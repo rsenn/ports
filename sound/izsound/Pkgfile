@@ -1,0 +1,34 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: A C++/STL sound processing library.
+#  IzSound is a C++/STL stream-oriented sound processing library. It has
+#  been designed around small DSP units that can be chained together to
+#  operate on the sound data stream.
+# URL: http://www.izforge.com/izsound/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libao2, libc6, libgcc1, libmad0, libogg0, libstdc++6, libvorbis0a, libvorbisfile3
+
+name=izsound
+version=0.3.0
+release=1
+source=(http://download.berlios.de/izsound/izsound-$version.tar.bz2
+        izsound-0.3.0-bvector.patch
+        #izsound-0.3.0-bitvec.patch
+       )
+
+build()
+{
+  cd izsound-$version
+
+  patch -N -p1 -i $SRC/izsound-0.3.0-bvector.patch
+
+#  patch -N -p1 -i $SRC/izsound-0.3.0-bitvec.patch
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

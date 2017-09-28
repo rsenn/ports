@@ -1,0 +1,35 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A multi-agent application development framework.
+#  PSIworld (Programmable Scalable Interactive World) is a framework
+#  that provides a set of libraries, utilities, and applications
+#  to ease the implementation of dynamic artificial intelligence
+#  environments. Specifically, the development of multi-agent applications
+#  is targeted. It is designed in a generic manner so that various kinds
+#  of applications can use it. This framework not only includes pure
+#  algorithm libraries for AI computation tasks, but also a C/C++ library
+#  for distributed computation. A server-client model also involves various,
+#  concurrent visualization methods of distinct Agents or Societies.
+#  .
+# URL: http://project-psi.org/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=projectpsi
+version=0.3
+release=1
+source=(http://project-psi.org/releases/psiworld-0.3.tar.gz)
+
+build()
+{
+  cd psiworld-0.3
+./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+make
+make DESTDIR="$PKG" install
+}
+
+# EOF

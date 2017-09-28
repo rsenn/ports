@@ -1,0 +1,36 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A directory browser for Internet radio stations
+#  streamtuner2 is an Internet radio browser. It lists directory services
+#  like shoutcast and icecast/xiph.org in a GTK+ window. It mimics the older
+#  streamtuner, but is an independent rewrite and aims for more features.
+#  .
+# URL: http://milki.erphesfurt.de/streamtuner2/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=streamtuner2
+version=1.9.7
+release=1
+source=(http://milki.erphesfurt.de/streamtuner2/streamtuner2-$version.tgz)
+
+build()
+{
+  cd streamtuner2
+
+  install -d $ROOT/bin
+  cat >$ROOT/bin/streamtuner2 <<EOF
+#!/bin/sh
+cd $prefix/share/streamtuner2
+exec ./st2.py
+EOF
+  chmod +x $ROOT/bin/streamtuner2
+
+  install -d $ROOT/share/streamtuner2
+  install -m 755 st2.py st2.glade streamtuner2.png $ROOT/share/streamtuner2
+
+  install -d $ROOT/share/doc/streamtuner2
+  install -m 644 README $ROOT/share/doc/streamtuner2
+}
+
+# EOF

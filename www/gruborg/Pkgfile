@@ -1,0 +1,27 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A distributed crawler for indexing the Web.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=grub-client
+version=0.3.0
+release=1
+source=($mirror_sf/grub/grub-client-0.3.0.tar.gz)
+
+build() 
+{
+  cd grub-client-$version
+  
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+  
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

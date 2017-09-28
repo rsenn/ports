@@ -1,0 +1,25 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: almost as superior as apt-get
+# URL: http://lesbian.mine.nu/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=porn
+version=0.5.1
+release=1
+source=(http://www.lesbian.mine.nu/porn-get_$version.tar.gz)
+
+build()
+{
+  cd porn-get_$version
+
+  sed -i \
+      -e "s,/usr/local,\$(PREFIX),g" \
+      -e "s,/usr,\$(PREFIX),g" \
+      -e "s,\$(PREFIX),\$(DESTDIR)&,g" \
+    makefile
+
+  make
+  make DESTDIR="$PKG" PREFIX="$prefix" install
+}

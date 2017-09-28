@@ -1,0 +1,12 @@
+diff -ru -ru ImageMagick-6.2.7_orig/coders/psd.c ImageMagick-6.2.7/coders/psd.c
+--- ImageMagick-6.2.7_orig/coders/psd.c	2006-05-08 17:20:37.000000000 +0200
++++ ImageMagick-6.2.7/coders/psd.c	2006-05-22 11:59:06.000000000 +0200
+@@ -1052,6 +1052,8 @@
+             (void) SetImageAttribute(layer_info[i].image,"[layer-opacity]",s);
+             (void) SetImageAttribute(layer_info[i].image,"label",(char *)
+               layer_info[i].name);
++            FormatMagickString(s,MaxTextExtent,"%d", layer_info[i].visible);    // added by nexbyte
++            (void) SetImageAttribute(layer_info[i].image,"[layer-visible]",s);  // added by nexbyte
+           }
+         if (image->debug != MagickFalse)
+           (void) LogMagickEvent(CoderEvent,GetMagickModule(),

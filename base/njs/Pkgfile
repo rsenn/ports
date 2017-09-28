@@ -1,0 +1,39 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: NJS JavaScript interpreter.
+#  NJS is an independent implementation of the JavaScript language 
+#  developed by Netscape and standardized by ECMA. 
+#  It is designed to be re-entrant, extendible, fast, and programmable.
+# URL: http://www.njs-javascript.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=njs
+version=0.2.5
+release=3
+source=($mirror_sf/njs/js-$version.tar.gz
+        njs-0.2.5-fixes.patch
+        njs-0.2.5-njs.patch)
+
+build()
+{
+  cd js-$version
+
+  patch -N -p1 -i $SRC/njs-0.2.5-fixes.patch
+  patch -N -p1 -i $SRC/njs-0.2.5-njs.patch
+
+#  libtoolize --force --copy --install
+#  aclocal --force -I am
+#  autoconf --force
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --includedir="$prefix/include/njs" \
+       --${static:=enable}-shared \
+       --${shared:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+}

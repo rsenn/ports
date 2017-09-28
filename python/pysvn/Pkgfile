@@ -1,0 +1,51 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Python interface to Subversion
+#  The pysvn project's goal is to enable Tools to be written in Python that
+#  use Subversion. Windows, Mac OS X, Linux and other unix platforms are
+#  supported. pysvn Extension Features * Supports all svn client features *
+#  Supports svn transaction features required to write svn pre-commit hooks *
+#  Easy to learn and use * Python like interface * Good Documentation and
+#  examples * No need to understand the Subversion C API pysvn WorkBench
+#  Features * Easy to learn and use * All subversion client operations in
+#  a GUI * Enhanced subversion operations (rename of modified files etc) *
+#  Support software development workflow * Builtin GUI diff showing line and
+#  character diffs * Ability to diff between revisions in a files history *
+#  Runs on Windows, Mac OS X and Unix platforms * Implemented in Python,
+#  allowing customisation
+#  .
+# URL: http://pysvn.tigris.org/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=pysvn
+version=1.6.2
+release=1
+source=(http://pysvn.barrys-emacs.org/source_kits/pysvn-$version.tar.gz)
+
+build()
+{
+  cd pysvn-$version/Source
+
+  python setup.py configure
+
+  make
+
+  set -- $(IFS=". " && echo $(python --version 2>&1)) && shift
+
+  instdir=lib/python$1.$2/site-packages
+
+
+  mkdir -p $ROOT/$instdir/pysvn
+  cp pysvn/__init__.py $ROOT/$instdir/pysvn
+  cp pysvn/_pysvn*.so $ROOT/$instdir/pysvn
+
+  cd ..
+
+  install -d $ROOT/share/doc/pysvn
+  install -m 644 Docs/* $ROOT/share/doc/pysvn
+  install -m 644 INSTALL.html LICENSE.txt $ROOT/share/doc/pysvn
+  cp -rf Examples $ROOT/share/doc/pysvn/examples
+}
+
+# EOF

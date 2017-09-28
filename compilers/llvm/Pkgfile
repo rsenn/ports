@@ -1,0 +1,45 @@
+# $Id: Pkgfile,v 1.2 2007/04/22 23:07:53 roman Exp $
+#
+# Description: A novel compiler infrastructure for the optimization of programs.
+#  Low-Level Virtual Machine (LLVM) is a compiler infrastructure designed for
+#  compile-time, link-time, run-time, and &quot;idle-time&quot; optimization
+#  of programs from arbitrary programming languages. It currently supports
+#  compilation of C, Objective-C, and C++ programs, using front-ends derived
+#  from GCC 4.0, GCC 4.2, and a custom new front-end, &quot;clang&quot;. It
+#  supports x86, x86_64, ia64, PowerPC, and SPARC, with support for Alpha
+#  and ARM under development.
+# URL: http://llvm.org
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libelfg0, libgcc1, libstdc++6, libc6, libelfg0, libgcc1, libstdc++6
+
+name=llvm
+version=2.3
+release=1
+source=(http://llvm.org/releases/$version/llvm-$version.tar.gz)
+
+build()
+{
+  cd llvm-$version
+
+  sed -i \
+      -e "/LLVM_DOCSDIR=/ s:/docs/llvm:/share/doc/llvm:g" \
+      -e "/LLVM_INFODIR=/ s:/docs/llvm:/share/info:g" \
+      -e "/LLVM_MANDIR=/ s:/docs/llvm:/share/man:g" \
+    configure
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --enable-doxygen \
+       --enable-pic
+
+  make
+  make DESTDIR="$PKG" install
+
+  if test -e $ROOT/docs
+  then
+    install -d $ROOT/share
+    mv $ROOT/docs $ROOT/share/doc
+  fi
+}

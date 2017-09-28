@@ -1,0 +1,27 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Section: asfix
+# Description:
+# URL: http://www.program-transformation.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=asfix
+version=0.2.3
+release=1
+source=(http://homepages.cwi.nl/~daybuild/releases/asfix-0.2.3.tar.gz)
+
+build()
+{
+  cd asfix-0.2.3
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A memory-optimized frequent itemset mining algorithm.
+# FP-Growth-Tiny introduces a space optimization to the FP- Growth
+# algorithm for mining frequent itemsets in a transaction database. The
+# code contains libraries, CLI frontends and a few other tools suited for
+# this task. Frequent itemset or frequency mining is the core of popular
+# mining methods such as association rule mining and sequence mining.
+#
+# URL: http://www.cs.bilkent.edu.tr/~erayo/wml/code.html
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=fpgrowth-tiny
+version=1.4.0
+release=1
+source=(http://www.cs.bilkent.edu.tr/~erayo/code/fpgrowth-tiny-$version.tar.bz2)
+
+build()
+{
+  cd fpgrowth-tiny
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

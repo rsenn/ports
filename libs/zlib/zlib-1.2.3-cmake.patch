@@ -1,0 +1,36 @@
+diff -ru zlib-1.2.3_orig/CMakeLists.txt zlib-1.2.3/CMakeLists.txt
+--- zlib-1.2.3_orig/CMakeLists.txt	2007-12-05 04:46:20.000000000 +0100
++++ zlib-1.2.3/CMakeLists.txt	2007-12-05 04:45:02.000000000 +0100
+@@ -0,0 +1,32 @@
++IF(WIN32)
++  SET(libz_NAME zlib1)
++ELSE(WIN32)
++  SET(libz_NAME z)
++  SET(PIC_FLAGS -fPIC)
++ENDIF(WIN32)
++
++IF(NOT DEFINED SHARED)
++  SET(SHARED 1)
++ENDIF(NOT DEFINED SHARED)
++
++IF(SHARED)
++  SET(LINK_MODE SHARED)
++ELSE(SHARED)
++  SET(LINK_MODE STATIC)
++ENDIF(SHARED)
++
++SET(libz_SOURCES adler32.c compress.c crc32.c gzio.c uncompr.c deflate.c trees.c zutil.c inflate.c infback.c inftrees.c inffast.c)
++ADD_LIBRARY(${libz_NAME} ${LINK_MODE} ${libz_SOURCES})
++SET_TARGET_PROPERTIES(${libz_NAME} PROPERTIES VERSION 1.2.3)
++
++ADD_EXECUTABLE(minigzip minigzip.c)
++TARGET_LINK_LIBRARIES(minigzip ${libz_NAME})
++
++INSTALL(TARGETS ${libz_NAME} minigzip
++        LIBRARY DESTINATION lib
++        RUNTIME DESTINATION bin
++        ARCHIVE DESTINATION lib)
++
++INSTALL(FILES zlib.h zconf.h DESTINATION include)
++
++ADD_SUBDIRECTORY(examples)

@@ -1,0 +1,51 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An extensible email filter that is used to identify spam.
+#  Apache SpamAssassin is an extensible email filter that is used to
+#  identify spam. Once identified, the mail can then be optionally tagged
+#  as spam for later filtering. It provides a command line tool to perform
+#  filtering, a client-server system to filter large volumes of mail, and
+#  Mail::SpamAssassin, a set of Perl modules allowing Apache SpamAssassin
+#  to be used in a wide variety of email systems.
+#  .
+# URL: http://spamassassin.apache.org/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=spamassassin
+version=3.2.5
+release=1
+source=(http://mirror.switch.ch/mirror/apache/dist/spamassassin/source/Mail-SpamAssassin-$version.tar.bz2)
+
+build()
+{
+  cd ${srcdir=$SRC/Mail-SpamAssassin-$version}
+
+  install -d $ROOT/share/doc/spamassassin
+  install -m 644 CREDITS Changes INSTALL* LICENSE MANIFEST NOTICE PACKAGING README TRADEMARK UPGRADE USAGE $ROOT/share/doc/spamassassin
+
+  cd $srcdir/spamc
+
+  perl version.h.pl
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+
+  make
+
+  install -d $ROOT/bin
+  install -m 755 spamc qmail-spamc $ROOT/bin
+
+  cd $srcdir/spamd-apache2
+
+  perl Makefile.PL
+
+  cd $srcdir
+
+  yes "" | perl Makefile.PL
+}
+
+# EOF

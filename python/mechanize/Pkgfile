@@ -1,0 +1,35 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: stateful programmatic web browsing
+#  A library for browsing the web in python. Mechanize acts like a browser
+#  allowing you to do web scraping, functional testing of web sites and
+#  things no one has thought of yet.
+#  Among other things, mechanize:
+#  * Follows links
+#  * Fills in HTML forms
+#  * Automatically observes robots.txt
+#  * Has a browser history
+#  It was modelled after the Perl module WWW::Mechanize.
+# URL: http://wwwsearch.sourceforge.net/mechanize/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=mechanize
+version=0.1.7b
+release=1
+source=(http://wwwsearch.sourceforge.net/mechanize/src/mechanize-$version.tar.gz)
+
+build()
+{
+  cd mechanize-$version
+
+  set -- $(IFS=". " && echo $(python --version 2>&1)) && shift
+
+  instdir=lib/python$1.$2/site-packages
+
+  export PYTHONPATH="$prefix/$instdir:$ROOT/$instdir"
+
+  mkdir -p $ROOT/$instdir
+
+  python setup.py install --prefix="$ROOT"
+}

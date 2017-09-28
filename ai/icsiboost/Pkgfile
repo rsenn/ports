@@ -1,0 +1,35 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An implementation of BoosTexter.
+#  Boosting is a meta-learning approach that aims at combining an ensemble
+#  of weak classifiers to form a strong classifier. Adaptive Boosting
+#  (Adaboost) implements this idea as a greedy search for a linear
+#  combination of classifiers by overweighting the examples that are
+#  misclassified by each classifier. icsiboost implements Adaboost over
+#  stumps (one-level decision trees) on discrete and continuous attributes
+#  (words and real values). This approach is one of the most efficient and
+#  simple to combine continuous and nominal values. This implementation
+#  is aimed at allowing training from millions of examples by hundreds of
+#  features in a reasonable amount of time/memory.
+#
+# URL: http://code.google.com/p/icsiboost/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=icsiboost
+version=0.3c-20080823
+release=1
+source=(icsiboost-$version.tar.gz)
+
+build()
+{
+  cd icsiboost-$version
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

@@ -1,0 +1,28 @@
+# $Id: Pkgfile,v 1.20 2007/05/09 21:02:55 roman Exp $
+#
+# Description: A modular, terminal-based IRC client with Perl scripting.
+#  Irssi is a modular, terminal-based IRC client with Perl scripting.
+# URL: http://www.irssi.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: slang
+
+name=irssi
+version=0.8.12
+release=1
+source=(http://irssi.org/files/irssi-$version.tar.bz2
+        irssi-0.8.12-ni-maxhost.patch)
+
+build()
+{
+  cd irssi-$version
+
+  patch -N -p1 -i $SRC/irssi-0.8.12-ni-maxhost.patch
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

@@ -1,0 +1,764 @@
+diff -ru -ru pmake_orig/GNUmakefile pmake/GNUmakefile
+--- pmake_orig/GNUmakefile	2006-10-09 16:35:25.000000000 +0200
++++ pmake/GNUmakefile	2006-10-09 16:42:17.000000000 +0200
+@@ -0,0 +1,36 @@
++#	$NetBSD: Makefile,v 1.33 2004/05/07 00:04:38 ross Exp $
++#	@(#)Makefile	5.2 (Berkeley) 12/28/90
++
++PROG=	pmake
++
++SRCS=	arch.c buf.c compat.c cond.c dir.c for.c hash.c job.c main.c \
++	make.c parse.c str.c suff.c targ.c trace.c var.c util.c
++SRCS+=	lst.lib/lstAppend.c lst.lib/lstAtEnd.c lst.lib/lstAtFront.c lst.lib/lstClose.c lst.lib/lstConcat.c \
++	lst.lib/lstDatum.c lst.lib/lstDeQueue.c lst.lib/lstDestroy.c lst.lib/lstDupl.c lst.lib/lstEnQueue.c \
++	lst.lib/lstFind.c lst.lib/lstFindFrom.c lst.lib/lstFirst.c lst.lib/lstForEach.c lst.lib/lstForEachFrom.c \
++	lst.lib/lstInit.c lst.lib/lstInsert.c lst.lib/lstIsAtEnd.c lst.lib/lstIsEmpty.c lst.lib/lstLast.c \
++	lst.lib/lstMember.c lst.lib/lstNext.c lst.lib/lstOpen.c lst.lib/lstRemove.c lst.lib/lstReplace.c lst.lib/lstSucc.c
++OBJS= $(SRCS:%.c=%.o)
++WARNS=3
++WFORMAT= 1
++SUBDIR=	PSD.doc
++SUBDIR+= unit-tests
++
++all: $(PROG)
++
++$(PROG): $(OBJS)
++	$(CC) -o $@ $^
++#.include <bsd.prog.mk>
++#.include <bsd.subdir.mk>
++
++# provide a clue as to what we are using
++BUILD_DATE!= date +%Y%m%d
++MAKE_VERSION:= netbsd-${BUILD_DATE}
++CPPFLAGS_main.o:= "-DMAKE_VERSION=\"${MAKE_VERSION}\""
++CPPFLAGS+= ${CPPFLAGS_${.TARGET}} -DMAKE_NATIVE
++main.o:	${OBJS:Nmain.o} ${MAKEFILE}
++COPTS.var.c+= -Wno-cast-qual
++
++# A simple unit-test driver to help catch regressions
++accept test:
++	cd ${.CURDIR}/unit-tests && ${.MAKE:S,^./,${.CURDIR}/,} TEST_MAKE=${TEST_MAKE:U${.OBJDIR}/${PROG:T}} ${.TARGET}
+diff -ru -ru pmake_orig/Makefile pmake/Makefile
+--- pmake_orig/Makefile	2006-10-09 16:35:20.000000000 +0200
++++ pmake/Makefile	2006-10-09 16:36:55.000000000 +0200
+@@ -26,7 +26,7 @@
+ BUILD_DATE!= date +%Y%m%d
+ MAKE_VERSION:= netbsd-${BUILD_DATE}
+ CPPFLAGS_main.o:= "-DMAKE_VERSION=\"${MAKE_VERSION}\""
+-CPPFLAGS+= ${CPPFLAGS_${.TARGET}} -DMAKE_NATIVE
++CPPFLAGS+= ${CPPFLAGS_${.TARGET}}
+ main.o:	${OBJS:Nmain.o} ${MAKEFILE}
+ COPTS.var.c+= -Wno-cast-qual
+ 
+diff -ru -ru pmake_orig/arch.c pmake/arch.c
+--- pmake_orig/arch.c	2006-10-09 16:35:20.000000000 +0200
++++ pmake/arch.c	2006-10-09 16:36:44.000000000 +0200
+@@ -73,11 +73,6 @@
+ #else
+ #include <sys/cdefs.h>
+ #ifndef lint
+-#if 0
+-static char sccsid[] = "@(#)arch.c	8.2 (Berkeley) 1/2/94";
+-#else
+-__RCSID("$NetBSD: arch.c,v 1.44 2005/02/16 15:11:52 christos Exp $");
+-#endif
+ #endif /* not lint */
+ #endif
+ 
+diff -ru -ru pmake_orig/buf.c pmake/buf.c
+--- pmake_orig/buf.c	2006-10-09 16:35:20.000000000 +0200
++++ pmake/buf.c	2006-10-09 16:37:03.000000000 +0200
+@@ -74,11 +74,6 @@
+ #else
+ #include <sys/cdefs.h>
+ #ifndef lint
+-#if 0
+-static char sccsid[] = "@(#)buf.c	8.1 (Berkeley) 6/6/93";
+-#else
+-__RCSID("$NetBSD: buf.c,v 1.16 2005/02/16 15:11:52 christos Exp $");
+-#endif
+ #endif /* not lint */
+ #endif
+ 
+diff -ru -ru pmake_orig/compat.c pmake/compat.c
+--- pmake_orig/compat.c	2006-10-09 16:35:20.000000000 +0200
++++ pmake/compat.c	2006-10-09 16:37:10.000000000 +0200
+@@ -74,11 +74,6 @@
+ #else
+ #include <sys/cdefs.h>
+ #ifndef lint
+-#if 0
+-static char sccsid[] = "@(#)compat.c	8.2 (Berkeley) 3/19/94";
+-#else
+-__RCSID("$NetBSD: compat.c,v 1.58 2005/05/08 04:19:12 christos Exp $");
+-#endif
+ #endif /* not lint */
+ #endif
+ 
+diff -ru -ru pmake_orig/cond.c pmake/cond.c
+--- pmake_orig/cond.c	2006-10-09 16:35:20.000000000 +0200
++++ pmake/cond.c	2006-10-09 16:37:16.000000000 +0200
+@@ -74,11 +74,6 @@
+ #else
+ #include <sys/cdefs.h>
+ #ifndef lint
+-#if 0
+-static char sccsid[] = "@(#)cond.c	8.2 (Berkeley) 1/2/94";
+-#else
+-__RCSID("$NetBSD: cond.c,v 1.27 2005/06/02 02:03:19 lukem Exp $");
+-#endif
+ #endif /* not lint */
+ #endif
+ 
+diff -ru -ru pmake_orig/dir.c pmake/dir.c
+--- pmake_orig/dir.c	2006-10-09 16:35:20.000000000 +0200
++++ pmake/dir.c	2006-10-09 16:37:21.000000000 +0200
+@@ -74,11 +74,6 @@
+ #else
+ #include <sys/cdefs.h>
+ #ifndef lint
+-#if 0
+-static char sccsid[] = "@(#)dir.c	8.2 (Berkeley) 1/2/94";
+-#else
+-__RCSID("$NetBSD: dir.c,v 1.45 2005/02/16 15:11:52 christos Exp $");
+-#endif
+ #endif /* not lint */
+ #endif
+ 
+diff -ru -ru pmake_orig/for.c pmake/for.c
+--- pmake_orig/for.c	2006-10-09 16:35:20.000000000 +0200
++++ pmake/for.c	2006-10-09 16:37:26.000000000 +0200
+@@ -34,11 +34,6 @@
+ #else
+ #include <sys/cdefs.h>
+ #ifndef lint
+-#if 0
+-static char sccsid[] = "@(#)for.c	8.1 (Berkeley) 6/6/93";
+-#else
+-__RCSID("$NetBSD: for.c,v 1.18 2005/02/16 15:11:52 christos Exp $");
+-#endif
+ #endif /* not lint */
+ #endif
+ 
+diff -ru -ru pmake_orig/hash.c pmake/hash.c
+--- pmake_orig/hash.c	2006-10-09 16:35:20.000000000 +0200
++++ pmake/hash.c	2006-10-09 16:37:31.000000000 +0200
+@@ -74,11 +74,6 @@
+ #else
+ #include <sys/cdefs.h>
+ #ifndef lint
+-#if 0
+-static char sccsid[] = "@(#)hash.c	8.1 (Berkeley) 6/6/93";
+-#else
+-__RCSID("$NetBSD: hash.c,v 1.14 2005/02/16 15:11:52 christos Exp $");
+-#endif
+ #endif /* not lint */
+ #endif
+ 
+diff -ru -ru pmake_orig/job.c pmake/job.c
+--- pmake_orig/job.c	2006-10-09 16:35:20.000000000 +0200
++++ pmake/job.c	2006-10-09 16:37:36.000000000 +0200
+@@ -74,11 +74,6 @@
+ #else
+ #include <sys/cdefs.h>
+ #ifndef lint
+-#if 0
+-static char sccsid[] = "@(#)job.c	8.2 (Berkeley) 3/19/94";
+-#else
+-__RCSID("$NetBSD: job.c,v 1.95 2005/06/29 19:59:42 christos Exp $");
+-#endif
+ #endif /* not lint */
+ #endif
+ 
+diff -ru -ru pmake_orig/lst.lib/lstAppend.c pmake/lst.lib/lstAppend.c
+--- pmake_orig/lst.lib/lstAppend.c	2006-10-09 16:35:21.000000000 +0200
++++ pmake/lst.lib/lstAppend.c	2006-10-09 16:39:36.000000000 +0200
+@@ -36,13 +36,6 @@
+ static char rcsid[] = "$NetBSD: lstAppend.c,v 1.10 2004/05/07 00:04:41 ross Exp $";
+ #else
+ #include <sys/cdefs.h>
+-#ifndef lint
+-#if 0
+-static char sccsid[] = "@(#)lstAppend.c	8.1 (Berkeley) 6/6/93";
+-#else
+-__RCSID("$NetBSD: lstAppend.c,v 1.10 2004/05/07 00:04:41 ross Exp $");
+-#endif
+-#endif /* not lint */
+ #endif
+ 
+ /*-
+diff -ru -ru pmake_orig/lst.lib/lstAtEnd.c pmake/lst.lib/lstAtEnd.c
+--- pmake_orig/lst.lib/lstAtEnd.c	2006-10-09 16:35:21.000000000 +0200
++++ pmake/lst.lib/lstAtEnd.c	2006-10-09 16:39:50.000000000 +0200
+@@ -36,13 +36,6 @@
+ static char rcsid[] = "$NetBSD: lstAtEnd.c,v 1.11 2005/02/16 15:11:53 christos Exp $";
+ #else
+ #include <sys/cdefs.h>
+-#ifndef lint
+-#if 0
+-static char sccsid[] = "@(#)lstAtEnd.c	8.1 (Berkeley) 6/6/93";
+-#else
+-__RCSID("$NetBSD: lstAtEnd.c,v 1.11 2005/02/16 15:11:53 christos Exp $");
+-#endif
+-#endif /* not lint */
+ #endif
+ 
+ /*-
+diff -ru -ru pmake_orig/lst.lib/lstAtFront.c pmake/lst.lib/lstAtFront.c
+--- pmake_orig/lst.lib/lstAtFront.c	2006-10-09 16:35:21.000000000 +0200
++++ pmake/lst.lib/lstAtFront.c	2006-10-09 16:39:55.000000000 +0200
+@@ -36,13 +36,6 @@
+ static char rcsid[] = "$NetBSD: lstAtFront.c,v 1.11 2005/02/16 15:11:53 christos Exp $";
+ #else
+ #include <sys/cdefs.h>
+-#ifndef lint
+-#if 0
+-static char sccsid[] = "@(#)lstAtFront.c	8.1 (Berkeley) 6/6/93";
+-#else
+-__RCSID("$NetBSD: lstAtFront.c,v 1.11 2005/02/16 15:11:53 christos Exp $");
+-#endif
+-#endif /* not lint */
+ #endif
+ 
+ /*-
+diff -ru -ru pmake_orig/lst.lib/lstClose.c pmake/lst.lib/lstClose.c
+--- pmake_orig/lst.lib/lstClose.c	2006-10-09 16:35:21.000000000 +0200
++++ pmake/lst.lib/lstClose.c	2006-10-09 16:39:59.000000000 +0200
+@@ -36,13 +36,6 @@
+ static char rcsid[] = "$NetBSD: lstClose.c,v 1.10 2004/05/07 00:04:41 ross Exp $";
+ #else
+ #include <sys/cdefs.h>
+-#ifndef lint
+-#if 0
+-static char sccsid[] = "@(#)lstClose.c	8.1 (Berkeley) 6/6/93";
+-#else
+-__RCSID("$NetBSD: lstClose.c,v 1.10 2004/05/07 00:04:41 ross Exp $");
+-#endif
+-#endif /* not lint */
+ #endif
+ 
+ /*-
+diff -ru -ru pmake_orig/lst.lib/lstConcat.c pmake/lst.lib/lstConcat.c
+--- pmake_orig/lst.lib/lstConcat.c	2006-10-09 16:35:21.000000000 +0200
++++ pmake/lst.lib/lstConcat.c	2006-10-09 16:40:03.000000000 +0200
+@@ -36,13 +36,6 @@
+ static char rcsid[] = "$NetBSD: lstConcat.c,v 1.12 2004/05/07 00:04:41 ross Exp $";
+ #else
+ #include <sys/cdefs.h>
+-#ifndef lint
+-#if 0
+-static char sccsid[] = "@(#)lstConcat.c	8.1 (Berkeley) 6/6/93";
+-#else
+-__RCSID("$NetBSD: lstConcat.c,v 1.12 2004/05/07 00:04:41 ross Exp $");
+-#endif
+-#endif /* not lint */
+ #endif
+ 
+ /*-
+diff -ru -ru pmake_orig/lst.lib/lstDatum.c pmake/lst.lib/lstDatum.c
+--- pmake_orig/lst.lib/lstDatum.c	2006-10-09 16:35:21.000000000 +0200
++++ pmake/lst.lib/lstDatum.c	2006-10-09 16:40:08.000000000 +0200
+@@ -36,13 +36,6 @@
+ static char rcsid[] = "$NetBSD: lstDatum.c,v 1.10 2004/05/07 00:04:41 ross Exp $";
+ #else
+ #include <sys/cdefs.h>
+-#ifndef lint
+-#if 0
+-static char sccsid[] = "@(#)lstDatum.c	8.1 (Berkeley) 6/6/93";
+-#else
+-__RCSID("$NetBSD: lstDatum.c,v 1.10 2004/05/07 00:04:41 ross Exp $");
+-#endif
+-#endif /* not lint */
+ #endif
+ 
+ /*-
+diff -ru -ru pmake_orig/lst.lib/lstDeQueue.c pmake/lst.lib/lstDeQueue.c
+--- pmake_orig/lst.lib/lstDeQueue.c	2006-10-09 16:35:21.000000000 +0200
++++ pmake/lst.lib/lstDeQueue.c	2006-10-09 16:40:13.000000000 +0200
+@@ -36,13 +36,6 @@
+ static char rcsid[] = "$NetBSD: lstDeQueue.c,v 1.11 2005/02/16 15:11:53 christos Exp $";
+ #else
+ #include <sys/cdefs.h>
+-#ifndef lint
+-#if 0
+-static char sccsid[] = "@(#)lstDeQueue.c	8.1 (Berkeley) 6/6/93";
+-#else
+-__RCSID("$NetBSD: lstDeQueue.c,v 1.11 2005/02/16 15:11:53 christos Exp $");
+-#endif
+-#endif /* not lint */
+ #endif
+ 
+ /*-
+diff -ru -ru pmake_orig/lst.lib/lstDestroy.c pmake/lst.lib/lstDestroy.c
+--- pmake_orig/lst.lib/lstDestroy.c	2006-10-09 16:35:21.000000000 +0200
++++ pmake/lst.lib/lstDestroy.c	2006-10-09 16:40:17.000000000 +0200
+@@ -36,13 +36,6 @@
+ static char rcsid[] = "$NetBSD: lstDestroy.c,v 1.11 2004/05/07 00:04:41 ross Exp $";
+ #else
+ #include <sys/cdefs.h>
+-#ifndef lint
+-#if 0
+-static char sccsid[] = "@(#)lstDestroy.c	8.1 (Berkeley) 6/6/93";
+-#else
+-__RCSID("$NetBSD: lstDestroy.c,v 1.11 2004/05/07 00:04:41 ross Exp $");
+-#endif
+-#endif /* not lint */
+ #endif
+ 
+ /*-
+diff -ru -ru pmake_orig/lst.lib/lstDupl.c pmake/lst.lib/lstDupl.c
+--- pmake_orig/lst.lib/lstDupl.c	2006-10-09 16:35:21.000000000 +0200
++++ pmake/lst.lib/lstDupl.c	2006-10-09 16:40:23.000000000 +0200
+@@ -36,13 +36,6 @@
+ static char rcsid[] = "$NetBSD: lstDupl.c,v 1.12 2005/02/16 15:11:53 christos Exp $";
+ #else
+ #include <sys/cdefs.h>
+-#ifndef lint
+-#if 0
+-static char sccsid[] = "@(#)lstDupl.c	8.1 (Berkeley) 6/6/93";
+-#else
+-__RCSID("$NetBSD: lstDupl.c,v 1.12 2005/02/16 15:11:53 christos Exp $");
+-#endif
+-#endif /* not lint */
+ #endif
+ 
+ /*-
+diff -ru -ru pmake_orig/lst.lib/lstEnQueue.c pmake/lst.lib/lstEnQueue.c
+--- pmake_orig/lst.lib/lstEnQueue.c	2006-10-09 16:35:21.000000000 +0200
++++ pmake/lst.lib/lstEnQueue.c	2006-10-09 16:40:28.000000000 +0200
+@@ -36,13 +36,6 @@
+ static char rcsid[] = "$NetBSD: lstEnQueue.c,v 1.11 2005/02/16 15:11:53 christos Exp $";
+ #else
+ #include <sys/cdefs.h>
+-#ifndef lint
+-#if 0
+-static char sccsid[] = "@(#)lstEnQueue.c	8.1 (Berkeley) 6/6/93";
+-#else
+-__RCSID("$NetBSD: lstEnQueue.c,v 1.11 2005/02/16 15:11:53 christos Exp $");
+-#endif
+-#endif /* not lint */
+ #endif
+ 
+ /*-
+diff -ru -ru pmake_orig/lst.lib/lstFind.c pmake/lst.lib/lstFind.c
+--- pmake_orig/lst.lib/lstFind.c	2006-10-09 16:35:21.000000000 +0200
++++ pmake/lst.lib/lstFind.c	2006-10-09 16:40:32.000000000 +0200
+@@ -36,13 +36,6 @@
+ static char rcsid[] = "$NetBSD: lstFind.c,v 1.12 2005/02/16 15:11:53 christos Exp $";
+ #else
+ #include <sys/cdefs.h>
+-#ifndef lint
+-#if 0
+-static char sccsid[] = "@(#)lstFind.c	8.1 (Berkeley) 6/6/93";
+-#else
+-__RCSID("$NetBSD: lstFind.c,v 1.12 2005/02/16 15:11:53 christos Exp $");
+-#endif
+-#endif /* not lint */
+ #endif
+ 
+ /*-
+diff -ru -ru pmake_orig/lst.lib/lstFindFrom.c pmake/lst.lib/lstFindFrom.c
+--- pmake_orig/lst.lib/lstFindFrom.c	2006-10-09 16:35:21.000000000 +0200
++++ pmake/lst.lib/lstFindFrom.c	2006-10-09 16:40:35.000000000 +0200
+@@ -36,13 +36,6 @@
+ static char rcsid[] = "$NetBSD: lstFindFrom.c,v 1.11 2004/05/07 00:04:41 ross Exp $";
+ #else
+ #include <sys/cdefs.h>
+-#ifndef lint
+-#if 0
+-static char sccsid[] = "@(#)lstFindFrom.c	8.1 (Berkeley) 6/6/93";
+-#else
+-__RCSID("$NetBSD: lstFindFrom.c,v 1.11 2004/05/07 00:04:41 ross Exp $");
+-#endif
+-#endif /* not lint */
+ #endif
+ 
+ /*-
+diff -ru -ru pmake_orig/lst.lib/lstFirst.c pmake/lst.lib/lstFirst.c
+--- pmake_orig/lst.lib/lstFirst.c	2006-10-09 16:35:21.000000000 +0200
++++ pmake/lst.lib/lstFirst.c	2006-10-09 16:40:40.000000000 +0200
+@@ -36,13 +36,6 @@
+ static char rcsid[] = "$NetBSD: lstFirst.c,v 1.10 2004/05/07 00:04:41 ross Exp $";
+ #else
+ #include <sys/cdefs.h>
+-#ifndef lint
+-#if 0
+-static char sccsid[] = "@(#)lstFirst.c	8.1 (Berkeley) 6/6/93";
+-#else
+-__RCSID("$NetBSD: lstFirst.c,v 1.10 2004/05/07 00:04:41 ross Exp $");
+-#endif
+-#endif /* not lint */
+ #endif
+ 
+ /*-
+diff -ru -ru pmake_orig/lst.lib/lstForEach.c pmake/lst.lib/lstForEach.c
+--- pmake_orig/lst.lib/lstForEach.c	2006-10-09 16:35:21.000000000 +0200
++++ pmake/lst.lib/lstForEach.c	2006-10-09 16:40:44.000000000 +0200
+@@ -36,13 +36,6 @@
+ static char rcsid[] = "$NetBSD: lstForEach.c,v 1.11 2004/05/07 00:04:41 ross Exp $";
+ #else
+ #include <sys/cdefs.h>
+-#ifndef lint
+-#if 0
+-static char sccsid[] = "@(#)lstForEach.c	8.1 (Berkeley) 6/6/93";
+-#else
+-__RCSID("$NetBSD: lstForEach.c,v 1.11 2004/05/07 00:04:41 ross Exp $");
+-#endif
+-#endif /* not lint */
+ #endif
+ 
+ /*-
+diff -ru -ru pmake_orig/lst.lib/lstForEachFrom.c pmake/lst.lib/lstForEachFrom.c
+--- pmake_orig/lst.lib/lstForEachFrom.c	2006-10-09 16:35:21.000000000 +0200
++++ pmake/lst.lib/lstForEachFrom.c	2006-10-09 16:40:48.000000000 +0200
+@@ -36,13 +36,6 @@
+ static char rcsid[] = "$NetBSD: lstForEachFrom.c,v 1.11 2004/05/07 00:04:41 ross Exp $";
+ #else
+ #include <sys/cdefs.h>
+-#ifndef lint
+-#if 0
+-static char sccsid[] = "@(#)lstForEachFrom.c	8.1 (Berkeley) 6/6/93";
+-#else
+-__RCSID("$NetBSD: lstForEachFrom.c,v 1.11 2004/05/07 00:04:41 ross Exp $");
+-#endif
+-#endif /* not lint */
+ #endif
+ 
+ /*-
+diff -ru -ru pmake_orig/lst.lib/lstInit.c pmake/lst.lib/lstInit.c
+--- pmake_orig/lst.lib/lstInit.c	2006-10-09 16:35:21.000000000 +0200
++++ pmake/lst.lib/lstInit.c	2006-10-09 16:40:52.000000000 +0200
+@@ -36,13 +36,6 @@
+ static char rcsid[] = "$NetBSD: lstInit.c,v 1.10 2004/05/07 00:04:41 ross Exp $";
+ #else
+ #include <sys/cdefs.h>
+-#ifndef lint
+-#if 0
+-static char sccsid[] = "@(#)lstInit.c	8.1 (Berkeley) 6/6/93";
+-#else
+-__RCSID("$NetBSD: lstInit.c,v 1.10 2004/05/07 00:04:41 ross Exp $");
+-#endif
+-#endif /* not lint */
+ #endif
+ 
+ /*-
+diff -ru -ru pmake_orig/lst.lib/lstInsert.c pmake/lst.lib/lstInsert.c
+--- pmake_orig/lst.lib/lstInsert.c	2006-10-09 16:35:21.000000000 +0200
++++ pmake/lst.lib/lstInsert.c	2006-10-09 16:40:56.000000000 +0200
+@@ -36,13 +36,6 @@
+ static char rcsid[] = "$NetBSD: lstInsert.c,v 1.10 2004/05/07 00:04:41 ross Exp $";
+ #else
+ #include <sys/cdefs.h>
+-#ifndef lint
+-#if 0
+-static char sccsid[] = "@(#)lstInsert.c	8.1 (Berkeley) 6/6/93";
+-#else
+-__RCSID("$NetBSD: lstInsert.c,v 1.10 2004/05/07 00:04:41 ross Exp $");
+-#endif
+-#endif /* not lint */
+ #endif
+ 
+ /*-
+diff -ru -ru pmake_orig/lst.lib/lstIsAtEnd.c pmake/lst.lib/lstIsAtEnd.c
+--- pmake_orig/lst.lib/lstIsAtEnd.c	2006-10-09 16:35:21.000000000 +0200
++++ pmake/lst.lib/lstIsAtEnd.c	2006-10-09 16:41:00.000000000 +0200
+@@ -36,13 +36,6 @@
+ static char rcsid[] = "$NetBSD: lstIsAtEnd.c,v 1.10 2004/05/07 00:04:41 ross Exp $";
+ #else
+ #include <sys/cdefs.h>
+-#ifndef lint
+-#if 0
+-static char sccsid[] = "@(#)lstIsAtEnd.c	8.1 (Berkeley) 6/6/93";
+-#else
+-__RCSID("$NetBSD: lstIsAtEnd.c,v 1.10 2004/05/07 00:04:41 ross Exp $");
+-#endif
+-#endif /* not lint */
+ #endif
+ 
+ /*-
+diff -ru -ru pmake_orig/lst.lib/lstIsEmpty.c pmake/lst.lib/lstIsEmpty.c
+--- pmake_orig/lst.lib/lstIsEmpty.c	2006-10-09 16:35:21.000000000 +0200
++++ pmake/lst.lib/lstIsEmpty.c	2006-10-09 16:41:03.000000000 +0200
+@@ -36,13 +36,6 @@
+ static char rcsid[] = "$NetBSD: lstIsEmpty.c,v 1.10 2004/05/07 00:04:41 ross Exp $";
+ #else
+ #include <sys/cdefs.h>
+-#ifndef lint
+-#if 0
+-static char sccsid[] = "@(#)lstIsEmpty.c	8.1 (Berkeley) 6/6/93";
+-#else
+-__RCSID("$NetBSD: lstIsEmpty.c,v 1.10 2004/05/07 00:04:41 ross Exp $");
+-#endif
+-#endif /* not lint */
+ #endif
+ 
+ /*-
+diff -ru -ru pmake_orig/lst.lib/lstLast.c pmake/lst.lib/lstLast.c
+--- pmake_orig/lst.lib/lstLast.c	2006-10-09 16:35:21.000000000 +0200
++++ pmake/lst.lib/lstLast.c	2006-10-09 16:41:07.000000000 +0200
+@@ -36,13 +36,6 @@
+ static char rcsid[] = "$NetBSD: lstLast.c,v 1.10 2004/05/07 00:04:41 ross Exp $";
+ #else
+ #include <sys/cdefs.h>
+-#ifndef lint
+-#if 0
+-static char sccsid[] = "@(#)lstLast.c	8.1 (Berkeley) 6/6/93";
+-#else
+-__RCSID("$NetBSD: lstLast.c,v 1.10 2004/05/07 00:04:41 ross Exp $");
+-#endif
+-#endif /* not lint */
+ #endif
+ 
+ /*-
+diff -ru -ru pmake_orig/lst.lib/lstMember.c pmake/lst.lib/lstMember.c
+--- pmake_orig/lst.lib/lstMember.c	2006-10-09 16:35:21.000000000 +0200
++++ pmake/lst.lib/lstMember.c	2006-10-09 16:41:11.000000000 +0200
+@@ -36,13 +36,6 @@
+ static char rcsid[] = "$NetBSD: lstMember.c,v 1.10 2004/05/07 00:04:41 ross Exp $";
+ #else
+ #include <sys/cdefs.h>
+-#ifndef lint
+-#if 0
+-static char sccsid[] = "@(#)lstMember.c	8.1 (Berkeley) 6/6/93";
+-#else
+-__RCSID("$NetBSD: lstMember.c,v 1.10 2004/05/07 00:04:41 ross Exp $");
+-#endif
+-#endif /* not lint */
+ #endif
+ 
+ /*-
+diff -ru -ru pmake_orig/lst.lib/lstNext.c pmake/lst.lib/lstNext.c
+--- pmake_orig/lst.lib/lstNext.c	2006-10-09 16:35:21.000000000 +0200
++++ pmake/lst.lib/lstNext.c	2006-10-09 16:41:14.000000000 +0200
+@@ -36,13 +36,6 @@
+ static char rcsid[] = "$NetBSD: lstNext.c,v 1.10 2004/05/07 00:04:41 ross Exp $";
+ #else
+ #include <sys/cdefs.h>
+-#ifndef lint
+-#if 0
+-static char sccsid[] = "@(#)lstNext.c	8.1 (Berkeley) 6/6/93";
+-#else
+-__RCSID("$NetBSD: lstNext.c,v 1.10 2004/05/07 00:04:41 ross Exp $");
+-#endif
+-#endif /* not lint */
+ #endif
+ 
+ /*-
+diff -ru -ru pmake_orig/lst.lib/lstOpen.c pmake/lst.lib/lstOpen.c
+--- pmake_orig/lst.lib/lstOpen.c	2006-10-09 16:35:21.000000000 +0200
++++ pmake/lst.lib/lstOpen.c	2006-10-09 16:41:17.000000000 +0200
+@@ -36,13 +36,6 @@
+ static char rcsid[] = "$NetBSD: lstOpen.c,v 1.10 2004/05/07 00:04:41 ross Exp $";
+ #else
+ #include <sys/cdefs.h>
+-#ifndef lint
+-#if 0
+-static char sccsid[] = "@(#)lstOpen.c	8.1 (Berkeley) 6/6/93";
+-#else
+-__RCSID("$NetBSD: lstOpen.c,v 1.10 2004/05/07 00:04:41 ross Exp $");
+-#endif
+-#endif /* not lint */
+ #endif
+ 
+ /*-
+diff -ru -ru pmake_orig/lst.lib/lstRemove.c pmake/lst.lib/lstRemove.c
+--- pmake_orig/lst.lib/lstRemove.c	2006-10-09 16:35:21.000000000 +0200
++++ pmake/lst.lib/lstRemove.c	2006-10-09 16:41:21.000000000 +0200
+@@ -36,13 +36,6 @@
+ static char rcsid[] = "$NetBSD: lstRemove.c,v 1.10 2004/05/07 00:04:41 ross Exp $";
+ #else
+ #include <sys/cdefs.h>
+-#ifndef lint
+-#if 0
+-static char sccsid[] = "@(#)lstRemove.c	8.1 (Berkeley) 6/6/93";
+-#else
+-__RCSID("$NetBSD: lstRemove.c,v 1.10 2004/05/07 00:04:41 ross Exp $");
+-#endif
+-#endif /* not lint */
+ #endif
+ 
+ /*-
+diff -ru -ru pmake_orig/lst.lib/lstReplace.c pmake/lst.lib/lstReplace.c
+--- pmake_orig/lst.lib/lstReplace.c	2006-10-09 16:35:21.000000000 +0200
++++ pmake/lst.lib/lstReplace.c	2006-10-09 16:41:25.000000000 +0200
+@@ -36,13 +36,6 @@
+ static char rcsid[] = "$NetBSD: lstReplace.c,v 1.10 2004/05/07 00:04:41 ross Exp $";
+ #else
+ #include <sys/cdefs.h>
+-#ifndef lint
+-#if 0
+-static char sccsid[] = "@(#)lstReplace.c	8.1 (Berkeley) 6/6/93";
+-#else
+-__RCSID("$NetBSD: lstReplace.c,v 1.10 2004/05/07 00:04:41 ross Exp $");
+-#endif
+-#endif /* not lint */
+ #endif
+ 
+ /*-
+diff -ru -ru pmake_orig/lst.lib/lstSucc.c pmake/lst.lib/lstSucc.c
+--- pmake_orig/lst.lib/lstSucc.c	2006-10-09 16:35:21.000000000 +0200
++++ pmake/lst.lib/lstSucc.c	2006-10-09 16:41:29.000000000 +0200
+@@ -36,13 +36,6 @@
+ static char rcsid[] = "$NetBSD: lstSucc.c,v 1.11 2004/05/07 00:04:41 ross Exp $";
+ #else
+ #include <sys/cdefs.h>
+-#ifndef lint
+-#if 0
+-static char sccsid[] = "@(#)lstSucc.c	8.1 (Berkeley) 6/6/93";
+-#else
+-__RCSID("$NetBSD: lstSucc.c,v 1.11 2004/05/07 00:04:41 ross Exp $");
+-#endif
+-#endif /* not lint */
+ #endif
+ 
+ /*-
+diff -ru -ru pmake_orig/main.c pmake/main.c
+--- pmake_orig/main.c	2006-10-09 16:35:20.000000000 +0200
++++ pmake/main.c	2006-10-09 16:37:51.000000000 +0200
+@@ -72,18 +72,6 @@
+ static char rcsid[] = "$NetBSD: main.c,v 1.111 2005/06/24 02:53:27 lukem Exp $";
+ #else
+ #include <sys/cdefs.h>
+-#ifndef lint
+-__COPYRIGHT("@(#) Copyright (c) 1988, 1989, 1990, 1993\n\
+-	The Regents of the University of California.  All rights reserved.\n");
+-#endif /* not lint */
+-
+-#ifndef lint
+-#if 0
+-static char sccsid[] = "@(#)main.c	8.3 (Berkeley) 3/19/94";
+-#else
+-__RCSID("$NetBSD: main.c,v 1.111 2005/06/24 02:53:27 lukem Exp $");
+-#endif
+-#endif /* not lint */
+ #endif
+ 
+ /*-
+diff -ru -ru pmake_orig/make.c pmake/make.c
+--- pmake_orig/make.c	2006-10-09 16:35:20.000000000 +0200
++++ pmake/make.c	2006-10-09 16:37:58.000000000 +0200
+@@ -72,13 +72,6 @@
+ static char rcsid[] = "$NetBSD: make.c,v 1.56 2005/02/16 15:11:52 christos Exp $";
+ #else
+ #include <sys/cdefs.h>
+-#ifndef lint
+-#if 0
+-static char sccsid[] = "@(#)make.c	8.1 (Berkeley) 6/6/93";
+-#else
+-__RCSID("$NetBSD: make.c,v 1.56 2005/02/16 15:11:52 christos Exp $");
+-#endif
+-#endif /* not lint */
+ #endif
+ 
+ /*-
+diff -ru -ru pmake_orig/parse.c pmake/parse.c
+--- pmake_orig/parse.c	2006-10-09 16:35:20.000000000 +0200
++++ pmake/parse.c	2006-10-09 16:38:05.000000000 +0200
+@@ -72,13 +72,6 @@
+ static char rcsid[] = "$NetBSD: parse.c,v 1.102 2005/06/18 14:32:04 rpaulo Exp $";
+ #else
+ #include <sys/cdefs.h>
+-#ifndef lint
+-#if 0
+-static char sccsid[] = "@(#)parse.c	8.3 (Berkeley) 3/19/94";
+-#else
+-__RCSID("$NetBSD: parse.c,v 1.102 2005/06/18 14:32:04 rpaulo Exp $");
+-#endif
+-#endif /* not lint */
+ #endif
+ 
+ /*-
+diff -ru -ru pmake_orig/str.c pmake/str.c
+--- pmake_orig/str.c	2006-10-09 16:35:20.000000000 +0200
++++ pmake/str.c	2006-10-09 16:38:11.000000000 +0200
+@@ -72,13 +72,6 @@
+ static char rcsid[] = "$NetBSD: str.c,v 1.23 2005/02/16 15:11:52 christos Exp $";
+ #else
+ #include <sys/cdefs.h>
+-#ifndef lint
+-#if 0
+-static char     sccsid[] = "@(#)str.c	5.8 (Berkeley) 6/1/90";
+-#else
+-__RCSID("$NetBSD: str.c,v 1.23 2005/02/16 15:11:52 christos Exp $");
+-#endif
+-#endif				/* not lint */
+ #endif
+ 
+ #include "make.h"
+diff -ru -ru pmake_orig/suff.c pmake/suff.c
+--- pmake_orig/suff.c	2006-10-09 16:35:20.000000000 +0200
++++ pmake/suff.c	2006-10-09 16:38:17.000000000 +0200
+@@ -72,13 +72,6 @@
+ static char rcsid[] = "$NetBSD: suff.c,v 1.48 2005/02/16 15:11:52 christos Exp $";
+ #else
+ #include <sys/cdefs.h>
+-#ifndef lint
+-#if 0
+-static char sccsid[] = "@(#)suff.c	8.4 (Berkeley) 3/21/94";
+-#else
+-__RCSID("$NetBSD: suff.c,v 1.48 2005/02/16 15:11:52 christos Exp $");
+-#endif
+-#endif /* not lint */
+ #endif
+ 
+ /*-
+diff -ru -ru pmake_orig/targ.c pmake/targ.c
+--- pmake_orig/targ.c	2006-10-09 16:35:20.000000000 +0200
++++ pmake/targ.c	2006-10-09 16:38:23.000000000 +0200
+@@ -72,13 +72,6 @@
+ static char rcsid[] = "$NetBSD: targ.c,v 1.34 2005/02/16 15:11:53 christos Exp $";
+ #else
+ #include <sys/cdefs.h>
+-#ifndef lint
+-#if 0
+-static char sccsid[] = "@(#)targ.c	8.2 (Berkeley) 3/19/94";
+-#else
+-__RCSID("$NetBSD: targ.c,v 1.34 2005/02/16 15:11:53 christos Exp $");
+-#endif
+-#endif /* not lint */
+ #endif
+ 
+ /*-
+diff -ru -ru pmake_orig/trace.c pmake/trace.c
+--- pmake_orig/trace.c	2006-10-09 16:35:20.000000000 +0200
++++ pmake/trace.c	2006-10-09 16:38:29.000000000 +0200
+@@ -41,9 +41,6 @@
+ static char rcsid[] = "$NetBSD: trace.c,v 1.6 2004/05/07 00:04:40 ross Exp $";
+ #else
+ #include <sys/cdefs.h>
+-#ifndef lint
+-__RCSID("$NetBSD: trace.c,v 1.6 2004/05/07 00:04:40 ross Exp $");
+-#endif /* not lint */
+ #endif
+ 
+ /*-
+diff -ru -ru pmake_orig/util.c pmake/util.c
+--- pmake_orig/util.c	2006-10-09 16:35:20.000000000 +0200
++++ pmake/util.c	2006-10-09 16:38:42.000000000 +0200
+@@ -8,9 +8,6 @@
+ static char rcsid[] = "$NetBSD: util.c,v 1.36 2005/02/16 15:11:53 christos Exp $";
+ #else
+ #include <sys/cdefs.h>
+-#ifndef lint
+-__RCSID("$NetBSD: util.c,v 1.36 2005/02/16 15:11:53 christos Exp $");
+-#endif
+ #endif
+ 
+ #include <sys/param.h>
+diff -ru -ru pmake_orig/var.c pmake/var.c
+--- pmake_orig/var.c	2006-10-09 16:35:20.000000000 +0200
++++ pmake/var.c	2006-10-09 16:38:34.000000000 +0200
+@@ -72,13 +72,6 @@
+ static char rcsid[] = "$NetBSD: var.c,v 1.96 2005/07/01 16:45:38 christos Exp $";
+ #else
+ #include <sys/cdefs.h>
+-#ifndef lint
+-#if 0
+-static char sccsid[] = "@(#)var.c	8.3 (Berkeley) 3/19/94";
+-#else
+-__RCSID("$NetBSD: var.c,v 1.96 2005/07/01 16:45:38 christos Exp $");
+-#endif
+-#endif /* not lint */
+ #endif
+ 
+ /*-

@@ -1,0 +1,47 @@
+# $Id: Pkgfile,v 1.5 2007/05/09 21:02:56 roman Exp $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: dietlibc
+
+name=mysqlbackup
+version=1
+release=1
+source=(mysqlbackup.in
+        mysqlbackup.conf.in)
+
+build()
+{
+  for file in mysqlbackup.conf mysqlbackup
+  do
+    sed "s,@bindir@,$prefix/bin,g
+        s,@prefix@,$prefix,g" \
+      $SRC/$file.in >$file
+  done
+
+  install -d $ROOT/sbin
+  install -m 755 mysqlbackup $ROOT/sbin
+
+  install -d $ROOT/etc
+  install -m 644 mysqlbackup.conf $ROOT/etc/mysqlbackup.conf
+
+  install -d $ROOT/local/config
+  sed '/^[a-z0-9_]\+=/ s,^,#,' mysqlbackup.conf > $ROOT/local/config/mysqlbackup.conf
+
+#  install -d $ROOT/man/man1
+#  install -m 644 $SRC/mysqlbackup.1 $ROOT/man/man1
+}
+
+postmerge()
+{
+  $prefix/bin/sed -i "s,@services_run@,$services_run,g" \
+    $prefix/sbin/mysqlbackup \
+    $prefix/local/config/mysqlbackup.conf
+
+  crontab_add "0 0 * * * nice -n 19 mysqlbackup" || \
+    echo "mysqlbackup already in crontab"
+
+  crontab_add "0,5,10,15,20,25,30,35,40,45,50,55 * * * * nice -n 19 mysqlbackup --incremental" || \
+    echo "incremental mysqlbackup already in crontab"
+}

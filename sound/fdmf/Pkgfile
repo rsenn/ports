@@ -1,0 +1,23 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Finds music files that are likely to contain the same music.
+# URL: http://w140.com/audio
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libgdbm3
+
+name=fdmf
+version=0.0.9r
+release=1
+source=(http://w140.com/audio/fdmf-$version.tar.gz)
+
+build()
+{
+  cd fdmf-$version
+
+  make
+
+  install -d $ROOT/bin
+
+  install -m 755 vector_pairs sonic_reducer $ROOT/bin
+  install -m 755 fdmf fdmf_bench optparam $ROOT/bin
+}

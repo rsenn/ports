@@ -1,0 +1,23 @@
+diff -ru unzip-5.52_orig/unix/Makefile unzip-5.52/unix/Makefile
+--- unzip-5.52_orig/unix/Makefile	2006-01-24 18:06:54.000000000 +0100
++++ unzip-5.52/unix/Makefile	2006-01-24 18:14:36.000000000 +0100
+@@ -807,7 +807,7 @@
+ # the DLL in place (with unzip_shlib, which is UnZip linked with the shared
+ # library).
+ #
+-linux_shlib:	unix_make
++linux_shlib:	unix_make unzipsfx$O funzip$O cryptf$O globalsf$O inflatef$O ttyiof$O crctab_$O crypt_$O extract_$O fileio_$O globals_$O inflate_$O match_$O process_$O ttyio_$O $M_$O
+ #	$(MAKE) objsdll CC=gcc CF="-O3 -Wall -I. -fPIC -DDLL $(LOC)"
+ 	$(MAKE) objsdll CC=gcc CF="-O3 -Wall -I. -fPIC -DDLL -DASM_CRC $(LOC)"\
+ 	 AS=gcc AF="-fPIC -Di386 $(AF)" CRC32=crc_gcc
+@@ -816,7 +816,9 @@
+ 	ln -sf libunzip.so.0.4 libunzip.so.0
+ 	ln -sf libunzip.so.0 libunzip.so
+ 	gcc -c -O unzipstb.c
+-	gcc -o unzip_shlib unzipstb.o -L. -lunzip
++	gcc -Wl,-rpath,$(prefix)/lib -o unzip unzipstb.o -L. -lunzip
++	gcc -Wl,-rpath,$(prefix)/lib -o unzipsfx unzipsfx$O crctab_$O crypt_$O extract_$O fileio_$O globals_$O inflate_$O match_$O process_$O ttyio_$O $M_$O -L. -lunzip
++	gcc -Wl,-rpath,$(prefix)/lib -o funzip funzip$O cryptf$O globalsf$O inflatef$O ttyiof$O -L. -lunzip 
+ 
+ # Linux ELF shared library, as above, but using inflate() from zlib (libz.so)
+ # instead of the original UnZip version.  (libz was libgz prior to 0.94)

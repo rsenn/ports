@@ -1,0 +1,34 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:40 roman Exp $
+#
+# Description: A sed-like editor for binary files.
+#  bbe is a sed-like editor for binary files. Instead of reading input
+#  in lines as sed, bbe reads arbitrary blocks from an input stream and
+#  performs byte-related transformations on found blocks. Blocks can be
+#  defined using start/stop strings, stream offset and block length,
+#  or a combination. Basic editing commands include delete, replace,
+#  search/replace, binary operations (and, or, etc.), append, and bcd/ASCII
+#  conversion. For examining the input stream, it contains some grep-like
+#  features like printing the input file name, stream offset, and block
+#  number of found blocks. Block contents can also be printed in different
+#  formats like hex, octal, ASCII, and binary.
+# URL: http://sourceforge.net/projects/bbe-/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=bbe
+version=0.2.2
+release=1
+source=($mirror_sf/bbe-/bbe-$version.tar.gz)
+
+build()
+{
+  cd bbe-$version
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

@@ -1,0 +1,53 @@
+args: -r -u -N -- libfries-0.97_orig libfries-0.97
+diff -r -u -N -- libfries-0.97_orig/Makefile libfries-0.97/Makefile
+diff -r -u -N -- libfries-0.97_orig/Makefile.in libfries-0.97/Makefile.in
+diff -r -u -N -- libfries-0.97_orig/autom4te.cache/output.0 libfries-0.97/autom4te.cache/output.0
+diff -r -u -N -- libfries-0.97_orig/autom4te.cache/output.1 libfries-0.97/autom4te.cache/output.1
+diff -r -u -N -- libfries-0.97_orig/autom4te.cache/requests libfries-0.97/autom4te.cache/requests
+diff -r -u -N -- libfries-0.97_orig/autom4te.cache/traces.0 libfries-0.97/autom4te.cache/traces.0
+diff -r -u -N -- libfries-0.97_orig/autom4te.cache/traces.1 libfries-0.97/autom4te.cache/traces.1
+diff -r -u -N -- libfries-0.97_orig/config.log libfries-0.97/config.log
+diff -r -u -N -- libfries-0.97_orig/config.status libfries-0.97/config.status
+diff -r -u -N -- libfries-0.97_orig/configure libfries-0.97/configure
+diff -r -u -N -- libfries-0.97_orig/configure.ac libfries-0.97/configure.ac
+--- libfries-0.97_orig/configure.ac	2008-11-14 15:02:57.000000000 +0000
++++ libfries-0.97/configure.ac	2008-11-14 15:06:05.000000000 +0000
+@@ -29,13 +29,17 @@
+                       echo "" && exit])
+ 
+ # Checks for libraries.
+-AC_CHECK_LIB([pcre],[main],[echo "OK">/dev/null],[echo "" &&
++ac_cv_save_LIBS=$LIBS
++LIBS=
++AC_CHECK_LIB([pcre],[pcre_compile],[echo "OK">/dev/null
++PCRE_LIBS="-lpcre"],[echo "" &&
+                       echo "   pcre library not found." &&
+                       echo "   Make sure libpcre is installed and" &&
+                       echo "   can be found in a standard path." &&
+                       echo "   You may need to set LDFLAGS to specify search path." &&
+                       echo "" && exit])
+-
++LIBS=$ac_cv_save_LIBS
++AC_SUBST([PCRE_LIBS])
+ 
+ # Checks for typedefs, structures, and compiler characteristics.
+ AC_HEADER_STDBOOL
+diff -r -u -N -- libfries-0.97_orig/src/Makefile libfries-0.97/src/Makefile
+diff -r -u -N -- libfries-0.97_orig/src/Makefile.in libfries-0.97/src/Makefile.in
+diff -r -u -N -- libfries-0.97_orig/src/include/Makefile libfries-0.97/src/include/Makefile
+diff -r -u -N -- libfries-0.97_orig/src/include/Makefile.in libfries-0.97/src/include/Makefile.in
+diff -r -u -N -- libfries-0.97_orig/src/libfries/.libs/libfries.la libfries-0.97/src/libfries/.libs/libfries.la
+diff -r -u -N -- libfries-0.97_orig/src/libfries/.libs/libfries.lai libfries-0.97/src/libfries/.libs/libfries.lai
+diff -r -u -N -- libfries-0.97_orig/src/libfries/Makefile libfries-0.97/src/libfries/Makefile
+diff -r -u -N -- libfries-0.97_orig/src/libfries/Makefile.am libfries-0.97/src/libfries/Makefile.am
+--- libfries-0.97_orig/src/libfries/Makefile.am	2008-11-14 15:02:57.000000000 +0000
++++ libfries-0.97/src/libfries/Makefile.am	2008-11-14 15:07:53.000000000 +0000
+@@ -3,3 +3,4 @@
+ lib_LTLIBRARIES = libfries.la
+ libfries_la_SOURCES = util.cc language.cc features_l.cc features_y.cc fex.cc RGF.cc sensor.cc
+ libfries_la_LDFLAGS = -rpath $(libdir) -no-undefined -version-info 0:9
++libfries_la_LIBADD = $(PCRE_LIBS)
+diff -r -u -N -- libfries-0.97_orig/src/libfries/Makefile.in libfries-0.97/src/libfries/Makefile.in
+diff -r -u -N -- libfries-0.97_orig/src/libfries/libfries.la libfries-0.97/src/libfries/libfries.la
+diff -r -u -N -- libfries-0.97_orig/src/main/Makefile libfries-0.97/src/main/Makefile
+diff -r -u -N -- libfries-0.97_orig/src/main/Makefile.in libfries-0.97/src/main/Makefile.in

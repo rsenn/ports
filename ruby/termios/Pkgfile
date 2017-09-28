@@ -1,0 +1,37 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: simple wrapper for termios(3)
+#  Termios module are a simple wrapper for termios(3). It can be included
+#  into IO-family classes and can extend IO-family objects. In addition,
+#  the methods can use as module function.
+# URL: http://arika.org/ruby/termios
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=termios
+version=0.9.5
+release=1
+source=(http://files.rubyforge.mmmultiworks.com/termios/ruby-termios-$version.tar.gz
+        ruby-termios-0.9.5-fix.patch)
+
+build()
+{
+  cd ruby-termios-$version
+
+  patch -N -p1 -i $SRC/ruby-termios-0.9.5-fix.patch
+
+  set -- `ruby --version`
+
+  RUBYVERSION="$2"
+  RUBYLIBDIR="$prefix/lib/ruby/${RUBYVERSION%.*}"
+
+  ruby extconf.rb
+
+  make
+  make DESTDIR="$PKG" RUBYLIBDIR="$PKG/$RUBYLIBDIR" sitedir='$(libdir)/ruby' install
+
+  install -d $ROOT/share/doc/termios
+  install -m 644 ChangeLog MANIFEST README $ROOT/share/doc/termios
+}
+
+# EOF

@@ -1,0 +1,285 @@
+diff -ru xapian-omega-1.0.6/ChangeLog xapian-omega-trunk/ChangeLog
+--- xapian-omega-1.0.6/ChangeLog	2008-03-17 07:49:07.000000000 +0000
++++ xapian-omega-trunk/ChangeLog	2008-03-31 11:42:00.000000000 +0000
+@@ -1,37 +1,54 @@
+-Sun Mar 16 11:39:49 GMT 2008  Olly Betts <olly@survex.com>
++Mon Mar 31 02:00:48 GMT 2008  Olly Betts <olly@survex.com>
+ 
+-	* NEWS: Update for 1.0.6.
++	* configure.ac: Update version to 1.0.6 to match latest release.
+ 
+-Sun Mar 16 11:04:19 GMT 2008  Olly Betts <olly@survex.com>
++Wed Mar 12 07:04:56 GMT 2008  Olly Betts <olly@survex.com>
+ 
+-	* configure.ac: Update for 1.0.6.
++	* scriptindex.cc: Make deprecated "index=nopos" an error.
+ 
+-Wed Mar 12 08:04:58 GMT 2008  Olly Betts <olly@survex.com>
++Mon Mar 10 03:37:30 GMT 2008  Olly Betts <olly@survex.com>
+ 
+-	* NEWS: Update.
+-	* common/: Update to latest xapian-core on branch to pick up
+-	  safedirent.h and fix the build.
++	* Makefile.am,diritor.cc,diritor.h,omindex.cc: Check for readdir()
++	  failing.
+ 
+-Mon Mar 10 03:53:20 GMT 2008  Olly Betts <olly@survex.com>
++Thu Mar 06 23:43:11 GMT 2008  Olly Betts <olly@survex.com>
+ 
+-	* Backport change from trunk:
++	* common/: Update to latest revisions.
+ 	* Makefile.am,diritor.h: Use safedirent.h not dirent.h and build
+ 	  msvc_dirent.cc as part of omindex.
+-	* Makefile.am,diritor.cc,diritor.h,omindex.cc: Check for readdir()
+-	  failing.
+ 
+-Thu Mar 06 23:08:16 GMT 2008  Olly Betts <olly@survex.com>
++Wed Mar 05 23:16:23 GMT 2008  Olly Betts <olly@survex.com>
+ 
+-	* Backport change from trunk:
+-	* NEWS: Update from ChangeLog.
++	* NEWS: Update to HEAD with un-backported changes kept separate.
+ 
+-Wed Mar 05 04:28:49 GMT 2008  Olly Betts <olly@survex.com>
++Wed Mar 05 19:05:12 GMT 2008  Olly Betts <olly@survex.com>
++
++	* NEWS: Update to 1.0 branch point.
++
++Sat Feb 02 22:46:40 GMT 2008  Olly Betts <olly@survex.com>
++
++	* query.cc: Add (C) notice for Thomas Viehmann.
++
++Sat Feb 02 22:46:14 GMT 2008  Olly Betts <olly@survex.com>
++
++	* omindex.cc: Back out random change committed by accident.
++
++Sat Feb 02 21:23:07 GMT 2008  Olly Betts <olly@survex.com>
+ 
+-	* Backport change from trunk:
+ 	* omindex.cc,query.cc: New OmegaScript commands $addfilter, $lower,
+ 	  $upper.
+ 	* docs/omegascript.rst: Document.  Improve formatting.
+-	* query.cc: Add (C) notice for Thomas Viehmann.
++
++Fri Feb 01 01:45:26 GMT 2008  Olly Betts <olly@survex.com>
++
++	* INSTALL: PCRE required.
++	* docs/omegascript.rst: $transform{} now enabled.  Fixes bug#231.
++
++Fri Feb 01 01:35:58 GMT 2008  Olly Betts <olly@survex.com>
++
++	* Makefile.am,configure.ac,query.cc: Add PCRE as a requirement and
++	  add $transform{} command (which has been in the code for ages but
++	  disabled).
+ 
+ Sat Jan 19 02:01:02 GMT 2008  Olly Betts <olly@survex.com>
+ 
+diff -ru xapian-omega-1.0.6/INSTALL xapian-omega-trunk/INSTALL
+--- xapian-omega-1.0.6/INSTALL	2008-03-17 07:49:07.000000000 +0000
++++ xapian-omega-trunk/INSTALL	2008-02-01 01:47:25.000000000 +0000
+@@ -1,6 +1,10 @@
+ Omega Installation
+ ==================
+ 
++You'll need to ensure that PCRE <http://www.pcre.org/> is installed before
++building Omega.  If you install PCRE from a package, make sure you install the
++corresponding -dev or -devel package as well.
++
+ The simplest way to compile this package is:
+ 
+   1. `cd' to the directory containing the package's source code and type
+diff -ru xapian-omega-1.0.6/Makefile.am xapian-omega-trunk/Makefile.am
+--- xapian-omega-1.0.6/Makefile.am	2008-03-17 07:49:07.000000000 +0000
++++ xapian-omega-trunk/Makefile.am	2008-03-10 03:40:11.000000000 +0000
+@@ -97,7 +97,8 @@
+ omega_SOURCES = omega.cc query.cc cgiparam.cc utils.cc configfile.cc date.cc\
+  cdb_init.cc cdb_find.cc cdb_hash.cc cdb_unpack.cc loadfile.cc\
+  utf8convert.cc datematchdecider.cc
+-omega_LDADD = $(XAPIAN_LIBS) # -lpcre
++omega_LDADD = $(XAPIAN_LIBS) $(PCRE_LIBS)
++omega_INCLUDES = $(PCRE_CFLAGS)
+ 
+ omindex_SOURCES = omindex.cc myhtmlparse.cc htmlparse.cc\
+  common/getopt.cc commonhelp.cc utils.cc hashterm.cc loadfile.cc md5.cc\
+diff -ru xapian-omega-1.0.6/NEWS xapian-omega-trunk/NEWS
+--- xapian-omega-1.0.6/NEWS	2008-03-17 07:49:07.000000000 +0000
++++ xapian-omega-trunk/NEWS	2008-03-05 23:17:25.000000000 +0000
+@@ -1,4 +1,17 @@
+-Omega 1.0.6 (2008-03-17):
++upto:
++Wed Mar 05 19:05:12 GMT 2008  Olly Betts <olly@survex.com>
++
++HEAD only:
++
++	* INSTALL: PCRE required.
++	* docs/omegascript.rst: $transform{} now enabled.  Fixes bug#231.
++	* Makefile.am,configure.ac,query.cc: Add PCRE as a requirement and
++	  add $transform{} command (which has been in the code for ages but
++	  disabled).
++
++Omega 1.0.6 (2008-03-??):
++
++general:
+ 
+ documentation:
+ 
+@@ -10,19 +23,26 @@
+ 
+  + Add support for DjVu files.
+ 
+- + If we get an error trying to read a directory entry, report it to the user
+-   rather than ignoring it.
++* scriptindex:
+ 
+ omega:
+ 
+ * OmegaScript commands $addfilter, $lower, $upper.
+ 
++templates:
++
++testsuite:
++
++build system:
++
+ portability:
+ 
+ * Check "defined HAVE_SYSMP" rather than just "HAVE_SYSMP".  This doesn't
+   change behaviour, but fixes a compile warning on platforms other than Linux
+   and IRIX.
+ 
++packaging:
++
+ Omega 1.0.5 (2007-12-21):
+ 
+ documentation:
+diff -ru xapian-omega-1.0.6/configure.ac xapian-omega-trunk/configure.ac
+--- xapian-omega-1.0.6/configure.ac	2008-03-17 07:49:07.000000000 +0000
++++ xapian-omega-trunk/configure.ac	2008-03-31 02:01:06.000000000 +0000
+@@ -271,6 +271,29 @@
+   test -z "$RST2HTML" && AC_MSG_ERROR([rst2html is required to build documentation])
+ fi
+ 
++AC_ARG_VAR(PCRE_CONFIG, [Location of pcre-config])
++AC_PATH_PROG(PCRE_CONFIG, pcre-config)
++if test -z "$PCRE_CONFIG" ; then
++  dnl Simple check to see if the problem is likely to be that we're using a
++  dnl "packaged" pcre but only have the runtime package installed.
++  for sfx in '' 32 64 ; do
++    set /usr/lib$sfx/libpcre*.so.*
++    if test "/usr/lib$sfx/libpcre?.so.*" != "$1" ; then
++      if test -r /etc/debian_version ; then
++	pkg="libpcre3-dev"
++      else
++	pkg="pcre-devel"
++      fi
++      AC_MSG_ERROR([Can't find pcre-config, although the PCRE runtime library seems to be installed.  If you've installed PCRE from a package, you probably need to install an extra package called something like $pkg in order to be able to build $PACKAGE_NAME.])
++    fi
++  done
++  AC_MSG_ERROR([Can't find pcre-config.  If the PCRE library is installed, you need to add PCRE_CONFIG=/path/to/pcre-config to your configure command.])
++fi
++PCRE_CFLAGS=`$PCRE_CONFIG --cflags`
++PCRE_LIBS=`$PCRE_CONFIG --libs`
++AC_SUBST(PCRE_CFLAGS)
++AC_SUBST(PCRE_LIBS)
++
+ dnl Disabled XML stuff as we don't currently build omindex-config
+ dnl dnl Check for libxml or libxml2.  We do this by looking for xml-config.
+ dnl AC_PATH_PROG(XML_CONFIG_PATH, xml2-config)
+diff -ru xapian-omega-1.0.6/docs/omegascript.rst xapian-omega-trunk/docs/omegascript.rst
+--- xapian-omega-1.0.6/docs/omegascript.rst	2008-03-17 07:49:07.000000000 +0000
++++ xapian-omega-trunk/docs/omegascript.rst	2008-02-02 21:24:35.000000000 +0000
+@@ -447,8 +447,6 @@
+          $string =~ s/REGEXP/SUBST/;
+          print $string;
+ 
+-	[Disabled currently - will be enabled in Xapian 1.1.0]
+-
+ $uniq{LIST}
+ 	remove duplicates from a sorted list
+ 
+diff -ru xapian-omega-1.0.6/query.cc xapian-omega-trunk/query.cc
+--- xapian-omega-1.0.6/query.cc	2008-04-05 06:03:21.000000000 +0000
++++ xapian-omega-trunk/query.cc	2008-02-02 22:46:56.000000000 +0000
+@@ -52,10 +52,7 @@
+ #endif
+ 
+ #include <cdb.h>
+-
+-#ifdef HAVE_PCRE
+ #include <pcre.h>
+-#endif
+ 
+ #include "date.h"
+ #include "datematchdecider.h"
+@@ -798,9 +795,7 @@
+ CMD_time,
+ CMD_topdoc,
+ CMD_topterms,
+-#ifdef HAVE_PCRE
+ CMD_transform,
+-#endif
+ CMD_uniq,
+ CMD_unpack,
+ CMD_unstem,
+@@ -919,9 +914,7 @@
+ 				// (counting from 0)
+ T(topterms,	   0, 1, N, M), // list of up to N top relevance feedback terms
+ 				// (default 16)
+-#ifdef HAVE_PCRE
+ T(transform,	   3, 3, N, 0), // transform with a regexp
+-#endif
+ T(uniq,		   1, 1, N, 0), // removed duplicates from a sorted list
+ T(unpack,	   1, 1, N, 0), // convert 4 byte big endian binary string to a number
+ T(unstem,	   1, 1, N, Q), // return list of probabilistic terms from
+@@ -1833,7 +1826,6 @@
+ 		    if (!value.empty()) value.erase(value.size() - 1);
+ 		}
+ 		break;
+-#ifdef HAVE_PCRE
+ 	    case CMD_transform: {
+ 		pcre *re;
+ 		const char *error;
+@@ -1868,7 +1860,6 @@
+ 		}
+ 		break;
+ 	    }
+-#endif
+ 	    case CMD_uniq: {
+ 		const string &list = args[0];
+ 		if (list.empty()) break;
+diff -ru xapian-omega-1.0.6/scriptindex.cc xapian-omega-trunk/scriptindex.cc
+--- xapian-omega-1.0.6/scriptindex.cc	2008-03-17 07:49:07.000000000 +0000
++++ xapian-omega-trunk/scriptindex.cc	2008-03-12 07:05:42.000000000 +0000
+@@ -3,7 +3,7 @@
+  * Copyright 1999,2000,2001 BrightStation PLC
+  * Copyright 2001 Sam Liddicott
+  * Copyright 2001,2002 Ananova Ltd
+- * Copyright 2002,2003,2004,2005,2006,2007 Olly Betts
++ * Copyright 2002,2003,2004,2005,2006,2007,2008 Olly Betts
+  *
+  * This program is free software; you can redistribute it and/or
+  * modify it under the terms of the GNU General Public License as
+@@ -294,16 +294,13 @@
+ 			if (val == "nopos") {
+ 			    // INDEX used to take an optional argument which
+ 			    // could be "nopos" to mean the same that
+-			    // INDEXNOPOS now does.
+-			    cout << filename << ':' << line_no
+-				 << ": Warning: Index action '" << action
+-				 << '=' << val << "' is deprecated - "
+-				    "use action 'indexnopos' instead" << endl;
+-			    // Translate this to allow older scripts to work
+-			    // (this is safe to do since nopos isn't a sane
+-			    // prefix value).
+-			    code = Action::INDEXNOPOS;
+-			    val = "";
++			    // INDEXNOPOS now does.  FIXME: remove this
++			    // error eventually (1.2.0?)
++			    cerr << filename << ':' << line_no
++				 << ": Support for '" << action
++				 << '=' << val << "' has been removed - "
++				    "use 'indexnopos' instead" << endl;
++			    exit(1);
+ 			}
+ 			/* FALLTHRU */
+ 		    case Action::INDEXNOPOS:

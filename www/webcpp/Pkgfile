@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Generates beautifully coloured Web pages from source code.
+#  Webcpp (Web C Plus Plus) is a command line utility that takes your source
+#  code and converts it into an HTML file, using a fully customizable syntax
+#  highlighting engine and stylesheets. Webcpp currently supports Ada95,
+#  Assembler, ASP, Basic, C, C#, C++, Cg, CLIPS, DOS Batch, EMF, Euphoria,
+#  Fortran, Haskell, Java, Javascript, Markup, Modula2, Objective C, Pascal,
+#  Perl, PHP, Power Builder, Python, RenderMan, Ruby, SQL, Tcl, Unix shell,
+#  UnrealScript, and VHDL highlighting.
+# URL: http://webcpp.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=webcpp
+version=0.8.4
+release=1
+source=($mirror_sf/webcpp/webcpp-$version-src.tar.gz)
+
+build()
+{
+  cd webcpp-$version-src
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

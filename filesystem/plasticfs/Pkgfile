@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A module for providing virtual file systems in user space.
+#  The Plastic File System is an LD_PRELOAD module for manipulating what
+#  the file system looks like for programs. This allows virtual file systems
+#  to exist in user space, without kernel hacks or modules.
+# URL: http://plasticfs.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=plasticfs
+version=1.11
+release=1
+source=(http://plasticfs.sourceforge.net/plasticfs-$version.tar.gz)
+
+build()
+{
+  cd plasticfs-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

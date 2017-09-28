@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Cursed MIDI Sequencer
+# URL: http://www.informatik.uni-mannheim.de/pi4.data/content/projects/cuse/index_en.html
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on: 
+
+name=cuse
+version=0.5
+release=1
+source=(http://www.informatik.uni-mannheim.de/pi4.data/content/projects/cuse/files/cuse-$version-src.tar.gz)
+
+build() 
+{
+  cd cuse-$version
+  
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+  
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/cuse
+  install -m 644 NEWS README AUTHORS INSTALL ChangeLog COPYING $ROOT/share/doc/cuse
+}
+
+# EOF

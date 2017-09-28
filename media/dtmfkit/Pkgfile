@@ -1,0 +1,21 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: DTMFkit is an application which decodes or encodes DTMF tones through a sound card (or possibly other DSP) interface.
+# URL: http://www.sephail.net/projects/dtmfkit/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=dtmfkit
+version=0.20
+release=1
+source=(http://www.sephail.net/projects/dtmfkit/dtmfkit-$version.tar.gz)
+
+build()
+{
+  cd dtmfkit-$version
+
+  install -d $ROOT/bin
+
+  make CC="${CC-cc} $CFLAGS"
+  make PREFIX="$ROOT" install
+}

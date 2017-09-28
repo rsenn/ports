@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: X-TrueType font cache extension client library
+#  FontCache is an extension that is used by X-TrueType to cache information
+#  about fonts.
+#  .
+# URL: http://xorg.freedesktop.org
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=xfontcache
+version=1.0.4
+release=1
+source=(ftp://ftp.x.org/pub/individual/lib/libXfontcache-$version.tar.bz2)
+
+build()
+{
+  cd libXfontcache-$version
+
+  #./autogen.sh
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

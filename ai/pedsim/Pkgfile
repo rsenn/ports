@@ -1,0 +1,27 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A simple microscopic pedestrian simulation system.
+# pedsim is a simple microscopic pedestrian simulation system. It consists
+# of a simulation core, and some functions that direct the pedestrians'
+# desires. It outputs POV-Ray files and an XML-like data stream, which
+# can be used to attach external viewers, in order to watch the progress
+# of the simulation in real time. It is suitable for use in evacuation
+# simulations, games, and movies.
+#
+# URL: http://pedsim.silmaril.org/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=pedsim
+version=0.99
+release=1
+source=($mirror_sf/pedsim/pedsim-$version.zip
+$mirror_sf/pedsim/pedsim-$version.tar.gz)
+
+build()
+{
+  cd pedsim-$version
+
+  make
+  make PREFIX="$ROOT" install
+}

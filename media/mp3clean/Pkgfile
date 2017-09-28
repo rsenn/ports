@@ -1,0 +1,38 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Cleans up MP3 filenames and ID3 tags.
+#  mp3clean takes a list of files and presents each file's ID3 tag
+#  for re-editing. If no ID3 tag is found, mp3clean will go through
+#  great effort to clean up and create a suggestion for ID3 tags from
+#  looking at the filenames. When you are satisfied with the ID3 tags,
+#  mp3clean will create a nice filename from the ID3 tag, based on
+#  your format string and general cleanup rules.
+#  .
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=mp3clean
+version=0.7
+release=1
+source=($mirror_sf/mp3clean/mp3clean-0.7.tar.gz)
+
+build()
+{
+  cd mp3clean-0.7
+
+  install -d $ROOT/bin
+
+  make
+
+  install -d $ROOT/bin
+  install -m 755 mp3clean $ROOT/bin
+
+  install -d $ROOT/share/doc/mp3clean
+  install -m 644 AUTHOR COPYING README $ROOT/share/doc/mp3clean
+
+  install -d $ROOT/share/man/man1
+  install -m 644 mp3clean.1 $ROOT/share/man/man1
+}
+
+# EOF

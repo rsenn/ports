@@ -1,0 +1,79 @@
+# $Id: Pkgfile,v 1.18 2007/04/22 23:07:53 roman Exp $
+#
+# Description:
+# Longdescription:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libopcodes
+version=2.17
+release=1
+source=($mirror_gnu/binutils/binutils-$version.tar.gz
+        libopcodes-2.17-bfddep.patch
+        libopcodes-2.17-install-headers.patch
+        libopcodes-config.in
+        libopcodes.pc.in)
+
+build()
+{
+  cd binutils-$version/opcodes
+
+#  patch -N -p2 -i $SRC/libopcodes-2.17-bfddep.patch
+#  patch -N -p2 -i $SRC/libopcodes-2.17-install-headers.patch
+
+  sed -e ':cont; /\\$/ { N; b cont }' \
+      -e '/:/ s|$(BFD_H)||g' \
+      -e '/LDFLAGS/ s|-release\s|-version-info |' \
+      -e '/INCLUDES/ { s,-I\.\.\/bfd\s,, ; s,-I[^\s]*/intl,, }' \
+      -i Makefile.am
+
+  autoheader --force
+  libtoolize --force --copy
+  aclocal --force -I . -I .. -I ../config
+  automake -a --foreign --copy
+  aclocal --force -I . -I .. -I ../config
+  autoconf --force
+
+  ./configure \
+       --host="$host" \
+       --build="$build" \
+       ${target+--target="$target"} \
+       --prefix="$prefix" \
+       --${static:=enable}-shared \
+       --${shared:=enable}-shared
+
+  make LIBTOOL="$LIBTOOL" \
+       INSTALL="install" \
+       VERSION="${version//./:}" \
+       DESTDIR="$PKG" \
+       CC="${CC-cc} -include config.h -include stdint.h" \
+    all install
+
+  cd ..
+
+  copy_license "COPYING"
+
+  install -d $ROOT/bin
+
+  for subst in bin/libopcodes-config lib/pkgconfig/libopcodes.pc
+  do
+    install -d $ROOT/${subst%/*}
+
+    sed -e "s,@version@,${version},g" \
+        -e "s,@prefix@,${prefix},g" \
+        -e "s,@exec_prefix@,${exec_prefix},g" \
+        -e "s,@bindir@,${bindir},g" \
+        -e "s,@libdir@,${libdir},g" \
+        -e "s,@includedir@,${includedir:-$prefix/include},g" \
+        -e "s,@sysconfdir@,${sysconfdir:-$prefix/etc},g" \
+      $SRC/${subst##*/}.in >$ROOT/$subst
+  done
+
+  chmod 755 $ROOT/bin/libopcodes-config
+
+#  install -d $ROOT/share/doc
+#  cp -rf $SRC/opcodes $ROOT/share/doc/$name-$version
+
+  install -d $ROOT/include
+  cp -rf include/opcode $ROOT/include
+}

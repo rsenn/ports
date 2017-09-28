@@ -1,0 +1,37 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: IBM Classes for Unicode (ICU) enable you to write fully cross-platform programs
+#  ICU provides a Unicode implementation, with functions for formatting
+#  numbers, dates, times, and currencies (according to locale conventions,
+#  transliteration, and parsing text in those formats). It provides flexible
+#  patterns for formatting messages, where the pattern determines the order
+#  of the variable parts of the messages, and the format for each of those
+#  variables. These patterns can be stored in resource files for translation
+#  to different languages. Included are more than 100 codepage converters
+#  for interaction with non-unicode systems.
+#  .
+# URL: http://icu-project.org
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=icu
+version=4.0
+release=1
+source=(http://download.icu-project.org/files/icu4c/$version/icu4c-4_0-src.tgz)
+
+build()
+{
+  cd icu/source
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix" \
+     --mandir="$prefix/share/man"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

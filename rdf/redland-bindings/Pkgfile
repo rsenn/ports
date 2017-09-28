@@ -1,0 +1,44 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Redland is a library that provides a high-level interface
+# for the Resource Description Framework (RDF) allowing the RDF graph to
+# be parsed from XML, stored, queried and manipulated. Redland implements
+# each of the RDF concepts in its own class via an object based API,
+# reflected into the language APIs, currently C#, Java, Perl, PHP, Obj-C,
+# Python, Ruby and Tcl. Several classes providing functionality such as
+# for parsers, storage are built as modules that can be loaded at compile
+# or run-time as required.
+# The redland-bindings package provides the higher level language APIs to
+# Redland in the following languages: C#, Java, Obj-C, Perl, PHP, Python,
+# Ruby, Tcl
+# URL: http://librdf.org/bindings/
+# Maintainer: Roman Senn <rs@adfinis.com>
+
+name=redland-bindings
+version=1.0.6.1
+release=1
+source=(http://download.librdf.org/source/redland-bindings-1.0.6.1.tar.gz)
+
+build()
+{
+  cd redland-bindings-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --${shared:=enable}-shared \
+       --${static:=enable}-shared \
+       --with-perl \
+       --with-python \
+       --with-php \
+       --with-ruby \
+       --without-java \
+       --without-tcl \
+       --without-ecma-cli \
+       --with-redland="system"
+
+
+  make
+  make DESTDIR="$PKG" install
+}

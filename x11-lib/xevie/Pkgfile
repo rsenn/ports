@@ -1,0 +1,35 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: X11 EvIE extension library
+#  libXevie provides an X Window System client interface to the EvIE
+#  extension to the X protocol. . The EvIE (Event Interception Extension)
+#  allows for clients to be able to intercept all events coming through
+#  the server and then decide what to do with them, including being able
+#  to modify or discard events.
+#  .
+# URL: http://xorg.freedesktop.org
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=xevie
+version=1.0.2
+release=1
+source=(ftp://ftp.x.org/pub/individual/lib/libXevie-$version.tar.bz2)
+
+build()
+{
+  cd libXevie-$version
+
+  #./autogen.sh
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

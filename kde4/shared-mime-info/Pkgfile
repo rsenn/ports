@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: FreeDesktop.org shared MIME database and spec
+#  This is the shared MIME-info database from the X Desktop Group. It is
+#  required by any program complying to the Shared MIME-Info Database spec,
+#  which is also included in this package.
+#  At this time ROX and GNOME use this database. KDE is expected to follow
+#  soon, and hopefully others too.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=shared-mime-info
+version=0.22
+release=1
+source=(ftp://mirror.switch.ch/mirror/gentoo/distfiles/shared-mime-info-0.22.tar.bz2)
+
+build()
+{
+  cd shared-mime-info-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

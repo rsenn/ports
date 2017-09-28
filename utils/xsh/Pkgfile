@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A powerful command-line shell for XML processing.
+#  XSH (the XML Editing Shell) is a very powerful command-line shell
+#  designed to allow easy navigation and manipulation of XML documents. XSH
+#  may be used either interactively or for off-line XML processing (like
+#  bash). XPath can be used to select parts of an XML document to be listed
+#  or processed. The system shell and Perl are also accessible from XSH in
+#  a very natural way. XSH itself is written in Perl using the XML::LibXML
+#  bindings of the libxml2 library.
+# URL: http://xsh.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=xsh
+version=3.0-1.44
+release=1
+source=($mirror_gnu/bash/bash-${version%-*}.tar.gz
+        http://home.eol.ca/~parkw/bashdiff/bashdiff-${version#*-}.tar.gz)
+
+build()
+{
+  cd bash-${version%-*}
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

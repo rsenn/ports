@@ -1,0 +1,83 @@
+diff -r -u -N -- mod_mp3-1.2_orig/Makefile.am mod_mp3-1.2/Makefile.am
+--- mod_mp3-1.2_orig/Makefile.am	2008-11-20 10:29:16.000000000 +0000
++++ mod_mp3-1.2/Makefile.am	2008-11-20 10:31:48.000000000 +0000
+@@ -2,7 +2,7 @@
+ 
+ EXTRA_DIST = faq faq.html
+ 
+-INCLUDES = -I$(top_builddir)/include -I$(top_builddir)/libID3/include
++INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/libID3/include
+ SUBDIRS = libID3 src 
+ CC = APXS_CC
+ CP = cp
+diff -r -u -N -- mod_mp3-1.2_orig/libID3/Makefile.am mod_mp3-1.2/libID3/Makefile.am
+--- mod_mp3-1.2_orig/libID3/Makefile.am	2008-11-20 10:29:16.000000000 +0000
++++ mod_mp3-1.2/libID3/Makefile.am	2008-11-20 10:32:14.000000000 +0000
+@@ -1,6 +1,6 @@
+ # Used to build Makefile.in
+ 
+-INCLUDES = -I$(top_builddir)/include
++INCLUDES = -I$(top_srcdir)/include
+ SUBDIRS = include lib src id3-test Docs
+ 
+ valgrind:
+diff -r -u -N -- mod_mp3-1.2_orig/libID3/id3-test/Makefile.am mod_mp3-1.2/libID3/id3-test/Makefile.am
+--- mod_mp3-1.2_orig/libID3/id3-test/Makefile.am	2008-11-20 10:29:16.000000000 +0000
++++ mod_mp3-1.2/libID3/id3-test/Makefile.am	2008-11-20 10:31:19.000000000 +0000
+@@ -1,7 +1,7 @@
+ # Used to build Makefile.in
+ 
+ EXTRA_DIST = list.h
+-INCLUDES = -I$(top_builddir)/include -I../include
++INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/libID3/include
+ LDADDS = ../lib/libid3.la
+ 
+ noinst_PROGRAMS = id3test
+diff -r -u -N -- mod_mp3-1.2_orig/libID3/lib/Makefile.am mod_mp3-1.2/libID3/lib/Makefile.am
+--- mod_mp3-1.2_orig/libID3/lib/Makefile.am	2008-11-20 10:29:16.000000000 +0000
++++ mod_mp3-1.2/libID3/lib/Makefile.am	2008-11-20 10:30:16.000000000 +0000
+@@ -1,6 +1,6 @@
+ # Used to build Makefile.in
+ 
+-INCLUDES = -I$(top_builddir)/include -I../include
++INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/libID3/include 
+ 
+ lib_LTLIBRARIES = libid3.la
+ libid3_la_SOURCES = id3.c md5.c
+diff -r -u -N -- mod_mp3-1.2_orig/libID3/src/Makefile.am mod_mp3-1.2/libID3/src/Makefile.am
+--- mod_mp3-1.2_orig/libID3/src/Makefile.am	2008-11-20 10:29:16.000000000 +0000
++++ mod_mp3-1.2/libID3/src/Makefile.am	2008-11-20 10:32:26.000000000 +0000
+@@ -1,6 +1,6 @@
+ # Used to build Makefile.in
+ 
+-INCLUDES = -I$(top_builddir)/include -I../include
++INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/libID3/include
+ LDADDS = ../lib/libid3.la
+ 
+ bin_PROGRAMS = tagpuller
+diff -r -u -N -- mod_mp3-1.2_orig/libID3/src/tagpuller.c mod_mp3-1.2/libID3/src/tagpuller.c
+--- mod_mp3-1.2_orig/libID3/src/tagpuller.c	2008-11-20 10:29:16.000000000 +0000
++++ mod_mp3-1.2/libID3/src/tagpuller.c	2008-11-20 10:30:42.000000000 +0000
+@@ -1,6 +1,7 @@
+ #include <stdio.h>
+ #include <dirent.h>
+ #include <limits.h>
++#include <sys/stat.h>
+ #include "id3.h"
+ 
+ char *export_dir;
+diff -r -u -N -- mod_mp3-1.2_orig/src/Makefile.am mod_mp3-1.2/src/Makefile.am
+--- mod_mp3-1.2_orig/src/Makefile.am	2008-11-20 10:29:16.000000000 +0000
++++ mod_mp3-1.2/src/Makefile.am	2008-11-20 10:32:01.000000000 +0000
+@@ -3,9 +3,9 @@
+ EXTRA_DIST = directives.h  internal_dispatch.h  mod_mp3.h  mysql_dispatch.h \
+ pgsql_dispatch.h  playlist_dispatch.h  proto.h  shout.h
+ 
+-INCLUDES = -I$(top_builddir)/include -I$(top_srcdir) -I$(APXS_INCLUDE) \
++INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir) -I$(APXS_INCLUDE) \
+ $(MYSQL_INC) $(PGSQL_INC)  $(BERK_DB_INCLUDE) $(APR_INCLUDE)\
+--I$(top_builddir)/libID3/include -I$(GHTTP_INCLUDE) $(GDB_INCLUDE)
++-I$(top_srcdir)/libID3/include -I$(GHTTP_INCLUDE) $(GDB_INCLUDE)
+ 
+ LIBS = $(MYSQL_LIB) $(PGSQL_LIB)  $(BERK_DB_LIB) $(GHTTP_LIB) \
+ -L$(top_builddir)/libID3/lib -lid3 $(GDB_INCLUDE)

@@ -1,0 +1,36 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Python/C++ bindings generator
+#  SIP is a tool for generating bindings for C++ classes with some ideas
+#  borrowed from SWIG, but capable of tighter bindings, because it's specific
+#  to C++ and Python.
+#  produced by it, you will also need python-sip4-dev.
+#  SIP was originally designed to generate Python bindings for KDE and so
+#  has explicit support for the signal slot mechanism used by the Qt/KDE
+#  class libraries.
+#  - connecting Qt signals to Python functions and class methods
+#  - connecting Python signals to Qt slots
+#  - overloading virtual member functions with Python class methods
+#  - protected member functions
+#  - abstract classes
+#  - enumerated types
+#  - global class instances
+#  - static member functions.
+# URL: http://www.riverbankcomputing.co.uk/software/sip/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=sip
+version=4.7.1
+release=1
+source=(http://www.riverbankcomputing.com/Downloads/sip4/sip-$version.tar.gz)
+
+build()
+{
+  cd sip-$version
+
+  python configure.py #install --prefix="$ROOT"
+
+  make CC="${CC-cc}" CFLAGS="$CFLAGS"
+  make DESTDIR="$PKG" install
+}

@@ -1,0 +1,34 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A powerful music composition and audio synthesis application.
+#  Beast is a powerful music composition and modular synthesis
+#  application. It offers multiple input methods like multitrack, piano roll,
+#  and pattern editing and supports skins. On the technical side, it has
+#  a wide range of abilities like sequencing, unlimited undo/redo history,
+#  real-time synthesis with multiprocessor support, full duplex 32-bit audio
+#  rendering, precise timing down to sample granularity, on demand loading
+#  of partial wave files, on the fly decoding of various sample formats,
+#  aliasing free oscillators, and full Scheme scripting support.
+#  .
+# URL: http://beast.gtk.org/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=beastbse
+version=0.7.1
+release=1
+source=(http://beast.gtk.org/beast-ftp/v0.7/beast-0.7.1.tar.bz2)
+
+build()
+{
+  cd beast-0.7.1
+./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+make
+make DESTDIR="$PKG" install
+}
+
+# EOF

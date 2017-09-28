@@ -1,0 +1,24 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A unionfs filesystem implementation which is way more flexible than the current in-kernel unionfs solution
+# URL: http://podgorny.cz/moin/UnionFsFuse
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libfuse2
+
+name=unionfs-fuse
+version=0.20
+release=1
+source=(http://podgorny.cz/unionfs-fuse/releases/unionfs-fuse-$version.tar.bz2)
+
+build()
+{
+  cd unionfs-fuse-$version
+
+  make CC="${CC-cc}" CFLAGS="$CFLAGS"
+
+  install -d $ROOT/bin
+  install -m 755 unionfs $ROOT/bin
+
+  install -d $ROOT/share/doc/unionfs-fuse
+  install -m 644 [A-Z]*[A-Z]*[A-Z]*[A-Z]* $ROOT/share/doc/unionfs-fuse
+}

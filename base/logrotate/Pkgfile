@@ -1,0 +1,115 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: Log rotation utility
+#  The logrotate utility is designed to simplify the administration of
+#  log files on a system which generates a lot of log files. Logrotate
+#  allows for the automatic rotation compression, removal and mailing of
+#  log files. Logrotate can be set to handle a log file daily, weekly,
+#  monthly or when the log file gets to a certain size. Normally, logrotate
+#  runs as a daily cron job.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: dietlibc
+
+name=logrotate
+version=4
+release=3
+source=(logrotate.in
+        logrotate.conf.in
+        logrotate.local.conf.in
+        logrotate.1)
+
+build()
+{
+  for file in logrotate.conf logrotate.local.conf logrotate
+  do
+    sed "s,@bindir@,$prefix/bin,g
+        s,@prefix@,$prefix,g" \
+      $SRC/$file.in >$file
+  done
+
+  install -d $ROOT/sbin
+  install -m 755 logrotate $ROOT/sbin
+
+  install -d $ROOT/etc
+  install -m 644 logrotate.conf $ROOT/etc/logrotate.conf
+
+  install -d $ROOT/local/config
+  install -m 644 logrotate.local.conf $ROOT/local/config/logrotate.conf
+
+  install -d $ROOT/man/man1
+  install -m 644 $SRC/logrotate.1 $ROOT/man/man1
+}
+
+#premerge()
+#{
+#  if [ ! -f "$prefix/local/config/.logrotate.tag" ]; then
+#    touch $prefix/local/config/.logrotate.tag
+#  fi
+#}
+
+postmerge()
+{
+  sed -i -e "s,@services_run@,$services_run,g" \
+        -e "s,@logrotate_archive@,$logrotate_archive,g" \
+        -e "s,@logrotate_services@,$logrotate_services,g" \
+        -e "s,@logrotate_products@,$logrotate_products,g" \
+    $prefix/sbin/logrotate \
+    $prefix/etc/logrotate.conf \
+    $prefix/local/config/logrotate.conf
+
+  entries=$(grep '^[^#]' $prefix/local/config/logrotate.conf)
+
+  # merged for the first time?
+  if [ -z "$entries" ]; then
+
+    for service in $logrotate_services; do
+      notice "Configuring for service '$service'..."
+      echo "log_service '$service'" >>$prefix/local/config/logrotate.conf
+    done
+    echo >>$prefix/local/config/logrotate.conf
+
+    for product in $logrotate_products; do
+      notice "Configuring for product '$product'..."
+      dir="/nexbyte/$product/logs"
+      files=$({ echo errors; cd /nexbyte/$product/logs && find * -maxdepth 0 -type f 2>/dev/null | grep -i '^[_0-9a-z]\+$'; } | sort -u)
+      test -z "$files" && continue
+      echo "log_file '$product' '/nexbyte/$product'" $files >>$prefix/local/config/logrotate.conf
+    done
+    echo >>$prefix/local/config/logrotate.conf
+
+#    rm -f "$prefix/local/config/.logrotate.tag"
+  fi
+
+  crontab_add "0 0 * * * nice -n 19 logrotate" || echo "logrotate already in crontab" 1>&2
+}
+
+# --------------------------------------------------------------------------------
+config()
+{
+  # add the main-menu entry "logrotate"
+  config_branch 'logrotate'  'Logrotate configuration'
+
+    # choose a target directory
+    config_value 'archive'   'Archive directory'
+      config_description     'Directory where rotated logs will be archived'
+      config_default         '$(root=$(config_getvalue global_root); echo ${root%/}/nexbyte/backup/logs/$(config_getvalue global_hostname))'
+    config_end
+
+    # choose services
+    config_value 'services'   'Logrotate services'
+      config_description      'Which services logs should be rotated'
+      config_default          '$(config_enabled)'
+      config_function         'checklist $(echo $(cd /usr/local/service && ls -1 | grep -i "^[_0-9a-z]\+$"))'
+    config_end
+
+    # choose products
+    config_value 'products'   'Logrotate products'
+      config_description      'Which services logs should be rotated'
+      config_default          '$(config_enabled)'
+      config_function         'checklist $(echo $(find ${global_root%/}/nexbyte/ -maxdepth 2 -type d -name logs | sed "s,/logs$,, ;; s,^.*/,,"))'
+    config_end
+
+  config_end
+
+}

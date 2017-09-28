@@ -1,0 +1,418 @@
+diff -ru dyndb-0.5.2_orig/src/LICENSES dyndb-0.5.2/src/LICENSES
+--- dyndb-0.5.2_orig/src/LICENSES	2007-09-19 01:46:25.000000000 +0200
++++ dyndb-0.5.2/src/LICENSES	2007-09-21 06:53:14.000000000 +0200
+@@ -92,9 +92,9 @@
+ int32.h: public domain
+ open.h: GPL, uo
+ open_rdwr.c: GPL, uo
+-open_read.c: GPL, uo
+-open_readwri.c: GPL, uo
+-open_trunc.c: GPL, uo
++: GPL, uo
++: GPL, uo
++: GPL, uo
+ readwrite.h: public domain reimplementation of DJBs readwrite.h by uo.
+ scan.h: public domain reimplementation of DJBs scan library by uo
+ scan_long.c: public domain reimplementation of DJBs scan library by uo
+diff -ru dyndb-0.5.2_orig/src/Makefile dyndb-0.5.2/src/Makefile
+--- dyndb-0.5.2_orig/src/Makefile	2007-09-19 01:46:25.000000000 +0200
++++ dyndb-0.5.2/src/Makefile	2007-09-21 06:53:50.000000000 +0200
+@@ -18,22 +18,13 @@
+ INCLUDES=-DPACKAGE_VERSION=\"$(PACKAGE)-$(VERSION)\" \
+  -DPACKAGE=\"$(PACKAGE)\" -DVERSION=\"$(VERSION)\"
+ 
+-
+-
+-libbyte_a_SOURCES=str_rchr.c fmt_ulong.c byte_copy.c str_len.c \
+-byte_chr.c byte_cr.c str_diff.c str_chr.c scan_long.c scan_sign.c \
+-scan_ulong.c fmt_xlong.c 
+-libbyte_a_OBJECTS=$(libbyte_a_SOURCES:.c=.o)
+- 
+-libunix_a_SOURCES=stralloc_catb.c stralloc_plus.c gen_alloc_lus.c \
+-gen_alloc_ady.c stralloc_opyb.c stralloc_eady.c stralloc_opys.c \
+-error.c error_str.c alloc_re.c alloc.c env_get.c stralloc_pend.c \
+-gen_alloc_end.c stralloc_copy.c stralloc_free.c stralloc_cats.c \
+-buffer_0.c buffer_put.c buffer_1.c getln.c buffer_get.c buffer.c \
+-open_trunc.c open_read.c open_readwri.c 
++libunix_a_SOURCES=gen_alloc_lus.c \
++gen_alloc_ady.c \
++error.c error_str.c alloc_re.c alloc.c env_get.c \
++gen_alloc_end.c 
+ libunix_a_OBJECTS=$(libunix_a_SOURCES:.c=.o)
+  
+-libuomisc_a_SOURCES=timing.c bailout.c buffer_2.c buffer_put.c \
++libuomisc_a_SOURCES=timing.c bailout.c \
+ uogetopt.c bailout_name.c 
+ libuomisc_a_OBJECTS=$(libuomisc_a_SOURCES:.c=.o)
+  
+@@ -43,7 +34,7 @@
+ libdyndb_a_OBJECTS=$(libdyndb_a_SOURCES:.c=.o)
+  
+ 
+-LIBRARIES += libbyte.a libunix.a libuomisc.a libdyndb.a
++LIBRARIES += libunix.a libuomisc.a libdyndb.a
+  
+ TARGETS += dyndbtree dyndbstats dyndbdump dyndbfdump dyndbmake \
+ dyndbget dyndbadd dyndbdel dyndb_intro.7 dyndbdel.1 dyndbadd.1 \
+@@ -51,7 +42,7 @@
+  
+ CLEANFILES += fsync.o fsync.lib gettimeofday.lib inet_aton.o \
+ inet_aton.lib socket.lib socklen_t.h socklen_t.stamp ssize_t.h \
+-ssize_t.stamp typesize2.h typesize2.stamp have_futimes.h iopause.h \
++ssize_t.stamp typesize2.h typesize2.stamp have_futimes.h \
+ utimes.o utimes.lib vfork.o vfork.lib version.tmac dyndb_intro.html.t \
+ dyndbdel.html.t dyndbadd.html.t dyndbget.html.t libdyndb.html.t \
+ dyndbmake.html.t install.html.t INSTALL.t dyndb_intro.7 \
+@@ -70,45 +61,43 @@
+ $@
+ iopause.h: iopause.sh compile.sh link.sh
+ 	sh iopause.sh >iopause.t && mv iopause.t $@
+-libbyte.a: $(libbyte_a_OBJECTS) makelib.sh
+-	./makelib.sh $@ $(libbyte_a_OBJECTS)
+ libunix.a: $(libunix_a_OBJECTS) makelib.sh
+ 	./makelib.sh $@ $(libunix_a_OBJECTS)
+ libuomisc.a: $(libuomisc_a_OBJECTS) makelib.sh
+ 	./makelib.sh $@ $(libuomisc_a_OBJECTS)
+ libdyndb.a: $(libdyndb_a_OBJECTS) makelib.sh
+ 	./makelib.sh $@ $(libdyndb_a_OBJECTS)
+-dyndbtree:  dyndbtree.o libdyndb.a libuomisc.a libunix.a libbyte.a \
++dyndbtree:  dyndbtree.o libdyndb.a libuomisc.a libunix.a lowfat.lib \
+ link.sh
+-	$L dyndbtree  dyndbtree.o libdyndb.a libuomisc.a libunix.a libbyte.a \
++	$L dyndbtree  dyndbtree.o libdyndb.a libuomisc.a libunix.a `cat lowfat.lib` \
+ 
+-dyndbstats:  dyndbstats.o libdyndb.a libuomisc.a libunix.a libbyte.a \
++dyndbstats:  dyndbstats.o libdyndb.a libuomisc.a libunix.a lowfat.lib \
+ gettimeofday.lib link.sh
+-	$L dyndbstats  dyndbstats.o libdyndb.a libuomisc.a libunix.a libbyte.a \
++	$L dyndbstats  dyndbstats.o libdyndb.a libuomisc.a libunix.a `cat lowfat.lib` \
+ `cat gettimeofday.lib` 
+-dyndbdump:  dyndbdump.o libdyndb.a libuomisc.a libunix.a libbyte.a \
++dyndbdump:  dyndbdump.o libdyndb.a libuomisc.a libunix.a lowfat.lib \
+ link.sh
+-	$L dyndbdump  dyndbdump.o libdyndb.a libuomisc.a libunix.a libbyte.a \
++	$L dyndbdump  dyndbdump.o libdyndb.a libuomisc.a libunix.a `cat lowfat.lib` \
+ 
+-dyndbfdump:  dyndbfdump.o libdyndb.a libuomisc.a libunix.a libbyte.a \
++dyndbfdump:  dyndbfdump.o libdyndb.a libuomisc.a libunix.a lowfat.lib \
+ link.sh
+-	$L dyndbfdump  dyndbfdump.o libdyndb.a libuomisc.a libunix.a libbyte.a \
++	$L dyndbfdump  dyndbfdump.o libdyndb.a libuomisc.a libunix.a `cat lowfat.lib` \
+ 
+-dyndbmake:  dyndbmake.o libdyndb.a libuomisc.a libunix.a libbyte.a \
++dyndbmake:  dyndbmake.o libdyndb.a libuomisc.a libunix.a lowfat.lib \
+ fsync.lib link.sh
+-	$L dyndbmake  dyndbmake.o libdyndb.a libuomisc.a libunix.a libbyte.a \
++	$L dyndbmake  dyndbmake.o libdyndb.a libuomisc.a libunix.a `cat lowfat.lib` \
+ `cat fsync.lib` 
+-dyndbget:  dyndbget.o libdyndb.a libuomisc.a libunix.a libbyte.a \
++dyndbget:  dyndbget.o libdyndb.a libuomisc.a libunix.a lowfat.lib \
+ link.sh
+-	$L dyndbget  dyndbget.o libdyndb.a libuomisc.a libunix.a libbyte.a \
++	$L dyndbget  dyndbget.o libdyndb.a libuomisc.a libunix.a `cat lowfat.lib` \
+ 
+-dyndbadd:  dyndbadd.o libdyndb.a libuomisc.a libunix.a libbyte.a \
++dyndbadd:  dyndbadd.o libdyndb.a libuomisc.a libunix.a lowfat.lib \
+ fsync.lib link.sh
+-	$L dyndbadd  dyndbadd.o libdyndb.a libuomisc.a libunix.a libbyte.a \
++	$L dyndbadd  dyndbadd.o libdyndb.a libuomisc.a libunix.a `cat lowfat.lib` \
+ `cat fsync.lib` 
+-dyndbdel:  dyndbdel.o libdyndb.a libuomisc.a libunix.a libbyte.a \
++dyndbdel:  dyndbdel.o libdyndb.a libuomisc.a libunix.a lowfat.lib \
+ fsync.lib link.sh
+-	$L dyndbdel  dyndbdel.o libdyndb.a libuomisc.a libunix.a libbyte.a \
++	$L dyndbdel  dyndbdel.o libdyndb.a libuomisc.a libunix.a `cat lowfat.lib` \
+ `cat fsync.lib` 
+ dyndb_intro.html: dyndb_intro.7.in groff.tmac version.tmac
+ 	groff -mwww -Thtml -P-l groff.tmac version.tmac dyndb_intro.7.in \
+@@ -172,158 +161,102 @@
+ libdyndb.html dyndbmake.html install.html INSTALL $(EXTRA_HTML)
+ 
+  
+-byte_chr.o: byte_chr.c byte.h compilew.sh
+-	$W  -c $<
+-buffer_put.o: buffer_put.c buffer.h str.h byte.h error.h compile.sh
+-	$C  -c $<
+-stralloc_copy.o: stralloc_copy.c stralloc.h gen_alloc.h compilew.sh
+-	$W  -c $<
+ dyndbfdump.o: dyndbfdump.c dyndb.h int32.h typesize.h typesize2.h \
+-  uint32.h fmt.h buffer.h bailout.h str.h uogetopt.h compilew.sh
+-	$W  -c $<
+-bailout.o: bailout.c error.h buffer.h bailout.h fmt.h compilew.sh
+-	$W  -c $<
+-str_len.o: str_len.c str.h compilew.sh
++  bailout.h uogetopt.h compilew.sh
+ 	$W  -c $<
+-fmt_xlong.o: fmt_xlong.c gen_fmt.h fmt.h compilew.sh
++bailout.o: bailout.c error.h bailout.h compilew.sh
+ 	$W  -c $<
+ gen_alloc_ady.o: gen_alloc_ady.c alloc.h gen_alloci.h compilew.sh
+ 	$W  -c $<
+-byte_cr.o: byte_cr.c byte.h compilew.sh
+-	$W  -c $<
+ dyndb_init.o: dyndb_init.c dyndb.h int32.h typesize.h typesize2.h \
+-  uint32.h compilew.sh
+-	$W  -c $<
+-scan_ulong.o: scan_ulong.c gen_scan.h scan.h case.h compilew.sh
++  compilew.sh
+ 	$W  -c $<
+ timing.o: timing.c timing.h compilew.sh
+ 	$W  -c $<
+ dyndb_seek.o: dyndb_seek.c dyndb.h int32.h typesize.h typesize2.h \
+-  uint32.h compilew.sh
+-	$W  -c $<
+-alloc_re.o: alloc_re.c alloc.h byte.h compilew.sh
++  compilew.sh
+ 	$W  -c $<
+-dyndbmake.o: dyndbmake.c /usr/include/errno.h buffer.h stralloc.h \
+-  gen_alloc.h dyndb.h int32.h typesize.h typesize2.h uint32.h bailout.h \
+-  fmt.h uogetopt.h str.h attributes.h compilew.sh
++alloc_re.o: alloc_re.c alloc.h compilew.sh
+ 	$W  -c $<
+-getln.o: getln.c byte.h getln.h buffer.h stralloc.h gen_alloc.h compilew.sh
+-	$W  -c $<
+-stralloc_opyb.o: stralloc_opyb.c stralloc.h gen_alloc.h byte.h compilew.sh
++dyndbmake.o: dyndbmake.c /usr/include/errno.h \
++  gen_alloc.h dyndb.h int32.h typesize.h typesize2.h bailout.h \
++  uogetopt.h attributes.h compilew.sh
+ 	$W  -c $<
+-scan_long.o: scan_long.c gen_scan.h scan.h case.h compilew.sh
++getln.o: getln.c getln.h gen_alloc.h compilew.sh
+ 	$W  -c $<
+ alloc.o: alloc.c alloc.h error.h compilew.sh
+ 	$W  -c $<
+-fmt_ulong.o: fmt_ulong.c gen_fmt.h fmt.h compilew.sh
++fmt_ulong.o: fmt_ulong.c gen_compilew.sh
+ 	$W  -c $<
+-buffer.o: buffer.c buffer.h compile.sh
++buffer.o: buffer.c compile.sh
+ 	$C  -c $<
+-scan_sign.o: scan_sign.c scan.h compilew.sh
+-	$W  -c $<
+-dyndbtree.o: dyndbtree.c dyndb.h int32.h typesize.h typesize2.h uint32.h \
++dyndbtree.o: dyndbtree.c dyndb.h int32.h typesize.h typesize2.h \
+   bailout.h uogetopt.h compilew.sh
+ 	$W  -c $<
+-buffer_get.o: buffer_get.c buffer.h byte.h error.h compile.sh
+-	$C  -c $<
+-str_diff.o: str_diff.c str.h compilew.sh
+-	$W  -c $<
+ dyndb_delete.o: dyndb_delete.c dyndb.h int32.h typesize.h typesize2.h \
+-  uint32.h compilew.sh
++  compilew.sh
+ 	$W  -c $<
+-dyndbdel.o: dyndbdel.c error.h buffer.h stralloc.h gen_alloc.h dyndb.h \
+-  int32.h typesize.h typesize2.h uint32.h bailout.h open.h str.h \
++dyndbdel.o: dyndbdel.c error.h gen_alloc.h dyndb.h \
++  int32.h typesize.h typesize2.h bailout.h \
+   uogetopt.h compilew.sh
+ 	$W  -c $<
+-buffer_0.o: buffer_0.c readwrite.h buffer.h compile.sh
+-	$C  -c $<
+-stralloc_pend.o: stralloc_pend.c stralloc.h gen_alloc.h gen_alloci.h compilew.sh
+-	$W  -c $<
+-stralloc_eady.o: stralloc_eady.c stralloc.h gen_alloc.h gen_alloci.h compilew.sh
+-	$W  -c $<
+ dyndb_fdisk.o: dyndb_fdisk.c dyndb.h int32.h typesize.h typesize2.h \
+-  uint32.h compilew.sh
+-	$W  -c $<
+-stralloc_free.o: stralloc_free.c stralloc.h gen_alloc.h alloc.h compilew.sh
+-	$W  -c $<
+-byte_copy.o: byte_copy.c byte.h compilew.sh
++  compilew.sh
+ 	$W  -c $<
+ dyndb_look.o: dyndb_look.c dyndb.h int32.h typesize.h typesize2.h \
+-  uint32.h compilew.sh
++  compilew.sh
+ 	$W  -c $<
+-buffer_2.o: buffer_2.c readwrite.h buffer.h compile.sh
+-	$C  -c $<
+-uogetopt.o: uogetopt.c readwrite.h str.h env.h scan.h uogetopt.h \
++uogetopt.o: uogetopt.c readwrite.h env.h uogetopt.h \
+   attributes.h compilew.sh
+ 	$W  -c $<
+ dyndb_read.o: dyndb_read.c dyndb.h int32.h typesize.h typesize2.h \
+-  uint32.h compilew.sh
++  compilew.sh
+ 	$W  -c $<
+-stralloc_opys.o: stralloc_opys.c str.h stralloc.h gen_alloc.h compilew.sh
+-	$W  -c $<
+-open_readwri.o: open_readwri.c open.h compilew.sh
+-	$W  -c $<
+-stralloc_plus.o: stralloc_plus.c stralloc.h gen_alloc.h gen_alloci.h compilew.sh
+-	$W  -c $<
+-dyndbdump.o: dyndbdump.c dyndb.h int32.h typesize.h typesize2.h uint32.h \
+-  fmt.h buffer.h bailout.h uogetopt.h str.h compilew.sh
++dyndbdump.o: dyndbdump.c dyndb.h int32.h typesize.h typesize2.h \
++  bailout.h uogetopt.h compilew.sh
+ 	$W  -c $<
+ dyndb_enter.o: dyndb_enter.c dyndb.h int32.h typesize.h typesize2.h \
+-  uint32.h compilew.sh
++  compilew.sh
+ 	$W  -c $<
+ dyndb_hash.o: dyndb_hash.c dyndb.h int32.h typesize.h typesize2.h \
+-  uint32.h compilew.sh
++  compilew.sh
+ 	$W  -c $<
+-gen_alloc_end.o: gen_alloc_end.c gen_alloci.h byte.h compilew.sh
+-	$W  -c $<
+-stralloc_catb.o: stralloc_catb.c stralloc.h gen_alloc.h byte.h compilew.sh
++gen_alloc_end.o: gen_alloc_end.c gen_alloci.h compilew.sh
+ 	$W  -c $<
+ dyndb_fwalk.o: dyndb_fwalk.c dyndb.h int32.h typesize.h typesize2.h \
+-  uint32.h compilew.sh
++  compilew.sh
+ 	$W  -c $<
+-dyndbadd.o: dyndbadd.c error.h buffer.h stralloc.h gen_alloc.h dyndb.h \
+-  int32.h typesize.h typesize2.h uint32.h bailout.h open.h str.h \
++dyndbadd.o: dyndbadd.c error.h gen_alloc.h dyndb.h \
++  int32.h typesize.h typesize2.h bailout.h \
+   uogetopt.h attributes.h compilew.sh
+ 	$W  -c $<
+ dyndb_create.o: dyndb_create.c dyndb.h int32.h typesize.h typesize2.h \
+-  uint32.h compilew.sh
++  compilew.sh
+ 	$W  -c $<
+ env_get.o: env_get.c env.h compilew.sh
+ 	$W  -c $<
+ dyndb_walk.o: dyndb_walk.c dyndb.h int32.h typesize.h typesize2.h \
+-  uint32.h compilew.sh
+-	$W  -c $<
+-str_chr.o: str_chr.c str.h compilew.sh
++  compilew.sh
+ 	$W  -c $<
+ error_str.o: error_str.c error.h compilew.sh
+ 	$W  -c $<
+ gen_alloc_lus.o: gen_alloc_lus.c gen_alloci.h compilew.sh
+ 	$W  -c $<
+-str_rchr.o: str_rchr.c str.h compilew.sh
+-	$W  -c $<
+ bailout_name.o: bailout_name.c bailout.h compilew.sh
+ 	$W  -c $<
+ dyndb_write.o: dyndb_write.c dyndb.h int32.h typesize.h typesize2.h \
+-  uint32.h compilew.sh
+-	$W  -c $<
+-stralloc_cats.o: stralloc_cats.c str.h stralloc.h gen_alloc.h compilew.sh
++  compilew.sh
+ 	$W  -c $<
+-buffer_1.o: buffer_1.c readwrite.h buffer.h compile.sh
+-	$C  -c $<
+ error.o: error.c error.h compilew.sh
+ 	$W  -c $<
+-open_read.o: open_read.c open.h compilew.sh
+-	$W  -c $<
+-dyndbget.o: dyndbget.c error.h buffer.h stralloc.h gen_alloc.h str.h \
+-  dyndb.h int32.h typesize.h typesize2.h uint32.h bailout.h uogetopt.h compilew.sh
++dyndbget.o: dyndbget.c error.h gen_alloc.h \
++  dyndb.h int32.h typesize.h typesize2.h bailout.h uogetopt.h compilew.sh
+ 	$W  -c $<
+ dyndb_tdisk.o: dyndb_tdisk.c dyndb.h int32.h typesize.h typesize2.h \
+-  uint32.h compilew.sh
++  compilew.sh
+ 	$W  -c $<
+ dyndbstats.o: dyndbstats.c dyndb.h int32.h typesize.h typesize2.h \
+-  uint32.h timing.h bailout.h uogetopt.h compilew.sh
+-	$W  -c $<
+-open_trunc.o: open_trunc.c open.h compilew.sh
++  timing.h bailout.h uogetopt.h compilew.sh
+ 	$W  -c $<
+ typesize2.h: typesize.stamp
+ typesize.stamp: typesize.sh compile.sh link.sh
+@@ -338,6 +271,9 @@
+ fsync.lib: fsync.sh compile.sh link.sh
+ 	sh fsync.sh >fsync.t && mv fsync.t $@
+ 
++lowfat.lib: compile.sh link.sh
++	echo -lowfat >lowfat.t && mv lowfat.t $@
++
+ .PRECIOUS: Makefile
+ remake: clean
+ 	rm -f compile.sh link.sh compilew.sh
+diff -ru dyndb-0.5.2_orig/src/alloc.c dyndb-0.5.2/src/alloc.c
+--- dyndb-0.5.2_orig/src/alloc.c	2007-09-19 01:46:25.000000000 +0200
++++ dyndb-0.5.2/src/alloc.c	2007-09-21 06:53:14.000000000 +0200
+@@ -7,6 +7,7 @@
+ #include "alloc.h"
+ #include "error.h"
+ #include <stdlib.h>
++#include <errno.h>
+ 
+ /* This must be a power of 2. */
+ /* XXX: This assumes that this alignment is enough. */
+diff -ru dyndb-0.5.2_orig/src/attributes.h dyndb-0.5.2/src/attributes.h
+--- dyndb-0.5.2_orig/src/attributes.h	2007-09-19 01:46:25.000000000 +0200
++++ dyndb-0.5.2/src/attributes.h	2007-09-21 06:53:14.000000000 +0200
+@@ -75,7 +75,7 @@
+ 
+ #define attribute_inline __inline__
+ 
+-#if GNUC_MINIMUM(2,7) /* doesn't work reliable before, IIRC */
++#if 0 //GNUC_MINIMUM(2,7) /* doesn't work reliable before, IIRC */
+ # define attribute_regparm(x) __attribute__((__regparm__((x))))
+ #else
+ # define attribute_regparm(x)
+diff -ru dyndb-0.5.2_orig/src/dyndbadd.c dyndb-0.5.2/src/dyndbadd.c
+--- dyndb-0.5.2_orig/src/dyndbadd.c	2007-09-19 01:46:25.000000000 +0200
++++ dyndb-0.5.2/src/dyndbadd.c	2007-09-21 06:53:14.000000000 +0200
+@@ -8,6 +8,7 @@
+ #include "str.h"
+ #include "uogetopt.h"
+ #include "attributes.h"
++#include <errno.h>
+ 
+ static uogetopt_t myopts[]={
+ {0,"",UOGO_MINARGS | UOGO_HIDDEN,0, 3 , 0,0},
+@@ -34,7 +35,7 @@
+ 		"  Report bugs to dyndb@lists.ohse.de"
+ 	);
+ 
+-	fd=open_readwrite(argv[1]);
++	fd=open_rw(argv[1]);
+ 	if (fd==-1) xbailout(111,errno,"failed to open ",argv[1],0,0);
+ 	dyndb_init(&dy,fd);
+ 	if (-1==dyndb_enterstart(&dy))
+diff -ru dyndb-0.5.2_orig/src/dyndbdel.c dyndb-0.5.2/src/dyndbdel.c
+--- dyndb-0.5.2_orig/src/dyndbdel.c	2007-09-19 01:46:25.000000000 +0200
++++ dyndb-0.5.2/src/dyndbdel.c	2007-09-21 06:53:14.000000000 +0200
+@@ -7,6 +7,7 @@
+ #include "open.h"
+ #include "str.h"
+ #include "uogetopt.h"
++#include <errno.h>
+ 
+ static uogetopt_t myopts[]={
+ {0,"",UOGO_MINARGS | UOGO_HIDDEN,0, 3 , 0,0},
+@@ -30,7 +31,7 @@
+ 		"  Report bugs to dyndb@lists.ohse.de"
+ 	);
+ 
+-	fd=open_readwrite(argv[1]);
++	fd=open_rw(argv[1]);
+ 	if (fd==-1) xbailout(100,errno,"failed to open ",argv[1],0,0);
+ 	dyndb_init(&dy,fd);
+ 
+diff -ru dyndb-0.5.2_orig/src/dyndbget.c dyndb-0.5.2/src/dyndbget.c
+--- dyndb-0.5.2_orig/src/dyndbget.c	2007-09-19 01:46:25.000000000 +0200
++++ dyndb-0.5.2/src/dyndbget.c	2007-09-21 06:53:14.000000000 +0200
+@@ -6,6 +6,7 @@
+ #include "dyndb.h"
+ #include "bailout.h"
+ #include "uogetopt.h"
++#include <errno.h>
+ 
+ static uogetopt_t myopts[]={
+ {0,"",UOGO_MINARGS | UOGO_HIDDEN,0, 2 , 0,0},
+diff -ru dyndb-0.5.2_orig/src/dyndbmake.c dyndb-0.5.2/src/dyndbmake.c
+--- dyndb-0.5.2_orig/src/dyndbmake.c	2007-09-19 01:46:25.000000000 +0200
++++ dyndb-0.5.2/src/dyndbmake.c	2007-09-21 06:53:14.000000000 +0200
+@@ -96,8 +96,8 @@
+ main(int argc, char **argv)
+ {
+ 	int fd;
+-	stralloc buf=STRALLOC_INIT;
+-	stralloc buf2=STRALLOC_INIT;
++	stralloc buf={0,0,0};
++	stralloc buf2={0,0,0};
+ 
+ 	bailout_progname(argv[0]);
+ 	flag_bailout_fatal_begin=3;

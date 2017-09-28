@@ -1,0 +1,66 @@
+diff -ru grep-2.5.3_orig/src/grep.c grep-2.5.3/src/grep.c
+--- grep-2.5.3_orig/src/grep.c	2008-07-18 19:33:14.000000000 +0200
++++ grep-2.5.3/src/grep.c	2008-07-18 19:33:37.000000000 +0200
+@@ -302,7 +302,8 @@
+   EXCLUDE_FROM_OPTION,
+   LINE_BUFFERED_OPTION,
+   LABEL_OPTION,
+-  EXCLUDE_DIRECTORY_OPTION
++  EXCLUDE_DIRECTORY_OPTION,
++  NO_RECURSE_SYMLINKS_OPTION
+ };
+ 
+ /* Long options equivalences. */
+@@ -343,6 +344,7 @@
+   {"mmap", no_argument, &mmap_option, 1},
+   {"no-filename", no_argument, NULL, 'h'},
+   {"no-messages", no_argument, NULL, 's'},
++  {"no-recurse-symlinks", no_argument, NULL, NO_RECURSE_SYMLINKS_OPTION},
+   {"null", no_argument, NULL, 'Z'},
+   {"null-data", no_argument, NULL, 'z'},
+   {"only-matching", no_argument, NULL, 'o'},
+@@ -677,6 +679,7 @@
+ static int line_buffered;       /* If nonzero, use line buffering, i.e.
+ 				   fflush everyline out.  */
+ static char *label = NULL;      /* Fake filename for stdin */
++static int no_recurse_symlinks; /* If nonzero, ignore symlinks on recursion. */
+ 
+ 
+ /* Internal variables to keep track of byte count, context, etc. */
+@@ -1469,6 +1472,17 @@
+ 	  file[dirlen] = '/';
+ 	  strcpy (file + dirlen + needs_slash, namep);
+ 	  namep += namelen + 1;
++
++	  /* if no_recurse_symlinks, test for and skip symlinks */
++	  if (no_recurse_symlinks) {
++	    struct stat sbuf;
++	    if (lstat(file,&sbuf) == -1 ||
++		S_ISLNK(sbuf.st_mode)) 
++	      {
++		continue;
++	      }
++	  }
++
+ 	  status &= grepfile (file, &child);
+ 	}
+       out_file -= !no_filenames;
+@@ -1558,6 +1572,7 @@
+       --exclude=FILE_PATTERN  skip files and directories matching FILE_PATTERN\n\
+       --exclude-from=FILE   skip files matching any file pattern from FILE\n\
+       --exclude-dir=PATTERN directories that match PATTERN will be skipped.\n\
++      --no-recurse-symlinks exclude symbolic links encountered during recursion\n\
+   -L, --files-without-match print only names of FILEs containing no match\n\
+   -l, --files-with-matches  print only names of FILEs containing matches\n\
+   -c, --count               print only a count of matching lines per FILE\n\
+@@ -2249,6 +2264,10 @@
+ 	label = optarg;
+ 	break;
+ 
++      case NO_RECURSE_SYMLINKS_OPTION:
++	no_recurse_symlinks = 1;
++	break;
++
+       case 0:
+ 	/* long options */
+ 	break;

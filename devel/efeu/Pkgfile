@@ -1,0 +1,20 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: EFEU is suitable for handling data cubes, which are especially useful for building data warehouses. It consists of a building system including mkmf (a xmkmf like Makefile generator), esh (a powerful C/C++ interpreter), efeudoc (a document generator with different output formats (LaTeX, HTML, roff, etc.)). EFEU has a huge set of C library core features, including robust memory allocation tools, functions to concatenate and copy strings with memory allocation, buffers for dynamically-growing strings and fields, data structures with reference counters and garbage collection, and file tools that allow you to specify pipes wherever a filename is expected and support automatic implementation of (de)compression filters (gzip) depending on filename extensions. It also includes a high-level interface to files, strings, and anything else you can read from or write to.
+# URL:
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=efeu
+version=3.2
+release=1
+source=(http://efeu.cybertec.at/dist/efeu-$version-2.tar.gz)
+
+build()
+{
+  cd efeu-$version-2
+
+  sed -i "s:/usr/local:$root:g" efeu-install.sh
+
+  sh efeu-install.sh --local
+}

@@ -1,0 +1,39 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A growable text/string buffer object creation and manipulation library.
+#  Libtext is a C library for creating, reading, and performing operations on
+#  growable text / string buffer objects with optional error callbacks. The
+#  library performs actions such as append, delete, find, get, insert,
+#  prepend, replace, and reverse. Libtext can also append, insert, overwrite,
+#  and prepend printf style formats. Further options include rejecting binary
+#  characters, setting a maximum size, and setting a mask that controls
+#  for which errors the callback will be executed for each individual
+#  object. The API is simple enough to learn and use within minutes, but
+#  can be used to build more complex routines.
+#  .
+# URL: http://libtext.sourceforge.net/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=libtext
+version=0.0.0-beta1
+release=1
+source=($mirror_sf/libtext/libtext-$version.tar.bz2)
+
+build()
+{
+  cd libtext-$version
+
+#  ./bootstrap
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

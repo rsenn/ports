@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Transparent process checkpointing and restarting for Linux clusters.
+# chpox provides transparent checkpointing and restarting of processes
+# on Linux clusters. It was originally designed for recovering tasks that
+# have a long execution time (i.e. numerical simulations) in case of system
+# crashes, power failures, etc. It may work with openMosix, is SMP safe,
+# does not require program recompiling/relinking, and supports virtual
+# memory, regular open files, pipes, Unix domain sockets, current directory,
+# and child processes.
+#
+# URL: http://www.cluster.kiev.ua/tasks/chpx.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6
+
+name=chpox
+version=1.0
+release=1
+source=(http://www.cluster.kiev.ua/support/files/chpox-$version.tar.gz)
+
+build()
+{
+  cd chpox-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

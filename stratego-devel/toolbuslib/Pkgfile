@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Section: devel
+# Description: C Libraries needed to connect to the ToolBus
+#  The ToolBus library is a small software package that contains C libraries
+#  needed for ToolBus clients to connect to the ToolBus.
+#  .
+# URL: http://www.program-transformation.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libaterm2 (>= 2.7-1)
+
+name=toolbuslib
+version=1.0
+release=1
+source=(http://homepages.cwi.nl/~daybuild/releases/toolbuslib-$version.tar.gz)
+
+build()
+{
+  cd toolbuslib-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

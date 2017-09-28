@@ -1,0 +1,32 @@
+# $Id: Pkgfile,v 1.4 2007/04/22 23:07:52 roman Exp $
+#
+# Description: A simple library and commandline utilities for inotify.
+#  inotify-tools is a simple library and a set of simple command line
+#  utilities for the Linux inotify filesystem change notification system.
+#  .
+# URL: http://inotify-tools.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=inotify-tools
+version=3.13
+release=1
+source=($mirror_sf/inotify-tools/inotify-tools-$version.tar.gz)
+
+build()
+{
+  cd inotify-tools-$version
+
+  libtoolize --force --copy
+  aclocal --force
+  automake --force --copy --foreign --add-missing
+  autoconf --force
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

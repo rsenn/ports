@@ -1,0 +1,51 @@
+# $Id: Pkgfile,v 1.18 2007/04/22 23:07:57 roman Exp $
+#
+# Description: net-tools
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=net-tools
+version=1.60
+release=4
+source=(http://www.tazenda.demon.co.uk/phil/net-tools/net-tools-$version.tar.bz2
+        http://www.linuxfromscratch.org/patches/blfs/6.3/net-tools-1.60-gcc34-3.patch
+        http://www.linuxfromscratch.org/patches/blfs/6.3/net-tools-1.60-kernel_headers-2.patch
+        http://www.linuxfromscratch.org/patches/blfs/6.3/net-tools-1.60-mii_ioctl-1.patch
+        net-tools-1.60-fixes.patch
+        net-tools-1.60-fixes-2.patch
+        net-tools-1.60-rpath.patch
+        net-tools-1.60-static.patch
+        net-tools-1.60-skfd-fix.patch
+        config.make
+        config.h)
+
+build()
+{
+   cd net-tools-$version
+#      patch -N -p1 -i $SRC/net-tools-$version-fixes.patch
+#      patch -N -p1 -i $SRC/net-tools-$version-rpath.patch
+   patch -N -p1 -i $SRC/net-tools-$version-static.patch
+   patch -N -p1 -i $SRC/net-tools-$version-skfd-fix.patch
+
+   patch -Np1 -i $SRC/net-tools-1.60-gcc34-3.patch
+   patch -Np1 -i $SRC/net-tools-1.60-kernel_headers-2.patch
+   patch -Np1 -i $SRC/net-tools-1.60-mii_ioctl-1.patch
+
+
+   cp $SRC/config.* .
+   touch config.*
+
+#      CC='gcc-2.95'
+
+   make BASEDIR="$prefix" CC="${CC-cc} -D_BSD_SOURCE -D_LINUX_IN6_H ${CFLAGS/-O[0-9]/-O0}"
+   make BASEDIR="$ROOT" mandir="/share/man" update
+
+   find $ROOT/bin -type l | xargs rm
+
+   rm -f $ROOT/bin/hostname
+
+  install -d $ROOT/share/doc/net-tools
+  install -m 644 ABOUT-NLS COPYING INSTALLING README TODO $ROOT/share/doc/net-tools
+}
+

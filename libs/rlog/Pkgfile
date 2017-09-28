@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: RLog provides a flexible message logging facility for C++
+# programs and libraries. It is highly optimized for the case where no log
+# messages are output, so that it can be left in production code and enabled
+# on-demand.
+# URL: http://arg0.net/wiki/rlog
+# Maintainer: Roman L. Senn <rs@adfinis.com>
+# Depends on: rlog fuse
+
+name=rlog
+version=1.4
+release=1
+source=(http://rlog.googlecode.com/files/rlog-$version.tar.gz)
+
+build()
+{
+  cd rlog-$version
+
+  rm config/config.sub &&
+  autoreconf --verbose --force --install
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --enable-shared \
+       --enable-static
+
+  make
+  make DESTDIR="$PKG" install
+}

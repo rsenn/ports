@@ -1,0 +1,30 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:40 roman Exp $
+#
+# Description: A diff &amp; patch utility for binary files.
+#  bdiff is a simple and small program to do what the very common utilities
+#  &quot;diff&quot; and &quot;patch&quot; do with text files, but also
+#  works with binary files.
+# URL: http://www.webalice.it/g_pochini/bdiff/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=bdiff
+version=1.0.5
+release=1
+source=(http://www.webalice.it/g_pochini/bdiff/bdiff-$version.tgz
+        bdiff-1.0.5-fixes.patch)
+
+build()
+{
+  cd bdiff-$version
+
+  patch -N -p1 -i $SRC/bdiff-1.0.5-fixes.patch
+
+  make
+
+  install -d $ROOT/bin
+  install -m 755 bdiff $ROOT/bin
+
+  install -d $ROOT/share/doc/bdiff
+  install -m 644 magic.txt README Fileformat.txt COPYING $ROOT/share/doc/bdiff
+}

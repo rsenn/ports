@@ -1,0 +1,255 @@
+# $Id: Pkgfile,v 1.11 2007/04/22 23:07:54 roman Exp $
+#
+# Description: A fast and secure DNS server
+# URL: http://cr.yp.to/djbdns.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6
+# Split: djbdns-tools (dnsfilter dnsip dnsipq dnsname dnstxt dnsmx dnsq dnstrace dnstracesort)
+
+name=djbdns
+version=1.05
+release=3adfinis2
+source=(http://cr.yp.to/djbdns/djbdns-1.05.tar.gz
+        djbdns-conf-home-inst.patch
+        http://smarden.org/pape/djb/manpages/djbdns-1.05-man.tar.gz
+        http://www.fefe.de/dns/djbdns-1.05-test19.diff.bz2
+        http://www.fefe.de/dns/djbdns-1.05-ixfr.diff.gz
+        djbdns-1.05-ignoreip2.patch
+        dnsadm.in
+        http://smarden.org/pape/djb/manpages/djbdns-1.05-man-20031023.tar.gz)
+
+build()
+{
+  cd djbdns-$version
+
+  case $prefix in
+    "/usr") SHELL="/bin/sh" ;;
+  esac
+
+  patch -N -p1 -i $SRC/djbdns-conf-home-inst.patch
+  patch -N -p0 -i $SRC/djbdns-1.05-ignoreip2.patch
+  bzcat $SRC/djbdns-1.05-test19.diff.bz2 | patch -N -p1
+  zcat $SRC/djbdns-1.05-ixfr.diff.gz | patch -N -p1
+
+  : ${SHELL="/bin/bash"}
+
+#  sed -i "s,#\!/bin/sh,#\!$SHELL," *.c
+
+  echo "${CC-cc} $CFLAGS -include errno.h" >conf-cc
+  echo "${CC-cc} $CFLAGS $LDFLAGS" >conf-ld
+  echo $ROOT >conf-home-inst
+
+  cp hier.c hier.c.orig
+  sed 's/.*dnsroots\.global.*//' <hier.c.orig >hier.c
+
+  mkdir -p $ROOT
+  make SHELL="$SHELL" setup
+
+  case ${prefix=/usr} in
+    /usr) sysconfdir="/etc" localstatedir="/var" ;;
+  esac
+
+  mkdir -p $PKG/${sysconfdir=$prefix/etc}
+  cp dnsroots.global $PKG/${sysconfdir=$prefix/etc}
+
+#  mkdir -p $ROOT/etc/{dnscache,tinydns}
+
+  mkdir -p $PKG/${sysconfdir=$prefix/etc}/dnscache/{env,ip,servers}
+  mkdir -p $PKG/${sysconfdir=$prefix/etc}/dnscache/env
+
+  cp dnsroots.global $PKG/$sysconfdir/dnscache/servers/@
+
+  sed -e "s,@SHELL@,${SHELL=$bindir/bash},g" \
+      -e "s,@prefix@,$prefix,g" \
+      -e "s,@bindir@,${bindir=$prefix/bin},g" \
+      -e "s,@libdir@,${libdir=$prefix/lib},g" \
+      -e "s,@shelldir@,${shelldir=$libdir/sh},g" \
+      -e "s,@sysconfdir@,${sysconfdir=$prefix/etc},g" $SRC/dnsadm.in >dnsadm
+
+  install -m 755 dnsadm $ROOT/bin
+
+  cd $SRC/djbdns-man
+
+  for manpage in *.[0-9]; do
+    n=${manpage##*.}
+
+    mkdir -p $ROOT/share/man/man${n}
+    cp "$manpage" $ROOT/share/man/man${n}
+
+  done
+}
+
+#----------------------------------------------------------------------------
+##postmerge()
+#{
+#  echo $dnscache_cachesize >${sysconfdir=$prefix/etc}/dnscache/env/CACHESIZE
+#  echo $dnscache_datalimit >${sysconfdir=$prefix/etc}/dnscache/env/DATALIMIT
+#  echo $dnscache_ipaddr >${sysconfdir=$prefix/etc}/dnscache/env/IP
+#  echo $dnscache_ipsend >${sysconfdir=$prefix/etc}/dnscache/env/IPSEND
+#  echo ${sysconfdir=$prefix/etc}/dnscache >${sysconfdir=$prefix/etc}/dnscache/env/ROOT
+#
+#  echo $tinydns_ipaddr >${sysconfdir=$prefix/etc}/tinydns/env/IP
+#  echo ${sysconfdir=$prefix/etc}/tinydns >${sysconfdir=$prefix/etc}/tinydns/env/ROOT
+#
+#  for ip in $dnscache_allowed
+#  do
+#    touch ${sysconfdir=$prefix/etc}/dnscache/ip/$ip
+#  done
+#
+#  for domain in $dnscache_delegates
+#  do
+#    echo "$tinydns_ipaddr" >${sysconfdir=$prefix/etc}/dnscache/servers/$domain
+#  done
+#
+#  if test ! -f ${sysconfdir=$prefix/etc}/dnscache/servers/@
+#  then
+#    cp ${sysconfdir=$prefix/etc}/dnsroots.global \
+#       ${sysconfdir=$prefix/etc}/dnscache/servers/@
+#  fi
+#
+#  if test ! -f $sysconfdir/tinydns/data; then
+#    exec 10>$sysconfdir/tinydns/data
+#    for domain in $dnscache_delegates; do
+#      echo ".$domain:$dnscache_ipaddr:a:86400" >&10
+#    done
+#    exec 10>&-
+#  fi
+#
+#  chown -R $dnscache_user:$dnscache_group $sysconfdir/dnscache
+#  chown -R $tinydns_user:$tinydns_group $sysconfdir/tinydns
+#}
+#
+##----------------------------------------------------------------------------
+#config()
+#{
+#  # add the main-menu entry 'dnscache'
+#  config_branch 'dnscache'   'djbdns dnscache (authorative) configuration'
+#
+#    config_value 'ipaddr'    'listen address'
+#      config_description     'IP address the dnscache server will listen to (TCP+UDP).'
+#      config_default         '$(config_getvalue global_ipaddr)'
+#    config_end
+#
+#    config_value 'cachesize' 'cache size'
+#      config_description     'Number of responses which will be cached.'
+#      config_default         '1000000'
+#    config_end
+#
+#    config_value 'datalimit' 'data limit'
+#      config_description     'UNKNOWN.'
+#      config_default         '3000000'
+#    config_end
+#
+#    config_value 'ipsend'    'ip outgoing address'
+#      config_description     'Source address of UDP responses.'
+#      config_default         '$(config_getvalue dnscache_ipaddr)'
+#    config_end
+#
+#    config_value 'user'      'dnscache user'
+#      config_description     'UNIX user the dnscache daemon will run under'
+#      config_default         '$(user_find dns daemon nobody)'
+#      config_function        'choose --help-{button,label} Create $(user_list)'
+#      config_extra           'input'
+#    config_end
+#
+#    config_value 'group'     'dnscache group'
+#      config_description     'UNIX user the dnscache daemon will run under'
+#      config_default         '$(group_find dns daemon nobody nogroup)'
+#      config_function        'choose --help-{button,label} Create $(group_list)'
+#      config_extra           'input'
+#    config_end
+#
+#    config_value 'allowed'   'allowed clients'
+#      config_description     'Clients from these subnets will be allowed to query.'
+#      config_default         '$(ipaddr=$(config_getvalue global_ipaddr); echo ${ipaddr%.*})'
+#    config_end
+#
+#    config_value 'delegates' 'delegates to tinydns'
+#      config_description     'Queries matching these domains will be deleagated to the tinydns server.'
+#      config_default         '$(config_getvalue tinydns_domains)'
+#    config_end
+#
+#  config_end
+#
+#  # add the main-menu entry 'tinydns'
+#  config_branch 'tinydns'  'djbdns tinydns (authorative) configuration'
+#
+#    config_value 'ipaddr'  'tinydns UDP address'
+#      config_description   'IP address the tinydns server will listen to (UDP).'
+#      config_default       '127.0.0.1'
+#    config_end
+#
+#    config_value 'user'    'tinydns user'
+#      config_description   'UNIX user the tinydns daemon will run under'
+#      config_default       '$(user_find dns daemon nobody)'
+#      config_function      'choose --help-{button,label} Create $(user_list)'
+#      config_extra         'input'
+#    config_end
+#
+#    config_value 'group'   'tinydns group'
+#      config_description   'UNIX user the tinydns daemon will run under'
+#      config_default       '$(group_find dns daemon nobody nogroup)'
+#      config_function      'choose --help-{button,label} Create $(group_list)'
+#      config_extra         'input'
+#    config_end
+#
+#    config_value 'domains' 'initial NS entries.'
+#      config_description   'The server will handle queries for these domains:'
+#      config_default       '$(config_getvalue global_domain) $(ipaddr=$(config_getvalue global_ipaddr); inet_arpa ${ipaddr%.*})'
+#    config_end
+#
+#  config_end
+#
+#  # enhance daemontools package configuration
+#  config_enter 'services' 'run' 'dnscache'
+#    config_label          'Run dnscache at boot'
+#    config_default        'yes'
+#    config_type           'value'
+#  config_leave
+#
+#  config_enter 'services' 'run' 'tinydns'
+#    config_label          'Run tinydns at boot'
+#    config_default        'yes'
+#    config_type           'value'
+#  config_leave
+#}
+#
+## --------------------------------------------------------------------------------
+#services()
+#{
+#  config_branch   'dnscache'
+#    config_branch 'log'
+#    config_end
+#    config_set    'TITLE' 'djbdns dnscache (recursive caching server)'
+#  config_end
+#
+#  config_branch   'tinydns'
+#    config_branch 'log'
+#    config_end
+#    config_set    'TITLE' 'djbdns tinydns (authorative server)'
+#  config_end
+#}
+#
+## --------------------------------------------------------------------------------
+#dnscache()
+#{
+#  export dnscache_user dnscache_datalimit
+#
+#  exec 2>&1
+#
+#  ${bindir}/sed -i -e "/^#/! { i\\${nl}nameserver $dnscache_ipaddr$nl }" \
+#    ${sysconfdir}/resolv.conf
+#
+#  exec envdir $prefix/etc/dnscache/env sh -c \
+#    'exec envuidgid $dnscache_user softlimit -o250 -d "$dnscache_datalimit" dnscache'
+#}
+#
+## --------------------------------------------------------------------------------
+#tinydns()
+#{
+#  export tinydns_user
+#  exec 2>&1
+#  (cd $prefix/etc/tinydns/data && $bindir/tinydns-data data)
+#  exec envuidgid $tinydns_user envdir $prefix/etc/tinydns/env softlimit -d300000 tinydns
+#}
+#

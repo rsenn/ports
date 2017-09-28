@@ -1,0 +1,26 @@
+--- memgrep-0.8.0_orig/Makefile.in	2009-03-02 01:59:46.000000000 +0100
++++ memgrep-0.8.0/Makefile.in	2009-03-02 02:14:29.000000000 +0100
+@@ -7,14 +7,17 @@
+ 	cd examples && make
+ 
+ install:
+-	cp include/memgrep.h /usr/include
+-	cp libmemgrep.so /usr/lib
+-	cp libmemgrep.a /usr/lib
+-	cp heaplist.so /usr/lib
+-	cp memgrep /usr/bin
++	mkdir -p $(DESTDIR)$(PREFIX)/include
++	cp include/memgrep.h $(DESTDIR)$(PREFIX)/include
++	mkdir -p $(DESTDIR)$(PREFIX)/lib
++	cp libmemgrep.so $(DESTDIR)$(PREFIX)/lib
++	cp libmemgrep.a $(DESTDIR)$(PREFIX)/lib
++	cp heaplist.so $(DESTDIR)$(PREFIX)/lib
++	mkdir -p $(DESTDIR)$(PREFIX)/bin
++	cp memgrep $(DESTDIR)$(PREFIX)/bin
+ 
+ uninstall:
+-	rm -f /usr/lib/libmemgrep.so /usr/lib/libmemgrep.a /usr/bin/memgrep /usr/include/memgrep.h
++	rm -f $(DESTDIR)$(PREFIX)/lib/libmemgrep.so $(DESTDIR)$(PREFIX)/lib/libmemgrep.a $(DESTDIR)$(PREFIX)/bin/memgrep $(DESTDIR)$(PREFIX)/include/memgrep.h
+ 
+ clean:
+ 	cd examples && make clean

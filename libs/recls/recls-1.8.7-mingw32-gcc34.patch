@@ -1,0 +1,888 @@
+diff -r -u src_orig/build/gcc34/makefile.mingw32 src/build/gcc34/makefile.mingw32
+--- src_orig/build/gcc34/makefile.mingw32	2007-04-21 04:31:27.000000000 +0200
++++ src/build/gcc34/makefile.mingw32	2007-04-21 04:31:08.000000000 +0200
+@@ -0,0 +1,884 @@
++################################################################################
++# File:     makefile.mingw32
++#
++# Purpose:  Makefile for the recls project, for the GCC 3.4
++#           compiler, on Win32
++#
++# Created:  23rd September 2003
++# Updated:  18th June 2006
++#
++################################################################################
++
++
++################################################################################
++# Symbols
++
++# Identification
++
++COMP_TAG          =   gcc34
++PROJ_TAG          =   recls
++PROJ_VER_MAJOR    =   1
++PROJ_TAG_VER      =   $(PROJ_TAG).$(PROJ_VER_MAJOR)
++
++CC                  =   gcc
++CPPC                =   g++
++AR                  =   ar
++LD                  =   $(CPPC)
++RM                  =   rm
++CP                  =   cp
++RC                  =   rc
++
++# Directories
++
++PROJ_BASE_DIR       =   ../..
++PROJ_BIN_DIR        =   $(PROJ_BASE_DIR)/bin
++PROJ_INCLUDE_DIR    =   $(PROJ_BASE_DIR)/include
++PROJ_LIB_DIR        =   $(PROJ_BASE_DIR)/lib
++PROJ_OBJ_DIR        =   .
++PROJ_SRC_DIR        =   $(PROJ_BASE_DIR)/src
++PROJ_MAPPINGS_DIR   =   $(PROJ_BASE_DIR)/mappings
++PROJ_TESTS_DIR      =   $(PROJ_BASE_DIR)/test
++PROJ_EXAMPLES_DIR   =   $(PROJ_BASE_DIR)/examples
++PROJ_SAMPLES_DIR    =   $(PROJ_BASE_DIR)/samples
++
++# Includes
++
++INCLUDES_LEADER     =   
++
++PROJ_INCLUDE        =   -I$(PROJ_INCLUDE_DIR)
++
++COMMON_INCLUDES     =   
++
++CC_INCLUDES = \
++ $(INCLUDES_LEADER)\
++ $(PROJ_INCLUDE)\
++ $(COMMON_INCLUDES)\
++ -I"$(STLSOFT)/include"\
++ \
++
++CPPC_INCLUDES = \
++ $(INCLUDES_LEADER)\
++ $(PROJ_INCLUDE)\
++ $(COMMON_INCLUDES)\
++ -I"$(STLSOFT)/include"\
++ \
++
++3PTY_LIBS__ST_DEBUG = \
++ -luser32\
++ -lwininet\
++ \
++
++3PTY_LIBS__ST_RELEASE = \
++ -luser32\
++ -lwininet\
++ \
++
++
++LIB_PATHS =\
++ \
++
++LIBS_LEADER         =   
++
++COMMON_LIB          =   
++
++# #defines
++
++CMN_DEF_NO_IMPLICIT_LINK =\
++ -DRECLS_NO_IMPLICIT_LINK\
++ \
++
++COMMON_DEFS         =   -DWIN32 $(CMN_DEF_NO_IMPLICIT_LINK)
++
++CC_DEFS             =   $(COMMON_DEFS)
++
++CPPC_DEFS           =   $(COMMON_DEFS)
++
++# Flags
++
++CC_F_NOLOGO             =   
++CC_F_COMPILE_ONLY       =   -c
++CC_F_WARNING_MAX        =   -Wall -pedantic -Wno-long-long -Wno-unused-value -Wundef -Wshadow
++CC_F_WARNING_ERR        =   -Werror
++
++CPPC_F_NOLOGO       =   
++CPPC_F_COMPILE_ONLY =   -c
++CPPC_F_WARNING_MAX  =   -Wall -pedantic -Wno-long-long -Wno-unused-value
++CPPC_F_WARNING_ERR  =   -Werror
++CPPC_F_EXCEPTIONS   =   
++CPPC_F_RTTI         =   
++
++CC_TOOL_FLAGS       =   
++
++CC_FLAGS = \
++ $(CC_TOOL_FLAGS)\
++ $(CC_F_NOLOGO)\
++ $(CC_F_COMPILE_ONLY)\
++ $(CC_F_WARNING_MAX)\
++ $(CC_F_WARNING_ERR)\
++ \
++
++CPPC_TOOL_FLAGS     =   
++
++CPPC_FLAGS = \
++ $(CPPC_TOOL_FLAGS)\
++ $(CPPC_F_NOLOGO)\
++ $(CPPC_F_COMPILE_ONLY)\
++ $(CPPC_F_WARNING_MAX)\
++ $(CPPC_F_WARNING_ERR)\
++ $(CPPC_F_EXCEPTIONS)\
++ $(CPPC_F_RTTI)\
++ \
++
++# Arguments (= flags + defines + includes)
++
++CC_ARGS_ST_DEBUG = -D_DEBUG -UNDEBUG $(CC_FLAGS) $(CC_DEFS) $(CC_INCLUDES)
++CC_ARGS_ST_RELEASE = -DNDEBUG -U_DEBUG $(CC_FLAGS) $(CC_DEFS) $(CC_INCLUDES)
++
++CPPC_ARGS_ST_DEBUG = -D_DEBUG -UNDEBUG $(CPPC_FLAGS) $(CPPC_DEFS) $(CPPC_INCLUDES)
++CPPC_ARGS_ST_RELEASE = -DNDEBUG -U_DEBUG $(CPPC_FLAGS) $(CPPC_DEFS) $(CPPC_INCLUDES)
++
++# archiver flags and arguments
++
++AR_ARGS = 
++
++# linker flags and arguments
++
++LD_F_NOLOGO = 
++
++LD_ARGS_ST_DEBUG =  $(LD_F_NOLOGO) $(LIB_PATHS) $(COMMON_LIB)
++LD_ARGS_ST_RELEASE =  $(LD_F_NOLOGO) $(LIB_PATHS) $(COMMON_LIB)
++
++################################################################################
++# Targets
++
++########################################
++# TARGETS_LIBS
++
++TARGET_LIB_ST_DEBUG = $(PROJ_LIB_DIR)/lib$(PROJ_TAG_VER).$(COMP_TAG).debug.a
++TARGET_LIB_UN_ST_DEBUG = $(PROJ_LIB_DIR)/lib$(PROJ_TAG).$(COMP_TAG).debug.a
++TARGET_LIB_ST_RELEASE = $(PROJ_LIB_DIR)/lib$(PROJ_TAG_VER).$(COMP_TAG).a
++TARGET_LIB_UN_ST_RELEASE = $(PROJ_LIB_DIR)/lib$(PROJ_TAG).$(COMP_TAG).a
++
++TARGETS_LIBS =\
++ $(TARGET_LIB_ST_DEBUG)\
++ $(TARGET_LIB_UN_ST_DEBUG)\
++ $(TARGET_LIB_ST_RELEASE)\
++ $(TARGET_LIB_UN_ST_RELEASE)\
++ \
++
++########################################
++# TARGETS_TESTS
++
++
++TARGETS_TESTS =\
++ \
++
++########################################
++# TARGETS_EXAMPLES
++
++TARGET_EXAMPLE_C_1_ST_DEBUG = $(PROJ_BIN_DIR)/$(PROJ_TAG_VER).example_c_1.$(COMP_TAG).debug.exe
++TARGET_EXAMPLE_C_2_ST_DEBUG = $(PROJ_BIN_DIR)/$(PROJ_TAG_VER).example_c_2.$(COMP_TAG).debug.exe
++TARGET_EXAMPLE_C_3_ST_DEBUG = $(PROJ_BIN_DIR)/$(PROJ_TAG_VER).example_c_3.$(COMP_TAG).debug.exe
++TARGET_EXAMPLE_C_4_ST_DEBUG = $(PROJ_BIN_DIR)/$(PROJ_TAG_VER).example_c_4.$(COMP_TAG).debug.exe
++TARGET_EXAMPLE_C_5_ST_DEBUG = $(PROJ_BIN_DIR)/$(PROJ_TAG_VER).example_c_5.$(COMP_TAG).debug.exe
++TARGET_EXAMPLE_C_6_ST_DEBUG = $(PROJ_BIN_DIR)/$(PROJ_TAG_VER).example_c_6.$(COMP_TAG).debug.exe
++TARGET_EXAMPLE_C_7_ST_DEBUG = $(PROJ_BIN_DIR)/$(PROJ_TAG_VER).example_c_7.$(COMP_TAG).debug.exe
++TARGET_EXAMPLE_C_8_ST_DEBUG = $(PROJ_BIN_DIR)/$(PROJ_TAG_VER).example_c_8.$(COMP_TAG).debug.exe
++TARGET_EXAMPLE_CPP_1_ST_DEBUG = $(PROJ_BIN_DIR)/$(PROJ_TAG_VER).example_cpp_1.$(COMP_TAG).debug.exe
++TARGET_EXAMPLE_CPP_2_ST_DEBUG = $(PROJ_BIN_DIR)/$(PROJ_TAG_VER).example_cpp_2.$(COMP_TAG).debug.exe
++TARGET_EXAMPLE_CPP_3_ST_DEBUG = $(PROJ_BIN_DIR)/$(PROJ_TAG_VER).example_cpp_3.$(COMP_TAG).debug.exe
++TARGET_EXAMPLE_STL_1_ST_DEBUG = $(PROJ_BIN_DIR)/$(PROJ_TAG_VER).example_stl_1.$(COMP_TAG).debug.exe
++TARGET_EXAMPLE_STL_2_ST_DEBUG = $(PROJ_BIN_DIR)/$(PROJ_TAG_VER).example_stl_2.$(COMP_TAG).debug.exe
++TARGET_EXAMPLE_C_1_ST_RELEASE = $(PROJ_BIN_DIR)/$(PROJ_TAG_VER).example_c_1.$(COMP_TAG).exe
++TARGET_EXAMPLE_C_2_ST_RELEASE = $(PROJ_BIN_DIR)/$(PROJ_TAG_VER).example_c_2.$(COMP_TAG).exe
++TARGET_EXAMPLE_C_3_ST_RELEASE = $(PROJ_BIN_DIR)/$(PROJ_TAG_VER).example_c_3.$(COMP_TAG).exe
++TARGET_EXAMPLE_C_4_ST_RELEASE = $(PROJ_BIN_DIR)/$(PROJ_TAG_VER).example_c_4.$(COMP_TAG).exe
++TARGET_EXAMPLE_C_5_ST_RELEASE = $(PROJ_BIN_DIR)/$(PROJ_TAG_VER).example_c_5.$(COMP_TAG).exe
++TARGET_EXAMPLE_C_6_ST_RELEASE = $(PROJ_BIN_DIR)/$(PROJ_TAG_VER).example_c_6.$(COMP_TAG).exe
++TARGET_EXAMPLE_C_7_ST_RELEASE = $(PROJ_BIN_DIR)/$(PROJ_TAG_VER).example_c_7.$(COMP_TAG).exe
++TARGET_EXAMPLE_C_8_ST_RELEASE = $(PROJ_BIN_DIR)/$(PROJ_TAG_VER).example_c_8.$(COMP_TAG).exe
++TARGET_EXAMPLE_CPP_1_ST_RELEASE = $(PROJ_BIN_DIR)/$(PROJ_TAG_VER).example_cpp_1.$(COMP_TAG).exe
++TARGET_EXAMPLE_CPP_2_ST_RELEASE = $(PROJ_BIN_DIR)/$(PROJ_TAG_VER).example_cpp_2.$(COMP_TAG).exe
++TARGET_EXAMPLE_CPP_3_ST_RELEASE = $(PROJ_BIN_DIR)/$(PROJ_TAG_VER).example_cpp_3.$(COMP_TAG).exe
++TARGET_EXAMPLE_STL_1_ST_RELEASE = $(PROJ_BIN_DIR)/$(PROJ_TAG_VER).example_stl_1.$(COMP_TAG).exe
++TARGET_EXAMPLE_STL_2_ST_RELEASE = $(PROJ_BIN_DIR)/$(PROJ_TAG_VER).example_stl_2.$(COMP_TAG).exe
++
++TARGETS_EXAMPLES =\
++ $(TARGET_EXAMPLE_C_1_ST_DEBUG)\
++ $(TARGET_EXAMPLE_C_2_ST_DEBUG)\
++ $(TARGET_EXAMPLE_C_3_ST_DEBUG)\
++ $(TARGET_EXAMPLE_C_4_ST_DEBUG)\
++ $(TARGET_EXAMPLE_C_5_ST_DEBUG)\
++ $(TARGET_EXAMPLE_C_6_ST_DEBUG)\
++ $(TARGET_EXAMPLE_C_7_ST_DEBUG)\
++ $(TARGET_EXAMPLE_C_8_ST_DEBUG)\
++ $(TARGET_EXAMPLE_C_1_ST_RELEASE)\
++ $(TARGET_EXAMPLE_C_2_ST_RELEASE)\
++ $(TARGET_EXAMPLE_C_3_ST_RELEASE)\
++ $(TARGET_EXAMPLE_C_4_ST_RELEASE)\
++ $(TARGET_EXAMPLE_C_5_ST_RELEASE)\
++ $(TARGET_EXAMPLE_C_6_ST_RELEASE)\
++ $(TARGET_EXAMPLE_C_7_ST_RELEASE)\
++ $(TARGET_EXAMPLE_C_8_ST_RELEASE)\
++ $(TARGET_EXAMPLE_CPP_1_ST_DEBUG)\
++ $(TARGET_EXAMPLE_CPP_2_ST_DEBUG)\
++ $(TARGET_EXAMPLE_CPP_3_ST_DEBUG)\
++ $(TARGET_EXAMPLE_CPP_1_ST_RELEASE)\
++ $(TARGET_EXAMPLE_CPP_2_ST_RELEASE)\
++ $(TARGET_EXAMPLE_CPP_3_ST_RELEASE)\
++ $(TARGET_EXAMPLE_STL_1_ST_DEBUG)\
++ $(TARGET_EXAMPLE_STL_2_ST_DEBUG)\
++ $(TARGET_EXAMPLE_STL_1_ST_RELEASE)\
++ $(TARGET_EXAMPLE_STL_2_ST_RELEASE)\
++ \
++
++########################################
++# TARGETS_SAMPLES
++
++
++TARGETS_SAMPLES =\
++ \
++
++########################################
++# TARGETS
++
++TARGETS = \
++ $(TARGETS_LIBS)\
++ $(TARGETS_TESTS)\
++ $(TARGETS_EXAMPLES)\
++ $(TARGETS_SAMPLES)\
++ \
++
++########################################
++# OBJS_CORE
++
++OBJ_CORE_recls_api__ST_DEBUG = $(PROJ_OBJ_DIR)/recls_api.debug.o
++OBJ_CORE_recls_api_win32__ST_DEBUG = $(PROJ_OBJ_DIR)/recls_api_win32.debug.o
++OBJ_CORE_recls_fileinfo__ST_DEBUG = $(PROJ_OBJ_DIR)/recls_fileinfo.debug.o
++OBJ_CORE_recls_fileinfo_win32__ST_DEBUG = $(PROJ_OBJ_DIR)/recls_fileinfo_win32.debug.o
++OBJ_CORE_recls_ftp_api_win32__ST_DEBUG = $(PROJ_OBJ_DIR)/recls_ftp_api_win32.debug.o
++OBJ_CORE_recls_util__ST_DEBUG = $(PROJ_OBJ_DIR)/recls_util.debug.o
++OBJ_CORE_recls_util_win32__ST_DEBUG = $(PROJ_OBJ_DIR)/recls_util_win32.debug.o
++OBJ_CORE_entryinfo__ST_DEBUG = $(PROJ_OBJ_DIR)/entryinfo.debug.o
++OBJ_CORE_ReclsSearch__ST_DEBUG = $(PROJ_OBJ_DIR)/ReclsSearch.debug.o
++OBJ_CORE_ReclsFileSearch__ST_DEBUG = $(PROJ_OBJ_DIR)/ReclsFileSearch.debug.o
++OBJ_CORE_ReclsFileSearchDirectoryNode__ST_DEBUG = $(PROJ_OBJ_DIR)/ReclsFileSearchDirectoryNode.debug.o
++OBJ_CORE_ReclsFtpSearch_win32__ST_DEBUG = $(PROJ_OBJ_DIR)/ReclsFtpSearch_win32.debug.o
++OBJ_CORE_ReclsFtpSearchDirectoryNode_win32__ST_DEBUG = $(PROJ_OBJ_DIR)/ReclsFtpSearchDirectoryNode_win32.debug.o
++
++OBJS_CORE_ST_DEBUG = \
++ $(OBJ_CORE_recls_api__ST_DEBUG)\
++ $(OBJ_CORE_recls_api_win32__ST_DEBUG)\
++ $(OBJ_CORE_recls_fileinfo__ST_DEBUG)\
++ $(OBJ_CORE_recls_fileinfo_win32__ST_DEBUG)\
++ $(OBJ_CORE_recls_ftp_api_win32__ST_DEBUG)\
++ $(OBJ_CORE_recls_util__ST_DEBUG)\
++ $(OBJ_CORE_recls_util_win32__ST_DEBUG)\
++ $(OBJ_CORE_entryinfo__ST_DEBUG)\
++ $(OBJ_CORE_ReclsSearch__ST_DEBUG)\
++ $(OBJ_CORE_ReclsFileSearch__ST_DEBUG)\
++ $(OBJ_CORE_ReclsFileSearchDirectoryNode__ST_DEBUG)\
++ $(OBJ_CORE_ReclsFtpSearch_win32__ST_DEBUG)\
++ $(OBJ_CORE_ReclsFtpSearchDirectoryNode_win32__ST_DEBUG)\
++ $(OBJ_CORE_recls_wininet_dl__ST_DEBUG)\
++ \
++
++OBJ_CORE_recls_api__ST_RELEASE = $(PROJ_OBJ_DIR)/recls_api.o
++OBJ_CORE_recls_api_win32__ST_RELEASE = $(PROJ_OBJ_DIR)/recls_api_win32.o
++OBJ_CORE_recls_fileinfo__ST_RELEASE = $(PROJ_OBJ_DIR)/recls_fileinfo.o
++OBJ_CORE_recls_fileinfo_win32__ST_RELEASE = $(PROJ_OBJ_DIR)/recls_fileinfo_win32.o
++OBJ_CORE_recls_ftp_api_win32__ST_RELEASE = $(PROJ_OBJ_DIR)/recls_ftp_api_win32.o
++OBJ_CORE_recls_util__ST_RELEASE = $(PROJ_OBJ_DIR)/recls_util.o
++OBJ_CORE_recls_util_win32__ST_RELEASE = $(PROJ_OBJ_DIR)/recls_util_win32.o
++OBJ_CORE_entryinfo__ST_RELEASE = $(PROJ_OBJ_DIR)/entryinfo.o
++OBJ_CORE_ReclsSearch__ST_RELEASE = $(PROJ_OBJ_DIR)/ReclsSearch.o
++OBJ_CORE_ReclsFileSearch__ST_RELEASE = $(PROJ_OBJ_DIR)/ReclsFileSearch.o
++OBJ_CORE_ReclsFileSearchDirectoryNode__ST_RELEASE = $(PROJ_OBJ_DIR)/ReclsFileSearchDirectoryNode.o
++OBJ_CORE_ReclsFtpSearch_win32__ST_RELEASE = $(PROJ_OBJ_DIR)/ReclsFtpSearch_win32.o
++OBJ_CORE_ReclsFtpSearchDirectoryNode_win32__ST_RELEASE = $(PROJ_OBJ_DIR)/ReclsFtpSearchDirectoryNode_win32.o
++
++OBJS_CORE_ST_RELEASE = \
++ $(OBJ_CORE_recls_api__ST_RELEASE)\
++ $(OBJ_CORE_recls_api_win32__ST_RELEASE)\
++ $(OBJ_CORE_recls_fileinfo__ST_RELEASE)\
++ $(OBJ_CORE_recls_fileinfo_win32__ST_RELEASE)\
++ $(OBJ_CORE_recls_ftp_api_win32__ST_RELEASE)\
++ $(OBJ_CORE_recls_util__ST_RELEASE)\
++ $(OBJ_CORE_recls_util_win32__ST_RELEASE)\
++ $(OBJ_CORE_entryinfo__ST_RELEASE)\
++ $(OBJ_CORE_ReclsSearch__ST_RELEASE)\
++ $(OBJ_CORE_ReclsFileSearch__ST_RELEASE)\
++ $(OBJ_CORE_ReclsFileSearchDirectoryNode__ST_RELEASE)\
++ $(OBJ_CORE_ReclsFtpSearch_win32__ST_RELEASE)\
++ $(OBJ_CORE_ReclsFtpSearchDirectoryNode_win32__ST_RELEASE)\
++ $(OBJ_CORE_recls_wininet_dl__ST_RELEASE)\
++ \
++
++
++OBJS_CORE =\
++ $(OBJS_CORE_ST_DEBUG)\
++ $(OBJS_CORE_ST_RELEASE)\
++ \
++
++########################################
++# OBJS_LIBS
++
++OBJS_LIBS =\
++ $(OBJS_CORE)\
++ \
++
++########################################
++# OBJS_TESTS
++
++
++OBJS_TESTS =\
++ \
++
++########################################
++# OBJS_EXAMPLES
++
++OBJ_EXAMPLE_C_1_ST_DEBUG = $(PROJ_OBJ_DIR)/example_c_1.debug.o
++OBJ_EXAMPLE_C_2_ST_DEBUG = $(PROJ_OBJ_DIR)/example_c_2.debug.o
++OBJ_EXAMPLE_C_3_ST_DEBUG = $(PROJ_OBJ_DIR)/example_c_3.debug.o
++OBJ_EXAMPLE_C_4_ST_DEBUG = $(PROJ_OBJ_DIR)/example_c_4.debug.o
++OBJ_EXAMPLE_C_5_ST_DEBUG = $(PROJ_OBJ_DIR)/example_c_5.debug.o
++OBJ_EXAMPLE_C_6_ST_DEBUG = $(PROJ_OBJ_DIR)/example_c_6.debug.o
++OBJ_EXAMPLE_C_7_ST_DEBUG = $(PROJ_OBJ_DIR)/example_c_7.debug.o
++OBJ_EXAMPLE_C_8_ST_DEBUG = $(PROJ_OBJ_DIR)/example_c_8.debug.o
++OBJ_EXAMPLE_CPP_1_ST_DEBUG = $(PROJ_OBJ_DIR)/example_cpp_1.debug.o
++OBJ_EXAMPLE_CPP_2_ST_DEBUG = $(PROJ_OBJ_DIR)/example_cpp_2.debug.o
++OBJ_EXAMPLE_CPP_3_ST_DEBUG = $(PROJ_OBJ_DIR)/example_cpp_3.debug.o
++OBJ_EXAMPLE_STL_1_ST_DEBUG = $(PROJ_OBJ_DIR)/example_stl_1.debug.o
++OBJ_EXAMPLE_STL_2_ST_DEBUG = $(PROJ_OBJ_DIR)/example_stl_2.debug.o
++OBJ_EXAMPLE_C_1_ST_RELEASE = $(PROJ_OBJ_DIR)/example_c_1.o
++OBJ_EXAMPLE_C_2_ST_RELEASE = $(PROJ_OBJ_DIR)/example_c_2.o
++OBJ_EXAMPLE_C_3_ST_RELEASE = $(PROJ_OBJ_DIR)/example_c_3.o
++OBJ_EXAMPLE_C_4_ST_RELEASE = $(PROJ_OBJ_DIR)/example_c_4.o
++OBJ_EXAMPLE_C_5_ST_RELEASE = $(PROJ_OBJ_DIR)/example_c_5.o
++OBJ_EXAMPLE_C_6_ST_RELEASE = $(PROJ_OBJ_DIR)/example_c_6.o
++OBJ_EXAMPLE_C_7_ST_RELEASE = $(PROJ_OBJ_DIR)/example_c_7.o
++OBJ_EXAMPLE_C_8_ST_RELEASE = $(PROJ_OBJ_DIR)/example_c_8.o
++OBJ_EXAMPLE_CPP_1_ST_RELEASE = $(PROJ_OBJ_DIR)/example_cpp_1.o
++OBJ_EXAMPLE_CPP_2_ST_RELEASE = $(PROJ_OBJ_DIR)/example_cpp_2.o
++OBJ_EXAMPLE_CPP_3_ST_RELEASE = $(PROJ_OBJ_DIR)/example_cpp_3.o
++OBJ_EXAMPLE_STL_1_ST_RELEASE = $(PROJ_OBJ_DIR)/example_stl_1.o
++OBJ_EXAMPLE_STL_2_ST_RELEASE = $(PROJ_OBJ_DIR)/example_stl_2.o
++
++OBJS_EXAMPLES =\
++ $(OBJ_EXAMPLE_C_1_ST_DEBUG)\
++ $(OBJ_EXAMPLE_C_2_ST_DEBUG)\
++ $(OBJ_EXAMPLE_C_3_ST_DEBUG)\
++ $(OBJ_EXAMPLE_C_4_ST_DEBUG)\
++ $(OBJ_EXAMPLE_C_5_ST_DEBUG)\
++ $(OBJ_EXAMPLE_C_6_ST_DEBUG)\
++ $(OBJ_EXAMPLE_C_7_ST_DEBUG)\
++ $(OBJ_EXAMPLE_C_8_ST_DEBUG)\
++ $(OBJ_EXAMPLE_C_1_ST_RELEASE)\
++ $(OBJ_EXAMPLE_C_2_ST_RELEASE)\
++ $(OBJ_EXAMPLE_C_3_ST_RELEASE)\
++ $(OBJ_EXAMPLE_C_4_ST_RELEASE)\
++ $(OBJ_EXAMPLE_C_5_ST_RELEASE)\
++ $(OBJ_EXAMPLE_C_6_ST_RELEASE)\
++ $(OBJ_EXAMPLE_C_7_ST_RELEASE)\
++ $(OBJ_EXAMPLE_C_8_ST_RELEASE)\
++ $(OBJ_EXAMPLE_CPP_1_ST_DEBUG)\
++ $(OBJ_EXAMPLE_CPP_2_ST_DEBUG)\
++ $(OBJ_EXAMPLE_CPP_3_ST_DEBUG)\
++ $(OBJ_EXAMPLE_CPP_1_ST_RELEASE)\
++ $(OBJ_EXAMPLE_CPP_2_ST_RELEASE)\
++ $(OBJ_EXAMPLE_CPP_3_ST_RELEASE)\
++ $(OBJ_EXAMPLE_STL_1_ST_DEBUG)\
++ $(OBJ_EXAMPLE_STL_2_ST_DEBUG)\
++ $(OBJ_EXAMPLE_STL_1_ST_RELEASE)\
++ $(OBJ_EXAMPLE_STL_2_ST_RELEASE)\
++ \
++
++########################################
++# OBJS_SAMPLES
++
++
++OBJS_SAMPLES =\
++ \
++
++
++########################################
++# OBJS
++
++OBJS = \
++ $(OBJS_LIBS)\
++ $(OBJS_TESTS)\
++ $(OBJS_EXAMPLES)\
++ $(OBJS_SAMPLES)\
++ \
++
++########################################
++# SRC_CORE
++
++LIB_CORE_recls_H = $(PROJ_INCLUDE_DIR)/recls/recls.h
++LIB_CORE_alloca_H = $(PROJ_INCLUDE_DIR)/recls/alloca.h
++LIB_CORE_assert_H = $(PROJ_INCLUDE_DIR)/recls/assert.h
++LIB_CORE_ftp_H = $(PROJ_INCLUDE_DIR)/recls/ftp.h
++LIB_CORE_minmax_H = $(PROJ_INCLUDE_DIR)/recls/minmax.h
++LIB_CORE_unix_H = $(PROJ_INCLUDE_DIR)/recls/unix.h
++LIB_CORE_win32_H = $(PROJ_INCLUDE_DIR)/recls/win32.h
++LIB_CORE_implicit_link_H = $(PROJ_INCLUDE_DIR)/recls/implicit_link.h
++
++LIB_CORE_recls_api_CPP = $(PROJ_SRC_DIR)/recls_api.cpp
++LIB_CORE_recls_api_win32_CPP = $(PROJ_SRC_DIR)/recls_api_win32.cpp
++LIB_CORE_recls_fileinfo_CPP = $(PROJ_SRC_DIR)/recls_fileinfo.cpp
++LIB_CORE_recls_fileinfo_win32_CPP = $(PROJ_SRC_DIR)/recls_fileinfo_win32.cpp
++LIB_CORE_recls_ftp_api_win32_CPP = $(PROJ_SRC_DIR)/recls_ftp_api_win32.cpp
++LIB_CORE_recls_util_CPP = $(PROJ_SRC_DIR)/recls_util.cpp
++LIB_CORE_recls_util_win32_CPP = $(PROJ_SRC_DIR)/recls_util_win32.cpp
++LIB_CORE_entryinfo_CPP = $(PROJ_SRC_DIR)/entryinfo.cpp
++LIB_CORE_ReclsSearch_CPP = $(PROJ_SRC_DIR)/ReclsSearch.cpp
++LIB_CORE_ReclsFileSearch_CPP = $(PROJ_SRC_DIR)/ReclsFileSearch.cpp
++LIB_CORE_ReclsFileSearchDirectoryNode_CPP = $(PROJ_SRC_DIR)/ReclsFileSearchDirectoryNode.cpp
++LIB_CORE_ReclsFtpSearch_win32_CPP = $(PROJ_SRC_DIR)/ReclsFtpSearch_win32.cpp
++LIB_CORE_ReclsFtpSearchDirectoryNode_win32_CPP = $(PROJ_SRC_DIR)/ReclsFtpSearchDirectoryNode_win32.cpp
++
++########################################
++# SRC_HEADERS
++
++HEADERS_LIB	= \
++ $(LIB_CORE_recls_H)\
++ $(LIB_CORE_alloca_H)\
++ $(LIB_CORE_assert_H)\
++ $(LIB_CORE_ftp_H)\
++ $(LIB_CORE_minmax_H)\
++ $(LIB_CORE_unix_H)\
++ $(LIB_CORE_win32_H)\
++ $(LIB_CORE_implicit_link_H)\
++ \
++
++HEADERS_MAPPING_CPP =\
++ $(PROJ_INCLUDE_DIR)/recls/cpp/recls.hpp\
++ $(PROJ_INCLUDE_DIR)/recls/cpp/fileentry.hpp\
++ $(PROJ_INCLUDE_DIR)/recls/cpp/filesearch.hpp\
++ $(PROJ_INCLUDE_DIR)/recls/cpp/ftpsearch.hpp\
++ $(PROJ_INCLUDE_DIR)/recls/cpp/search.hpp\
++ \
++
++HEADERS_MAPPING_STL =\
++ $(PROJ_INCLUDE_DIR)/recls/stl/recls.hpp\
++ $(PROJ_INCLUDE_DIR)/recls/stl/root_sequence.hpp\
++ $(PROJ_INCLUDE_DIR)/recls/stl/search_sequence.hpp\
++ $(PROJ_INCLUDE_DIR)/recls/stl/traits.hpp\
++ \
++
++########################################
++# SRC_TESTS
++
++
++########################################
++# SRC_EXAMPLES
++
++SRC_EXAMPLE_C_1 = $(PROJ_EXAMPLES_DIR)/c/example_c_1/example_c_1.c
++SRC_EXAMPLE_C_2 = $(PROJ_EXAMPLES_DIR)/c/example_c_2/example_c_2.c
++SRC_EXAMPLE_C_3 = $(PROJ_EXAMPLES_DIR)/c/example_c_3/example_c_3.c
++SRC_EXAMPLE_C_4 = $(PROJ_EXAMPLES_DIR)/c/example_c_4/example_c_4.c
++SRC_EXAMPLE_C_5 = $(PROJ_EXAMPLES_DIR)/c/example_c_5/example_c_5.c
++SRC_EXAMPLE_C_6 = $(PROJ_EXAMPLES_DIR)/c/example_c_6/example_c_6.c
++SRC_EXAMPLE_C_7 = $(PROJ_EXAMPLES_DIR)/c/example_c_7/example_c_7.c
++SRC_EXAMPLE_C_8 = $(PROJ_EXAMPLES_DIR)/c/example_c_8/example_c_8.c
++SRC_EXAMPLE_CPP_1 = $(PROJ_EXAMPLES_DIR)/cpp/example_cpp_1/example_cpp_1.cpp
++SRC_EXAMPLE_CPP_2 = $(PROJ_EXAMPLES_DIR)/cpp/example_cpp_2/example_cpp_2.cpp
++SRC_EXAMPLE_CPP_3 = $(PROJ_EXAMPLES_DIR)/cpp/example_cpp_3/example_cpp_3.cpp
++SRC_EXAMPLE_STL_1 = $(PROJ_EXAMPLES_DIR)/stl/example_stl_1/example_stl_1.cpp
++SRC_EXAMPLE_STL_2 = $(PROJ_EXAMPLES_DIR)/stl/example_stl_2/example_stl_2.cpp
++
++########################################
++# SRC_SAMPLES
++
++
++################################################################################
++# External Targets (invokable by make)
++
++all:                build.all
++
++check.lib.dir:
++	@-test -d $(PROJ_LIB_DIR) || mkdir -p $(PROJ_LIB_DIR)
++
++check.bin.dir:
++	@-test -d $(PROJ_BIN_DIR) || mkdir -p $(PROJ_BIN_DIR)
++
++build.libs.core:    check.lib.dir $(TARGETS_LIBS)
++
++build.libs.com:     makefile.mingw32
++
++build.libs.dotnet:  makefile.mingw32
++
++build.libs:         build.libs.core build.libs.com build.libs.dotnet
++
++build.examples:     check.bin.dir $(TARGETS_EXAMPLES)
++
++build.samples:      check.bin.dir $(TARGETS_SAMPLES)
++
++build.test:         check.bin.dir $(TARGETS_TESTS)
++
++build.all:          build.libs build.examples build.samples build.test
++
++build:              build.all
++
++compile:            $(OBJS)
++
++
++test_:              makefile.mingw32
++
++test:		build.all test_
++
++test.all:	test
++
++test-all:	test.all	# backwards compatibility
++
++
++usage:
++	@echo "make [usage | clean | compile | all | test | target] - default is 'all'"
++
++clean.libs.core:
++	@-$(RM) $(TARGET_LIB_ST_DEBUG)
++	@-$(RM) $(TARGET_LIB_UN_ST_DEBUG)
++	@-$(RM) $(TARGET_LIB_ST_RELEASE)
++	@-$(RM) $(TARGET_LIB_UN_ST_RELEASE)
++	@-$(RM) $(OBJ_CORE_recls_api__ST_DEBUG)
++	@-$(RM) $(OBJ_CORE_recls_api_win32__ST_DEBUG)
++	@-$(RM) $(OBJ_CORE_recls_fileinfo__ST_DEBUG)
++	@-$(RM) $(OBJ_CORE_recls_fileinfo_win32__ST_DEBUG)
++	@-$(RM) $(OBJ_CORE_recls_ftp_api_win32__ST_DEBUG)
++	@-$(RM) $(OBJ_CORE_recls_util__ST_DEBUG)
++	@-$(RM) $(OBJ_CORE_recls_util_win32__ST_DEBUG)
++	@-$(RM) $(OBJ_CORE_entryinfo__ST_DEBUG)
++	@-$(RM) $(OBJ_CORE_ReclsSearch__ST_DEBUG)
++	@-$(RM) $(OBJ_CORE_ReclsFileSearch__ST_DEBUG)
++	@-$(RM) $(OBJ_CORE_ReclsFileSearchDirectoryNode__ST_DEBUG)
++	@-$(RM) $(OBJ_CORE_ReclsFtpSearch_win32__ST_DEBUG)
++	@-$(RM) $(OBJ_CORE_ReclsFtpSearchDirectoryNode_win32__ST_DEBUG)
++	@-$(RM) $(OBJ_CORE_recls_wininet_dl__ST_DEBUG)
++	@-$(RM) $(OBJ_CORE_recls_api__ST_RELEASE)
++	@-$(RM) $(OBJ_CORE_recls_api_win32__ST_RELEASE)
++	@-$(RM) $(OBJ_CORE_recls_fileinfo__ST_RELEASE)
++	@-$(RM) $(OBJ_CORE_recls_fileinfo_win32__ST_RELEASE)
++	@-$(RM) $(OBJ_CORE_recls_ftp_api_win32__ST_RELEASE)
++	@-$(RM) $(OBJ_CORE_recls_util__ST_RELEASE)
++	@-$(RM) $(OBJ_CORE_recls_util_win32__ST_RELEASE)
++	@-$(RM) $(OBJ_CORE_entryinfo__ST_RELEASE)
++	@-$(RM) $(OBJ_CORE_ReclsSearch__ST_RELEASE)
++	@-$(RM) $(OBJ_CORE_ReclsFileSearch__ST_RELEASE)
++	@-$(RM) $(OBJ_CORE_ReclsFileSearchDirectoryNode__ST_RELEASE)
++	@-$(RM) $(OBJ_CORE_ReclsFtpSearch_win32__ST_RELEASE)
++	@-$(RM) $(OBJ_CORE_ReclsFtpSearchDirectoryNode_win32__ST_RELEASE)
++	@-$(RM) $(OBJ_CORE_recls_wininet_dl__ST_RELEASE)
++
++clean.libs.com:
++
++clean.libs.dotnet:
++
++clean.libs:         clean.libs.core clean.libs.com clean.libs.dotnet
++
++clean.test:
++
++clean.examples:
++	@-$(RM) $(TARGET_EXAMPLE_C_1_ST_DEBUG)
++	@-$(RM) $(TARGET_EXAMPLE_C_2_ST_DEBUG)
++	@-$(RM) $(TARGET_EXAMPLE_C_3_ST_DEBUG)
++	@-$(RM) $(TARGET_EXAMPLE_C_4_ST_DEBUG)
++	@-$(RM) $(TARGET_EXAMPLE_C_5_ST_DEBUG)
++	@-$(RM) $(TARGET_EXAMPLE_C_6_ST_DEBUG)
++	@-$(RM) $(TARGET_EXAMPLE_C_7_ST_DEBUG)
++	@-$(RM) $(TARGET_EXAMPLE_C_8_ST_DEBUG)
++	@-$(RM) $(TARGET_EXAMPLE_C_1_ST_RELEASE)
++	@-$(RM) $(TARGET_EXAMPLE_C_2_ST_RELEASE)
++	@-$(RM) $(TARGET_EXAMPLE_C_3_ST_RELEASE)
++	@-$(RM) $(TARGET_EXAMPLE_C_4_ST_RELEASE)
++	@-$(RM) $(TARGET_EXAMPLE_C_5_ST_RELEASE)
++	@-$(RM) $(TARGET_EXAMPLE_C_6_ST_RELEASE)
++	@-$(RM) $(TARGET_EXAMPLE_C_7_ST_RELEASE)
++	@-$(RM) $(TARGET_EXAMPLE_C_8_ST_RELEASE)
++	@-$(RM) $(TARGET_EXAMPLE_CPP_1_ST_DEBUG)
++	@-$(RM) $(TARGET_EXAMPLE_CPP_2_ST_DEBUG)
++	@-$(RM) $(TARGET_EXAMPLE_CPP_3_ST_DEBUG)
++	@-$(RM) $(TARGET_EXAMPLE_CPP_1_ST_RELEASE)
++	@-$(RM) $(TARGET_EXAMPLE_CPP_2_ST_RELEASE)
++	@-$(RM) $(TARGET_EXAMPLE_CPP_3_ST_RELEASE)
++	@-$(RM) $(TARGET_EXAMPLE_STL_1_ST_DEBUG)
++	@-$(RM) $(TARGET_EXAMPLE_STL_2_ST_DEBUG)
++	@-$(RM) $(TARGET_EXAMPLE_STL_1_ST_RELEASE)
++	@-$(RM) $(TARGET_EXAMPLE_STL_2_ST_RELEASE)
++	@-$(RM) $(OBJ_EXAMPLE_C_1_ST_DEBUG)
++	@-$(RM) $(OBJ_EXAMPLE_C_2_ST_DEBUG)
++	@-$(RM) $(OBJ_EXAMPLE_C_3_ST_DEBUG)
++	@-$(RM) $(OBJ_EXAMPLE_C_4_ST_DEBUG)
++	@-$(RM) $(OBJ_EXAMPLE_C_5_ST_DEBUG)
++	@-$(RM) $(OBJ_EXAMPLE_C_6_ST_DEBUG)
++	@-$(RM) $(OBJ_EXAMPLE_C_7_ST_DEBUG)
++	@-$(RM) $(OBJ_EXAMPLE_C_8_ST_DEBUG)
++	@-$(RM) $(OBJ_EXAMPLE_C_1_ST_RELEASE)
++	@-$(RM) $(OBJ_EXAMPLE_C_2_ST_RELEASE)
++	@-$(RM) $(OBJ_EXAMPLE_C_3_ST_RELEASE)
++	@-$(RM) $(OBJ_EXAMPLE_C_4_ST_RELEASE)
++	@-$(RM) $(OBJ_EXAMPLE_C_5_ST_RELEASE)
++	@-$(RM) $(OBJ_EXAMPLE_C_6_ST_RELEASE)
++	@-$(RM) $(OBJ_EXAMPLE_C_7_ST_RELEASE)
++	@-$(RM) $(OBJ_EXAMPLE_C_8_ST_RELEASE)
++	@-$(RM) $(OBJ_EXAMPLE_CPP_1_ST_DEBUG)
++	@-$(RM) $(OBJ_EXAMPLE_CPP_2_ST_DEBUG)
++	@-$(RM) $(OBJ_EXAMPLE_CPP_3_ST_DEBUG)
++	@-$(RM) $(OBJ_EXAMPLE_CPP_1_ST_RELEASE)
++	@-$(RM) $(OBJ_EXAMPLE_CPP_2_ST_RELEASE)
++	@-$(RM) $(OBJ_EXAMPLE_CPP_3_ST_RELEASE)
++	@-$(RM) $(OBJ_EXAMPLE_STL_1_ST_DEBUG)
++	@-$(RM) $(OBJ_EXAMPLE_STL_2_ST_DEBUG)
++	@-$(RM) $(OBJ_EXAMPLE_STL_1_ST_RELEASE)
++	@-$(RM) $(OBJ_EXAMPLE_STL_2_ST_RELEASE)
++
++clean.samples:
++
++clean: clean.libs clean.test clean.examples clean.samples
++
++################################################################################
++# Internal Targets (invokable by make)
++
++########################################
++# core
++
++
++$(TARGET_LIB_UN_ST_DEBUG): $(TARGET_LIB_ST_DEBUG)
++	@$(CP) $(TARGET_LIB_ST_DEBUG) $@
++
++$(TARGET_LIB_ST_DEBUG): $(OBJS_CORE_ST_DEBUG) makefile.mingw32
++	$(AR) $(AR_ARGS) $@ $(OBJS_CORE_ST_DEBUG)
++
++$(OBJ_CORE_recls_api__ST_DEBUG): $(PROJ_SRC_DIR)/recls_api.cpp $(HEADERS_LIB) makefile.mingw32
++	$(CPPC) $(CPPC_ARGS_ST_DEBUG) -o $@ $(PROJ_SRC_DIR)/recls_api.cpp
++$(OBJ_CORE_recls_api_win32__ST_DEBUG): $(PROJ_SRC_DIR)/recls_api_win32.cpp $(HEADERS_LIB) makefile.mingw32
++	$(CPPC) $(CPPC_ARGS_ST_DEBUG) -o $@ $(PROJ_SRC_DIR)/recls_api_win32.cpp
++$(OBJ_CORE_recls_fileinfo__ST_DEBUG): $(PROJ_SRC_DIR)/recls_fileinfo.cpp $(HEADERS_LIB) makefile.mingw32
++	$(CPPC) $(CPPC_ARGS_ST_DEBUG) -o $@ $(PROJ_SRC_DIR)/recls_fileinfo.cpp
++$(OBJ_CORE_recls_fileinfo_win32__ST_DEBUG): $(PROJ_SRC_DIR)/recls_fileinfo_win32.cpp $(HEADERS_LIB) makefile.mingw32
++	$(CPPC) $(CPPC_ARGS_ST_DEBUG) -o $@ $(PROJ_SRC_DIR)/recls_fileinfo_win32.cpp
++$(OBJ_CORE_recls_ftp_api_win32__ST_DEBUG): $(PROJ_SRC_DIR)/recls_ftp_api_win32.cpp $(HEADERS_LIB) makefile.mingw32
++	$(CPPC) $(CPPC_ARGS_ST_DEBUG) -o $@ $(PROJ_SRC_DIR)/recls_ftp_api_win32.cpp
++$(OBJ_CORE_recls_util__ST_DEBUG): $(PROJ_SRC_DIR)/recls_util.cpp $(HEADERS_LIB) makefile.mingw32
++	$(CPPC) $(CPPC_ARGS_ST_DEBUG) -o $@ $(PROJ_SRC_DIR)/recls_util.cpp
++$(OBJ_CORE_recls_util_win32__ST_DEBUG): $(PROJ_SRC_DIR)/recls_util_win32.cpp $(HEADERS_LIB) makefile.mingw32
++	$(CPPC) $(CPPC_ARGS_ST_DEBUG) -o $@ $(PROJ_SRC_DIR)/recls_util_win32.cpp
++$(OBJ_CORE_entryinfo__ST_DEBUG): $(PROJ_SRC_DIR)/entryinfo.cpp $(HEADERS_LIB) makefile.mingw32
++	$(CPPC) $(CPPC_ARGS_ST_DEBUG) -o $@ $(PROJ_SRC_DIR)/entryinfo.cpp
++$(OBJ_CORE_ReclsSearch__ST_DEBUG): $(PROJ_SRC_DIR)/ReclsSearch.cpp $(HEADERS_LIB) makefile.mingw32
++	$(CPPC) $(CPPC_ARGS_ST_DEBUG) -o $@ $(PROJ_SRC_DIR)/ReclsSearch.cpp
++$(OBJ_CORE_ReclsFileSearch__ST_DEBUG): $(PROJ_SRC_DIR)/ReclsFileSearch.cpp $(HEADERS_LIB) makefile.mingw32
++	$(CPPC) $(CPPC_ARGS_ST_DEBUG) -o $@ $(PROJ_SRC_DIR)/ReclsFileSearch.cpp
++$(OBJ_CORE_ReclsFileSearchDirectoryNode__ST_DEBUG): $(PROJ_SRC_DIR)/ReclsFileSearchDirectoryNode.cpp $(HEADERS_LIB) makefile.mingw32
++	$(CPPC) $(CPPC_ARGS_ST_DEBUG) -o $@ $(PROJ_SRC_DIR)/ReclsFileSearchDirectoryNode.cpp
++$(OBJ_CORE_ReclsFtpSearch_win32__ST_DEBUG): $(PROJ_SRC_DIR)/ReclsFtpSearch_win32.cpp $(HEADERS_LIB) makefile.mingw32
++	$(CPPC) $(CPPC_ARGS_ST_DEBUG) -o $@ $(PROJ_SRC_DIR)/ReclsFtpSearch_win32.cpp
++$(OBJ_CORE_ReclsFtpSearchDirectoryNode_win32__ST_DEBUG): $(PROJ_SRC_DIR)/ReclsFtpSearchDirectoryNode_win32.cpp $(HEADERS_LIB) makefile.mingw32
++	$(CPPC) $(CPPC_ARGS_ST_DEBUG) -o $@ $(PROJ_SRC_DIR)/ReclsFtpSearchDirectoryNode_win32.cpp
++
++
++$(TARGET_LIB_UN_ST_RELEASE): $(TARGET_LIB_ST_RELEASE)
++	@$(CP) $(TARGET_LIB_ST_RELEASE) $@
++
++$(TARGET_LIB_ST_RELEASE): $(OBJS_CORE_ST_RELEASE) makefile.mingw32
++	$(AR) $(AR_ARGS) $@ $(OBJS_CORE_ST_RELEASE)
++
++$(OBJ_CORE_recls_api__ST_RELEASE): $(PROJ_SRC_DIR)/recls_api.cpp $(HEADERS_LIB) makefile.mingw32
++	$(CPPC) $(CPPC_ARGS_ST_RELEASE) -o $@ $(PROJ_SRC_DIR)/recls_api.cpp
++$(OBJ_CORE_recls_api_win32__ST_RELEASE): $(PROJ_SRC_DIR)/recls_api_win32.cpp $(HEADERS_LIB) makefile.mingw32
++	$(CPPC) $(CPPC_ARGS_ST_RELEASE) -o $@ $(PROJ_SRC_DIR)/recls_api_win32.cpp
++$(OBJ_CORE_recls_fileinfo__ST_RELEASE): $(PROJ_SRC_DIR)/recls_fileinfo.cpp $(HEADERS_LIB) makefile.mingw32
++	$(CPPC) $(CPPC_ARGS_ST_RELEASE) -o $@ $(PROJ_SRC_DIR)/recls_fileinfo.cpp
++$(OBJ_CORE_recls_fileinfo_win32__ST_RELEASE): $(PROJ_SRC_DIR)/recls_fileinfo_win32.cpp $(HEADERS_LIB) makefile.mingw32
++	$(CPPC) $(CPPC_ARGS_ST_RELEASE) -o $@ $(PROJ_SRC_DIR)/recls_fileinfo_win32.cpp
++$(OBJ_CORE_recls_ftp_api_win32__ST_RELEASE): $(PROJ_SRC_DIR)/recls_ftp_api_win32.cpp $(HEADERS_LIB) makefile.mingw32
++	$(CPPC) $(CPPC_ARGS_ST_RELEASE) -o $@ $(PROJ_SRC_DIR)/recls_ftp_api_win32.cpp
++$(OBJ_CORE_recls_util__ST_RELEASE): $(PROJ_SRC_DIR)/recls_util.cpp $(HEADERS_LIB) makefile.mingw32
++	$(CPPC) $(CPPC_ARGS_ST_RELEASE) -o $@ $(PROJ_SRC_DIR)/recls_util.cpp
++$(OBJ_CORE_recls_util_win32__ST_RELEASE): $(PROJ_SRC_DIR)/recls_util_win32.cpp $(HEADERS_LIB) makefile.mingw32
++	$(CPPC) $(CPPC_ARGS_ST_RELEASE) -o $@ $(PROJ_SRC_DIR)/recls_util_win32.cpp
++$(OBJ_CORE_entryinfo__ST_RELEASE): $(PROJ_SRC_DIR)/entryinfo.cpp $(HEADERS_LIB) makefile.mingw32
++	$(CPPC) $(CPPC_ARGS_ST_RELEASE) -o $@ $(PROJ_SRC_DIR)/entryinfo.cpp
++$(OBJ_CORE_ReclsSearch__ST_RELEASE): $(PROJ_SRC_DIR)/ReclsSearch.cpp $(HEADERS_LIB) makefile.mingw32
++	$(CPPC) $(CPPC_ARGS_ST_RELEASE) -o $@ $(PROJ_SRC_DIR)/ReclsSearch.cpp
++$(OBJ_CORE_ReclsFileSearch__ST_RELEASE): $(PROJ_SRC_DIR)/ReclsFileSearch.cpp $(HEADERS_LIB) makefile.mingw32
++	$(CPPC) $(CPPC_ARGS_ST_RELEASE) -o $@ $(PROJ_SRC_DIR)/ReclsFileSearch.cpp
++$(OBJ_CORE_ReclsFileSearchDirectoryNode__ST_RELEASE): $(PROJ_SRC_DIR)/ReclsFileSearchDirectoryNode.cpp $(HEADERS_LIB) makefile.mingw32
++	$(CPPC) $(CPPC_ARGS_ST_RELEASE) -o $@ $(PROJ_SRC_DIR)/ReclsFileSearchDirectoryNode.cpp
++$(OBJ_CORE_ReclsFtpSearch_win32__ST_RELEASE): $(PROJ_SRC_DIR)/ReclsFtpSearch_win32.cpp $(HEADERS_LIB) makefile.mingw32
++	$(CPPC) $(CPPC_ARGS_ST_RELEASE) -o $@ $(PROJ_SRC_DIR)/ReclsFtpSearch_win32.cpp
++$(OBJ_CORE_ReclsFtpSearchDirectoryNode_win32__ST_RELEASE): $(PROJ_SRC_DIR)/ReclsFtpSearchDirectoryNode_win32.cpp $(HEADERS_LIB) makefile.mingw32
++	$(CPPC) $(CPPC_ARGS_ST_RELEASE) -o $@ $(PROJ_SRC_DIR)/ReclsFtpSearchDirectoryNode_win32.cpp
++
++
++########################################
++# test
++
++########################################
++# examples
++
++# C example client
++
++$(TARGET_EXAMPLE_C_1_ST_DEBUG):	$(OBJ_EXAMPLE_C_1_ST_DEBUG) makefile.mingw32
++	$(LD) $(LD_ARGS_ST_DEBUG) -o $@ $(OBJ_EXAMPLE_C_1_ST_DEBUG) $(TARGET_LIB_ST_DEBUG) $(3PTY_LIBS__ST_DEBUG)
++
++$(OBJ_EXAMPLE_C_1_ST_DEBUG):	$(SRC_EXAMPLE_C_1) $(HEADERS_LIB) makefile.mingw32
++	$(CC) $(CC_ARGS_ST_DEBUG) -o $@ $(SRC_EXAMPLE_C_1)
++
++$(TARGET_EXAMPLE_C_2_ST_DEBUG):	$(OBJ_EXAMPLE_C_2_ST_DEBUG) makefile.mingw32
++	$(LD) $(LD_ARGS_ST_DEBUG) -o $@ $(OBJ_EXAMPLE_C_2_ST_DEBUG) $(TARGET_LIB_ST_DEBUG) $(3PTY_LIBS__ST_DEBUG)
++
++$(OBJ_EXAMPLE_C_2_ST_DEBUG):	$(SRC_EXAMPLE_C_2) $(HEADERS_LIB) makefile.mingw32
++	$(CC) $(CC_ARGS_ST_DEBUG) -o $@ $(SRC_EXAMPLE_C_2)
++
++$(TARGET_EXAMPLE_C_3_ST_DEBUG):	$(OBJ_EXAMPLE_C_3_ST_DEBUG) makefile.mingw32
++	$(LD) $(LD_ARGS_ST_DEBUG) -o $@ $(OBJ_EXAMPLE_C_3_ST_DEBUG) $(TARGET_LIB_ST_DEBUG) $(3PTY_LIBS__ST_DEBUG)
++
++$(OBJ_EXAMPLE_C_3_ST_DEBUG):	$(SRC_EXAMPLE_C_3) $(HEADERS_LIB) makefile.mingw32
++	$(CC) $(CC_ARGS_ST_DEBUG) -o $@ $(SRC_EXAMPLE_C_3)
++
++$(TARGET_EXAMPLE_C_4_ST_DEBUG):	$(OBJ_EXAMPLE_C_4_ST_DEBUG) makefile.mingw32
++	$(LD) $(LD_ARGS_ST_DEBUG) -o $@ $(OBJ_EXAMPLE_C_4_ST_DEBUG) $(TARGET_LIB_ST_DEBUG) $(3PTY_LIBS__ST_DEBUG)
++
++$(OBJ_EXAMPLE_C_4_ST_DEBUG):	$(SRC_EXAMPLE_C_4) $(HEADERS_LIB) makefile.mingw32
++	$(CC) $(CC_ARGS_ST_DEBUG) -o $@ $(SRC_EXAMPLE_C_4)
++
++$(TARGET_EXAMPLE_C_5_ST_DEBUG):	$(OBJ_EXAMPLE_C_5_ST_DEBUG) makefile.mingw32
++	$(LD) $(LD_ARGS_ST_DEBUG) -o $@ $(OBJ_EXAMPLE_C_5_ST_DEBUG) $(TARGET_LIB_ST_DEBUG) $(3PTY_LIBS__ST_DEBUG)
++
++$(OBJ_EXAMPLE_C_5_ST_DEBUG):	$(SRC_EXAMPLE_C_5) $(HEADERS_LIB) makefile.mingw32
++	$(CC) $(CC_ARGS_ST_DEBUG) -o $@ $(SRC_EXAMPLE_C_5)
++
++$(TARGET_EXAMPLE_C_6_ST_DEBUG):	$(OBJ_EXAMPLE_C_6_ST_DEBUG) makefile.mingw32
++	$(LD) $(LD_ARGS_ST_DEBUG) -o $@ $(OBJ_EXAMPLE_C_6_ST_DEBUG) $(TARGET_LIB_ST_DEBUG) $(3PTY_LIBS__ST_DEBUG)
++
++$(OBJ_EXAMPLE_C_6_ST_DEBUG):	$(SRC_EXAMPLE_C_6) $(HEADERS_LIB) makefile.mingw32
++	$(CC) $(CC_ARGS_ST_DEBUG) -o $@ $(SRC_EXAMPLE_C_6)
++
++$(TARGET_EXAMPLE_C_7_ST_DEBUG):	$(OBJ_EXAMPLE_C_7_ST_DEBUG) makefile.mingw32
++	$(LD) $(LD_ARGS_ST_DEBUG) -o $@ $(OBJ_EXAMPLE_C_7_ST_DEBUG) $(TARGET_LIB_ST_DEBUG) $(3PTY_LIBS__ST_DEBUG)
++
++$(OBJ_EXAMPLE_C_7_ST_DEBUG):	$(SRC_EXAMPLE_C_7) $(HEADERS_LIB) makefile.mingw32
++	$(CC) $(CC_ARGS_ST_DEBUG) -o $@ $(SRC_EXAMPLE_C_7)
++
++$(TARGET_EXAMPLE_C_8_ST_DEBUG):	$(OBJ_EXAMPLE_C_8_ST_DEBUG) makefile.mingw32
++	$(LD) $(LD_ARGS_ST_DEBUG) -o $@ $(OBJ_EXAMPLE_C_8_ST_DEBUG) $(TARGET_LIB_ST_DEBUG) $(3PTY_LIBS__ST_DEBUG)
++
++$(OBJ_EXAMPLE_C_8_ST_DEBUG):	$(SRC_EXAMPLE_C_8) $(HEADERS_LIB) makefile.mingw32
++	$(CC) $(CC_ARGS_ST_DEBUG) -o $@ $(SRC_EXAMPLE_C_8)
++
++$(TARGET_EXAMPLE_C_1_ST_RELEASE):	$(OBJ_EXAMPLE_C_1_ST_RELEASE) makefile.mingw32
++	$(LD) $(LD_ARGS_ST_RELEASE) -o $@ $(OBJ_EXAMPLE_C_1_ST_RELEASE) $(TARGET_LIB_ST_RELEASE) $(3PTY_LIBS__ST_RELEASE)
++
++$(OBJ_EXAMPLE_C_1_ST_RELEASE):	$(SRC_EXAMPLE_C_1) $(HEADERS_LIB) makefile.mingw32
++	$(CC) $(CC_ARGS_ST_RELEASE) -o $@ $(SRC_EXAMPLE_C_1)
++
++$(TARGET_EXAMPLE_C_2_ST_RELEASE):	$(OBJ_EXAMPLE_C_2_ST_RELEASE) makefile.mingw32
++	$(LD) $(LD_ARGS_ST_RELEASE) -o $@ $(OBJ_EXAMPLE_C_2_ST_RELEASE) $(TARGET_LIB_ST_RELEASE) $(3PTY_LIBS__ST_RELEASE)
++
++$(OBJ_EXAMPLE_C_2_ST_RELEASE):	$(SRC_EXAMPLE_C_2) $(HEADERS_LIB) makefile.mingw32
++	$(CC) $(CC_ARGS_ST_RELEASE) -o $@ $(SRC_EXAMPLE_C_2)
++
++$(TARGET_EXAMPLE_C_3_ST_RELEASE):	$(OBJ_EXAMPLE_C_3_ST_RELEASE) makefile.mingw32
++	$(LD) $(LD_ARGS_ST_RELEASE) -o $@ $(OBJ_EXAMPLE_C_3_ST_RELEASE) $(TARGET_LIB_ST_RELEASE) $(3PTY_LIBS__ST_RELEASE)
++
++$(OBJ_EXAMPLE_C_3_ST_RELEASE):	$(SRC_EXAMPLE_C_3) $(HEADERS_LIB) makefile.mingw32
++	$(CC) $(CC_ARGS_ST_RELEASE) -o $@ $(SRC_EXAMPLE_C_3)
++
++$(TARGET_EXAMPLE_C_4_ST_RELEASE):	$(OBJ_EXAMPLE_C_4_ST_RELEASE) makefile.mingw32
++	$(LD) $(LD_ARGS_ST_RELEASE) -o $@ $(OBJ_EXAMPLE_C_4_ST_RELEASE) $(TARGET_LIB_ST_RELEASE) $(3PTY_LIBS__ST_RELEASE)
++
++$(OBJ_EXAMPLE_C_4_ST_RELEASE):	$(SRC_EXAMPLE_C_4) $(HEADERS_LIB) makefile.mingw32
++	$(CC) $(CC_ARGS_ST_RELEASE) -o $@ $(SRC_EXAMPLE_C_4)
++
++$(TARGET_EXAMPLE_C_5_ST_RELEASE):	$(OBJ_EXAMPLE_C_5_ST_RELEASE) makefile.mingw32
++	$(LD) $(LD_ARGS_ST_RELEASE) -o $@ $(OBJ_EXAMPLE_C_5_ST_RELEASE) $(TARGET_LIB_ST_RELEASE) $(3PTY_LIBS__ST_RELEASE)
++
++$(OBJ_EXAMPLE_C_5_ST_RELEASE):	$(SRC_EXAMPLE_C_5) $(HEADERS_LIB) makefile.mingw32
++	$(CC) $(CC_ARGS_ST_RELEASE) -o $@ $(SRC_EXAMPLE_C_5)
++
++$(TARGET_EXAMPLE_C_6_ST_RELEASE):	$(OBJ_EXAMPLE_C_6_ST_RELEASE) makefile.mingw32
++	$(LD) $(LD_ARGS_ST_RELEASE) -o $@ $(OBJ_EXAMPLE_C_6_ST_RELEASE) $(TARGET_LIB_ST_RELEASE) $(3PTY_LIBS__ST_RELEASE)
++
++$(OBJ_EXAMPLE_C_6_ST_RELEASE):	$(SRC_EXAMPLE_C_6) $(HEADERS_LIB) makefile.mingw32
++	$(CC) $(CC_ARGS_ST_RELEASE) -o $@ $(SRC_EXAMPLE_C_6)
++
++$(TARGET_EXAMPLE_C_7_ST_RELEASE):	$(OBJ_EXAMPLE_C_7_ST_RELEASE) makefile.mingw32
++	$(LD) $(LD_ARGS_ST_RELEASE) -o $@ $(OBJ_EXAMPLE_C_7_ST_RELEASE) $(TARGET_LIB_ST_RELEASE) $(3PTY_LIBS__ST_RELEASE)
++
++$(OBJ_EXAMPLE_C_7_ST_RELEASE):	$(SRC_EXAMPLE_C_7) $(HEADERS_LIB) makefile.mingw32
++	$(CC) $(CC_ARGS_ST_RELEASE) -o $@ $(SRC_EXAMPLE_C_7)
++
++$(TARGET_EXAMPLE_C_8_ST_RELEASE):	$(OBJ_EXAMPLE_C_8_ST_RELEASE) makefile.mingw32
++	$(LD) $(LD_ARGS_ST_RELEASE) -o $@ $(OBJ_EXAMPLE_C_8_ST_RELEASE) $(TARGET_LIB_ST_RELEASE) $(3PTY_LIBS__ST_RELEASE)
++
++$(OBJ_EXAMPLE_C_8_ST_RELEASE):	$(SRC_EXAMPLE_C_8) $(HEADERS_LIB) makefile.mingw32
++	$(CC) $(CC_ARGS_ST_RELEASE) -o $@ $(SRC_EXAMPLE_C_8)
++
++# C++ example client
++
++$(TARGET_EXAMPLE_CPP_1_ST_DEBUG):	$(OBJ_EXAMPLE_CPP_1_ST_DEBUG) makefile.mingw32
++	$(LD) $(LD_ARGS_ST_DEBUG) -o $@ $(OBJ_EXAMPLE_CPP_1_ST_DEBUG) $(TARGET_LIB_ST_DEBUG) $(3PTY_LIBS__ST_DEBUG)
++
++$(OBJ_EXAMPLE_CPP_1_ST_DEBUG):	$(SRC_EXAMPLE_CPP_1) $(HEADERS_LIB) $(HEADERS_MAPPING_CPP) makefile.mingw32
++	$(CPPC) $(CPPC_ARGS_ST_DEBUG) -o $@ $(SRC_EXAMPLE_CPP_1)
++
++$(TARGET_EXAMPLE_CPP_2_ST_DEBUG):	$(OBJ_EXAMPLE_CPP_2_ST_DEBUG) makefile.mingw32
++	$(LD) $(LD_ARGS_ST_DEBUG) -o $@ $(OBJ_EXAMPLE_CPP_2_ST_DEBUG) $(TARGET_LIB_ST_DEBUG) $(3PTY_LIBS__ST_DEBUG)
++
++$(OBJ_EXAMPLE_CPP_2_ST_DEBUG):	$(SRC_EXAMPLE_CPP_2) $(HEADERS_LIB) $(HEADERS_MAPPING_CPP) makefile.mingw32
++	$(CPPC) $(CPPC_ARGS_ST_DEBUG) -o $@ $(SRC_EXAMPLE_CPP_2)
++
++$(TARGET_EXAMPLE_CPP_3_ST_DEBUG):	$(OBJ_EXAMPLE_CPP_3_ST_DEBUG) makefile.mingw32
++	$(LD) $(LD_ARGS_ST_DEBUG) -o $@ $(OBJ_EXAMPLE_CPP_3_ST_DEBUG) $(TARGET_LIB_ST_DEBUG) $(3PTY_LIBS__ST_DEBUG)
++
++$(OBJ_EXAMPLE_CPP_3_ST_DEBUG):	$(SRC_EXAMPLE_CPP_3) $(HEADERS_LIB) $(HEADERS_MAPPING_CPP) makefile.mingw32
++	$(CPPC) $(CPPC_ARGS_ST_DEBUG) -o $@ $(SRC_EXAMPLE_CPP_3)
++
++$(TARGET_EXAMPLE_CPP_1_ST_RELEASE):	$(OBJ_EXAMPLE_CPP_1_ST_RELEASE) makefile.mingw32
++	$(LD) $(LD_ARGS_ST_RELEASE) -o $@ $(OBJ_EXAMPLE_CPP_1_ST_RELEASE) $(TARGET_LIB_ST_RELEASE) $(3PTY_LIBS__ST_RELEASE)
++
++$(OBJ_EXAMPLE_CPP_1_ST_RELEASE):	$(SRC_EXAMPLE_CPP_1) $(HEADERS_LIB) $(HEADERS_MAPPING_CPP) makefile.mingw32
++	$(CPPC) $(CPPC_ARGS_ST_RELEASE) -o $@ $(SRC_EXAMPLE_CPP_1)
++
++$(TARGET_EXAMPLE_CPP_2_ST_RELEASE):	$(OBJ_EXAMPLE_CPP_2_ST_RELEASE) makefile.mingw32
++	$(LD) $(LD_ARGS_ST_RELEASE) -o $@ $(OBJ_EXAMPLE_CPP_2_ST_RELEASE) $(TARGET_LIB_ST_RELEASE) $(3PTY_LIBS__ST_RELEASE)
++
++$(OBJ_EXAMPLE_CPP_2_ST_RELEASE):	$(SRC_EXAMPLE_CPP_2) $(HEADERS_LIB) $(HEADERS_MAPPING_CPP) makefile.mingw32
++	$(CPPC) $(CPPC_ARGS_ST_RELEASE) -o $@ $(SRC_EXAMPLE_CPP_2)
++
++$(TARGET_EXAMPLE_CPP_3_ST_RELEASE):	$(OBJ_EXAMPLE_CPP_3_ST_RELEASE) makefile.mingw32
++	$(LD) $(LD_ARGS_ST_RELEASE) -o $@ $(OBJ_EXAMPLE_CPP_3_ST_RELEASE) $(TARGET_LIB_ST_RELEASE) $(3PTY_LIBS__ST_RELEASE)
++
++$(OBJ_EXAMPLE_CPP_3_ST_RELEASE):	$(SRC_EXAMPLE_CPP_3) $(HEADERS_LIB) $(HEADERS_MAPPING_CPP) makefile.mingw32
++	$(CPPC) $(CPPC_ARGS_ST_RELEASE) -o $@ $(SRC_EXAMPLE_CPP_3)
++
++# STL example client
++
++$(TARGET_EXAMPLE_STL_1_ST_DEBUG):	$(OBJ_EXAMPLE_STL_1_ST_DEBUG) makefile.mingw32
++	$(LD) $(LD_ARGS_ST_DEBUG) -o $@ $(OBJ_EXAMPLE_STL_1_ST_DEBUG) $(TARGET_LIB_ST_DEBUG) $(3PTY_LIBS__ST_DEBUG)
++
++$(OBJ_EXAMPLE_STL_1_ST_DEBUG):	$(SRC_EXAMPLE_STL_1) $(HEADERS_LIB) $(HEADERS_MAPPING_STL) makefile.mingw32
++	$(CPPC) $(CPPC_ARGS_ST_DEBUG) -o $@ $(SRC_EXAMPLE_STL_1)
++
++$(TARGET_EXAMPLE_STL_2_ST_DEBUG):	$(OBJ_EXAMPLE_STL_2_ST_DEBUG) makefile.mingw32
++	$(LD) $(LD_ARGS_ST_DEBUG) -o $@ $(OBJ_EXAMPLE_STL_2_ST_DEBUG) $(TARGET_LIB_ST_DEBUG) $(3PTY_LIBS__ST_DEBUG)
++
++$(OBJ_EXAMPLE_STL_2_ST_DEBUG):	$(SRC_EXAMPLE_STL_2) $(HEADERS_LIB) $(HEADERS_MAPPING_STL) makefile.mingw32
++	$(CPPC) $(CPPC_ARGS_ST_DEBUG) -o $@ $(SRC_EXAMPLE_STL_2)
++
++$(TARGET_EXAMPLE_STL_1_ST_RELEASE):	$(OBJ_EXAMPLE_STL_1_ST_RELEASE) makefile.mingw32
++	$(LD) $(LD_ARGS_ST_RELEASE) -o $@ $(OBJ_EXAMPLE_STL_1_ST_RELEASE) $(TARGET_LIB_ST_RELEASE) $(3PTY_LIBS__ST_RELEASE)
++
++$(OBJ_EXAMPLE_STL_1_ST_RELEASE):	$(SRC_EXAMPLE_STL_1) $(HEADERS_LIB) $(HEADERS_MAPPING_STL) makefile.mingw32
++	$(CPPC) $(CPPC_ARGS_ST_RELEASE) -o $@ $(SRC_EXAMPLE_STL_1)
++
++$(TARGET_EXAMPLE_STL_2_ST_RELEASE):	$(OBJ_EXAMPLE_STL_2_ST_RELEASE) makefile.mingw32
++	$(LD) $(LD_ARGS_ST_RELEASE) -o $@ $(OBJ_EXAMPLE_STL_2_ST_RELEASE) $(TARGET_LIB_ST_RELEASE) $(3PTY_LIBS__ST_RELEASE)
++
++$(OBJ_EXAMPLE_STL_2_ST_RELEASE):	$(SRC_EXAMPLE_STL_2) $(HEADERS_LIB) $(HEADERS_MAPPING_STL) makefile.mingw32
++	$(CPPC) $(CPPC_ARGS_ST_RELEASE) -o $@ $(SRC_EXAMPLE_STL_2)
++
++########################################
++# samples
++
++################################################################################

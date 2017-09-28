@@ -1,0 +1,42 @@
+# $Id: Pkgfile,v 1.9 2007/04/23 17:39:08 roman Exp $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=metakit
+version=2.4.9.7
+release=1
+source=(http://www.equi4.com/pub/mk/metakit-$version.tar.gz)
+
+build()
+{
+  cd ${srcdir=$SRC/metakit-$version}/unix
+
+  ./configure \
+      --build="$build" \
+      --host="host" \
+      --prefix="$prefix"
+
+  make
+  make prefix="$ROOT" install
+
+  install -d $ROOT/include/metakit
+  install -m 644 *.h $ROOT/include/metakit/
+
+  cd $srcdir/tcl
+
+  ./configure \
+      --build="$build" \
+      --host="host" \
+      --prefix="$prefix"
+
+  make
+  make prefix="$ROOT" install
+
+  cd $srcdir/python
+
+  python setup.py --prefix="$ROOT" install
+}
+

@@ -1,0 +1,49 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A swift, liberal HTML parser with a fantastic library
+#  Hpricot is a very flexible HTML parser, based on Tanaka Akiras HTree
+#  and John Resigs jQuery, but with the scanner recoded in C. Ive borrowed
+#  (what I believe to be) the best ideas from these wares to make Hpricot
+#  heaps of fun to use.
+# URL: http://wiki.github.com/why/hpricot
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=hpricot
+version=0.6-20090219
+release=1
+source=(http://code.whytheluckystiff.net/dist/hpricot-${version%-*}.tgz
+        hpricot-0.5-140-rakefix.patch
+        hpricot-$version.diff)
+
+build()
+{
+  cd hpricot-${version%-*}
+
+  patch -N -p1 -i $SRC/hpricot-$version.diff
+
+  IFS="$IFS[]"
+  set -- `ruby --version`
+
+  RUBYVERSION="$2"
+  eval RUBYARCH="\${$#}"
+
+  RUBYLIBDIR="$prefix/lib/ruby/${RUBYVERSION%.*}"
+
+  install -d $PKG/$RUBYLIBDIR
+  cp -r lib/* $PKG/$RUBYLIBDIR
+
+  install -d $ROOT/share/hpricot
+  cp -r test extras $ROOT/share/hpricot
+
+  install -d $ROOT/share/doc/hpricot
+  install -m 644 CHANGELOG COPYING README $ROOT/share/doc/hpricot
+
+  cd ext/hpricot_scan
+
+  ruby extconf.rb
+  make
+
+  install -d $PKG/$RUBYLIBDIR/$RUBYARCH
+  install -m 755 *.so $PKG/$RUBYLIBDIR/$RUBYARCH
+}

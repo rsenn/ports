@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A utility that creates a new SVN project using an initial project directory.
+#  SVN Create Project creates a new SVN project using an initial
+#  project directory. It creates the tags and branches directory in
+#  the SVN repository and imports the initial directory as "trunk". It
+#  then checks out the project from the SVN repository to the defined
+#  destination. Finally, it does an integrity check.
+#  .
+# URL: http://svncrpr.sourceforge.net/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=svncrpr
+version=0.1.1
+release=1
+source=($mirror_sf/svncrpr/svncrpr-$version.tar.gz)
+
+build()
+{
+  cd svncrpr-$version
+
+  install -d $ROOT/bin
+  install -m 755 svncrpr $ROOT/bin
+
+  install -d $ROOT/share/doc/svncrpr
+  install -m 644 COPYING README $ROOT/share/doc/svncrpr
+}
+
+# EOF

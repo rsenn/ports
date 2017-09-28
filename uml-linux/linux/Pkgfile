@@ -1,0 +1,37 @@
+# $Id: Pkgfile,v 1.4 2007/04/22 23:07:57 roman Exp $
+#
+# Description: The Linux Kernel.
+#  Linux is a clone of the Unix kernel, written from scratch by Linus
+#  Torvalds with assistance from a loosely-knit team of hackers across the
+#  Net. It aims towards POSIX and Single UNIX Specification compliance. It
+#  has all the features you would expect in a modern fully-fledged Unix
+#  kernel, including true multitasking, virtual memory, shared libraries,
+#  demand loading, shared copy-on-write executables, proper memory
+#  management, and TCP/IP networking.
+# URL: http://www.kernel.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=linux
+version=2.6.16.20
+release=1
+source=(http://www.kernel.org/pub/linux/kernel/v2.6/linux-$version.tar.bz2
+  config
+  uml-2.6.16.20.patch)
+
+build()
+{
+  cd linux-${version}
+  patch -N -p1 -i $SRC/uml-2.6.16.20.patch
+  mv $SRC/config .config
+  yes "" | make config ARCH=um
+  make linux modules ARCH=um
+  install -d $ROOT/bin
+  install -m 755 linux $ROOT/bin/uml-${version}
+  ln -s uml-$version $ROOT/bin/uml
+
+#  yes "n" | make -i INSTALL_PATH=$ROOT modules_install
+  make INSTALL_MOD_PATH=$ROOT modules_install
+
+  rm -f $ROOT/lib/modules/$version*/source
+}

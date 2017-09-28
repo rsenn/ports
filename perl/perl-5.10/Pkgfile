@@ -1,0 +1,80 @@
+# $Id: Pkgfile,v 1.24 2007/05/09 21:03:00 roman Exp $
+#
+# Description: Larry Wall's Practical Extraction and Report Language
+#  An interpreted scripting language, known among some as "Unix's Swiss
+#  Army Chainsaw".
+#  .
+#  Perl is optimised for scanning arbitrary text files and system
+#  administration. It has built-in extended regular expression matching
+#  and replacement, a data-flow mechanism to improve security with
+#  setuid scripts and is extensible via modules that can interface to C
+#  libraries.
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=perl
+version=5.10.0
+release=1
+source=(ftp://sunsite.cnlab-switch.ch/mirror/CPAN/src/perl-$version.tar.gz
+        #perl-$version-config.patch
+        )
+
+build()
+{
+  cd perl-$version
+
+  #patch -N -p1 -i $SRC/perl-$version-config.patch
+
+  ./configure.gnu \
+      --prefix="$prefix" \
+      -Dusedevel \
+      -Dshrpdir="$prefix/lib/perl/$target/core" \
+      -Dprivlib="$prefix/lib/perl" \
+      -Darchlib="$prefix/lib/perl/$target" \
+      -Dsitelib="$prefix/lib/perl/site_perl" \
+      -Dsitearch="$prefix/lib/perl/site_perl/$target" \
+      -Dman1dir="$prefix/share/man/man1" \
+      -Dsiteman1dir="$prefix/share/man/man1" \
+      -Dman3dir="$prefix/share/man/man3" \
+      -Dsiteman3dir="$prefix/share/man/man3" \
+      -Dlibc="$prefix/lib/libc.so.6" \
+      -Dlibpth="$prefix/lib" \
+      -Dlibs="-ldl -lm"
+
+  make
+  make \
+       DESTDIR="$PKG" \
+       man1dir="$prefix/share/man/man1" \
+       man3dir="$prefix/share/man/man3" \
+     install
+
+  for file in $ROOT/bin/*; do
+    if [ "$file" != "${file%$version}" ]; then
+      mv $file ${file%$version}
+    fi
+  done
+
+ (cd lib &&
+  find . -type f | while read path; do
+    dir=$(dirname "$path")
+    file=$(basename "$path")
+    mkdir -p "$ROOT/lib/perl/$dir"
+    cp "$dir/$file" "$ROOT/lib/perl/$dir"
+  done)
+
+
+  grep '^#!/usr/local/bin/perl' $ROOT/bin/* | sed 's,:.*,,' | while read file
+  do
+    sed -i -e \
+      "s,^..$prefix/bin/perl$version,\#\!$prefix/bin/perl,g" \
+      "$file"
+  done
+
+  sed -i -e "s,share/man,man,g" \
+    $ROOT/lib/perl/Config_heavy.pl \
+    $ROOT/lib/perl/$target/.packlist \
+    $ROOT/lib/perl/$target/Config_heavy.pl
+
+  mv $ROOT/share/man $ROOT/man
+}

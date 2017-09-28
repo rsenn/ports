@@ -1,0 +1,86 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:48 roman Exp $
+#
+# Package: jslibs
+# Description: standalone JavaScript development runtime environment with general purpose native libraries
+#  jslibs is a standalone JavaScript development runtime environment for
+#  using JavaScript as a general-purpose scripting language.
+#  .
+#  jslibs uses SpiderMonkey library that is Gecko's JavaScript engine
+#  (SpiderMonkey is used in various Mozilla products, including Firefox).
+#  .
+#  jslibs provides a set of native modules that contains various general
+#  purpose classes and functions.
+#  .
+#  Some of these modules are simple wrappers for familiar libraries such as:
+#  zlib, SQLite, FastCGI, NSPR [(Netscape Portable Runtime)] , ODE [(Open
+#  Dynamics Engine)] , libpng, libjpeg, librsvg, SDL, libiconv, OpenGL,
+#  OpenAL, ogg vorbis, libTomCrypt, libffi [(Foreign function interface)] ,
+#  ...
+#  .
+#  Other modules provide tools for enhancing JavaScript programming : Print(),
+#  Load(), Exec(), Seal(), Expand(), Buffer class, Blob class, Sandbox class,
+#  ...
+#  .
+#  The jslibs distribution comes with a small standalone command line access
+#  program (jshost) that can be used to run JavaScript files. Note that the
+#  modules are quite independent from jshost and can be used in any project
+#  that embeds SpiderMonkey. A Windows binary (without console) is also
+#  available (jswinhost).
+#  .
+# URL: http://code.google.com/p/jslibs/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=jslibs
+version=0.9-r2227
+release=1
+source=(jslibs-0.9-r1881.tar.bz2
+        jslibs-0.9-r2227-linux.patch
+        jslibs-0.9-r2227-fixup.patch
+        jslibs-0.9-r2227-jsaudio.patch
+        jslibs-0.9-r2227-jsffi.patch
+        jslibs-0.9-r2227-jsgraphics.patch
+        jslibs-0.9-r2227-jsiconv.patch
+        jslibs-0.9-r2227-jsode.patch
+        jslibs-0.9-r2227-jssdl.patch
+        jslibs-0.9-r2227-jsjabber.patch
+        jslibs-0.9-r2227-jssound.patch
+        jslibs-0.9-r2227-jssvg.patch
+        jslibs-0.9-r2227-jshost.patch
+        jslibs-0.9-r2227-jstask.patch
+        jslibs-0.9-r2227-jstrimesh.patch
+        jslibs-r1881-r2227.diff.bz2)
+
+build()
+{
+  cd jslibs-0.9-r1881
+
+  bzcat $SRC/jslibs-r1881-r2227.diff.bz2 | patch -N -p1
+  patch -N -p1 -i $SRC/jslibs-0.9-r2227-linux.patch
+  patch -N -p1 -i $SRC/jslibs-0.9-r2227-fixup.patch
+  patch -N -p1 -i $SRC/jslibs-0.9-r2227-jsaudio.patch
+  patch -N -p1 -i $SRC/jslibs-0.9-r2227-jsffi.patch
+  patch -N -p1 -i $SRC/jslibs-0.9-r2227-jsgraphics.patch
+  patch -N -p1 -i $SRC/jslibs-0.9-r2227-jsiconv.patch
+  patch -N -p1 -i $SRC/jslibs-0.9-r2227-jsode.patch
+  patch -N -p1 -i $SRC/jslibs-0.9-r2227-jssdl.patch
+  patch -N -p1 -i $SRC/jslibs-0.9-r2227-jsjabber.patch
+  patch -N -p1 -i $SRC/jslibs-0.9-r2227-jssound.patch
+  patch -N -p1 -i $SRC/jslibs-0.9-r2227-jssvg.patch
+  patch -N -p1 -i $SRC/jslibs-0.9-r2227-jshost.patch
+  patch -N -p1 -i $SRC/jslibs-0.9-r2227-jstask.patch
+  patch -N -p1 -i $SRC/jslibs-0.9-r2227-jstrimesh.patch
+
+  make
+
+  for lib in js{audio,ffi,graphics,iconv,ode,sdl,jabber,sound,svg,task,trimesh}
+  do
+    make -C src/$lib
+  done
+
+  install -d $ROOT/lib/js
+  install -m 755 src/*/js*.so $ROOT/lib/js
+
+  install -d $ROOT/bin
+  install -m 755 src/jshost/jshost $ROOT/bin
+}

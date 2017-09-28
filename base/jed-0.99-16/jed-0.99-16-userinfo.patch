@@ -1,0 +1,37 @@
+diff -ru jed-0.99-16_orig/src/userinfo.c jed-0.99-16/src/userinfo.c
+--- jed-0.99-16_orig/src/userinfo.c	2008-03-24 15:47:36.000000000 +0000
++++ jed-0.99-16/src/userinfo.c	2008-03-24 15:49:13.000000000 +0000
+@@ -208,15 +208,12 @@
+      return SLang_create_slstring (JED_HOSTNAME);
+ #endif
+ 
+-   b = buf;
+-
+-   if ((-1 == gethostname (buf, sizeof (buf)))
+-       || (*buf == 0))
+-     {
+-	b = getenv ("HOSTNAME");
+-	if (b == NULL)
+-	  return NULL;
+-     }
++   if (!(b = getenv("HOSTNAME")))
++  {
++    b = buf;
++    if((-1 == gethostname (buf, sizeof (buf))) || (*buf == 0))
++      return NULL;
++  }
+ 
+ #if HAS_TCPIP_CODE
+    /* gethostname may not provide the full name so use gethostbyname
+--- jed-0.99-16_orig/src/userinfo.c	2008-03-24 15:58:49.000000000 +0000
++++ jed-0.99-16/src/userinfo.c	2008-03-24 15:59:33.000000000 +0000
+@@ -46,6 +46,9 @@
+ 
+ #include "userinfo.h"
+ 
++#undef HAS_TCPIP_CODE
++#define HAS_TCPIP_CODE 0
++
+ /*}}}*/
+ 
+ typedef struct

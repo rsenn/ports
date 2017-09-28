@@ -1,0 +1,36 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: An interactive playlist manipulation shell for linux
+# URL: http://www.geocities.com/kman_can/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libgcc1, libjackasyn0, libncurses5, libogg0, libstdc++6, libvorbis0a, libvorbisfile3
+
+name=imp3sh
+version=0.2.4
+release=1
+source=(http://distfiles.gentoo.org/distfiles/imp3sh-$version.tar.gz)
+
+build()
+{
+  cd imp3sh-$version
+
+  export CPPFLAGS="${CPPFLAGS:+$CPPFLAGS }-I$prefix/include/ncurses"
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/imp3sh
+  install -m 644 [A-Z][A-Z]* $ROOT/share/doc/imp3sh
+
+  if test -e $prefix/lib/libjackasyn.so
+  then
+    rm -f imp3sh
+    make LIBS="-ljackasyn" imp3sh
+
+    install -m 755 imp3sh $ROOT/bin/imp3sh-jack
+  fi
+}

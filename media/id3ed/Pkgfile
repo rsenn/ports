@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: ID3 tag editor for mp3 files.  Interactive and command line modes.
+#  id3ed is an ID3 tag editor for mp3 files. You can set tags interactively
+#  or from the command line, or a combination of both. id3ed can set genre
+#  by name or number. You can also remove or view tags.
+# URL: http://users.dakotacom.net/~donut/programs/id3ed.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=id3ed
+version=1.10.4
+release=1
+source=(http://users.dakotacom.net/~donut/programs/id3ed/id3ed-$version.tar.gz)
+
+build()
+{
+  cd id3ed-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --mandir="$prefix/share/man"
+
+  install -d $ROOT/bin
+  install -d $ROOT/share/man/man1
+
+  make
+  make DESTDIR="$PKG" install
+}

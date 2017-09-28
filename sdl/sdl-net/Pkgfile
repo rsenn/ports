@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A low level cross-platform network API.
+#  SDL_net is a thin API layer over sockets which is meant to be a simple
+#  cross-platform network API.
+#  .
+# URL: http://www.libsdl.org/projects/SDL_net/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=sdl-net
+version=1.2.7
+release=1
+source=(http://www.libsdl.org/projects/SDL_net/release/SDL_net-$version.tar.gz)
+
+build()
+{
+  cd SDL_net-$version
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --target="$target" \
+      --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/sdl-net
+  install -m 644 CHANGES COPYING README $ROOT/share/doc/sdl-net
+}
+
+# EOF

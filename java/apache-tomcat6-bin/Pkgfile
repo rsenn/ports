@@ -1,0 +1,48 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Servlet and JSP engine
+# URL: 
+# Maintainer: 
+# Depends on: 
+
+name=apache-tomcat6-bin
+version=6.0.20
+release=1
+source=(http://mirror.switch.ch/mirror/apache/dist/tomcat/tomcat-6/v$version/bin/apache-tomcat-$version.tar.gz)
+
+build() 
+{
+  cd apache-tomcat-$version
+
+  case $prefix in 
+    /usr) localstatedir=/var sysconfdir=/etc ;;
+  esac
+
+  pkgname=tomcat6
+  pkgsysconfdir=${sysconfdir=$prefix/etc}/$pkgname
+  pkglogdir=${localstatedir=$prefix/var}/log/$pkgname
+  pkglibdir=${localstatedir=$prefix/var}/lib/$pkgname
+  pkgcachedir=${localstatedir=$prefix/var}/cache/$pkgname
+  pkgdocdir=${prefix}/share/doc/$pkgname
+  pkgdatadir=${prefix}/share/$pkgname
+
+  install -d $PKG${pkgsysconfdir}  
+  install -d $PKG${pkglogdir}
+  install -d $PKG${pkglibdir}/{lib,logs,work,conf}
+  install -d $PKG${pkgcachedir}
+  install -d $PKG${pkgdocdir}
+  install -d $PKG${pkgdatadir}
+
+  cp -r conf/* $PKG${pkgsysconfdir}/
+  mv -f lib $PKG${pkgdatadir}/
+
+  for LIB in `cd $PKG${pkgdatadir}/lib && echo *`; do
+    ln -s ${pkgdatadir}/lib/$LIB $PKG${pkglibdir}/lib/
+  done
+
+  mv -f webapps/docs/* $PKG${pkgdocdir} 
+  rmdir webapps/docs
+  cp -r webapps $PKG${pkgdatadir}/
+}
+
+# EOF

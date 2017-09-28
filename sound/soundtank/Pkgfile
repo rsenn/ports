@@ -1,0 +1,44 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A program that holds musical instruments for you to play.
+#  Soundtank is a program that hosts musical instruments for you to play;
+#  each instrument can be controlled via MIDI. You can create custom
+#  instruments and save them to files, and can also load instruments that
+#  other people create. It relies on LADSA plugins, as it has no built-in
+#  sound synthesis algorithms, but hosts them in "realtime objects" which
+#  embody the structure of the audio signal flow. RTObjects can be controlled
+#  in a completely customizable fashion using MIDI events sent through the
+#  ALSA sequencer interface. Soundtank outputs audio through ALSA or JACK.
+#  .
+# URL: http://sourceforge.net/projects/soundtank
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=soundtank
+version=1.0.2
+release=1
+source=($mirror_sf/soundtank/soundtank-$version.tar.gz)
+
+build()
+{
+  cd soundtank-$version
+
+  ./bootstrap
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/soundtank
+  install -m 644 AUTHORS COPYING ChangeLog README $ROOT/share/doc/soundtank
+
+  cp -rf example $ROOT/share/doc/soundtank
+  install -m 644 */*.txt $ROOT/share/doc/soundtank
+}
+
+# EOF

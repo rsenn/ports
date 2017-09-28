@@ -1,0 +1,38 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A virtual filesystem for accessing the storage memory of Siemens mobile phones by datacable
+# Now you can mount and work with a phone filesystem like a floppy disk!
+# It is based on the FUSE (Filesystem in USErspace) core.
+# URL: http://chaos.allsiemens.com/siefs/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libfuse2
+
+name=siefs
+version=0.5
+release=1
+source=(http://chaos.allsiemens.com/download/siefs-$version.tar.gz
+        siefs-0.5-pkgconfig.patch)
+
+build()
+{
+  cd siefs-$version
+
+  patch -N -p1 -i $SRC/siefs-0.5-pkgconfig.patch
+
+  aclocal --force
+  automake --force --copy --foreign --add-missing
+  autoconf --force
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  rm -f NEWS
+
+  install -d $ROOT/share/doc/siefs
+  install -m 644 [A-Z]*[A-Z]* $ROOT/share/doc/siefs
+}

@@ -1,0 +1,51 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:52 roman Exp $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=soundtouch
+version=1.4.0
+release=1
+source=(http://www.surina.net/soundtouch/soundtouch-$version.tar.gz)
+
+build()
+{
+  cd soundtouch-$version
+
+  libtoolize --force --copy
+  aclocal --force
+  autoheader --force
+  automake --force --copy --foreign --add-missing
+  aclocal --force
+  autoconf --force
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --${shared:=enable}-shared \
+      --${static:=enable}-shared \
+      --disable-dependency-tracking
+
+  make
+  make DESTDIR="$PKG" install
+
+  mkdir -p $ROOT/share/doc/soundtouch
+  mv $ROOT/doc/soundtouch/* $ROOT/share/doc/soundtouch
+  rm -rf $ROOT/doc
+
+#  make -i -C source/example clean
+
+  find source/example \
+      -name 'Makefile*' -or \
+      -name '*.in' -or \
+      -name '*.la' -or \
+      -name '*.lo' -or \
+      -name '*.o' | xargs -d '
+' rm -v
+
+  cp -rf source/example $ROOT/share/doc/soundtouch/
+
+}

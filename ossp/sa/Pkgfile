@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A socket abstraction library.
+#  OSSP sa is an abstraction library for the Unix socket application
+#  programming interface (API). It features stream and datagram oriented
+#  communication over Unix Domain and Internet Domain (TCP and UDP)
+#  sockets. It provides the following key features: address abstraction
+#  (local, IPv4, and IPv6), type abstraction, I/O timeouts, I/O stream
+#  buffering, and convenience I/O functions.
+#  .
+# URL: http://www.ossp.org/pkg/lib/sa/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=sa
+version=1.2.6
+release=1
+source=(ftp://ftp.ossp.org/pkg/lib/sa/sa-1.2.6.tar.gz)
+
+build()
+{
+  cd sa-1.2.6
+./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+make
+make DESTDIR="$PKG" install
+}
+
+# EOF

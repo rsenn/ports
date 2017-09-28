@@ -1,0 +1,112 @@
+--- pygtk-2.13.0_orig/configure.ac	2008-12-04 19:48:21.000000000 +0100
++++ pygtk-2.13.0/configure.ac	2008-12-04 19:51:24.000000000 +0100
+@@ -355,14 +355,14 @@
+ if test "x$GCC" = "xyes"; then
+   JH_ADD_CFLAG([-Wall])
+   JH_ADD_CFLAG([-fno-strict-aliasing])
+-
+-  case $host_os in
+-  solaris*)
+-    ;;
+-  *)
+-    JH_ADD_CFLAG([-std=c9x])
+-    ;;
+-  esac
++dnl
++dnl  case $host_os in
++dnl  solaris*)
++dnl    ;;
++dnl  *)
++dnl    JH_ADD_CFLAG([-std=c9x])
++dnl    ;;
++dnl  esac
+ fi
+ 
+ 
+--- pygtk-2.13.0_orig/configure	2008-12-04 19:48:21.000000000 +0100
++++ pygtk-2.13.0/configure	2008-12-04 19:51:30.000000000 +0100
+@@ -12712,70 +12985,6 @@
+   fi
+   ;;
+ esac
+-
+-  case $host_os in
+-  solaris*)
+-    ;;
+-  *)
+-
+-case " $CFLAGS " in
+-*[\	\ ]-std=c9x[\	\ ]*)
+-  ;;
+-*)
+-  save_CFLAGS="$CFLAGS"
+-  CFLAGS="$CFLAGS -std=c9x"
+-  { echo "$as_me:$LINENO: checking whether $CC understands -std=c9x" >&5
+-echo $ECHO_N "checking whether $CC understands -std=c9x... $ECHO_C" >&6; }
+-  cat >conftest.$ac_ext <<_ACEOF
+-/* confdefs.h.  */
+-_ACEOF
+-cat confdefs.h >>conftest.$ac_ext
+-cat >>conftest.$ac_ext <<_ACEOF
+-/* end confdefs.h.  */
+-
+-int
+-main ()
+-{
+-
+-  ;
+-  return 0;
+-}
+-_ACEOF
+-rm -f conftest.$ac_objext
+-if { (ac_try="$ac_compile"
+-case "(($ac_try" in
+-  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+-  *) ac_try_echo=$ac_try;;
+-esac
+-eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
+-  (eval "$ac_compile") 2>conftest.er1
+-  ac_status=$?
+-  grep -v '^ *+' conftest.er1 >conftest.err
+-  rm -f conftest.er1
+-  cat conftest.err >&5
+-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+-  (exit $ac_status); } && {
+-	 test -z "$ac_c_werror_flag" ||
+-	 test ! -s conftest.err
+-       } && test -s conftest.$ac_objext; then
+-  jh_has_option=yes
+-else
+-  echo "$as_me: failed program was:" >&5
+-sed 's/^/| /' conftest.$ac_ext >&5
+-
+-	jh_has_option=no
+-fi
+-
+-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+-  { echo "$as_me:$LINENO: result: $jh_has_option" >&5
+-echo "${ECHO_T}$jh_has_option" >&6; }
+-  if test $jh_has_option = no; then
+-    CFLAGS="$save_CFLAGS"
+-  fi
+-  ;;
+-esac
+-    ;;
+-  esac
+ fi
+ 
+ 
+--- pygtk-2.13.0_orig/autogen.sh	1970-01-01 01:00:00.000000000 +0100
++++ pygtk-2.13.0/autogen.sh	2008-12-04 19:59:57.000000000 +0100
+@@ -0,0 +1,11 @@
++#!/bin/sh
++#
++# 20081204
++
++
++libtoolize --force --copy --automake
++aclocal --force -I m4
++autoheader --force
++automake --force --copy --foreign --add-missing
++aclocal --force -I m4
++autoconf --force

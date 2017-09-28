@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Presents the CVS contents as mountable file system
+# It allows to view the versioned files as like they were ordinary files on a disk.
+# There is also a possibility to check in/out some files for editing.
+# URL: http://cvsfs.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libfuse2, libgcc1, libstdc++6
+
+name=cvsfs
+version=0.5
+release=1
+source=($mirror_sf/cvsfs/cvsfs-fuse-$version.tar.gz)
+
+build()
+{
+  cd cvsfs-fuse-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --mandir="$prefix/share/man"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/bin
+  install -m 755 fuse/cvsfs-fuse $ROOT/bin/cvsfs
+
+  install -d $ROOT/share/doc/cvsfs
+  install -m 644 [A-Z]*[A-Z]* $ROOT/share/doc/cvsfs
+}

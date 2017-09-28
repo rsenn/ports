@@ -1,0 +1,46 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:50 roman Exp $
+#
+# Description: SDIF Sound Description Interchange Format
+#  The Sound Description Interchange Format (SDIF) is an established standard
+#  for the interchange of sound descriptions and analysis data. This project
+#  provides libraries, SDIF (in C) and Easdif (in C++), tools, and wrappers
+#  to read and write SDIF files.
+# URL: http://sdif.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=sdif
+version=3.11.1
+release=1
+source=(http://heanet.dl.sourceforge.net/sourceforge/sdif/SDIF-$version-src.zip
+        sdif-3.11.1-examples.patch)
+
+build()
+{
+  cd SDIF-$version-src
+
+  patch -p1 -i $SRC/sdif-3.11.1-examples.patch
+
+  sh autogen.sh
+
+#  ./configure \
+#       --build="$build" \
+#       --host="$host" \
+#       --prefix="$prefix" \
+#       --${shared:=enable}-shared \
+#       --${static:=enable}-shared
+#
+#  make
+#  make INSTALL="$INSTALL" DESTDIR="$PKG" install
+#
+  cmake \
+      -D CMAKE_INSTALL_PREFIX="$prefix" \
+      -D CMAKE_BUILD_TYPE="RelWithDebug" \
+    .
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/sdif
+  install -m 644 AUTHORS ChangeLog COPYING INSTALL README ReleaseNotes $ROOT/share/doc/sdif
+}

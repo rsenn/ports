@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A collection of libnet and libpcap based ARP utilities.
+# ARP Tools is collection of libnet and libpcap based ARP utilities. It
+# currently contains ARP Discover (arpdiscover), an Ethernet scanner
+# based on ARP protocol; ARP Flood (arpflood), an ARP request flooder;
+# and ARP Poison (arppoison), for poisoning switches' MAC address tables.
+#
+# URL: http://www.burghardt.pl/2007/12/arp-tools/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libnet1, libpcap0.8
+
+name=arptools
+version=1.0.2
+release=1
+source=(http://www.burghardt.pl/files/arptools-$version.tar.gz)
+
+build()
+{
+  cd arptools-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Cross-platform system information tool
+# URL: http://code.google.com/p/geekinfo/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=geekinfo
+version=2.0.15
+release=1
+source=(http://geekinfo.googlecode.com/files/geekinfo-$version.tar.gz
+        geekinfo-2.0.15-linux.patch)
+
+build()
+{
+  cd geekinfo
+
+  patch -N -p1 -i $SRC/geekinfo-2.0.15-linux.patch
+
+  make CXXFLAGS="${CXXFLAGS:--g -O2}" linux
+
+  install -d $ROOT/bin
+  install -m 755 geekinfo $ROOT/bin
+
+  install -d $ROOT/share/doc/geekinfo
+  install -m 644 *.txt $ROOT/share/doc/geekinfo/
+}
+
+# EOF

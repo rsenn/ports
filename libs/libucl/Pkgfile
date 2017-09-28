@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Portable compression library - runtime
+#  UCL is a portable lossless data compression library written in ANSI C,
+#  implementing a number of compression algorithms that achieve an excellent
+#  compression ratio while allowing *very* fast decompression. Decompression
+#  requires no additional memory.
+# URL: http://www.oberhumer.com/opensource/ucl/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=ucl
+version=0.9a38
+release=1
+source=(http://download.gna.org/ucl/0.9/ucl-$version-src.tar.bz2)
+
+build()
+{
+  cd ucl-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

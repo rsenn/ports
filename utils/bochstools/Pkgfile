@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: # Bochs-Tools is a collection of scripts and programs to be used together
+# with the Bochs emulator. The main goal is to provide a more Unix-like
+# interface to the emulator and to enable access to Bochs disk images from
+# outside of Bochs. This project makes it very simple to copy an existing
+# OS installation to a Bochs image (as long as Linux has write access to
+# the relevant file system).
+#
+# URL: http://www.bablokb.de/bochs-tools/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=bochstools
+category=utils
+version=1.6.4
+release=1
+source=(http://www.bablokb.de/bochs-tools/bochstools-$version.tar.bz2)
+
+build()
+{
+  cd bochstools-$version
+
+  make
+  make PREFIX="$ROOT" MANDIR="$ROOT/share/man" install
+
+  install -d $ROOT/share/doc/bochstools
+  install -m 644 COPYING ChangeLog NEWS README TODO $ROOT/share/doc/bochstools
+}

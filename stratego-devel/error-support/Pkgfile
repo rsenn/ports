@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Package: error-support
+# Section: devel
+# Description:
+# URL: http://www.program-transformation.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6
+
+name=error-support
+version=1.5.1
+release=1
+source=(http://homepages.cwi.nl/~daybuild/releases/error-support-$version.tar.gz)
+
+build()
+{
+  cd error-support-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

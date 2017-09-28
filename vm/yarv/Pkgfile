@@ -1,0 +1,27 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: 'Virtual Machine for Ruby'
+# URL: http://www.atdot.net/yarv/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name='yarv'
+version='0.4.1'
+release=1
+source=(http://www.atdot.net/yarv/yarv-0.4.1.tar.gz)
+
+build()
+{
+  cd yarv-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

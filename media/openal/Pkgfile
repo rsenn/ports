@@ -1,0 +1,42 @@
+# $Id: Pkgfile,v 1.7 2007/05/09 21:03:13 roman Exp $
+#
+# Description: A cross-platform API for interactive, spatialized audio.
+#  OpenAL, the Open Audio Library, is a joint effort to create an open,
+#  vendor-neutral, cross-platform API for interactive, primarily spatialized
+#  audio. Its primary audience is made up of application developers and
+#  desktop users that rely on portable standards like OpenGL for games and
+#  other multimedia applications.
+# URL: http://openal.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=openal
+version=0.0.8
+release=1
+source=($mirror_gentoo/openal-$version.tar.gz
+        openal-0.0.8-pkgconfig.patch)
+
+build()
+{
+  cd openal-$version
+
+  patch -N -p1 -i $SRC/openal-0.0.8-pkgconfig.patch
+
+  libtoolize --force --copy --install
+  aclocal --force -I admin/autotools/m4
+  autoconf --force
+
+  ./configure \
+      --prefix="$prefix" \
+      --build="$build" \
+      --host="$host" \
+      --${shared:=enable}-shared \
+      --${static:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/openal
+  install -m 644 TODO NOTES README AUTHORS INSTALL ChangeLog COPYING $ROOT/share/doc/openal
+}
+

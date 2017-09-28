@@ -1,0 +1,348 @@
+diff -ru -ru psmisc-22.1_orig/doc/Makefile.in psmisc-22.1/doc/Makefile.in
+--- psmisc-22.1_orig/doc/Makefile.in	2006-09-25 15:21:23.000000000 +0200
++++ psmisc-22.1/doc/Makefile.in	2006-09-25 15:20:56.000000000 +0200
+@@ -148,7 +148,7 @@
+ sharedstatedir = @sharedstatedir@
+ sysconfdir = @sysconfdir@
+ target_alias = @target_alias@
+-man_MANS = fuser.1 killall.1 pstree.1
++man_MANS = killall.1 pstree.1
+ EXTRA_DIST = $(man_MANS)
+ all: all-am
+ 
+diff -ru -ru psmisc-22.1_orig/src/Makefile.in psmisc-22.1/src/Makefile.in
+--- psmisc-22.1_orig/src/Makefile.in	2006-09-25 15:21:23.000000000 +0200
++++ psmisc-22.1/src/Makefile.in	2006-09-25 15:22:47.000000000 +0200
+@@ -36,8 +36,7 @@
+ POST_UNINSTALL = :
+ build_triplet = @build@
+ host_triplet = @host@
+-bin_PROGRAMS = fuser$(EXEEXT) killall$(EXEEXT) pstree$(EXEEXT) \
+-	oldfuser$(EXEEXT)
++bin_PROGRAMS = killall$(EXEEXT) pstree$(EXEEXT)
+ subdir = src
+ DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
+ ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
+@@ -69,10 +68,8 @@
+ 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+ CCLD = $(CC)
+ LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+-SOURCES = $(fuser_SOURCES) $(killall_SOURCES) $(oldfuser_SOURCES) \
+-	$(pstree_SOURCES)
+-DIST_SOURCES = $(fuser_SOURCES) $(killall_SOURCES) $(oldfuser_SOURCES) \
+-	$(pstree_SOURCES)
++SOURCES = $(killall_SOURCES) $(pstree_SOURCES)
++DIST_SOURCES = $(killall_SOURCES) $(pstree_SOURCES)
+ ETAGS = etags
+ CTAGS = ctags
+ DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
+@@ -177,9 +174,8 @@
+ oldfuser_SOURCES = oldfuser.c comm.h signals.c signals.h loop.h i18n.h
+ fuser_SOURCES = fuser.c comm.h signals.c signals.h i18n.h fuser.h
+ killall_SOURCES = killall.c comm.h signals.c signals.h i18n.h
+-killall_LDADD = @SELINUX_LIB@
+ pstree_SOURCES = pstree.c comm.h i18n.h
+-pstree_LDADD = @TERMCAP_LIB@ @SELINUX_LIB@
++pstree_LDADD = @TERMCAP_LIB@
+ BUILT_SOURCES = signames.h
+ EXTRA_DIST = signames.c 
+ CLEANFILES = signames.h
+@@ -240,15 +236,9 @@
+ 
+ clean-binPROGRAMS:
+ 	-test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
+-fuser$(EXEEXT): $(fuser_OBJECTS) $(fuser_DEPENDENCIES) 
+-	@rm -f fuser$(EXEEXT)
+-	$(LINK) $(fuser_LDFLAGS) $(fuser_OBJECTS) $(fuser_LDADD) $(LIBS)
+ killall$(EXEEXT): $(killall_OBJECTS) $(killall_DEPENDENCIES) 
+ 	@rm -f killall$(EXEEXT)
+ 	$(LINK) $(killall_LDFLAGS) $(killall_OBJECTS) $(killall_LDADD) $(LIBS)
+-oldfuser$(EXEEXT): $(oldfuser_OBJECTS) $(oldfuser_DEPENDENCIES) 
+-	@rm -f oldfuser$(EXEEXT)
+-	$(LINK) $(oldfuser_LDFLAGS) $(oldfuser_OBJECTS) $(oldfuser_LDADD) $(LIBS)
+ pstree$(EXEEXT): $(pstree_OBJECTS) $(pstree_DEPENDENCIES) 
+ 	@rm -f pstree$(EXEEXT)
+ 	$(LINK) $(pstree_LDFLAGS) $(pstree_OBJECTS) $(pstree_LDADD) $(LIBS)
+diff -ru -ru psmisc-22.1_orig/src/comm.h psmisc-22.1/src/comm.h
+--- psmisc-22.1_orig/src/comm.h	2006-09-25 15:21:23.000000000 +0200
++++ psmisc-22.1/src/comm.h	2006-09-25 15:20:56.000000000 +0200
+@@ -11,7 +11,7 @@
+ #define COMM_LEN sizeof(dummy.comm)
+ extern struct task_struct dummy;
+ #else
+-#define COMM_LEN 16		/* synchronize with size of comm in struct task_struct in
++#define COMM_LEN 254		/* synchronize with size of comm in struct task_struct in
+ 				   /usr/include/linux/sched.h */
+ #endif
+ 
+diff -ru -ru psmisc-22.1_orig/src/killall.c psmisc-22.1/src/killall.c
+--- psmisc-22.1_orig/src/killall.c	2006-09-25 15:21:23.000000000 +0200
++++ psmisc-22.1/src/killall.c	2006-09-25 15:20:56.000000000 +0200
+@@ -59,35 +59,31 @@
+            quiet = 0, wait_until_dead = 0, process_group = 0,
+            ignore_case = 0, pidof;
+ 
++/*
++ * This is the implementation from 21.5, as the one in 21.6 and newer uses
++ * Linux specific functions getline() and rpmatch()
++ */
+ static int
+ ask (char *name, pid_t pid)
+ {
+-  int res;
+-  size_t len;
+-  char *line;
+-
+-  line = NULL;
+-  len = 0;
+-
+-  do {
+-    printf (_("Kill %s(%s%d) ? (y/N) "), name, process_group ? "pgid " : "",
+-	    pid);
+-    fflush (stdout);
+-
+-    if (getline (&line, &len, stdin) < 0)
+-      return 0;
+-    /* Check for default */
+-    if (line[0] == '\n') {
+-      free(line);
+-      return 0;
+-    }
+-    res = rpmatch(line);
+-    if (res >= 0) {
+-      free(line);
+-      return res;
++  int ch, c;
++
++  do
++    {
++      printf (_("Kill %s(%s%d) ? (y/n) "), name, process_group ? "pgid " : "",
++	      pid);
++      fflush (stdout);
++      do
++	if ((ch = getchar ()) == EOF)
++	  exit (0);
++      while (ch == '\n' || ch == '\t' || ch == ' ');
++      do
++	if ((c = getchar ()) == EOF)
++	  exit (0);
++      while (c != '\n');
+     }
+-  } while(1);
+-  /* Never should get here */
++  while (ch != 'y' && ch != 'n' && ch != 'Y' && ch != 'N');
++  return ch == 'y' || ch == 'Y';
+ }
+ 
+ static int
+@@ -267,7 +263,7 @@
+         }
+ #endif /*WITH_SELINUX*/
+       /* load process name */
+-      if (asprintf (&path, PROC_BASE "/%d/stat", pid_table[i]) < 0)
++      if (asprintf (&path, PROC_BASE "/%d/status", pid_table[i]) < 0)
+ 	continue;
+       if (!(file = fopen (path, "r"))) 
+ 	{
+@@ -275,72 +271,13 @@
+ 	  continue;
+ 	}
+       free (path);
+-      okay = fscanf (file, "%*d (%15[^)]", comm) == 1;
++      okay = fscanf (file, "%s", comm) == 1;
+       (void) fclose (file);
+       if (!okay)
+ 	continue;
+       got_long = 0;
+       command = NULL;		/* make gcc happy */
+       length = strlen (comm);
+-      if (length == COMM_LEN - 1)
+-	{
+-	  if (asprintf (&path, PROC_BASE "/%d/cmdline", pid_table[i]) < 0)
+-	    continue;
+-	  if (!(file = fopen (path, "r"))) {
+-	    free (path);
+-	    continue;
+-	  }
+-	  free (path);
+-          while (1) {
+-            /* look for actual command so we skip over initial "sh" if any */
+-            char *p;
+-	    int cmd_size = 128;
+-	    command_buf = (char *)malloc (cmd_size);
+-	    if (!command_buf)
+-	      exit (1);
+-
+-            /* 'cmdline' has arguments separated by nulls */
+-            for (p=command_buf; ; p++) {
+-              int c;
+-	      if (p == (command_buf + cmd_size)) 
+-		{
+-		  int cur_size = cmd_size;
+-		  cmd_size *= 2;
+-		  command_buf = (char *)realloc(command_buf, cmd_size);
+-		  if (!command_buf)
+-		    exit (1);
+-		  p = command_buf + cur_size;
+-		}
+-              c = fgetc(file);
+-              if (c == EOF || c == '\0') {
+-                *p = '\0';
+-                break;
+-              } else {
+-                *p = c;
+-              }
+-            }
+-            if (strlen(command_buf) == 0) {
+-              okay = 0;
+-              break;
+-            }
+-            p = strrchr(command_buf,'/');
+-            p = p ? p+1 : command_buf;
+-            if (strncmp(p, comm, COMM_LEN-1) == 0) {
+-              okay = 1;
+-              command = p;
+-              break;
+-            }
+-          }
+-          (void) fclose(file);
+-	  if (exact && !okay)
+-	    {
+-	      if (verbose)
+-		fprintf (stderr, _("skipping partial match %s(%d)\n"), comm,
+-			 pid_table[i]);
+-	      continue;
+-	    }
+-	  got_long = okay;
+-	}
+       /* mach by process name */
+       for (j = 0; j < names; j++)
+ 	{
+@@ -372,7 +309,7 @@
+ 	        }
+ 	      else
+ 	        {
+-	          if (asprintf (&path, PROC_BASE "/%d/exe", pid_table[i]) < 0)
++	          if (asprintf (&path, PROC_BASE "/%d/file", pid_table[i]) < 0)
+ 		    continue;
+ 
+ 	          if (stat (path, &st) < 0) 
+@@ -697,7 +634,7 @@
+       fprintf (stderr, _("Maximum number of names is %d\n"), MAX_NAMES);
+       exit (1);
+     }
+-  if (stat("/proc/self/stat", &isproc)==-1)
++  if (stat("/proc/curproc/status", &isproc)==-1)
+     {
+       fprintf (stderr, _("%s is empty (not mounted ?)\n"), PROC_BASE);
+       exit (1);
+diff -ru -ru psmisc-22.1_orig/src/pstree.c psmisc-22.1/src/pstree.c
+--- psmisc-22.1_orig/src/pstree.c	2006-09-25 15:21:23.000000000 +0200
++++ psmisc-22.1/src/pstree.c	2006-09-25 15:20:56.000000000 +0200
+@@ -590,7 +590,7 @@
+       {
+ 	if (!(path = malloc (strlen (PROC_BASE) + strlen (de->d_name) + 10)))
+ 	  exit (2);
+-	sprintf (path, "%s/%d/stat", PROC_BASE, pid);
++	sprintf (path, "%s/%d/status", PROC_BASE, pid);
+ 	if ((file = fopen (path, "r")) != NULL)
+ 	  {
+ 	    empty = 0;
+@@ -608,95 +608,8 @@
+ 		perror (path);
+ 		exit (1);
+ 	      }
+-            fread(readbuf, BUFSIZ, 1, file) ;
+-            if (ferror(file) == 0) 
+-            {
+-              memset(comm, '\0', COMM_LEN+1);
+-              tmpptr = strrchr(readbuf, ')'); /* find last ) */
+-              /* We now have readbuf with pid and cmd, and tmpptr+2
+-               * with the rest */
+-              /*printf("readbuf: %s\n", readbuf);*/
+-              if (sscanf(readbuf, "%*d (%15[^)]", comm) == 1)
+-              {
+-                /*printf("tmpptr: %s\n", tmpptr+2);*/
+-                if (sscanf(tmpptr+2, "%*c %d", &ppid) == 1)
+-                {
+-/*
+-	    if (fscanf
+-		(file, "%d (%s) %c %d", &dummy, comm, (char *) &dummy,
+-		 &ppid) == 4)
+- */
+-		{
+-		   DIR *taskdir;
+-		   struct dirent *dt;
+-		   char *taskpath;
+-		   char *threadname;
+-		   int thread;
+-		   
+-		   if (!(taskpath = malloc(strlen(path) + 10))) {
+-		      exit (2);
+-		   }
+-		   sprintf (taskpath, "%s/task", path);
+-		   
+-		   if ((taskdir=opendir(taskpath))!=0) {
+-		      /* if we have this dir, we're on 2.6 */
+-		      if (!(threadname = malloc(strlen(comm) + 3))) {
+-			 exit (2);
+-		      }
+-		      sprintf(threadname,"{%s}",comm);
+-		      while ((dt = readdir(taskdir)) != NULL) {
+-			 if ((thread=atoi(dt->d_name)) !=0) {
+-			    if (thread != pid) {
+-#ifdef WITH_SELINUX
+-			       if (print_args)
+-				 add_proc(threadname, thread, pid, st.st_uid, threadname, strlen(threadname)+1, scontext);
+-			       else 
+-				 add_proc(threadname, thread, pid, st.st_uid, NULL, 0, scontext);
+-#else  /*WITH_SELINUX*/
+-			       if (print_args)
+-				 add_proc(threadname, thread, pid, st.st_uid, threadname, strlen(threadname)+1);
+-			       else
+-				 add_proc(threadname, thread, pid, st.st_uid, NULL, 0);
+-#endif /*WITH_SELINUX*/
+-			    }
+-			 }
+-		      }
+-		      free(threadname);
+-		      (void) closedir(taskdir);
+-		   }
+-		   free(taskpath);
+-		}
+-
+-		if (!print_args)
+-#ifdef WITH_SELINUX
+-		  add_proc(comm, pid, ppid, st.st_uid, NULL, 0, scontext);
+-#else  /*WITH_SELINUX*/
+-		  add_proc (comm, pid, ppid, st.st_uid, NULL, 0);
+-#endif /*WITH_SELINUX*/
+-		else
+-		  {
+-		    sprintf (path, "%s/%d/cmdline", PROC_BASE, pid);
+-		    if ((fd = open (path, O_RDONLY)) < 0)
+-		      {
+-			perror (path);
+-			exit (1);
+-		      }
+-		    if ((size = read (fd, buffer, (size_t) output_width)) < 0)
+-		      {
+-			perror (path);
+-			exit (1);
+-		      }
+-		    (void) close (fd);
+-		    if (size)
+-		      buffer[size++] = 0;
+-#ifdef WITH_SELINUX
+-		    add_proc(comm, pid, ppid, st.st_uid, buffer, size, scontext);
+-#else  /*WITH_SELINUX*/
+-		    add_proc (comm, pid, ppid, st.st_uid, buffer, size);
+-#endif /*WITH_SELINUX*/
+-		  }
+-		}
+-	      }
++	    if (fscanf(file, "%s %*d %d", comm, &ppid) == 2) {
++		add_proc(comm,pid,ppid,st.st_uid,NULL,0);
+ 	    }
+ 	    (void) fclose (file);
+ 	  }

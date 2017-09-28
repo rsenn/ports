@@ -1,0 +1,34 @@
+diff -ru ffe-0.2.5_orig/src/Makefile.am ffe-0.2.5/src/Makefile.am
+--- ffe-0.2.5_orig/src/Makefile.am	2008-04-04 17:50:33.000000000 +0000
++++ ffe-0.2.5/src/Makefile.am	2008-04-04 18:12:51.000000000 +0000
+@@ -1,6 +1,7 @@
+ bin_PROGRAMS = ffe
+ 
+-AM_CFLAGS = -I.. 
++AM_CFLAGS = -I..
++AM_CPPFLAGS = -DSYSCONFDIR=\"$(sysconfdir)\"
+ 
+ ffe_SOURCES = ffe.c xmalloc.c parserc.c execute.c
+ noinst_HEADERS = ffe.h
+diff -ru ffe-0.2.5_orig/src/ffe.c ffe-0.2.5/src/ffe.c
+--- ffe-0.2.5_orig/src/ffe.c	2008-04-04 17:50:33.000000000 +0000
++++ ffe-0.2.5/src/ffe.c	2008-04-04 17:54:15.000000000 +0000
+@@ -693,7 +693,7 @@
+     struct structure *s;
+     char *structure_to_use = NULL;
+     char *output_to_use = NULL;
+-    char *config_to_use = NULL;
++    const char *config_to_use = NULL;
+     char *ofile_to_use = NULL;
+     char *field_list = NULL;
+ #ifdef HAVE_GETOPT_LONG
+@@ -790,6 +790,9 @@
+     
+     if(config_to_use == NULL) config_to_use = get_default_rc_name();
+ 
++    if(access(config_to_use, R_OK) != 0)
++      config_to_use = SYSCONFDIR"/fferc";
++
+     environment(structure_to_use,output_to_use,ofile_to_use);
+                 
+     parserc(config_to_use,field_list);

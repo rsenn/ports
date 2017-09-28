@@ -1,0 +1,25 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=portage
+version=2.1.2.12
+release=1
+source=(http://distfiles.gentoo.org/distfiles/portage-$version.tar.bz2)
+
+build()
+{
+  cd portage-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

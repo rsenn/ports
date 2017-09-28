@@ -1,0 +1,19 @@
+--- mod_ap2_snmp.c.orig	2007-01-18 15:55:06.000000000 +0100
++++ mod_ap2_snmp.c	2007-01-18 15:55:25.000000000 +0100
+@@ -40,6 +40,7 @@
+ //#define MOD_SNMP_DEBUG(message) ap_log_error(APLOG_MARK, APLOG_DEBUG, APR_SUCCESS, NULL, message);
+ #define MOD_SNMP_DEBUG(message...) ap_log_error(APLOG_MARK, APLOG_DEBUG, APR_SUCCESS, NULL, message);
+ #define MOD_SNMP_ERROR(message...) ap_log_error(APLOG_MARK, APLOG_ERR, APR_SUCCESS, NULL, message);
++#define MOD_SNMP_NOTICE(message...) ap_log_error(APLOG_MARK, APLOG_NOTICE, APR_SUCCESS, NULL, message);
+ 
+ module AP_MODULE_DECLARE_DATA ap2_snmp_module;
+ 
+@@ -290,7 +291,7 @@
+ 		strcat(agentHttpAddress,":");
+ 		strcat(agentHttpAddress,port);
+ 
+-		MOD_SNMP_ERROR("AP2_SNMP: agentHttpAddress set to %s", agentHttpAddress);
++		MOD_SNMP_NOTICE("AP2_SNMP: agentHttpAddress set to %s", agentHttpAddress);
+ 
+ 		// 12/12/2004 - it was moved to *ap2_snmp_pre_mpm* function
+ 		/*snmp_set("APACHE2-MIB::agentHttpAddress.0",'s',tmp_buffer);*/

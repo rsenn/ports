@@ -1,0 +1,36 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An object/vector-based image editor.
+#  Geist is an object-based image editor, designed to be used in conjunction
+#  with the GIMP. While the GIMP specializes in pixel editing, geist deals
+#  with objects. Geist's specialties are antialiased truetype fonts and
+#  a full RGBA colorspace with transparent objects blended quickly in
+#  realtime. Supported objects are lines, text (with wordwrapping and
+#  font styles), rectangles, images (zoomed or scaled with or without
+#  antialiasing), and polygons. Geist saves documents in XML, and can export
+#  to all image formats supported by imlib2.
+#  .
+# URL: http://linuxbrit.co.uk/geist/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=geist
+version=0.0.3
+release=1
+source=(http://linuxbrit.co.uk/downloads/geist-$version.tar.gz)
+
+build()
+{
+  cd geist-$version
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

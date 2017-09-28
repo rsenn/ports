@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A configuration storage library.
+#  GConf is a "registry" system, a library applications can use to store
+#  key-value pairs persistently. It's written for GNOME, but it does not
+#  require GNOME or even X to work. Use outside GNOME is encouraged and
+#  will be supported.
+#  .
+# URL: http://www.gnome.org/projects/gconf/
+# Maintainer:  Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=gconf
+version=1.2.1
+release=1
+source=(http://ftp.acc.umu.se/pub/gnome/sources/GConf/${version%.*}/GConf-$version.tar.bz2)
+
+build()
+{
+  cd GConf-$version
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

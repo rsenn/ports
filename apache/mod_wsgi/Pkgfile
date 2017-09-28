@@ -1,0 +1,39 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Python WSGI adapter module for Apache.
+# URL: 
+# Maintainer: 
+# Depends on: 
+
+name=mod_wsgi
+version=2.5
+release=1
+source=(http://modwsgi.googlecode.com/files/mod_wsgi-$version.tar.gz)
+
+build() 
+{
+  cd mod_wsgi-$version
+  
+  APXS=`echo $prefix/*bin/apxs*`
+
+  for apxs in $APXS; do
+   (
+    ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix" \
+       --with-apxs="$apxs"
+
+    make
+    make DESTDIR="$PKG" install
+
+    make clean
+    )
+  done
+  
+  install -d $ROOT/share/doc/mod_wsgi
+  install -m 644 LICENCE README $ROOT/share/doc/mod_wsgi
+}
+
+# EOF

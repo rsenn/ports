@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A DNS diagnostic tool.
+# bost is a DNS diagnostic tool for resolving IPs from hostnames and
+# hostnames from IPs. It performs double checks. It is useful for checking
+# if there are more IPs on a hostname. It can check IP ranges (CIDR).
+#
+# URL: http://blambi.chebab.com/software/bost/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=bost
+version=0.0.5
+release=1
+source=(http://blambi.chebab.com/software/bost/files/bost-$version.tar.gz)
+
+build()
+{
+  cd bost-$version
+
+  make \
+      CC="${CC-cc}" \
+      LD="${CC-cc}" \
+      CFLAGS="$CFLAGS" \
+      LDFLAGS="$LDFLAGS -lm"
+
+  install -d $ROOT/bin
+  install -m 755 bost $ROOT/bin
+
+  install -d $ROOT/share/doc/bost
+  install -m 644 COPYING Changelog README $ROOT/share/doc/bost
+}

@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Changes X terminal emulator window titles
+#  This is a small program that generates escape sequences to change the
+#  title of terminal emulator windows under X. It should work with any
+#  program that emulates an xterm-like terminal.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=xttitle
+version=1.0
+release=1
+source=(#http://www.jarvis.com/xttitle/xttitle-$version.tar.gz
+        http://www.urltoys.com/xttitle-$version.tar.gz)
+
+build()
+{
+  cd xttitle-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/xttitle
+  install -m 644 INSTALL README GPL COPYRIGHT $ROOT/share/doc/xttitle
+}

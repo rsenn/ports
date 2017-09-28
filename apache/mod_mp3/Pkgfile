@@ -1,0 +1,92 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An extension to the Apache Web server which streams audio to MP3 clients.
+#  mod_mp3 turns the Apache Web server into an MP3 or Ogg streaming
+#  server. It can play from a list of files, either in order or randomly. It
+#  can also be used to cache MP3s into memory and have the server operate
+#  entirely from memory. It has an XML-RPC interface for you to write
+#  interfaces around and supports retrieving information via XML/RSS.
+#  .
+# URL: http://tangent.org/380/mod_mp3.html
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=mod_mp3
+version=1.2
+release=1
+source=(http://download.tangent.org/mod_mp3-$version.tar.gz
+        http://docs.tangent.org/mod_mp3/mod_mp3.html
+        mod_mp3-1.2-includes.patch
+        mod_mp3-1.2-avoid-version.patch
+        mod_mp3-1.2-noconf.patch)
+
+build()
+{
+  cd mod_mp3-$version
+
+  patch -N -p1 -i $SRC/mod_mp3-1.2-includes.patch
+  patch -N -p1 -i $SRC/mod_mp3-1.2-avoid-version.patch
+  patch -N -p1 -i $SRC/mod_mp3-1.2-noconf.patch
+
+  case $prefix in
+    "/usr") sysconfdir="/etc" localstatedir="/var" ;;
+  esac
+
+  sh autogen.sh
+
+  APXS=`ls $prefix/*bin/apxs*`
+
+  for apxs in $APXS; do
+   (rm -rf ${builddir=build-`$apxs -q progname`}
+    mkdir -p $builddir
+    cd $builddir
+
+    ../configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix" \
+       --with-apxs="$apxs"
+
+    make
+    make DESTDIR="$PKG" install
+
+    libexecdir=`$apxs -q libexecdir`
+
+    install -d $PKG${libexecdir}
+    install -m 755 src/.libs/libmod_mp3.so $PKG${libexecdir}/
+
+
+    sysconfdir=`$apxs -q sysconfdir`
+
+    install -d $PKG${sysconfdir}/mods-available
+    echo "LoadModule mp3_module $libexecdir/mod_mp3.so" >$PKG${sysconfdir}/mods-available/mp3.load
+   )
+  done
+
+  install -d $ROOT/share/doc/mod_mp3
+  install -m 644 AUTHORS COPYING README ChangeLog INSTALL $ROOT/share/doc/mod_mp3
+  install -m 644 $SRC/mod_mp3.html $ROOT/share/doc/mod_mp3
+
+  return 0
+
+  install -d $PKG${sysconfdir=$prefix/etc}/$NAME/mods-available
+  echo LoadModule mp3_module $prefix/lib/httpd/modules/mod_mp3.so \
+    >$PKG${sysconfdir}/$NAME/mods-available/mp3.load
+  cat >$PKG${sysconfdir}/$NAME/mods-available/mp3.conf <<EOF
+Listen 8000
+<VirtualHost stream.digitall.ch:8000>
+  ServerName stream.digitall.ch
+  MP3Engine On
+  MP3CastName "dig-it-all audio streams"
+  MP3Genre "minimal"
+  MP3 /export/mp3
+  MP3Random On
+  Timeout 1200
+  ErrorLog ${localstatedir=$prefix/var}/log/$NAME/music_error_log
+</VirtualHost>                                                                                                                                  #Increase this if your connections are timing out
+EOF
+}
+
+# EOF
+

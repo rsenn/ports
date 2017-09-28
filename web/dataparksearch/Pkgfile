@@ -1,0 +1,40 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A Web search engine tool.
+#  DataparkSearch is a Web search engine tool. It features support for
+#  http, https, ftp, nntp, and news URLs, htdb virtual URL support for
+#  indexing SQL databases, text/html, text/xml, text/plain, audio/mpeg
+#  (MP3), and image/gif mime types built-in support, external parsers
+#  support for other document types, the ability to index multilangual
+#  sites using content negotiation, searching of all of the word forms using
+#  ispell affixes and dictionaries, stopwords and synonyms lists, boolean
+#  query language support, results sorting by relevancy, popularity rank,
+#  last modified time, and importance (a multiplication of the relevancy
+#  and popularity ranks), support for various character sets, and phrases
+#  segmenting for the Chinese, Japanese, Korean, and Thai languages. It
+#  has accent-insensitive search, mod_dpsearch for Apache, and support for
+#  internationalized domain names.
+#  .
+# URL: http://www.dataparksearch.org/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=dataparksearch
+version=4.50
+release=1
+source=(http://www.dataparksearch.org/dpsearch-4.50.tar.bz2)
+
+build()
+{
+  cd dpsearch-4.50
+./bootstrap
+./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+make
+make DESTDIR="$PKG" install
+}
+
+# EOF

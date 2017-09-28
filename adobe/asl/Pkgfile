@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Adobe Source Libraries
+# URL: http://stlab.adobe.com/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=asl
+version=1.0.39
+release=1
+source=($mirror_sf/adobe-source/apl_$version.tgz
+        $mirror_sf/adobe-source/asl_$version.tgz
+        $mirror_sf/boost/boost_1_37_0.tar.bz2)
+
+build()
+{
+  ln -sf source_release adobe_source_libraries
+  ln -sf boost_1_37_0 boost_libraries
+
+  cd platform_release
+
+  BOOST_BUILD=$prefix/share/boost-build
+
+  export BOOST_BUILD
+
+  bjam release debug-symbols="off" optimization="speed" threading="multi"
+}
+
+# EOF

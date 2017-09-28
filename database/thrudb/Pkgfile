@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Document Oriented Database Services
+# URL: http://code.google.com/p/thrudb/
+# Maintainer: 
+# Depends on: 
+
+name=thrudb
+version=20090820
+release=1
+source=(thrudb-$version.tar.gz)
+
+build() 
+{
+  cd thrudb-$version
+
+  rm -f */src/gen-cpp/*
+  
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+  
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/thrudb
+  install -m 644 thrudoc/README thrudoc/NEWS thrudoc/TODO $ROOT/share/doc/thrudb
+}
+
+# EOF

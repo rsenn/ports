@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Converts CSV or Excel data to ruby
+#  Hyogen converts CSV or Excel data to Ruby objects or a text.
+#  .
+# URL: https://rubyforge.org/projects/hyogen/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=hyogen
+version=0.0.3
+release=1
+source=($mirror_rubyforge/hyogen/hyogen-$version.tgz)
+
+build()
+{
+  cd hyogen-$version
+
+  set -- `ruby --version`
+
+  RUBYVERSION="$2"
+  RUBYLIBDIR="$prefix/lib/ruby/${RUBYVERSION%.*}"
+
+  ruby setup.rb config --siterubyver="$RUBYLIBDIR"
+  ruby setup.rb setup
+  ruby setup.rb install --prefix="$PKG"
+
+  install -d $ROOT/share/doc/hyogen
+  install -m 644 History.txt Manifest.txt README README.txt $ROOT/share/doc/hyogen
+}
+
+# EOF

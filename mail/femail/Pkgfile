@@ -1,0 +1,176 @@
+# $Id: Pkgfile 560 2008-10-01 21:22:30Z enki $
+#
+# Package: femail
+# Priority: extra
+# Provides: mail-transport-agent
+# Replaces: exim, exim-tls, exim4-daemon-custom, exim4-daemon-heavy, exim4-daemon-light, sendmail, qmail
+# Suggests: mail-reader
+# Recommends: mailx, psmisc
+# Description: A secure mini-sendmail.
+#  femail provides a sendmail-compatible commandline interface and forwards mail via SMTP.
+#  Unlike many other implementations, it is fully RFC 2821 and 2822 compatible.
+#  It embeds extra environment information from Apache in the header, if present,
+#  to help with tracking down abuse. It is written with security as a main design goal.
+# URL: http://bulabula.org/femail/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: coreutils, libc6
+
+name=femail
+version=0.97
+release=3
+source=(http://unduli.bsws.de/femail/femail-$version.tgz
+        femail-$version-fixes.patch
+        femail.conf
+        femail.8)
+
+build()
+{
+  cd femail-$version
+
+  patch -N -p1 -i $SRC/femail-$version-fixes.patch
+
+  case $prefix in
+    "/usr") sysconfdir="/etc" localstatedir="/var" ;;
+  esac
+
+  make \
+      ${CC+CC="$CC"} \
+      CFLAGS="${CFLAGS:-'-g -O2'} -fno-builtin" \
+      SYSCONFDIR="${sysconfdir=$prefix/etc}" \
+      prefix="$prefix"
+
+  install -d $ROOT/bin
+  install -m 755 femail $ROOT/bin/femail
+
+  install -d $PKG${sysconfdir="$prefix/etc"}
+  install -m 644 $SRC/femail.conf $PKG${sysconfdir}
+
+  install -d $ROOT/share/man/man8
+  install -m 644 $SRC/femail.8 $ROOT/share/man/man8
+}
+
+templates()
+{
+  Template: femail/smtphost
+  Type: string
+  Default: localhost
+  Description: SMTP server host which allows relaying from this host
+   .
+
+  Template: femail/smtpport
+  Type: string
+  Default: 25
+  Description: SMTP server port
+   .
+
+  Template: femail/myname
+  Type: string
+  Default: localhost
+  Description: Canonical hostname of this server
+   .
+}
+
+config()
+{
+  . /usr/share/debconf/confmodule
+
+  db_version 2.0
+  db_title "femail v0.97 configuration"
+
+  db_get femail/smtphost; test "$RET" = localhost && RET=; smtphost=${RET:-smtp.`hostname -d`}
+  db_get femail/myname; test "$RET" = localhost && RET=; myname=${RET:-`hostname -f`}
+
+  if test "$RET" != "$smtphost"; then
+    db_set femail/smtphost "$smtphost"
+  fi
+
+  if test "$RET" != "$myname"; then
+    db_set femail/myname "$myname"
+  fi
+
+  db_input high femail/smtphost || true
+  db_input high femail/smtpport || true
+  db_input medium femail/myname || true
+
+  db_go || true
+}
+
+# package postinst script
+# --------------------------------------------------------------------------------
+postinst()
+{
+  test "$FEMAIL_PACKAGE_DEBUG" = yes && set -vx
+
+  case "$1" in
+     configure)
+        . /usr/share/debconf/confmodule
+        db_version 2.0
+
+        db_get femail/smtphost; test "$RET" = localhost && RET=; smtphost=${RET:-smtp.`hostname -d`}
+        db_get femail/smtpport; smtpport=${RET:-25}
+        db_get femail/myname; test "$RET" = localhost && RET=; myname=${RET:-`hostname -f`}
+
+        if [ "$RET" != "$smtphost" ]; then
+          db_set femail/smtphost "smtphost"
+          db_go || true
+        fi
+
+        if [ "$RET" != "$myname" ]; then
+          db_set femail/myname "$myname"
+          db_go || true
+        fi
+
+        alternative="mta"
+
+        if [ -h /usr/sbin/sendmail ] && linkdest=`readlink /usr/sbin/sendmail`; then
+          case $linkdest in
+            /etc/alternatives/*)
+              alternative=`basename "$linkdest"`
+            ;;
+          esac
+        fi
+
+        update-alternatives \
+           --install /usr/sbin/sendmail "$alternative" /usr/bin/femail 120 \
+           --slave /usr/share/man/man8/sendmail.8.gz sendmail.8.gz /usr/share/man/man8/femail.8.gz
+
+        # The following only on a new install
+        if [ -z "$2" ]; then
+          sed -i \
+              -e "s|^\s*\(smtphost\)\s*=.*\$|\1=${smtphost}|" \
+              -e "s|^\s*\(smtpport\)\s*=.*\$|\1=${smtpport}|" \
+              -e "s|^\s*\(myname\)\s*=.*\$|\1=${myname}|" \
+          /etc/femail.conf
+        fi
+
+        # Purge the debconf database we no longer need.
+        if [ -e /usr/share/debconf/confmodule ]; then
+          . /usr/share/debconf/confmodule
+          db_version 2.0
+          db_purge
+        fi
+     ;;
+
+     abort-upgrade|abort-remove|abort-deconfigure)
+
+        db_reset femail/smtphost || true
+        db_reset femail/smtpport || true
+        db_reset femail/myname || true
+     ;;
+
+     *)
+        echo "postinst called with unknown argument \`$1'" >&2
+        exit 1
+     ;;
+  esac
+}
+
+postrm()
+{
+  if [ "$1" = purge ]; then
+
+    # remove logs
+    :
+
+  fi
+}

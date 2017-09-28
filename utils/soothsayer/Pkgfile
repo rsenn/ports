@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Soothsayer is an intelligent predictive text entry platform
+# Soothsayer exploits redundant information embedded in natural languages
+# to generate predictions. Soothsayer's modular and pluggable architecture
+# allows its language model to be extended and customized to utilize
+# statistical, syntactic, and semantic information sources.
+#
+# URL: http://soothsayer.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libgcc1, libncurses5, libsqlite3-0, libstdc++6, xulrunner-1.9
+
+name=soothsayer
+version=0.6.3
+release=1
+source=($mirror_sf/soothsayer/soothsayer-$version.tar.gz)
+
+build()
+{
+  cd soothsayer-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

@@ -1,0 +1,35 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: the xine video player, user interface
+#  This is an X11 based GUI for the libxine video player library. It
+#  provides xine, a skin based media player that can play all the
+#  audio/video formats that libxine supports. Currently, this includes
+#  MPEG1/2, some AVI and Quicktime files, some network streaming methods
+#  and disc based media (VCD, SVCD, DVD). A more complete list can be found
+#  on http://xinehq.de/index.php/features/.
+#  Most DVDs on the market today are play-protected by the Content
+#  Scrambling System (CSS). Xine does not provide any code to
+#  descramble those DVDs, because of legal uncertainties. Have a look at
+#  /usr/share/doc/xine-ui/README.Debian for more information!
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=xine-ui
+version=0.99.5
+release=1
+source=($mirror_sf/xine/xine-ui-$version.tar.gz)
+
+build()
+{
+  cd xine-ui-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

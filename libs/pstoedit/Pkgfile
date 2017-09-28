@@ -1,0 +1,48 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A converter from Postscript(TM) and PDF to other vector graphic formats.
+#  pstoedit converts Postscript(TM) and PDF files to other vector graphic 
+#  formats so that they can be edited graphically. The formats it can generate 
+#  include tgif, fig, PDF, gnuplot, DXF, Java Applets, HPGL, WMF, EMF, LaTeX2e,
+#  SWF, and many others. pstoedit's framework can be used independantly by other programs.
+#  .
+# URL: http://www.pstoedit.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=pstoedit
+version=3.45
+release=1
+source=($mirror_sf/pstoedit/pstoedit-$version.tar.gz
+        pstoedit-3.45-c++0x.patch
+        pstoedit-3.45-cxxstd.patch
+        pstoedit-3.45-m4.patch
+        pstoedit-3.45-config-script.patch)
+
+build()
+{
+  cd pstoedit-$version
+
+  patch -N -p1 -i $SRC/pstoedit-3.45-c++0x.patch
+  patch -N -p1 -i $SRC/pstoedit-3.45-cxxstd.patch
+  patch -N -p1 -i $SRC/pstoedit-3.45-m4.patch
+  patch -N -p1 -i $SRC/pstoedit-3.45-config-script.patch
+
+  libtoolize --force --copy --automake --install
+  aclocal --force -I config
+  automake --force --copy --foreign --add-missing
+  aclocal --force -I config
+  autoconf --force
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --with-libplot \
+       --with-emf \
+       --with-magick \
+       --without-swf # broken ming
+
+  make
+  make DESTDIR="$PKG" install
+}

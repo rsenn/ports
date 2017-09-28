@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Templating language for Ruby.
+#  Markaby is a templating language for Ruby, with a plugin for Rails,
+#  which allows you to write HTML templates in pure-Ruby (a la Builder.)
+#  .
+# URL:
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=markaby
+version=0.5
+release=1
+source=(http://files.rubyforge.mmmultiworks.com/markaby/markaby-$version.tar.gz)
+
+build()
+{
+  cd markaby-$version
+
+  set `ruby --version`
+
+  RUBYVERSION=$2
+  RUBYLIBDIR=$prefix/lib/ruby/${RUBYVERSION%.*}
+
+  ruby setup.rb config --siterubyver="$RUBYLIBDIR"
+  ruby setup.rb setup
+  ruby setup.rb install --prefix="$PKG"
+
+  install -d $ROOT/share/doc/markaby
+  install -m 644 README $ROOT/share/doc/markaby
+}
+
+# EOF

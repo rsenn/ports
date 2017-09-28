@@ -1,0 +1,27 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:52 roman Exp $
+#
+# Description: The audio player for KDE.
+#  Amarok is a sound system-independent audio-player for Unix. Its interface
+#  uses a powerful "browser" metaphor that allows you to create playlists
+#  that make the most of your music collection.
+# URL: http://amarok.kde.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=amarok
+version=1.4.9.1
+release=1
+source=(ftp://ftp.solnet.ch/mirror/KDE/stable/amarok/$version/src/amarok-$version.tar.bz2)
+
+build()
+{
+  cd amarok-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

@@ -1,0 +1,52 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:47 roman Exp $
+#
+# Description: Free Lossless Audio Coder.
+#  FLAC is a Free Lossless Audio Codec. The FLAC format supports streaming,
+#  seeking, and archival, and gives 25-75% compression on typical CD
+#  audio. Input plugins for Winamp and XMMS are also provided.
+# URL: http://flac.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=flac
+version=1.2.1
+release=1
+source=($mirror_sf/flac/flac-$version.tar.gz
+        flac-1.2.1-cppinc.patch
+        flac-1.2.1-size_t_max.patch
+        flac-1.2.1-ldflags.patch
+        flac-1.2.1-libogg-dep.patch)
+
+build()
+{
+  cd flac-$version
+
+  patch -N -p1 -i $SRC/flac-1.2.1-cppinc.patch
+  patch -N -p1 -i $SRC/flac-1.2.1-size_t_max.patch
+  patch -N -p1 -i $SRC/flac-1.2.1-ldflags.patch
+  patch -N -p1 -i $SRC/flac-1.2.1-libogg-dep.patch
+
+  libtoolize --force --copy --install
+  aclocal --force
+  automake --copy --force --foreign --add-missing
+  aclocal --force
+  autoconf --force
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --${shared:=enable}-shared \
+      --${static:=enable}-shared \
+      --${use_3dnow:=disable}-3dnow \
+      --${use_altivec:=disable}-altivec \
+      --${use_sse:=enable}-sse \
+      --${use_asm:=enable}-asm-optimizations \
+      --disable-xmms-plugin \
+      --disable-rpath \
+      --with-ogg="$prefix" \
+      --with-libiconv-prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" docdir='$(datadir)/doc/$(PACKAGE)' install
+}

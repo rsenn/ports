@@ -1,0 +1,25 @@
+# $Id: Pkgfile 424 2008-08-10 01:52:57Z enki $
+#
+# Description: mod_spin is an Apache module that provides a simple template language with data replacement capabilities, persistent application and session tracking, database connection pooling, dynamic linking of applications into Apache as shared libraries, parameters, cookies, and multipart/form data parsing, and a simple API for MVC controller functionality.
+# URL: http://www.rexursive.com/software/modspin/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=mod_spin
+version=1.1.7
+release=1
+source=(ftp://ftp.rexursive.com/pub/mod-spin/mod_spin-$version.tar.bz2)
+
+build()
+{
+  cd mod_spin-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

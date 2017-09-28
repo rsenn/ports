@@ -1,0 +1,38 @@
+# $Id: Pkgfile 424 2008-08-10 01:52:57Z enki $
+#
+# Description: A library and tools for hardware and kernel module detection.
+#  libhardware is a very small static library used in many utilities that are
+#  part of the &quot;Bad Penguin&quot; distribution. It provides functions
+#  to access information about your system hardware, to detect the hardware,
+#  and to handle kernel modules automatically. It is able to enumerate all
+#  PCI devices, enumerate all EIDE disks and CDROMs, enumerate all SCSI
+#  disks and CDROMs, enumerate all EIDE/SCSI disk partitions, and check if
+#  a detected device is supported in the Linux kernel using a custom PCI
+#  database. It can also handle USB devices. The included shell scripts
+#  'probedisk' and 'probepart' detect disks, CDROMs, and partitions. The
+#  included 'scanmodule' utility allows you to detect devices and load
+#  their kernel modules automatically.
+# URL: http://www.badpenguin.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libhardware
+version=0.7.4
+release=1
+source=(http://www.badpenguin.org/pub/software/libhardware/libhardware-$version.tar.gz)
+
+build()
+{
+  cd libhardware-$version
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --${static:=enable}-shared \
+      --${shared:=enable}-shared \
+      --disable-dependency-tracking
+
+  make
+  make DESTDIR="$PKG" install
+}

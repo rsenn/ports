@@ -1,0 +1,736 @@
+args: -r -u -- juce_orig juce
+diff -r -u -- juce_orig/Makefile juce/Makefile
+diff -r -u -- juce_orig/build/gnu/Makefile.am juce/build/gnu/Makefile.am
+--- juce_orig/build/gnu/Makefile.am	2008-07-28 14:28:36.000000000 +0200
++++ juce/build/gnu/Makefile.am	2008-07-29 21:05:48.000000000 +0200
+@@ -1,3 +1,5 @@
++SUBDIRS = src
++
+ ACLOCAL_AMFLAGS = -I m4
+ 
+ lib_LTLIBRARIES = libjuce.la
+diff -r -u -- juce_orig/build/gnu/configure.in juce/build/gnu/configure.in
+--- juce_orig/build/gnu/configure.in	2008-07-28 14:28:36.000000000 +0200
++++ juce/build/gnu/configure.in	2008-07-29 21:05:34.000000000 +0200
+@@ -102,6 +102,7 @@
+   AC_SUBST([PTHREAD_LIBS])
+ fi
+ 
+-AC_CONFIG_FILES([Makefile])
++AC_CONFIG_FILES([Makefile
++src/Makefile])
+ 
+ AC_OUTPUT
+diff -r -u -- juce_orig/build/gnu/src/Makefile.am juce/build/gnu/src/Makefile.am
+--- juce_orig/build/gnu/src/Makefile.am	2008-07-29 21:13:43.000000000 +0200
++++ juce/build/gnu/src/Makefile.am	2008-07-29 21:04:59.000000000 +0200
+@@ -0,0 +1,315 @@
++nobase_include_HEADERS = \
++	juce_core/cryptography/juce_MD5.h \
++	juce_core/cryptography/juce_BlowFish.h \
++	juce_core/cryptography/juce_Primes.h \
++	juce_core/cryptography/juce_RSAKey.h \
++	juce_core/basics/juce_PlatformDefs.h \
++	juce_core/basics/juce_RelativeTime.h \
++	juce_core/basics/juce_Initialisation.h \
++	juce_core/basics/juce_SystemStats.h \
++	juce_core/basics/juce_Atomic.h \
++	juce_core/basics/juce_MathsFunctions.h \
++	juce_core/basics/juce_Random.h \
++	juce_core/basics/juce_Logger.h \
++	juce_core/basics/juce_Singleton.h \
++	juce_core/basics/juce_DataConversions.h \
++	juce_core/basics/juce_StandardHeader.h \
++	juce_core/basics/juce_Time.h \
++	juce_core/basics/juce_Memory.h \
++	juce_core/basics/juce_FileLogger.h \
++	juce_core/io/juce_InputStream.h \
++	juce_core/io/network/juce_Socket.h \
++	juce_core/io/network/juce_URL.h \
++	juce_core/io/files/juce_File.h \
++	juce_core/io/files/juce_NamedPipe.h \
++	juce_core/io/files/juce_FileOutputStream.h \
++	juce_core/io/files/juce_DirectoryIterator.h \
++	juce_core/io/files/juce_FileInputStream.h \
++	juce_core/io/files/juce_FileSearchPath.h \
++	juce_core/io/juce_OutputStream.h \
++	juce_core/io/streams/juce_MemoryOutputStream.h \
++	juce_core/io/streams/juce_SubregionStream.h \
++	juce_core/io/streams/juce_InputSource.h \
++	juce_core/io/streams/juce_BufferedInputStream.h \
++	juce_core/io/streams/juce_GZIPCompressorOutputStream.h \
++	juce_core/io/streams/juce_MemoryInputStream.h \
++	juce_core/io/streams/juce_FileInputSource.h \
++	juce_core/io/streams/juce_GZIPDecompressorInputStream.h \
++	juce_core/misc/juce_PerformanceCounter.h \
++	juce_core/misc/juce_PlatformUtilities.h \
++	juce_core/misc/juce_Uuid.h \
++	juce_core/misc/juce_ZipFile.h \
++	juce_core/containers/juce_SortedSet.h \
++	juce_core/containers/juce_Array.h \
++	juce_core/containers/juce_BitArray.h \
++	juce_core/containers/juce_ElementComparator.h \
++	juce_core/containers/juce_PropertySet.h \
++	juce_core/containers/juce_OwnedArray.h \
++	juce_core/containers/juce_SparseSet.h \
++	juce_core/containers/juce_ArrayAllocationBase.h \
++	juce_core/containers/juce_ReferenceCountedArray.h \
++	juce_core/containers/juce_ReferenceCountedObject.h \
++	juce_core/containers/juce_VoidArray.h \
++	juce_core/containers/juce_MemoryBlock.h \
++	juce_core/threads/juce_ScopedLock.h \
++	juce_core/threads/juce_InterProcessLock.h \
++	juce_core/threads/juce_WaitableEvent.h \
++	juce_core/threads/juce_ReadWriteLock.h \
++	juce_core/threads/juce_ScopedWriteLock.h \
++	juce_core/threads/juce_Process.h \
++	juce_core/threads/juce_ThreadPool.h \
++	juce_core/threads/juce_CriticalSection.h \
++	juce_core/threads/juce_TimeSliceThread.h \
++	juce_core/threads/juce_ScopedTryLock.h \
++	juce_core/threads/juce_ScopedReadLock.h \
++	juce_core/threads/juce_Thread.h \
++	juce_core/text/juce_XmlElement.h \
++	juce_core/text/juce_String.h \
++	juce_core/text/juce_XmlDocument.h \
++	juce_core/text/juce_CharacterFunctions.h \
++	juce_core/text/juce_StringArray.h \
++	juce_core/text/juce_StringPairArray.h \
++	juce_core/text/juce_LocalisedStrings.h \
++	juce_DefineMacros.h \
++	juce_WithoutMacros.h \
++	juce_amalgamated_template.h \
++	juce_app_includes.h \
++	juce_appframework/audio/plugins/juce_PluginDescription.h \
++	juce_appframework/audio/plugins/juce_KnownPluginList.h \
++	juce_appframework/audio/plugins/juce_AudioPluginFormatManager.h \
++	juce_appframework/audio/plugins/juce_AudioPluginInstance.h \
++	juce_appframework/audio/plugins/formats/juce_LADSPAPluginFormat.h \
++	juce_appframework/audio/plugins/formats/juce_VSTPluginFormat.h \
++	juce_appframework/audio/plugins/formats/juce_DirectXPluginFormat.h \
++	juce_appframework/audio/plugins/formats/juce_AudioUnitPluginFormat.h \
++	juce_appframework/audio/plugins/juce_PluginListComponent.h \
++	juce_appframework/audio/plugins/juce_AudioPluginFormat.h \
++	juce_appframework/audio/plugins/juce_PluginDirectoryScanner.h \
++	juce_appframework/audio/synthesisers/juce_Synthesiser.h \
++	juce_appframework/audio/synthesisers/juce_Sampler.h \
++	juce_appframework/audio/audio_sources/juce_BufferingAudioSource.h \
++	juce_appframework/audio/audio_sources/juce_AudioTransportSource.h \
++	juce_appframework/audio/audio_sources/juce_PositionableAudioSource.h \
++	juce_appframework/audio/audio_sources/juce_AudioFormatReaderSource.h \
++	juce_appframework/audio/audio_sources/juce_ResamplingAudioSource.h \
++	juce_appframework/audio/audio_sources/juce_IIRFilterAudioSource.h \
++	juce_appframework/audio/audio_sources/juce_ToneGeneratorAudioSource.h \
++	juce_appframework/audio/audio_sources/juce_MixerAudioSource.h \
++	juce_appframework/audio/audio_sources/juce_AudioSourcePlayer.h \
++	juce_appframework/audio/audio_sources/juce_AudioSource.h \
++	juce_appframework/audio/audio_sources/juce_ChannelRemappingAudioSource.h \
++	juce_appframework/audio/processors/juce_AudioProcessor.h \
++	juce_appframework/audio/processors/juce_AudioProcessorPlayer.h \
++	juce_appframework/audio/processors/juce_AudioProcessorListener.h \
++	juce_appframework/audio/processors/juce_AudioProcessorEditor.h \
++	juce_appframework/audio/processors/juce_AudioPlayHead.h \
++	juce_appframework/audio/processors/juce_GenericAudioProcessorEditor.h \
++	juce_appframework/audio/processors/juce_AudioProcessorGraph.h \
++	juce_appframework/audio/midi/juce_MidiFile.h \
++	juce_appframework/audio/midi/juce_MidiMessage.h \
++	juce_appframework/audio/midi/juce_MidiMessageSequence.h \
++	juce_appframework/audio/midi/juce_MidiKeyboardState.h \
++	juce_appframework/audio/midi/juce_MidiMessageCollector.h \
++	juce_appframework/audio/midi/juce_MidiBuffer.h \
++	juce_appframework/audio/audio_file_formats/oggvorbis/juce_OggVorbisHeader.h \
++	juce_appframework/audio/audio_file_formats/juce_WavAudioFormat.h \
++	juce_appframework/audio/audio_file_formats/juce_QuickTimeAudioFormat.h \
++	juce_appframework/audio/audio_file_formats/flac/libFLAC/juce_FlacHeader.h \
++	juce_appframework/audio/audio_file_formats/juce_AudioFormatWriter.h \
++	juce_appframework/audio/audio_file_formats/juce_AudioThumbnailCache.h \
++	juce_appframework/audio/audio_file_formats/juce_AudioFormatReader.h \
++	juce_appframework/audio/audio_file_formats/juce_AudioFormatManager.h \
++	juce_appframework/audio/audio_file_formats/juce_FlacAudioFormat.h \
++	juce_appframework/audio/audio_file_formats/juce_AudioCDBurner.h \
++	juce_appframework/audio/audio_file_formats/juce_AudioFormat.h \
++	juce_appframework/audio/audio_file_formats/juce_AudioSubsectionReader.h \
++	juce_appframework/audio/audio_file_formats/juce_AiffAudioFormat.h \
++	juce_appframework/audio/audio_file_formats/juce_AudioCDReader.h \
++	juce_appframework/audio/audio_file_formats/juce_AudioThumbnail.h \
++	juce_appframework/audio/audio_file_formats/juce_OggVorbisAudioFormat.h \
++	juce_appframework/audio/devices/juce_MidiInput.h \
++	juce_appframework/audio/devices/juce_MidiOutput.h \
++	juce_appframework/audio/devices/juce_AudioDeviceManager.h \
++	juce_appframework/audio/devices/juce_AudioIODevice.h \
++	juce_appframework/audio/devices/juce_AudioIODeviceType.h \
++	juce_appframework/audio/dsp/juce_AudioSampleBuffer.h \
++	juce_appframework/audio/dsp/juce_IIRFilter.h \
++	juce_appframework/audio/dsp/juce_AudioDataConverters.h \
++	juce_appframework/events/juce_Message.h \
++	juce_appframework/events/juce_MessageListener.h \
++	juce_appframework/events/juce_AsyncUpdater.h \
++	juce_appframework/events/juce_ActionListener.h \
++	juce_appframework/events/juce_MessageManager.h \
++	juce_appframework/events/juce_InterprocessConnectionServer.h \
++	juce_appframework/events/juce_ChangeBroadcaster.h \
++	juce_appframework/events/juce_ActionListenerList.h \
++	juce_appframework/events/juce_MultiTimer.h \
++	juce_appframework/events/juce_ActionBroadcaster.h \
++	juce_appframework/events/juce_Timer.h \
++	juce_appframework/events/juce_InterprocessConnection.h \
++	juce_appframework/events/juce_ChangeListenerList.h \
++	juce_appframework/events/juce_ChangeListener.h \
++	juce_appframework/documents/juce_UndoableAction.h \
++	juce_appframework/documents/juce_UndoManager.h \
++	juce_appframework/documents/juce_FileBasedDocument.h \
++	juce_appframework/documents/juce_SelectedItemSet.h \
++	juce_appframework/documents/juce_RecentlyOpenedFilesList.h \
++	juce_appframework/gui/components/juce_Component.h \
++	juce_appframework/gui/components/filebrowser/juce_DirectoryContentsDisplayComponent.h \
++	juce_appframework/gui/components/filebrowser/juce_FileTreeComponent.h \
++	juce_appframework/gui/components/filebrowser/juce_FilenameComponent.h \
++	juce_appframework/gui/components/filebrowser/juce_WildcardFileFilter.h \
++	juce_appframework/gui/components/filebrowser/juce_DirectoryContentsList.h \
++	juce_appframework/gui/components/filebrowser/juce_FilePreviewComponent.h \
++	juce_appframework/gui/components/filebrowser/juce_FileBrowserComponent.h \
++	juce_appframework/gui/components/filebrowser/juce_FileListComponent.h \
++	juce_appframework/gui/components/filebrowser/juce_FileBrowserListener.h \
++	juce_appframework/gui/components/filebrowser/juce_FileSearchPathListComponent.h \
++	juce_appframework/gui/components/filebrowser/juce_FileChooser.h \
++	juce_appframework/gui/components/filebrowser/juce_FileChooserDialogBox.h \
++	juce_appframework/gui/components/filebrowser/juce_FileFilter.h \
++	juce_appframework/gui/components/filebrowser/juce_ImagePreviewComponent.h \
++	juce_appframework/gui/components/properties/juce_PropertyPanel.h \
++	juce_appframework/gui/components/properties/juce_TextPropertyComponent.h \
++	juce_appframework/gui/components/properties/juce_BooleanPropertyComponent.h \
++	juce_appframework/gui/components/properties/juce_ChoicePropertyComponent.h \
++	juce_appframework/gui/components/properties/juce_SliderPropertyComponent.h \
++	juce_appframework/gui/components/properties/juce_ButtonPropertyComponent.h \
++	juce_appframework/gui/components/properties/juce_PropertyComponent.h \
++	juce_appframework/gui/components/windows/juce_TooltipWindow.h \
++	juce_appframework/gui/components/windows/juce_ThreadWithProgressWindow.h \
++	juce_appframework/gui/components/windows/juce_ResizableWindow.h \
++	juce_appframework/gui/components/windows/juce_DocumentWindow.h \
++	juce_appframework/gui/components/windows/juce_ComponentPeer.h \
++	juce_appframework/gui/components/windows/juce_TopLevelWindow.h \
++	juce_appframework/gui/components/windows/juce_DialogWindow.h \
++	juce_appframework/gui/components/windows/juce_SplashScreen.h \
++	juce_appframework/gui/components/windows/juce_AlertWindow.h \
++	juce_appframework/gui/components/juce_Desktop.h \
++	juce_appframework/gui/components/mouse/juce_LassoComponent.h \
++	juce_appframework/gui/components/mouse/juce_FileDragAndDropTarget.h \
++	juce_appframework/gui/components/mouse/juce_MouseListener.h \
++	juce_appframework/gui/components/mouse/juce_MouseCursor.h \
++	juce_appframework/gui/components/mouse/juce_MouseEvent.h \
++	juce_appframework/gui/components/mouse/juce_ComponentDragger.h \
++	juce_appframework/gui/components/mouse/juce_TooltipClient.h \
++	juce_appframework/gui/components/mouse/juce_MouseHoverDetector.h \
++	juce_appframework/gui/components/mouse/juce_DragAndDropTarget.h \
++	juce_appframework/gui/components/mouse/juce_DragAndDropContainer.h \
++	juce_appframework/gui/components/layout/juce_StretchableLayoutResizerBar.h \
++	juce_appframework/gui/components/layout/juce_TabbedComponent.h \
++	juce_appframework/gui/components/layout/juce_Viewport.h \
++	juce_appframework/gui/components/layout/juce_ResizableBorderComponent.h \
++	juce_appframework/gui/components/layout/juce_StretchableObjectResizer.h \
++	juce_appframework/gui/components/layout/juce_ResizableCornerComponent.h \
++	juce_appframework/gui/components/layout/juce_ComponentMovementWatcher.h \
++	juce_appframework/gui/components/layout/juce_ComponentBoundsConstrainer.h \
++	juce_appframework/gui/components/layout/juce_StretchableLayoutManager.h \
++	juce_appframework/gui/components/layout/juce_ScrollBar.h \
++	juce_appframework/gui/components/layout/juce_TabbedButtonBar.h \
++	juce_appframework/gui/components/layout/juce_MultiDocumentPanel.h \
++	juce_appframework/gui/components/layout/juce_ComponentAnimator.h \
++	juce_appframework/gui/components/layout/juce_GroupComponent.h \
++	juce_appframework/gui/components/juce_ComponentListener.h \
++	juce_appframework/gui/components/keyboard/juce_KeyMappingEditorComponent.h \
++	juce_appframework/gui/components/keyboard/juce_KeyPress.h \
++	juce_appframework/gui/components/keyboard/juce_KeyboardFocusTraverser.h \
++	juce_appframework/gui/components/keyboard/juce_KeyPressMappingSet.h \
++	juce_appframework/gui/components/keyboard/juce_ModifierKeys.h \
++	juce_appframework/gui/components/keyboard/juce_KeyListener.h \
++	juce_appframework/gui/components/menus/juce_PopupMenu.h \
++	juce_appframework/gui/components/menus/juce_MenuBarComponent.h \
++	juce_appframework/gui/components/menus/juce_MenuBarModel.h \
++	juce_appframework/gui/components/menus/juce_PopupMenuCustomComponent.h \
++	juce_appframework/gui/components/special/juce_PreferencesPanel.h \
++	juce_appframework/gui/components/special/juce_DropShadower.h \
++	juce_appframework/gui/components/special/juce_OpenGLComponent.h \
++	juce_appframework/gui/components/special/juce_WebBrowserComponent.h \
++	juce_appframework/gui/components/special/juce_MagnifierComponent.h \
++	juce_appframework/gui/components/special/juce_MidiKeyboardComponent.h \
++	juce_appframework/gui/components/special/juce_ColourSelector.h \
++	juce_appframework/gui/components/special/juce_BubbleComponent.h \
++	juce_appframework/gui/components/special/juce_AudioDeviceSelectorComponent.h \
++	juce_appframework/gui/components/special/juce_QuickTimeMovieComponent.h \
++	juce_appframework/gui/components/special/juce_BubbleMessageComponent.h \
++	juce_appframework/gui/components/special/juce_SystemTrayIconComponent.h \
++	juce_appframework/gui/components/special/juce_ActiveXControlComponent.h \
++	juce_appframework/gui/components/juce_ComponentDeletionWatcher.h \
++	juce_appframework/gui/components/lookandfeel/juce_OldSchoolLookAndFeel.h \
++	juce_appframework/gui/components/lookandfeel/juce_LookAndFeel.h \
++	juce_appframework/gui/components/controls/juce_Toolbar.h \
++	juce_appframework/gui/components/controls/juce_TableHeaderComponent.h \
++	juce_appframework/gui/components/controls/juce_Slider.h \
++	juce_appframework/gui/components/controls/juce_ToolbarItemComponent.h \
++	juce_appframework/gui/components/controls/juce_TableListBox.h \
++	juce_appframework/gui/components/controls/juce_TextEditor.h \
++	juce_appframework/gui/components/controls/juce_ToolbarItemPalette.h \
++	juce_appframework/gui/components/controls/juce_ComboBox.h \
++	juce_appframework/gui/components/controls/juce_ToolbarItemFactory.h \
++	juce_appframework/gui/components/controls/juce_SliderListener.h \
++	juce_appframework/gui/components/controls/juce_ProgressBar.h \
++	juce_appframework/gui/components/controls/juce_TreeView.h \
++	juce_appframework/gui/components/controls/juce_Label.h \
++	juce_appframework/gui/components/controls/juce_ListBox.h \
++	juce_appframework/gui/components/buttons/juce_HyperlinkButton.h \
++	juce_appframework/gui/components/buttons/juce_ToolbarButton.h \
++	juce_appframework/gui/components/buttons/juce_ToggleButton.h \
++	juce_appframework/gui/components/buttons/juce_Button.h \
++	juce_appframework/gui/components/buttons/juce_TextButton.h \
++	juce_appframework/gui/components/buttons/juce_ArrowButton.h \
++	juce_appframework/gui/components/buttons/juce_ImageButton.h \
++	juce_appframework/gui/components/buttons/juce_DrawableButton.h \
++	juce_appframework/gui/components/buttons/juce_ShapeButton.h \
++	juce_appframework/gui/graphics/effects/juce_DropShadowEffect.h \
++	juce_appframework/gui/graphics/effects/juce_ImageEffectFilter.h \
++	juce_appframework/gui/graphics/effects/juce_GlowEffect.h \
++	juce_appframework/gui/graphics/effects/juce_ReduceOpacityEffect.h \
++	juce_appframework/gui/graphics/colour/juce_ColourGradient.h \
++	juce_appframework/gui/graphics/colour/juce_PixelFormats.h \
++	juce_appframework/gui/graphics/colour/juce_Colour.h \
++	juce_appframework/gui/graphics/colour/juce_Colours.h \
++	juce_appframework/gui/graphics/contexts/juce_LowLevelGraphicsPostScriptRenderer.h \
++	juce_appframework/gui/graphics/contexts/juce_LowLevelGraphicsSoftwareRenderer.h \
++	juce_appframework/gui/graphics/contexts/juce_EdgeTable.h \
++	juce_appframework/gui/graphics/contexts/juce_Graphics.h \
++	juce_appframework/gui/graphics/contexts/juce_LowLevelGraphicsContext.h \
++	juce_appframework/gui/graphics/contexts/juce_RectanglePlacement.h \
++	juce_appframework/gui/graphics/contexts/juce_Justification.h \
++	juce_appframework/gui/graphics/brushes/juce_GradientBrush.h \
++	juce_appframework/gui/graphics/brushes/juce_Brush.h \
++	juce_appframework/gui/graphics/brushes/juce_ImageBrush.h \
++	juce_appframework/gui/graphics/brushes/juce_SolidColourBrush.h \
++	juce_appframework/gui/graphics/fonts/juce_Typeface.h \
++	juce_appframework/gui/graphics/fonts/juce_TextLayout.h \
++	juce_appframework/gui/graphics/fonts/juce_Font.h \
++	juce_appframework/gui/graphics/fonts/juce_GlyphArrangement.h \
++	juce_appframework/gui/graphics/imaging/juce_ImageConvolutionKernel.h \
++	juce_appframework/gui/graphics/imaging/juce_ImageCache.h \
++	juce_appframework/gui/graphics/imaging/juce_ImageFileFormat.h \
++	juce_appframework/gui/graphics/imaging/juce_Image.h \
++	juce_appframework/gui/graphics/imaging/image_file_formats/juce_GIFLoader.h \
++	juce_appframework/gui/graphics/drawables/juce_DrawableText.h \
++	juce_appframework/gui/graphics/drawables/juce_Drawable.h \
++	juce_appframework/gui/graphics/drawables/juce_DrawableImage.h \
++	juce_appframework/gui/graphics/drawables/juce_DrawableComposite.h \
++	juce_appframework/gui/graphics/drawables/juce_DrawablePath.h \
++	juce_appframework/gui/graphics/geometry/juce_Line.h \
++	juce_appframework/gui/graphics/geometry/juce_Point.h \
++	juce_appframework/gui/graphics/geometry/juce_Path.h \
++	juce_appframework/gui/graphics/geometry/juce_PathIterator.h \
++	juce_appframework/gui/graphics/geometry/juce_AffineTransform.h \
++	juce_appframework/gui/graphics/geometry/juce_BorderSize.h \
++	juce_appframework/gui/graphics/geometry/juce_PositionedRectangle.h \
++	juce_appframework/gui/graphics/geometry/juce_Rectangle.h \
++	juce_appframework/gui/graphics/geometry/juce_PathStrokeType.h \
++	juce_appframework/gui/graphics/geometry/juce_RectangleList.h \
++	juce_appframework/application/juce_Application.h \
++	juce_appframework/application/juce_ApplicationCommandTarget.h \
++	juce_appframework/application/juce_ApplicationCommandID.h \
++	juce_appframework/application/juce_PropertiesFile.h \
++	juce_appframework/application/juce_ApplicationProperties.h \
++	juce_appframework/application/juce_ApplicationCommandInfo.h \
++	juce_appframework/application/juce_ApplicationCommandManager.h \
++	juce_appframework/application/juce_DeletedAtShutdown.h \
++	juce_appframework/application/juce_SystemClipboard.h \
++	juce_core_includes.h
+diff -r -u -- juce_orig/build/juce.h juce/build/juce.h
+--- juce_orig/build/juce.h	2008-07-28 14:28:36.000000000 +0200
++++ juce/build/juce.h	2008-07-29 21:11:22.000000000 +0200
+@@ -40,7 +40,7 @@
+ //==============================================================================
+ 
+ // (this includes things that need defining outside of the JUCE namespace)
+-#include "src/juce_core/basics/juce_StandardHeader.h"
++#include "juce_core/basics/juce_StandardHeader.h"
+ 
+ BEGIN_JUCE_NAMESPACE
+ 
+@@ -58,12 +58,12 @@
+ #define JUCE_PUBLIC_INCLUDES
+ 
+ // this is where all the class header files get brought in..
+-#include "src/juce_core_includes.h"
++#include "juce_core_includes.h"
+ 
+ // if you're compiling a command-line app, you might want to just include the core headers,
+ // so you can set this macro before including juce.h
+ #if ! JUCE_ONLY_BUILD_CORE_LIBRARY
+-  #include "src/juce_app_includes.h"
++  #include "juce_app_includes.h"
+ #endif
+ 
+ #if JUCE_MSVC
+diff -r -u -- juce_orig/src/juce_WithoutMacros.h juce/src/juce_WithoutMacros.h
+--- juce_orig/src/juce_WithoutMacros.h	2008-07-28 14:28:34.000000000 +0200
++++ juce/src/juce_WithoutMacros.h	2008-07-29 21:11:22.000000000 +0200
+@@ -47,12 +47,12 @@
+     ..then you can avoid the problems by doing this:
+ 
+     @code
+-    #include <src/juce_WithoutMacros.h> // includes everything in juce.h, but
++    #include <juce_WithoutMacros.h> // includes everything in juce.h, but
+                                         // without the macros that are likely to confict
+ 
+     #include "problematic_3rd_party_header_file.h"
+ 
+-    #include <src/juce_DefineMacros.h>  // this is optional - including it after the
++    #include <juce_DefineMacros.h>  // this is optional - including it after the
+                                         // 3rd party file will re-define the juce macros
+                                         // that were omitted previously. You may need to
+                                         // avoid including this if your code later on uses
+diff -r -u -- juce_orig/juce.h juce/juce.h
+--- juce_orig/juce.h	2008-07-28 14:28:34.000000000 +0200
++++ juce/juce.h	2008-07-29 21:11:22.000000000 +0200
+@@ -40,7 +40,7 @@
+ //==============================================================================
+ 
+ // (this includes things that need defining outside of the JUCE namespace)
+-#include "src/juce_core/basics/juce_StandardHeader.h"
++#include "juce_core/basics/juce_StandardHeader.h"
+ 
+ BEGIN_JUCE_NAMESPACE
+ 
+@@ -58,12 +58,12 @@
+ #define JUCE_PUBLIC_INCLUDES
+ 
+ // this is where all the class header files get brought in..
+-#include "src/juce_core_includes.h"
++#include "juce_core_includes.h"
+ 
+ // if you're compiling a command-line app, you might want to just include the core headers,
+ // so you can set this macro before including juce.h
+ #if ! JUCE_ONLY_BUILD_CORE_LIBRARY
+-  #include "src/juce_app_includes.h"
++  #include "juce_app_includes.h"
+ #endif
+ 
+ #if JUCE_MSVC
+--- juce_orig/build/gnu/Makefile.am	2008-07-29 21:22:33.000000000 +0200
++++ juce/build/gnu/Makefile.am	2008-07-29 21:23:01.000000000 +0200
+@@ -763,318 +763,4 @@
+ nobase_include_HEADERS = \
+ 	juce.h \
+ 	juce_Config.h \
+-	juce_amalgamated.h \
+-	src/juce_core/cryptography/juce_MD5.h \
+-	src/juce_core/cryptography/juce_BlowFish.h \
+-	src/juce_core/cryptography/juce_Primes.h \
+-	src/juce_core/cryptography/juce_RSAKey.h \
+-	src/juce_core/basics/juce_PlatformDefs.h \
+-	src/juce_core/basics/juce_RelativeTime.h \
+-	src/juce_core/basics/juce_Initialisation.h \
+-	src/juce_core/basics/juce_SystemStats.h \
+-	src/juce_core/basics/juce_Atomic.h \
+-	src/juce_core/basics/juce_MathsFunctions.h \
+-	src/juce_core/basics/juce_Random.h \
+-	src/juce_core/basics/juce_Logger.h \
+-	src/juce_core/basics/juce_Singleton.h \
+-	src/juce_core/basics/juce_DataConversions.h \
+-	src/juce_core/basics/juce_StandardHeader.h \
+-	src/juce_core/basics/juce_Time.h \
+-	src/juce_core/basics/juce_Memory.h \
+-	src/juce_core/basics/juce_FileLogger.h \
+-	src/juce_core/io/juce_InputStream.h \
+-	src/juce_core/io/network/juce_Socket.h \
+-	src/juce_core/io/network/juce_URL.h \
+-	src/juce_core/io/files/juce_File.h \
+-	src/juce_core/io/files/juce_NamedPipe.h \
+-	src/juce_core/io/files/juce_FileOutputStream.h \
+-	src/juce_core/io/files/juce_DirectoryIterator.h \
+-	src/juce_core/io/files/juce_FileInputStream.h \
+-	src/juce_core/io/files/juce_FileSearchPath.h \
+-	src/juce_core/io/juce_OutputStream.h \
+-	src/juce_core/io/streams/juce_MemoryOutputStream.h \
+-	src/juce_core/io/streams/juce_SubregionStream.h \
+-	src/juce_core/io/streams/juce_InputSource.h \
+-	src/juce_core/io/streams/juce_BufferedInputStream.h \
+-	src/juce_core/io/streams/juce_GZIPCompressorOutputStream.h \
+-	src/juce_core/io/streams/juce_MemoryInputStream.h \
+-	src/juce_core/io/streams/juce_FileInputSource.h \
+-	src/juce_core/io/streams/juce_GZIPDecompressorInputStream.h \
+-	src/juce_core/misc/juce_PerformanceCounter.h \
+-	src/juce_core/misc/juce_PlatformUtilities.h \
+-	src/juce_core/misc/juce_Uuid.h \
+-	src/juce_core/misc/juce_ZipFile.h \
+-	src/juce_core/containers/juce_SortedSet.h \
+-	src/juce_core/containers/juce_Array.h \
+-	src/juce_core/containers/juce_BitArray.h \
+-	src/juce_core/containers/juce_ElementComparator.h \
+-	src/juce_core/containers/juce_PropertySet.h \
+-	src/juce_core/containers/juce_OwnedArray.h \
+-	src/juce_core/containers/juce_SparseSet.h \
+-	src/juce_core/containers/juce_ArrayAllocationBase.h \
+-	src/juce_core/containers/juce_ReferenceCountedArray.h \
+-	src/juce_core/containers/juce_ReferenceCountedObject.h \
+-	src/juce_core/containers/juce_VoidArray.h \
+-	src/juce_core/containers/juce_MemoryBlock.h \
+-	src/juce_core/threads/juce_ScopedLock.h \
+-	src/juce_core/threads/juce_InterProcessLock.h \
+-	src/juce_core/threads/juce_WaitableEvent.h \
+-	src/juce_core/threads/juce_ReadWriteLock.h \
+-	src/juce_core/threads/juce_ScopedWriteLock.h \
+-	src/juce_core/threads/juce_Process.h \
+-	src/juce_core/threads/juce_ThreadPool.h \
+-	src/juce_core/threads/juce_CriticalSection.h \
+-	src/juce_core/threads/juce_TimeSliceThread.h \
+-	src/juce_core/threads/juce_ScopedTryLock.h \
+-	src/juce_core/threads/juce_ScopedReadLock.h \
+-	src/juce_core/threads/juce_Thread.h \
+-	src/juce_core/text/juce_XmlElement.h \
+-	src/juce_core/text/juce_String.h \
+-	src/juce_core/text/juce_XmlDocument.h \
+-	src/juce_core/text/juce_CharacterFunctions.h \
+-	src/juce_core/text/juce_StringArray.h \
+-	src/juce_core/text/juce_StringPairArray.h \
+-	src/juce_core/text/juce_LocalisedStrings.h \
+-	src/juce_DefineMacros.h \
+-	src/juce_WithoutMacros.h \
+-	src/juce_amalgamated_template.h \
+-	src/juce_app_includes.h \
+-	src/juce_appframework/audio/plugins/juce_PluginDescription.h \
+-	src/juce_appframework/audio/plugins/juce_KnownPluginList.h \
+-	src/juce_appframework/audio/plugins/juce_AudioPluginFormatManager.h \
+-	src/juce_appframework/audio/plugins/juce_AudioPluginInstance.h \
+-	src/juce_appframework/audio/plugins/formats/juce_LADSPAPluginFormat.h \
+-	src/juce_appframework/audio/plugins/formats/juce_VSTPluginFormat.h \
+-	src/juce_appframework/audio/plugins/formats/juce_DirectXPluginFormat.h \
+-	src/juce_appframework/audio/plugins/formats/juce_AudioUnitPluginFormat.h \
+-	src/juce_appframework/audio/plugins/juce_PluginListComponent.h \
+-	src/juce_appframework/audio/plugins/juce_AudioPluginFormat.h \
+-	src/juce_appframework/audio/plugins/juce_PluginDirectoryScanner.h \
+-	src/juce_appframework/audio/synthesisers/juce_Synthesiser.h \
+-	src/juce_appframework/audio/synthesisers/juce_Sampler.h \
+-	src/juce_appframework/audio/audio_sources/juce_BufferingAudioSource.h \
+-	src/juce_appframework/audio/audio_sources/juce_AudioTransportSource.h \
+-	src/juce_appframework/audio/audio_sources/juce_PositionableAudioSource.h \
+-	src/juce_appframework/audio/audio_sources/juce_AudioFormatReaderSource.h \
+-	src/juce_appframework/audio/audio_sources/juce_ResamplingAudioSource.h \
+-	src/juce_appframework/audio/audio_sources/juce_IIRFilterAudioSource.h \
+-	src/juce_appframework/audio/audio_sources/juce_ToneGeneratorAudioSource.h \
+-	src/juce_appframework/audio/audio_sources/juce_MixerAudioSource.h \
+-	src/juce_appframework/audio/audio_sources/juce_AudioSourcePlayer.h \
+-	src/juce_appframework/audio/audio_sources/juce_AudioSource.h \
+-	src/juce_appframework/audio/audio_sources/juce_ChannelRemappingAudioSource.h \
+-	src/juce_appframework/audio/processors/juce_AudioProcessor.h \
+-	src/juce_appframework/audio/processors/juce_AudioProcessorPlayer.h \
+-	src/juce_appframework/audio/processors/juce_AudioProcessorListener.h \
+-	src/juce_appframework/audio/processors/juce_AudioProcessorEditor.h \
+-	src/juce_appframework/audio/processors/juce_AudioPlayHead.h \
+-	src/juce_appframework/audio/processors/juce_GenericAudioProcessorEditor.h \
+-	src/juce_appframework/audio/processors/juce_AudioProcessorGraph.h \
+-	src/juce_appframework/audio/midi/juce_MidiFile.h \
+-	src/juce_appframework/audio/midi/juce_MidiMessage.h \
+-	src/juce_appframework/audio/midi/juce_MidiMessageSequence.h \
+-	src/juce_appframework/audio/midi/juce_MidiKeyboardState.h \
+-	src/juce_appframework/audio/midi/juce_MidiMessageCollector.h \
+-	src/juce_appframework/audio/midi/juce_MidiBuffer.h \
+-	src/juce_appframework/audio/audio_file_formats/oggvorbis/juce_OggVorbisHeader.h \
+-	src/juce_appframework/audio/audio_file_formats/juce_WavAudioFormat.h \
+-	src/juce_appframework/audio/audio_file_formats/juce_QuickTimeAudioFormat.h \
+-	src/juce_appframework/audio/audio_file_formats/flac/libFLAC/juce_FlacHeader.h \
+-	src/juce_appframework/audio/audio_file_formats/juce_AudioFormatWriter.h \
+-	src/juce_appframework/audio/audio_file_formats/juce_AudioThumbnailCache.h \
+-	src/juce_appframework/audio/audio_file_formats/juce_AudioFormatReader.h \
+-	src/juce_appframework/audio/audio_file_formats/juce_AudioFormatManager.h \
+-	src/juce_appframework/audio/audio_file_formats/juce_FlacAudioFormat.h \
+-	src/juce_appframework/audio/audio_file_formats/juce_AudioCDBurner.h \
+-	src/juce_appframework/audio/audio_file_formats/juce_AudioFormat.h \
+-	src/juce_appframework/audio/audio_file_formats/juce_AudioSubsectionReader.h \
+-	src/juce_appframework/audio/audio_file_formats/juce_AiffAudioFormat.h \
+-	src/juce_appframework/audio/audio_file_formats/juce_AudioCDReader.h \
+-	src/juce_appframework/audio/audio_file_formats/juce_AudioThumbnail.h \
+-	src/juce_appframework/audio/audio_file_formats/juce_OggVorbisAudioFormat.h \
+-	src/juce_appframework/audio/devices/juce_MidiInput.h \
+-	src/juce_appframework/audio/devices/juce_MidiOutput.h \
+-	src/juce_appframework/audio/devices/juce_AudioDeviceManager.h \
+-	src/juce_appframework/audio/devices/juce_AudioIODevice.h \
+-	src/juce_appframework/audio/devices/juce_AudioIODeviceType.h \
+-	src/juce_appframework/audio/dsp/juce_AudioSampleBuffer.h \
+-	src/juce_appframework/audio/dsp/juce_IIRFilter.h \
+-	src/juce_appframework/audio/dsp/juce_AudioDataConverters.h \
+-	src/juce_appframework/events/juce_Message.h \
+-	src/juce_appframework/events/juce_MessageListener.h \
+-	src/juce_appframework/events/juce_AsyncUpdater.h \
+-	src/juce_appframework/events/juce_ActionListener.h \
+-	src/juce_appframework/events/juce_MessageManager.h \
+-	src/juce_appframework/events/juce_InterprocessConnectionServer.h \
+-	src/juce_appframework/events/juce_ChangeBroadcaster.h \
+-	src/juce_appframework/events/juce_ActionListenerList.h \
+-	src/juce_appframework/events/juce_MultiTimer.h \
+-	src/juce_appframework/events/juce_ActionBroadcaster.h \
+-	src/juce_appframework/events/juce_Timer.h \
+-	src/juce_appframework/events/juce_InterprocessConnection.h \
+-	src/juce_appframework/events/juce_ChangeListenerList.h \
+-	src/juce_appframework/events/juce_ChangeListener.h \
+-	src/juce_appframework/documents/juce_UndoableAction.h \
+-	src/juce_appframework/documents/juce_UndoManager.h \
+-	src/juce_appframework/documents/juce_FileBasedDocument.h \
+-	src/juce_appframework/documents/juce_SelectedItemSet.h \
+-	src/juce_appframework/documents/juce_RecentlyOpenedFilesList.h \
+-	src/juce_appframework/gui/components/juce_Component.h \
+-	src/juce_appframework/gui/components/filebrowser/juce_DirectoryContentsDisplayComponent.h \
+-	src/juce_appframework/gui/components/filebrowser/juce_FileTreeComponent.h \
+-	src/juce_appframework/gui/components/filebrowser/juce_FilenameComponent.h \
+-	src/juce_appframework/gui/components/filebrowser/juce_WildcardFileFilter.h \
+-	src/juce_appframework/gui/components/filebrowser/juce_DirectoryContentsList.h \
+-	src/juce_appframework/gui/components/filebrowser/juce_FilePreviewComponent.h \
+-	src/juce_appframework/gui/components/filebrowser/juce_FileBrowserComponent.h \
+-	src/juce_appframework/gui/components/filebrowser/juce_FileListComponent.h \
+-	src/juce_appframework/gui/components/filebrowser/juce_FileBrowserListener.h \
+-	src/juce_appframework/gui/components/filebrowser/juce_FileSearchPathListComponent.h \
+-	src/juce_appframework/gui/components/filebrowser/juce_FileChooser.h \
+-	src/juce_appframework/gui/components/filebrowser/juce_FileChooserDialogBox.h \
+-	src/juce_appframework/gui/components/filebrowser/juce_FileFilter.h \
+-	src/juce_appframework/gui/components/filebrowser/juce_ImagePreviewComponent.h \
+-	src/juce_appframework/gui/components/properties/juce_PropertyPanel.h \
+-	src/juce_appframework/gui/components/properties/juce_TextPropertyComponent.h \
+-	src/juce_appframework/gui/components/properties/juce_BooleanPropertyComponent.h \
+-	src/juce_appframework/gui/components/properties/juce_ChoicePropertyComponent.h \
+-	src/juce_appframework/gui/components/properties/juce_SliderPropertyComponent.h \
+-	src/juce_appframework/gui/components/properties/juce_ButtonPropertyComponent.h \
+-	src/juce_appframework/gui/components/properties/juce_PropertyComponent.h \
+-	src/juce_appframework/gui/components/windows/juce_TooltipWindow.h \
+-	src/juce_appframework/gui/components/windows/juce_ThreadWithProgressWindow.h \
+-	src/juce_appframework/gui/components/windows/juce_ResizableWindow.h \
+-	src/juce_appframework/gui/components/windows/juce_DocumentWindow.h \
+-	src/juce_appframework/gui/components/windows/juce_ComponentPeer.h \
+-	src/juce_appframework/gui/components/windows/juce_TopLevelWindow.h \
+-	src/juce_appframework/gui/components/windows/juce_DialogWindow.h \
+-	src/juce_appframework/gui/components/windows/juce_SplashScreen.h \
+-	src/juce_appframework/gui/components/windows/juce_AlertWindow.h \
+-	src/juce_appframework/gui/components/juce_Desktop.h \
+-	src/juce_appframework/gui/components/mouse/juce_LassoComponent.h \
+-	src/juce_appframework/gui/components/mouse/juce_FileDragAndDropTarget.h \
+-	src/juce_appframework/gui/components/mouse/juce_MouseListener.h \
+-	src/juce_appframework/gui/components/mouse/juce_MouseCursor.h \
+-	src/juce_appframework/gui/components/mouse/juce_MouseEvent.h \
+-	src/juce_appframework/gui/components/mouse/juce_ComponentDragger.h \
+-	src/juce_appframework/gui/components/mouse/juce_TooltipClient.h \
+-	src/juce_appframework/gui/components/mouse/juce_MouseHoverDetector.h \
+-	src/juce_appframework/gui/components/mouse/juce_DragAndDropTarget.h \
+-	src/juce_appframework/gui/components/mouse/juce_DragAndDropContainer.h \
+-	src/juce_appframework/gui/components/layout/juce_StretchableLayoutResizerBar.h \
+-	src/juce_appframework/gui/components/layout/juce_TabbedComponent.h \
+-	src/juce_appframework/gui/components/layout/juce_Viewport.h \
+-	src/juce_appframework/gui/components/layout/juce_ResizableBorderComponent.h \
+-	src/juce_appframework/gui/components/layout/juce_StretchableObjectResizer.h \
+-	src/juce_appframework/gui/components/layout/juce_ResizableCornerComponent.h \
+-	src/juce_appframework/gui/components/layout/juce_ComponentMovementWatcher.h \
+-	src/juce_appframework/gui/components/layout/juce_ComponentBoundsConstrainer.h \
+-	src/juce_appframework/gui/components/layout/juce_StretchableLayoutManager.h \
+-	src/juce_appframework/gui/components/layout/juce_ScrollBar.h \
+-	src/juce_appframework/gui/components/layout/juce_TabbedButtonBar.h \
+-	src/juce_appframework/gui/components/layout/juce_MultiDocumentPanel.h \
+-	src/juce_appframework/gui/components/layout/juce_ComponentAnimator.h \
+-	src/juce_appframework/gui/components/layout/juce_GroupComponent.h \
+-	src/juce_appframework/gui/components/juce_ComponentListener.h \
+-	src/juce_appframework/gui/components/keyboard/juce_KeyMappingEditorComponent.h \
+-	src/juce_appframework/gui/components/keyboard/juce_KeyPress.h \
+-	src/juce_appframework/gui/components/keyboard/juce_KeyboardFocusTraverser.h \
+-	src/juce_appframework/gui/components/keyboard/juce_KeyPressMappingSet.h \
+-	src/juce_appframework/gui/components/keyboard/juce_ModifierKeys.h \
+-	src/juce_appframework/gui/components/keyboard/juce_KeyListener.h \
+-	src/juce_appframework/gui/components/menus/juce_PopupMenu.h \
+-	src/juce_appframework/gui/components/menus/juce_MenuBarComponent.h \
+-	src/juce_appframework/gui/components/menus/juce_MenuBarModel.h \
+-	src/juce_appframework/gui/components/menus/juce_PopupMenuCustomComponent.h \
+-	src/juce_appframework/gui/components/special/juce_PreferencesPanel.h \
+-	src/juce_appframework/gui/components/special/juce_DropShadower.h \
+-	src/juce_appframework/gui/components/special/juce_OpenGLComponent.h \
+-	src/juce_appframework/gui/components/special/juce_WebBrowserComponent.h \
+-	src/juce_appframework/gui/components/special/juce_MagnifierComponent.h \
+-	src/juce_appframework/gui/components/special/juce_MidiKeyboardComponent.h \
+-	src/juce_appframework/gui/components/special/juce_ColourSelector.h \
+-	src/juce_appframework/gui/components/special/juce_BubbleComponent.h \
+-	src/juce_appframework/gui/components/special/juce_AudioDeviceSelectorComponent.h \
+-	src/juce_appframework/gui/components/special/juce_QuickTimeMovieComponent.h \
+-	src/juce_appframework/gui/components/special/juce_BubbleMessageComponent.h \
+-	src/juce_appframework/gui/components/special/juce_SystemTrayIconComponent.h \
+-	src/juce_appframework/gui/components/special/juce_ActiveXControlComponent.h \
+-	src/juce_appframework/gui/components/juce_ComponentDeletionWatcher.h \
+-	src/juce_appframework/gui/components/lookandfeel/juce_OldSchoolLookAndFeel.h \
+-	src/juce_appframework/gui/components/lookandfeel/juce_LookAndFeel.h \
+-	src/juce_appframework/gui/components/controls/juce_Toolbar.h \
+-	src/juce_appframework/gui/components/controls/juce_TableHeaderComponent.h \
+-	src/juce_appframework/gui/components/controls/juce_Slider.h \
+-	src/juce_appframework/gui/components/controls/juce_ToolbarItemComponent.h \
+-	src/juce_appframework/gui/components/controls/juce_TableListBox.h \
+-	src/juce_appframework/gui/components/controls/juce_TextEditor.h \
+-	src/juce_appframework/gui/components/controls/juce_ToolbarItemPalette.h \
+-	src/juce_appframework/gui/components/controls/juce_ComboBox.h \
+-	src/juce_appframework/gui/components/controls/juce_ToolbarItemFactory.h \
+-	src/juce_appframework/gui/components/controls/juce_SliderListener.h \
+-	src/juce_appframework/gui/components/controls/juce_ProgressBar.h \
+-	src/juce_appframework/gui/components/controls/juce_TreeView.h \
+-	src/juce_appframework/gui/components/controls/juce_Label.h \
+-	src/juce_appframework/gui/components/controls/juce_ListBox.h \
+-	src/juce_appframework/gui/components/buttons/juce_HyperlinkButton.h \
+-	src/juce_appframework/gui/components/buttons/juce_ToolbarButton.h \
+-	src/juce_appframework/gui/components/buttons/juce_ToggleButton.h \
+-	src/juce_appframework/gui/components/buttons/juce_Button.h \
+-	src/juce_appframework/gui/components/buttons/juce_TextButton.h \
+-	src/juce_appframework/gui/components/buttons/juce_ArrowButton.h \
+-	src/juce_appframework/gui/components/buttons/juce_ImageButton.h \
+-	src/juce_appframework/gui/components/buttons/juce_DrawableButton.h \
+-	src/juce_appframework/gui/components/buttons/juce_ShapeButton.h \
+-	src/juce_appframework/gui/graphics/effects/juce_DropShadowEffect.h \
+-	src/juce_appframework/gui/graphics/effects/juce_ImageEffectFilter.h \
+-	src/juce_appframework/gui/graphics/effects/juce_GlowEffect.h \
+-	src/juce_appframework/gui/graphics/effects/juce_ReduceOpacityEffect.h \
+-	src/juce_appframework/gui/graphics/colour/juce_ColourGradient.h \
+-	src/juce_appframework/gui/graphics/colour/juce_PixelFormats.h \
+-	src/juce_appframework/gui/graphics/colour/juce_Colour.h \
+-	src/juce_appframework/gui/graphics/colour/juce_Colours.h \
+-	src/juce_appframework/gui/graphics/contexts/juce_LowLevelGraphicsPostScriptRenderer.h \
+-	src/juce_appframework/gui/graphics/contexts/juce_LowLevelGraphicsSoftwareRenderer.h \
+-	src/juce_appframework/gui/graphics/contexts/juce_EdgeTable.h \
+-	src/juce_appframework/gui/graphics/contexts/juce_Graphics.h \
+-	src/juce_appframework/gui/graphics/contexts/juce_LowLevelGraphicsContext.h \
+-	src/juce_appframework/gui/graphics/contexts/juce_RectanglePlacement.h \
+-	src/juce_appframework/gui/graphics/contexts/juce_Justification.h \
+-	src/juce_appframework/gui/graphics/brushes/juce_GradientBrush.h \
+-	src/juce_appframework/gui/graphics/brushes/juce_Brush.h \
+-	src/juce_appframework/gui/graphics/brushes/juce_ImageBrush.h \
+-	src/juce_appframework/gui/graphics/brushes/juce_SolidColourBrush.h \
+-	src/juce_appframework/gui/graphics/fonts/juce_Typeface.h \
+-	src/juce_appframework/gui/graphics/fonts/juce_TextLayout.h \
+-	src/juce_appframework/gui/graphics/fonts/juce_Font.h \
+-	src/juce_appframework/gui/graphics/fonts/juce_GlyphArrangement.h \
+-	src/juce_appframework/gui/graphics/imaging/juce_ImageConvolutionKernel.h \
+-	src/juce_appframework/gui/graphics/imaging/juce_ImageCache.h \
+-	src/juce_appframework/gui/graphics/imaging/juce_ImageFileFormat.h \
+-	src/juce_appframework/gui/graphics/imaging/juce_Image.h \
+-	src/juce_appframework/gui/graphics/imaging/image_file_formats/juce_GIFLoader.h \
+-	src/juce_appframework/gui/graphics/drawables/juce_DrawableText.h \
+-	src/juce_appframework/gui/graphics/drawables/juce_Drawable.h \
+-	src/juce_appframework/gui/graphics/drawables/juce_DrawableImage.h \
+-	src/juce_appframework/gui/graphics/drawables/juce_DrawableComposite.h \
+-	src/juce_appframework/gui/graphics/drawables/juce_DrawablePath.h \
+-	src/juce_appframework/gui/graphics/geometry/juce_Line.h \
+-	src/juce_appframework/gui/graphics/geometry/juce_Point.h \
+-	src/juce_appframework/gui/graphics/geometry/juce_Path.h \
+-	src/juce_appframework/gui/graphics/geometry/juce_PathIterator.h \
+-	src/juce_appframework/gui/graphics/geometry/juce_AffineTransform.h \
+-	src/juce_appframework/gui/graphics/geometry/juce_BorderSize.h \
+-	src/juce_appframework/gui/graphics/geometry/juce_PositionedRectangle.h \
+-	src/juce_appframework/gui/graphics/geometry/juce_Rectangle.h \
+-	src/juce_appframework/gui/graphics/geometry/juce_PathStrokeType.h \
+-	src/juce_appframework/gui/graphics/geometry/juce_RectangleList.h \
+-	src/juce_appframework/application/juce_Application.h \
+-	src/juce_appframework/application/juce_ApplicationCommandTarget.h \
+-	src/juce_appframework/application/juce_ApplicationCommandID.h \
+-	src/juce_appframework/application/juce_PropertiesFile.h \
+-	src/juce_appframework/application/juce_ApplicationProperties.h \
+-	src/juce_appframework/application/juce_ApplicationCommandInfo.h \
+-	src/juce_appframework/application/juce_ApplicationCommandManager.h \
+-	src/juce_appframework/application/juce_DeletedAtShutdown.h \
+-	src/juce_appframework/application/juce_SystemClipboard.h \
+-	src/juce_core_includes.h
++	juce_amalgamated.h

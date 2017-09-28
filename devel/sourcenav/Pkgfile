@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Source code analysis, editor, browser and build tool.
+#  Source-Navigator is a source code analysis tool which lets users to edit,
+#  browse and build their projects. With it, you can edit your source code,
+#  display relationships between classes and functions and members, and
+#  display call trees. You can also build your projects, either with your
+#  own makefile, or by using Source-Navigator's build system to automatically
+#  generate a makefile. Source-Navigator works with the Insight GUI interface
+#  for GDB.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=sourcenav
+version=5.2b2
+release=1
+source=($mirror_sf/sourcenav/sourcenav-$version.tar.gz)
+
+build()
+{
+  cd sourcenav-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

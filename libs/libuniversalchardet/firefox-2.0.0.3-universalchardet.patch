@@ -1,0 +1,46 @@
+diff -ru -ru mozilla_orig/extensions/universalchardet/src/Makefile.in mozilla/extensions/universalchardet/src/Makefile.in
+--- mozilla_orig/extensions/universalchardet/src/Makefile.in	2007-04-16 10:52:43.000000000 +0200
++++ mozilla/extensions/universalchardet/src/Makefile.in	2007-04-16 11:11:31.000000000 +0200
+@@ -44,15 +44,16 @@
+ 
+ include $(DEPTH)/config/autoconf.mk
+ 
++MOZ_COMPONENTS_VERSION_SCRIPT_LDFLAGS = 
+ MODULE		= universalchardet
+ LIBRARY_NAME	= universalchardet
+ EXPORT_LIBRARY	= 1
+-IS_COMPONENT	= 1
++IS_COMPONENT	= 0
+ MODULE_NAME	= nsUniversalCharDetModule
+ ifneq ($(OS_ARCH),WINNT)
+ SHORT_LIBNAME	= ucdet
+ endif
+-MOZILLA_INTERNAL_API = 1
++MOZILLA_INTERNAL_API = 0
+ 
+ REQUIRES	= xpcom \
+ 		  string \
+@@ -86,9 +87,7 @@
+ 		nsSJISProber.cpp \
+ 		nsUTF8Prober.cpp \
+ 		nsLatin1Prober.cpp \
+-		nsUniversalCharDetModule.cpp \
+ 		nsUniversalDetector.cpp \
+-		nsUdetXPCOMWrapper.cpp \
+                $(NULL)
+ 
+ # Not built on win32. Not sure why not
+@@ -96,9 +95,10 @@
+ CPPSRCS	+= LangThaiModel.cpp
+ endif
+ 
+-EXTRA_DSO_LDOPTS += \
+-		$(MOZ_COMPONENT_LIBS) \
+-		$(NULL)
++EXTRA_DSO_LDOPTS += -lnspr4
++#EXTRA_DSO_LDOPTS += \
++#		$(MOZ_COMPONENT_LIBS) \
++#		$(NULL)
+ 
+ include $(topsrcdir)/config/rules.mk
+ 

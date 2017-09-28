@@ -1,0 +1,37 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An MP3 analysis, data capturing, and data hiding utility.
+#  MP3nema is a tool aimed at analyzing and capturing data that is hidden
+#  between frames in an MP3 file or stream, otherwise noted as "out of band"
+#  data. This utility also supports adding data between frames and capturing
+#  streaming audio.
+#  .
+# URL: http://www.757labs.com/projects/mp3nema/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=mp3nema
+version=0.01
+release=1
+source=(http://www.757labs.com/projects/mp3nema/releases/mp3nema-v${version//./_}.tar.bz2)
+
+build()
+{
+  cd mp3nema-v${version//./_}
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+
+  make
+
+  install -d $ROOT/bin
+  install -m 755 mp3nema $ROOT/bin
+
+  install -d $ROOT/share/doc/mp3nema
+  install -m 644 ChangeLog LICENSE README $ROOT/share/doc/mp3nema
+}
+
+# EOF

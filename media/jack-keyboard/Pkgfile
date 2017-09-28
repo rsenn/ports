@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: jack-keyboard is a virtual MIDI keyboard - a program that allows you to send JACK MIDI events (play ;-) using your PC keyboard. It's somewhat similar to vkeybd, except it uses JACK MIDI instead of ALSA, and the keyboard mapping is much better - it uses the same layout as trackers (like Impulse Tracker) did, so you have two and half octaves under your fingers.
+# URL: http://pin.if.uz.zgora.pl/~trasz/jack-keyboard/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=jack-keyboard
+version=2.5
+release=1
+source=(http://pin.if.uz.zgora.pl/%7Etrasz/jack-keyboard/jack-keyboard-2.5.tar.gz)
+
+build()
+{
+  cd jack-keyboard-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/jack-keyboard
+  install -m 644 [A-Z]*[A-Z]* $ROOT/share/doc/jack-keyboard
+}

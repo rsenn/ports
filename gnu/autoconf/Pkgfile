@@ -1,0 +1,58 @@
+# $Id: Pkgfile,v 1.9 2007/04/22 23:07:52 roman Exp $
+#
+# Section: devel
+# Description: Automatic configure script builder.
+#  The standard for FSF source packages.  This is only useful if you
+#  write your own programs or if you extensively modify other people's
+#  programs.
+#  .
+#  For an extensive library of additional Autoconf macros, install the
+#  `autoconf-archive' package.  For a book that explains how to use
+#  Autoconf, Automake, and Libtool in conjunction, install the
+#  `autobook' package.
+#  .
+#  The Debian project regards the full documentation for autoconf to be
+#  non-free, so it is not included in Debian.  Nevertheless, the
+#  non-free distribution that accompanies Debian includes the manual in
+#  its `autoconf-doc' package.
+#  .
+#  This version of autoconf is not compatible with scripts meant for
+#  Autoconf 2.13 or earlier.  If you need support for such scripts,
+#  you must also install the autoconf2.13 package.
+#  .
+# URL: http://www.gnu.org/software/autoconf
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=autoconf
+version=2.63
+release=1
+source=($mirror_gnu/autoconf/autoconf-$version.tar.bz2
+        autoconf-2.61-datarootdir.patch
+        autoconf-2.61-msvc.patch
+        autoconf-2.61-canonical-split.patch)
+
+build()
+{
+  cd autoconf-$version
+
+  patch -N -p2 -i $SRC/autoconf-2.61-datarootdir.patch
+
+  rm -rf $SRC/autoconf-${version}_orig && cp -rvf $SRC/autoconf-${version}{,_orig}
+
+  #patch -N -p1 -i $SRC/autoconf-2.61-msvc.patch
+  patch -N -p1 -i $SRC/autoconf-2.61-canonical-split.patch
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  sed -i "s,/[^ ]*\(/bin/[^ ]\),$prefix\1,g" $ROOT/bin/*
+
+  install -d $ROOT/share/doc/autoconf
+  install -m 644 AUTHORS BUGS ChangeLog COPYING COPYINGv3 INSTALL NEWS README THANKS TODO $ROOT/share/doc/autoconf
+}

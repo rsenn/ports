@@ -1,0 +1,27 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Section: devel
+# Description: Interface for creating and manipulating ASF rewrite systems
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=asf-support
+version=1.7
+release=1
+source=(http://homepages.cwi.nl/~daybuild/releases/asf-support-1.7.tar.gz)
+
+build()
+{
+  cd asf-support-1.7
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

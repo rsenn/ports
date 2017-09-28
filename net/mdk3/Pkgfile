@@ -1,0 +1,21 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: 802.11 wireless network security testing tool.
+# URL: http://homepages.tu-darmstadt.de/~p_larbig/wlan/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=mdk3
+version=5
+release=1
+source=(http://homepages.tu-darmstadt.de/~p_larbig/wlan/mdk3-v5.tar.bz2)
+
+build()
+{
+  cd mdk3-v$version
+
+  make CFLAGS="${CFLAGS--g -O2 -Wall}"
+  make PREFIX="$prefix" DESTDIR="$PKG" install
+}
+
+# EOF

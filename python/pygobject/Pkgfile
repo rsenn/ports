@@ -1,0 +1,25 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:50 roman Exp $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=pygobject
+version=2.15.4
+release=1
+source=($mirror_gnome/sources/pygobject/${version%.*}/pygobject-$version.tar.bz2)
+
+build()
+{
+  cd pygobject-$version
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+

@@ -1,0 +1,44 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: POSIX-compliant shell
+#  The Debian Almquist Shell (dash) is a lightweight POSIX-compliant shell
+#  derived from ash.
+#  It can be usefully installed as /bin/sh (because it executes scripts
+#  faster than bash), or as the default shell for the superuser. It depends
+#  on fewer libraries than bash, and is therefore less likely to be affected
+#  by an upgrade problem or a disk failure. It is also useful for checking
+#  the POSIX compliance of scripts. POSIX-compliant shell The Debian Almquist
+#  Shell (dash) is a lightweight POSIX-compliant shell derived from ash.
+#  It can be usefully installed as /bin/sh (because it executes scripts
+#  faster than bash), or as the default shell for the superuser. It depends
+#  on fewer libraries than bash, and is therefore less likely to be affected
+#  by an upgrade problem or a disk failure. It is also useful for checking
+#  the POSIX compliance of scripts.
+# URL: 
+# Maintainer: 
+# Depends on: 
+
+name=dash
+version=0.5.5.1
+release=1
+source=(ftp://mirror.switch.ch/mirror/gentoo/distfiles/dash-$version.tar.gz)
+
+build() 
+{
+  cd dash-$version
+
+  case $prefix in
+    "/usr") bindir="/bin" ;;
+  esac
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --bindir="${bindir=$prefix/bin}"
+  
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

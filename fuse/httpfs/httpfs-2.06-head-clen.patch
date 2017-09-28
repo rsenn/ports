@@ -1,0 +1,49 @@
+--- httpfs.c_orig	2009-03-07 20:38:58.000000000 +0100
++++ httpfs.c	2009-03-07 20:59:58.000000000 +0100
+@@ -312,6 +312,7 @@
+     char* b;
+     struct timeval timeout;
+     int bytes, status;
++    int flags;
+ 
+ #ifdef USE_SSL
+     if (protocol == PROTO_HTTPS) {
+@@ -333,7 +334,7 @@
+ 
+     /* Build request buffer, starting with the HEAD. */
+ 
+-    bytes = snprintf(buf, sizeof(buf), "HEAD %s HTTP/1.1\r\nHost: %s\r\n", file_name, host);
++    bytes = snprintf(buf, sizeof(buf), "GET %s HTTP/1.1\r\nHost: %s\r\n", file_name, host);
+ #ifdef USE_AUTH
+     if ( *auth_buf != '\0' )
+ 	bytes += snprintf(&buf[bytes], sizeof(buf) - bytes, "Authorization: Basic %s\r\n", auth_buf);
+@@ -370,6 +371,10 @@
+     }
+ #endif
+ 
++    flags = fcntl(sockfd, F_GETFL);
++    flags |= O_NONBLOCK;
++    fcntl(sockfd, F_SETFL, flags);
++
+     (void) sscanf(buf, "HTTP/1.1 %d ", &status);
+     if (status != 200) {
+ 	fprintf(stderr, "%s: HEAD (read) failed with Status %d\n", argv0, status);
+@@ -381,6 +386,10 @@
+ 	return -1;
+     }
+     file_size = atoll(b+16);
++
++    while(read(sockfd, buf, sizeof(buf)) > 0)
++      ;
++
+     return 0;
+ }
+ 
+@@ -422,6 +431,7 @@
+     /* Build request buffer, starting with the GET. */
+ 
+     bytes = snprintf(buf, sizeof(buf), "GET %s HTTP/1.1\r\nHost: %s\r\n", file_name, host);
++	  bytes += snprintf(&buf[bytes], sizeof(buf) - bytes, "Transfer-Encoding: 8bit\r\n");
+     bytes += snprintf(&buf[bytes], sizeof(buf) - bytes, "Range: bytes=%llu-%llu\r\n", (unsigned long long) start, (unsigned long long) end);
+ #ifdef USE_AUTH
+     if ( *auth_buf != '\0' )

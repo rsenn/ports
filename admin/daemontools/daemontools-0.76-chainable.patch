@@ -1,0 +1,168 @@
+File admin_orig/daemontools-0.76/compile/rts-tmp/test.sv/supervise/control is a fifo while file daemontools-0.76/compile/rts-tmp/test.sv/supervise/control is a fifo
+File admin_orig/daemontools-0.76/compile/rts-tmp/test.sv/supervise/ok is a fifo while file daemontools-0.76/compile/rts-tmp/test.sv/supervise/ok is a fifo
+diff -r -u daemontools-0.76/src/Makefile daemontools-0.76/src/Makefile
+--- daemontools-0.76/src/Makefile	2007-07-29 16:39:31.000000000 +0200
++++ daemontools-0.76/src/Makefile	2007-07-29 16:50:47.000000000 +0200
+@@ -10,7 +10,7 @@
+ 	hasflock.h hasmkffo.h hassgact.h hassgprm.h hasshsgr.h haswaitp.h \
+ 	iopause.h iopause.o it load lock_ex.o lock_exnb.o makelib match.o \
+ 	matchtest matchtest.o multilog multilog.o ndelay_off.o ndelay_on.o \
+-	open_append.o open_read.o open_trunc.o open_write.o openreadclose.o \
++	open_append.o open_read.o open_trunc.o open_write.o openreadclose.o split.o \
+ 	pathexec_env.o pathexec_run.o pgrphack pgrphack.o prot.o readclose.o \
+ 	readproctitle readproctitle.o rts scan_ulong.o seek_set.o select.h \
+ 	setlock setlock.o setuidgid setuidgid.o sgetopt.o sig.o sig_block.o \
+@@ -235,6 +235,9 @@
+ openreadclose.h readclose.h stralloc.h
+ 	./compile openreadclose.c
+ 
++split.o: compile 
++	./compile split.c
++
+ pathexec_env.o: alloc.h byte.h compile env.h gen_alloc.h pathexec.h \
+ pathexec_env.c str.h stralloc.h
+ 	./compile pathexec_env.c
+@@ -359,8 +362,8 @@
+ subgetopt.o: compile subgetopt.c subgetopt.h
+ 	./compile subgetopt.c
+ 
+-supervise: byte.a deepsleep.o load supervise.o time.a unix.a
+-	./load supervise deepsleep.o time.a unix.a byte.a 
++supervise: byte.a deepsleep.o openreadclose.o load supervise.o split.o time.a unix.a
++	./load supervise deepsleep.o split.o time.a unix.a byte.a
+ 
+ supervise.o: coe.h compile deepsleep.h env.h error.h fifo.h iopause.h \
+ lock.h ndelay.h open.h sig.h strerr.h supervise.c tai.h taia.h \
+diff -r -u daemontools-0.76/src/supervise.c daemontools-0.76/src/supervise.c
+--- daemontools-0.76/src/supervise.c	2007-07-29 16:39:31.000000000 +0200
++++ daemontools-0.76/src/supervise.c	2007-07-29 19:41:07.000000000 +0200
+@@ -1,8 +1,12 @@
+ #include <unistd.h>
++#include <alloca.h>
+ #include <sys/types.h>
+ #include <sys/stat.h>
+ #include <signal.h>
+ #include <errno.h>
++#include <limits.h>
++#include <string.h>
++#include <libgen.h>
+ #include "sig.h"
+ #include "strerr.h"
+ #include "error.h"
+@@ -17,7 +21,10 @@
+ #include "taia.h"
+ #include "deepsleep.h"
+ #include "fmt.h"
++#include "stralloc.h"
+ 
++char **split(char *buf,int c,int *len,int plus,int ofs);
++  
+ #define FATAL "supervise: fatal: "
+ #define WARNING "supervise: warning: "
+ 
+@@ -93,7 +100,7 @@
+   strerr_die4sys(111,FATAL,"received a SIGTERM from ",pidstr,": ");
+ }
+ 
+-const char *run[2] = { "./run", 0 };
++//const char *run[2] = { "./run", 0 };
+ 
+ void trystart(void)
+ {
+@@ -106,10 +113,35 @@
+       trigger();
+       return;
+     case 0:
++    {
++      char **argv=0;
++      int argc;
++      stralloc sa={0,0,0};
++      struct stat st;
++      const char path[PATH_MAX+1];
++      if(openreadclose("params",&sa,1024)) {
++        argv=split(sa.s,'\n',&argc,2,1);
++        if(argv[argc-1]) argv[argc-1]=0; else argv[argc]=0;
++      } else {
++        argv=alloca(8);
++        argv[1]=0;
++      }
++      stralloc_ready(&sa,PATH_MAX);
++      if(stat("name",&st)==0&&S_ISREG(st.st_mode))
++        openreadclose("name",&sa,64);
++      else if(lstat("run",&st)==0&&S_ISLNK(st.st_mode))
++        realpath("run",sa.s);
++      else
++        strcpy(sa.s,"./run");
++
++      argv[0]=basename(sa.s);
++
+       sig_uncatch(sig_child);
+       sig_unblock(sig_child);
+-      execve(*run,run,environ);
++      execve("./run",argv,environ);
++
+       strerr_die4sys(111,FATAL,"unable to start ",dir,"/run: ");
++    }
+   }
+   flagpaused = 0;
+   pid = f;
+diff -r -u daemontools-0.76/src/svscan.c daemontools-0.76/src/svscan.c
+--- daemontools-0.76/src/svscan.c	2007-07-29 16:39:31.000000000 +0200
++++ daemontools-0.76/src/svscan.c	2007-07-29 19:25:19.000000000 +0200
+@@ -170,6 +170,7 @@
+     errno = 0;
+     d = readdir(dir);
+     if (!d) break;
++    if (0==strcmp(d->d_name,"supervise")) continue;
+     start(d->d_name);
+   }
+   if (errno) {
+diff -r -u daemontools-0.76_orig/src/Makefile daemontools-0.76/src/Makefile
+--- daemontools-0.76_orig/src/Makefile	2007-07-29 21:52:44.000000000 +0200
++++ daemontools-0.76/src/Makefile	2007-07-29 21:58:23.000000000 +0200
+@@ -383,8 +383,8 @@
+ svok.o: compile error.h open.h strerr.h svok.c
+ 	./compile svok.c
+ 
+-svscan: byte.a load svscan.o unix.a
+-	./load svscan unix.a byte.a 
++svscan: byte.a load svscan.o stralloc_opys.o stralloc_catb.o unix.a
++	./load svscan stralloc_opys.o stralloc_catb.o unix.a byte.a
+ 
+ svscan.o: byte.h coe.h compile direntry.h env.h error.h fd.h \
+ pathexec.h str.h strerr.h svscan.c wait.h
+diff -r -u daemontools-0.76_orig/src/svscan.c daemontools-0.76/src/svscan.c
+--- daemontools-0.76_orig/src/svscan.c	2007-07-29 21:52:44.000000000 +0200
++++ daemontools-0.76/src/svscan.c	2007-07-29 21:59:16.000000000 +0200
+@@ -12,6 +12,7 @@
+ #include "str.h"
+ #include "byte.h"
+ #include "pathexec.h"
++#include "stralloc.h"
+ 
+ #define SERVICES 1000
+ 
+@@ -143,6 +144,8 @@
+   int i;
+   int r;
+   int wstat;
++  stralloc name={0,0,0};
++  struct stat st;
+ 
+   for (;;) {
+     r = wait_nohang(&wstat);
+@@ -170,9 +173,14 @@
+     errno = 0;
+     d = readdir(dir);
+     if (!d) break;
++    if (d->d_name[0]=='.') continue;
++    stralloc_copys(&name,d->d_name);
++    stralloc_catb(&name,"/run",5);
++    if (stat(name.s,&st)==-1) continue;
+     if (0==strcmp(d->d_name,"supervise")) continue;
+     start(d->d_name);
+   }
++  /*if(name.s&&name.a) free(name.s);*/
+   if (errno) {
+     direrror();
+     closedir(dir);

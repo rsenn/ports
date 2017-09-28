@@ -1,0 +1,12 @@
+diff -ru mod_auth_kerb-5.0rc7_orig/Makefile.in mod_auth_kerb-5.0rc7/Makefile.in
+--- mod_auth_kerb-5.0rc7_orig/Makefile.in	2006-03-28 12:01:02.000000000 +0200
++++ mod_auth_kerb-5.0rc7/Makefile.in	2006-03-28 12:02:23.000000000 +0200
+@@ -11,7 +11,7 @@
+ CFLAGS =
+ 
+ APXS_CPPFLAGS = ${shell [ -n "${CPPFLAGS}" ] && echo ${CPPFLAGS} | sed -e 's/\([^ ]*\)/-Wc,\1/g'}
+-APXS_LDFLAGS  = ${shell [ -n "${LDFLAGS}"  ] && echo ${LDFLAGS} | sed -e 's/\([^ ]*\)/-Wl,\1/g'}
++APXS_LDFLAGS  = ${shell [ -n "${LDFLAGS}"  ] && echo ${LDFLAGS} | sed -e 's/\([^ ]*\)/-Wl,\1/g;;s/-pthread/-lpthread/g'}
+ 
+ all: src/mod_auth_kerb.so
+ 

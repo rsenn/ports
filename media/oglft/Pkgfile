@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: OpenGL/FreeType2 Text Rendering Library.
+#  OpenGL/FreeType2 Text Rendering Library (OGLFT) is an interface library
+#  for rendering text in OpenGL programs using the FreeType 2 font handling
+#  library. Text can be drawn in several modes, including as raster images,
+#  as tessellated polygons and as texture maps.
+# URL: http://oglft.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=oglft
+version=0.9
+release=1
+source=($mirror_sf/oglft/oglft-$version.tar.gz)
+
+build() 
+{
+  cd oglft-$version
+  
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+  
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/oglft
+  install -m 644 README AUTHORS COPYING COPYING.LIB ChangeLog INSTALL NEWS $ROOT/share/doc/oglft
+}
+
+# EOF

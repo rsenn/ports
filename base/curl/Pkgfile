@@ -1,0 +1,43 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: A command line tool and library for client-side URL transfers.
+#  curl and libcurl is a tool for transferring files using URL syntax. It
+#  supports HTTP, HTTPS, FTP, FTPS, SCP, SFTP, TFTP, DICT, TELNET,
+#  LDAP, and FILE, as well as HTTP-post, HTTP-put, cookies, FTP upload,
+#  resumed transfers, passwords, port numbers, SSL certificates, Kerberos,
+#  and proxies. It is powered by libcurl, the client-side URL transfer
+#  library. There are bindings to libcurl for over 30 languages and
+#  environments.
+#  .
+# URL: http://curl.haxx.se/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=curl
+version=7.19.4
+release=1
+source=(http://curl.haxx.se/download/curl-$version.tar.bz2
+        curl-7.15.1-cygwin.patch)
+
+build()
+{
+  cd curl-$version
+
+  libtoolize --force --copy --install --automake
+  aclocal --force -I m4
+  automake --force --copy --foreign --add-missing
+  aclocal --force -I m4
+  autoconf --force
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --${shared=enable}-shared \
+      --${static=enable}-shared \
+      --with-ssl="$prefix" \
+      --with-zlib="$prefix"
+
+  make
+  make prefix="$ROOT" install
+}

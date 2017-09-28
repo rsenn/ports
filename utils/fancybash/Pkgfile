@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A tool that provides colors and additional information.
+#  fancybash adds the following features to a bash prompt: login name,
+#  hostname, PTS/TTY, count and size of files in the current directory,
+#  directory name, jobs running in the background, current time, and fancy
+#  colors. While its colors are cyan/grey when working as an unprivileged
+#  user, they change to yellow/red when becoming root (or another user
+#  with uid=0).
+# URL: http://ircnet.de/home/cru/fancybash/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=fancybash
+version=1.1
+release=1
+source=(http://home.ircnet.de/cru/fancybash/dist/fancybash-$version.tar.bz2)
+
+build()
+{
+  cd fancybash
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

@@ -1,0 +1,20 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: User-mode Linux (utility programs)
+# URL: http://www.user-mode-linux.org/~blaisorblade/uml-utilities/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=uml-utilities
+version=20060323
+release=1
+source=(http://www.user-mode-linux.org/~blaisorblade/uml-utilities/uml_utilities_$version.tar.bz2)
+
+build()
+{
+  cd tools-$version
+
+  make CC="${CC-cc} $CFLAGS"
+
+  make BIN_DIR="$ROOT/bin" LIB_DIR="$ROOT/lib/uml" install
+}

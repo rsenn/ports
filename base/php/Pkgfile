@@ -1,0 +1,207 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: A high-level scripting language.
+#  PHP is a widely-used Open Source general-purpose scripting language
+#  that is especially suited for Web development and can be embedded
+#  into HTML. Its syntax draws upon C, Java, and Perl, and is easy
+#  to learn. PHP runs on many different platforms and can be used as a
+#  standalone executable or as a module under a variety of Web servers. It
+#  has excellent support for databases, XML, LDAP, IMAP, Java, various
+#  Internet protocols, and general data manipulation, and is extensible via
+#  its powerful API. It is actively developed and supported by a talented
+#  and energetic international team. Numerous Open Source and commercial
+#  PHP-based application packages are available.
+# URL: http://www.php.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+# source infos from php_accelerator
+source ../php_accelerator/Pkgfile
+
+accelerator_version="$version"
+
+name=php
+version=4.4.7
+release=1
+source=(http://ch2.php.net/distributions/php-$version.tar.bz2
+        php-4.3.11-nexbyte.patch
+        php-4.3.11-krb5.patch
+        php-4.3.11-zendext.patch
+        php-4.3.11-rpath.patch
+        php-4.3.11-upload.patch
+        php-4.3.11-cli.patch
+        php.ini.in)
+
+build()
+{
+  cd php-$version
+  patch -N -p1 -i $SRC/php-4.3.11-krb5.patch
+#  patch -N -p1 -i $SRC/php-4.3.11-nexbyte.patch
+  patch -N -p1 -i $SRC/php-4.3.11-zendext.patch
+#  patch -N -p1 -i $SRC/php-4.3.11-rpath.patch
+  patch -N -p1 -i $SRC/php-4.3.11-upload.patch
+  patch -N -p1 -i $SRC/php-4.3.11-cli.patch
+
+  cp -rf ../php-$version ../php-${version}_orig
+
+  sed -i -e "s,/usr/local,$prefix,g" \
+        -e "s,/usr,$prefix,g" \
+        -e "s,[ \t]-a[ \t], ," \
+    configure
+
+  if [ -f "$prefix/sbin/apxs" ]; then
+    LDFLAGS="-Wl,-export-dynamic -rdynamic -Wl,-rpath,$prefix/lib" \
+    CPPFLAGS="-I$prefix/include/apr-1" \
+    ./configure \
+        --build="$build" \
+        --host="$host" \
+        ${target+--target="$target"} \
+        --with-apxs="$prefix/sbin/apxs" \
+        --prefix="$prefix" \
+        --enable-xml \
+        --disable-rpath \
+        --with-expat-dir="$prefix" \
+        --with-gd="$prefix" \
+        --with-t1lib="shared,$prefix" \
+        --with-ttf-dir="$prefix" \
+        --enable-gd-native-ttf \
+        --with-freetype-dir="$prefix" \
+        --with-jpeg-dir="$prefix" \
+        --with-png-dir="$prefix" \
+        --with-openssl="$prefix" \
+        --enable-exif \
+        --enable-ftp \
+        --with-ming="shared,$prefix" \
+        --with-curl="$prefix" \
+        --with-zlib="$prefix" \
+        --with-kerberos \
+        --with-pcre-regex="$prefix" \
+        --with-mysql="shared,$prefix" \
+        --with-mysql-sock="$prefix/tmp/mysql.sock" \
+        --with-dom="shared" \
+        --with-dom-xslt="shared,$prefix" \
+        --with-dom-exslt="shared,$prefix" \
+        --enable-xslt="shared" \
+        --with-xslt="shared" \
+        --with-xslt-sablot="shared,$prefix" \
+        --with-sablot-js="shared,$prefix" \
+        --with-iconv-dir="$prefix" \
+        --with-imap="shared,$prefix" \
+        --with-zip="shared,$prefix" \
+        --with-bz2="$prefix" \
+        --enable-memory-limit
+
+    sed -i '/#define HAVE_GLOB/ s,define \([0-9A-Za-z_]\+\) .*$,undef \1,' main/php_config.h
+    sed -i -e "s,sys_lib_search_path_spec=\".*\",sys_lib_search_path_spec=\"$prefix/lib\"," libtool
+
+    make EXTRA_LDFLAGS_PROGRAM="-Wl,-rpath,$prefix/lib -liconv" \
+        EXTENSION_DIR="$prefix/lib/php/extensions"
+
+#    install -d $ROOT/etc
+#    install $prefix/etc/httpd.conf $ROOT/etc
+#    echo "LoadModule" >> $ROOT/etc/httpd.conf
+
+    make INSTALL_ROOT="$PKG" \
+        EXTENSION_DIR="$prefix/lib/php/extensions" install
+
+    make distclean
+  fi
+
+  LDFLAGS="-Wl,-export-dynamic -rdynamic -Wl,-rpath,$prefix/lib" \
+  CPPFLAGS="-I$prefix/include/apr-1" \
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       ${target+--target="$target"} \
+       --with-apxs2="$prefix/bin/apxs" \
+       --prefix="$prefix" \
+       --enable-xml \
+       --disable-rpath \
+       --with-expat-dir="$prefix" \
+       --with-gd="$prefix" \
+       --with-t1lib="shared,$prefix" \
+       --with-ttf-dir="$prefix" \
+       --enable-gd-native-ttf \
+       --with-freetype-dir="$prefix" \
+       --with-jpeg-dir="$prefix" \
+       --with-png-dir="$prefix" \
+       --with-openssl="$prefix" \
+       --enable-exif \
+       --enable-ftp \
+       --with-ming="shared,$prefix" \
+       --with-curl="shared,$prefix" \
+       --with-zlib="$prefix" \
+       --with-kerberos \
+       --with-pcre-regex="$prefix" \
+       --with-mysql="shared,$prefix" \
+       --with-mysql-sock="$prefix/tmp/mysql.sock" \
+       --with-dom=shared \
+       --with-dom-xslt="shared,$prefix" \
+       --with-dom-exslt="shared,$prefix" \
+       --enable-xslt=shared \
+       --with-xslt=shared \
+       --with-xslt-sablot="shared,$prefix" \
+       --with-sablot-js="shared,$prefix" \
+       --with-iconv-dir="$prefix" \
+       --with-imap="shared,$prefix" \
+       --enable-memory-limit
+
+  sed -i '/#define HAVE_GLOB/ s,define \([0-9A-Za-z_]\+\) .*$,undef \1,' main/php_config.h
+  sed -i -e "s,sys_lib_search_path_spec=\".*\",sys_lib_search_path_spec=\"$prefix/lib\"," libtool
+
+  make EXTRA_LDFLAGS_PROGRAM="-Wl,-rpath,$prefix/lib -liconv" \
+       EXTENSION_DIR="$prefix/lib/php/extensions"
+
+#  install -d $ROOT/etc
+#  install $prefix/etc/httpd.conf $ROOT/etc
+#  echo "LoadModule" >> $ROOT/etc/httpd.conf
+
+  make INSTALL_ROOT="$PKG" \
+       EXTENSION_DIR="$prefix/lib/php/extensions" install
+
+  copy_license "LICENSE"
+
+  # customize php.ini
+  cd ..
+
+  MAJOR=${version%%.*}
+  MINOR=${version%.*} ; MINOR=${MINOR#*.}
+  sed -e "s,@accelerator_version@,$accelerator_version,g" \
+      -e "s,@major@,$MAJOR,g" \
+      -e "s,@minor@,$MINOR,g" \
+      -e "s,@prefix@,$prefix,g" \
+      -e "s,upload_max_filesize = 2M,upload_max_filesize = 32M," \
+      -e "s,memory_limit = 8M,memory_limit = 64M," \
+      $SRC/php.ini.in > $ROOT/lib/php.ini
+
+  sed -n "/upload_progress_meter/! p" $ROOT/lib/php.ini > $ROOT/lib/php-cli.ini
+
+  rm -f $ROOT/etc/httpd.conf*
+
+  ln -s "php" $ROOT/lib/PEAR
+
+  for ext in $ROOT/lib/php/extensions/*.so*
+  do
+    dst=${ext##*/}
+
+    case $dst in
+      lib*.so.0.0)
+        dst=${dst#lib}
+        dst=${dst%.so*}.so
+        mv $ext $ROOT/lib/php/extensions/${dst}
+        ;;
+      *)
+        ;;
+    esac
+  done
+
+  rm -f $PKG/.{depdb,depdblock,filemap,lock}
+}
+
+postmerge()
+{
+  httpd_module_add $prefix/lib/apache2/libphp4.so php4_module $prefix/local/config/dso2.conf
+  text_append 'application/x-httpd-php	php' $sysconfdir/mime.types
+  text_replace '    DirectoryIndex index.php index.html' '^    DirectoryIndex index.html$' $sysconfdir/httpd2.conf
+  true
+}

@@ -1,0 +1,206 @@
+diff --git a/src/HyphenationRule.cpp b/src/HyphenationRule.cpp
+index 82a151b..fddbf93 100644
+--- a/src/HyphenationRule.cpp
++++ b/src/HyphenationRule.cpp
+@@ -23,13 +23,16 @@
+  * is documented in HyphenationRule.h */
+ #include "HyphenationRule.h"
+ 
++#include <cstdlib>
++#include <cstring>
++
+ using namespace std;
+ 
+ Hyphenate::HyphenationRule::HyphenationRule(std::string dpattern)
+ : del_pre(0), skip_post(0)
+ {
+    int priority = 0;
+-   uint i;
++   unsigned int i;
+ 
+    for (i = 0; i < dpattern.size() && dpattern[i] != '/'; i++)
+       if (dpattern[i] >= '0' && dpattern[i] <= '9')
+@@ -49,7 +52,7 @@ Hyphenate::HyphenationRule::HyphenationRule(std::string dpattern)
+       i += 1;    /* Ignore the /. */
+ 
+       int field = 1;
+-      uint start = 0, cut = 0;
++      unsigned int start = 0, cut = 0;
+       for (; i < dpattern.size(); i++) {
+          if (field == 1 && dpattern[i] == '=')
+             field++;
+@@ -72,7 +75,7 @@ Hyphenate::HyphenationRule::HyphenationRule(std::string dpattern)
+          start = 1;
+ 
+       skip_post = cut;
+-      for (uint j = start; j < start+cut && j < priorities.size(); j++) {
++      for (unsigned int j = start; j < start+cut && j < priorities.size(); j++) {
+          if (priorities[j-1] % 2 == 1) break;
+          del_pre++; skip_post--;
+       }
+diff --git a/src/HyphenationRule.h b/src/HyphenationRule.h
+index 05ab708..d7c95e8 100644
+--- a/src/HyphenationRule.h
++++ b/src/HyphenationRule.h
+@@ -23,6 +23,7 @@
+ 
+ #include <string>
+ #include <vector>
++#include <memory>
+ 
+ namespace Hyphenate {
+    /** The HyphenationRule class represents a single Hyphenation Rule, that
+@@ -73,11 +74,11 @@ namespace Hyphenate {
+ 
+          /** Returns true iff there is a priority value != 0 for this offset
+           *  or a larger one. */
+-         inline bool hasPriority(uint offset) const 
++         inline bool hasPriority(unsigned int offset) const 
+             { return priorities.size() > offset; }
+          /** Returns the hyphenation priority for a hyphen preceding the byte
+           *  at the given offset. */
+-         inline char priority(uint offset) const { return priorities[offset]; }
++         inline char priority(unsigned int offset) const { return priorities[offset]; }
+ 
+          /** Returns the pattern to match for this rule to apply. */
+          inline std::string &getKey() { return key; }
+diff --git a/src/HyphenationTree.cpp b/src/HyphenationTree.cpp
+index d438c21..df37be9 100644
+--- a/src/HyphenationTree.cpp
++++ b/src/HyphenationTree.cpp
+@@ -25,6 +25,7 @@
+ #include <glib.h>
+ #include <iostream>
+ #include <stdexcept>
++#include <cstdlib>
+ 
+ using namespace std;
+ using namespace Hyphenate;
+@@ -179,7 +180,7 @@ auto_ptr<vector<const HyphenationRule*> > HyphenationTree::applyPatterns
+    /* For each suffix of the expanded word, search all matching prefixes.
+     * That way, each possible match is found. Note the pointer arithmetics
+     * in the first and second argument. */
+-   for (uint i = 0; i < w.size()-1 && i <= stop_at; i++)
++   for (unsigned int i = 0; i < w.size()-1 && i <= stop_at; i++)
+       root->apply_patterns((&pri[i]), (&rules[i]), w.c_str() + i);
+ 
+    /* Copy the results to a shorter vector. */
+@@ -189,15 +190,15 @@ auto_ptr<vector<const HyphenationRule*> > HyphenationTree::applyPatterns
+    /* We honor the safe areas at the start and end of each word here. */
+    /* Please note that the incongruence between start and end is due
+     * to the fact that hyphenation happens _before_ each character. */
+-   uint ind_start = 1, ind_end = w.size()-1;
+-   for (uint skip = 0; skip < start_safe && ind_start < w.size(); ind_start++)
++   unsigned int ind_start = 1, ind_end = w.size()-1;
++   for (unsigned int skip = 0; skip < start_safe && ind_start < w.size(); ind_start++)
+       if ((w[ind_start] & 0xC0) != 0x80)
+          skip++;
+-   for (uint skip = 0; skip < end_safe && ind_end > 0; ind_end--)
++   for (unsigned int skip = 0; skip < end_safe && ind_end > 0; ind_end--)
+       if ((w[ind_end] & 0xC0) != 0x80)
+          skip++;
+ 
+-   for (uint i = ind_start; i <= ind_end; i++)
++   for (unsigned int i = ind_start; i <= ind_end; i++)
+       (*output_rules)[i-1] = rules[i];
+    return output_rules;
+ }
+diff --git a/src/HyphenationTree.h b/src/HyphenationTree.h
+index 8aefebf..b1b481d 100644
+--- a/src/HyphenationTree.h
++++ b/src/HyphenationTree.h
+@@ -35,7 +35,7 @@ namespace Hyphenate {
+    class HyphenationTree {
+       private:
+          HyphenationNode* root;
+-         uint start_safe, end_safe;
++         unsigned int start_safe, end_safe;
+ 
+       public:
+          /** The constructor constructs an empty tree, which can be filled
+diff --git a/src/Hyphenator.cpp b/src/Hyphenator.cpp
+index 8597a24..64c6215 100644
+--- a/src/Hyphenator.cpp
++++ b/src/Hyphenator.cpp
+@@ -99,7 +99,7 @@ std::string Hyphenator::hyphenate
+ 
+    /* Go through the input. All non-alpha characters are added to the
+     * output immediately, and words are hyphenated and then added. */
+-   for (uint i = 0; i < word.size(); i++) {
++   for (unsigned int i = 0; i < word.size(); i++) {
+       /* Skip UTF-8 tail bytes. */
+       if ( (word[i] & 0xC0) == 0x80)
+          ;
+@@ -140,7 +140,7 @@ std::string Hyphenator::hyphenate_word
+    string result;
+ 
+    int acc_skip = 0;
+-   for (uint i = 0; i < word.size(); i++) {
++   for (unsigned int i = 0; i < word.size(); i++) {
+       if ((*rules)[i] != NULL)
+ 	 acc_skip += (*rules)[i]->apply(result, hyphen);
+ 
+@@ -163,7 +163,7 @@ pair<std::string,std::string> Hyphenator::hyphenate_at
+ 
+    /* First of all, find the word which needs to be hyphenated. */
+    const gchar *cur = src.c_str();
+-   for (uint i = 0; i < len; i++)
++   for (unsigned int i = 0; i < len; i++)
+       cur = g_utf8_next_char(cur);
+    
+    const gchar *next = cur;
+diff --git a/src/Makefile b/src/Makefile
+index 0122a6f..1f3e0db 100644
+--- a/src/Makefile
++++ b/src/Makefile
+@@ -32,13 +32,13 @@ CXXFLAGS+=-D LIBHYPHENATE_DEFAULT_PATH='"$(SHAREDIR)/patterns"'
+ .SECONDARY : $(OBJECTS:.o=.lo)
+ 
+ %.lo : %.c
+-	libtool --mode=compile $(CXX) $(CPPFLAGS) -c $<
++	libtool --mode=compile --tag=CXX $(CXX) $(CPPFLAGS) -c $<
+ 
+ %.lo : %.cpp
+-	libtool --mode=compile $(CXX) $(CXXFLAGS) -c $<
++	libtool --mode=compile --tag=CXX $(CXX) $(CXXFLAGS) -c $<
+ 
+ %.la :
+-	libtool --mode=link \
++	libtool --mode=link --tag=CXX \
+ 	 $(CXX) $(CPPFLAGS) -c -o $@ $^ -version-info $(VERSION) \
+ 	    -rpath $(LIBDIR) $(LIBS)
+ 
+@@ -53,7 +53,7 @@ clean : ; -rm -rf *.o *.lo *.la .libs
+ 
+ libhyphen-install : libhyphen.la
+ 	$(INSTALL) -d $(DESTDIR)$(LIBDIR) $(DESTDIR)$(INCLUDEDIR)
+-	libtool --mode=install $(INSTALL) -m a=r libhyphen.la \
++	libtool --mode=install --tag=CXX $(INSTALL) libhyphen.la \
+ 	    $(DESTDIR)$(LIBDIR)/$(NAME).la
+ 	libtool --mode=finish $(LIBDIR)
+ 	$(INSTALL) -m a=r hyphen.h $(DESTDIR)$(INCLUDEDIR)/..
+@@ -62,7 +62,7 @@ install : all src-install
+ 	$(INSTALL) -d $(DESTDIR)$(LIBDIR) $(DESTDIR)$(SHAREDIR) 
+ 	$(INSTALL) -d $(DESTDIR)$(INCLUDEDIR) $(DESTDIR)$(SHAREDIR)/patterns
+ 	$(INSTALL) -d $(DESTDIR)$(DOCDIR)
+-	libtool --mode=install $(INSTALL) -m a=r $(NAME).la \
+-	    $(DESTDIR)$(LIBDIR)/$(NAME).la
+-	libtool --mode=finish $(LIBDIR)
++	libtool --mode=install --tag=CXX $(INSTALL) $(NAME).la \
++	    $(DESTDIR)$(LIBDIR)/
++	libtool --mode=finish --tag=CXX $(LIBDIR)
+ 	$(INSTALL) -m a=r $(INSTALL_HEADERS) $(DESTDIR)$(INCLUDEDIR)
+diff --git a/src/hyphenate.cpp b/src/hyphenate.cpp
+index 58e53d4..a0c4556 100644
+--- a/src/hyphenate.cpp
++++ b/src/hyphenate.cpp
+@@ -24,6 +24,9 @@
+ #include "hyphenate.h"
+ #include "Hyphenator.h"
+ 
++#include <cstdlib>
++#include <cstring>
++
+ using namespace std;
+ 
+ /** Build an hyphenator for the language given in a RFC-3066 compliant string.

@@ -1,0 +1,37 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Section: web
+# Description: Web browser.
+#  Opera is Internet browser innovation. Our features, speed and security
+#  will give you the best browser experience available. More than 20 million
+#  people use Opera as their preferred browser of choice.
+# URL: http://www.opera.com/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on: 
+
+name=opera
+version=9.64
+release=1
+source=(ftp://mirror.switch.ch/mirror/opera/linux/${version/./}/final/en/i386/static/opera-$version.gcc295-static-qt3.i386.tar.gz
+        ftp://mirror.switch.ch/mirror/opera/linux/${version/./}/final/en/i386/shared/opera-$version.gcc4-shared-qt3.i386.tar.gz)
+
+build() 
+{
+  ID=`lsb_release -s -i`
+  REL=`lsb_release -s -r`
+
+  case $ID:$REL in
+    Ubuntu:*) DIR=opera-$version-*.gcc4-shared-qt3.i386 ;;
+    *:*) DIR=opera-$version-*.gcc295-static-qt3.i386 ;;
+  esac
+
+  cd $DIR
+
+  install -d $ROOT
+  cp -rf usr/* $ROOT/
+
+  install -d $ROOT/bin
+  ln -sf $prefix/lib/opera/$version/opera $ROOT/bin
+}
+
+# EOF

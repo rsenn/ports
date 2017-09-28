@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Scripts to manage a series of patches by keeping track of the changes.
+# Quilt is a set of scripts to manage a series of patches by keeping track
+# of the changes each patch makes. Patches can be applied, un-applied,
+# refreshed, etc. The key philosophical concept is that your primary output
+# is patches, not amp;quot;.camp;quot; files or amp;quot;.hamp;quot;
+# files, so patches are the first-class object here. It was originally
+# based on Andrew Morton's patch scripts published on the Linux kernel
+# mailing list a while ago, but has been heavily modified since then.
+#
+# URL: http://savannah.nongnu.org/projects/quilt
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=quilt
+version=0.46
+release=1
+source=(http://savannah.nongnu.org/download/quilt/quilt-$version.tar.gz)
+
+build()
+{
+  cd quilt-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

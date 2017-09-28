@@ -1,0 +1,18 @@
+diff -ru ruby-termios-0.9.5_orig/termios.c ruby-termios-0.9.5/termios.c
+--- ruby-termios-0.9.5_orig/termios.c	2009-01-23 02:21:23.000000000 +0100
++++ ruby-termios-0.9.5/termios.c	2009-01-23 02:25:05.000000000 +0100
+@@ -12,11 +12,7 @@
+ #include <unistd.h>
+ #include <string.h>
+ 
+-#ifdef HAVE_TYPE_RB_IO_T
+-typedef rb_io_t OpenFile;
+-#endif
+-
+-#if defined(HAVE_TYPE_RB_IO_T) ||  defined(HAVE_ST_FD)
++#if defined(HAVE_TYPE_RB_IO_T) && defined(HAVE_ST_FD)
+ # define FILENO(fptr) (fptr->fd)
+ #else
+ # define FILENO(fptr) fileno(fptr->f)
+Only in ruby-termios-0.9.5: termios.o
+Only in ruby-termios-0.9.5: termios.so

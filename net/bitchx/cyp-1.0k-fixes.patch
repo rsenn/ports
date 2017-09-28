@@ -1,0 +1,375 @@
+diff -r -u -- cyp_orig/cyp.bx cyp/cyp.bx
+--- cyp_orig/cyp.bx	2007-05-15 12:39:41.000000000 +0200
++++ cyp/cyp.bx	2007-05-15 12:41:13.000000000 +0200
+@@ -210,7 +210,7 @@
+ oof
+ 
+ alias _moduleload {
+-fe ($glob(~/cyp/modules\/*.m)) mod {
++fe ($glob(@pkglibdir@/cyp/modules\/*.m)) mod {
+         ^load $mod}}
+ 
+ ^_moduleload
+@@ -219,8 +219,8 @@
+ oof
+ alias _fsetload {
+ 
+-if (fexist(~/cyp/formats/fsets)) {
+-        @fsets = open(~/cyp/formats/fsets R T)
++if (fexist(@pkglibdir@/cyp/formats/fsets)) {
++        @fsets = open(@pkglibdir@/cyp/formats/fsets R T)
+         while (!eof($fsets)) {
+                 ^fset $read($fsets)
+         }
+diff -r -u -- cyp_orig/modules/ansi.m cyp/modules/ansi.m
+--- cyp_orig/modules/ansi.m	2007-05-15 12:39:41.000000000 +0200
++++ cyp/modules/ansi.m	2007-05-15 12:41:13.000000000 +0200
+@@ -1,5 +1,5 @@
+ alias cypress {
+-@ :ansifile = open(~/cyp/logos/logo.$(rand(3)) R)
++@ :ansifile = open(@pkglibdir@/cyp/logos/logo.$(rand(3)) R)
+ 	while (!eof($ansifile)) {
+ 		echo $read($ansifile)
+ 	}
+diff -r -u -- cyp_orig/modules/theme.m cyp/modules/theme.m
+--- cyp_orig/modules/theme.m	2007-05-15 12:39:41.000000000 +0200
++++ cyp/modules/theme.m	2007-05-15 12:41:13.000000000 +0200
+@@ -1,9 +1,9 @@
+ ## theme module, thanx to robohak for help w/ padding
+ alias tsave if ([$1]) {
+ 	@ blahfile = fullstrip($0)
+-	if (fexist(~/cyp/themes/$(blahfile).th)) {
+-		@ rename(~/cyp/themes/$(blahfile).th ~/cyp/themes/$(blahfile).th.old)
+-		^exec rm ~/cyp/themes/$(blahfile).th.old 1> /dev/null 2> /dev/null
++	if (fexist(@pkglibdir@/cyp/themes/$(blahfile).th)) {
++		@ rename(@pkglibdir@/cyp/themes/$(blahfile).th @pkglibdir@/cyp/themes/$(blahfile).th.old)
++		^exec rm @pkglibdir@/cyp/themes/$(blahfile).th.old 1> /dev/null 2> /dev/null
+ 	}
+         @ :saveth = open($twiddle($HOME)$(loadpath)themes/$(blahfile).th W T)
+         @ :author = N
+@@ -51,8 +51,8 @@
+         @ write($saveth @sc3=[$sc3)
+         @ write($saveth @sc4=[$sc4)
+         @ close($saveth)
+-	xecho -b $scriptname: saved theme file $(hblk)[$(cl)~/cyp/themes/$(name).th$(hblk)]$(cl) $(hblk)\($(cl)$desc$(hblk)\)$(cl)
+-        ^load ~/cyp/themes/$(name).th
++	xecho -b $scriptname: saved theme file $(hblk)[$(cl)@pkglibdir@/cyp/themes/$(name).th$(hblk)]$(cl) $(hblk)\($(cl)$desc$(hblk)\)$(cl)
++        ^load @pkglibdir@/cyp/themes/$(name).th
+         ^do.formatupdate
+ }{ xecho -b $scriptname usage: /tsave <theme> <description> }
+ 
+@@ -60,7 +60,7 @@
+ alias theme if (![$0]) {
+ 	echo      $(hwht)f$(cl)ile $(hwht)n$(cl)ame$(hblk)      ú     $(hwht)a$(cl)uthor     $(hblk)     ú     $(hwht)d$(cl)escription
+ 	echo 
+-	fe ($glob(~/cyp/themes\/*.th)) th {
++	fe ($glob(@pkglibdir@/cyp/themes\/*.th)) th {
+ 	  @ :thfile = open($th R T)
+ 	  @ :auth = after(: $read($thfile))
+ 	  @ :desc = after(: $read($thfile))
+@@ -69,9 +69,9 @@
+ 	  echo      $(cl)$[10]name$(hblk)     ú     $(cl)$[12]auth    $(hblk)ú     $(cl)$desc$repeat(${20-strlen($strip( $stripansicodes($desc)))}  )$(cl)
+ 	}
+ }{
+-if (fexist(~/cyp/themes/$0.th)==-1) { xecho -b $scriptname: theme $0 does not exist }{
++if (fexist(@pkglibdir@/cyp/themes/$0.th)==-1) { xecho -b $scriptname: theme $0 does not exist }{
+ 	@ name = [$0]
+-	^load ~/cyp/themes/$(0).th
++	^load @pkglibdir@/cyp/themes/$(0).th
+ 	^do.formatupdate  
+ 	xecho -b loaded theme file $(hblk)[$(cl)$(0).th$(hblk)]$(cl) by $auth $(hblk)\($(cl)$desc$(hblk)\)$(cl)
+ }}
+@@ -115,9 +115,9 @@
+ dotopwin
+ alias untheme { @name=[];@scdesc=[stock];cyp.rehash;xecho -b $scriptname: no longer using a theme, /fsave to save}
+ alias rtheme if ([$0]) { 
+-if (fexist(~/cyp/themes/$0.th)==-1) { xecho -b theme $(0) does not exist!
++if (fexist(@pkglibdir@/cyp/themes/$0.th)==-1) { xecho -b theme $(0) does not exist!
+ }{
+-^exec rm -rf ~/cyp/themes/$(0).th 1> /dev/null 2> /dev/null
++^exec rm -rf @pkglibdir@/cyp/themes/$(0).th 1> /dev/null 2> /dev/null
+ xecho -b theme $(0) has been removed!
+ }}{xecho -b $scriptname usage: /rtheme <theme>}
+ 
+diff -r -u -- cyp_orig/modules/uptime.m cyp/modules/uptime.m
+--- cyp_orig/modules/uptime.m	2007-05-15 12:39:41.000000000 +0200
++++ cyp/modules/uptime.m	2007-05-15 12:41:13.000000000 +0200
+@@ -6,4 +6,4 @@
+ 
+ on #-send_notice 77 * {@lsn=[$1-];@lsnn=[$0]}
+ 
+-alias uptime {/load ~/cyp/ans/uptime.ans}
+\ No newline at end of file
++alias uptime {/load @pkglibdir@/cyp/ans/uptime.ans}
+\ No newline at end of file
+diff -r -u -- cyp_orig/modules/func.m cyp/modules/func.m
+--- cyp_orig/modules/func.m	2007-05-15 12:49:23.000000000 +0200
++++ cyp/modules/func.m	2007-05-15 12:49:32.000000000 +0200
+@@ -85,7 +85,7 @@
+ @function_return=(:uhost=userhost($0))==[<UNKNOWN>@<UNKNOWN>]?[]:uhost}
+ 
+ alias _homedir {
+-	push function_return $twiddle(~)}	
++	push function_return $twiddle(@pkglibdir@)}	
+ 
+ alias fix.size {
+         @ :_size=[$0]
+@@ -113,4 +113,4 @@
+ 	} else {
+ 	@ function_return = []}}
+ 
+-/* eof */
+\ No newline at end of file
++/* eof */
+diff -r -u -- cyp_orig/cyp.bx cyp/cyp.bx
+--- cyp_orig/cyp.bx	2007-05-15 12:51:05.000000000 +0200
++++ cyp/cyp.bx	2007-05-15 12:53:16.000000000 +0200
+@@ -205,8 +205,8 @@
+ oof
+ /* module load */
+ ^eval load $savefile
+-^eval load $twiddle($HOME)$(loadpath)sc/scan.$snf
+-^eval load $twiddle($HOME)$(loadpath)sc/scan
++^eval load $twiddle(@pkglibdir@)$(loadpath)sc/scan.$snf
++^eval load $twiddle(@pkglibdir@)$(loadpath)sc/scan
+ oof
+ 
+ alias _moduleload {
+@@ -228,15 +228,15 @@
+ 
+ ^_fsetload
+ oof
+-^eval load $twiddle($HOME)$(loadpath)formats/dccformats
+-^eval load $twiddle($HOME)$(loadpath)formats/fsets  
++^eval load $twiddle(@pkglibdir@)$(loadpath)formats/dccformats
++^eval load $twiddle(@pkglibdir@)$(loadpath)formats/fsets  
+ oof
+ oof
+-^eval load $twiddle($HOME)$(loadpath)formats/arrays
++^eval load $twiddle(@pkglibdir@)$(loadpath)formats/arrays
+ oof
+-^eval load $twiddle($HOME)$(loadpath)wis/whois
++^eval load $twiddle(@pkglibdir@)$(loadpath)wis/whois
+ ^eval dccform$(dccform)
+-^eval load $twiddle($HOME)$(loadpath)wis/whois.$fnum
++^eval load $twiddle(@pkglibdir@)$(loadpath)wis/whois.$fnum
+ 
+ oof
+ oof
+diff -r -u -- cyp_orig/modules/color.m cyp/modules/color.m
+--- cyp_orig/modules/color.m	2007-05-15 12:51:05.000000000 +0200
++++ cyp/modules/color.m	2007-05-15 12:51:59.000000000 +0200
+@@ -35,5 +35,5 @@
+ ^xecho -b $(bmag)bmagenta$(cl) $(bblu)bblue$(cl) $(bred)bred$(cl) $(bblk)bblack$(cl) $(byel)byellow$(cl) $(bcyn)bcyan$(cl)
+ ^eval ^load $twiddle($HOME)$(loadpath)stats/$statbar
+ ^eval pubload $pub
+-^eval ^load $twiddle($HOME)$(loadpath)sc/scan.$snf
+-}
+\ No newline at end of file
++^eval ^load $twiddle(@pkglibdir@)$(loadpath)sc/scan.$snf
++}
+diff -r -u -- cyp_orig/modules/format.m cyp/modules/format.m
+--- cyp_orig/modules/format.m	2007-05-15 12:51:05.000000000 +0200
++++ cyp/modules/format.m	2007-05-15 12:52:57.000000000 +0200
+@@ -14,21 +14,21 @@
+ 		(h) { if (![$1]) {smform.show} {smform $1} }
+ 		(f) { if (![$1]) {snform.show} {snform $1} }
+ 		(o) { if (![$1]) {sv.show} {svform $1} }
+-		(n) { if (![$1]) {ansiload $twiddle($HOME)$(loadpath)ans/scan.ans} {sformat $1;@snf=[$1]} }
+-		(c) { if (![$1]) {ansiload $twiddle($HOME)$(loadpath)ans/plist.ans} {pformat $1;@snf=[$1]} } 
+-		(q) { if (![$1]) {ansiload $twiddle($HOME)$(loadpath)ans/whois.ans} {wformat $1;@fwhois=[$1]}}
+-		(m) { if (![$1]) {ansiload $twiddle($HOME)$(loadpath)ans/public.ans} {pubformat $1}} 
+-		(r) { if (![$1]) {ansiload $twiddle($HOME)$(loadpath)ans/dcc.ans} {dccformat $1}}
++		(n) { if (![$1]) {ansiload $twiddle(@pkglibdir@)$(loadpath)ans/scan.ans} {sformat $1;@snf=[$1]} }
++		(c) { if (![$1]) {ansiload $twiddle(@pkglibdir@)$(loadpath)ans/plist.ans} {pformat $1;@snf=[$1]} } 
++		(q) { if (![$1]) {ansiload $twiddle(@pkglibdir@)$(loadpath)ans/whois.ans} {wformat $1;@fwhois=[$1]}}
++		(m) { if (![$1]) {ansiload $twiddle(@pkglibdir@)$(loadpath)ans/public.ans} {pubformat $1}} 
++		(r) { if (![$1]) {ansiload $twiddle(@pkglibdir@)$(loadpath)ans/dcc.ans} {dccformat $1}}
+                 (t) { if (![$1]) {scform.show} {scform $1} }
+                 (s) { if (![$1]) {cform.show} {cform $1} }
+ 		(u) { if (![$1]) {qlogo.show} {qlogo $1} }
+ 		(v) { if (![$1]) {abot.show} {abot $1}}
+                 (w) { if (![$1]) {mdform.show} {mdform $1}}
+-		(x) { if (![$1]) {ansiload $twiddle($HOME)$(loadpath)ans/dccbar.ans} {dbarformat $1}} 
++		(x) { if (![$1]) {ansiload $twiddle(@pkglibdir@)$(loadpath)ans/dccbar.ans} {dbarformat $1}} 
+ 		(*) { format }
+ 
+ 	}
+-}{ load $twiddle($HOME)$(loadpath)ans/format.ans }
++}{ load $twiddle(@pkglibdir@)$(loadpath)ans/format.ans }
+ 
+ 
+ alias dbarformat {
+@@ -517,4 +517,4 @@
+         ^eval xecho -b current format set to $(hwht)$mdform
+ }
+ 
+-# .:. clogic '98
+\ No newline at end of file
++# .:. clogic '98
+diff -r -u -- cyp_orig/modules/save.m cyp/modules/save.m
+--- cyp_orig/modules/save.m	2007-05-15 12:51:05.000000000 +0200
++++ cyp/modules/save.m	2007-05-15 12:53:47.000000000 +0200
+@@ -150,8 +150,8 @@
+ ^eval qlogo.load $qlogo
+ ^eval abot.load $abot
+ ^eval mdform.load $mdform
+-^eval ^load $twiddle($HOME)$(loadpath)stats/$statbar
+-^eval load $twiddle($HOME)$(loadpath)modules/filters.m
+-^eval load $twiddle($HOME)$(loadpath)wis/whois.$fnum
+-^eval load $twiddle($HOME)$(loadpath)sc/scan.$snf
+-}
+\ No newline at end of file
++^eval ^load $twiddle(@pkglibdir@)$(loadpath)stats/$statbar
++^eval load $twiddle(@pkglibdir@)$(loadpath)modules/filters.m
++^eval load $twiddle(@pkglibdir@)$(loadpath)wis/whois.$fnum
++^eval load $twiddle(@pkglibdir@)$(loadpath)sc/scan.$snf
++}
+Only in cyp_orig/: cyp
+diff -r -u -- cyp_orig/modules/color.m cyp/modules/color.m
+--- cyp_orig/modules/color.m	2007-05-15 13:06:17.000000000 +0200
++++ cyp/modules/color.m	2007-05-15 13:07:44.000000000 +0200
+@@ -33,7 +33,7 @@
+ ^xecho -b available colors $(cyn): $(cl)clear $(blu)blue $(grn)green $(cyn)cyan $(red)red $(mag)magenta $(yel)yellow $(wht)white 
+ ^xecho -b $(hblk)hblack $(hblu)hblue $(hgrn)hgreen $(hcyn)hcyan $(hred)hred $(hmag)hmagenta $(hyel)hyello $(hwht)hwhite $(bwht)bwhite
+ ^xecho -b $(bmag)bmagenta$(cl) $(bblu)bblue$(cl) $(bred)bred$(cl) $(bblk)bblack$(cl) $(byel)byellow$(cl) $(bcyn)bcyan$(cl)
+-^eval ^load $twiddle($HOME)$(loadpath)stats/$statbar
++^eval ^load $twiddle(@pkglibdir@)$(loadpath)stats/$statbar
+ ^eval pubload $pub
+ ^eval ^load $twiddle(/usr/local/lib/bx)$(loadpath)sc/scan.$snf
+ }
+diff -r -u -- cyp_orig/modules/config.m cyp/modules/config.m
+--- cyp_orig/modules/config.m	2007-05-15 13:06:17.000000000 +0200
++++ cyp/modules/config.m	2007-05-15 13:07:44.000000000 +0200
+@@ -36,7 +36,7 @@
+ 	(f5) {/fkey5 $choice}
+ 	(f6) {/fkey6 $choice}
+ 
+-	(*) {ansiload $twiddle($HOME)$(loadpath)ans/config.ans;^xecho -b usage -$(hwht)> $(hwht)c$(cl)onfig $(hblk)<$(cl)letter$(hblk)> <$(cl)setting$(hblk)>}
++	(*) {ansiload $twiddle(@pkglibdir@)$(loadpath)ans/config.ans;^xecho -b usage -$(hwht)> $(hwht)c$(cl)onfig $(hblk)<$(cl)letter$(hblk)> <$(cl)setting$(hblk)>}
+ }}
+ 
+ alias bot_tog { if (showtype==1) { @ showtype = 2;xecho -b now showing passwords. } else { @ showtype = 1;xecho -b not showing passwords }}
+diff -r -u -- cyp_orig/modules/help.m cyp/modules/help.m
+--- cyp_orig/modules/help.m	2007-05-15 13:06:17.000000000 +0200
++++ cyp/modules/help.m	2007-05-15 13:07:44.000000000 +0200
+@@ -1,4 +1,4 @@
+-#alias chelp if (![$0]) {load $twiddle($HOME)$(loadpath)ans/help.ans}{
++#alias chelp if (![$0]) {load $twiddle(@pkglibdir@)$(loadpath)ans/help.ans}{
+ @hwords=[mw qk bkt massk rkick not mreop mko mirck clones cig mnot mmsg minv cypress flags lsay emsg esay untheme rtheme theme frelm tsave freln away back format config color sbcolor v rn csc dict paste saveall fsave cpsave sbar scan topwin wk wlk wn wp wj wc csave usay country addbot listbot botdel botsave]
+ alias chelp if (![$0]) {
+ #@:hwords=[mw qk bkt massk rkick not mreop mko mirck clones cig mnot mmsg minv cypress flags lsay emsg esay untheme rtheme theme frelm tsave freln away back format config color sbcolor v rn csc dict paste saveall fsave cpsave sbar scan topwin wk wlk wn wp wj wc csave usay country addbot listbot botdel botsave]
+diff -r -u -- cyp_orig/modules/logging.m cyp/modules/logging.m
+--- cyp_orig/modules/logging.m	2007-05-15 13:06:17.000000000 +0200
++++ cyp/modules/logging.m	2007-05-15 13:07:44.000000000 +0200
+@@ -1,13 +1,13 @@
+ alias remlog {
+ 	input " remove log? [y|n]: " if ([$0]==[y])
+-	{@unlink($twiddle($HOME)$(loadpath)$cyplog) 
++	{@unlink($twiddle(@pkglibdir@)$(loadpath)$cyplog) 
+ 	xecho -b $scriptname log removed.
+ }}
+ 	
+ alias play readlog
+ 
+ alias readlog {
+-	more $twiddle($HOME)$(loadpath)$cyplog
++	more $twiddle(@pkglibdir@)$(loadpath)$cyplog
+ 	xecho -b type /remlog to remove log}
+ 
+ 
+diff -r -u -- cyp_orig/modules/publics.m cyp/modules/publics.m
+--- cyp_orig/modules/publics.m	2007-05-15 13:06:17.000000000 +0200
++++ cyp/modules/publics.m	2007-05-15 13:07:44.000000000 +0200
+@@ -11,7 +11,7 @@
+ 	(8) {pub8;@pub=8;xecho -b publics format currently set to $(hwht)$(pub)$(cl);xecho -b /fsave to save.}
+ 	(9) {pub9;@pub=9;xecho -b publics format currently set to $(hwht)$(pub)$(cl);xecho -b /fsave to save.}
+ }}{
+-ansiload $twiddle($HOME)$(loadpath)/ans/public.ans
++ansiload $twiddle(@pkglibdir@)$(loadpath)/ans/public.ans
+ xecho -b please choose a valid number. 
+ }
+ 
+diff -r -u -- cyp_orig/modules/sbar.m cyp/modules/sbar.m
+--- cyp_orig/modules/sbar.m	2007-05-15 13:06:17.000000000 +0200
++++ cyp/modules/sbar.m	2007-05-15 13:07:44.000000000 +0200
+@@ -2,7 +2,7 @@
+ alias sbar if ([$0] && ([$0] <= sbar.max)) {
+ 	@ statbar = [stat.$0]
+ 	@ statnum = [$0]
+-	load $twiddle($HOME)$(loadpath)stats/$statbar
++	load $twiddle(@pkglibdir@)$(loadpath)stats/$statbar
+ 	xecho -b $scriptname sbar set to $(hwht)$0
+ 	xecho -b type /cpsave to save status bar
+ } { xecho -b $scriptname usage: /sbar <1-$(sbar.max)> current sbar is $(hwht)$after(. $statbar)}
+\ No newline at end of file
+diff -r -u -- cyp_orig/modules/sbcolor.m cyp/modules/sbcolor.m
+--- cyp_orig/modules/sbcolor.m	2007-05-15 13:06:17.000000000 +0200
++++ cyp/modules/sbcolor.m	2007-05-15 13:07:44.000000000 +0200
+@@ -33,5 +33,5 @@
+ ^xecho -b available colors $(cyn): $(cl)clear $(blu)blue $(grn)green $(cyn)cyan $(red)red $(mag)magenta $(yel)yellow $(wht)white 
+ ^xecho -b $(hblk)hblack $(hblu)hblue $(hgrn)hgreen $(hcyn)hcyan $(hred)hred $(hmag)hmagenta $(hyel)hyello $(hwht)hwhite $(bwht)bwhite
+ ^xecho -b $(bmag)bmagenta$(cl) $(bblu)bblue$(cl) $(bred)bred$(cl) $(bblk)bblack$(cl) $(byel)byellow$(cl) $(bcyn)bcyan$(cl)
+-^eval ^load $twiddle($HOME)$(loadpath)stats/$statbar
++^eval ^load $twiddle(@pkglibdir@)$(loadpath)stats/$statbar
+ }
+\ No newline at end of file
+diff -r -u -- cyp_orig/modules/theme.m cyp/modules/theme.m
+--- cyp_orig/modules/theme.m	2007-05-15 13:06:17.000000000 +0200
++++ cyp/modules/theme.m	2007-05-15 13:07:44.000000000 +0200
+@@ -5,7 +5,7 @@
+ 		@ rename(/usr/local/lib/bx/cyp/themes/$(blahfile).th /usr/local/lib/bx/cyp/themes/$(blahfile).th.old)
+ 		^exec rm /usr/local/lib/bx/cyp/themes/$(blahfile).th.old 1> /dev/null 2> /dev/null
+ 	}
+-        @ :saveth = open($twiddle($HOME)$(loadpath)themes/$(blahfile).th W T)
++        @ :saveth = open($twiddle(@pkglibdir@)$(loadpath)themes/$(blahfile).th W T)
+         @ :author = N
+ 	@ :desc = [$1]
+ 	@ :name = blahfile
+@@ -106,9 +106,9 @@
+ if (plistf ==7) cdcc7
+ 
+ ^eval do.dccload $dccform
+-^eval ^load $twiddle($HOME)$(loadpath)wis/whois.$fnum
+-^eval ^load $twiddle($HOME)$(loadpath)stats/$statbar
+-^eval load $twiddle($HOME)$(loadpath)sc/scan.$snf
++^eval ^load $twiddle(@pkglibdir@)$(loadpath)wis/whois.$fnum
++^eval ^load $twiddle(@pkglibdir@)$(loadpath)stats/$statbar
++^eval load $twiddle(@pkglibdir@)$(loadpath)sc/scan.$snf
+ }
+ 
+ alias dotopwin { if (top==[on]) {^window split on} }
+diff -r -u -- cyp_orig/sc/scan cyp/sc/scan
+--- cyp_orig/sc/scan	2007-05-15 13:06:17.000000000 +0200
++++ cyp/sc/scan	2007-05-15 13:07:44.000000000 +0200
+@@ -1,11 +1,11 @@
+ alias sformat {
+ 	switch ($0) {
+-		(1) {@ snf = 1;^eval load $twiddle($HOME)$(loadpath)sc/scan.1}
+-		(2) {@ snf = 2;^eval load $twiddle($HOME)$(loadpath)sc/scan.2}
+-		(3) {@ snf = 3;^eval load $twiddle($HOME)$(loadpath)sc/scan.3}
+-		(4) {@ snf = 4;^eval load $twiddle($HOME)$(loadpath)sc/scan.4}
+-		(5) {@ snf = 5;^eval load $twiddle($HOME)$(loadpath)sc/scan.5}
+-		(6) {@ snf = 6;^eval load $twiddle($HOME)$(loadpath)sc/scan.6}
++		(1) {@ snf = 1;^eval load $twiddle(@pkglibdir@)$(loadpath)sc/scan.1}
++		(2) {@ snf = 2;^eval load $twiddle(@pkglibdir@)$(loadpath)sc/scan.2}
++		(3) {@ snf = 3;^eval load $twiddle(@pkglibdir@)$(loadpath)sc/scan.3}
++		(4) {@ snf = 4;^eval load $twiddle(@pkglibdir@)$(loadpath)sc/scan.4}
++		(5) {@ snf = 5;^eval load $twiddle(@pkglibdir@)$(loadpath)sc/scan.5}
++		(6) {@ snf = 6;^eval load $twiddle(@pkglibdir@)$(loadpath)sc/scan.6}
+ 	}
+ ^xecho -b cypress scan format set to $(hwht)$(snf)$(cl)	
+ }
+\ No newline at end of file
+diff -r -u -- cyp_orig/wis/whois cyp/wis/whois
+--- cyp_orig/wis/whois	2007-05-15 13:06:17.000000000 +0200
++++ cyp/wis/whois	2007-05-15 13:07:44.000000000 +0200
+@@ -2,7 +2,7 @@
+ alias wformat if ([$0] && ([$0] <= whois.max)) {
+ 	@fwhois = [whois.$0]
+ 	@fnum = [$0]
+-	load $twiddle($HOME)$(loadpath)wis/${fwhois}
++	load $twiddle(@pkglibdir@)$(loadpath)wis/${fwhois}
+ 	xecho -b cypress whois set to ${hwht}$fnum
+ 	xecho -b type /fsave to save whois format
+ } { xecho -b cypress usage: /wformat <1-$(whois.max)>

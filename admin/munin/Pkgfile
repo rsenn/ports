@@ -1,0 +1,56 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A system that gathers information from your network and graphs it using rrdtool.
+#  Munin is a system to gather and graph all sorts of information. You can
+#  install a node on the various machines in your network, as well as on
+#  a central server. The nodes will know how to extract various kinds of
+#  information, such as load average and bandwidth usage, and will wait for
+#  the server to request these values. The output is in HTML format. The
+#  server can optionally send notifications if any of the values move
+#  outside of a specified range (and when they move back into it).
+#  .
+# URL: http://munin.sourceforge.net/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=munin
+version=1.3.4
+release=1
+source=($mirror_sf/munin/munin_$version.tar.gz)
+
+build()
+{
+  cd munin-$version
+
+  case $prefix in
+    "/usr") localstatedir="/var" sysconfdir="/etc" ;;
+  esac
+
+  #set -- `perl --version`
+  #perl_archlib="$prefix/share/perl/${4#v}"
+
+  eval "perl_`perl -V:archlib`"
+
+  htmldir="${localstatedir=$prefix/var}/www"
+  cgidir="${libdir=$prefix/lib}/cgi-bin"
+  confdir="${sysconfdir=$prefix/etc}/munin"
+
+  make \
+      USER="root" \
+      GROUP="root" \
+      DESTDIR="$PKG/" \
+      PREFIX="$prefix" \
+      MANDIR="\$(DESTDIR)$prefix/share/man" \
+      LIBDIR="\$(DESTDIR)$prefix/lib" \
+      BINDIR="\$(DESTDIR)$prefix/bin" \
+      SBINDIR="\$(DESTDIR)$prefix/sbin" \
+      HTMLDIR="\$(DESTDIR)$htmldir" \
+      CGIDIR="\$(DESTDIR)$cgidir" \
+      CONFDIR="\$(DESTDIR)$confdir" \
+      PERLLIB="\$(DESTDIR)$perl_archlib" \
+    build install
+
+  echo "Exit code: $?"
+}
+
+# EOF

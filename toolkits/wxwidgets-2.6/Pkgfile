@@ -1,0 +1,41 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:53 roman Exp $
+#
+# Description: A C++ cross-platform GUI library.
+#  wxWidgets is a cross-platform C++ GUI library, offering classes for all
+#  common GUI controls as well as a comprehensive set of helper classes for
+#  most common application tasks, ranging from networking to HTML display
+#  and image manipulation. wxWidgets uses native widgets on all platforms
+#  whenever possible and fills missing gaps on some platforms using generic
+#  controls written with wxWidgets itself.
+# URL: http://www.wxwidgets.org
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=wxwidgets
+version=2.6.4
+release=1
+source=($mirror_sf/wxwindows/wxWidgets-$version.tar.bz2)
+
+build()
+{
+  cd wxWidgets-$version
+
+  sed -i "s,/usr/local,$prefix,g" configure
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --${static:=enable}-shared \
+       --${shared:=enable}-shared
+
+  make #EXTRALIBS_FOR_GUI="\$(EXTRALIBS_GUI) -lpangocairo-1.0 -lcairo -lICE"
+  make DESTDIR="$PKG" install
+
+  ln -sf $prefix/lib/wx/config/gtk2-ansi-release-2.6 $ROOT/bin/wx-config-${version%.*}
+
+  rm -f $ROOT/bin/wxrc
+
+  install -d $ROOT/share/doc
+  cp -rvf docs $ROOT/share/doc/$name-$version
+}

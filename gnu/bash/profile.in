@@ -1,0 +1,107 @@
+# profile: System wide environment and startup programs, for login setup
+#          Functions and aliases go in /etc/bashrc
+
+# Add an executable search path to the PATH environment variable, if
+# it doesn't already contain the specified path.
+pathmunge()
+{
+  local IFS=":"
+
+  if ! echo "$PATH" | egrep -q "(^|:)$1($|:)"
+  then
+    if test "$2" = "after"
+    then
+      PATH="$PATH:$1"
+    else
+      PATH="$1:$PATH"
+    fi 
+  fi 
+} 
+
+# Path manipulation 
+if test $(id -u) = 0
+then
+  pathmunge "@sbindir@"
+  pathmunge "@bindir@"
+fi 
+
+if test -d "@libdir@/sh"
+then
+  pathmunge "@libdir@/sh" after
+fi
+
+unset -f pathmunge 
+
+# No core files by default 
+ulimit -S -c 0 > /dev/null 2>&1 
+
+# Checks if the specified executable exists within one of the directories in PATH
+chkbin()
+{
+  local IFS=: dir
+
+  for dir in $PATH
+  do
+    test -e "$dir/$1" || return $?
+  done
+}
+
+# Default user preferences..
+EDITOR='nano'
+PAGER='more'
+
+export EDITOR PAGER
+
+# Decide which editor to use
+if chkbin 'jed'
+then
+  EDITOR='jed'
+elif chkbin 'vim'
+then
+  EDITOR='vim'
+fi
+
+# Decide which pager to use
+if chkbin 'less'
+then
+  PAGER='less'
+  export LESS='-R'
+fi
+
+tone=0
+
+for n in $(hostname | hexdump -d | sed 's|^[^\s]\+\s*||')
+do
+  tone=$((tone + n))
+done
+
+bold=$(( (tone >> 2) & 1 ))
+tone=$(( (tone & 3) + 31 ))
+
+# Color code shortcuts
+color_tone="\\[\\e[$((bold));$((tone))m\\]"
+color_bold="\\[\\e[37;1m\\]"
+color_none="\\[\\e[0m\\]"
+
+unset -v bold tone
+
+if test $(id -u) = 0
+then
+  export PS1="$color_tone\\h$color_bold<$color_none\\w$color_bold>$color_none \\\$ "
+else
+  export PS1="$color_none\\u$color_tone@$color_none\\h$color_tone<$color_none\\w$color_tone>$color_none \\\$ "
+fi
+
+unset -v color_{tone,bold,none}
+
+export LESS PS1
+
+CVS_RSH='ssh'
+LC_ALL='C'
+LANG='C'
+GLOBIGNORE='CVS:.svn'
+#HISTFILE='$HOME/.history'
+HISTFILESIZE=262144
+HISTSIZE=32768
+
+export CVS_RSH LC_ALL LANG GLOBIGNORE HISTFILE HISTFILESIZE HISTSIZE

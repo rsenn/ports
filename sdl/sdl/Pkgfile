@@ -1,0 +1,32 @@
+# $Id: $
+#
+# Description: A library that gives portable low-level access for multimedia applications.
+#  SDL is a library that allows you portable low-level access to a video
+#  framebuffer, audio output, mouse, and keyboard. With SDL, it is easy to
+#  write portable games which run on many different platforms.
+# URL: http://www.libsdl.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=sdl
+version=1.2.13
+release=1
+source=(http://www.libsdl.org/release/SDL-$version.tar.gz)
+
+build()
+{
+  cd SDL-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --${shared:=enable}-shared \
+       --${static:=enable}-shared \
+       --disable-x11-shared \
+       --enable-video-x11-vm
+
+  make
+  make DESTDIR="$PKG" install
+}
+

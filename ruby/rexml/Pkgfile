@@ -1,0 +1,35 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A pure Ruby XML parser.
+#  REXML is an XML 1.0 compliant, reasonably fast, non-validating
+#  XML parser. It has an API that is designed to be intuitive,
+#  straightforward. and terse. REXML includes a tree model parser, a SAX2
+#  streaming parser, and a pull parser. It also includes a full XPath
+#  implementation. All of REXML's parsers pass 100% of the Oasis XML
+#  non-validating tests. As of Ruby 1.8.0, REXML is distributed with Ruby.
+#  .
+# URL: http://www.germane-software.com/software/XML/rexml/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=rexml
+version=3.0.2
+release=1
+source=(http://www.germane-software.com/archives/rexml_$version.tgz)
+
+build()
+{
+  cd rexml_$version
+
+  set -- `ruby --version`
+
+  RUBYVERSION="$2"
+  RUBYLIBDIR="$prefix/lib/ruby/${RUBYVERSION%.*}"
+
+  ruby bin/install.rb --destdir="$PKG" --target="$RUBYLIBDIR"
+
+  install -d $ROOT/share/doc/rexml
+  install -m 644 README INSTALL *.txt $ROOT/share/doc/rexml
+}
+
+# EOF

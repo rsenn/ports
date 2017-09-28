@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A Disjunctive Normal Form boolean expression C++ library.
+#  BoolStuff is a small C++ library that computes the Disjunctive Normal
+#  Form of a boolean expression binary tree. The library also has a C
+#  programming interface.
+#  .
+# URL: http://sarrazip.com/dev/boolstuff.html
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=boolstuff
+version=0.1.12
+release=1
+source=(http://sarrazip.com/dev/boolstuff-$version.tar.gz)
+
+build()
+{
+  cd boolstuff-$version
+
+  ./bootstrap
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

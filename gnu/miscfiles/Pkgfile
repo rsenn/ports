@@ -1,0 +1,54 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: GNU miscfiles
+#  Files include:
+#  * connectives- (prepositions, pronouns, and the like)
+#  * web2- Webster's Second International English wordlist
+#  * web2a- Webster's Second Internations appendix english wordlist
+#  * propernames- some common proper names
+#  * airport- list of three letter codes for some major airports
+#  * ascii- a map of the ascii character set
+#  * birthtoken- traditional stone and flower for each month
+#  * inter.phone- international country telephone codes
+#  * na.phone- North American (+1) telephone area codes
+#  * operator- precedence table for operators in the C language
+#  * abbrevs.talk, abbrevs.gen- common abbreviations used in electronic
+#  communication
+#  * cities.dat- geographic coordinates of many major cities
+#  * postal.codes- postal codes for US and Mexican states and Canadian
+#  provinces
+#  * GNU-manifesto- The GNU Manifest
+#  * mailinglists- all public Project GNU related mailing lists.
+#  * languages- two-letter codes for languages, from ISO 639
+#  * latin1- like `ascii'; describing the ISO Latin-1 character set
+#  * currency- currency abbreviations and names
+#  * countries- country abbreviations and names and capital cities
+#  * unicode- The official Unicode character set table
+#  * jargon.html- The Jargon file (same as the _Hacker's_Dictionary_)
+#  * us-constitution- The Constitution of the United States of America
+#  * us-declaration- The Declaration of Independence of the Thirteen Colonies
+#  * rfc-index.txt, fyi-index.txt, std-index.txt, bcp-index.txt- Indices
+#  of internet standardization documents
+#  * tasks.texi, tasks.info- The GNU task list
+# URL: http://savannah.gnu.org/projects/miscfiles/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=miscfiles
+version=1.4.2
+release=1
+source=(http://ftp.gnu.org/gnu/miscfiles/miscfiles-$version.tar.gz)
+
+build()
+{
+  cd miscfiles-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

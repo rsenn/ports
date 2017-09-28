@@ -1,0 +1,24 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: GNU Source-highlight, given a source file, produces a document with syntax highlighting.
+# URL: http://www.gnu.org/software/src-highlite/source-highlight.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=source-highlight
+version=2.9
+release=1
+source=(ftp://ftp.gnu.org/gnu/src-highlite/source-highlight-$version.tar.gz)
+
+build()
+{
+  cd source-highlight-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

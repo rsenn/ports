@@ -1,0 +1,128 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:50 roman Exp $
+# Package: kdelibs5
+# Description: core libraries for all KDE 4 applications
+# This package contains all the shared libraries. You need these libraries to
+# run KDE applications.
+#
+# This package is part of KDE, and a component of the KDE libraries module.
+# See the 'kde4' and 'kdelibs5' packages for more information.
+# URL: http://www.kde.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libacl1, libasound2, libaspell15, libattr1, libbz2-1.0, libc6, libcomerr2, libenchant1c2a, libgcc1, libgif4, libice6, libjasper1, libjpeg62, libkrb53, libopenexr2ldbl, libpcre3, libphonon4, libpng12-0, libqt4-dbus, libqt4-designer, libqt4-network, libqt4-qt3support, libqt4-svg, libqt4-test, libqt4-xml, libqtcore4, libqtgui4, libsm6, libsoprano4, libssl0.9.8, libstdc++6, libstreamanalyzer0, libstreams0, libx11-6, libxau6, libxcursor1, libxdmcp6, libxext6, libxfixes3, libxft2, libxml2, libxpm4, libxrender1, libxslt1.1, libxtst6, zlib1g, libacl1, libasound2, libaspell15, libattr1, libbz2-1.0, libc6, libcomerr2, libenchant1c2a, libgcc1, libgif4, libice6, libjasper1, libjpeg62, libkrb53, libopenexr2ldbl, libpcre3, libpng12-0, libqt4-dbus, libqt4-designer, libqt4-network, libqt4-qt3support, libqt4-svg, libqt4-test, libqt4-xml, libqtcore4, libqtgui4, libsm6, libssl0.9.8, libstdc++6, libstreamanalyzer0, libstreams0, libx11-6, libxau6, libxcursor1, libxdmcp6, libxext6, libxfixes3, libxft2, libxml2, libxpm4, libxrender1, libxslt1.1, libxtst6, zlib1g, libacl1, libasound2, libaspell15, libattr1, libbz2-1.0, libc6, libcomerr2, libenchant1c2a, libgcc1, libgif4, libice6, libjasper1, libjpeg62, libkrb53, libopenexr2ldbl, libpcre3, libpng12-0, libqt4-dbus, libqt4-designer, libqt4-network, libqt4-qt3support, libqt4-svg, libqt4-test, libqt4-xml, libqtcore4, libqtgui4, libsm6, libssl0.9.8, libstdc++6, libstreamanalyzer0, libstreams0, libx11-6, libxau6, libxcursor1, libxdmcp6, libxext6, libxfixes3, libxft2, libxml2, libxpm4, libxrender1, libxslt1.1, libxtst6, zlib1g, libacl1, libasound2, libaspell15, libattr1, libbz2-1.0, libc6, libcomerr2, libenchant1c2a, libgcc1, libgif4, libice6, libjasper1, libjpeg62, libkrb53, libopenexr2ldbl, libpcre3, libpng12-0, libqt4-dbus, libqt4-designer, libqt4-network, libqt4-qt3support, libqt4-svg, libqt4-test, libqt4-xml, libqtcore4, libqtgui4, libsm6, libssl0.9.8, libstdc++6, libstreamanalyzer0, libstreams0, libx11-6, libxau6, libxcursor1, libxdmcp6, libxext6, libxfixes3, libxft2, libxml2, libxpm4, libxrender1, libxslt1.1, libxtst6, zlib1g
+
+name=kdelibs
+version=4.1.0
+release=1
+source=(ftp://ftp.kde.org/pub/kde/stable/${version%-*}/src/kdelibs-${version%-*}.tar.bz2)
+
+build()
+{
+  cd ${srcdir=$SRC/kdelibs-${version%-*}}
+
+#  bzip2 -dc $SRC/kdelibs-4.0.3-r792735.diff.bz2 | patch -N -p1
+
+  rm -rf ${builddir=$SRC/kdelibs-${version%-*}/build} && mkdir $builddir && cd $builddir
+
+  case $CXXFLAGS in
+    *-ggdb*) build_type="Debug" ;;
+       *-g*) build_type="RelWithDebInfo" CXXFLAGS="$CXXFLAGS -DNDEBUG" ;;
+         *) build_type="Release" CXXFLAGS="$CXXFLAGS -DNDEBUG" ;;
+  esac
+
+  cmake \
+        -D CMAKE_INSTALL_PREFIX="$prefix" \
+        -D KDE4_ENABLE_FINAL:BOOL="OFF" \
+        -D KDE4_ENABLE_FPIE:BOOL="OFF" \
+        -D KDE4_ENABLE_HTMLHANDBOOK:BOOL="ON" \
+        -D X11_LIB_SEARCH_PATH:PATH="$prefix/lib" \
+        -D X11_X11_LIB:FILEPATH="$prefix/lib/libX11.so" \
+        -D STRIGI_INCLUDE_DIR:PATH="$prefix/include/strigi" \
+        -D STRIGI_STREAMANALYZER_LIBRARY:FILEPATH="$prefix/lib/libstreamanalyzer.so" \
+        -D STRIGI_STREAMS_LIBRARY:FILEPATH="$prefix/lib/libstreams.so" \
+        -D STRIGI_STRIGIQTDBUSCLIENT_LIBRARY:FILEPATH="$prefix/lib/libstrigiqtdbusclient.so" \
+        -D ALSA_INCLUDES:PATH="$prefix/include" \
+        -D ASOUND_LIBRARY:FILEPATH="$prefix/lib/libasound.so" \
+        -D BZIP2_INCLUDE_DIR:PATH="$prefix/include" \
+        -D BZIP2_LIBRARIES:FILEPATH="$prefix/lib/libbz2.so" \
+        -D GIF_INCLUDE_DIR:PATH="$prefix/include" \
+        -D GIF_LIBRARIES:FILEPATH="$prefix/lib/libgif.so" \
+        -D JPEG_INCLUDE_DIR:PATH="$prefix/include" \
+        -D JPEG_LIBRARY:FILEPATH="$prefix/lib/libjpeg.so" \
+        -D LIBEXSLT_LIBRARIES:FILEPATH="$prefix/lib/libexslt.so" \
+        -D LIBINTL_INCLUDE_DIR:PATH="$prefix/include" \
+        -D LIBXML2_INCLUDE_DIR:PATH="$prefix/include/libxml2" \
+        -D LIBXML2_LIBRARIES:FILEPATH="$prefix/lib/libxml2.so" \
+        -D LIBXSLT_INCLUDE_DIR:PATH="$prefix/include" \
+        -D LIBXSLT_LIBRARIES:FILEPATH="$prefix/lib/libxslt.so" \
+        -D OPENGL_INCLUDE_DIR:PATH="$prefix/include" \
+        -D OPENGL_gl_LIBRARY:FILEPATH="$prefix/lib/libGL.so" \
+        -D OPENGL_glu_LIBRARY:FILEPATH="$prefix/lib/libGLU.so" \
+        -D OPENGL_xmesa_INCLUDE_DIR:PATH="$prefix/include" \
+        -D OPENSSL_INCLUDE_DIR:PATH="$prefix/include" \
+        -D OPENSSL_LIBRARIES:FILEPATH="$prefix/lib/libssl.so" \
+        -D PNG_LIBRARY:FILEPATH="$prefix/lib/libpng.so" \
+        -D PNG_PNG_INCLUDE_DIR:PATH="$prefix/include" \
+        -D SOPRANO_CLIENT_LIBRARIES:FILEPATH="$prefix/lib/libsopranoclient.so" \
+        -D SOPRANO_INCLUDE_DIR:PATH="$prefix/include" \
+        -D SOPRANO_LIBRARIES:FILEPATH="$prefix/lib/libsoprano.so" \
+        -D SOPRANO_SERVER_LIBRARIES:FILEPATH="$prefix/lib/libsopranoserver.so" \
+        -D UPDATE_MIME_DATABASE_EXECUTABLE:FILEPATH="$prefix/bin/update-mime-database" \
+        -D X11_ICE_INCLUDE_PATH:PATH="$prefix/include" \
+        -D X11_ICE_LIB:FILEPATH="$prefix/lib/libICE.so" \
+        -D X11_X11_INCLUDE_PATH:PATH="$prefix/include" \
+        -D X11_XShm_INCLUDE_PATH:PATH="$prefix/include" \
+        -D X11_XSync_INCLUDE_PATH:PATH="$prefix/include" \
+        -D X11_XTest_INCLUDE_PATH:PATH="$prefix/include" \
+        -D X11_XTest_LIB:FILEPATH="$prefix/lib/libXtst.so" \
+        -D X11_Xaccessrules_INCLUDE_PATH:PATH="$prefix/include" \
+        -D X11_Xaccessstr_INCLUDE_PATH:PATH="$prefix/include" \
+        -D X11_Xau_INCLUDE_PATH:PATH="$prefix/include" \
+        -D X11_Xau_LIB:FILEPATH="$prefix/lib/libXau.so" \
+        -D X11_Xcomposite_INCLUDE_PATH:PATH="$prefix/include" \
+        -D X11_Xcomposite_LIB:FILEPATH="$prefix/lib/libXcomposite.so" \
+        -D X11_Xcursor_INCLUDE_PATH:PATH="$prefix/include" \
+        -D X11_Xcursor_LIB:FILEPATH="$prefix/lib/libXcursor.so" \
+        -D X11_Xdamage_INCLUDE_PATH:PATH="$prefix/include" \
+        -D X11_Xdamage_LIB:FILEPATH="$prefix/lib/libXdamage.so" \
+        -D X11_Xdmcp_INCLUDE_PATH:PATH="$prefix/include" \
+        -D X11_Xdmcp_LIB:FILEPATH="$prefix/lib/libXdmcp.so" \
+        -D X11_Xext_LIB:FILEPATH="$prefix/lib/libXext.so" \
+        -D X11_Xfixes_INCLUDE_PATH:PATH="$prefix/include" \
+        -D X11_Xfixes_LIB:FILEPATH="$prefix/lib/libXfixes.so" \
+        -D X11_Xft_INCLUDE_PATH:PATH="$prefix/include" \
+        -D X11_Xft_LIB:FILEPATH="$prefix/lib/libXft.so" \
+        -D X11_Xinerama_INCLUDE_PATH:PATH="$prefix/include" \
+        -D X11_Xinerama_LIB:FILEPATH="$prefix/lib/libXinerama.so" \
+        -D X11_Xinput_INCLUDE_PATH:PATH="$prefix/include" \
+        -D X11_Xinput_LIB:FILEPATH="$prefix/lib/libXi.so" \
+        -D X11_Xkb_INCLUDE_PATH:PATH="$prefix/include" \
+        -D X11_Xkbfile_INCLUDE_PATH:PATH="$prefix/include" \
+        -D X11_Xkbfile_LIB:FILEPATH="$prefix/lib/libxkbfile.so" \
+        -D X11_Xkblib_INCLUDE_PATH:PATH="$prefix/include" \
+        -D X11_Xlib_INCLUDE_PATH:PATH="$prefix/include" \
+        -D X11_Xpm_INCLUDE_PATH:PATH="$prefix/include" \
+        -D X11_Xpm_LIB:FILEPATH="$prefix/lib/libXpm.so" \
+        -D X11_Xrandr_INCLUDE_PATH:PATH="$prefix/include" \
+        -D X11_Xrandr_LIB:FILEPATH="$prefix/lib/libXrandr.so" \
+        -D X11_Xrender_INCLUDE_PATH:PATH="$prefix/include" \
+        -D X11_Xrender_LIB:FILEPATH="$prefix/lib/libXrender.so" \
+        -D X11_Xscreensaver_INCLUDE_PATH:PATH="$prefix/include" \
+        -D X11_Xscreensaver_LIB:FILEPATH="$prefix/lib/libXss.so" \
+        -D X11_Xshape_INCLUDE_PATH:PATH="$prefix/include" \
+        -D X11_Xt_INCLUDE_PATH:PATH="$prefix/include" \
+        -D X11_Xt_LIB:FILEPATH="$prefix/lib/libXt.so" \
+        -D X11_Xutil_INCLUDE_PATH:PATH="$prefix/include" \
+        -D X11_Xv_INCLUDE_PATH:PATH="$prefix/include" \
+        -D X11_Xv_LIB:FILEPATH="$prefix/lib/libXv.so" \
+        -D X11_Xxf86misc_LIB:FILEPATH="$prefix/lib/libXxf86misc.so" \
+        -D X11_dpms_INCLUDE_PATH:PATH="$prefix/include" \
+        -D X11_xf86misc_INCLUDE_PATH:PATH="$prefix/include" \
+        -D X11_xf86vmode_INCLUDE_PATH:PATH="$prefix/include" \
+        -D ZLIB_INCLUDE_DIR:PATH="$prefix/include" \
+        -D ZLIB_LIBRARY:FILEPATH="$prefix/lib/libz.so" \
+     ${srcdir=$SRC/kdelibs-${version%-*}} \
+     -LA
+
+  make
+  make DESTDIR="$PKG" install
+}

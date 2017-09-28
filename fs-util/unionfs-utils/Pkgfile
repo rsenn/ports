@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: stackable unification file system - management tools
+#  The unionfs driver provides a unification file system for the Linux
+#  kernel. It allows to virtually merge the contents of several directories
+#  and/or stack them, so that apparent file changes in the unionfs end in
+#  file changes in only one of the source directories.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=unionfs-utils
+version=0.2.1
+release=1
+source=(ftp://ftp.filesystems.org/pub/unionfs/unionfs-utils-0.x/unionfs_utils-$version.tar.gz)
+
+build()
+{
+  cd unionfs_utils-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --mandir="$prefix/share/man"
+
+  make
+  make DESTDIR="$PKG" install
+}

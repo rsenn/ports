@@ -1,0 +1,42 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Various utilities to enhance productivity.
+#  grindr is a set of various utilities to enhance Web productivity. It
+#  provides tools to interact with Web sites, RSS feeds, and instant
+#  messaging. Munchr is a simple RSS parser which can collect data from
+#  restricted Web sites, and this data is routed to nbox. nbox is a small
+#  GUI display for all collected information. Posting information is done
+#  by feedr, which takes a set of parameters and values and submits it to
+#  the appropriate Web service. gaskr provides a GUI to prepare data for
+#  feedr. Initial configuration for gaskr is prepared by bildr, which can
+#  log onto sites and scrape all form data from HTML content.
+#  .
+# URL: http://github.com/stef/grindr/wikis
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=grindr
+version=0.3.1
+release=1
+source=(http://github.com/stef/munchr/tarball/v$version)
+
+build()
+{
+  cd stef-munchr-84ac5e6eecb4107b80aa3afac3abfb671a29e526
+
+  case $prefix in
+    /usr) sysconfdir=/etc ;;
+  esac
+
+  install -d $ROOT/bin
+  cp pidgin bildr gaskr wachr feedr munchr nbox $ROOT/bin
+
+  install -d $PKG${sysconfdir="$prefix/etc"}
+  cp -rf cfgs/* $ROOT${sysconfdir}
+
+  install -d $ROOT/share/doc/grindr
+  install -m 644 README VERSION $ROOT/share/doc/grindr
+  cp -f doc/* $ROOT/share/doc/grindr
+}
+
+# EOF

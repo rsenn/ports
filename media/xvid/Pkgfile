@@ -1,0 +1,37 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: $'AN MPEG-4 VIDEO CODEC.\NXVID (FORMERLY XVID) IS AN OPEN SOURCE MPEG-4 VIDEO CODEC, IMPLEMENTING MPEG-4 SIMPLE PROFILE, ADVANCED SIMPLE PROFILE, AND ADVANCED VIDEO CODING STANDARDS'An MPEG-4 video codec.\nXvid (formerly XviD) is an open source MPEG-4 video codec, implementing MPEG-4 Simple Profile, Advanced Simple Profile, and Advanced Video Coding standards
+#  It is written in C with assembler optimizations for quality and speed
+#  (including MMX, SSE, and 3Dnow! code for i386 and AltiVec for PowerPC),
+#  and is especially optimized towards offline, multi-pass compression for
+#  storage and archival purposes.'
+#  .
+# URL: http://www.xvid.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name='xvid'
+version=1.2.1.tar.gz
+release=1
+source=(http://downloads.xvid.org/downloads/xvidcore-1.2.1.tar.gz)
+
+build() 
+{
+  cd xvidcore
+  
+  build/generic/configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+  
+  make -C build/generic \
+      DESTDIR="$PKG" \
+      prefix="$prefix" \
+    all \
+    install
+
+  install -d $ROOT/share/doc/xvid
+  install -m 644 ChangeLog AUTHORS CodingStyle LICENSE README TODO debian/README.Debian doc/INSTALL $ROOT/share/doc/xvid
+}
+
+# EOF

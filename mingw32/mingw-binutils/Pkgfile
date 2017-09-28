@@ -1,0 +1,51 @@
+# $Id: Pkgfile,v 1.3 2006/06/11 13:27:37 roman Exp $
+#
+# Description: Collection of binary utilities
+# Longdescription:
+# Includes tools capable of linking and managing archives, including
+# handling object code, libraries, profile data, and symbol names.
+# URL: http://www.gnu.org/software/binutils
+# Maintainer: Roman Senn <smoli@paranoya.ch>
+# Depends on:
+
+name=mingw-binutils
+version=2.18.50
+date=20080109
+release=2
+target=i686-pc-mingw32
+source=($mirror_sf/mingw/binutils-$version-$date-$release-src.tar.gz)
+
+build()
+{
+  cd binutils-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix" \
+       --mandir="$prefix/share/man" \
+       --infodir="$prefix/share/info" \
+       --disable-nls \
+       --without-included-gettext \
+       --${static:=enable}-shared \
+       --disable-shared \
+       --with-mmap \
+       --enable-bfd-assembler \
+       --disable-commonbfdlib \
+       --disable-install-libbfd \
+       --disable-install-libiberty \
+       --disable-werror
+
+  make
+  make DESTDIR="$PKG" install
+
+  rm -f $ROOT/lib/libiberty.a
+
+  cd $ROOT/$target/bin && for x in ../../bin/$target-*; do
+    name=${x##*/}
+    tool=${name#$target-}
+
+    ln -sf $x $tool
+  done
+}

@@ -1,0 +1,35 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description:  File System in User Space - Module for ext2
+# This module for the FUSE kernel service allows any FUSE-enabled user to mount
+# Second Extended file systems, e.g. disk images.
+#
+# The module has been initially written for UMView, the user-mode
+# implementation of View-OS. If you want to allow completely user-mode disk
+# images mounting (with no kernel/superuser support at all), take a look at
+# umview-mod-umfuseext2 and its dependencies.
+#
+# URL: http://sourceforge.net/projects/fuse-ext2/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: e2fslibs, libc6, libcomerr2, libfuse2
+
+name=fuse-ext2
+version=0.1
+release=1
+source=(http://www.kernel.org/pub/linux/kernel/people/jgarzik/fs/fuse-ext2-$version.tar.bz2)
+
+build()
+{
+  cd fuse-ext2-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/fuse-ext2
+  install -m 644 [A-Z]*[A-Z]* $ROOT/share/doc/fuse-ext2
+}

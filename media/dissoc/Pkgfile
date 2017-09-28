@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Dissociated Studio
+# URL: http://www.panix.com/~asl2/music/dissoc_studio/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=dissoc
+version=0.1
+release=1
+source=(http://www.panix.com/%7Easl2/music/dissoc_studio/dissoc-$version.tar.gz
+        dissoc-0.1-c++0x.patch)
+
+build()
+{
+  cd dissoc-$version
+
+  patch -p1 -i $SRC/dissoc-0.1-c++0x.patch
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/dissoc
+  install -m 644 README AUTHORS COPYING ChangeLog INSTALL NEWS TODO $ROOT/share/doc/dissoc
+}

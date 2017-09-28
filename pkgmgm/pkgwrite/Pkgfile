@@ -1,0 +1,26 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A simple tool to make Debian and Redhat packages out of a single specification file
+# URL: http://ffem.org/daveb/pkgwrite/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: coreutils, libc6, perl
+
+name=pkgwrite
+version=0.0.6
+release=1
+source=(http://ffem.org/daveb/pkgwrite/pkgwrite-$version.tar.gz)
+
+build()
+{
+  cd pkgwrite-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix" \
+       --mandir="$prefix/share/man"
+
+  make
+  make DESTDIR="$PKG" install
+}

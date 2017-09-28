@@ -1,0 +1,66 @@
+diff -r -u -N -- mod_cplusplus_orig/configure.in mod_cplusplus/configure.in
+--- mod_cplusplus_orig/configure.in	2008-11-20 10:21:33.000000000 +0000
++++ mod_cplusplus/configure.in	2008-11-20 10:23:39.000000000 +0000
+@@ -67,7 +67,7 @@
+ 	CPPFLAGS="$CPPFLAGS -DNO_STDCPP"
+     fi 
+ CPLUSPLUS_BUILDDIR=`pwd`
+-CPPFLAGS="$CPPFLAGS -Wall -Werror -g -I$CPLUSPLUS_BUILDDIR/include"
++CPPFLAGS="$CPPFLAGS -Wall -g -I$CPLUSPLUS_BUILDDIR/include"
+ 
+ AC_SUBST(CPLUSPLUS_BUILDDIR)
+ AC_SUBST(MODULES_DIR)
+diff -r -u -N -- mod_cplusplus_orig/example/handler/Makefile.am mod_cplusplus/example/handler/Makefile.am
+--- mod_cplusplus_orig/example/handler/Makefile.am	2008-11-20 10:21:34.000000000 +0000
++++ mod_cplusplus/example/handler/Makefile.am	2008-11-20 10:23:20.000000000 +0000
+@@ -2,4 +2,6 @@
+ DISTFILES = test_auth.h test_handler.h test_auth.cpp test_handler.cpp Makefile.am Makefile.in
+ libtest_handler_la_SOURCES = test_handler.cpp test_auth.cpp
+ 
++INCLUDES = -I$(top_srcdir)/include
++
+ lib_LTLIBRARIES = libtest_handler.la
+diff -r -u -N -- mod_cplusplus_orig/example/input_filter/Makefile.am mod_cplusplus/example/input_filter/Makefile.am
+--- mod_cplusplus_orig/example/input_filter/Makefile.am	2008-11-20 10:21:34.000000000 +0000
++++ mod_cplusplus/example/input_filter/Makefile.am	2008-11-20 10:24:30.000000000 +0000
+@@ -1,4 +1,7 @@
+ CLEANFILES = libtest_input.so *~
+ DISTFILES = test_input.h test_input.cpp Makefile.am Makefile.in
+ libtest_input_la_SOURCES = test_input.cpp
++
++INCLUDES = -I$(top_srcdir)/include
++
+ lib_LTLIBRARIES = libtest_input.la
+diff -r -u -N -- mod_cplusplus_orig/example/output_filter/Makefile.am mod_cplusplus/example/output_filter/Makefile.am
+--- mod_cplusplus_orig/example/output_filter/Makefile.am	2008-11-20 10:21:34.000000000 +0000
++++ mod_cplusplus/example/output_filter/Makefile.am	2008-11-20 10:24:48.000000000 +0000
+@@ -1,4 +1,7 @@
+ CLEANFILES = libtest_output.so *~
+ DISTFILES = test_output.h test_output.cpp Makefile.am Makefile.in
+ libtest_output_la_SOURCES = test_output.cpp
++
++INCLUDES = -I$(top_srcdir)/include
++
+ lib_LTLIBRARIES = libtest_output.la
+diff -r -u -N -- mod_cplusplus_orig/example/protocol/Makefile.am mod_cplusplus/example/protocol/Makefile.am
+--- mod_cplusplus_orig/example/protocol/Makefile.am	2008-11-20 10:21:34.000000000 +0000
++++ mod_cplusplus/example/protocol/Makefile.am	2008-11-20 10:25:09.000000000 +0000
+@@ -1,4 +1,7 @@
+ CLEANFILES = libtest_protocol.so *~
+ DISTFILES = test_protocol.h test_protocol.cpp Makefile.am Makefile.in
+ libtest_protocol_la_SOURCES = test_protocol.cpp
++
++INCLUDES = -I$(top_srcdir)/include
++
+ lib_LTLIBRARIES = libtest_protocol.la
+diff -r -u -N -- mod_cplusplus_orig/src/Makefile.am mod_cplusplus/src/Makefile.am
+--- mod_cplusplus_orig/src/Makefile.am	2008-11-20 10:21:34.000000000 +0000
++++ mod_cplusplus/src/Makefile.am	2008-11-20 10:22:41.000000000 +0000
+@@ -1,5 +1,7 @@
+ CLEANFILES = .libs/libmod_cplusplus.so *~
+ 
++INCLUDES = -I$(top_srcdir)/include
++
+ libmod_cplusplus_la_SOURCES = mod_cplusplus.c \
+                               apache_handler.cpp \
+                               apache_filters.cpp \

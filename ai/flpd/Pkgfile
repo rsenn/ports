@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A learning system based on fuzzy prototypes.
+# FLPD is an automatic learning system based on fuzzy prototypes,
+# composed of a C++ library for machine learning and fuzzy logic and an
+# experimentation framework.
+#
+# URL: http://flpd.sourceforge.net/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=flpd
+version=3.14
+release=1
+source=($mirror_sf/flpd/flpd-$version.tar.gz)
+
+build()
+{
+  cd flpd-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

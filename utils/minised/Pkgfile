@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A fast, small sed implementation for constrained environments.
+# minised is the fast, small sed originally distributed in the GNU toolkit
+# and still distributed with Minix. The members of the GNU Project removed
+# it when they built their own sed around an enhanced regexp package,
+# but it's still better for some uses (in particular, it's faster and
+# less memory-intensive).
+#
+# URL: http://www.exactcode.de/site/open_source/minised/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=minised
+version=1.12
+release=1
+source=(http://dl.exactcode.de/oss/minised/minised-$version.tar.gz)
+
+build()
+{
+  cd minised-$version
+
+  sed -i 's,/man/,/share/man/,g' Makefile
+
+  make ${CC+CC="$CC"} ${CFLAGS+CFLAGS="$CFLAGS"}
+
+  install -d $ROOT/bin
+  install -d $ROOT/share/man/man1
+
+  make PREFIX="$ROOT" install
+}

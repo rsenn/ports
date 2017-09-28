@@ -1,0 +1,29 @@
+# $Id: Pkgfile 424 2008-08-10 01:52:57Z enki $
+#
+# Description: A library for loading and writing Standard MIDI Files, i.e. files with the ".mid" extension
+# It also handles tempo stuff, computing between pulses and seconds etc. The only dependency is glib. It was tested under
+# Linux, FreeBSD and Solaris.
+# URL: http://pin.if.uz.zgora.pl/~trasz/libsmf/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libglib2.0-0, libncurses5, libreadline5
+
+name=libsmf
+version=1.1
+release=1
+source=(http://pin.if.uz.zgora.pl/~trasz/libsmf/libsmf-$version.tar.gz)
+
+build()
+{
+  cd libsmf-$version
+
+  export CPPFLAGS="-DNDEBUG=1"
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

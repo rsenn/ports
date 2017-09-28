@@ -1,0 +1,4568 @@
+Only in exscalibar-1.0.4/src/examples/incremental: incremental
+diff -ru exscalibar-1.0.4_orig/src/examples/incremental/incremental.cpp exscalibar-1.0.4/src/examples/incremental/incremental.cpp
+--- exscalibar-1.0.4_orig/src/examples/incremental/incremental.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/examples/incremental/incremental.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -32,7 +32,7 @@
+   // Here we setup our I/O. We want 0 inputs and 1 output:
+   virtual void initFromProperties(const Properties &) { setupIO(0, 1); }
+   // Here we specify our types, we just want a Wave output.
+-  virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &, SignalTypeRefs &outTypes) { outTypes[0] = Value(); return true; }
++  virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &, SignalTypeRefs &outTypes) { outTypes[0] = Value(); return true; }
+   // Now we specify what this processor should output. We want it to infinitely produce 1s.
+   virtual void processor() { while(true) output(0).makeScratchSamples(1, true)[0] = 1.; }
+   // And a public constructor is necessary for use.
+@@ -55,7 +55,7 @@
+   virtual void initFromProperties(const Properties &p) { theFirst = p["First"].toDouble(); setupIO(1, 1); }
+   // Here we specify the output type. We trust that the input type is something
+   // sensible and copy it blindly.
+-  virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes) { outTypes[0] = inTypes[0]; return true; }
++  virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes) { outTypes[0] = inTypes[0]; return true; }
+   // Here we define the actual operation this processor does.
+   // f(0) = theFirst
+   // f(i | i > 0) = f(i - 1) + [readElement]
+@@ -73,7 +73,7 @@
+   virtual void initFromProperties(const Properties &) { setupIO(1, 0); }
+   // And here can verify our input type. As it happens, we dont care, so we
+   // just return true.
+-  virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &, SignalTypeRefs &) { return true; }
++  virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &, SignalTypeRefs &) { return true; }
+   // Here we define the operation of this processor. We just read a sample and
+   // print off the (first) value. Easy.
+   virtual void processor() { for(int i = 1; true; i++) { cout << "[" << name() << "] " << i << "th element: " << input(0).readSamples(1)[0] << endl; sleep(1); } }
+Only in exscalibar-1.0.4/src/examples/incremental: incremental.o
+Only in exscalibar-1.0.4/src/exinfo: exinfo
+Only in exscalibar-1.0.4/src/exinfo: exinfo.o
+diff -ru exscalibar-1.0.4_orig/src/geddei/buffer.cpp exscalibar-1.0.4/src/geddei/buffer.cpp
+--- exscalibar-1.0.4_orig/src/geddei/buffer.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/geddei/buffer.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -192,7 +192,7 @@
+ 		thePlungers.remove(thePlungers.begin());
+ }
+ 
+-const bool Buffer::trapdoorUNSAFE() const
++bool Buffer::trapdoorUNSAFE() const
+ {
+ 	if(MESSAGES) qDebug("Checking trapdoor for %s...", Processor::getCallersProcessor() ? Processor::getCallersProcessor()->name().latin1() : "[SubProcessor]");
+ 	QValueVector<const Processor *>::const_iterator i;
+@@ -234,22 +234,24 @@
+ 	if(MESSAGES) qDebug("< closeTrapdoor");
+ }
+ 
+-const int Buffer::nextPlungerUNSAFE() const
++int Buffer::nextPlungerUNSAFE() const
+ {
+ 	if(thePlungers.begin() == thePlungers.end()) return -1;
+ 	return *thePlungers.begin();
+ }
+ 
+-const int Buffer::nextPlungerUNSAFE(const uint pos, const uint ignore) const
++int Buffer::nextPlungerUNSAFE(const uint pos, const uint ignore) const
+ {
+ 	// 'ii' starts at first plunger
+ 	QValueList<uint>::const_iterator ii = thePlungers.begin();
+ 	
+ 	// First we skip down the plunger list until we find the first plunger at or past 'pos'
+-	for(; ii != thePlungers.end() && ((*ii - readPos) & theMask) < ((pos - readPos) & theMask); ii++);
++	for(; ii != thePlungers.end() && ((*ii - readPos) & theMask) < ((pos - readPos) & theMask); ii++)
++    ;
+ 	
+ 	// Then we skip upto ignore plungers from the list while they are situated on 'pos'
+-	for(uint i = 0; i < ignore && ii != thePlungers.end() && *ii == pos; i++, ii++);
++	for(uint i = 0; i < ignore && ii != thePlungers.end() && *ii == pos; i++, ii++)
++    ;
+ 	
+ 	// If we ran out of plungers, return -1
+ 	if(ii == thePlungers.end()) return -1;
+@@ -264,7 +266,7 @@
+  *  0 <= r < elements: If a plunger occurs before elements are available
+  *  r = Undefined: If trapdoor is open(-ed).
+  */
+-const uint Buffer::waitForUNSAFE(const uint elements) const
++uint Buffer::waitForUNSAFE(const uint elements) const
+ {
+ 	if(MESSAGES) qDebug("Waiting for %d elements...", elements);
+ 	int nextPlunger = -1;
+@@ -281,7 +283,7 @@
+ 	return Undefined;
+ }
+ 
+-const uint Buffer::waitForUNSAFE(const uint elements, const BufferReader *reader) const
++uint Buffer::waitForUNSAFE(const uint elements, const BufferReader *reader) const
+ {
+ 	if(MESSAGES) qDebug("Waiting for %d elements...", elements);
+ 	int nextPlunger = -1;
+@@ -301,7 +303,7 @@
+ 	return Undefined;
+ }
+ 
+-const uint Buffer::waitForIgnorePlungersUNSAFE(const uint elements, const BufferReader *reader) const
++uint Buffer::waitForIgnorePlungersUNSAFE(const uint elements, const BufferReader *reader) const
+ {
+ 	if(MESSAGES) qDebug("Waiting for %d elements, ignoring plungers...", elements);
+ 	while(!trapdoorUNSAFE())
+@@ -311,7 +313,7 @@
+ 	return Undefined;
+ }
+ 
+-const uint Buffer::elementsFree() const
++uint Buffer::elementsFree() const
+ {
+ 	if(MESSAGES) qDebug("= elementsFree");
+ 	QMutexLocker lock(&theDataFlux);
+diff -ru exscalibar-1.0.4_orig/src/geddei/buffer.h exscalibar-1.0.4/src/geddei/buffer.h
+--- exscalibar-1.0.4_orig/src/geddei/buffer.h	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/geddei/buffer.h	2009-02-28 10:10:20.000000000 +0100
+@@ -58,10 +58,10 @@
+ 	 */
+ 	void updateUNSAFE();
+ 
+-	const bool trapdoorUNSAFE() const;
+-	const uint waitForUNSAFE(const uint elements) const;
+-	const uint waitForUNSAFE(const uint elements, const BufferReader *reader) const;
+-	const uint waitForIgnorePlungersUNSAFE(const uint elements, const BufferReader *reader) const;
++	bool trapdoorUNSAFE() const;
++	uint waitForUNSAFE(const uint elements) const;
++	uint waitForUNSAFE(const uint elements, const BufferReader *reader) const;
++	uint waitForIgnorePlungersUNSAFE(const uint elements, const BufferReader *reader) const;
+ 	void waitForFreeUNSAFE(const uint elements) const;
+ 
+ 	/**
+@@ -76,7 +76,7 @@
+ 	 * 
+ 	 * @return -1 if there isn't one.
+ 	 */
+-	const int nextPlungerUNSAFE() const;
++	int nextPlungerUNSAFE() const;
+ 
+ 	/**
+ 	 * Finds the next plunger from @a pos and returns its position relative to
+@@ -84,7 +84,7 @@
+ 	 * 
+ 	 * @return -1 if there isn't such a plunger.
+ 	 */
+-	const int nextPlungerUNSAFE(const uint pos, const uint ignore) const;
++	int nextPlungerUNSAFE(const uint pos, const uint ignore) const;
+ 
+ public:
+ 	// USE THIS FROM processor on stop() - dont forget to reinitialise
+@@ -103,7 +103,7 @@
+ 	 * 
+ 	 * Thread-safe.
+ 	 */
+-	const uint elementsFree() const;
++	uint elementsFree() const;
+ 
+ 	/**
+ 	 * Waits until the buffer is at least empty enough to allow a number of
+@@ -181,7 +181,7 @@
+ 	/**
+ 	 * Returns the size of the buffer.
+ 	 */
+-	const uint size() const { return theSize; }
++	uint size() const { return theSize; }
+ 
+ 	/**
+ 	 * Returns the type of the buffer.
+Binary files exscalibar-1.0.4_orig/src/geddei/buffer.o and exscalibar-1.0.4/src/geddei/buffer.o differ
+diff -ru exscalibar-1.0.4_orig/src/geddei/bufferdata.cpp exscalibar-1.0.4/src/geddei/bufferdata.cpp
+--- exscalibar-1.0.4_orig/src/geddei/bufferdata.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/geddei/bufferdata.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -122,7 +122,7 @@
+ 	return out << "]";
+ }
+ 
+-const bool BufferData::plunger() const
++bool BufferData::plunger() const
+ {
+ 	return theInfo->thePlunger;
+ }
+diff -ru exscalibar-1.0.4_orig/src/geddei/bufferdata.h exscalibar-1.0.4/src/geddei/bufferdata.h
+--- exscalibar-1.0.4_orig/src/geddei/bufferdata.h	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/geddei/bufferdata.h	2009-02-28 10:10:19.000000000 +0100
+@@ -220,10 +220,10 @@
+ 	 * If so, two seperate sends of sizes firstPart() and secondPart() would be needed.
+ 	 * Otherwise, just firstPart() is needed.
+ 	 */
+-	const bool rollsOver() const { return theOffset + theVisibleSize - 1 > theInfo->theMask; }
+-	const uint sizeOnlyPart() const { return theVisibleSize; }
+-	const uint sizeFirstPart() const { return (theInfo->theMask + 1) - theOffset; }
+-	const uint sizeSecondPart() const { return theOffset + theVisibleSize - (theInfo->theMask + 1); }
++	bool rollsOver() const { return theOffset + theVisibleSize - 1 > theInfo->theMask; }
++	uint sizeOnlyPart() const { return theVisibleSize; }
++	uint sizeFirstPart() const { return (theInfo->theMask + 1) - theOffset; }
++	uint sizeSecondPart() const { return theOffset + theVisibleSize - (theInfo->theMask + 1); }
+ 	const float *firstPart() const { return theInfo->theData + theOffset; }
+ 	float *firstPart() { return theInfo->theData + theOffset; }
+ 	const float *secondPart() const { return theInfo->theData; }
+@@ -275,7 +275,7 @@
+ 	 * Grabs a the unique ID code - will be the same for all BufferData
+ 	 * objects that share data.
+ 	 */
+-	const BufferID identity() const { return theInfo; }
++	BufferID identity() const { return theInfo; }
+ 
+ 	/** @internal
+ 	 * Grabs the info object. This is the implicitly shared object throughout
+@@ -330,7 +330,7 @@
+ 	 *
+ 	 * @return true iff this data is terminated by a plunger.
+ 	 */
+-	const bool plunger() const;
++	bool plunger() const;
+ 
+ 	/**
+ 	 * Used to get the number of elements (single values) used to represent
+@@ -342,21 +342,21 @@
+ 	 *
+ 	 * @return The number of elements in the data.
+ 	 */
+-	const uint elements() const { return theVisibleSize; }
++	uint elements() const { return theVisibleSize; }
+ 
+ 	/** @internal
+ 	 * Get the scope of the signal data.
+ 	 * 
+ 	 * @return The scope of the signal data.
+ 	 */
+-	const uint scope() const { return theInfo->theScope; }
++	uint scope() const { return theInfo->theScope; }
+ 	
+ 	/**
+ 	 * Used to get the number of elements inside the data chunk.
+ 	 *
+ 	 * @return The number of samples in the data.
+ 	 */
+-	const uint samples() const { return theVisibleSize / theInfo->theScope; }
++	uint samples() const { return theVisibleSize / theInfo->theScope; }
+ 
+ 	/**
+ 	 * Get another BufferData object referencing some portion of elements in
+@@ -471,7 +471,7 @@
+ 	 *
+ 	 * @return true iff the BufferData object is valid.
+ 	 */
+-	const bool isValid() const { return theInfo->theValid; }
++	bool isValid() const { return theInfo->theValid; }
+ 
+ 	/**
+ 	 * Makes this bufferdata invalid, ending the life of the previous data.
+@@ -488,7 +488,7 @@
+ 	 *
+ 	 * @return true iff this BufferData is null.
+ 	 */
+-	const bool isNull() const { return theInfo->theValid && theInfo->theAccessibleSize == Undefined; }
++	bool isNull() const { return theInfo->theValid && theInfo->theAccessibleSize == Undefined; }
+ 
+ 	/**
+ 	 * Operator to give easy and transparent access to the data contained
+diff -ru exscalibar-1.0.4_orig/src/geddei/bufferdatas.h exscalibar-1.0.4/src/geddei/bufferdatas.h
+--- exscalibar-1.0.4_orig/src/geddei/bufferdatas.h	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/geddei/bufferdatas.h	2009-02-28 10:10:20.000000000 +0100
+@@ -146,14 +146,14 @@
+ 	 *
+ 	 * @return The number of slots for BufferData objects.
+ 	 */
+-	const uint size() const { return theCount; }
++	uint size() const { return theCount; }
+ 	
+ 	/**
+ 	 * Get the number of BufferDatas objects stored.
+ 	 *
+ 	 * @return The number of slots for BufferData objects.
+ 	 */
+-	const uint count() const { return theCount; }
++	uint count() const { return theCount; }
+ 
+ 	/** @internal
+ 	 * Assignment operator.
+diff -ru exscalibar-1.0.4_orig/src/geddei/bufferinfo.h exscalibar-1.0.4/src/geddei/bufferinfo.h
+--- exscalibar-1.0.4_orig/src/geddei/bufferinfo.h	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/geddei/bufferinfo.h	2009-02-28 10:10:19.000000000 +0100
+@@ -77,7 +77,7 @@
+ 	 * 
+ 	 * @return true if this object is still a live portion of a Buffer.
+ 	 */
+-	const bool isLive() const
++	bool isLive() const
+ 	{
+ 		bool ret = (theLife == Foreign);
+ #ifdef EDEBUG
+@@ -100,7 +100,7 @@
+ 	 * 
+ 	 * @return true if this object is still a live portion of a Buffer.
+ 	 */
+-	const bool isActive() const
++	bool isActive() const
+ 	{
+ 		bool ret = (theLife == Foreign && theCounter > 0);
+ #ifdef EDEBUG
+@@ -109,7 +109,7 @@
+ 		return ret;
+ 	}
+ 	
+-	const bool isReferenced() const { return theCounter > 0; }
++	bool isReferenced() const { return theCounter > 0; }
+ 	void reference();
+ 	void unreference(BufferData &client);
+ 	
+@@ -138,7 +138,7 @@
+ 		theEndType = Ignore;
+ 		theValid = false;
+ 	}
+-	
++
+ 	/**
+ 	 * To be called on internal objects (to a Buffer/BufferReader).
+ 	 * 
+diff -ru exscalibar-1.0.4_orig/src/geddei/bufferreader.cpp exscalibar-1.0.4/src/geddei/bufferreader.cpp
+--- exscalibar-1.0.4_orig/src/geddei/bufferreader.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/geddei/bufferreader.cpp	2009-02-28 10:10:20.000000000 +0100
+@@ -62,7 +62,7 @@
+ 	if(MESSAGES) qDebug("< skipPlunger (rP: %d, tAPH: %d)", readPos, theAlreadyPlungedHere);
+ }
+ 
+-const uint BufferReader::elementsReady() const
++uint BufferReader::elementsReady() const
+ {
+ 	if(MESSAGES) qDebug("= elementsReady (rP: %d, tAPH: %d", readPos, theAlreadyPlungedHere);
+ 	QMutexLocker lock(&theBuffer->theDataFlux);
+@@ -73,7 +73,7 @@
+ 		return untilPlunger;
+ }
+ 
+-const int BufferReader::nextPlunger() const
++int BufferReader::nextPlunger() const
+ {
+ 	if(MESSAGES) qDebug("= nextPlunger");
+ 	QMutexLocker lock(&theBuffer->theDataFlux);
+diff -ru exscalibar-1.0.4_orig/src/geddei/bufferreader.h exscalibar-1.0.4/src/geddei/bufferreader.h
+--- exscalibar-1.0.4_orig/src/geddei/bufferreader.h	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/geddei/bufferreader.h	2009-02-28 10:10:19.000000000 +0100
+@@ -73,7 +73,7 @@
+ 	 * 
+ 	 * This takes into account theAlreadyPlungedHere counter.
+ 	 */
+-	const int nextPlunger() const;
++	int nextPlunger() const;
+ 
+ 	/**
+ 	 * Returns the number of elements that would definately cause an immediate
+@@ -86,7 +86,7 @@
+ 	 * 
+ 	 * Thread-safe.
+ 	 */
+-	const uint elementsReady() const;
++	uint elementsReady() const;
+ 
+ 	/**
+ 	 * Waits until the buffer is at least full enough to allow a read of a
+@@ -172,7 +172,7 @@
+ 	/**
+ 	 * Returns the size of the buffer.
+ 	 */
+-	const uint size() const { return theBuffer->size(); }
++	uint size() const { return theBuffer->size(); }
+ 
+ 	void debug();
+ 
+diff -ru exscalibar-1.0.4_orig/src/geddei/combination.cpp exscalibar-1.0.4/src/geddei/combination.cpp
+--- exscalibar-1.0.4_orig/src/geddei/combination.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/geddei/combination.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -67,7 +67,7 @@
+ 		qDebug("WARNING: Could not initialise - incompatible SubProcessors: %s(%d, %d, %d) === %s(%d, %d, %d).", theX->theType.latin1(), theX->theIn, theX->theStep, theX->theOut, theY->theType.latin1(), theY->theIn, theY->theStep, theY->theOut);
+ }
+ 
+-const bool Combination::verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes)
++bool Combination::verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes)
+ {
+ 	SignalTypeRefs r(1);
+ 	if(theX->verifyAndSpecifyTypes(inTypes, r) && r.populated(0))
+diff -ru exscalibar-1.0.4_orig/src/geddei/combination.h exscalibar-1.0.4/src/geddei/combination.h
+--- exscalibar-1.0.4_orig/src/geddei/combination.h	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/geddei/combination.h	2009-02-28 10:10:19.000000000 +0100
+@@ -29,7 +29,7 @@
+ 	virtual void processChunks(const BufferDatas &in, BufferDatas &out, const uint chunks) const;
+ 	virtual PropertiesInfo specifyProperties() const;
+ 	virtual void initFromProperties(const Properties &p);
+-	virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
++	virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
+ 	
+ public:
+ 	Combination(SubProcessor *x, SubProcessor *y);
+Only in exscalibar-1.0.4/src/geddei: connection.o
+diff -ru exscalibar-1.0.4_orig/src/geddei/domprocessor.cpp exscalibar-1.0.4/src/geddei/domprocessor.cpp
+--- exscalibar-1.0.4_orig/src/geddei/domprocessor.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/geddei/domprocessor.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -56,7 +56,7 @@
+ 	thePrimary->paintProcessor(p);
+ }
+ 
+-const bool DomProcessor::createAndAddWorker()
++bool DomProcessor::createAndAddWorker()
+ {
+ 	SubProcessor *sub = SubProcessorFactory::create(thePrimary->theType);
+ 	if(!sub) return false;
+@@ -64,7 +64,7 @@
+ 	return true;
+ }
+ 
+-const bool DomProcessor::createAndAddWorker(const QString &host, const uint key)
++bool DomProcessor::createAndAddWorker(const QString &host, const uint key)
+ {
+ 	return ProcessorForwarder::createCoupling(this, host, key, thePrimary->theType) != 0;
+ }
+@@ -110,7 +110,7 @@
+ 		}
+ }
+ 
+-const bool DomProcessor::processorStarted()
++bool DomProcessor::processorStarted()
+ {
+ 	if(MESSAGES) qDebug("DomProcessor[%s]: Starting...", theName.latin1());
+ 	
+@@ -267,7 +267,8 @@
+ 			if(MESSAGES && theDebug)
+ 			{	qDebug("\n---- NEXT WORKER ----");
+ 				char c = 'A';
+-				for(QPtrList<DxCoupling>::Iterator x = theWorkers.begin(); x != theWorkers.end() && x != w; x++, c++);
++				for(QPtrList<DxCoupling>::Iterator x = theWorkers.begin(); x != theWorkers.end() && x != w; x++, c++)
++          ;
+ 				qDebug("--------- %c ---------", c);
+ 			}
+ 		}
+@@ -469,7 +470,7 @@
+ 	}
+ }
+ 
+-const bool DomProcessor::verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes)
++bool DomProcessor::verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes)
+ {
+ 	// We can use just verifyAndSpecifyTypes here, since the outTypes will be recorded
+ 	// for our primary in the for loop later anyway (assuming they're valid).
+diff -ru exscalibar-1.0.4_orig/src/geddei/domprocessor.h exscalibar-1.0.4/src/geddei/domprocessor.h
+--- exscalibar-1.0.4_orig/src/geddei/domprocessor.h	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/geddei/domprocessor.h	2009-02-28 10:10:19.000000000 +0100
+@@ -163,11 +163,11 @@
+ 	friend class SubProcessor;
+ 
+ 	//* Reimplementations from Processor.
+-	virtual const bool processorStarted();
++	virtual bool processorStarted();
+ 	virtual void processor();
+ 	virtual void wantToStopNow();
+ 	virtual void haveStoppedNow();
+-	virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
++	virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
+ 	virtual PropertiesInfo specifyProperties() const;
+ 	virtual void initFromProperties(const Properties &properties);
+ 	virtual void specifyInputSpace(QValueVector<uint> &samples);
+@@ -214,7 +214,7 @@
+ 	 *
+ 	 * @return true iff a worker was added.
+ 	 */
+-	const bool createAndAddWorker();
++	bool createAndAddWorker();
+ 
+ 	/**
+ 	 * Creates and adds a remote SubProcessor to this Processor's list of
+@@ -225,7 +225,7 @@
+ 	 * @param key The session key under which the SubProcessor will be added.
+ 	 * @return true iff a worker was added.
+ 	 */
+-	const bool createAndAddWorker(const QString &host, const uint key);
++	bool createAndAddWorker(const QString &host, const uint key);
+ 
+ 	/**
+ 	 * Constructor. A valid primary SubProcessor must be passed in @a primary.
+Only in exscalibar-1.0.4/src/geddei: domprocessor.o
+Only in exscalibar-1.0.4/src/geddei: drcoupling.o
+Only in exscalibar-1.0.4/src/geddei: dscoupling.o
+diff -ru exscalibar-1.0.4_orig/src/geddei/dxcoupling.h exscalibar-1.0.4/src/geddei/dxcoupling.h
+--- exscalibar-1.0.4_orig/src/geddei/dxcoupling.h	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/geddei/dxcoupling.h	2009-02-28 10:10:19.000000000 +0100
+@@ -55,7 +55,7 @@
+ 	 * @return Returns false if it exitted due to stopping.
+ 	 * UNSAFE: Needs theDataX to be locked throughout the *entire* transaction, from start to finish.
+ 	 */
+-	const bool transactCheckerUNSAFE();
++	bool transactCheckerUNSAFE();
+ 
+ protected:
+ 	// TODO: Look into moving any accesses to theReaders into this class to get rid of friend.
+Only in exscalibar-1.0.4/src/geddei: dxcoupling.o
+diff -ru exscalibar-1.0.4_orig/src/geddei/globals.cpp exscalibar-1.0.4/src/geddei/globals.cpp
+--- exscalibar-1.0.4_orig/src/geddei/globals.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/geddei/globals.cpp	2009-02-28 10:10:20.000000000 +0100
+@@ -45,7 +45,7 @@
+ 	return theVersion;
+ }
+ 
+-const uint getConfig()
++uint getConfig()
+ {
+ 	return 0
+ #ifdef HAVE_FFTW
+diff -ru exscalibar-1.0.4_orig/src/geddei/globals.h exscalibar-1.0.4/src/geddei/globals.h
+--- exscalibar-1.0.4_orig/src/geddei/globals.h	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/geddei/globals.h	2009-02-28 10:10:19.000000000 +0100
+@@ -24,7 +24,7 @@
+ 	void sleep(const uint secs);
+ 	void usleep(const uint usecs);
+ 	
+-	inline const uint ceillog2(const uint i)
++	inline uint ceillog2(const uint i)
+ 	{
+ 		for(uint l = 0; ; l++)
+ 			if(i <= uint(1 << l))
+@@ -32,7 +32,7 @@
+ 	}
+ 	
+ 	const char *getVersion();
+-	const uint getConfig();
++	uint getConfig();
+ 	const QStringList getPaths();
+ 	
+ }
+Only in exscalibar-1.0.4/src/geddei: globals.o
+Only in exscalibar-1.0.4/src/geddei: libgeddei.so
+Only in exscalibar-1.0.4/src/geddei: libgeddei.so.1
+Only in exscalibar-1.0.4/src/geddei: libgeddei.so.1.0
+Only in exscalibar-1.0.4/src/geddei: libgeddei.so.1.0.4
+diff -ru exscalibar-1.0.4_orig/src/geddei/llconnection.cpp exscalibar-1.0.4/src/geddei/llconnection.cpp
+--- exscalibar-1.0.4_orig/src/geddei/llconnection.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/geddei/llconnection.cpp	2009-02-28 10:10:20.000000000 +0100
+@@ -27,7 +27,7 @@
+ {
+ }
+ 
+-const bool LLConnection::pullType()
++bool LLConnection::pullType()
+ {
+ 	theSource->confirmTypes();
+ 	return theType;
+@@ -57,7 +57,7 @@
+ 	theSource->checkExit();
+ }
+ 
+-const uint LLConnection::bufferElementsFree()
++uint LLConnection::bufferElementsFree()
+ {
+ 	return theBuffer.elementsFree();
+ }
+@@ -74,7 +74,7 @@
+ 	return ret;
+ }
+ 
+-const bool LLConnection::waitUntilReady()
++bool LLConnection::waitUntilReady()
+ {
+ 	// Perhaps this shouldn't always call confirmTypes(), since it will clear stuff that we may not want cleared
+ 	//theSink->confirmTypes();
+diff -ru exscalibar-1.0.4_orig/src/geddei/llconnection.h exscalibar-1.0.4/src/geddei/llconnection.h
+--- exscalibar-1.0.4_orig/src/geddei/llconnection.h	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/geddei/llconnection.h	2009-02-28 10:10:19.000000000 +0100
+@@ -37,7 +37,7 @@
+ class LLConnection: public LxConnectionReal, public xLConnectionReal
+ {
+ 	//* Reimplementations from LxConnection
+-	virtual const bool waitUntilReady();
++	virtual bool waitUntilReady();
+ 	virtual const SignalTypeRef type() { return xLConnectionReal::type(); }
+ 	virtual void setType(const SignalType *type);
+ 	virtual void resetType();
+@@ -49,15 +49,15 @@
+ 	virtual void startPlungers();
+ 	virtual void plungerSent();
+ 	virtual void noMorePlungers();
+-	virtual const uint maximumScratchElements(const uint minimum) { while(bufferElementsFree() < minimum) bufferWaitForFree(); return bufferElementsFree(); }
+-	virtual const uint maximumScratchElementsEver() { return theBuffer.size(); }
++	virtual uint maximumScratchElements(const uint minimum) { while(bufferElementsFree() < minimum) bufferWaitForFree(); return bufferElementsFree(); }
++	virtual uint maximumScratchElementsEver() { return theBuffer.size(); }
+ 
+ 	//* Reimplementation from xLConnection.
+-	virtual const bool pullType();
++	virtual bool pullType();
+ 
+ 	//* Reimplementation from LxConnectionReal.
+ 	virtual void bufferWaitForFree();
+-	virtual const uint bufferElementsFree();
++	virtual uint bufferElementsFree();
+ 	virtual void transport(const BufferData &data);
+ 
+ 	friend class Processor;
+Only in exscalibar-1.0.4/src/geddei: llconnection.o
+diff -ru exscalibar-1.0.4_orig/src/geddei/lmconnection.cpp exscalibar-1.0.4/src/geddei/lmconnection.cpp
+--- exscalibar-1.0.4_orig/src/geddei/lmconnection.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/geddei/lmconnection.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -40,7 +40,7 @@
+ 		theBuffer.resize(elements);
+ }
+ 
+-const bool LMConnection::waitUntilReady()
++bool LMConnection::waitUntilReady()
+ {
+ 	for(QPtrList<MLConnection>::Iterator i = theConnections.begin(); i != theConnections.end(); i++)
+ 		if(!(*i)->waitUntilReady()) return false;
+@@ -85,17 +85,17 @@
+ 	theSource->checkExit();
+ }
+ 
+-const uint LMConnection::bufferElementsFree()
++uint LMConnection::bufferElementsFree()
+ {
+ 	return theBuffer.elementsFree();
+ }
+ 
+-const uint LMConnection::maximumScratchElementsEver()
++uint LMConnection::maximumScratchElementsEver()
+ {
+ 	return theBuffer.size();
+ }
+ 
+-const uint LMConnection::maximumScratchElements(const uint minimum)
++uint LMConnection::maximumScratchElements(const uint minimum)
+ {
+ 	while(bufferElementsFree() < minimum)
+ 		bufferWaitForFree();
+diff -ru exscalibar-1.0.4_orig/src/geddei/lmconnection.h exscalibar-1.0.4/src/geddei/lmconnection.h
+--- exscalibar-1.0.4_orig/src/geddei/lmconnection.h	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/geddei/lmconnection.h	2009-02-28 10:10:19.000000000 +0100
+@@ -44,7 +44,7 @@
+ 	virtual const SignalTypeRef type();
+ 
+ 	//* Reimplementations from LxConnection
+-	virtual const bool waitUntilReady();
++	virtual bool waitUntilReady();
+ 	virtual void setType(const SignalType *type);
+ 	virtual void resetType();
+ 	virtual void sourceStopping();
+@@ -55,13 +55,13 @@
+ 	virtual void startPlungers();
+ 	virtual void plungerSent();
+ 	virtual void noMorePlungers();
+-	virtual const uint maximumScratchElements(const uint minimum = 1);
+-	virtual const uint maximumScratchElementsEver();
++	virtual uint maximumScratchElements(const uint minimum = 1);
++	virtual uint maximumScratchElementsEver();
+ 	virtual void enforceMinimum(const uint elements);
+ 	
+ 	//* Reimplementations from LxConnectionReal
+ 	virtual void bufferWaitForFree();
+-	virtual const uint bufferElementsFree();
++	virtual uint bufferElementsFree();
+ 	virtual void transport(const BufferData &data);
+ 
+ 	/**
+Only in exscalibar-1.0.4/src/geddei: lmconnection.o
+diff -ru exscalibar-1.0.4_orig/src/geddei/lrconnection.cpp exscalibar-1.0.4/src/geddei/lrconnection.cpp
+--- exscalibar-1.0.4_orig/src/geddei/lrconnection.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/geddei/lrconnection.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -120,13 +120,14 @@
+ 	if(MESSAGES) qDebug("> LRC::bWFF()");
+ 	if(theSink.isOpen())
+ 	{	theSink.sendByte(BufferWaitForFree);
+-		while(!trapdoor() && theSink.isOpen() && !theSink.waitForAck(502));
++		while(!trapdoor() && theSink.isOpen() && !theSink.waitForAck(502))
++      ;
+ 	}
+ 	theSource->checkExit();
+ 	if(MESSAGES) qDebug("< LRC::bWFF()");
+ }
+ 
+-const uint LRConnection::bufferElementsFree()
++uint LRConnection::bufferElementsFree()
+ {
+ 	if(MESSAGES) qDebug("> LRC::bEF()");
+ 	uint ret;
+@@ -139,13 +140,14 @@
+ 	return ret;
+ }
+ 
+-const bool LRConnection::waitUntilReady()
++bool LRConnection::waitUntilReady()
+ {
+ 	if(MESSAGES) qDebug("> LRC::wUR()");
+ 	if(theSink.isOpen())
+ 	{	theSink.sendByte(WaitUntilReady);
+ 		if(MESSAGES) qDebug("= LRC::wUR(): isOpen() = %d", theSink.isOpen());
+-		while(!trapdoor() && theSink.isOpen() && !theSink.waitForAck(503));
++		while(!trapdoor() && theSink.isOpen() && !theSink.waitForAck(503))
++      ;
+ 	}
+ 	if(MESSAGES) qDebug("= LRC::wUR(): checkExit() (isOpen() = %d)", theSink.isOpen());
+ 	theSource->checkExit();
+diff -ru exscalibar-1.0.4_orig/src/geddei/lrconnection.h exscalibar-1.0.4/src/geddei/lrconnection.h
+--- exscalibar-1.0.4_orig/src/geddei/lrconnection.h	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/geddei/lrconnection.h	2009-02-28 10:10:20.000000000 +0100
+@@ -43,7 +43,7 @@
+ 	virtual const SignalTypeRef type();
+ 
+ 	//* Reimplementations from LxConnection
+-	virtual const bool waitUntilReady();
++	virtual bool waitUntilReady();
+ 	virtual void setType(const SignalType *type);
+ 	virtual void resetType();
+ 	virtual void sourceStopping();
+@@ -53,14 +53,14 @@
+ 	virtual void startPlungers();
+ 	virtual void plungerSent();
+ 	virtual void noMorePlungers();
+-	virtual const uint maximumScratchElements(const uint) { return Undefined; }
+-	virtual const uint maximumScratchElementsEver() { return Undefined; }
++	virtual uint maximumScratchElements(const uint) { return Undefined; }
++	virtual uint maximumScratchElementsEver() { return Undefined; }
+ 	virtual void enforceMinimum(const uint elements);
+ 
+ 	//* Reimplementations from LxConnectionReal
+ 	virtual void transport(const BufferData &data);
+ 	virtual void bufferWaitForFree();
+-	virtual const uint bufferElementsFree();
++	virtual uint bufferElementsFree();
+ 
+ 	QString theRemoteHost, theRemoteProcessorName;
+ 	uint theRemoteKey, theRemoteIndex;
+@@ -69,7 +69,7 @@
+ 	QMutex theTrapdoor;
+ 	void openTrapdoor() { theTrapdoor.lock(); }
+ 	void closeTrapdoor() { theTrapdoor.unlock(); }
+-	const bool trapdoor() { bool ret = theTrapdoor.tryLock(); if(ret) theTrapdoor.unlock(); return !ret; }
++	bool trapdoor() { bool ret = theTrapdoor.tryLock(); if(ret) theTrapdoor.unlock(); return !ret; }
+ 
+ 	/**
+ 	 * Simple constructor.
+Only in exscalibar-1.0.4/src/geddei: lrconnection.o
+diff -ru exscalibar-1.0.4_orig/src/geddei/lxconnection.h exscalibar-1.0.4/src/geddei/lxconnection.h
+--- exscalibar-1.0.4_orig/src/geddei/lxconnection.h	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/geddei/lxconnection.h	2009-02-28 10:10:19.000000000 +0100
+@@ -99,7 +99,7 @@
+ 	 *
+ 	 * @return false if something went wrong.
+ 	 */
+-	virtual const bool waitUntilReady() = 0;
++	virtual bool waitUntilReady() = 0;
+ 
+ 	/**
+ 	 * Conducts the setting of the type if an object wants to do it without
+@@ -172,7 +172,7 @@
+ 	 * must be less than or equal to maximumScratchElementsEver().
+ 	 * @return Undefined (= (uint)-1) in the case of unlimited.
+ 	 */
+-	virtual const uint maximumScratchElements(const uint minimum = 1) = 0;
++	virtual uint maximumScratchElements(const uint minimum = 1) = 0;
+ 
+ 	/**
+ 	 * Returns the maximum amount of scratch elements we could ever make that
+@@ -183,7 +183,7 @@
+ 	 *
+ 	 * @return Undefined (= (uint)-1) in the case of unlimited.
+ 	 */
+-	virtual const uint maximumScratchElementsEver() = 0;
++	virtual uint maximumScratchElementsEver() = 0;
+ 
+ 	/** @deprecated
+ 	 * TODO: Kill this method
+@@ -301,7 +301,7 @@
+ 	 * must be less than or equal to maximumScratchSamplesEver().
+ 	 * @return Undefined (= (uint)-1) in the case of unlimited.
+ 	 */
+-	const uint maximumScratchSamples(const uint minimum = 1) { return maximumScratchElements(theType->elementsFromSamples(minimum)) == Undefined ? Undefined : theType->samples(maximumScratchElements(theType->elementsFromSamples(minimum))); }
++	uint maximumScratchSamples(const uint minimum = 1) { return maximumScratchElements(theType->elementsFromSamples(minimum)) == Undefined ? Undefined : theType->samples(maximumScratchElements(theType->elementsFromSamples(minimum))); }
+ 
+ 	/**
+ 	 * Returns the maximum amount of scratch samples we could ever make that
+@@ -312,7 +312,7 @@
+ 	 *
+ 	 * @return Undefined (= (uint)-1) in the case of unlimited.
+ 	 */
+-	const uint maximumScratchSamplesEver() { return maximumScratchElementsEver() == Undefined ? Undefined : theType->samples(maximumScratchElementsEver()); }
++	uint maximumScratchSamplesEver() { return maximumScratchElementsEver() == Undefined ? Undefined : theType->samples(maximumScratchElementsEver()); }
+ 
+ 	/**
+ 	 * Some syntactic sugar, if you're into that sort of thing. Equivalent to
+Only in exscalibar-1.0.4/src/geddei: lxconnection.o
+diff -ru exscalibar-1.0.4_orig/src/geddei/lxconnectionnull.h exscalibar-1.0.4/src/geddei/lxconnectionnull.h
+--- exscalibar-1.0.4_orig/src/geddei/lxconnectionnull.h	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/geddei/lxconnectionnull.h	2009-02-28 10:10:19.000000000 +0100
+@@ -39,12 +39,12 @@
+ 	virtual void startPlungers() {}
+ 	virtual void plungerSent() {}
+ 	virtual void noMorePlungers() {}
+-	virtual const uint maximumScratchElements(const uint) { return Undefined; }
+-	virtual const uint maximumScratchElementsEver() { return Undefined; }
++	virtual uint maximumScratchElements(const uint) { return Undefined; }
++	virtual uint maximumScratchElementsEver() { return Undefined; }
+ 	virtual BufferData makeScratchElements(const uint, bool = false) { return BufferData::fake(); }
+ 	virtual void setType(const SignalType *type) { theType = type->copy(); }
+ 	virtual void resetType() { delete theType; theType = 0L; }
+-	virtual const bool waitUntilReady() { return true; }
++	virtual bool waitUntilReady() { return true; }
+ 	virtual void sourceStopping() {}
+ 	virtual void sourceStopped() {}
+ 	virtual void reset() {}
+Only in exscalibar-1.0.4/src/geddei: lxconnectionnull.o
+diff -ru exscalibar-1.0.4_orig/src/geddei/lxconnectionreal.h exscalibar-1.0.4/src/geddei/lxconnectionreal.h
+--- exscalibar-1.0.4_orig/src/geddei/lxconnectionreal.h	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/geddei/lxconnectionreal.h	2009-02-28 10:10:19.000000000 +0100
+@@ -56,7 +56,7 @@
+ 	 * Returns the amount of free ELEMENTS in the destination buffer (trivial on LL but
+ 	 * harder for LR). Useful for gauging amount to push.
+ 	 */
+-	virtual const uint bufferElementsFree() = 0;
++	virtual uint bufferElementsFree() = 0;
+ 
+ 	/**
+ 	 * Actually moves the data to the receiving "place" (either a connection or an object).
+Only in exscalibar-1.0.4/src/geddei: lxconnectionreal.o
+diff -ru exscalibar-1.0.4_orig/src/geddei/matrix.cpp exscalibar-1.0.4/src/geddei/matrix.cpp
+--- exscalibar-1.0.4_orig/src/geddei/matrix.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/geddei/matrix.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -16,7 +16,7 @@
+ namespace SignalTypes
+ {
+ 
+-const bool Matrix::sameAsBE(const SignalType *cmp) const
++bool Matrix::sameAsBE(const SignalType *cmp) const
+ {
+ 	return SignalType::sameAsBE(cmp) &&
+ 		theWidth == dynamic_cast<const Matrix *>(cmp)->theWidth &&
+diff -ru exscalibar-1.0.4_orig/src/geddei/matrix.h exscalibar-1.0.4/src/geddei/matrix.h
+--- exscalibar-1.0.4_orig/src/geddei/matrix.h	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/geddei/matrix.h	2009-02-28 10:10:19.000000000 +0100
+@@ -28,9 +28,9 @@
+ {
+ 	virtual void serialise(QSocketSession &sink) const;
+ 	virtual void deserialise(QSocketSession &source);
+-	virtual const uint id() const { return 3; }
++	virtual uint id() const { return 3; }
+ 	virtual SignalType *copyBE() const { return new Matrix(theWidth, theHeight, theFrequency); }
+-	virtual const bool sameAsBE(const SignalType *cmp) const;
++	virtual bool sameAsBE(const SignalType *cmp) const;
+ 
+ protected:
+ 	uint theWidth; ///< Width of the represented matrix in elements.
+@@ -44,21 +44,21 @@
+ 	 *
+ 	 * @return The number of elements in a row (number of columns)
+ 	 */
+-	const uint width() const { return theWidth; }
++	uint width() const { return theWidth; }
+ 
+ 	/**
+ 	 * Get the number of rows in the matrix this object represents.
+ 	 *
+ 	 * @return The number of elements in a column (number of rows).
+ 	 */
+-	const uint height() const { return theHeight; }
++	uint height() const { return theHeight; }
+ 
+ 	/**
+ 	 * Get the frequency represented by the progression of elements in a row.
+ 	 *
+ 	 * @return The pitch width of the matrix elements.
+ 	 */
+-	const float pitchWidth() const { return thePitchWidth; }
++	float pitchWidth() const { return thePitchWidth; }
+ 
+ 	/**
+ 	 * Get the frequency represented by the progression of elements in a
+@@ -66,7 +66,7 @@
+ 	 *
+ 	 * @return The pitch height of the matrix elements.
+ 	 */
+-	const float pitchHeight() const { return thePitchHeight; }
++	float pitchHeight() const { return thePitchHeight; }
+ 
+ 	/**
+ 	 * Constrictor for a new matrix whose row size is equal to column size.
+@@ -95,7 +95,7 @@
+  */
+ class SquareMatrix: public Matrix
+ {
+-	virtual const uint id() const { return 4; }
++	virtual uint id() const { return 4; }
+ 	virtual SignalType *copyBE() const { return new SquareMatrix(theWidth, theFrequency); }
+ 
+ public:
+@@ -106,7 +106,7 @@
+ 	 *
+ 	 * @return The number of elements in every row and column of the matrix.
+ 	 */
+-	const uint size() const { return theWidth; }
++	uint size() const { return theWidth; }
+ 
+ 	/**
+ 	 * Get the frequency represented by the progression of elements in either
+@@ -114,7 +114,7 @@
+ 	 *
+ 	 * @return The pitch of the matrix elements.
+ 	 */
+-	const float pitch() const { return thePitchWidth; }
++	float pitch() const { return thePitchWidth; }
+ 
+ 	/**
+ 	 * Constrictor for a new matrix whose row size is equal to column size.
+Only in exscalibar-1.0.4/src/geddei: matrix.o
+diff -ru exscalibar-1.0.4_orig/src/geddei/mlconnection.cpp exscalibar-1.0.4/src/geddei/mlconnection.cpp
+--- exscalibar-1.0.4_orig/src/geddei/mlconnection.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/geddei/mlconnection.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -47,7 +47,7 @@
+ 	theSink->noMorePlungers();
+ }
+ 
+-const uint MLConnection::capacity() const
++uint MLConnection::capacity() const
+ {
+ 	return theReader->size();
+ }
+@@ -74,7 +74,7 @@
+ 	theConnection->enforceMinimum(elements);
+ }
+ 
+-const uint MLConnection::elementsReady() const
++uint MLConnection::elementsReady() const
+ {
+ #ifdef EDEBUG
+ 	if(!theReader)
+@@ -102,7 +102,7 @@
+ 	theSink->checkExit();
+ }
+ 
+-const bool MLConnection::plungeSync(const uint samples) const
++bool MLConnection::plungeSync(const uint samples) const
+ {
+ #ifdef EDEBUG
+ 	if(!theReader)
+@@ -191,7 +191,7 @@
+ 	theType = type->copy();
+ }
+ 
+-const bool MLConnection::waitUntilReady()
++bool MLConnection::waitUntilReady()
+ {
+ //	return theSink->confirmTypes();
+ 	return theSink->waitUntilReady();
+diff -ru exscalibar-1.0.4_orig/src/geddei/mlconnection.h exscalibar-1.0.4/src/geddei/mlconnection.h
+--- exscalibar-1.0.4_orig/src/geddei/mlconnection.h	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/geddei/mlconnection.h	2009-02-28 10:10:19.000000000 +0100
+@@ -42,7 +42,7 @@
+ 	virtual void reset();
+ 	virtual void sinkStopping();
+ 	virtual void sinkStopped();
+-	virtual const uint elementsReady() const;
++	virtual uint elementsReady() const;
+ 	virtual void waitForElements(const uint elements) const;
+ 	virtual const BufferData readElements(const uint elements);
+ 	virtual const BufferData peekElements(const uint elements);
+@@ -50,8 +50,8 @@
+ 	virtual BufferReader *newReader();
+ 	virtual void killReader();
+ 	virtual void resurectReader();
+-	virtual const bool plungeSync(const uint samples) const;
+-	virtual const uint capacity() const;
++	virtual bool plungeSync(const uint samples) const;
++	virtual uint capacity() const;
+ 
+ protected:
+ 	LMConnection *theConnection;
+@@ -61,7 +61,7 @@
+ 	/**
+ 	 * Blocks until sink is happy that all inputs are confirmed.
+ 	 */
+-	const bool waitUntilReady();
++	bool waitUntilReady();
+ 
+ 	/**
+ 	 * Resets the (essentially cached) type of the connection.
+Only in exscalibar-1.0.4/src/geddei: mlconnection.o
+diff -ru exscalibar-1.0.4_orig/src/geddei/multiplicative.h exscalibar-1.0.4/src/geddei/multiplicative.h
+--- exscalibar-1.0.4_orig/src/geddei/multiplicative.h	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/geddei/multiplicative.h	2009-02-28 10:10:19.000000000 +0100
+@@ -43,9 +43,9 @@
+ 	virtual void setSinkMultiplicity(const uint multiplicity) = 0;
+ 
+ public:
+-	virtual const bool initGiven() const = 0;
+-	virtual const bool knowMultiplicity() const = 0;
+-	virtual const uint multiplicity() const = 0;
++	virtual bool initGiven() const = 0;
++	virtual bool knowMultiplicity() const = 0;
++	virtual uint multiplicity() const = 0;
+ 	virtual void doInit(const QString &name, ProcessorGroup *g = 0, const Properties &properties = Properties()) = 0;
+ 
+ 	void setMultiplicity(const uint multiplicity);
+Only in exscalibar-1.0.4/src/geddei: multiplicative.o
+diff -ru exscalibar-1.0.4_orig/src/geddei/multiprocessor.h exscalibar-1.0.4/src/geddei/multiprocessor.h
+--- exscalibar-1.0.4_orig/src/geddei/multiprocessor.h	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/geddei/multiprocessor.h	2009-02-28 10:10:19.000000000 +0100
+@@ -82,7 +82,7 @@
+ 	/**
+ 	 * @return true iff the quantity of multiplicity is known.
+ 	 */
+-	const bool knowMultiplicity() const { return theIsInitialised; }
++	bool knowMultiplicity() const { return theIsInitialised; }
+ 
+ 	/**
+ 	 * Get the quantity of multiplicity.
+@@ -90,12 +90,12 @@
+ 	 * @return The quantity of multiplicity. This value is only valid if
+ 	 * knowMultiplicity() returns true.
+ 	 */
+-	const uint multiplicity() const { return theProcessors.count(); }
++	uint multiplicity() const { return theProcessors.count(); }
+ 
+ 	/**
+ 	 * @return true iff init() has been called on this object.
+ 	 */
+-	const bool initGiven() const { return theIsInitialised || theDeferredInit; }
++	bool initGiven() const { return theIsInitialised || theDeferredInit; }
+ 
+ 	//* Reimplementation from Multiplicative
+ 	virtual void doInit(const QString &name, ProcessorGroup *g, const Properties &properties);
+Only in exscalibar-1.0.4/src/geddei: multiprocessor.o
+Only in exscalibar-1.0.4/src/geddei: multiprocessorcreator.o
+Only in exscalibar-1.0.4/src/geddei: multisink.o
+diff -ru exscalibar-1.0.4_orig/src/geddei/multisource.cpp exscalibar-1.0.4/src/geddei/multisource.cpp
+--- exscalibar-1.0.4_orig/src/geddei/multisource.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/geddei/multisource.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -28,7 +28,7 @@
+ 		sourcePort(i) --;
+ }
+ 
+-const bool MultiSource::deferConnect(MultiSink *sink, const uint bufferSize)
++bool MultiSource::deferConnect(MultiSink *sink, const uint bufferSize)
+ {
+ 	// If our multiplicity is explicitly defined
+ 	if(knowMultiplicity())
+diff -ru exscalibar-1.0.4_orig/src/geddei/multisource.h exscalibar-1.0.4/src/geddei/multisource.h
+--- exscalibar-1.0.4_orig/src/geddei/multisource.h	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/geddei/multisource.h	2009-02-28 10:10:19.000000000 +0100
+@@ -71,7 +71,7 @@
+ 	 * @return true if the connect should be abandoned. false if both
+ 	 * multiplicative source and sink are ready.
+ 	 */
+-	const bool deferConnect(MultiSink *sink, const uint bufferSize);
++	bool deferConnect(MultiSink *sink, const uint bufferSize);
+ 
+ 	/**
+ 	 * Connect this to a multiplicative sink.
+Only in exscalibar-1.0.4/src/geddei: multisource.o
+diff -ru exscalibar-1.0.4_orig/src/geddei/processor.cpp exscalibar-1.0.4/src/geddei/processor.cpp
+--- exscalibar-1.0.4_orig/src/geddei/processor.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/geddei/processor.cpp	2009-02-28 10:10:20.000000000 +0100
+@@ -154,7 +154,7 @@
+ 	delete theInputs[index];
+ }
+ 
+-const float Processor::bufferCapacity(const uint index)
++float Processor::bufferCapacity(const uint index)
+ {
+ 	assert(index < theInputs.size());
+ 	return theInputs[index]->filled();
+@@ -251,7 +251,7 @@
+ 	checkExit();
+ }
+ 
+-const bool Processor::thereIsInputForProcessing(const uint samples)
++bool Processor::thereIsInputForProcessing(const uint samples)
+ {
+ 	guard();
+ 	
+@@ -313,7 +313,7 @@
+ 	}
+ }
+ 
+-const bool Processor::thereIsInputForProcessing()
++bool Processor::thereIsInputForProcessing()
+ {
+ 	QValueVector<uint> sready(numInputs());
+ 	specifyInputSpace(sready);
+@@ -451,7 +451,7 @@
+ 	theDeferredInit = false;
+ }
+ 
+-const PropertiesInfo Processor::properties() const
++PropertiesInfo Processor::properties() const
+ {
+ 	return specifyProperties();
+ }
+@@ -477,7 +477,7 @@
+ 	theRedrawPeriod = redrawPeriod;
+ }
+ 
+-const bool Processor::go()
++bool Processor::go()
+ {
+ 	if(MESSAGES) qDebug("> Processor::go() (name=%s)", theName.latin1());
+ 	if(!theIsInitialised) return false;
+@@ -553,7 +553,7 @@
+ 	if(MESSAGES) qDebug("< Processor::stop()");
+ }
+ 
+-const bool Processor::confirmTypes()
++bool Processor::confirmTypes()
+ {
+ 	QMutexLocker lock(&theConfirming);
+ 
+@@ -703,7 +703,7 @@
+ 	new LMConnection(this, sourceIndex, bufferSize);
+ }
+ 
+-const bool Processor::readyRegisterIn(const uint sinkIndex) const
++bool Processor::readyRegisterIn(const uint sinkIndex) const
+ {
+ 	if(sinkIndex >= theInputs.size())
+ 	{	qWarning("*** ERROR: Processor::connect: %s[%d]: Invalid sink index to connect to. (%p inputs: %d)", name().latin1(), sinkIndex, this, theInputs.size());
+@@ -805,7 +805,7 @@
+ 		theAllDoneChanged.wait(&theStop);
+ }
+ 
+-const Processor::ErrorType Processor::waitUntilGoing(int *errorData)
++Processor::ErrorType Processor::waitUntilGoing(int *errorData)
+ {
+ 	QMutexLocker lock(&theErrorSystem);
+ 	while(theError == Pending || theError == NotStarted)
+@@ -853,7 +853,7 @@
+ 	if(d) d->remove(this);
+ }
+ 
+-const bool Processor::waitUntilReady()
++bool Processor::waitUntilReady()
+ {
+ 	return waitUntilGoing() == NoError;
+ }
+diff -ru exscalibar-1.0.4_orig/src/geddei/processor.h exscalibar-1.0.4/src/geddei/processor.h
+--- exscalibar-1.0.4_orig/src/geddei/processor.h	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/geddei/processor.h	2009-02-28 10:10:19.000000000 +0100
+@@ -268,11 +268,11 @@
+ 
+ 	//@{
+ 	/** Reimplementations from Multiplicative. */
+-	const bool knowMultiplicity() const { return theIsInitialised; }
++	bool knowMultiplicity() const { return theIsInitialised; }
+ protected:
+-	const uint multiplicity() const { return theMulti&Out ? numOutputs() : numInputs(); }
++	uint multiplicity() const { return theMulti&Out ? numOutputs() : numInputs(); }
+ private:
+-	const bool initGiven() const { return theIsInitialised || theDeferredInit; }
++	bool initGiven() const { return theIsInitialised || theDeferredInit; }
+ 	//@}
+ 
+ 	//@{
+@@ -317,9 +317,9 @@
+ 	/** Reimplementations from Sink. */
+ 	virtual void doRegisterIn(xLConnection *me, const uint port);
+ 	virtual void undoRegisterIn(xLConnection *me, const uint port);
+-	virtual const bool readyRegisterIn(const uint sinkIndex) const;
++	virtual bool readyRegisterIn(const uint sinkIndex) const;
+ 	virtual void waitToStop() { wait(); }
+-	virtual const bool waitUntilReady();
++	virtual bool waitUntilReady();
+ 	//@}
+ 
+ 	//@{
+@@ -401,7 +401,7 @@
+ 	 * @return true iff a read of @a samples will not block or cause a plunger
+ 	 * to be read, false iff no more data can *ever* be read.
+ 	 */
+-	const bool thereIsInputForProcessing(const uint samples);
++	bool thereIsInputForProcessing(const uint samples);
+ 
+ 	/** @overload
+ 	 * Blocks until either:
+@@ -419,7 +419,7 @@
+ 	 * @return true iff a read of @a samples will not block or cause a plunger
+ 	 * to be read, false iff no more data can *ever* be read.
+ 	 */
+-	const bool thereIsInputForProcessing();
++	bool thereIsInputForProcessing();
+ 
+ 	/**
+ 	 * Call this from initFromProperties to initialise I/O connections.
+@@ -490,7 +490,7 @@
+ 	 * 
+ 	 * @sa initFromProperties() processor() processorStopped()
+ 	 */
+-	virtual const bool processorStarted() { return true; }
++	virtual bool processorStarted() { return true; }
+ 
+ 	/**
+ 	 * Reimplement to cleanup any stuff that processor may have left open/locked/
+@@ -551,7 +551,7 @@
+ 	 * @return true if @a inTypes is valid and @a outTypes is populated correctly.
+ 	 */
+ 	//TODO: enforce the same basic class rule.
+-	virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes) = 0;
++	virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes) = 0;
+ 
+ 	/**
+ 	 * Reimplement to force the inputs' buffer size to be at least samples big, explicitly
+@@ -628,7 +628,7 @@
+ 	 *
+ 	 * @return The processor's properties and their default values.
+ 	 */
+-	const PropertiesInfo properties() const;
++	PropertiesInfo properties() const;
+ 
+ 	/**
+ 	 * Performs basic object construction that cannot otherwise be done in the constructor
+@@ -667,7 +667,7 @@
+ 	 * @return false if there has been an error with the init(). true if initialisation has
+ 	 * been deferred or suceeded. Undefined if init() hasn't been called yet.
+ 	 */
+-	const bool isInitFailed() const { return !(theIsInitialised || theDeferredInit); }
++	bool isInitFailed() const { return !(theIsInitialised || theDeferredInit); }
+ 
+ 	/**
+ 	 * Use this method for driving multiple inputs from one output.
+@@ -778,7 +778,7 @@
+ 	 *
+ 	 * Reimplementation from Source.
+ 	 */
+-	virtual const bool confirmTypes();
++	virtual bool confirmTypes();
+ 
+ 	/**
+ 	 * Make the thing start doing stuff. i.e. Starts processor thread.
+@@ -787,7 +787,7 @@
+ 	 *
+ 	 * @sa waitUntilGoing() confirmTypes() errorType() errorData() stop()
+ 	 */
+-	const bool go();
++	bool go();
+ 
+ 	/**
+ 	 * Blocks until processor is active, and gives error information if processor startup
+@@ -801,7 +801,7 @@
+ 	 *
+ 	 * @sa go()
+ 	 */
+-	const ErrorType waitUntilGoing(int *errorData = 0);
++	ErrorType waitUntilGoing(int *errorData = 0);
+ 
+ 	/**
+ 	 * Blocks until the Processor object is finished and has exited it's main
+@@ -822,7 +822,7 @@
+ 	 *
+ 	 * @sa waitUntilGoing().
+ 	 */
+-	const ErrorType errorType() const { QMutexLocker lock(&theErrorSystem); return theError; }
++	ErrorType errorType() const { QMutexLocker lock(&theErrorSystem); return theError; }
+ 
+ 	/**
+ 	 * Get any (numerical) data associated with the error condition given
+@@ -834,7 +834,7 @@
+ 	 *
+ 	 * @sa errorType
+ 	 */
+-	const int errorData() const { QMutexLocker lock(&theErrorSystem); return theErrorData; }
++	int errorData() const { QMutexLocker lock(&theErrorSystem); return theErrorData; }
+ 
+ 	/**
+ 	 * Get a string which is a human readable interpretation of the last
+@@ -874,7 +874,7 @@
+ 	 *
+ 	 * @sa pause() unpause()
+ 	 */
+-	const bool paused() const { QMutexLocker lock(&thePause); return thePaused; }
++	bool paused() const { QMutexLocker lock(&thePause); return thePaused; }
+ 
+ 	/**
+ 	 * Make the thing stop doing stuff. i.e. Cancels processor thread.
+@@ -896,28 +896,28 @@
+ 	 *
+ 	 * @return The number of inputs.
+ 	 */
+-	const uint numInputs() const { return theInputs.size(); }
++	uint numInputs() const { return theInputs.size(); }
+ 
+ 	/**
+ 	 * Gets the number of outputs this processor has.
+ 	 *
+ 	 * @return The number of outputs.
+ 	 */
+-	const uint numOutputs() const { return theOutputs.size(); }
++	uint numOutputs() const { return theOutputs.size(); }
+ 
+ 	/**
+ 	 * Gets the width of the processor's image. Used by the Nite for drawing.
+ 	 *
+ 	 * @return The image's width.
+ 	 */
+-	const uint width() const { return theWidth; }
++	uint width() const { return theWidth; }
+ 
+ 	/**
+ 	 * Gets the height of the processor's image. Used by the Nite for drawing.
+ 	 *
+ 	 * @return The image's height.
+ 	 */
+-	const uint height() const { return theHeight; }
++	uint height() const { return theHeight; }
+ 
+ 	/**
+ 	 * Gets the (automatic) redraw period of the processor in milliseconds. Used by
+@@ -925,7 +925,7 @@
+ 	 *
+ 	 * @return The automatic redraw rate.
+ 	 */
+-	const uint redrawPeriod() const { return theRedrawPeriod; }
++	uint redrawPeriod() const { return theRedrawPeriod; }
+ 
+ 	/**
+ 	 * Front-end routing for drawing the Processor to a canvas. Used by the Nite
+@@ -943,7 +943,7 @@
+ 	 * @return A float between 0 and 1 which is the fractional filled-ness of the
+ 	 * port's connection buffer.
+ 	 */
+-	const float bufferCapacity(const uint index);
++	float bufferCapacity(const uint index);
+ 
+ 	/**
+ 	 * Gets the (instance-wise) name of the processor. This is unique for any group
+Only in exscalibar-1.0.4/src/geddei: processor.o
+diff -ru exscalibar-1.0.4_orig/src/geddei/processorfactory.h exscalibar-1.0.4/src/geddei/processorfactory.h
+--- exscalibar-1.0.4_orig/src/geddei/processorfactory.h	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/geddei/processorfactory.h	2009-02-28 10:10:19.000000000 +0100
+@@ -51,7 +51,7 @@
+ 	 * @param type The type of Processor (i.e. class name) to be queried.
+ 	 * @return true if it can be create() -ed, false otherwise.
+ 	 */
+-	static const bool available(const QString &type) { return factory().isAvailable(type); }
++	static bool available(const QString &type) { return factory().isAvailable(type); }
+ 
+ 	/**
+ 	 * Gets (latest available) version of a Processor -derived class.
+@@ -60,7 +60,7 @@
+ 	 * @return The version of the class @a type that is available, or -1 if
+ 	 * unavailable, in an integer code.
+ 	 */
+-	static const int versionId(const QString &type) { return factory().getVersion(type); }
++	static int versionId(const QString &type) { return factory().getVersion(type); }
+ 
+ 	/**
+ 	 * Gets (latest available) version of a Processor -derived class.
+Only in exscalibar-1.0.4/src/geddei: processorfactory.o
+diff -ru exscalibar-1.0.4_orig/src/geddei/processorforwarder.cpp exscalibar-1.0.4/src/geddei/processorforwarder.cpp
+--- exscalibar-1.0.4_orig/src/geddei/processorforwarder.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/geddei/processorforwarder.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -163,7 +163,7 @@
+ 	return ret;
+ }
+ 
+-const bool ProcessorForwarder::deleteConnection(const QString &sinkHost, const uint sinkKey, const QString &sinkProcessorName, const uint sinkIndex)
++bool ProcessorForwarder::deleteConnection(const QString &sinkHost, const uint sinkKey, const QString &sinkProcessorName, const uint sinkIndex)
+ {
+ 	QSocketDevice link;
+ 	if(MESSAGES) qDebug("> ProcessorForwarder::deleteConnection() : sinkHost = %s", sinkHost.latin1());
+@@ -211,7 +211,7 @@
+ 	return ret;
+ }
+ 
+-const bool ProcessorForwarder::deleteCoupling(const QString &host, const uint key, const uint sPK)
++bool ProcessorForwarder::deleteCoupling(const QString &host, const uint key, const uint sPK)
+ {
+ 	QSocketDevice *link = login(host, key);
+ 	if(!link) return false;
+diff -ru exscalibar-1.0.4_orig/src/geddei/processorforwarder.h exscalibar-1.0.4/src/geddei/processorforwarder.h
+--- exscalibar-1.0.4_orig/src/geddei/processorforwarder.h	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/geddei/processorforwarder.h	2009-02-28 10:10:19.000000000 +0100
+@@ -79,7 +79,7 @@
+ 	 * Simply calls disconnect on the given processor/input.
+ 	 * Used for LRCs to kill their RLC ends.
+ 	 */
+-	static const bool deleteConnection(const QString &sinkHost, const uint sinkKey, const QString &sinkProcessorName, const uint sinkIndex);
++	static bool deleteConnection(const QString &sinkHost, const uint sinkKey, const QString &sinkProcessorName, const uint sinkIndex);
+ 
+ 	/**
+ 	 * Delets a "child" RLConnection.
+@@ -101,7 +101,7 @@
+ 	 * This should be called *before* the accompanying DRCoupling object is fully deleted
+ 	 * (and is can/should be indirectly called by the DRC destructor).
+ 	 */
+-	static const bool deleteCoupling(const QString &host, const uint key, const uint subProcessorKey);
++	static bool deleteCoupling(const QString &host, const uint key, const uint subProcessorKey);
+ 
+ 	/**
+ 	 * Simple constructor.
+Only in exscalibar-1.0.4/src/geddei: processorforwarder.o
+diff -ru exscalibar-1.0.4_orig/src/geddei/processorgroup.cpp exscalibar-1.0.4/src/geddei/processorgroup.cpp
+--- exscalibar-1.0.4_orig/src/geddei/processorgroup.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/geddei/processorgroup.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -29,7 +29,7 @@
+ 	if(theAdopt) deleteAll();
+ }
+ 
+-const bool ProcessorGroup::exists(const QString &name)
++bool ProcessorGroup::exists(const QString &name)
+ {
+ 	return theProcessors.count(name);
+ }
+@@ -78,7 +78,7 @@
+ 		}
+ }
+ 
+-const bool ProcessorGroup::confirmTypes() const
++bool ProcessorGroup::confirmTypes() const
+ {
+ 	if(MESSAGES) qDebug("ProcessorGroup::confirmTypes()");
+ 	for(QMap<QString, Processor *>::ConstIterator i = theProcessors.begin(); i != theProcessors.end(); i++)
+@@ -102,7 +102,7 @@
+ 		i.data()->disconnectAll();
+ }
+ 
+-const bool ProcessorGroup::go(const bool waitUntilGoing) const
++bool ProcessorGroup::go(const bool waitUntilGoing) const
+ {
+ 	if(!confirmTypes()) return false;
+ 	for(QMap<QString, Processor *>::ConstIterator i = theProcessors.begin(); i != theProcessors.end(); i++)
+@@ -111,7 +111,7 @@
+ 	return true;
+ }
+ 
+-const Processor::ErrorType ProcessorGroup::waitUntilGoing(Processor **errorProc, int *errorData) const
++Processor::ErrorType ProcessorGroup::waitUntilGoing(Processor **errorProc, int *errorData) const
+ {
+ 	Processor::ErrorType ret;
+ 	for(QMap<QString, Processor *>::ConstIterator i = theProcessors.begin(); i != theProcessors.end(); i++)
+diff -ru exscalibar-1.0.4_orig/src/geddei/processorgroup.h exscalibar-1.0.4/src/geddei/processorgroup.h
+--- exscalibar-1.0.4_orig/src/geddei/processorgroup.h	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/geddei/processorgroup.h	2009-02-28 10:10:19.000000000 +0100
+@@ -52,7 +52,7 @@
+ 	 *
+ 	 * @return true iff all types confirm correctly.
+ 	 */
+-	const bool confirmTypes() const;
++	bool confirmTypes() const;
+ 
+ 	/**
+ 	 * Start all Processor objects in the group. Note this returns once all have
+@@ -67,7 +67,7 @@
+ 	 *
+ 	 * @sa waitUntilGoing()
+ 	 */
+-	const bool go(const bool waitUntilGoing = true) const;
++	bool go(const bool waitUntilGoing = true) const;
+ 
+ 	/**
+ 	 * Waits for all Processor objects to be actaully running correctly. Use this
+@@ -79,7 +79,7 @@
+ 	 * the error arose with.
+ 	 * @return The Error it failed with or Processor::NoError if all went correctly.
+ 	 */
+-	const Processor::ErrorType waitUntilGoing(Processor **errorProc = 0, int *errorData = 0) const;
++	Processor::ErrorType waitUntilGoing(Processor **errorProc = 0, int *errorData = 0) const;
+ 
+ 	/**
+ 	 * Stops all Processor objects in the group.
+@@ -118,7 +118,7 @@
+ 	 * @param name The name of the Processor object to be found.
+ 	 * @return true if a Processor object of name @a name is contained in the group.
+ 	 */
+-	const bool exists(const QString &name);
++	bool exists(const QString &name);
+ 
+ 	/**
+ 	 * Get a reference to a named Processor object. It must exist in the group.
+@@ -151,7 +151,7 @@
+ 	 *
+ 	 * @return The number of Processor objects in the group.
+ 	 */
+-	const uint count() const { return theProcessors.count(); }
++	uint count() const { return theProcessors.count(); }
+ 
+ 	/**
+ 	 * Default constructor.
+Only in exscalibar-1.0.4/src/geddei: processorgroup.o
+Only in exscalibar-1.0.4/src/geddei: processorport.o
+diff -ru exscalibar-1.0.4_orig/src/geddei/properties.h exscalibar-1.0.4/src/geddei/properties.h
+--- exscalibar-1.0.4_orig/src/geddei/properties.h	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/geddei/properties.h	2009-02-28 10:10:19.000000000 +0100
+@@ -131,7 +131,7 @@
+ 	 *
+ 	 * @return The number of keys in this object.
+ 	 */
+-	const uint size() const { return theData.size(); }
++	uint size() const { return theData.size(); }
+ 
+ 	/** @internal
+ 	 * Get a list of the keys in this object.
+@@ -249,7 +249,7 @@
+ 	 *
+ 	 * @return The number of keys in this object.
+ 	 */
+-	const uint size() const { return Properties::size(); }
++	uint size() const { return Properties::size(); }
+ 
+ 	/** 
+ 	 * Get a list of the keys in this object.
+Only in exscalibar-1.0.4/src/geddei: properties.o
+diff -ru exscalibar-1.0.4_orig/src/geddei/rlconnection.cpp exscalibar-1.0.4/src/geddei/rlconnection.cpp
+--- exscalibar-1.0.4_orig/src/geddei/rlconnection.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/geddei/rlconnection.cpp	2009-02-28 10:10:20.000000000 +0100
+@@ -66,8 +66,9 @@
+ 	while(theSource.isOpen())
+ 	{
+ 		if(MESSAGES) qDebug("= RLC::run(): Receiving...");
+-		uchar command;
+-		while(theSource.isOpen() && !theSource.receiveChunk(&command, 1, 501));
++		unsigned char command;
++		while(theSource.isOpen() && !theSource.receiveChunk(&command, 1, 501))
++      ;
+ 		if(!theSource.isOpen()) break;
+ 
+ 		if(MESSAGES) qDebug("= RLC::run(): command = %d", (int)command);
+@@ -194,7 +195,7 @@
+ */	if(MESSAGES) qDebug("< RLC::run()");
+ }
+ 
+-const bool RLConnection::pullType()
++bool RLConnection::pullType()
+ {
+ 	QMutexLocker lock(&theGotTypeM);
+ 	while(!theHaveType) theGotType.wait(&theGotTypeM);
+diff -ru exscalibar-1.0.4_orig/src/geddei/rlconnection.h exscalibar-1.0.4/src/geddei/rlconnection.h
+--- exscalibar-1.0.4_orig/src/geddei/rlconnection.h	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/geddei/rlconnection.h	2009-02-28 10:10:19.000000000 +0100
+@@ -52,7 +52,7 @@
+ 	virtual void run();
+ 
+ 	//* Reimplementation from xLConnection.
+-	virtual const bool pullType();
++	virtual bool pullType();
+ 
+ public:
+ 	/**
+Only in exscalibar-1.0.4/src/geddei: rlconnection.o
+diff -ru exscalibar-1.0.4_orig/src/geddei/rscoupling.cpp exscalibar-1.0.4/src/geddei/rscoupling.cpp
+--- exscalibar-1.0.4_orig/src/geddei/rscoupling.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/geddei/rscoupling.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -59,7 +59,8 @@
+ 	{
+ 		if(MESSAGES) qDebug("= RSC::run(): Receiving...");
+ 		uchar command;
+-		while(theSession.isOpen() && !theSession.receiveChunk(&command, 1, 501));
++		while(theSession.isOpen() && !theSession.receiveChunk(&command, 1, 501))
++      ;
+ 		if(!theSession.isOpen()) break;
+ 
+ 		if(MESSAGES) qDebug("= RSC::run(): command = %d", (int)command);
+Only in exscalibar-1.0.4/src/geddei: rscoupling.o
+diff -ru exscalibar-1.0.4_orig/src/geddei/signaltype.h exscalibar-1.0.4/src/geddei/signaltype.h
+--- exscalibar-1.0.4_orig/src/geddei/signaltype.h	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/geddei/signaltype.h	2009-02-28 10:12:31.000000000 +0100
+@@ -2,6 +2,7 @@
+ #define _GEDDEI_SIGNALTYPE_H
+ 
+ #include <iostream>
++#include <sys/types.h>
+ using namespace std;
+ 
+ class QSocketSession;
+@@ -82,7 +83,7 @@
+ 	 * @param comp The object to be compared to this.
+ 	 * @return true iff they are equivalent.
+ 	 */
+-	const bool sameAs(const SignalType *comp) const { return sameAsBE(comp); }
++	bool sameAs(const SignalType *comp) const { return sameAsBE(comp); }
+ 
+ 	/**
+ 	 * Static method for creation of a new SignalType-derived class from its
+@@ -170,7 +171,7 @@
+ 	 *
+ 	 * @return The unique identity of the new class.
+ 	 */
+-	virtual const uint id() const = 0;
++	virtual uint id() const = 0;
+ 
+ 	/**
+ 	 * Duplicate this SignalType object.
+@@ -205,7 +206,7 @@
+ 	 * @param comp The object to be compared to this.
+ 	 * @return true iff they are equivalent.
+ 	 */
+-	virtual const bool sameAsBE(const SignalType *comp) const { return id() == comp->id() && theScope == comp->theScope && theFrequency == comp->theFrequency; }
++	virtual bool sameAsBE(const SignalType *comp) const { return id() == comp->id() && theScope == comp->theScope && theFrequency == comp->theFrequency; }
+ 
+ 	//@}
+ 
+@@ -228,13 +229,13 @@
+ 	 * @return The scope, or number of single value elements per sample of the
+ 	 * data represented by this SignalType.
+ 	 */
+-	const uint scope() const { return theScope; }
++	uint scope() const { return theScope; }
+ 
+ 	/**
+ 	 * @return The frequency, or number of samples per Signal-time second of
+ 	 * the data represented by this SignalType.
+ 	 */
+-	const float frequency() const { return theFrequency; }
++	float frequency() const { return theFrequency; }
+ 
+ 	/**
+ 	 * Sets the scope of this SignalType.
+@@ -257,7 +258,7 @@
+ 	 * @return The number of samples that @a elements constitute. This will be
+ 	 * less than or equal to @a elements .
+ 	 */
+-	const uint samples(const uint elements) const { return elements / theScope; }
++	uint samples(const uint elements) const { return elements / theScope; }
+ 
+ 	/**
+ 	 * Get the number of seconds represented by the given number of elements.
+@@ -265,7 +266,7 @@
+ 	 * @param elements The number of elements.
+ 	 * @return The number of Signal-time seconds that @a elements constitute.
+ 	 */
+-	const float seconds(const uint elements) const { return float(elements / theScope) / theFrequency; }
++	float seconds(const uint elements) const { return float(elements / theScope) / theFrequency; }
+ 
+ 	/**
+ 	 * Get the number of elements a number of samples represents.
+@@ -274,7 +275,7 @@
+ 	 * @return The number of elements represented by @a samples . This will be
+ 	 * greater than or equal to @a samples .
+ 	 */
+-	const uint elementsFromSamples(const uint samples) const { return samples * theScope; }
++	uint elementsFromSamples(const uint samples) const { return samples * theScope; }
+ 
+ 	/**
+ 	 * Get the number of elements a Signal-time length of seconds represents.
+@@ -282,7 +283,7 @@
+ 	 * @param seconds The length of Signal-time.
+ 	 * @return The number of elements.
+ 	 */
+-	const uint elementsFromSeconds(const float seconds) const { return (uint)(seconds * theFrequency) * theScope; }
++	uint elementsFromSeconds(const float seconds) const { return (uint)(seconds * theFrequency) * theScope; }
+ 	
+ 	/**
+ 	 * Virtual destructor.
+Only in exscalibar-1.0.4/src/geddei: signaltype.o
+diff -ru exscalibar-1.0.4_orig/src/geddei/signaltyperef.cpp exscalibar-1.0.4/src/geddei/signaltyperef.cpp
+--- exscalibar-1.0.4_orig/src/geddei/signaltyperef.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/geddei/signaltyperef.cpp	2009-02-28 10:10:20.000000000 +0100
+@@ -20,12 +20,12 @@
+ namespace Geddei
+ {
+ 
+-const bool SignalTypeRef::operator==(const SignalType &p)
++bool SignalTypeRef::operator==(const SignalType &p)
+ {
+ 	return thePtr->sameAs(&p);
+ }
+ 
+-const bool SignalTypeRef::operator==(const SignalTypeRef &p)
++bool SignalTypeRef::operator==(const SignalTypeRef &p)
+ {
+ 	return thePtr->sameAs(p.thePtr);
+ }
+@@ -44,12 +44,12 @@
+ 	return *this;
+ }
+ 
+-const uint SignalTypeRef::scope() const
++uint SignalTypeRef::scope() const
+ {
+ 	return thePtr->scope();
+ }
+ 
+-const float SignalTypeRef::frequency() const
++float SignalTypeRef::frequency() const
+ {
+ 	return thePtr->frequency();
+ }
+diff -ru exscalibar-1.0.4_orig/src/geddei/signaltyperef.h exscalibar-1.0.4/src/geddei/signaltyperef.h
+--- exscalibar-1.0.4_orig/src/geddei/signaltyperef.h	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/geddei/signaltyperef.h	2009-02-28 10:10:19.000000000 +0100
+@@ -97,7 +97,7 @@
+ 	 * @return true iff we reference an object of type @a T.
+ 	 */
+ 	template<class T>
+-	const bool isA() const { return dynamic_cast<const T *>(thePtr); }
++	bool isA() const { return dynamic_cast<const T *>(thePtr); }
+ 	
+ 	/**
+ 	 * Return a const reference of class @a T that we represent. If we cannot
+@@ -150,7 +150,7 @@
+ 	 * @return The scope, or number of single value elements per sample of the
+ 	 * data represented by this SignalType.
+ 	 */
+-	const uint scope() const;
++	uint scope() const;
+ 
+ 	/**
+ 	 * Convenience function to go through the reference and retrieve the
+@@ -165,7 +165,7 @@
+ 	 * @return The frequency, or number of samples per Signal-time second of
+ 	 * the data represented by this SignalType.
+ 	 */
+-	const float frequency() const;
++	float frequency() const;
+ 	
+ 	/**
+ 	 * Assignment operator. This will turn us into a copy of the SignalType
+@@ -197,7 +197,7 @@
+ 	 * @param p The type against which to be compared.
+ 	 * @return true iff we are completely equivalent.
+ 	 */
+-	const bool operator==(const SignalType &p);
++	bool operator==(const SignalType &p);
+ 	
+ 	/** @overload
+ 	 * Check to see if we are the same as some other SignalType. This not only
+@@ -207,8 +207,8 @@
+ 	 * @param p The type against which to be compared.
+ 	 * @return true iff we are completely equivalent.
+ 	 */
+-	const bool operator==(const SignalTypeRef &p);
+-	
++	bool operator==(const SignalTypeRef &p);
++
+ 	/** @internal
+ 	 * For the explicit copy constructor we actually make a copy of ourselves.
+ 	 * 
+Only in exscalibar-1.0.4/src/geddei: signaltyperef.o
+diff -ru exscalibar-1.0.4_orig/src/geddei/signaltyperefs.cpp exscalibar-1.0.4/src/geddei/signaltyperefs.cpp
+--- exscalibar-1.0.4_orig/src/geddei/signaltyperefs.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/geddei/signaltyperefs.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -85,7 +85,7 @@
+ 	return *this;
+ }
+ 
+-const bool SignalTypeRefs::allSame() const
++bool SignalTypeRefs::allSame() const
+ {
+ 	if(!theData[0]) return false;
+ 	for(uint i = 1; i < theCount; i++)
+diff -ru exscalibar-1.0.4_orig/src/geddei/signaltyperefs.h exscalibar-1.0.4/src/geddei/signaltyperefs.h
+--- exscalibar-1.0.4_orig/src/geddei/signaltyperefs.h	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/geddei/signaltyperefs.h	2009-02-28 10:10:19.000000000 +0100
+@@ -95,7 +95,7 @@
+ 	 */
+ 	explicit SignalTypeRefs(const uint count = 0, const bool implicitCopying = true);
+ 
+-	const bool populated(const uint i) const
++	bool populated(const uint i) const
+ 	{
+ 		return theData[i];
+ 	}
+@@ -248,7 +248,7 @@
+ 	 *
+ 	 * @return The number of spaces allocated.
+ 	 */
+-	const uint count() const { return theCount; }
++	uint count() const { return theCount; }
+ 
+ 	/**
+ 	 * Check if all SignalType objects contained in this object are actually
+@@ -258,7 +258,7 @@
+ 	 * types. If any are null, returns false. If fewer than two objects are
+ 	 * contained it returns true.
+ 	 */
+-	const bool allSame() const;
++	bool allSame() const;
+ 
+ 	/**
+ 	 * Assignment operator. Makes an identical copy of the list given by
+Only in exscalibar-1.0.4/src/geddei: signaltyperefs.o
+diff -ru exscalibar-1.0.4_orig/src/geddei/sink.h exscalibar-1.0.4/src/geddei/sink.h
+--- exscalibar-1.0.4_orig/src/geddei/sink.h	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/geddei/sink.h	2009-02-28 10:10:19.000000000 +0100
+@@ -44,7 +44,7 @@
+ 	 * Checks that the input port @a sinkIndex is valid for a new connection.
+ 	 * This is just used to check before a doRegisterIn call.
+ 	 */
+-	virtual const bool readyRegisterIn(const uint sinkIndex) const = 0;
++	virtual bool readyRegisterIn(const uint sinkIndex) const = 0;
+ 
+ 	/**
+ 	 * Called by an incoming signal to suggest that the sink should initialise
+@@ -82,7 +82,7 @@
+ 	 * This should return only when the Sink has started processing or bailed
+ 	 * due to error.
+ 	 */
+-	virtual const bool waitUntilReady() = 0;
++	virtual bool waitUntilReady() = 0;
+ 
+ 	/**
+ 	 * This should return only when the Sink has finished all processing.
+@@ -95,7 +95,7 @@
+ 	 * Note this is done automatically if neccessary at go(), but it's a good practice
+ 	 * to call it beforehand anyway.
+ 	 */
+-	virtual const bool confirmTypes() = 0;
++	virtual bool confirmTypes() = 0;
+ 
+ 	/**
+ 	 * May be called upon between stop() and start() to reset any cached data stored
+Only in exscalibar-1.0.4/src/geddei: sink.o
+diff -ru exscalibar-1.0.4_orig/src/geddei/source.h exscalibar-1.0.4/src/geddei/source.h
+--- exscalibar-1.0.4_orig/src/geddei/source.h	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/geddei/source.h	2009-02-28 10:10:19.000000000 +0100
+@@ -38,7 +38,7 @@
+ 	 * Note this is done automatically if neccessary at go(), but it's good
+ 	 * practise to call it beforehand anyway.
+ 	 */
+-	virtual const bool confirmTypes() = 0;
++	virtual bool confirmTypes() = 0;
+ 
+ 	/**
+ 	 * Make a record that @a me is now inhabiting @a port of this Source.
+Only in exscalibar-1.0.4/src/geddei: source.o
+diff -ru exscalibar-1.0.4_orig/src/geddei/spectrum.cpp exscalibar-1.0.4/src/geddei/spectrum.cpp
+--- exscalibar-1.0.4_orig/src/geddei/spectrum.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/geddei/spectrum.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -16,7 +16,7 @@
+ namespace SignalTypes
+ {
+ 
+-const bool Spectrum::sameAsBE(const SignalType *cmp) const
++bool Spectrum::sameAsBE(const SignalType *cmp) const
+ {
+ 	return SignalType::sameAsBE(cmp) && dynamic_cast<const Spectrum *>(cmp)->theStep == theStep;
+ }
+diff -ru exscalibar-1.0.4_orig/src/geddei/spectrum.h exscalibar-1.0.4/src/geddei/spectrum.h
+--- exscalibar-1.0.4_orig/src/geddei/spectrum.h	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/geddei/spectrum.h	2009-02-28 10:10:19.000000000 +0100
+@@ -33,8 +33,8 @@
+ {
+ 	virtual void serialise(QSocketSession &sink) const;
+ 	virtual void deserialise(QSocketSession &source);
+-	virtual const uint id() const { return 2; }
+-	virtual const bool sameAsBE(const SignalType *cmp) const;
++	virtual uint id() const { return 2; }
++	virtual bool sameAsBE(const SignalType *cmp) const;
+ 	virtual SignalType *copyBE() const { return new Spectrum(theScope, theFrequency, theStep); }
+ 
+ protected:
+@@ -47,7 +47,7 @@
+ 	 * @param band The band index.
+ 	 * @return The midpoint frequency of band @a band.
+ 	 */
+-	const float bandFrequency(uint band) const { return band * theStep; }
++	float bandFrequency(uint band) const { return band * theStep; }
+ 
+ 	/**
+ 	 * Gets the number of bands in the spectra of the signal to which this
+@@ -55,7 +55,7 @@
+ 	 *
+ 	 * @return The number of bands.
+ 	 */
+-	const uint size() const { return theScope; }
++	uint size() const { return theScope; }
+ 
+ 	/**
+ 	 * Gets the difference in audio frequency between each band in the
+@@ -63,7 +63,7 @@
+ 	 *
+ 	 * @return The frequency stepping between bands.
+ 	 */
+-	const float step() const { return theStep; }
++	float step() const { return theStep; }
+ 
+ 	/**
+ 	 * Gets the Nyquist frequency (the highest frequency that can be
+@@ -71,7 +71,7 @@
+ 	 *
+ 	 * @return The Nyquist frequency.
+ 	 */
+-	const float nyquist() const { return float(theScope) * theStep; }
++	float nyquist() const { return float(theScope) * theStep; }
+ 
+ 	/**
+ 	 * Create a new SignalType to represent a spectrum.
+Only in exscalibar-1.0.4/src/geddei: spectrum.o
+diff -ru exscalibar-1.0.4_orig/src/geddei/splitter.cpp exscalibar-1.0.4/src/geddei/splitter.cpp
+--- exscalibar-1.0.4_orig/src/geddei/splitter.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/geddei/splitter.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -63,7 +63,7 @@
+ 	theSource->checkExit();
+ }
+ 
+-const bool Splitter::confirmTypes()
++bool Splitter::confirmTypes()
+ {
+ 	return theSource->confirmTypes();
+ }
+@@ -82,7 +82,7 @@
+ 	theConnections.setAutoDelete(true);
+ }
+ 
+-const bool Splitter::waitUntilReady()
++bool Splitter::waitUntilReady()
+ {
+ 	for(QPtrList<LxConnection>::iterator i = theConnections.begin(); i != theConnections.end(); i++)
+ 		if(!((*i)->waitUntilReady()))
+@@ -165,7 +165,7 @@
+ 		(*i)->noMorePlungers();
+ }
+ 
+-const uint Splitter::maximumScratchElements(const uint minimum)
++uint Splitter::maximumScratchElements(const uint minimum)
+ {
+ 	QPtrList<LxConnection>::iterator i = theConnections.begin();
+ 	uint ret = (*i)->maximumScratchElements(minimum);
+@@ -174,7 +174,7 @@
+ 	return ret;
+ }
+ 
+-const uint Splitter::maximumScratchElementsEver()
++uint Splitter::maximumScratchElementsEver()
+ {
+ 	QPtrList<LxConnection>::iterator i = theConnections.begin();
+ 	uint ret = (*i)->maximumScratchElementsEver();
+diff -ru exscalibar-1.0.4_orig/src/geddei/splitter.h exscalibar-1.0.4/src/geddei/splitter.h
+--- exscalibar-1.0.4_orig/src/geddei/splitter.h	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/geddei/splitter.h	2009-02-28 10:10:19.000000000 +0100
+@@ -36,7 +36,7 @@
+ {
+ 	//* Reimplementations from Source
+ 	virtual void checkExit();
+-	virtual const bool confirmTypes();
++	virtual bool confirmTypes();
+ 	virtual void doRegisterOut(LxConnection *me, const uint port);
+ 	virtual void undoRegisterOut(LxConnection *me, const uint port);
+ 	virtual const Processor *processor() const { return dynamic_cast<Processor *>(theSource); }
+@@ -49,7 +49,7 @@
+ 	virtual void forgetScratch(const BufferData &data);
+ 
+ 	//* Reimplementations from LxConnection
+-	virtual const bool waitUntilReady();
++	virtual bool waitUntilReady();
+ 	virtual void setType(const SignalType *type);
+ 	virtual void resetType();
+ 	virtual void sourceStopping();
+@@ -61,8 +61,8 @@
+ 	virtual void startPlungers();
+ 	virtual void plungerSent();
+ 	virtual void noMorePlungers();
+-	virtual const uint maximumScratchElements(const uint minimum = 1);
+-	virtual const uint maximumScratchElementsEver();
++	virtual uint maximumScratchElements(const uint minimum = 1);
++	virtual uint maximumScratchElementsEver();
+ 	virtual void enforceMinimum(const uint elements);
+ 
+ 	QPtrList<LxConnection> theConnections;
+Only in exscalibar-1.0.4/src/geddei: splitter.o
+diff -ru exscalibar-1.0.4_orig/src/geddei/subprocessor.h exscalibar-1.0.4/src/geddei/subprocessor.h
+--- exscalibar-1.0.4_orig/src/geddei/subprocessor.h	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/geddei/subprocessor.h	2009-02-28 10:10:19.000000000 +0100
+@@ -204,7 +204,7 @@
+ 	 * in fact does an extra thing, namely records the outTypes for later use.
+ 	 * DO NOT call verifyAndSpecifyTypes(...) directly: Use proxyVSTypes(...) instead.
+ 	 */
+-	const bool proxyVSTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes) { return verifyAndSpecifyTypes(inTypes, outTypes); }
++	bool proxyVSTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes) { return verifyAndSpecifyTypes(inTypes, outTypes); }
+ 
+ 	/** @internal
+ 	 * (Re)defines the number of inputs/outputs after any multiplicity concerns are
+@@ -285,7 +285,7 @@
+ 	 * @sa proxyVSTypes(), for internal development.
+ 	 */
+ 	//TODO: enforce the same basic class rule.
+-	virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes) = 0;
++	virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes) = 0;
+ 
+ 	/**
+ 	 * Initialises from the given @a properties. Should call setupIO() (and
+@@ -309,7 +309,7 @@
+ 	 * or the number of inputs in the case of an Input Multiplicitive object. Undefined
+ 	 * is given otherwise.
+ 	 */
+-	const uint multiplicity() const { return theMulti == In ? theNumInputs : theMulti == Out ? theNumOutputs : Undefined; }
++	uint multiplicity() const { return theMulti == In ? theNumInputs : theMulti == Out ? theNumOutputs : Undefined; }
+ 
+ 	/**
+ 	 * Call from initFromProperties(). Use it to set up the number of inputs/outputs,
+Only in exscalibar-1.0.4/src/geddei: subprocessor.o
+diff -ru exscalibar-1.0.4_orig/src/geddei/subprocessorfactory.cpp exscalibar-1.0.4/src/geddei/subprocessorfactory.cpp
+--- exscalibar-1.0.4_orig/src/geddei/subprocessorfactory.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/geddei/subprocessorfactory.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -34,7 +34,7 @@
+ 	return *theOne;
+ }
+ 
+-const bool SubProcessorFactory::available(const QString &type)
++bool SubProcessorFactory::available(const QString &type)
+ {
+ 	if(type.contains("&"))
+ 		return available(type.section("&", 0, 0)) && available(type.section("&", 1));
+@@ -42,7 +42,7 @@
+ 		return factory().isAvailable(type);
+ }
+ 
+-const int SubProcessorFactory::versionId(const QString &type)
++int SubProcessorFactory::versionId(const QString &type)
+ {
+ 	if(type.contains("&"))
+ 		return min(versionId(type.section("&", 0, 0)), versionId(type.section("&", 1)));
+diff -ru exscalibar-1.0.4_orig/src/geddei/subprocessorfactory.h exscalibar-1.0.4/src/geddei/subprocessorfactory.h
+--- exscalibar-1.0.4_orig/src/geddei/subprocessorfactory.h	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/geddei/subprocessorfactory.h	2009-02-28 10:10:20.000000000 +0100
+@@ -54,7 +54,7 @@
+ 	 * @param type The type of SubProcessor (i.e. class name) to be queried.
+ 	 * @return true if it can be create() -ed, false otherwise.
+ 	 */
+-	static const bool available(const QString &type);
++	static bool available(const QString &type);
+ 
+ 	/**
+ 	 * Gets (latest available) version of a SubProcessor -derived class.
+@@ -63,7 +63,7 @@
+ 	 * @return The version of the class @a type that is available, or -1 if
+ 	 * unavailable, given in the integer code representation.
+ 	 */
+-	static const int versionId(const QString &type);
++	static int versionId(const QString &type);
+ 
+ 	/**
+ 	 * Gets (latest available) version of a SubProcessor -derived class.
+Only in exscalibar-1.0.4/src/geddei: subprocessorfactory.o
+diff -ru exscalibar-1.0.4_orig/src/geddei/value.h exscalibar-1.0.4/src/geddei/value.h
+--- exscalibar-1.0.4_orig/src/geddei/value.h	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/geddei/value.h	2009-02-28 10:10:19.000000000 +0100
+@@ -31,7 +31,7 @@
+  */
+ class Value: public SignalType
+ {
+-	virtual const uint id() const { return 0; }
++	virtual uint id() const { return 0; }
+ 	virtual SignalType *copyBE() const { return new Value(theFrequency); }
+ 
+ public:
+diff -ru exscalibar-1.0.4_orig/src/geddei/wave.h exscalibar-1.0.4/src/geddei/wave.h
+--- exscalibar-1.0.4_orig/src/geddei/wave.h	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/geddei/wave.h	2009-02-28 10:10:19.000000000 +0100
+@@ -30,7 +30,7 @@
+  */
+ class Wave: public SignalType
+ {
+-	virtual const uint id() const { return 1; }
++	virtual uint id() const { return 1; }
+ 	virtual SignalType *copyBE() const { return new Wave(theFrequency); }
+ 
+ public:
+Only in exscalibar-1.0.4/src/geddei: wave.o
+diff -ru exscalibar-1.0.4_orig/src/geddei/xlconnection.h exscalibar-1.0.4/src/geddei/xlconnection.h
+--- exscalibar-1.0.4_orig/src/geddei/xlconnection.h	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/geddei/xlconnection.h	2009-02-28 10:10:19.000000000 +0100
+@@ -100,7 +100,7 @@
+ 	 * plunger. If neither plunger nor enough data are forthcoming in the input
+ 	 * stream, it will block indefinately.
+ 	 */
+-	virtual const bool plungeSync(const uint samples) const = 0;
++	virtual bool plungeSync(const uint samples) const = 0;
+ 	
+ 	/** @internal
+ 	 * Returns the number of elements currently available to be read without
+@@ -112,7 +112,7 @@
+ 	 * essentially a technical issue. As such the value returned may be an
+ 	 * underestimate.
+ 	 */
+-	virtual const uint elementsReady() const = 0;
++	virtual uint elementsReady() const = 0;
+ 
+ 	/** @internal
+ 	 * Waits until a read @a elements elements can be guaranteed without
+@@ -231,7 +231,7 @@
+ 	 * @return The number of samples ready. Due to the timing semantics, this
+ 	 * may be an underestimate.
+ 	 */
+-	const uint samplesReady() const { return theType->samples(elementsReady()); }
++	uint samplesReady() const { return theType->samples(elementsReady()); }
+ 
+ 	/**
+ 	 * Read a single sample from the connection. This will block until a sample
+@@ -366,7 +366,7 @@
+ 	 *
+ 	 * @return The number of samples that this buffer can hold at once.
+ 	 */
+-	virtual const uint capacity() const = 0;
++	virtual uint capacity() const = 0;
+ 
+ 	/**
+ 	 * Get the current filled-ness of the buffer.
+@@ -374,7 +374,7 @@
+ 	 * @return 0 if there is no buffer on this side of the connection.
+ 	 * Otherwise return the filledness relative to the size (range 0. to 1.).
+ 	 */
+-	virtual const float filled() const { return 0.; }
++	virtual float filled() const { return 0.; }
+ 
+ 	/**
+ 	 * Simple destructor.
+Only in exscalibar-1.0.4/src/geddei: xlconnection.o
+diff -ru exscalibar-1.0.4_orig/src/geddei/xlconnectionreal.cpp exscalibar-1.0.4/src/geddei/xlconnectionreal.cpp
+--- exscalibar-1.0.4_orig/src/geddei/xlconnectionreal.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/geddei/xlconnectionreal.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -47,7 +47,7 @@
+ 		theReader = new BufferReader(&theBuffer);
+ }
+ 
+-const uint xLConnectionReal::elementsReady() const
++uint xLConnectionReal::elementsReady() const
+ {
+ #ifdef EDEBUG
+ 	if(!theReader)
+@@ -85,7 +85,7 @@
+ */	theSink->checkExit();
+ }
+ 
+-const bool xLConnectionReal::plungeSync(const uint samples) const
++bool xLConnectionReal::plungeSync(const uint samples) const
+ {
+ #ifdef EDEBUG
+ 	if(!theReader)
+diff -ru exscalibar-1.0.4_orig/src/geddei/xlconnectionreal.h exscalibar-1.0.4/src/geddei/xlconnectionreal.h
+--- exscalibar-1.0.4_orig/src/geddei/xlconnectionreal.h	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/geddei/xlconnectionreal.h	2009-02-28 10:10:20.000000000 +0100
+@@ -50,7 +50,7 @@
+ 	virtual void reset() { theBuffer.clear(); }
+ 	virtual void sinkStopping();
+ 	virtual void sinkStopped();
+-	virtual const uint elementsReady() const;
++	virtual uint elementsReady() const;
+ 	virtual void waitForElements(const uint elements) const;
+ 	virtual const BufferData readElements(const uint elements);
+ 	virtual const BufferData peekElements(const uint elements);
+@@ -58,9 +58,9 @@
+ 	virtual BufferReader *newReader() { return new BufferReader(&theBuffer); }
+ 	virtual void killReader();
+ 	virtual void resurectReader();
+-	virtual const uint capacity() const { return theBuffer.size() / theType->scope(); }
+-	virtual const float filled() const { return 1.0 - float(theBuffer.elementsFree()) / float(theBuffer.size()); }
+-	virtual const bool plungeSync(const uint samples) const;
++	virtual uint capacity() const { return theBuffer.size() / theType->scope(); }
++	virtual float filled() const { return 1.0 - float(theBuffer.elementsFree()) / float(theBuffer.size()); }
++	virtual bool plungeSync(const uint samples) const;
+ 	
+ protected:
+ 	friend class BobPort;
+@@ -70,7 +70,7 @@
+ 	/**
+ 	 * Extracts the type from the source end of the connection.
+ 	 */
+-	virtual const bool pullType() = 0;
++	virtual bool pullType() = 0;
+ 
+ 	/**
+ 	 * Simple constructor.
+Only in exscalibar-1.0.4/src/geddei: xlconnectionreal.o
+Only in exscalibar-1.0.4/src/geddei: xscoupling.o
+Only in exscalibar-1.0.4/src/geddei: xxcoupling.o
+diff -ru exscalibar-1.0.4_orig/src/nite/bob.h exscalibar-1.0.4/src/nite/bob.h
+--- exscalibar-1.0.4_orig/src/nite/bob.h	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/nite/bob.h	2009-02-28 10:10:19.000000000 +0100
+@@ -77,7 +77,7 @@
+ 
+ 	bool connectYourself();
+ 	void disconnectYourself();
+-	const bool connected() const { return theProfileTimer != 0; }
++	bool connected() const { return theProfileTimer != 0; }
+ 	virtual void saveYourself(QDomElement &element, QDomDocument &doc);
+ 	virtual void loadYourselfPre(QDomElement &element);
+ 	virtual void loadYourselfPost(QDomElement &element);
+Only in exscalibar-1.0.4/src/nite: bob.o
+diff -ru exscalibar-1.0.4_orig/src/nite/boblink.h exscalibar-1.0.4/src/nite/boblink.h
+--- exscalibar-1.0.4_orig/src/nite/boblink.h	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/nite/boblink.h	2009-02-28 10:10:19.000000000 +0100
+@@ -54,9 +54,9 @@
+ 	void loadYourself(QDomElement &element);
+ 
+ 	void setBufferSize(const uint bufferSize) { theBufferSize = bufferSize; }
+-	const uint bufferSize() { return theBufferSize; }
++	uint bufferSize() { return theBufferSize; }
+ 	void setProximity(const uint proximity) { theProximity = proximity; }
+-	const uint proximity() { return theProximity; }
++	uint proximity() { return theProximity; }
+ 
+ 	BobLink(BobPort *from, BobPort *to);
+ 	~BobLink();
+Only in exscalibar-1.0.4/src/nite: boblink.o
+Only in exscalibar-1.0.4/src/nite: bobport.o
+Only in exscalibar-1.0.4/src/nite: bobsview.o
+diff -ru exscalibar-1.0.4_orig/src/nite/capturer.cpp exscalibar-1.0.4/src/nite/capturer.cpp
+--- exscalibar-1.0.4_orig/src/nite/capturer.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/nite/capturer.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -33,7 +33,7 @@
+ 
+ #include "geddeinite.h"
+ 
+-const bool Capturer::verifyAndSpecifyTypes(QPtrList<SignalType> &, QPtrList<SignalType> &outTypes)
++bool Capturer::verifyAndSpecifyTypes(QPtrList<SignalType> &, QPtrList<SignalType> &outTypes)
+ {
+ 	outTypes.append(new SignalTypes::Wave(44100));
+ 	return true;
+diff -ru exscalibar-1.0.4_orig/src/nite/capturer.h exscalibar-1.0.4/src/nite/capturer.h
+--- exscalibar-1.0.4_orig/src/nite/capturer.h	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/nite/capturer.h	2009-02-28 10:10:19.000000000 +0100
+@@ -34,7 +34,7 @@
+ class Capturer: public Processor
+ {
+ 	virtual void processor();
+-	virtual const bool verifyAndSpecifyTypes(QPtrList<SignalType> &, QPtrList<SignalType> &outTypes);
++	virtual bool verifyAndSpecifyTypes(QPtrList<SignalType> &, QPtrList<SignalType> &outTypes);
+ 	virtual void initFromProperties(const Properties &) { setupIO(0, 2); }
+ 
+ public:
+Only in exscalibar-1.0.4/src/nite: capturer.o
+Only in exscalibar-1.0.4/src/nite: domsoftbob.o
+Only in exscalibar-1.0.4/src/nite: floatinglink.o
+diff -ru exscalibar-1.0.4_orig/src/nite/geddeinite.cpp exscalibar-1.0.4/src/nite/geddeinite.cpp
+--- exscalibar-1.0.4_orig/src/nite/geddeinite.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/nite/geddeinite.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -127,11 +127,12 @@
+ const QString GeddeiNite::makeUniqueName(const QString &type)
+ {
+ 	QString ret = "";
+-	for(int i = 1; theGroup.exists(ret = type + QString().setNum(i)); i++);
++	for(int i = 1; theGroup.exists(ret = type + QString().setNum(i)); i++)
++    ;
+ 	return ret;
+ }
+ 
+-const bool GeddeiNite::bobCollision(Bob *b)
++bool GeddeiNite::bobCollision(Bob *b)
+ {
+ 	for(QPtrList<Bob>::iterator i = theBobs.begin(); i != theBobs.end(); i++)
+ 		if(b->collidesWith(*i) && b != *i)
+@@ -391,7 +392,7 @@
+ 	modeRunAction->setEnabled(theTested);
+ }
+ 
+-const bool GeddeiNite::connectAll()
++bool GeddeiNite::connectAll()
+ {
+ 	bool successful = true;
+ 	theWatch = 0;
+@@ -483,6 +484,8 @@
+ void GeddeiNite::closeEvent(QCloseEvent *e)
+ {
+ 	if(theModified)
+-	;	// TODO: ask if want to save
++  {
++	  ;	// TODO: ask if want to save
++  }
+ 	e->accept();
+ }
+diff -ru exscalibar-1.0.4_orig/src/nite/geddeinite.h exscalibar-1.0.4/src/nite/geddeinite.h
+--- exscalibar-1.0.4_orig/src/nite/geddeinite.h	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/nite/geddeinite.h	2009-02-28 10:10:19.000000000 +0100
+@@ -67,7 +67,7 @@
+ 	void updateItems();
+ 	void doSave(const QString &filename);
+ 	void doLoad(const QString &filename);
+-	const bool connectAll();
++	bool connectAll();
+ 	void disconnectAll();
+ 
+ 	virtual void updateProperties();
+@@ -91,14 +91,14 @@
+ 	void setActive(QCanvasItem *item = NULL);
+ 	void setModified(bool modified = true);
+ 
+-	const int defaultBufferSize() const { return theDefaultBufferSize; }
+-	const bool tested() const { return theTested; }
+-	const bool connected() const { return theConnected; }
++	int defaultBufferSize() const { return theDefaultBufferSize; }
++	bool tested() const { return theTested; }
++	bool connected() const { return theConnected; }
+ 
+ 	ProcessorGroup &group() { return theGroup; }
+ 	WatchProcessor *watch() { return theWatch; }
+ 
+-	const bool bobCollision(Bob *b);
++	bool bobCollision(Bob *b);
+ 	void addBob(Bob *b);
+ 	void removeBob(Bob *b);
+ 	Bob *getBob(const QString &name);
+Only in exscalibar-1.0.4/src/nite: geddeinite.o
+Only in exscalibar-1.0.4/src/nite: geddeinitebase.cpp
+Only in exscalibar-1.0.4/src/nite: geddeinitebase.h
+Only in exscalibar-1.0.4/src/nite: geddeinitebase.o
+Only in exscalibar-1.0.4/src/nite: hardbob.o
+Only in exscalibar-1.0.4/src/nite: main.o
+Only in exscalibar-1.0.4/src/nite: moc_bob.cpp
+Only in exscalibar-1.0.4/src/nite: moc_bob.o
+Only in exscalibar-1.0.4/src/nite: moc_bobport.cpp
+Only in exscalibar-1.0.4/src/nite: moc_bobport.o
+Only in exscalibar-1.0.4/src/nite: moc_bobsview.cpp
+Only in exscalibar-1.0.4/src/nite: moc_bobsview.o
+Only in exscalibar-1.0.4/src/nite: moc_geddeinite.cpp
+Only in exscalibar-1.0.4/src/nite: moc_geddeinite.o
+Only in exscalibar-1.0.4/src/nite: moc_geddeinitebase.cpp
+Only in exscalibar-1.0.4/src/nite: moc_geddeinitebase.o
+Only in exscalibar-1.0.4/src/nite: moc_watchprocessor.cpp
+Only in exscalibar-1.0.4/src/nite: moc_watchprocessor.o
+Only in exscalibar-1.0.4/src/nite: nite
+diff -ru exscalibar-1.0.4_orig/src/nite/player.cpp exscalibar-1.0.4/src/nite/player.cpp
+--- exscalibar-1.0.4_orig/src/nite/player.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/nite/player.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -73,7 +73,7 @@
+ 	}
+ }
+ 
+-const bool Player::verifyAndSpecifyTypes(const SignalTypeRefs &, SignalTypeRefs &outTypes)
++bool Player::verifyAndSpecifyTypes(const SignalTypeRefs &, SignalTypeRefs &outTypes)
+ {
+ 	outTypes = Wave(theRate);
+ 	return true;
+diff -ru exscalibar-1.0.4_orig/src/nite/player.h exscalibar-1.0.4/src/nite/player.h
+--- exscalibar-1.0.4_orig/src/nite/player.h	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/nite/player.h	2009-02-28 10:10:19.000000000 +0100
+@@ -47,7 +47,7 @@
+ 	virtual void paintProcessor(QPainter &p);
+ 	virtual void processor();
+ 	virtual void processorStopped();
+-	virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
++	virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
+ 	virtual void initFromProperties(const Properties &);
+ 	virtual void specifyOutputSpace(QValueVector<uint> &sizes);
+ 
+Only in exscalibar-1.0.4/src/nite: player.o
+Only in exscalibar-1.0.4/src/nite: processorview.o
+Only in exscalibar-1.0.4/src/nite: qmake_image_collection.cpp
+Only in exscalibar-1.0.4/src/nite: qmake_image_collection.o
+Only in exscalibar-1.0.4/src/nite: refresher.o
+Only in exscalibar-1.0.4/src/nite: softbob.o
+diff -ru exscalibar-1.0.4_orig/src/nite/watchprocessor.cpp exscalibar-1.0.4/src/nite/watchprocessor.cpp
+--- exscalibar-1.0.4_orig/src/nite/watchprocessor.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/nite/watchprocessor.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -90,7 +90,7 @@
+ //	else qDebug("-");
+ }
+ 
+-const bool WatchProcessor::verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes)
++bool WatchProcessor::verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes)
+ {
+ 	outTypes[0] = inTypes[0];
+ 	if(inTypes[0].isA<Value>())
+@@ -108,8 +108,8 @@
+ 
+ void WatchProcessor::watchWave()
+ {
+-	const uint width = theWidth, height = theHeight;
+-	const uint widthM1 = width - 1, heightM1 = height - 1;
++	uint width = theWidth, height = theHeight;
++	uint widthM1 = width - 1, heightM1 = height - 1;
+ 	QPainter *p;
+ 	float min = -1, max = 1;
+ 	QTime t;
+@@ -158,9 +158,9 @@
+ void WatchProcessor::watchGraph()
+ {
+ 	QPainter *p;
+-	const uint width = theWidth, height = theHeight;
+-	const uint widthM1 = width - 1, heightM1 = height - 1;
+-	const uint speed = 2;
++	uint width = theWidth, height = theHeight;
++	uint widthM1 = width - 1, heightM1 = height - 1;
++	uint speed = 2;
+ 	int oldy = heightM1;
+ 	float min = 0, max = 1;
+ 
+@@ -193,8 +193,8 @@
+ 
+ void WatchProcessor::watchSpectrograph()
+ {
+-	const uint width = theWidth, height = theHeight;
+-	const uint widthM1 = width - 1/*, heightM1 = height - 1*/;
++	uint width = theWidth, height = theHeight;
++	uint widthM1 = width - 1/*, heightM1 = height - 1*/;
+ 	QPainter *p;
+ 	uint bandWidth = theScope;
+ 	while(true)
+@@ -218,8 +218,8 @@
+ 
+ void WatchProcessor::watchMatrix()
+ {
+-	const uint width = theWidth, height = theHeight;
+-	const uint size = ::min(width, height);
++	uint width = theWidth, height = theHeight;
++	uint size = ::min(width, height);
+ 	QPainter *p;
+ 	uint bandWidth = uint(sqrt(double(theScope)));
+ 
+@@ -252,8 +252,8 @@
+ 
+ void WatchProcessor::watchSpectrum()
+ {
+-	const uint width = theWidth, height = theHeight;
+-	const uint heightM1 = height - 1;
++	uint width = theWidth, height = theHeight;
++	uint heightM1 = height - 1;
+ 	QPainter *p;
+ 	cin.get();
+ 	while(true)
+diff -ru exscalibar-1.0.4_orig/src/nite/watchprocessor.h exscalibar-1.0.4/src/nite/watchprocessor.h
+--- exscalibar-1.0.4_orig/src/nite/watchprocessor.h	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/nite/watchprocessor.h	2009-02-28 10:10:19.000000000 +0100
+@@ -70,7 +70,7 @@
+ 	void watchMatrix();
+ 
+ 	virtual void processor();
+-	virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
++	virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
+ 	virtual void initFromProperties(const Properties &) { setupIO(1, 1); }
+ 	virtual void specifyInputSpace(QValueVector<uint> &samples);
+ 	virtual void specifyOutputSpace(QValueVector<uint> &samples) { specifyInputSpace(samples); }
+Only in exscalibar-1.0.4/src/nite: watchprocessor.o
+diff -ru exscalibar-1.0.4_orig/src/processors/example/add.cpp exscalibar-1.0.4/src/processors/example/add.cpp
+--- exscalibar-1.0.4_orig/src/processors/example/add.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/processors/example/add.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -22,7 +22,7 @@
+ {
+ 	int count;
+ 	virtual void processor();
+-	virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
++	virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
+ 	virtual void initFromProperties(const Properties &properties);
+ public:
+ 	Add() : Processor("Add") {}
+@@ -45,7 +45,7 @@
+ 	}
+ }
+ 
+-const bool Add::verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes)
++bool Add::verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes)
+ {
+ 	if(!inTypes.allSame()) return false;
+ 	outTypes[0] = inTypes[0];
+Only in exscalibar-1.0.4/src/processors/example: add.o
+Only in exscalibar-1.0.4/src/processors/example: example.o
+Only in exscalibar-1.0.4/src/processors/example: libexample.so
+diff -ru exscalibar-1.0.4_orig/src/processors/example/multiply.cpp exscalibar-1.0.4/src/processors/example/multiply.cpp
+--- exscalibar-1.0.4_orig/src/processors/example/multiply.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/processors/example/multiply.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -22,7 +22,7 @@
+ {
+ 	int count;
+ 	virtual void processor();
+-	virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
++	virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
+ 	virtual void initFromProperties(const Properties &properties);
+ public:
+ 	Multiply() : Processor("Multiply") {}
+@@ -44,7 +44,7 @@
+ 	}
+ }
+ 
+-const bool Multiply::verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes)
++bool Multiply::verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes)
+ {
+ 	if(!inTypes.allSame()) return false;
+ 	outTypes[0] = inTypes[0];
+Only in exscalibar-1.0.4/src/processors/example: multiply.o
+diff -ru exscalibar-1.0.4_orig/src/processors/example/sink.cpp exscalibar-1.0.4/src/processors/example/sink.cpp
+--- exscalibar-1.0.4_orig/src/processors/example/sink.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/processors/example/sink.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -23,7 +23,7 @@
+ protected:
+ 	virtual void processor();
+ 	virtual void initFromProperties(const Properties &props);
+-	virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &/*inTypes*/, SignalTypeRefs &/*outTypes*/) { return true; }
++	virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &/*inTypes*/, SignalTypeRefs &/*outTypes*/) { return true; }
+ public:
+ 	SignalSink() : Processor("SignalSink") {}
+ };
+Only in exscalibar-1.0.4/src/processors/example: sink.o
+diff -ru exscalibar-1.0.4_orig/src/processors/example/split.cpp exscalibar-1.0.4/src/processors/example/split.cpp
+--- exscalibar-1.0.4_orig/src/processors/example/split.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/processors/example/split.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -21,7 +21,7 @@
+ class Split : public Processor
+ {
+ 	virtual void processor();
+-	virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
++	virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
+ 	virtual void initFromProperties(const Properties &properties);
+ public:
+ 	Split() : Processor("Split", Out, Guarded) {}
+@@ -42,7 +42,7 @@
+ 	}
+ }
+ 
+-const bool Split::verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes)
++bool Split::verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes)
+ {
+ 	outTypes = inTypes[0];
+ 	return true;
+Only in exscalibar-1.0.4/src/processors/example: split.o
+diff -ru exscalibar-1.0.4_orig/src/processors/example/template.cpp exscalibar-1.0.4/src/processors/example/template.cpp
+--- exscalibar-1.0.4_orig/src/processors/example/template.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/processors/example/template.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -29,7 +29,7 @@
+ 
+ 	virtual void processor();
+ 	virtual void processorStopped();
+-	virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
++	virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
+ 	virtual PropertiesInfo specifyProperties() const;
+ 	virtual void initFromProperties(const Properties &properties);
+ 
+@@ -51,7 +51,7 @@
+ 	// TODO: Deinitialisations.
+ }
+ 
+-const bool Template::verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes)
++bool Template::verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes)
+ {
+ 	// TODO: Check input types and return correct output types.
+ 	// Don't forget to make copy()s!
+diff -ru exscalibar-1.0.4_orig/src/processors/marsyas/marsyasprocessor.cpp exscalibar-1.0.4/src/processors/marsyas/marsyasprocessor.cpp
+--- exscalibar-1.0.4_orig/src/processors/marsyas/marsyasprocessor.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/processors/marsyas/marsyasprocessor.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -117,7 +117,7 @@
+ 	setupIO(theNumInputs, theNumOutputs);
+ }
+ 
+-const bool MarsyasProcessor::verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes)
++bool MarsyasProcessor::verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes)
+ {
+ 	if(theNumInputs)
+ 	{	theSystem->updctrl("natural/inObservations", (long)inTypes[0]->scope());
+diff -ru exscalibar-1.0.4_orig/src/processors/marsyas/marsyasprocessor.h exscalibar-1.0.4/src/processors/marsyas/marsyasprocessor.h
+--- exscalibar-1.0.4_orig/src/processors/marsyas/marsyasprocessor.h	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/processors/marsyas/marsyasprocessor.h	2009-02-28 10:10:19.000000000 +0100
+@@ -27,7 +27,7 @@
+ 	unsigned theNumInputs, theNumOutputs;
+ 
+ 	virtual void processor();
+-	virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
++	virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
+ 	virtual void initFromProperties(const Properties &properties);
+ 	virtual PropertiesInfo specifyProperties() const;
+ 
+diff -ru exscalibar-1.0.4_orig/src/processors/math/exp.cpp exscalibar-1.0.4/src/processors/math/exp.cpp
+--- exscalibar-1.0.4_orig/src/processors/math/exp.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/processors/math/exp.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -30,7 +30,7 @@
+ 	uint theSize;
+ 
+ 	virtual void processChunk(const BufferDatas &in, BufferDatas &out) const;
+-	virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
++	virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
+ 	virtual void initFromProperties(const Properties &/*properties*/) { setupIO(1, 1, 1, 1, 1); }
+ 
+ public:
+@@ -43,7 +43,7 @@
+ 		outs[0][i] = exp(ins[0][i]);
+ }
+ 
+-const bool Exp::verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes)
++bool Exp::verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes)
+ {
+ 	outTypes[0] = inTypes[0];
+ 	theSize = inTypes[0].scope();
+Only in exscalibar-1.0.4/src/processors/math: exp.o
+Only in exscalibar-1.0.4/src/processors/math: libmath.so
+diff -ru exscalibar-1.0.4_orig/src/processors/math/log.cpp exscalibar-1.0.4/src/processors/math/log.cpp
+--- exscalibar-1.0.4_orig/src/processors/math/log.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/processors/math/log.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -30,7 +30,7 @@
+ 	uint theSize;
+ 
+ 	virtual void processChunk(const BufferDatas &in, BufferDatas &out) const;
+-	virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
++	virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
+ 	virtual void initFromProperties(const Properties &/*properties*/) { setupIO(1, 1, 1, 1, 1); }
+ 
+ public:
+@@ -43,7 +43,7 @@
+ 		outs[0][i] = log(ins[0][i]);
+ }
+ 
+-const bool Log::verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes)
++bool Log::verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes)
+ {
+ 	outTypes[0] = inTypes[0];
+ 	theSize = inTypes[0].scope();
+Only in exscalibar-1.0.4/src/processors/math: log.o
+diff -ru exscalibar-1.0.4_orig/src/processors/math/magnitude.cpp exscalibar-1.0.4/src/processors/math/magnitude.cpp
+--- exscalibar-1.0.4_orig/src/processors/math/magnitude.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/processors/math/magnitude.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -29,7 +29,7 @@
+ class Magnitude: public SubProcessor
+ {
+ 	virtual void initFromProperties(const Properties &);
+-	virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &in, SignalTypeRefs &out);
++	virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &in, SignalTypeRefs &out);
+ 	virtual void processChunk(const BufferDatas &in, BufferDatas &out) const;
+ 	
+ public:
+@@ -45,7 +45,7 @@
+ 	setupIO(1, 1, 1, 1, 1);
+ }
+ 
+-const bool Magnitude::verifyAndSpecifyTypes(const SignalTypeRefs &in, SignalTypeRefs &out)
++bool Magnitude::verifyAndSpecifyTypes(const SignalTypeRefs &in, SignalTypeRefs &out)
+ {
+ 	if(!in[0].isA<Spectrum>()) return false;
+ 	out = Value(in[0].frequency());
+Only in exscalibar-1.0.4/src/processors/math: magnitude.o
+Only in exscalibar-1.0.4/src/processors/math: math.o
+diff -ru exscalibar-1.0.4_orig/src/processors/math/mean.cpp exscalibar-1.0.4/src/processors/math/mean.cpp
+--- exscalibar-1.0.4_orig/src/processors/math/mean.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/processors/math/mean.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -27,7 +27,7 @@
+ 	uint theSize;
+ 
+ 	virtual void processChunks(const BufferDatas &in, BufferDatas &out, const uint chunks) const;
+-	virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
++	virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
+ 	virtual void initFromProperties(const Properties &) { setupIO(Undefined, 1, 1, 1, 1); }
+ 
+ public:
+@@ -45,7 +45,7 @@
+ 				outs[0](c, j) += ins[i](c, j) / float(multiplicity());
+ }
+ 
+-const bool Mean::verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes)
++bool Mean::verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes)
+ {
+ 	outTypes[0] = inTypes[0];
+ 	theSize = inTypes[0].scope();
+Only in exscalibar-1.0.4/src/processors/math: mean.o
+diff -ru exscalibar-1.0.4_orig/src/processors/math/normalise.cpp exscalibar-1.0.4/src/processors/math/normalise.cpp
+--- exscalibar-1.0.4_orig/src/processors/math/normalise.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/processors/math/normalise.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -33,7 +33,7 @@
+ 	
+ 	virtual PropertiesInfo specifyProperties() const;
+ 	virtual void initFromProperties(const Properties &);
+-	virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &in, SignalTypeRefs &out);
++	virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &in, SignalTypeRefs &out);
+ 	virtual void specifyOutputSpace(QValueVector<uint> &out);
+ 	virtual void processor();
+ 	virtual void receivedPlunger();
+@@ -57,7 +57,7 @@
+ 	setupIO(1, 1);
+ }
+ 
+-const bool Normalise::verifyAndSpecifyTypes(const SignalTypeRefs &in, SignalTypeRefs &out)
++bool Normalise::verifyAndSpecifyTypes(const SignalTypeRefs &in, SignalTypeRefs &out)
+ {
+ 	if(in[0].scope() != 1) return false;
+ 	out = in[0];
+@@ -93,16 +93,20 @@
+ 		{ avg += f[i] / float(f.size()); t++; }
+ 	for(uint i = 0; i < f.size(); i++)
+ 		if(f[i] != mini && f[i] != maxi)
++    {
+ 			if(f[i] > avg) { avgu += f[i]; tu++; }
+ 			else { avgb += f[i]; tb++; }
++    }
+ 	avgu /= float(tu);
+ 	avgb /= float(tb);
+ 	float avguu = 0., avgbb = 0.;
+ 	tu = 0.; tb = 0.;
+ 	for(uint i = 0; i < f.size(); i++)
+ 		if(f[i] != mini && f[i] != maxi)
++    {
+ 			if(f[i] > avgu) { avguu += f[i]; tu++; }
+ 			else if(f[i] < avgb) { avgbb += f[i]; tb++; }
++    }
+ 	avguu /= float(tu);
+ 	avgbb /= float(tb);
+ 	mini = max(avg + (avgb - avg) * 2.f, avgbb);
+Only in exscalibar-1.0.4/src/processors/math: normalise.o
+diff -ru exscalibar-1.0.4_orig/src/processors/math/sum.cpp exscalibar-1.0.4/src/processors/math/sum.cpp
+--- exscalibar-1.0.4_orig/src/processors/math/sum.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/processors/math/sum.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -29,7 +29,7 @@
+ class Sum: public SubProcessor
+ {
+ 	virtual void initFromProperties (const Properties &);
+-	virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
++	virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
+ 	virtual void processChunk(const BufferDatas &ins, BufferDatas &outs) const;
+ public:
+ 	Sum();
+@@ -44,7 +44,7 @@
+ 	setupIO(1, 1, 1, 1, 1);
+ }
+ 
+-const bool Sum::verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes)
++bool Sum::verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes)
+ {
+ 	outTypes = Value(inTypes[0].frequency());
+ 	return true;
+Only in exscalibar-1.0.4/src/processors/math: sum.o
+diff -ru exscalibar-1.0.4_orig/src/processors/mir/bark.cpp exscalibar-1.0.4/src/processors/mir/bark.cpp
+--- exscalibar-1.0.4_orig/src/processors/mir/bark.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/processors/mir/bark.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -26,7 +26,7 @@
+ 	uint theBins[24], bandWidth;
+ 
+ 	virtual void processChunk(const BufferDatas &in, BufferDatas &out) const;
+-	virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
++	virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
+ 	virtual void initFromProperties(const Properties &properties);
+ 
+ public:
+@@ -45,7 +45,7 @@
+ 	}
+ }
+ 
+-const bool Bark::verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes)
++bool Bark::verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes)
+ {
+ 	// TODO: should only take a "stepped spectrum" in.
+ 	if(!inTypes[0].isA<Spectrum>()) return false;
+Only in exscalibar-1.0.4/src/processors/mir: bark.o
+diff -ru exscalibar-1.0.4_orig/src/processors/mir/cepstrum.cpp exscalibar-1.0.4/src/processors/mir/cepstrum.cpp
+--- exscalibar-1.0.4_orig/src/processors/mir/cepstrum.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/processors/mir/cepstrum.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -40,7 +40,7 @@
+ 	float *theIn, *theOut;
+ 
+ 	virtual void processChunk(const BufferDatas &in, BufferDatas &out) const;
+-	virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
++	virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
+ 	virtual void initFromProperties(const Properties &properties);
+ 	virtual PropertiesInfo specifyProperties() const
+ 	{
+@@ -70,7 +70,7 @@
+ 	if(thePlan) fftwf_destroy_plan(thePlan);
+ }
+ 
+-const bool Cepstrum::verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes)
++bool Cepstrum::verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes)
+ {
+ 	if(!inTypes[0].isA<Spectrum>()) return false;
+ 	const Spectrum &s = inTypes[0].asA<Spectrum>();
+@@ -106,7 +106,7 @@
+ 	uint theSize;
+ 
+ 	virtual void processChunk(const BufferDatas &in, BufferDatas &out) const;
+-	virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
++	virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
+ 	virtual void initFromProperties(const Properties &properties);
+ 
+ public:
+@@ -128,7 +128,7 @@
+ 	}
+ }
+ 
+-const bool Cepstrum::verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes)
++bool Cepstrum::verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes)
+ {
+ 	if(!inTypes[0].isA<Spectrum>()) return false;
+ 	const Spectrum &s = inTypes[0].asA<Spectrum>();
+Only in exscalibar-1.0.4/src/processors/mir: cepstrum.o
+diff -ru exscalibar-1.0.4_orig/src/processors/mir/checkerboard.cpp exscalibar-1.0.4/src/processors/mir/checkerboard.cpp
+--- exscalibar-1.0.4_orig/src/processors/mir/checkerboard.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/processors/mir/checkerboard.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -35,7 +35,7 @@
+ 
+ 	virtual void processor();
+ 	virtual void processorStopped();
+-	virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
++	virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
+ 	virtual PropertiesInfo specifyProperties() const;
+ 	virtual void initFromProperties(const Properties &properties);
+ 
+@@ -48,7 +48,7 @@
+ 	theBoard = 0;
+ }
+ 
+-inline const float sqr(const float a) { return a * a; }
++inline float sqr(const float a) { return a * a; }
+ 
+ void Checkerboard::processor()
+ {
+@@ -81,7 +81,7 @@
+ 	delete [] theBoard;
+ }
+ 
+-const bool Checkerboard::verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes)
++bool Checkerboard::verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes)
+ {
+ 	if(!inTypes[0].isA<SquareMatrix>()) return false;
+ 	theSize = inTypes[0].asA<SquareMatrix>().size();
+Only in exscalibar-1.0.4/src/processors/mir: checkerboard.o
+diff -ru exscalibar-1.0.4_orig/src/processors/mir/crosssimilarity.cpp exscalibar-1.0.4/src/processors/mir/crosssimilarity.cpp
+--- exscalibar-1.0.4_orig/src/processors/mir/crosssimilarity.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/processors/mir/crosssimilarity.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -28,7 +28,7 @@
+ 	int theScope, theCount;
+ 
+ 	virtual void processChunk(const BufferDatas &in, BufferDatas &out) const;
+-	virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
++	virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
+ 	virtual void initFromProperties(const Properties &/*properties*/) { setupIO(Undefined, 1, 1, 1, 1); }
+ 
+ public:
+@@ -45,7 +45,7 @@
+ 		}
+ }
+ 
+-const bool CrossSimilarity::verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes)
++bool CrossSimilarity::verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes)
+ {
+ 	theScope = inTypes[0].scope();
+ 	theCount = multiplicity();
+Only in exscalibar-1.0.4/src/processors/mir: crosssimilarity.o
+diff -ru exscalibar-1.0.4_orig/src/processors/mir/cutoff.cpp exscalibar-1.0.4/src/processors/mir/cutoff.cpp
+--- exscalibar-1.0.4_orig/src/processors/mir/cutoff.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/processors/mir/cutoff.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -30,7 +30,7 @@
+ 	uint theFrom, theTo, theSize;
+ 
+ 	virtual void processChunks(const BufferDatas &in, BufferDatas &out, const uint chunks) const;
+-	virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
++	virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
+ 	virtual PropertiesInfo specifyProperties() const;
+ 	virtual void initFromProperties(const Properties &properties);
+ 
+@@ -46,7 +46,7 @@
+ 		outs[0].sample(i).copyFrom(ins[0].mid(i * theSize + theFrom, theTo - theFrom));
+ }
+ 
+-const bool CutOff::verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes)
++bool CutOff::verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes)
+ {
+ 	if(!inTypes[0].isA<Spectrum>()) return false;
+ 	const Spectrum &s = inTypes[0].asA<Spectrum>();
+Only in exscalibar-1.0.4/src/processors/mir: cutoff.o
+diff -ru exscalibar-1.0.4_orig/src/processors/mir/diagonalsum.cpp exscalibar-1.0.4/src/processors/mir/diagonalsum.cpp
+--- exscalibar-1.0.4_orig/src/processors/mir/diagonalsum.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/processors/mir/diagonalsum.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -26,13 +26,13 @@
+ 	uint theSize, theBandwidth;
+ 
+ 	virtual void processChunk(const BufferDatas &in, BufferDatas &out) const;
+-	virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
++	virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
+ 	virtual void initFromProperties(const Properties &/*properties*/) { setupIO(1, 1, 1, 1, 1); }
+ public:
+ 	DiagonalSum() : SubProcessor("DiagonalSum") {}
+ };
+ 
+-const bool DiagonalSum::verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes)
++bool DiagonalSum::verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes)
+ {
+ 	if(!inTypes[0].isA<SquareMatrix>()) return false;
+ 	theSize = inTypes[0].asA<SquareMatrix>().size();
+Only in exscalibar-1.0.4/src/processors/mir: diagonalsum.o
+diff -ru exscalibar-1.0.4_orig/src/processors/mir/downsample.cpp exscalibar-1.0.4/src/processors/mir/downsample.cpp
+--- exscalibar-1.0.4_orig/src/processors/mir/downsample.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/processors/mir/downsample.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -25,7 +25,7 @@
+ 	uint theConsolidate;
+ 
+ 	virtual void processChunks(const BufferDatas &in, BufferDatas &out, const uint chunks) const;
+-	virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
++	virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
+ 	virtual PropertiesInfo specifyProperties() const;
+ 	virtual void initFromProperties(const Properties &properties);
+ 
+@@ -67,7 +67,7 @@
+ 	}
+ }
+ 
+-const bool DownSample::verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes)
++bool DownSample::verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes)
+ {
+ 	theScope = inTypes[0].scope();
+ 	outTypes = inTypes[0];
+Only in exscalibar-1.0.4/src/processors/mir: downsample.o
+diff -ru exscalibar-1.0.4_orig/src/processors/mir/fft.cpp exscalibar-1.0.4/src/processors/mir/fft.cpp
+--- exscalibar-1.0.4_orig/src/processors/mir/fft.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/processors/mir/fft.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -40,7 +40,7 @@
+ 	virtual void processChunk(const BufferDatas &in, BufferDatas &out) const;
+ 	virtual PropertiesInfo specifyProperties() const;
+ 	virtual void initFromProperties(const Properties &p);
+-	virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
++	virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
+ public:
+ 	FFT() : SubProcessor("FFT") {}
+ 	~FFT();
+@@ -87,7 +87,7 @@
+ 	float *real, *imag;
+ 
+ 	virtual void processChunk(const BufferDatas &in, BufferDatas &out) const;
+-	virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
++	virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
+ 	virtual PropertiesInfo specifyProperties() const;
+ 	virtual void initFromProperties(const Properties &properties);
+ 
+@@ -195,7 +195,7 @@
+ 
+ #endif
+ 
+-const bool FFT::verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes)
++bool FFT::verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes)
+ {
+ 	if(!inTypes[0].isA<Wave>()) return false;
+ 	// TODO: should output a "stepped spectrum".
+Only in exscalibar-1.0.4/src/processors/mir: fft.o
+Only in exscalibar-1.0.4/src/processors/mir: libmir.so
+diff -ru exscalibar-1.0.4_orig/src/processors/mir/mfcc.cpp exscalibar-1.0.4/src/processors/mir/mfcc.cpp
+--- exscalibar-1.0.4_orig/src/processors/mir/mfcc.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/processors/mir/mfcc.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -32,7 +32,7 @@
+ 	uint theMarkers[BINS + 2], bandWidth;
+ 
+ 	virtual void processChunk(const BufferDatas &in, BufferDatas &out) const;
+-	virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
++	virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
+ 	virtual void initFromProperties(const Properties &properties);
+ 
+ public:
+@@ -61,10 +61,10 @@
+ 	}
+ }
+ 
+-const float toMel(const float hertz) { return 1127.01048 * log(1.0 + hertz / 700.0); }
+-const float toHertz(const float mel) { return 700.0 * (exp(mel / 1127.01048 - 1.0)); }
++float toMel(const float hertz) { return 1127.01048 * log(1.0 + hertz / 700.0); }
++float toHertz(const float mel) { return 700.0 * (exp(mel / 1127.01048 - 1.0)); }
+ 
+-const bool MFCC::verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes)
++bool MFCC::verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes)
+ {
+ 	// TODO: should only take a "stepped spectrum" in.
+ 	if(!inTypes[0].isA<Spectrum>()) return false;
+Only in exscalibar-1.0.4/src/processors/mir: mfcc.o
+Only in exscalibar-1.0.4/src/processors/mir: mir.o
+diff -ru exscalibar-1.0.4_orig/src/processors/mir/selfsimilarity.cpp exscalibar-1.0.4/src/processors/mir/selfsimilarity.cpp
+--- exscalibar-1.0.4_orig/src/processors/mir/selfsimilarity.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/processors/mir/selfsimilarity.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -32,7 +32,7 @@
+ 
+ 	virtual void processChunks(const BufferDatas &in, BufferDatas &out, const uint chunks) const;
+ 	virtual void initFromProperties(const Properties &properties);
+-	virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
++	virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
+ 	virtual PropertiesInfo specifyProperties() const;
+ 
+ public:
+@@ -82,7 +82,7 @@
+ 	}
+ }
+ 
+-const bool SelfSimilarity::verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes)
++bool SelfSimilarity::verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes)
+ {
+ 	if(!inTypes[0].isA<Spectrum>()) return false;
+ 	outTypes[0] = SquareMatrix(theSize, inTypes[0].frequency() / theStep, inTypes[0].frequency());
+Only in exscalibar-1.0.4/src/processors/mir: selfsimilarity.o
+diff -ru exscalibar-1.0.4_orig/src/processors/mir/similarity.cpp exscalibar-1.0.4/src/processors/mir/similarity.cpp
+--- exscalibar-1.0.4_orig/src/processors/mir/similarity.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/processors/mir/similarity.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -31,7 +31,7 @@
+ 
+ protected:
+ 	virtual void processor();
+-	virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
++	virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
+ 	virtual PropertiesInfo specifyProperties() const;
+ 	virtual void initFromProperties(const Properties &properties);
+ 	virtual void specifyInputSpace(QValueVector<uint> &samples) { samples[0] = theSize; }
+@@ -86,7 +86,7 @@
+ 	}
+ }
+ 
+-const bool Similarity::verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes)
++bool Similarity::verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes)
+ {
+ 	if(!inTypes[0].isA<Spectrum>()) return false;
+ 	outTypes[0] = SquareMatrix(theSize, inTypes[0].frequency() / theStep, inTypes[0].frequency());
+Only in exscalibar-1.0.4/src/processors/mir: similarity.o
+diff -ru exscalibar-1.0.4_orig/src/processors/mir/simplesplit.cpp exscalibar-1.0.4/src/processors/mir/simplesplit.cpp
+--- exscalibar-1.0.4_orig/src/processors/mir/simplesplit.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/processors/mir/simplesplit.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -28,7 +28,7 @@
+ 	int theWidth;
+ 
+ 	virtual void processChunk(const BufferDatas &in, BufferDatas &out) const;
+-	virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
++	virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
+ 	virtual void initFromProperties(const Properties &properties);
+ 
+ public:
+@@ -45,7 +45,7 @@
+ 		out[i].copyFrom(in[0].mid(i * theWidth, theWidth));
+ }
+ 
+-const bool SimpleSplit::verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes)
++bool SimpleSplit::verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes)
+ {
+ 	if(!inTypes[0].isA<Spectrum>()) return false;
+ 	Spectrum s = inTypes[0].asA<Spectrum>();
+Only in exscalibar-1.0.4/src/processors/mir: simplesplit.o
+diff -ru exscalibar-1.0.4_orig/src/processors/mir/wavegen.cpp exscalibar-1.0.4/src/processors/mir/wavegen.cpp
+--- exscalibar-1.0.4_orig/src/processors/mir/wavegen.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/processors/mir/wavegen.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -30,7 +30,7 @@
+ 	int theChunk, theChunksPerPlunge, theStopAfterChunks;
+ 
+ 	virtual void processor();
+-	virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
++	virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
+ 	virtual void initFromProperties(const Properties &properties);
+ 	virtual PropertiesInfo specifyProperties() const;
+ 	virtual void specifyOutputSpace(QValueVector<uint> &samples);
+@@ -58,7 +58,7 @@
+ 	}
+ }
+ 
+-const bool WaveGen::verifyAndSpecifyTypes(const SignalTypeRefs &, SignalTypeRefs &outTypes)
++bool WaveGen::verifyAndSpecifyTypes(const SignalTypeRefs &, SignalTypeRefs &outTypes)
+ {
+ 	outTypes[0] = Wave(theRate);
+ 	return true;
+Only in exscalibar-1.0.4/src/processors/mir: wavegen.o
+diff -ru exscalibar-1.0.4_orig/src/processors/toolkit/alsacapturer.cpp exscalibar-1.0.4/src/processors/toolkit/alsacapturer.cpp
+--- exscalibar-1.0.4_orig/src/processors/toolkit/alsacapturer.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/processors/toolkit/alsacapturer.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -41,13 +41,13 @@
+ class ALSACapturer: public Processor
+ {
+ 	virtual void processor();
+-	virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
++	virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
+ 	virtual void initFromProperties(const Properties &) { setupIO(0, 2); }
+ public:
+ 	ALSACapturer() : Processor("ALSACapturer") {}
+ };
+ 
+-const bool ALSACapturer::verifyAndSpecifyTypes(const SignalTypeRefs &, SignalTypeRefs &outTypes)
++bool ALSACapturer::verifyAndSpecifyTypes(const SignalTypeRefs &, SignalTypeRefs &outTypes)
+ {
+ 	outTypes[0] = Wave(44100.0);
+ 	outTypes[1] = Wave(44100.0);
+Only in exscalibar-1.0.4/src/processors/toolkit: alsacapturer.o
+diff -ru exscalibar-1.0.4_orig/src/processors/toolkit/dumper.cpp exscalibar-1.0.4/src/processors/toolkit/dumper.cpp
+--- exscalibar-1.0.4_orig/src/processors/toolkit/dumper.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/processors/toolkit/dumper.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -31,7 +31,7 @@
+ 	QFile theOut;
+ 	
+ 	virtual void initFromProperties(const Properties &p);
+-	virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &, SignalTypeRefs &);
++	virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &, SignalTypeRefs &);
+ 	virtual void processor();
+ 	virtual void processorStopped();
+ 	
+@@ -49,7 +49,7 @@
+ 	setupIO(Undefined, 0);
+ }
+ 
+-const bool Dumper::verifyAndSpecifyTypes(const SignalTypeRefs &, SignalTypeRefs &)
++bool Dumper::verifyAndSpecifyTypes(const SignalTypeRefs &, SignalTypeRefs &)
+ {
+ 	return true;
+ }
+Only in exscalibar-1.0.4/src/processors/toolkit: dumper.o
+diff -ru exscalibar-1.0.4_orig/src/processors/toolkit/fan.cpp exscalibar-1.0.4/src/processors/toolkit/fan.cpp
+--- exscalibar-1.0.4_orig/src/processors/toolkit/fan.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/processors/toolkit/fan.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -29,7 +29,7 @@
+ class Fan: public SubProcessor
+ {
+ 	virtual void initFromProperties (const Properties &);
+-	virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
++	virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
+ 	virtual void processChunk(const BufferDatas &ins, BufferDatas &outs) const;
+ 
+ public:
+@@ -45,7 +45,7 @@
+ 	setupIO(1, Undefined, 1, 1, 1);
+ }
+ 
+-const bool Fan::verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes)
++bool Fan::verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes)
+ {
+ 	if(!inTypes[0].isA<Spectrum>()) return false;
+ 	for(uint i = 0; i < outTypes.count(); i++)
+@@ -68,7 +68,7 @@
+ 	QValueVector<uint> theBands;
+ 	virtual PropertiesInfo specifyProperties() const { return PropertiesInfo("Band0", 8, "")("Band1", 8, "")("Band2", 8, ""); }
+ 	virtual void initFromProperties (const Properties &p) { setupIO(1, 3, 1, 1, 1); theBands.resize(3); theBands[0] = p["Band0"].toInt(); theBands[1] = p["Band1"].toInt(); theBands[2] = p["Band2"].toInt(); }
+-	virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes)
++	virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes)
+ 	{
+ 		if(!inTypes[0].isA<Spectrum>()) return false;
+ 		for(uint i = 0; i < theBands.count(); i++)
+Only in exscalibar-1.0.4/src/processors/toolkit: fan.o
+diff -ru exscalibar-1.0.4_orig/src/processors/toolkit/jackcapturer.cpp exscalibar-1.0.4/src/processors/toolkit/jackcapturer.cpp
+--- exscalibar-1.0.4_orig/src/processors/toolkit/jackcapturer.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/processors/toolkit/jackcapturer.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -79,8 +79,8 @@
+ 	
+ 	virtual PropertiesInfo specifyProperties() const;
+ 	virtual void initFromProperties(const Properties &p);
+-	virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &, SignalTypeRefs &out);
+-	virtual const bool processorStarted();
++	virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &, SignalTypeRefs &out);
++	virtual bool processorStarted();
+ 	virtual void processor();
+ 	virtual void processorStopped();
+ 	virtual void specifyOutputSpace(QValueVector<uint> &samples);
+@@ -110,13 +110,13 @@
+ 	}
+ }
+ 
+-const bool JackCapturer::verifyAndSpecifyTypes(const SignalTypeRefs &, SignalTypeRefs &out)
++bool JackCapturer::verifyAndSpecifyTypes(const SignalTypeRefs &, SignalTypeRefs &out)
+ {
+ 	out = Wave(theFreq);
+ 	return true;
+ }
+ 
+-const bool JackCapturer::processorStarted()
++bool JackCapturer::processorStarted()
+ {
+ 	if(!numOutputs()) return false;
+ 	theBuffer.nullify();
+Only in exscalibar-1.0.4/src/processors/toolkit: jackcapturer.o
+Only in exscalibar-1.0.4/src/processors/toolkit: libtoolkit.so
+diff -ru exscalibar-1.0.4_orig/src/processors/toolkit/monitor.cpp exscalibar-1.0.4/src/processors/toolkit/monitor.cpp
+--- exscalibar-1.0.4_orig/src/processors/toolkit/monitor.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/processors/toolkit/monitor.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -71,7 +71,7 @@
+ 	thePlunge.wakeAll();
+ }
+ 
+-const bool Monitor::processorStarted()
++bool Monitor::processorStarted()
+ {
+ 	thePlungersCaught = 0;
+ 	return true;
+@@ -87,7 +87,7 @@
+ 	samples[0] = input(0).capacity() / 2;
+ }
+ 
+-const bool Monitor::verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes)
++bool Monitor::verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes)
+ {
+ 	outTypes[0] = inTypes[0];
+ 	theScope = inTypes[0].scope();
+diff -ru exscalibar-1.0.4_orig/src/processors/toolkit/monitor.h exscalibar-1.0.4/src/processors/toolkit/monitor.h
+--- exscalibar-1.0.4_orig/src/processors/toolkit/monitor.h	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/processors/toolkit/monitor.h	2009-02-28 10:10:19.000000000 +0100
+@@ -47,10 +47,10 @@
+  */
+ class Monitor: public Processor
+ {
+-	virtual const bool processorStarted();
++	virtual bool processorStarted();
+ 	virtual void processor();
+ 	virtual void processorStopped();
+-	virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
++	virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
+ 	virtual void initFromProperties(const Properties &properties);
+ 	virtual void receivedPlunger();
+ 	virtual void specifyOutputSpace(QValueVector<uint> &samples);
+@@ -73,28 +73,28 @@
+ 	 * @return The number of bits that flowed through this processor per
+ 	 * (real time) second.
+ 	 */
+-	const double averageThroughput() { return double(elementsProcessed() * 32) / theTotalTime; }
++	double averageThroughput() { return double(elementsProcessed() * 32) / theTotalTime; }
+ 	
+ 	/**
+ 	 * Determine time elapsed between go() and stop().
+ 	 * 
+ 	 * @return The number of seconds elapsed between go() and stop().
+ 	 */
+-	const double elapsedTime() { return theTotalTime; }
++	double elapsedTime() { return theTotalTime; }
+ 	
+ 	/**
+ 	 * Determine the number of (32-bit) elements that flowed through this object.
+ 	 * 
+ 	 * @return The total number of elements to flow through this object.
+ 	 */
+-	const uint elementsProcessed() { return theTotalSamples * theScope; }
++	uint elementsProcessed() { return theTotalSamples * theScope; }
+ 	
+ 	/**
+ 	 * Determine the number of samples that flowed through this object.
+ 	 * 
+ 	 * @return The total number of samples to flow through this object.
+ 	 */
+-	const uint samplesProcessed() { return theTotalSamples; }
++	uint samplesProcessed() { return theTotalSamples; }
+ 	
+ 	/**
+ 	 * Determine the total amount of signal time to flow through this object.
+@@ -102,7 +102,7 @@
+ 	 * @return the amount of signal, measured in seconds, that flowed through
+ 	 * this object.
+ 	 */
+-	const double signalProcessed() { return double(theTotalSamples) / theFrequency; }
++	double signalProcessed() { return double(theTotalSamples) / theFrequency; }
+ 	
+ 	/**
+ 	 * Determine how many times faster than realtime the signal flowed through
+@@ -112,7 +112,7 @@
+ 	 * 
+ 	 * @return The number of times faster than real the signal was processed.
+ 	 */
+-	const double timesFasterThanReal() { return signalProcessed() / theTotalTime; }
++	double timesFasterThanReal() { return signalProcessed() / theTotalTime; }
+ 	
+ 	/**
+ 	 * Block until a plunger flows through this object. If a plunger has
+Only in exscalibar-1.0.4/src/processors/toolkit: monitor.o
+diff -ru exscalibar-1.0.4_orig/src/processors/toolkit/multiplayer.cpp exscalibar-1.0.4/src/processors/toolkit/multiplayer.cpp
+--- exscalibar-1.0.4_orig/src/processors/toolkit/multiplayer.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/processors/toolkit/multiplayer.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -36,13 +36,13 @@
+ {
+ }
+ 
+-const bool MultiPlayer::verifyAndSpecifyTypes(const SignalTypeRefs &, SignalTypeRefs &outTypes)
++bool MultiPlayer::verifyAndSpecifyTypes(const SignalTypeRefs &, SignalTypeRefs &outTypes)
+ {
+ 	outTypes = Wave(theRate);
+ 	return true;
+ }
+ 
+-const bool MultiPlayer::openFile()
++bool MultiPlayer::openFile()
+ {
+ 	if(theFile) sf_close(theFile);
+ 	SF_INFO sfinfo;
+diff -ru exscalibar-1.0.4_orig/src/processors/toolkit/multiplayer.h exscalibar-1.0.4/src/processors/toolkit/multiplayer.h
+--- exscalibar-1.0.4_orig/src/processors/toolkit/multiplayer.h	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/processors/toolkit/multiplayer.h	2009-02-28 10:10:19.000000000 +0100
+@@ -58,11 +58,11 @@
+ 	uint theLength, thePosition, theFrames;
+ 	uint theIndex;
+ 
+-	const bool openFile();
++	bool openFile();
+ 
+ 	virtual void processor();
+ 	virtual void processorStopped();
+-	virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
++	virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
+ 	virtual PropertiesInfo specifyProperties() const;
+ 	virtual void initFromProperties(const Properties &p);
+ 	virtual void specifyOutputSpace(QValueVector<uint> &samples);
+Only in exscalibar-1.0.4/src/processors/toolkit: multiplayer.o
+diff -ru exscalibar-1.0.4_orig/src/processors/toolkit/player.cpp exscalibar-1.0.4/src/processors/toolkit/player.cpp
+--- exscalibar-1.0.4_orig/src/processors/toolkit/player.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/processors/toolkit/player.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -44,7 +44,7 @@
+ {
+ }
+ 
+-const bool Player::verifyAndSpecifyTypes(const SignalTypeRefs &, SignalTypeRefs &outTypes)
++bool Player::verifyAndSpecifyTypes(const SignalTypeRefs &, SignalTypeRefs &outTypes)
+ {
+ 	outTypes = Wave(theRate);
+ 	return true;
+@@ -141,7 +141,9 @@
+ 		}
+ 
+ 		if(mad_frame_decode(&Frame, &Stream))
++    {
+ 			if(MAD_RECOVERABLE(Stream.error) || Stream.error==MAD_ERROR_BUFLEN) continue; else break;
++    }
+ 		theChannels = MAD_NCHANNELS(&Frame.header);
+ 		theRate = Frame.header.samplerate;
+ 		theLength = 1;
+diff -ru exscalibar-1.0.4_orig/src/processors/toolkit/player.h exscalibar-1.0.4/src/processors/toolkit/player.h
+--- exscalibar-1.0.4_orig/src/processors/toolkit/player.h	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/processors/toolkit/player.h	2009-02-28 10:10:19.000000000 +0100
+@@ -88,7 +88,7 @@
+ 
+ 	virtual void processor();
+ 	virtual void processorStopped();
+-	virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
++	virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
+ 	virtual PropertiesInfo specifyProperties() const;
+ 	virtual void initFromProperties(const Properties &p);
+ 	virtual void specifyOutputSpace(QValueVector<uint> &samples);
+Only in exscalibar-1.0.4/src/processors/toolkit: player.o
+diff -ru exscalibar-1.0.4_orig/src/processors/toolkit/recorder.cpp exscalibar-1.0.4/src/processors/toolkit/recorder.cpp
+--- exscalibar-1.0.4_orig/src/processors/toolkit/recorder.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/processors/toolkit/recorder.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -107,7 +107,7 @@
+ 	// Skip to next file?
+ }
+ 
+-const bool Recorder::verifyAndSpecifyTypes(const SignalTypeRefs &, SignalTypeRefs &)
++bool Recorder::verifyAndSpecifyTypes(const SignalTypeRefs &, SignalTypeRefs &)
+ {
+ //	theScope = inTypes[0].scope();
+ //	theFrequency = inTypes[0].frequency();
+diff -ru exscalibar-1.0.4_orig/src/processors/toolkit/recorder.h exscalibar-1.0.4/src/processors/toolkit/recorder.h
+--- exscalibar-1.0.4_orig/src/processors/toolkit/recorder.h	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/processors/toolkit/recorder.h	2009-02-28 10:10:19.000000000 +0100
+@@ -59,7 +59,7 @@
+ {
+ 	virtual void processor();
+ 	virtual PropertiesInfo specifyProperties() const;
+-	virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &, SignalTypeRefs &);
++	virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &, SignalTypeRefs &);
+ 	virtual void initFromProperties(const Properties &p);
+ 	virtual void receivedPlunger();
+ 	
+Only in exscalibar-1.0.4/src/processors/toolkit: recorder.o
+diff -ru exscalibar-1.0.4_orig/src/processors/toolkit/stress.cpp exscalibar-1.0.4/src/processors/toolkit/stress.cpp
+--- exscalibar-1.0.4_orig/src/processors/toolkit/stress.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/processors/toolkit/stress.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -30,7 +30,7 @@
+ 	uint theSize;
+ 
+ 	virtual void processChunk(const BufferDatas &in, BufferDatas &out) const;
+-	virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
++	virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
+ 	virtual void initFromProperties(const Properties &/*properties*/) { setupIO(1, 1, 1, 1, 1); }
+ 
+ public:
+@@ -48,7 +48,7 @@
+ 	}
+ }
+ 
+-const bool Stress::verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes)
++bool Stress::verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes)
+ {
+ 	outTypes[0] = inTypes[0];
+ 	theSize = inTypes[0].scope();
+diff -ru exscalibar-1.0.4_orig/src/qtextra/qcounter.h exscalibar-1.0.4/src/qtextra/qcounter.h
+--- exscalibar-1.0.4_orig/src/qtextra/qcounter.h	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/qtextra/qcounter.h	2009-02-28 10:10:19.000000000 +0100
+@@ -51,7 +51,7 @@
+ 	 * 
+ 	 * @return The new value of the counter.
+ 	 */
+-	const int operator++();
++	int operator++();
+ 	
+ 	/**
+ 	 * Prefix increment operator. Atomically increment the counter by one and
+@@ -59,7 +59,7 @@
+ 	 * 
+ 	 * @return The new value of the counter.
+ 	 */
+-	const int operator++(int);
++	int operator++(int);
+ 	
+ 	/**
+ 	 * Prefix decrement operator. Atomically decrement the counter by one and
+@@ -67,7 +67,7 @@
+ 	 * 
+ 	 * @return The new value of the counter.
+ 	 */
+-	const int operator--();
++	int operator--();
+ 	
+ 	/**
+ 	 * Prefix decrement operator. Atomically decrement the counter by one and
+@@ -75,7 +75,7 @@
+ 	 * 
+ 	 * @return The new value of the counter.
+ 	 */
+-	const int operator--(int);
++	int operator--(int);
+ 	
+ 	/**
+ 	 * Atomic shorthand operator. Atomically increment the counter by @a i and
+@@ -84,7 +84,7 @@
+ 	 * @param i The amount to increment the counter by.
+ 	 * @return The new value of the counter.
+ 	 */
+-	const int operator+=(const int i);
++	int operator+=(const int i);
+ 	
+ 	/**
+ 	 * Atomic shorthand operator. Atomically decrement the counter by @a i and
+@@ -93,7 +93,7 @@
+ 	 * @param i The amount to decrement the counter by.
+ 	 * @return The new value of the counter.
+ 	 */
+-	const int operator-=(const int i);
++	int operator-=(const int i);
+ 	
+ 	/**
+ 	 * Assignment operator for an int.
+@@ -101,7 +101,7 @@
+ 	 * @param i The new value for the counter.
+ 	 * @return The counter's value, this is guaranteed to be @a i.
+ 	 */
+-	const int operator=(const int i);
++	int operator=(const int i);
+ 	
+ 	/**
+ 	 * Get the "current" value of the counter as an integer cast.
+@@ -112,7 +112,7 @@
+ 	 * @return The value of the counter as some point between call start and
+ 	 * end.
+ 	 */
+-	operator const int() const;
++	operator int() const;
+ 	
+ 	/**
+ 	 * Basic constructor.
+@@ -128,25 +128,25 @@
+ };
+ 
+ #ifdef UTILISE_PTHREAD
+-inline const int QCounter::operator++() { pthread_mutex_lock(&theMutex); int ret = (++theCount); pthread_mutex_unlock(&theMutex); return ret; }
+-inline const int QCounter::operator++(int) { pthread_mutex_lock(&theMutex); int ret = (theCount++); pthread_mutex_unlock(&theMutex); return ret; }
+-inline const int QCounter::operator--() { pthread_mutex_lock(&theMutex); int ret = (--theCount); pthread_mutex_unlock(&theMutex); return ret; }
+-inline const int QCounter::operator--(int) { pthread_mutex_lock(&theMutex); int ret = (theCount--); pthread_mutex_unlock(&theMutex); return ret; }
+-inline const int QCounter::operator+=(const int i) { pthread_mutex_lock(&theMutex); int ret = (theCount += i); pthread_mutex_unlock(&theMutex); return ret; }
+-inline const int QCounter::operator-=(const int i) { pthread_mutex_lock(&theMutex); int ret = (theCount -= i); pthread_mutex_unlock(&theMutex); return ret; }
+-inline const int QCounter::operator=(const int i) { pthread_mutex_lock(&theMutex); int ret = (theCount = i); pthread_mutex_unlock(&theMutex); return ret; }
+-inline QCounter::operator const int() const { return theCount; }
++inline int QCounter::operator++() { pthread_mutex_lock(&theMutex); int ret = (++theCount); pthread_mutex_unlock(&theMutex); return ret; }
++inline int QCounter::operator++(int) { pthread_mutex_lock(&theMutex); int ret = (theCount++); pthread_mutex_unlock(&theMutex); return ret; }
++inline int QCounter::operator--() { pthread_mutex_lock(&theMutex); int ret = (--theCount); pthread_mutex_unlock(&theMutex); return ret; }
++inline int QCounter::operator--(int) { pthread_mutex_lock(&theMutex); int ret = (theCount--); pthread_mutex_unlock(&theMutex); return ret; }
++inline int QCounter::operator+=(const int i) { pthread_mutex_lock(&theMutex); int ret = (theCount += i); pthread_mutex_unlock(&theMutex); return ret; }
++inline int QCounter::operator-=(const int i) { pthread_mutex_lock(&theMutex); int ret = (theCount -= i); pthread_mutex_unlock(&theMutex); return ret; }
++inline int QCounter::operator=(const int i) { pthread_mutex_lock(&theMutex); int ret = (theCount = i); pthread_mutex_unlock(&theMutex); return ret; }
++inline QCounter::operator int() const { return theCount; }
+ inline QCounter::QCounter(const int i) : theCount(i) { pthread_mutex_init(&theMutex, NULL); }
+ inline QCounter::~QCounter() { pthread_mutex_destroy(&theMutex); }
+ #else
+-inline const int QCounter::operator++() { QMutexLocker lock(&theMutex); return ++theCount; }
+-inline const int QCounter::operator++(int) { QMutexLocker lock(&theMutex); return theCount++; }
+-inline const int QCounter::operator--() { QMutexLocker lock(&theMutex); return --theCount; }
+-inline const int QCounter::operator--(int) { QMutexLocker lock(&theMutex); return theCount--; }
+-inline const int QCounter::operator+=(const int i) { QMutexLocker lock(&theMutex); return theCount += i; }
+-inline const int QCounter::operator-=(const int i) { QMutexLocker lock(&theMutex); return theCount -= i; }
+-inline const int QCounter::operator=(const int i) { QMutexLocker lock(&theMutex); return theCount = i; }
+-inline QCounter::operator const int() const { return theCount; }
++inline int QCounter::operator++() { QMutexLocker lock(&theMutex); return ++theCount; }
++inline int QCounter::operator++(int) { QMutexLocker lock(&theMutex); return theCount++; }
++inline int QCounter::operator--() { QMutexLocker lock(&theMutex); return --theCount; }
++inline int QCounter::operator--(int) { QMutexLocker lock(&theMutex); return theCount--; }
++inline int QCounter::operator+=(const int i) { QMutexLocker lock(&theMutex); return theCount += i; }
++inline int QCounter::operator-=(const int i) { QMutexLocker lock(&theMutex); return theCount -= i; }
++inline int QCounter::operator=(const int i) { QMutexLocker lock(&theMutex); return theCount = i; }
++inline QCounter::operator int() const { return theCount; }
+ inline QCounter::QCounter(const int i) : theCount(i) {}
+ inline QCounter::~QCounter() {}
+ #endif
+diff -ru exscalibar-1.0.4_orig/src/qtextra/qfactorymanager.h exscalibar-1.0.4/src/qtextra/qfactorymanager.h
+--- exscalibar-1.0.4_orig/src/qtextra/qfactorymanager.h	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/qtextra/qfactorymanager.h	2009-02-28 10:10:19.000000000 +0100
+@@ -69,9 +69,9 @@
+ 	}
+ 
+ 	const QStringList &getAvailable() { return theIds; }
+-	const bool isAvailable(const QString &id) { return theIds.contains(id); }
++	bool isAvailable(const QString &id) { return theIds.contains(id); }
+ 
+-	const int getVersion(const QString &id)
++	int getVersion(const QString &id)
+ 	{
+ 		if(!isAvailable(id)) return -1;
+ 		return theMappings[id]->getVersion(id);
+diff -ru exscalibar-1.0.4_orig/src/qtextra/qsocketsession.cpp exscalibar-1.0.4/src/qtextra/qsocketsession.cpp
+--- exscalibar-1.0.4_orig/src/qtextra/qsocketsession.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/qtextra/qsocketsession.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -103,7 +103,7 @@
+ 			return;
+ 		}
+ 		float rremotei;
+-		uint &t = *((uint *)&rremotei);
++		uint &t = *reinterpret_cast<uint *>(&rremotei);
+ 		t = bswap_32(*((uint *)&remotei));
+ 
+ 		if(remotei == i)
+@@ -145,7 +145,7 @@
+ 	}
+ }
+ 
+-const bool QSocketSession::receiveChunk(uchar *buffer, const uint size, const uint timeOut)
++bool QSocketSession::receiveChunk(uchar *buffer, const uint size, const uint timeOut)
+ {
+ 	if(!isOpen()) return false;
+ 	theSD->setBlocking(false);
+@@ -173,7 +173,7 @@
+ 	return !timedOut;
+ }
+ 
+-const bool QSocketSession::waitForAck(const uint timeOut, bool *ackType)
++bool QSocketSession::waitForAck(const uint timeOut, bool *ackType)
+ {
+ 	uchar c = 0;
+ 	while(isOpen() && c != 1 && c != 2)
+@@ -187,7 +187,7 @@
+ 	return true;
+ }
+ 
+-const bool QSocketSession::waitForAck(bool *ackType)
++bool QSocketSession::waitForAck(bool *ackType)
+ {
+ 	uchar c = 0;
+ 	while(isOpen() && c != 1 && c != 2)
+@@ -199,7 +199,7 @@
+ }
+ 
+ template<>
+-const float QSocketSession::safeReceiveWord()
++float QSocketSession::safeReceiveWord()
+ {
+ 	union { int32_t i; float t; uchar c[4]; } d;
+ 	receiveChunk(d.c, 4);
+@@ -208,7 +208,7 @@
+ }
+ 
+ template<>
+-const int32_t QSocketSession::safeReceiveWord()
++int32_t QSocketSession::safeReceiveWord()
+ {
+ 	union { int32_t i; uchar c[4]; } d;
+ 	receiveChunk(d.c, 4);
+@@ -217,7 +217,7 @@
+ }
+ 
+ template<>
+-const uint32_t QSocketSession::safeReceiveWord()
++uint32_t QSocketSession::safeReceiveWord()
+ {
+ 	union { int32_t i; uint32_t t; uchar c[4]; } d;
+ 	receiveChunk(d.c, 4);
+diff -ru exscalibar-1.0.4_orig/src/qtextra/qsocketsession.h exscalibar-1.0.4/src/qtextra/qsocketsession.h
+--- exscalibar-1.0.4_orig/src/qtextra/qsocketsession.h	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/qtextra/qsocketsession.h	2009-02-28 10:10:19.000000000 +0100
+@@ -58,7 +58,7 @@
+ 	 * 
+ 	 * @return true if the current connection is open (i.e. connected).
+ 	 */
+-	const bool isOpen()
++	bool isOpen()
+ 	{
+ 		if(!theSD->isValid())
+ 			theClosed = true;
+@@ -118,7 +118,7 @@
+ 	 * 
+ 	 * @sa sendByte()
+ 	 */
+-	const uchar receiveByte()
++	unsigned char receiveByte()
+ 	{
+ 		uchar c;
+ 		if(theSD->readBlock((char *)&c, 1) == 1)
+@@ -159,7 +159,7 @@
+ 	 * 
+ 	 * @sa sendChunk()
+ 	 */
+-	const bool receiveChunk(uchar *buffer, const uint size, const uint timeOut);
++	bool receiveChunk(uchar *buffer, const uint size, const uint timeOut);
+ 	
+ 	/**
+ 	 * Block until the next communication is received. It is interpreted as an
+@@ -175,7 +175,7 @@
+ 	 * 
+ 	 * @sa ack()
+ 	 */
+-	const bool waitForAck(bool *ackType = 0);
++	bool waitForAck(bool *ackType = 0);
+ 
+ 	/**
+ 	 * Block until the next communication is received. It is interpreted as an
+@@ -192,7 +192,7 @@
+ 	 * 
+ 	 * @sa ack()
+ 	 */
+-	const bool waitForAck(const uint timeOut, bool *ackType = 0);
++	bool waitForAck(const uint timeOut, bool *ackType = 0);
+ 	
+ 	//@}
+ 	
+@@ -241,7 +241,7 @@
+ 	 * 
+ 	 * @return true if they share the same byte-ordering.
+ 	 */
+-	const bool sameByteOrder() const { return theSameByteOrder; }
++	bool sameByteOrder() const { return theSameByteOrder; }
+ 	
+ 	/**
+ 	 * Send a single word down the connection. This can be one of int, float
+@@ -281,7 +281,7 @@
+ 	 * 
+ 	 * @sa safeSendWord()
+ 	 */
+-	template<typename T> const T safeReceiveWord();
++	template<typename T> T safeReceiveWord();
+ 	
+ 	/**
+ 	 * Receive a number of words from the connection. The word type may be one
+@@ -332,9 +332,9 @@
+ 	~QSocketSession();
+ };
+ 
+-template<> const float QSocketSession::safeReceiveWord();
+-template<> const int32_t QSocketSession::safeReceiveWord();
+-template<> const uint32_t QSocketSession::safeReceiveWord();
++template<> float QSocketSession::safeReceiveWord();
++template<> int32_t QSocketSession::safeReceiveWord();
++template<> uint32_t QSocketSession::safeReceiveWord();
+ template<> void QSocketSession::safeReceiveWordArray(float *t, const uint32_t size);
+ template<> void QSocketSession::safeReceiveWordArray(int32_t *t, const uint32_t size);
+ template<> void QSocketSession::safeReceiveWordArray(uint32_t *t, const uint32_t size);
+diff -ru exscalibar-1.0.4_orig/src/remote/rgeddei/abstractdomprocessor.h exscalibar-1.0.4/src/remote/rgeddei/abstractdomprocessor.h
+--- exscalibar-1.0.4_orig/src/remote/rgeddei/abstractdomprocessor.h	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/remote/rgeddei/abstractdomprocessor.h	2009-02-28 10:10:19.000000000 +0100
+@@ -20,7 +20,10 @@
+ #endif
+ using namespace rGeddei;
+ 
+-class Geddei::SubProcessor;
++namespace Geddei
++{
++class SubProcessor;
++}
+ 
+ namespace rGeddei
+ {
+@@ -53,7 +56,7 @@
+ 	 * worker object.
+ 	 * @return true if the worker was created successfully.
+ 	 */
+-	virtual const bool spawnWorker(LocalSession &session) = 0;
++	virtual bool spawnWorker(LocalSession &session) = 0;
+ 
+ 	/**
+ 	 * @overload
+@@ -68,7 +71,7 @@
+ 	 * worker object.
+ 	 * @return true if the worker was created successfully.
+ 	 */
+-	virtual const bool spawnWorker(RemoteSession &session) = 0;
++	virtual bool spawnWorker(RemoteSession &session) = 0;
+ 
+ 	/**
+ 	 * Constructs a new LocalDomProcessor object that
+Only in exscalibar-1.0.4/src/remote/rgeddei: abstractdomprocessor.o
+diff -ru exscalibar-1.0.4_orig/src/remote/rgeddei/abstractprocessor.h exscalibar-1.0.4/src/remote/rgeddei/abstractprocessor.h
+--- exscalibar-1.0.4_orig/src/remote/rgeddei/abstractprocessor.h	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/remote/rgeddei/abstractprocessor.h	2009-02-28 10:10:19.000000000 +0100
+@@ -115,7 +115,7 @@
+ 	 *
+ 	 * @sa Geddei::Processor::go()
+ 	 */
+-	virtual const bool go() = 0;
++	virtual bool go() = 0;
+ 
+ 	/**
+ 	 * Sends a message to the Processor object that this represents, telling it
+@@ -129,7 +129,7 @@
+ 	 *
+ 	 * @sa Geddei::Processor::waitUntilGoing()
+ 	 */
+-	virtual const Processor::ErrorType waitUntilGoing(int *errorData = 0) = 0;
++	virtual Processor::ErrorType waitUntilGoing(int *errorData = 0) = 0;
+ 
+ 	/**
+ 	 * Sends a message to the Processor object that this represents, telling it
+@@ -196,7 +196,7 @@
+ 	 *
+ 	 * @sa Geddei::Processor::connect()
+ 	 */
+-	virtual const bool connect(const uint sourceIndex, const RemoteProcessor *sink, const uint sinkIndex, const uint bufferSize = 1) = 0;
++	virtual bool connect(const uint sourceIndex, const RemoteProcessor *sink, const uint sinkIndex, const uint bufferSize = 1) = 0;
+ 
+ 	/** @overload
+ 	 * Attempts to create a connection between the Processor object this
+@@ -219,7 +219,7 @@
+ 	 *
+ 	 * @sa Geddei::Processor::connect()
+ 	 */
+-	virtual const bool connect(const uint sourceIndex, const LocalProcessor *sink, const uint sinkIndex, const uint bufferSize = 1) = 0;
++	virtual bool connect(const uint sourceIndex, const LocalProcessor *sink, const uint sinkIndex, const uint bufferSize = 1) = 0;
+ 
+ 	/**
+ 	 * Disguard all connections going from a given port (generally only one,
+Only in exscalibar-1.0.4/src/remote/rgeddei: abstractprocessor.o
+diff -ru exscalibar-1.0.4_orig/src/remote/rgeddei/abstractprocessorgroup.cpp exscalibar-1.0.4/src/remote/rgeddei/abstractprocessorgroup.cpp
+--- exscalibar-1.0.4_orig/src/remote/rgeddei/abstractprocessorgroup.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/remote/rgeddei/abstractprocessorgroup.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -28,7 +28,7 @@
+ {
+ }
+ 
+-const bool AbstractProcessorGroup::exists(const QString &name)
++bool AbstractProcessorGroup::exists(const QString &name)
+ {
+ 	return theProcessors.count(name);
+ }
+@@ -99,7 +99,7 @@
+ 		i.data()->init();
+ }
+ 
+-const bool AbstractProcessorGroup::go(const bool waitUntilGoing) const
++bool AbstractProcessorGroup::go(const bool waitUntilGoing) const
+ {
+ 	for(QMap<QString, AbstractProcessor *>::ConstIterator i = theProcessors.begin(); i != theProcessors.end(); i++)
+ 		if(!i.data()->go())
+@@ -118,7 +118,7 @@
+ 	return true;
+ }
+ 
+-const Processor::ErrorType AbstractProcessorGroup::waitUntilGoing(AbstractProcessor **errorProc, int *errorData) const
++Processor::ErrorType AbstractProcessorGroup::waitUntilGoing(AbstractProcessor **errorProc, int *errorData) const
+ {
+ 	Processor::ErrorType ret;
+ 	for(QMap<QString, AbstractProcessor *>::ConstIterator i = theProcessors.begin(); i != theProcessors.end(); i++)
+diff -ru exscalibar-1.0.4_orig/src/remote/rgeddei/abstractprocessorgroup.h exscalibar-1.0.4/src/remote/rgeddei/abstractprocessorgroup.h
+--- exscalibar-1.0.4_orig/src/remote/rgeddei/abstractprocessorgroup.h	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/remote/rgeddei/abstractprocessorgroup.h	2009-02-28 10:10:19.000000000 +0100
+@@ -71,7 +71,7 @@
+ 	 * Processor objects are either running or have failed to start.
+ 	 * @return true if the operation succeeded.
+ 	 */
+-	const bool go(const bool waitUntilGoing = true) const;
++	bool go(const bool waitUntilGoing = true) const;
+ 
+ 	/**
+ 	 * Block until all represented Processor objects are started or have failed
+@@ -84,7 +84,7 @@
+ 	 * @return The type of error that occured (if existant), coded as a
+ 	 * Geddei::Processor::ErrorType enumeration.
+ 	 */
+-	const Processor::ErrorType waitUntilGoing(AbstractProcessor **errorProc = 0, int *errorData = 0) const;
++	Processor::ErrorType waitUntilGoing(AbstractProcessor **errorProc = 0, int *errorData = 0) const;
+ 
+ 	/**
+ 	 * Stop all represented Processor objects immediately. See
+@@ -123,7 +123,7 @@
+ 	 * @param name The name to be checked for.
+ 	 * @return true iff the object of name @a name exists in this group.
+ 	 */
+-	const bool exists(const QString &name);
++	bool exists(const QString &name);
+ 
+ 	/**
+ 	 * Retreive the AbstractProcessor object of name @a name.
+Only in exscalibar-1.0.4/src/remote/rgeddei: abstractprocessorgroup.o
+diff -ru exscalibar-1.0.4_orig/src/remote/rgeddei/abstractprocessorport.cpp exscalibar-1.0.4/src/remote/rgeddei/abstractprocessorport.cpp
+--- exscalibar-1.0.4_orig/src/remote/rgeddei/abstractprocessorport.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/remote/rgeddei/abstractprocessorport.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -21,19 +21,19 @@
+ namespace rGeddei
+ {
+ 
+-const bool AbstractProcessorPort::split()
++bool AbstractProcessorPort::split()
+ {
+ 	theParent->split(thePort);
+ 	return true;
+ }
+ 
+-const bool AbstractProcessorPort::share()
++bool AbstractProcessorPort::share()
+ {
+ 	theParent->share(thePort);
+ 	return true;
+ }
+ 
+-const bool AbstractProcessorPort::connect(const AbstractProcessorPort &input)
++bool AbstractProcessorPort::connect(const AbstractProcessorPort &input)
+ {
+ 	if(dynamic_cast<RemoteProcessor *>(input.theParent))
+ 		return theParent->connect(thePort, dynamic_cast<RemoteProcessor *>(input.theParent), input.thePort, input.theBufferSize);
+@@ -43,7 +43,7 @@
+ 		return false;
+ }
+ 
+-const bool AbstractProcessorPort::disconnect()
++bool AbstractProcessorPort::disconnect()
+ {
+ 	theParent->disconnect(thePort);
+ 	return true;
+diff -ru exscalibar-1.0.4_orig/src/remote/rgeddei/abstractprocessorport.h exscalibar-1.0.4/src/remote/rgeddei/abstractprocessorport.h
+--- exscalibar-1.0.4_orig/src/remote/rgeddei/abstractprocessorport.h	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/remote/rgeddei/abstractprocessorport.h	2009-02-28 10:10:19.000000000 +0100
+@@ -76,7 +76,7 @@
+ 	 * P[0].connect(Q[1]);
+ 	 * @endcode
+ 	 */
+-	const bool split();
++	bool split();
+ 
+ 	/**
+ 	 * Share the output of a Processor.
+@@ -94,7 +94,7 @@
+ 	 * P[0].connect(Q[1]);
+ 	 * @endcode
+ 	 */
+-	const bool share();
++	bool share();
+ 
+ 	/**
+ 	 * Assert that this port represents an output port, and create a
+@@ -113,7 +113,7 @@
+ 	 *
+ 	 * @sa disconnect()
+ 	 */
+-	const bool connect(const AbstractProcessorPort &input);
++	bool connect(const AbstractProcessorPort &input);
+ 
+ 	/**
+ 	 * Assert that this port represents an output port and delete the
+@@ -129,7 +129,7 @@
+ 	 *
+ 	 * @sa connect()
+ 	 */
+-	const bool disconnect();
++	bool disconnect();
+ 
+ 	/**
+ 	 * Shorthand operator for connecting. Does the same as the connect()
+@@ -148,7 +148,7 @@
+ 	 *
+ 	 * @sa connect()
+ 	 */
+-	const bool operator>>=(const AbstractProcessorPort &input) { return connect(input); }
++	bool operator>>=(const AbstractProcessorPort &input) { return connect(input); }
+ 
+ 	/**
+ 	 * Shorthand operator for disconnecting. Does the same as the disconnect()
+@@ -164,7 +164,7 @@
+ 	 *
+ 	 * @sa disconnect()
+ 	 */
+-	const bool operator--(int) { return disconnect(); }
++	bool operator--(int) { return disconnect(); }
+ };
+ 
+ }
+Only in exscalibar-1.0.4/src/remote/rgeddei: abstractprocessorport.o
+Only in exscalibar-1.0.4/src/remote/rgeddei: hostprocessorforwarder.o
+Only in exscalibar-1.0.4/src/remote/rgeddei: librgeddei.so
+Only in exscalibar-1.0.4/src/remote/rgeddei: librgeddei.so.1
+Only in exscalibar-1.0.4/src/remote/rgeddei: librgeddei.so.1.0
+Only in exscalibar-1.0.4/src/remote/rgeddei: librgeddei.so.1.0.4
+diff -ru exscalibar-1.0.4_orig/src/remote/rgeddei/localdomprocessor.cpp exscalibar-1.0.4/src/remote/rgeddei/localdomprocessor.cpp
+--- exscalibar-1.0.4_orig/src/remote/rgeddei/localdomprocessor.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/remote/rgeddei/localdomprocessor.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -42,7 +42,7 @@
+ 	theAdopted = true;
+ }
+ 
+-const bool LocalDomProcessor::spawnWorker(LocalSession &session)
++bool LocalDomProcessor::spawnWorker(LocalSession &session)
+ {
+ 	if(MESSAGES) qDebug("LocalDomProcessor::spawnWorker(Local?)");
+ 	if(theSession != &session)
+@@ -51,7 +51,7 @@
+ 		return dynamic_cast<DomProcessor *>(theProcessor)->createAndAddWorker();
+ }
+ 
+-const bool LocalDomProcessor::spawnWorker(RemoteSession &session)
++bool LocalDomProcessor::spawnWorker(RemoteSession &session)
+ {
+ 	if(MESSAGES) qDebug("LocalDomProcessor::spawnWorker(Node)");
+ 	return dynamic_cast<DomProcessor *>(theProcessor)->createAndAddWorker(session.theHost, session.theKey);
+diff -ru exscalibar-1.0.4_orig/src/remote/rgeddei/localdomprocessor.h exscalibar-1.0.4/src/remote/rgeddei/localdomprocessor.h
+--- exscalibar-1.0.4_orig/src/remote/rgeddei/localdomprocessor.h	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/remote/rgeddei/localdomprocessor.h	2009-02-28 10:10:19.000000000 +0100
+@@ -26,7 +26,10 @@
+ using namespace Geddei;
+ using namespace rGeddei;
+ 
+-class Geddei::SubProcessor;
++namespace Geddei
++{
++class SubProcessor;
++}
+ 
+ namespace rGeddei
+ {
+@@ -86,8 +89,8 @@
+ 
+ public:
+ 	//* Reimplementations from AbstractDomProcessor
+-	virtual const bool spawnWorker(LocalSession &session);
+-	virtual const bool spawnWorker(RemoteSession &session);
++	virtual bool spawnWorker(LocalSession &session);
++	virtual bool spawnWorker(RemoteSession &session);
+ 
+ 	/**
+ 	 * Default destructor.
+Only in exscalibar-1.0.4/src/remote/rgeddei: localdomprocessor.o
+diff -ru exscalibar-1.0.4_orig/src/remote/rgeddei/localprocessor.cpp exscalibar-1.0.4/src/remote/rgeddei/localprocessor.cpp
+--- exscalibar-1.0.4_orig/src/remote/rgeddei/localprocessor.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/remote/rgeddei/localprocessor.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -66,7 +66,7 @@
+ 	if(g) setGroup(*g);
+ }
+ 
+-const bool LocalProcessor::connect(const uint sourceIndex, const LocalProcessor *sink, const uint sinkIndex, const uint bufferSize)
++bool LocalProcessor::connect(const uint sourceIndex, const LocalProcessor *sink, const uint sinkIndex, const uint bufferSize)
+ {
+ 	if(MESSAGES) qDebug("LocalProcessor::connect(): port=%d, host=%s, processor=%s", sink->theSession->thePort, sink->theSession->theHost.latin1(), sink->theProcessor->name().latin1());
+ 	if(theSession != sink->theSession)
+@@ -75,7 +75,7 @@
+ 		return theProcessor->connect(sourceIndex, sink->theProcessor, sinkIndex, bufferSize);
+ }
+ 
+-const bool LocalProcessor::connect(const uint sourceIndex, const RemoteProcessor *sink, const uint sinkIndex, const uint bufferSize)
++bool LocalProcessor::connect(const uint sourceIndex, const RemoteProcessor *sink, const uint sinkIndex, const uint bufferSize)
+ {
+ 	if(MESSAGES) qDebug("LocalProcessor::connect(): key=%d, host=%s, processor=%s", sink->theSession->theKey, sink->theSession->theHost.latin1(), sink->theName.latin1());
+ 	return theProcessor->connect(sourceIndex, sink->theSession->theHost, sink->theSession->theKey, sink->theHandle, sinkIndex, bufferSize);
+diff -ru exscalibar-1.0.4_orig/src/remote/rgeddei/localprocessor.h exscalibar-1.0.4/src/remote/rgeddei/localprocessor.h
+--- exscalibar-1.0.4_orig/src/remote/rgeddei/localprocessor.h	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/remote/rgeddei/localprocessor.h	2009-02-28 10:10:19.000000000 +0100
+@@ -125,15 +125,15 @@
+ private:
+ 	virtual void doInit(const QString &name, AbstractProcessorGroup *g, const Properties &p);
+ public:
+-	virtual const bool go() { return theProcessor->go(); }
+-	virtual const Processor::ErrorType waitUntilGoing(int *errorData = 0) { return theProcessor->waitUntilGoing(errorData); }
++	virtual bool go() { return theProcessor->go(); }
++	virtual Processor::ErrorType waitUntilGoing(int *errorData = 0) { return theProcessor->waitUntilGoing(errorData); }
+ 	virtual void waitUntilDone() { theProcessor->waitUntilDone(); }
+ 	virtual void stop() { theProcessor->stop(); }
+ 	virtual void reset() { theProcessor->reset(); }
+ 	virtual void share(const uint sourceIndex) { theProcessor->share(sourceIndex); }
+ 	virtual void split(const uint sourceIndex) { theProcessor->split(sourceIndex); }
+-	virtual const bool connect(const uint sourceIndex, const RemoteProcessor *sink, const uint sinkIndex, const uint bufferSize = 1);
+-	virtual const bool connect(const uint sourceIndex, const LocalProcessor *sink, const uint sinkIndex, const uint bufferSize = 1);
++	virtual bool connect(const uint sourceIndex, const RemoteProcessor *sink, const uint sinkIndex, const uint bufferSize = 1);
++	virtual bool connect(const uint sourceIndex, const LocalProcessor *sink, const uint sinkIndex, const uint bufferSize = 1);
+ 	virtual void disconnect(const uint sourceIndex);
+ 	virtual void disconnectAll();
+ 	virtual const QString name() const { return theProcessor->name(); }
+Only in exscalibar-1.0.4/src/remote/rgeddei: localprocessor.o
+Only in exscalibar-1.0.4/src/remote/rgeddei: localsession.o
+diff -ru exscalibar-1.0.4_orig/src/remote/rgeddei/remotedomprocessor.cpp exscalibar-1.0.4/src/remote/rgeddei/remotedomprocessor.cpp
+--- exscalibar-1.0.4_orig/src/remote/rgeddei/remotedomprocessor.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/remote/rgeddei/remotedomprocessor.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -43,7 +43,7 @@
+ 	theType = "";
+ }
+ 
+-const bool RemoteDomProcessor::spawnWorker(RemoteSession &session)
++bool RemoteDomProcessor::spawnWorker(RemoteSession &session)
+ {
+ 	if(MESSAGES) qDebug("RemoteDomProcessor::spawnWorker(Node)");
+ 	if(theSession == &session)
+@@ -52,7 +52,7 @@
+ 		return theSession->domProcessorCreateAndAdd(theHandle, session.theHost, session.theKey);
+ }
+ 
+-const bool RemoteDomProcessor::spawnWorker(LocalSession &session)
++bool RemoteDomProcessor::spawnWorker(LocalSession &session)
+ {
+ 	if(MESSAGES) qDebug("RemoteDomProcessor::spawnWorker(Local)");
+ 	return theSession->domProcessorCreateAndAdd(theHandle, session.theHost, session.thePort);
+diff -ru exscalibar-1.0.4_orig/src/remote/rgeddei/remotedomprocessor.h exscalibar-1.0.4/src/remote/rgeddei/remotedomprocessor.h
+--- exscalibar-1.0.4_orig/src/remote/rgeddei/remotedomprocessor.h	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/remote/rgeddei/remotedomprocessor.h	2009-02-28 10:10:19.000000000 +0100
+@@ -57,8 +57,8 @@
+ 
+ public:
+ 	//* Reimplementations from AbstractDomProcessor
+-	virtual const bool spawnWorker(LocalSession &session);
+-	virtual const bool spawnWorker(RemoteSession &session);
++	virtual bool spawnWorker(LocalSession &session);
++	virtual bool spawnWorker(RemoteSession &session);
+ 
+ 	/**
+ 	 * Default destructor.
+Only in exscalibar-1.0.4/src/remote/rgeddei: remotedomprocessor.o
+diff -ru exscalibar-1.0.4_orig/src/remote/rgeddei/remoteprocessor.cpp exscalibar-1.0.4/src/remote/rgeddei/remoteprocessor.cpp
+--- exscalibar-1.0.4_orig/src/remote/rgeddei/remoteprocessor.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/remote/rgeddei/remoteprocessor.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -61,12 +61,12 @@
+ 	theHandle = theName;
+ }
+ 
+-const bool RemoteProcessor::connect(const uint sourceIndex, const LocalProcessor *sink, const uint sinkIndex, const uint bufferSize)
++bool RemoteProcessor::connect(const uint sourceIndex, const LocalProcessor *sink, const uint sinkIndex, const uint bufferSize)
+ {
+ 	return theSession->processorConnect(theHandle, bufferSize, sourceIndex, sink->theSession->theHost, sink->theSession->thePort, sink->theProcessor->name().latin1(), sinkIndex);
+ }
+ 
+-const bool RemoteProcessor::connect(const uint sourceIndex, const RemoteProcessor *sink, const uint sinkIndex, const uint bufferSize)
++bool RemoteProcessor::connect(const uint sourceIndex, const RemoteProcessor *sink, const uint sinkIndex, const uint bufferSize)
+ {
+ 	if(MESSAGES) qDebug("RemoteProcessor::connect(): key=%d, host=%s, processor=%s", sink->theSession->theKey, sink->theSession->theHost.latin1(), sink->theHandle.latin1());
+ 	if(sink->theSession != theSession)
+diff -ru exscalibar-1.0.4_orig/src/remote/rgeddei/remoteprocessor.h exscalibar-1.0.4/src/remote/rgeddei/remoteprocessor.h
+--- exscalibar-1.0.4_orig/src/remote/rgeddei/remoteprocessor.h	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/remote/rgeddei/remoteprocessor.h	2009-02-28 10:10:19.000000000 +0100
+@@ -94,15 +94,15 @@
+ private:
+ 	virtual void doInit(const QString &name, AbstractProcessorGroup *g, const Properties &p);
+ public:
+-	virtual const bool go() { return theSession->processorGo(theHandle); }
+-	virtual const Processor::ErrorType waitUntilGoing(int *errorData = 0) { int ed; return (Processor::ErrorType)theSession->processorWaitUntilGoing(theHandle, errorData ? *errorData : ed); }
++	virtual bool go() { return theSession->processorGo(theHandle); }
++	virtual Processor::ErrorType waitUntilGoing(int *errorData = 0) { int ed; return (Processor::ErrorType)theSession->processorWaitUntilGoing(theHandle, errorData ? *errorData : ed); }
+ 	virtual void waitUntilDone() { theSession->processorWaitUntilDone(theHandle); }
+ 	virtual void stop() { theSession->processorStop(theHandle); }
+ 	virtual void reset() { theSession->processorReset(theHandle); }
+ 	virtual void split(const uint sourceIndex) { theSession->processorSplit(theHandle, sourceIndex); }
+ 	virtual void share(const uint sourceIndex) { theSession->processorShare(theHandle, sourceIndex); }
+-	virtual const bool connect(const uint sourceIndex, const RemoteProcessor *sink, const uint sinkIndex, const uint bufferSize = 1);
+-	virtual const bool connect(const uint sourceIndex, const LocalProcessor *sink, const uint sinkIndex, const uint bufferSize = 1);
++	virtual bool connect(const uint sourceIndex, const RemoteProcessor *sink, const uint sinkIndex, const uint bufferSize = 1);
++	virtual bool connect(const uint sourceIndex, const LocalProcessor *sink, const uint sinkIndex, const uint bufferSize = 1);
+ 	virtual void disconnect(const uint sourceIndex) { theSession->processorDisconnect(theHandle, sourceIndex); }
+ 	virtual void disconnectAll() { theSession->processorDisconnectAll(theHandle); }
+ 	virtual const QString name() const { return theName; }
+Only in exscalibar-1.0.4/src/remote/rgeddei: remoteprocessor.o
+diff -ru exscalibar-1.0.4_orig/src/remote/rgeddei/remotesession.cpp exscalibar-1.0.4/src/remote/rgeddei/remotesession.cpp
+--- exscalibar-1.0.4_orig/src/remote/rgeddei/remotesession.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/remote/rgeddei/remotesession.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -92,32 +92,32 @@
+ 	}
+ }
+ 
+-const bool RemoteSession::isValid()
++bool RemoteSession::isValid()
+ {
+ 	return theSession ? theSession->isOpen() : false;
+ }
+ 
+-const bool RemoteSession::available(const QString &type)
++bool RemoteSession::available(const QString &type)
+ {
+ 	return typeAvailable(type) && typeVersion(type) == ProcessorFactory::version(type);
+ }
+ 
+-const int RemoteSession::version(const QString &type)
++int RemoteSession::version(const QString &type)
+ {
+ 	return typeAvailable(type) ? typeVersion(type) : -1;
+ }
+ 
+-const bool RemoteSession::subAvailable(const QString &type)
++bool RemoteSession::subAvailable(const QString &type)
+ {
+ 	return typeSubAvailable(type) && typeSubVersion(type) == SubProcessorFactory::version(type);
+ }
+ 
+-const int RemoteSession::subVersion(const QString &type)
++int RemoteSession::subVersion(const QString &type)
+ {
+ 	return typeSubAvailable(type) ? typeSubVersion(type) : -1;
+ }
+ 
+-const bool RemoteSession::newProcessor(const QString &type, const QString &name)
++bool RemoteSession::newProcessor(const QString &type, const QString &name)
+ {
+ 	if(!theSession) { qFatal("*** FATAL: RemoteSession: Session to %s is not open.", theHost.latin1()); }
+ 	QMutexLocker lock(&theCalling);
+@@ -144,7 +144,7 @@
+ 	}
+ }
+ 
+-const bool RemoteSession::newDomProcessor(const QString &subType, const QString &name)
++bool RemoteSession::newDomProcessor(const QString &subType, const QString &name)
+ {
+ 	if(!theSession) { qFatal("*** FATAL: RemoteSession: Session to %s is not open.", theHost.latin1()); }
+ 	QMutexLocker lock(&theCalling);
+@@ -187,7 +187,7 @@
+ 	}
+ }
+ 
+-const bool RemoteSession::processorGo(const QString &name)
++bool RemoteSession::processorGo(const QString &name)
+ {
+ 	if(!theSession) { qFatal("*** FATAL: RemoteSession: Session to %s is not open.", theHost.latin1()); }
+ 	QMutexLocker lock(&theCalling);
+@@ -202,7 +202,7 @@
+ 	return ret;
+ }
+ 
+-const int RemoteSession::processorWaitUntilGoing(const QString &name, int &errorData)
++int RemoteSession::processorWaitUntilGoing(const QString &name, int &errorData)
+ {
+ 	if(!theSession) { qFatal("*** FATAL: RemoteSession: Session to %s is not open.", theHost.latin1()); }
+ 	QMutexLocker lock(&theCalling);
+@@ -262,7 +262,7 @@
+ 	if(MESSAGES) qDebug("< RS::processorReset(%s)", name.latin1());
+ }
+ 
+-const bool RemoteSession::processorConnect(const QString &name, const uint bufferSize, const uint output, const QString &destName, const uint destInput)
++bool RemoteSession::processorConnect(const QString &name, const uint bufferSize, const uint output, const QString &destName, const uint destInput)
+ {
+ 	if(!theSession) { qFatal("*** FATAL: RemoteSession: Session to %s is not open.", theHost.latin1()); }
+ 	QMutexLocker lock(&theCalling);
+@@ -281,7 +281,7 @@
+ 	return ret;
+ }
+ 
+-const bool RemoteSession::processorConnect(const QString &name, const uint bufferSize, const uint output, const QString &destHost, const uint destKey, const QString &destName, const uint destInput)
++bool RemoteSession::processorConnect(const QString &name, const uint bufferSize, const uint output, const QString &destHost, const uint destKey, const QString &destName, const uint destInput)
+ {
+ 	if(!theSession) { qFatal("*** FATAL: RemoteSession: Session to %s is not open.", theHost.latin1()); }
+ 	QMutexLocker lock(&theCalling);
+@@ -353,7 +353,7 @@
+ 	}
+ }
+ 
+-const bool RemoteSession::domProcessorCreateAndAdd(const QString &name)
++bool RemoteSession::domProcessorCreateAndAdd(const QString &name)
+ {
+ 	if(!theSession) { qFatal("*** FATAL: RemoteSession: Session to %s is not open.", theHost.latin1()); }
+ 	QMutexLocker lock(&theCalling);
+@@ -368,7 +368,7 @@
+ 	return ret;
+ }
+ 
+-const bool RemoteSession::domProcessorCreateAndAdd(const QString &name, const QString &host, const uint hostKey)
++bool RemoteSession::domProcessorCreateAndAdd(const QString &name, const QString &host, const uint hostKey)
+ {
+ 	if(!theSession) { qFatal("*** FATAL: RemoteSession: Session to %s is not open.", theHost.latin1()); }
+ 	QMutexLocker lock(&theCalling);
+@@ -385,7 +385,7 @@
+ 	return ret;
+ }
+ 
+-const bool RemoteSession::typeAvailable(const QString &type)
++bool RemoteSession::typeAvailable(const QString &type)
+ {
+ 	if(!theSession) { qFatal("*** FATAL: RemoteSession: Session to %s is not open.", theHost.latin1()); }
+ 	QMutexLocker lock(&theCalling);
+@@ -399,7 +399,7 @@
+ 	return ret;
+ }
+ 
+-const int RemoteSession::typeVersion(const QString &type)
++int RemoteSession::typeVersion(const QString &type)
+ {
+ 	if(!theSession) { qFatal("*** FATAL: RemoteSession: Session to %s is not open.", theHost.latin1()); }
+ 	QMutexLocker lock(&theCalling);
+@@ -413,7 +413,7 @@
+ 	return ret;
+ }
+ 
+-const bool RemoteSession::typeSubAvailable(const QString &type)
++bool RemoteSession::typeSubAvailable(const QString &type)
+ {
+ 	if(!theSession) { qFatal("*** FATAL: RemoteSession: Session to %s is not open.", theHost.latin1()); }
+ 	QMutexLocker lock(&theCalling);
+@@ -427,7 +427,7 @@
+ 	return ret;
+ }
+ 
+-const int RemoteSession::typeSubVersion(const QString &type)
++int RemoteSession::typeSubVersion(const QString &type)
+ {
+ 	if(!theSession) { qFatal("*** FATAL: RemoteSession: Session to %s is not open.", theHost.latin1()); }
+ 	QMutexLocker lock(&theCalling);
+diff -ru exscalibar-1.0.4_orig/src/remote/rgeddei/remotesession.h exscalibar-1.0.4/src/remote/rgeddei/remotesession.h
+--- exscalibar-1.0.4_orig/src/remote/rgeddei/remotesession.h	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/remote/rgeddei/remotesession.h	2009-02-28 10:10:19.000000000 +0100
+@@ -69,28 +69,28 @@
+   friend class LocalProcessor;
+   friend class RemoteDomProcessor;
+   friend class LocalDomProcessor;
+-  const bool newProcessor(const QString &type, const QString &name);
++  bool newProcessor(const QString &type, const QString &name);
+   void deleteProcessor(const QString &name);
+-  const bool newDomProcessor(const QString &subType, const QString &name);
++  bool newDomProcessor(const QString &subType, const QString &name);
+   void deleteDomProcessor(const QString &name);
+   void processorInit(const QString &name, const Properties &p, const QString &newName);
+-  const bool processorGo(const QString &name);
+-  const int processorWaitUntilGoing(const QString &name, int &errorData);
++  bool processorGo(const QString &name);
++  int processorWaitUntilGoing(const QString &name, int &errorData);
+   void processorWaitUntilDone(const QString &name);
+   void processorStop(const QString &name);
+   void processorReset(const QString &name);
+-  const bool processorConnect(const QString &name, const uint bufferSize, const uint output, const QString &destName, const uint destInput);
+-  const bool processorConnect(const QString &name, const uint bufferSize, const uint output, const QString &destHost, const uint destKey, const QString &destName, const uint destInput);
++  bool processorConnect(const QString &name, const uint bufferSize, const uint output, const QString &destName, const uint destInput);
++  bool processorConnect(const QString &name, const uint bufferSize, const uint output, const QString &destHost, const uint destKey, const QString &destName, const uint destInput);
+   void processorDisconnect(const QString &name, const uint output);
+   void processorDisconnectAll(const QString &name);
+   void processorSplit(const QString &name, const uint output);
+   void processorShare(const QString &name, const uint output);
+-  const bool domProcessorCreateAndAdd(const QString &name);
+-  const bool domProcessorCreateAndAdd(const QString &name, const QString &host, const uint hostKey);
+-  const bool typeAvailable(const QString &type);
+-  const int typeVersion(const QString &type);
+-  const bool typeSubAvailable(const QString &type);
+-  const int typeSubVersion(const QString &type);
++  bool domProcessorCreateAndAdd(const QString &name);
++  bool domProcessorCreateAndAdd(const QString &name, const QString &host, const uint hostKey);
++  bool typeAvailable(const QString &type);
++  int typeVersion(const QString &type);
++  bool typeSubAvailable(const QString &type);
++  int typeSubVersion(const QString &type);
+   void keepAlive();
+ 
+   const QString makeUniqueProcessorName() { return "!_" + QString().setNum(++theProcessorCount); }
+@@ -104,7 +104,7 @@
+ 	 * @return true iff the Geddei system on the remote side is able to create
+ 	 * a Processor-derived class @a type .
+ 	 */
+-	const bool available(const QString &type);
++	bool available(const QString &type);
+ 
+ 	/**
+ 	 * Determine if the remote host has a particular type of SubProcessor
+@@ -114,7 +114,7 @@
+ 	 * @return true iff the Geddei system on the remote side is able to create
+ 	 * a SubProcessor-derived class @a type .
+ 	 */
+-	const bool subAvailable(const QString &type);
++	bool subAvailable(const QString &type);
+ 
+ 	/**
+ 	 * Determine the latest version of a given Processor type available on the
+@@ -124,7 +124,7 @@
+ 	 * @return The latest available version of Processor-derived class
+ 	 * @a type .
+ 	 */
+-	const int version(const QString &type);
++	int version(const QString &type);
+ 
+ 	/**
+ 	 * Determine the latest version of a given SubProcessor type available on
+@@ -134,7 +134,7 @@
+ 	 * @return The latest available version of SubProcessor-derived class
+ 	 * @a type .
+ 	 */
+-	const int subVersion(const QString &type);
++	int subVersion(const QString &type);
+ 
+ 	/**
+ 	 * Check whether the session is established. This should be verified after
+@@ -142,7 +142,7 @@
+ 	 *
+ 	 * @return true if this session is valid and ready.
+ 	 */
+-	const bool isValid();
++	bool isValid();
+ 
+ 	/**
+ 	 * Simple constructor. Creates a new session on host @a host . This machine
+Only in exscalibar-1.0.4/src/remote/rgeddei: remotesession.o
+diff -ru exscalibar-1.0.4_orig/src/remote/rgeddei/sessionserver.cpp exscalibar-1.0.4/src/remote/rgeddei/sessionserver.cpp
+--- exscalibar-1.0.4_orig/src/remote/rgeddei/sessionserver.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/remote/rgeddei/sessionserver.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -22,6 +22,8 @@
+ 
+ #define MESSAGES 0
+ 
++#include <cstdlib>
++
+ namespace rGeddei
+ {
+ 
+@@ -94,7 +96,7 @@
+ 	}
+ }
+ 
+-const bool SessionServer::alive() const
++bool SessionServer::alive() const
+ {
+ 	QMutexLocker lock(&theCalling);
+ 	return theAlive;
+diff -ru exscalibar-1.0.4_orig/src/remote/rgeddei/sessionserver.h exscalibar-1.0.4/src/remote/rgeddei/sessionserver.h
+--- exscalibar-1.0.4_orig/src/remote/rgeddei/sessionserver.h	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/remote/rgeddei/sessionserver.h	2009-02-28 10:10:19.000000000 +0100
+@@ -65,7 +65,7 @@
+ 
+ 	void setAlive();
+ 	void resetAlive();
+-	const bool alive() const;
++	bool alive() const;
+ 
+ public:
+ 	// implementations of rpcs
+Only in exscalibar-1.0.4/src/remote/rgeddei: sessionserver.o
+Only in exscalibar-1.0.4/src/remote/tests/testnodeclient: testnodeclient
+Only in exscalibar-1.0.4/src/remote/tests/testnodeclient: testnodeclient.o
+Only in exscalibar-1.0.4/src/remote/tests/testrdemux: testrdemux
+Only in exscalibar-1.0.4/src/remote/tests/testrdemux: testrdemux.o
+Only in exscalibar-1.0.4/src/remote/tests/testspeed: testspeed
+Only in exscalibar-1.0.4/src/remote/tests/testspeed: testspeed.o
+Only in exscalibar-1.0.4/src/tests/testall: testall
+Only in exscalibar-1.0.4/src/tests/testall: testall.o
+Only in exscalibar-1.0.4/src/tests/testbuffer: testbuffer
+diff -ru exscalibar-1.0.4_orig/src/tests/testbuffer/testbuffer.cpp exscalibar-1.0.4/src/tests/testbuffer/testbuffer.cpp
+--- exscalibar-1.0.4_orig/src/tests/testbuffer/testbuffer.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/tests/testbuffer/testbuffer.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -1,6 +1,7 @@
+ #define __GEDDEI_BUILD
+ 
+ #include <iostream>
++#include <cstdlib>
+ 
+ #include "geddei.h"
+ using namespace Geddei;
+Only in exscalibar-1.0.4/src/tests/testbuffer: testbuffer.o
+Only in exscalibar-1.0.4/src/tests/testdemux: testdemux
+diff -ru exscalibar-1.0.4_orig/src/tests/testdemux/testdemux.cpp exscalibar-1.0.4/src/tests/testdemux/testdemux.cpp
+--- exscalibar-1.0.4_orig/src/tests/testdemux/testdemux.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/tests/testdemux/testdemux.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -48,7 +48,7 @@
+ 		}
+ 		plunge();
+ 	}
+-	virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &, SignalTypeRefs &outTypes) { outTypes[0] = Wave(22050); return true; }
++	virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &, SignalTypeRefs &outTypes) { outTypes[0] = Wave(22050); return true; }
+ 	virtual void initFromProperties(const Properties &) { setupIO(0, 1); }
+ 	
+ public:
+@@ -66,7 +66,7 @@
+ 		}
+ 	}
+ 
+-	virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &, SignalTypeRefs &) { return true; }
++	virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &, SignalTypeRefs &) { return true; }
+ 	virtual void initFromProperties(const Properties &) { setupIO(1, 0); }
+ 	virtual void receivedPlunger()
+ 	{
+@@ -80,7 +80,7 @@
+ {
+ 	virtual void processChunk(const BufferDatas &in, BufferDatas &out) const { out[0][0] = in[0][0] + in[0][2] + in[0][4]; out[0][1] = in[0][1] + in[0][3]; }
+ 	virtual void initFromProperties(const Properties &) { setupIO(1, 1, 5, 3, 2); }
+-	virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes) { outTypes = inTypes[0]; return true; }
++	virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes) { outTypes = inTypes[0]; return true; }
+ public:
+ 	Add() : SubProcessor("Add") {}
+ };
+@@ -89,7 +89,7 @@
+ {
+ 	virtual void processChunk(const BufferDatas &in, BufferDatas &out) const { out[0][0] = (in[0][0] - in[0][1]) + (in[0][2] - in[0][3]); }
+ 	virtual void initFromProperties(const Properties &) { setupIO(1, 1, 4, 2, 1); }
+-	virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes) { outTypes = inTypes[0]; return true; }
++	virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes) { outTypes = inTypes[0]; return true; }
+ public:
+ 	Sub() : SubProcessor("Sub") {}
+ };
+@@ -98,7 +98,7 @@
+ {
+ 	virtual void processChunk(const BufferDatas &in, BufferDatas &out) const { out[0][0] = ::abs(in[0][0] - in[1][0]); }
+ 	virtual void initFromProperties(const Properties &) { setupIO(2, 1, 1, 1, 1); }
+-	virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes) { outTypes = inTypes[0]; return true; }
++	virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes) { outTypes = inTypes[0]; return true; }
+ public:
+ 	Diff() : SubProcessor("Diff", InConst) {}
+ };
+Only in exscalibar-1.0.4/src/tests/testdemux: testdemux.o
+Only in exscalibar-1.0.4/src/tests/testfileout: testfileout
+diff -ru exscalibar-1.0.4_orig/src/tests/testfileout/testfileout.cpp exscalibar-1.0.4/src/tests/testfileout/testfileout.cpp
+--- exscalibar-1.0.4_orig/src/tests/testfileout/testfileout.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/tests/testfileout/testfileout.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -23,7 +23,7 @@
+ 			plunge();
+ 		}
+ 	}
+-	virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &, SignalTypeRefs &outTypes) { outTypes[0] = Wave(22050); return true; }
++	virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &, SignalTypeRefs &outTypes) { outTypes[0] = Wave(22050); return true; }
+ 	virtual void initFromProperties(const Properties &) { setupIO(0, 1); }
+ 	public: Trivial() : Processor("Trivial") {}
+ };
+@@ -35,7 +35,7 @@
+ 		for(int i = 0;; i++)
+ 			output(0).makeScratchSample(true)[0] = i;
+ 	}
+-	virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &, SignalTypeRefs &outTypes) { outTypes[0] = Wave(22050); return true; }
++	virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &, SignalTypeRefs &outTypes) { outTypes[0] = Wave(22050); return true; }
+ 	virtual void initFromProperties(const Properties &) { setupIO(0, 1); }
+ 	public: Trivial2() : Processor("Trivial2") {}
+ };
+@@ -43,7 +43,7 @@
+ class Multiply: public SubProcessor
+ {
+ 	virtual void processChunk(const BufferDatas &in, BufferDatas &out) const { out[0][0] = in[0][0] * in[1][0]; }
+-	virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes) { outTypes[0] = inTypes[0]; return true; }
++	virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes) { outTypes[0] = inTypes[0]; return true; }
+ 	virtual void initFromProperties(const Properties &) { setupIO(2, 1, 1, 1, 1); }
+ 	public: Multiply(): SubProcessor("Multiply") {}
+ };
+Only in exscalibar-1.0.4/src/tests/testfileout: testfileout.o
+Only in exscalibar-1.0.4/src/tests/testflow: testflow
+diff -ru exscalibar-1.0.4_orig/src/tests/testflow/testflow.cpp exscalibar-1.0.4/src/tests/testflow/testflow.cpp
+--- exscalibar-1.0.4_orig/src/tests/testflow/testflow.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/tests/testflow/testflow.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -24,16 +24,16 @@
+ 	{
+ //		while(true)
+ 		{
+-			for(unsigned int i = 0; i < 5; i++)
++			for(uint i = 0; i < 5; i++)
+ 			{	BufferData s = output(0).makeScratchSamples(10);
+-				for(unsigned int j = 0; j < 10; j++)
++				for(uint j = 0; j < 10; j++)
+ 					s[j] = i;
+ 				output(0) << s;
+ 				plunge();
+ 			}
+ 		}
+ 	}
+-	virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &, SignalTypeRefs &outTypes) { outTypes[0] = Wave(22050); return true; }
++	virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &, SignalTypeRefs &outTypes) { outTypes[0] = Wave(22050); return true; }
+ 	virtual void initFromProperties(const Properties &) { setupIO(0, 1); }
+ 
+ public:
+@@ -51,7 +51,7 @@
+ 		}
+ 	}
+ 
+-	virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes) { if(!inTypes[0].isA<Wave>()) return false; outTypes[0] = inTypes[0]; return true; }
++	virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes) { if(!inTypes[0].isA<Wave>()) return false; outTypes[0] = inTypes[0]; return true; }
+ 	virtual void initFromProperties(const Properties &) { setupIO(1, 1); }
+ 	virtual void receivedPlunger()
+ 	{
+@@ -76,7 +76,7 @@
+ 	}
+ 
+ 	virtual void initFromProperties(const Properties &) { setupIO(1, 0); }
+-	virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &, SignalTypeRefs &) { return true; }
++	virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &, SignalTypeRefs &) { return true; }
+ 	virtual void receivedPlunger()
+ 	{
+ 		std::cout << "Eater: Received plunger!" << std::endl;
+Only in exscalibar-1.0.4/src/tests/testflow: testflow.o
+Only in exscalibar-1.0.4/src/tests/testmulti: testmulti
+diff -ru exscalibar-1.0.4_orig/src/tests/testmulti/testmulti.cpp exscalibar-1.0.4/src/tests/testmulti/testmulti.cpp
+--- exscalibar-1.0.4_orig/src/tests/testmulti/testmulti.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/tests/testmulti/testmulti.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -41,7 +41,7 @@
+ 	uint theConsolidate;
+ 
+ 	virtual void processChunks(const BufferDatas &in, BufferDatas &out, const uint chunks) const;
+-	virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
++	virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes);
+ 	virtual PropertiesInfo specifyProperties() const;
+ 	virtual void initFromProperties(const Properties &properties);
+ 
+@@ -83,7 +83,7 @@
+ 	}
+ }
+ 
+-const bool DownSample::verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes)
++bool DownSample::verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes)
+ {
+ 	theScope = inTypes[0].scope();
+ 	outTypes = inTypes[0];
+@@ -126,7 +126,7 @@
+ 		}
+ 		plunge();
+ 	}
+-	virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &, SignalTypeRefs &outTypes)
++	virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &, SignalTypeRefs &outTypes)
+ 	{
+ 		outTypes[0] = Spectrum(theWidth, 1, 1);
+ 		return true;
+@@ -149,7 +149,7 @@
+ 	float theBass, theTreble;
+ 	int theBand[4];
+ 	virtual void initFromProperties (const Properties &) { setupIO(1, 3, 1, 1, 1); }
+-	virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes) { outTypes[0] = Spectrum(2); outTypes[1] = Spectrum(2); outTypes[2] = Spectrum(inTypes[0].scope() - 4); return true; }
++	virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes) { outTypes[0] = Spectrum(2); outTypes[1] = Spectrum(2); outTypes[2] = Spectrum(inTypes[0].scope() - 4); return true; }
+ 	virtual void processChunk(const BufferDatas &ins, BufferDatas &outs) const
+ 	{	cerr << "Sizes: i=" << ins[0].elements() << ", o = " << outs[0].elements() << ", " << outs[1].elements() << ", " << outs[2].elements() << endl;
+ 	}
+Only in exscalibar-1.0.4/src/tests/testmulti: testmulti.o
+Only in exscalibar-1.0.4/src/tests/testproperties: testproperties
+Only in exscalibar-1.0.4/src/tests/testproperties: testproperties.o
+Only in exscalibar-1.0.4/src/tests/testspeed: testspeed
+diff -ru exscalibar-1.0.4_orig/src/tests/testspeed/testspeed.cpp exscalibar-1.0.4/src/tests/testspeed/testspeed.cpp
+--- exscalibar-1.0.4_orig/src/tests/testspeed/testspeed.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/tests/testspeed/testspeed.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -34,7 +34,7 @@
+ 			}
+ 		}
+ 	}
+-	virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &, SignalTypeRefs &outTypes) { outTypes[0] = Value(); return true; }
++	virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &, SignalTypeRefs &outTypes) { outTypes[0] = Value(); return true; }
+ 	virtual void initFromProperties(const Properties &) { setupIO(0, 1); }
+ 	virtual void specifyOutputSpace(QValueVector<uint> &o) { o[0] = 10; }
+ public:
+@@ -55,7 +55,7 @@
+ //	sched_yield();
+ 		}
+ 	}
+-	virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &, SignalTypeRefs &) { return true; }
++	virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &, SignalTypeRefs &) { return true; }
+ 	virtual void initFromProperties(const Properties &) { setupIO(1, 0); }
+ public:
+ 	MySink() : Processor("MySink", NotMulti, Guarded) {}
+@@ -72,7 +72,7 @@
+ 			output(0).makeScratchSamples(1, true)[0] = *((float *)&t);
+ 		}
+ 	}
+-	virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &, SignalTypeRefs &out) { out[0] = Value(); return true; }
++	virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &, SignalTypeRefs &out) { out[0] = Value(); return true; }
+ 	virtual void initFromProperties(const Properties &) { setupIO(0, 1); }
+ public:
+ 	LatencySource() : Processor("LatencySource") {}
+@@ -93,10 +93,10 @@
+ 			delete t;
+ 		}
+ 	}
+-	virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &, SignalTypeRefs &) { return true; }
++	virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &, SignalTypeRefs &) { return true; }
+ 	virtual void initFromProperties(const Properties &) { setupIO(1, 0); }
+ public:
+-	const float latency() const { return float(theElapsedSum) / float(theSamples); }
++	float latency() const { return float(theElapsedSum) / float(theSamples); }
+ 	LatencySink() : Processor("LatencySink", NotMulti, Guarded) {}
+ };
+ 
+@@ -106,7 +106,7 @@
+ 	{
+ 		setupIO(1, 1, 1, 1);
+ 	}
+-	virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &in, SignalTypeRefs &out)
++	virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &in, SignalTypeRefs &out)
+ 	{
+ 		out = in;
+ 		return true;
+Only in exscalibar-1.0.4/src/tests/testspeed: testspeed.o
+Only in exscalibar-1.0.4/src/tests/testsplit: testsplit
+diff -ru exscalibar-1.0.4_orig/src/tests/testsplit/testsplit.cpp exscalibar-1.0.4/src/tests/testsplit/testsplit.cpp
+--- exscalibar-1.0.4_orig/src/tests/testsplit/testsplit.cpp	2009-02-28 08:53:53.000000000 +0100
++++ exscalibar-1.0.4/src/tests/testsplit/testsplit.cpp	2009-02-28 10:10:19.000000000 +0100
+@@ -14,9 +14,9 @@
+ 	{
+ //		while(true)
+ 		{
+-			for(unsigned int i = 0; i < 5; i++)
++			for(uint i = 0; i < 5; i++)
+ 			{	BufferData s = output(0).makeScratchSamples(10);
+-				for(unsigned int j = 0; j < 10; j++)
++				for(uint j = 0; j < 10; j++)
+ 					s[j] = i;
+ 				output(0) << s;
+ 				std::cout << "Generator " << name() << ": Pushing plunger..." << std::endl;
+@@ -24,7 +24,7 @@
+ 			}
+ 		}
+ 	}
+-	virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &, SignalTypeRefs &outTypes) { outTypes[0] = Wave(22050); return true; }
++	virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &, SignalTypeRefs &outTypes) { outTypes[0] = Wave(22050); return true; }
+ 	virtual void initFromProperties(const Properties &) { setupIO(0, 1); }
+ 
+ public:
+@@ -42,7 +42,7 @@
+ 		}
+ 	}
+ 
+-	virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes)
++	virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &inTypes, SignalTypeRefs &outTypes)
+ 	{
+ 		outTypes[0] = inTypes[0];
+ 		return true;
+@@ -75,7 +75,7 @@
+ 		}
+ 	}
+ 
+-	virtual const bool verifyAndSpecifyTypes(const SignalTypeRefs &, SignalTypeRefs &)
++	virtual bool verifyAndSpecifyTypes(const SignalTypeRefs &, SignalTypeRefs &)
+ 	{
+ 		return true;
+ 	}
+Only in exscalibar-1.0.4/src/tests/testsplit: testsplit.o
+Only in exscalibar-1.0.4/system: Makefile
+Only in exscalibar-1.0.4/system: libsystem.so
+Only in exscalibar-1.0.4/system: libsystem.so.1
+Only in exscalibar-1.0.4/system: libsystem.so.1.0
+Only in exscalibar-1.0.4/system: libsystem.so.1.0.0

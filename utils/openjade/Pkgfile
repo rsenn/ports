@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An implementation of DSSSL, an ISO standard for formatting SGML/XML documents.
+#  OpenJade is a suite of tools for validating, processing, and applying
+#  DSSSL (Document Style Semantics and Specification Language) stylesheets
+#  to SGML and XML documents. It is a project undertaken by the DSSSL
+#  community to maintain and extend Jade and the related SP suite of SGML/XML
+#  processing tools.
+#  .
+# URL: http://openjade.sourceforge.net/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=openjade
+version=1.3.2
+release=1
+source=($mirror_sf/openjade/openjade-$version.tar.gz)
+
+build()
+{
+  cd openjade-$version
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

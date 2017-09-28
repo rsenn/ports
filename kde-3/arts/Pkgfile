@@ -1,0 +1,37 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An analog realtime synthesizer.
+#  aRts is a framework for developing modular multimedia applications. The
+#  sound server, artsd, allows multiple applications to cooperatively process
+#  and output sound and music. aRts is designed to provide its filter
+#  and synthesis capabilities to other applications using the multimedia
+#  communication protocol (MCOP). aRts is also capable of modular realtime
+#  synthesis. It can create sounds & music (realtime midi synthesis) using
+#  small modules like oscillators for creating waveforms, various filters,
+#  mixers, faders, etc.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=arts
+version=1.5.10
+release=1
+source=(ftp://ftp.kde.org/pub/kde/stable/3.5.10/src/arts-$version.tar.bz2
+        arts-1.5.10-no-inline-artsc.patch
+        arts-1.5.10-climits.patch)
+
+build()
+{
+  cd arts-$version
+
+  patch -p1 -i $SRC/arts-1.5.10-no-inline-artsc.patch
+  patch -p1 -i $SRC/arts-1.5.10-climits.patch
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

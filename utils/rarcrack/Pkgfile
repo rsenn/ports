@@ -1,0 +1,25 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: This program uses a brute force algorithm to guess your
+# encrypted compressed file's password. If you forget your encrypted
+# file password, this program is the solution. This program can crack
+# zip,7z and rar file passwords.
+# URL: http://rarcrack.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=rarcrack
+version=0.2
+release=1
+source=($mirror_sf/rarcrack/rarcrack-$version.tar.bz2)
+
+build()
+{
+  cd rarcrack-$version
+
+  make CC="${CC-cc}" CFLAGS="$CFLAGS"
+
+  install -d $ROOT/bin
+
+  make PREFIX="$ROOT" install
+}

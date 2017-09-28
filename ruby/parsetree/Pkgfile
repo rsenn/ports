@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Ruby parse tree tools.
+#  ParseTree is a C extension (using RubyInline) that extracts the parse tree
+#  for an entire class or a specific method and returns it as a s-expression
+#  (aka sexp) using ruby's arrays, strings, symbols, and integers.
+# URL: http://rubyforge.org/projects/parsetree/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=parsetree
+version=3.0.3
+release=1
+source=($mirror_rubyforge/parsetree/ParseTree-$version.tgz)
+
+build()
+{
+  cd ParseTree-$version
+
+  set -- `ruby --version`
+
+  RUBYVERSION="$2"
+  RUBYLIBDIR="$prefix/lib/ruby/${RUBYVERSION%.*}"
+
+  install -d $PKG/$RUBYLIBDIR
+  install -m 644 lib/*.rb $PKG/$RUBYLIBDIR
+
+  install -d $ROOT/share/doc/parsetree
+  install -m 644 History.txt Manifest.txt README.txt $ROOT/share/doc/parsetree
+}

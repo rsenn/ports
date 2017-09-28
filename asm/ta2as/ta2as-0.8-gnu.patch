@@ -1,0 +1,98 @@
+diff -wru ta2asv08_orig/strlwr.c ta2asv08/strlwr.c
+--- ta2asv08_orig/strlwr.c	2009-04-09 09:06:52.000000000 +0200
++++ ta2asv08/strlwr.c	2009-04-09 09:06:13.000000000 +0200
+@@ -0,0 +1,51 @@
++/*
++FUNCTION
++  <<strlwr>>---force string to lower case
++  
++INDEX
++  strlwr
++
++ANSI_SYNOPSIS
++  #include <string.h>
++  char *strlwr(char *<[a]>);
++
++TRAD_SYNOPSIS
++  #include <string.h>
++  char *strlwr(<[a]>)
++  char *<[a]>;
++
++DESCRIPTION
++  <<strlwr>> converts each characters in the string at <[a]> to
++  lower case.
++
++RETURNS
++  <<strlwr>> returns its argument, <[a]>.
++
++PORTABILITY
++<<strlwr>> is not widely portable.
++
++<<strlwr>> requires no supporting OS subroutines.
++
++QUICKREF
++  strlwr
++*/
++
++#include <string.h>
++#include <ctype.h>
++
++char *
++strlwr (a)
++     char *a;
++{
++  char *ret = a;
++
++  while (*a != '\0')
++    {
++      if (isupper (*a))
++  *a = tolower (*a);
++      ++a;
++    }
++
++  return ret;
++}
++
+Only in ta2asv08: ta2as
+diff -wru ta2asv08_orig/ta2as.c ta2asv08/ta2as.c
+--- ta2asv08_orig/ta2as.c	2009-04-09 09:04:07.000000000 +0200
++++ ta2asv08/ta2as.c	2009-04-09 09:06:30.000000000 +0200
+@@ -95,12 +95,12 @@
+ int ReplaceMissch(cbuf lab,cbuf com,cbuf rem,oprd *op,int hoeveel)
+ {
+ char *p;
+-if(p=bsearch(com,replace,numofreps,16,(void*)stricmp))
++if(p=bsearch(com,replace,numofreps,16,(void*)strcasecmp))
+ 	{
+ 	strcpy(com,p+8);
+ 	return 0;
+ 	}
+-if (p=bsearch(lab,replace,numofreps,16,(void*)stricmp))
++if (p=bsearch(lab,replace,numofreps,16,(void*)strcasecmp))
+ 	{
+ 	strcpy(lab,p+8);
+ 	return 1;
+@@ -111,12 +111,12 @@
+ {
+ modstruct *p;
+ int waslabel;
+-if(p=bsearch(com,mods,numofmods,sizeof(modstruct),(void *)stricmp))
++if(p=bsearch(com,mods,numofmods,sizeof(modstruct),(void *)strcasecmp))
+ 	{
+ 	waslabel=0;
+ 	goto roepmodder;
+ 	}
+-else if(p=bsearch(lab,mods,numofmods,sizeof(modstruct),(void *)stricmp))
++else if(p=bsearch(lab,mods,numofmods,sizeof(modstruct),(void *)strcasecmp))
+ 	{
+ 	waslabel=1;
+ roepmodder:
+@@ -292,7 +292,7 @@
+ 	{
+ 	CrackMemInd(op);
+ 	}
+-else if(!strnicmp(opg,"offset",6))
++else if(!strncasecmp(opg,"offset",6))
+ 	{
+ 	temp=opg+6;
+ 	temp+=strspn(temp," \t");

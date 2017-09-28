@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+# Package: libmadeleine-ruby
+# Section: universe/libs
+# Description: Transparent object persistence (prevalence) for Ruby, based on Prevayler.
+# URL: http://madeleine.rubyforge.org/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=madeleine
+version=0.7.3
+release=1
+source=($mirror_rubyforge/madeleine/madeleine-$version.tar.gz)
+
+build()
+{
+  cd madeleine-$version
+
+  set `ruby --version`
+
+  RUBYVERSION=$2
+  RUBYLIBDIR=$prefix/lib/ruby/${RUBYVERSION%.*}
+
+  ruby install.rb config --site-ruby="$RUBYLIBDIR"
+  ruby install.rb setup
+  ruby install.rb install --prefix="$PKG"
+
+  install -d $ROOT/share/doc/madeleine
+  install -m 644 COPYING README NEWS TODO $ROOT/share/doc/madeleine
+}
+
+# EOF

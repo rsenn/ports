@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Binary object converter
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=objconv
+version=1
+release=1
+source=(http://www.agner.org/optimize/objconv.zip
+        objconv-cxx.patch)
+
+build()
+{
+  yes A | unzip -d objconv-src source.zip
+
+  cd objconv-src
+
+#  ls
+
+  dos2unix *.sh *.cpp *.h
+
+  patch -N -p1 -l -i $SRC/objconv-cxx.patch
+
+  sh build.sh
+
+  install -d $ROOT/bin
+  install -m 755 objconv $ROOT/bin
+
+  install -d $ROOT/share/doc/$name
+  install -m 644 $SRC/instructions.pdf $ROOT/share/doc/$name
+}

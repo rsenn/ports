@@ -1,0 +1,36 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A digital camera image meta-data (Exif) parser.
+#  exiftags parses a JPEG file looking for Exif (Exchangeable
+#  Image File) data, formatting, and printing image properties.
+#  Digital cameras typically add Exif data to the image files
+#  they produce containing information about the camera and
+#  digitized image. exiftags includes support for some camera
+#  manufacturer-specific properties.
+#  .
+# URL: http://johnst.org/sw/exiftags/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=exiftags
+version=1.01
+release=1
+source=(http://johnst.org/sw/exiftags/exiftags-$version.tar.gz)
+
+build()
+{
+  cd exiftags-$version
+
+  make
+
+  install -d $ROOT/bin
+  install -d $ROOT/share/doc/exiftags
+  install -m 644 CHANGES README $ROOT/share/doc/exiftags
+
+  make \
+       DESTDIR="$PKG" \
+       prefix="$prefix" \
+    install
+}
+
+# EOF

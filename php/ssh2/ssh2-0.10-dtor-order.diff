@@ -1,0 +1,16 @@
+diff -ru -ru ssh2-0.10_orig/ssh2.c ssh2-0.10/ssh2.c
+--- ssh2-0.10_orig/ssh2.c	2005-11-02 00:40:23.000000000 +0100
++++ ssh2-0.10/ssh2.c	2007-02-20 12:55:23.000000000 +0100
+@@ -1178,11 +1190,11 @@
+  */
+ PHP_MINIT_FUNCTION(ssh2)
+ {
++	le_ssh2_sftp		= zend_register_list_destructors_ex(php_ssh2_sftp_dtor, NULL, PHP_SSH2_SFTP_RES_NAME, module_number);
+ 	le_ssh2_session		= zend_register_list_destructors_ex(php_ssh2_session_dtor, NULL, PHP_SSH2_SESSION_RES_NAME, module_number);
+ #ifdef PHP_SSH2_REMOTE_FORWARDING
+ 	le_ssh2_listener	= zend_register_list_destructors_ex(php_ssh2_listener_dtor, NULL, PHP_SSH2_LISTENER_RES_NAME, module_number);
+ #endif /* PHP_SSH2_REMOTE_FORWARDING */
+-	le_ssh2_sftp		= zend_register_list_destructors_ex(php_ssh2_sftp_dtor, NULL, PHP_SSH2_SFTP_RES_NAME, module_number);
+ #ifdef PHP_SSH2_PUBLICKEY_SUBSYSTEM
+ 	le_ssh2_pkey_subsys	= zend_register_list_destructors_ex(php_ssh2_pkey_subsys_dtor, NULL, PHP_SSH2_PKEY_SUBSYS_RES_NAME, module_number);
+ #endif /* PHP_SSH2_PUBLICKEY_SUBSYSTEM */

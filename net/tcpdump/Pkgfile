@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A powerful tool for network monitoring and data acquisition
+#  This program allows you to dump the traffic on a network. tcpdump is
+#  able to examine IPv4, ICMPv4, IPv6, ICMPv6, UDP, TCP, SNMP, AFS BGP,
+#  RIP, PIM, DVMRP, IGMP, SMB, OSPF, NFS and many other packet types.
+#  It can be used to print out the headers of packets on a network interface,
+#  filter packets that match a certain expression. You can use this tool
+#  to track down network problems, to detect "ping attacks" or to monitor
+#  network activities.
+# URL: http://www.tcpdump.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=tcpdump
+version=3.9.8
+release=1
+source=(http://www.tcpdump.org/release/tcpdump-$version.tar.gz)
+
+build()
+{
+  cd tcpdump-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

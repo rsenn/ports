@@ -1,0 +1,33 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:52 roman Exp $
+# Name:
+# Description: Qt 4 WebKit module
+#  Qt is a cross-platform C++ application framework. Qt's primary feature
+#  is its rich set of widgets that provide standard GUI functionality.
+#  QtWebKit provides a Web browser engine that makes it easy to embed content
+#  from the World Wide Web into your Qt application. Qt 4 WebKit module Qt
+#  is a cross-platform C++ application framework. Qt's primary feature is
+#  its rich set of widgets that provide standard GUI functionality.
+#  QtWebKit provides a Web browser engine that makes it easy to embed
+#  content from the World Wide Web into your Qt application.
+# URL: http://www.trolltech.com
+#  http://www.trolltech.com
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=webkit
+version=r27630
+release=1
+source=(http://live.nightly.webkit.org/files/trunk/src/WebKit-$version.tar.bz2)
+
+build()
+{
+  cd WebKit-$version
+
+  find -name "*.pro" | while read qmk
+  do
+    (cd ${qmk%/*} && qmake ${qmk##*/})
+  done
+
+  make
+}
+

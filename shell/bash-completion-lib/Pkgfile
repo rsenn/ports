@@ -1,0 +1,48 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Section: universe/shells
+# Replaces: bash-completion
+# Description: Bash completion library
+#  This project splits the bash completion package of Ian Macdonald (see:
+#  http://www.caliban.org/bash/index.shtml#completion) into multiple
+#  files. The objectives of this project are that bash completion:
+#
+#    * should load faster
+#    * should consume less memory
+#    * should have an open development environment
+#    * should have automated tests
+#
+#  bash-completion-lib loads 4 times faster as does the single
+#  file bash completion package. Functions are loaded run-time for only
+#  those commands you actually complete - the moment you press TAB.
+#  After the first completion, the completion function is installed and
+#  stays in memory for fast subsequent completions.
+#  DejaGnu is used to run automated tests.
+#
+#  Homepage: http://www.fvue.nl/wiki/Bash_completion_library
+#  .
+# URL: http://code.google.com/p/bash-completion-lib/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: bash (>= 3.0)
+
+name=bash-completion-lib
+version=1.2.4
+release=1
+source=(http://bash-completion-lib.googlecode.com/files/bash_completion_lib-$version.tar.gz)
+
+build()
+{
+  cd bash_completion_lib-$version
+
+  install -d $PKG/etc
+  install -m 644 bash_completion_lib completionrc comploadrc $PKG/etc
+  install -d $PKG/etc/bash_completion_lib.d
+
+  install -d $ROOT/share/bash-completion-lib
+  cp -rf completions include script test $ROOT/share/bash-completion-lib
+
+  install -d $ROOT/share/doc/bash-completion-lib
+  install -m 644 AUTHORS COPYING INSTALL README RELEASE VERSION $ROOT/share/doc/bash-completion-lib
+}
+
+# EOF

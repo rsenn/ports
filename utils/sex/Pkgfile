@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Spouts a silly mad-lib-like random porn-style text
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6
+
+name=sex
+version=1.0
+release=1
+source=(http://distfiles.gentoo.org/distfiles/sex-1.0.tar.gz
+        sex-1.0-fix.patch)
+
+build()
+{
+  cd sex-$version
+
+  patch -N -p1 -i $SRC/sex-1.0-fix.patch
+
+  ${CC-cc} $LDFLAGS $CFLAGS -o sex sex.c
+
+  install -d $ROOT/share/doc/$name
+  install -m 644 README $ROOT/share/doc/$name/
+
+  install -d $ROOT/bin
+  install -m 755 sex $ROOT/bin/
+
+  install -d $ROOT/share/man/man1
+  install -m 644 sex.6 $ROOT/share/man/man1/sex.1
+}

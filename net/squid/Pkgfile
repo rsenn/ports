@@ -1,0 +1,38 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Squid is a high performance Web proxy cache that can be arranged hierarchically for an improvement in response times and a reduction in bandwith usage. Squid runs on all popular Unix and Windows platforms.
+# URL: 
+# Maintainer: 
+# Depends on: 
+
+name=squid
+version=3.0.STABLE17
+release=1
+source=(http://www.squid-cache.org/Versions/v3/3.0/squid-3.0.STABLE17.tar.bz2)
+
+build() 
+{
+  cd squid-$version
+  
+  #./bootstrap.sh
+
+  case $prefix in
+    /usr) sysconfdir="/etc" localstatedir="/var" ;;
+  esac
+  
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --libexecdir="$prefix/sbin" \
+       --sysconfdir="${sysconfdir=$prefix/etc}" \
+       --localstatedir="${localstatedir=$prefix/var}" \
+       --disable-dependency-tracking \
+       --disable-maintainer-mode \
+       --enable-ssl
+
+  
+  make DEFAULT_LOG_PREFIX="${localstatedir}/var/log/squid" DESTDIR="$PKG" install
+}
+
+# EOF

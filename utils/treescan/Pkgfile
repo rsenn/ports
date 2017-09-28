@@ -1,0 +1,25 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Finds all the files in a directory tree and prints their names in a way similar to "find -print", using an optimised disk access strategy. It is sometimes much faster than the naive strategy used by "find".
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=treescan
+version=0.6
+release=1
+source=(http://tantalophile.shareable.org/treescan/treescan-$version.tar.gz)
+
+build()
+{
+  cd treescan-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

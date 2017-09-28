@@ -1,0 +1,36 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A disassembler for x86 opcodes.
+#  The libdisasm project provides C (and SWIG Python/Perl bindings) for
+#  disassembling x86 opcode streams into instruction and operand details.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libdisasm
+version=0.21-pre2
+release=1
+source=(libdisasm_0.21-pre2.tgz)
+
+build()
+{
+  cd libdisasm_$version
+
+  sed -i \
+      -e 's/\s\+make$/ $(MAKE)/g' \
+      -e 's/\s\+make\s\+/ $(MAKE) /g' \
+    Makefile
+
+  make
+
+  install -d $ROOT/lib
+  install -m 755 libdisasm/libdisasm.so $ROOT/lib/libdisasm.so.${version%-*}
+  ln -s libdisasm.so.${version%-*} $ROOT/lib/libdisasm.so.${version%%.*}
+  ln -s libdisasm.so.${version%%.*} $ROOT/lib/libdisasm.so
+
+  install -d $ROOT/include
+  install -m 644 libdisasm/libdis.h $ROOT/include
+
+  install -d $ROOT/bin
+  install -m 755 x86dis/x86dis $ROOT/bin
+}

@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A package installer that uses source tarballs.
+#  Sourcer is a package installer that uses source tarballs. It is intended
+#  for LinuxFromScratch users, or any source freak. It's fast, totally
+#  customizable, and a little bit complicated at first.
+# URL: http://sourcer.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=sourcer
+version=0.5.1
+release=1
+source=($mirror_sf/sourcer/sourcer-$version.tar.bz2)
+
+build()
+{
+  cd sourcer-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

@@ -1,0 +1,20 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Parses .msg message files as produced by Microsoft Outlook.
+# URL: http://search.cpan.org/~mvz/Email-Outlook-Message-0.904/lib/Email/Outlook/Message.pm
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libemail-mime-creator-perl, libole-storage-lite-perl
+
+name=email-outlook-message
+version=0.904
+release=1
+source=(http://search.cpan.org/CPAN/authors/id/M/MV/MVZ/Email-Outlook-Message-$version.tar.gz)
+
+build()
+{
+  cd Email-Outlook-Message-$version
+
+  perl Build.PL installdirs="vendor"
+
+  ./Build install destdir="$PKG"
+}

@@ -1,0 +1,37 @@
+# $Id: Pkgfile,v 1.3 2007/05/09 21:02:53 roman Exp $
+#
+# Description: Multithreaded C++ cross-platform application framework.
+#  ZooLib allows one to write a single set of C++ sources which can
+#  be compiled into native executables for Mac OS, Windows, BeOS,
+#  or POSIX-compliant systems that use the X Window system (such as
+#  Linux). Zoolib provides a GUI toolkit with a uniquely flexible
+#  layout system. It also provides a single-file database format, TCP
+#  networking, and extensive debugging support. ZooLib applications are
+#  multithreaded. ZooLib requires only minimal support from the underlying
+#  OS and platform GUI layer, and thus could be ported to a completely new
+#  platform without too much difficulty. ZooLib is fully production quality
+#  on Windows and MacOS, completely implemented but untested on BeOS, and
+#  not yet complete on POSIX. Please note that the sources from the "demo"
+#  branch are also required to build ZooLib or to get started writing your
+#  own ZooLib applications.
+# URL: http://zoolib.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=zoolib
+version=0.8.1
+release=1
+source=($mirror_sf/zoolib/zoolib-$version.tgz
+        $mirror_sf/zoolib/zoolib-demos-1.0.1.tgz)
+
+build()
+{
+  cd zoolib-demos
+
+  export ZOOLIB_ROOT="$SRC/zoolib"
+
+  for dir in *-build-posix/
+  do
+    gmake -C "$dir" CC="$CXX" CFLAGS="$CXXFLAGS"
+  done
+}

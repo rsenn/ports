@@ -1,0 +1,33 @@
+--- mod_ap2_snmp_1.04_orig/Makefile	2007-01-23 15:31:11.000000000 +0100
++++ mod_ap2_snmp_1.04/Makefile	2007-01-23 10:01:32.000000000 +0100
+@@ -0,0 +1,30 @@
++prefix=/usr/local
++libdir=$(prefix)/lib
++pkglibdir=$(prefix)/lib/apache2
++
++CC=gcc
++INSTALL=install
++DEFS=-DLINUX=2 -D_REENTRANT -D_GNU_SOURCE -D_LARGEFILE64_SOURCE -DPATH_MAX=4096
++INCLUDES=-I$(prefix)/include/apache2 -I$(prefix)/include/apr
++CFLAGS=-prefer-pic -g -ggdb -O2 -march=i686 -pthread
++LDFLAGS=-rpath $(pkglibdir) -module -avoid-version
++LIBS=-lnetsnmp -lapr -lcrypto -ldl
++
++LIBTOOL=libtool --silent
++LTCOMPILE=$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) $(DEFS) $(INCLUDES)
++LTLINK=$(LIBTOOL) --mode=link $(CC) $(LDFLAGS)
++LTINSTALL=$(LIBTOOL) --mode=install $(INSTALL)
++
++all: mod_ap2_snmp.la
++
++clean:
++	$(RM) mod_ap2_snmp.la mod_ap2_snmp.lo
++
++install:
++	$(LTINSTALL) mod_ap2_snmp.la $(pkglibdir)
++
++mod_ap2_snmp.lo: mod_ap2_snmp.c
++	$(LTCOMPILE) -c $<
++
++mod_ap2_snmp.la: mod_ap2_snmp.lo
++	$(LTLINK) -o $@ $< $(LIBS)

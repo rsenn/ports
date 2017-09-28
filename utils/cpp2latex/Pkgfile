@@ -1,0 +1,25 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: This is a little piece of software to convert C++-programmlistings to a file you can input in an LaTeX-document.
+# URL: http://www.arnoldarts.de/drupal/?q=Cpp2LaTeX
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=cpp2latex
+version=2.3
+release=1
+source=(http://www.arnoldarts.de/drupal/files/downloads/cpp2latex/cpp2latex-$version.tar.gz)
+
+build()
+{
+  cd cpp2latex-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

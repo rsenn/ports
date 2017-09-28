@@ -1,0 +1,35 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Nutrition software to analyze meals with the USDA Nutrient Database.
+#  nut is nutrition software to record what you eat and analyze your
+#  meals for nutrient composition. The database included is the latest
+#  USDA Nutrient Database for Standard Reference. This database contains
+#  values for vitamins, minerals, fats, calories, protein, carbohydrates,
+#  fiber, etc., and includes the essential polyunsaturated fats, Omega-3
+#  and Omega-6. Nutrient levels are expressed as a percentage of the Daily
+#  Value, the familiar standard of food labeling in the United States, but
+#  also can be fully customized. Foods can be added from recipes or food
+#  labels, and nutrient intake can be graphed. The program is completely
+#  menu-driven and there are no commands to learn.
+# URL: http://nut.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=nut
+version=13.5
+release=1
+source=($mirror_sf/nut/nut-$version.tar.gz)
+
+build()
+{
+  cd nut-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

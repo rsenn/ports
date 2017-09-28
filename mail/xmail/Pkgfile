@@ -1,0 +1,39 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An ESMTP/POP3/POP-sync/Finger server.
+#  XMail is an Internet and intranet mail server featuring an ESMTP server,
+#  POP3 server, finger server, TLS support for SMTP and POP3 (both server and
+#  client side), multiple domains, no need for users to have a real system
+#  account, SMTP relay checking, DNS based maps check, custom (IP based and
+#  address based) spam protection, SMTP authentication (PLAIN LOGIN CRAM-MD5
+#  POP3-before-SMTP and custom), a POP3 account synchronizer with external
+#  POP3 accounts, account aliases, domain aliases, custom mail processing,
+#  direct mail files delivery, custom mail filters, mailing lists, remote
+#  administration, custom mail exchangers, logging, and multi-platform code.
+#  .
+# URL: http://www.xmailserver.org/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=xmail
+version=1.25
+release=1
+source=(http://www.xmailserver.org/xmail-$version.tar.gz)
+
+build()
+{
+  cd xmail-$version
+
+  make -f Makefile.lnx
+
+  install -d $ROOT/bin
+  install -m 755 bin/{XMail,XMCrypt} $ROOT/bin
+
+  install -d $ROOT/sbin
+  install -m 755 bin/{CtrlClnt,MkUsers,sendmail} $ROOT/sbin
+
+  install -d $ROOT/share/doc/xmail
+  install -m 644 docs/Readme.txt docs/ChangeLog.txt COPYING ToDo.txt $ROOT/share/doc/xmail
+}
+
+# EOF

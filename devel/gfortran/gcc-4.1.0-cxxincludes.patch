@@ -1,0 +1,30 @@
+diff -ru gcc-4.1.0_orig/gcc/configure gcc-4.1.0/gcc/configure
+--- gcc-4.1.0_orig/gcc/configure	2006-03-16 10:54:09.000000000 +0100
++++ gcc-4.1.0/gcc/configure	2006-03-16 11:18:08.000000000 +0100
+@@ -1654,12 +1654,8 @@
+ fi;
+ 
+ if test x${gcc_gxx_include_dir} = x; then
+-  if test x${enable_version_specific_runtime_libs} = xyes; then
+-    gcc_gxx_include_dir='${libsubdir}/include/c++'
+-  else
+-    libstdcxx_incdir='c++/$(version)'
+-    gcc_gxx_include_dir="\$(libsubdir)/\$(unlibsubdir)/..\`echo \$(exec_prefix) | sed -e 's|^\$(prefix)||' -e 's|/[^/]*|/..|g'\`/include/"${libstdcxx_incdir}
+-  fi
++  gcc_gxx_include_dir='${prefix}/include/c++'
++  libstdcxx_incdir=c++
+ fi
+ 
+ 
+diff -ru gcc-4.1.0_orig/libstdc++-v3/configure gcc-4.1.0/libstdc++-v3/configure
+--- gcc-4.1.0_orig/libstdc++-v3/configure	2006-03-16 10:54:19.000000000 +0100
++++ gcc-4.1.0/libstdc++-v3/configure	2006-03-16 11:18:56.000000000 +0100
+@@ -88839,7 +88839,7 @@
+ 
+   # Default case for install directory for include files.
+   if test $version_specific_libs = no && test $gxx_include_dir = no; then
+-    gxx_include_dir='${prefix}/include/c++/${gcc_version}'
++    gxx_include_dir='${prefix}'/include/c++
+   fi
+ 
+   # Version-specific runtime libs processing.

@@ -1,0 +1,33 @@
+# $Id: Pkgfile,v 1.3 2007/05/09 21:02:53 roman Exp $
+#
+# Description: SSH2 client-side library
+#  libssh2 is the thin library implementing client side of SSH2
+#  protocol as defined by Internet Drafts SECSH-TRANS, SECSH-USERAUTH,
+#  SECSH-CONNECTION, SECSH-ARCH, SECSH-FILEXFER, SECSH-DHGEX, SECSH-NUMBERS,
+#  and SECSH-PUBLICKEY
+#  This boils down to the regular terminal, scp and SFTP sessions; port
+#  forwarding; password, key-based and keyboard-interactive authentication.
+#  This package contains the library.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=ssh2
+version=0.10
+release=2
+source=(http://pecl.php.net/get/ssh2-$version.tgz
+        ssh2-0.10-dtor-order.diff)
+
+build()
+{
+  cd ssh2-${version}
+  patch -N -p1 -i $SRC/ssh2-0.10-dtor-order.diff
+
+  phpize
+  ./configure \
+    --prefix=$prefix \
+    --with-ssh2="$prefix"
+
+  make
+  make INSTALL_ROOT="$PKG" install
+}

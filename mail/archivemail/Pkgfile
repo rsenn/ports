@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An archiver and compressor for old email messages.
+#  archivemail is a tool written in Python for archiving and compressing old
+#  email in mailboxes. It can move messages older than the specified number
+#  of days to a separate mbox-format mailbox that is compressed with gzip,
+#  or optionally just delete old email. It supports archiving IMAP, mbox,
+#  MH, and maildir format mailboxes.
+#  .
+# URL: http://archivemail.sourceforge.net/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=archivemail
+version=0.7.2
+release=1
+source=($mirror_sf/archivemail/archivemail-$version.tar.gz)
+
+build()
+{
+  cd archivemail-$version
+
+  sed -i "s,\"man/,\"share/man/," setup.py
+
+  python setup.py install --prefix="$ROOT"
+
+  install -d $ROOT/share/doc/archivemail
+  install -m 644 CHANGELOG COPYING FAQ MANIFEST PKG-INFO README TODO $ROOT/share/doc/archivemail
+
+  cp -rf examples $ROOT/share/doc/archivemail
+}
+
+# EOF

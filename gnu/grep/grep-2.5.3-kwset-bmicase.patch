@@ -1,0 +1,90 @@
+Tuesday 08/09/2005 at 10:23 UTC, original submission:
+
+In case of of a single key word combined with an ignore-case match grep 
+uses the commentz-walter algorithm.
+
+The patch modifies the faster Boyer-Moore algo so that it can and will 
+be used instead. For a single character string still commentz-walter is 
+used since bmexec() then uses memchr(), something that will not do with 
+a trans table.
+
+In case of multibyte strings available a modification of bmexec() would 
+not be necessary: All characters are normalized to lower case in 
+search.c anyway. But for the sake of generality and the "mind your own 
+business"-philosophy the change to kwset.c are necessary.
+
+Something to be considered for the future:
+Should a normalization still take place in search.c (each character has 
+to be modified!)? Or should the trans-table be used (will that always 
+work with multibyte strings?)? 
+
+diff -u grep-2.5.3_orig/src/kwset.c grep-2.5.3/src/kwset.c
+--- grep-2.5.3_orig/src/kwset.c	2005-08-09 12:02:36.000000000 +0200
++++ grep-2.5.3/src/kwset.c	2005-08-09 12:02:57.000000000 +0200
+@@ -398,7 +398,7 @@ kwsprep (kwset_t kws)
+ 
+   /* Check if we can use the simple boyer-moore algorithm, instead
+      of the hairy commentz-walter algorithm. */
+-  if (kwset->words == 1 && kwset->trans == NULL)
++  if (kwset->words == 1 && (kwset->trans == NULL || kwset->mind > 1))
+     {
+       char c;
+ 
+@@ -503,6 +503,7 @@ bmexec (kwset_t kws, char const *text, s
+   register unsigned char const *d1;
+   register char const *ep, *sp, *tp;
+   register int d, gc, i, len, md2;
++  register char const *trans;
+ 
+   kwset = (struct kwset const *) kws;
+   len = kwset->mind;
+@@ -522,6 +523,7 @@ bmexec (kwset_t kws, char const *text, s
+   gc = U(sp[-2]);
+   md2 = kwset->mind2;
+   tp = text + len;
++  trans=kwset->trans;
+ 
+   /* Significance of 12: 1 (initial offset) + 10 (skip loop) + 1 (md2). */
+   if (size > 12 * len)
+@@ -549,10 +551,12 @@ bmexec (kwset_t kws, char const *text, s
+ 	  }
+ 	break;
+       found:
+-	if (U(tp[-2]) == gc)
++        /* gc is trans[gc] the way kwsincr() works */
++	if ( (trans ? trans[U(tp[-2])] : U(tp[-2])) == gc)
+ 	  {
+-	    for (i = 3; i <= len && U(tp[-i]) == U(sp[-i]); ++i)
+-	      ;
++	    for (i = 3; i <= len ; ++i)
++	      if ( (trans ? trans[U(tp[-i])] : U(tp[-i])) != U(sp[-i]))
++                break;
+ 	    if (i > len)
+ 	      return tp - len - text;
+ 	  }
+@@ -568,10 +572,12 @@ bmexec (kwset_t kws, char const *text, s
+       d = d1[U((tp += d)[-1])];
+       if (d != 0)
+ 	continue;
+-      if (U(tp[-2]) == gc)
+-	{
+-	  for (i = 3; i <= len && U(tp[-i]) == U(sp[-i]); ++i)
+-	    ;
++      /* gc is trans[gc] the way kwsincr() works */
++      if ( (trans ? trans[U(tp[-2])] : U(tp[-2])) == gc)
++        {
++          for (i = 3; i <= len; ++i)
++            if ( (trans ? trans[U(tp[-i])] : U(tp[-i])) != U(sp[-i]))
++              break;
+ 	  if (i > len)
+ 	    return tp - len - text;
+ 	}
+@@ -751,7 +757,7 @@ kwsexec (kwset_t kws, char const *text, 
+ 	 struct kwsmatch *kwsmatch)
+ {
+   struct kwset const *kwset = (struct kwset *) kws;
+-  if (kwset->words == 1 && kwset->trans == NULL)
++  if (kwset->words == 1 && (kwset->trans == NULL || kwset->mind > 1))
+     {
+       size_t ret = bmexec (kws, text, size);
+       if (kwsmatch != NULL && ret != (size_t) -1)

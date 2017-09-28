@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A FastTracker 2 inspired music sequencer/tracker.
+#  MilkyTracker is a multi-platform music application for creating .MOD
+#  and .XM module files. It attempts to recreate the module replay and
+#  user experience of the popular DOS program Fasttracker II, with special
+#  playback modes available for improved Amiga ProTracker 2/3 compatibility.
+#  .
+# URL: http://www.milkytracker.net/
+# Maintainer:  Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=milkytracker
+version=0.90.80
+release=1
+source=(http://www.milkytracker.net/files/milkytracker-0.90.80.tar.bz2)
+
+build()
+{
+  cd milkytracker-0.90.80
+./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+make
+make DESTDIR="$PKG" install
+}
+
+# EOF

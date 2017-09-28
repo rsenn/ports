@@ -1,0 +1,45 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description:
+# Longdescription:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=odcctools
+version=590.36
+release=1
+source=(http://dev.gentoo.org/~grobian/distfiles/odcctools-20080621.tar.bz2)
+
+build()
+{
+  cd odcctools-20060413
+
+  for target in powerpc i386; do
+
+    mkdir -p build-$target
+    pushd build-$target
+
+    ../configure --target=${target}-apple-darwin8 --prefix=${prefix} --libexecdir=${prefix}/libexec/10.4
+    make
+    popd
+
+  done
+
+  for target in powerpc i386; do
+    pushd build-${target}
+
+    PLATDIR="${prefix}/${target}-apple-darwin8"
+    install -d -m 755 ${pkg}$PLATDIR/bin
+    make install DESTDIR=${pkg}
+    mv ${pkg}${prefix}/lib ${pkg}$PLATDIR/
+    pushd ${pkg}$PLATDIR/bin
+    for file in `cd ${pkg}${prefix}/bin; ls ${target}*`; do
+    ln ../../bin/$file ${file/$target-apple-darwin8-/}
+    done
+    popd
+    popd
+    install -d -m 0755 ${pkg}${prefix}/${target}-apple-darwin8
+    mv ${pkg}${prefix}/include ${pkg}${prefix}/${target}-apple-darwin8/include
+done
+}

@@ -1,0 +1,27 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: The cutils collection is composed of: cdecl and cundecl (decode and encode C type declarations), cobfusc (make a C source file unreadable but compilable), chilight (highlight C source files), cunloop (unloop C loops), yyextract (extract grammar rules from yacc grammar), and yyref (generate a cross-reference for yacc input).
+# URL: http://www.sigala.it/sandro/software.php#cutils
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6
+
+name=cutils
+version=1.6
+release=4adfinis1
+source=(http://www.sigala.it/sandro/files/cutils-$version.tar.gz)
+
+build()
+{
+  cd cutils-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix" \
+       --mandir="$prefix/share/man" \
+       --infodir="$prefix/share/info"
+
+  make
+  make DESTDIR="$PKG" install
+}

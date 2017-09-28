@@ -1,0 +1,27 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: voodoo - the package manager for open source software.
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=voodoo
+version=0.2.2
+release=1
+source=($mirror_sf/voodoopm/voodoo-0.2.2.tar.bz2)
+
+build()
+{
+  cd voodoo-$version
+
+  export XERCESCROOT="$prefix" XALANCROOT="$prefix"
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

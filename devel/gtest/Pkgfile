@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Package: libgtest
+# Description: Google C++ Testing Framework
+#  Google's framework for writing C++ tests on a variety of platforms
+#  (Linux, Mac OS X, Windows, Windows CE, and Symbian). Based on the xUnit
+#  architecture. Supports automatic test discovery, a rich set of assertions,
+#  user-defined assertions, death tests, fatal and non-fatal failures,
+#  various options for running the tests, and XML test report generation.
+#
+# URL: http://code.google.com/p/googletest/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=gtest
+category=devel
+version=1.0.1
+release=1
+source=(http://googletest.googlecode.com/files/gtest-$version.tar.bz2)
+
+build()
+{
+  cd gtest-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: [P]hase [H]armonic [A]dvanced [S]ynthesis [EX]periment
+#  PHASEX is an experimental software synthesizer for use with
+#  Linux/ALSA/JACK. The name comes partially from its experimental method
+#  of using phase offset modulation, where each oscillator can have its
+#  phase offset between right and left channels modulated by an LFO or
+#  another oscillator.
+# URL: http://www.sysex.net/phasex/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=phasex
+version=0.11.1
+release=1
+source=(http://sysex.net/phasex/phasex-$version.tar.gz)
+
+build()
+{
+  cd phasex-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/phasex
+  install -m 644 TODO NEWS COPYING README INSTALL ChangeLog AUTHORS doc/ROADMAP $ROOT/share/doc/phasex
+}

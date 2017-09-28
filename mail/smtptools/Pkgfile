@@ -1,0 +1,35 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Tools for the Simple Mail Transfer Protocol
+#  This collection of commands contains tools to send and receive messsages
+#  with SMTP.
+#  .
+# URL: http://www.ohse.de/uwe/software/smtptools.html
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=smtptools
+version=0.2.3
+release=2
+source=(smtptools-$version.tar.gz
+        smtptools-0.2.3-compilefixes.patch)
+
+build()
+{
+  cd smtptools-$version
+
+  patch -N -p1 -i $SRC/smtptools-0.2.3-compilefixes.patch
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/smtptools
+  install -m 644 README AUTHORS COPYING ChangeLog INSTALL TODO $ROOT/share/doc/smtptools
+}
+
+# EOF

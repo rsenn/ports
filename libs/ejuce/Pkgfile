@@ -1,0 +1,33 @@
+# $Id: Pkgfile,v 1.2 2007/05/09 21:02:48 roman Exp $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=ejuce
+version=svn20080607
+release=1
+source=(ejuce-$version.tar.bz2
+        ejuce-20080607-fixes.patch)
+
+build()
+{
+  cd ejuce-${version#svn}
+
+  patch -N -p1 -i $SRC/ejuce-20080607-fixes.patch
+
+  cd build/linux
+
+  make CXX="$CXX" CXXFLAGS="$CXXFLAGS -I$prefix/include/juce -Wall" CONFIG="Release"
+  make CXX="$CXX" CXXFLAGS="$CXXFLAGS -I$prefix/include/juce -Wall" CONFIG="Debug"
+
+  install -d $ROOT/lib
+  install -m 644 ../../bin/*.a $ROOT/lib
+
+  install -d $ROOT/include
+
+ (cd ../.. &&
+  find * -type f -name "*.h" >files.txt &&
+  tar -c --files-from files.txt | tar -C $ROOT/include -xv)
+}

@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: LALR(1) parser generator for Ruby.
+# URL: http://i.loveruby.net/en/projects/racc/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=racc
+version=1.4.5
+release=1
+source=(http://i.loveruby.net/archive/racc/racc-1.4.5-all.tar.gz)
+
+build()
+{
+  cd racc-$version-all
+
+  IFS="$IFS[]"
+  set `ruby --version`
+
+  RUBYVERSION="$2"
+  eval RUBYARCH="\${$#}"
+
+  RUBYLIBDIR="$prefix/lib/ruby/${RUBYVERSION%.*}"
+
+  ruby setup.rb config --siterubyver="$RUBYLIBDIR" --siterubyverarch="$RUBYLIBDIR/$RUBYARCH"
+  ruby setup.rb setup
+  ruby setup.rb install --prefix="$PKG"
+}
+
+# EOF

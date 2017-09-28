@@ -1,0 +1,36 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A curses-based program that allows one to log into several machines simultaneously and interact with them, selectively directing input to individual machines or groups of selected machines
+#
+# You can run both line-oriented and screen oriented in the target machines,
+# because Omnitty has built-in terminal emulation capability. When the
+# window is large enough, Omnitty also displays a "summary area" for each
+# machine, in which it shows what the latest output from the machine was,
+# so you can have an idea of what is going on in each machine.
+#
+# URL: http://omnitty.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libncurses5, librote0
+
+name=omnitty
+version=0.3.0
+release=1
+source=($mirror_sf/omnitty/omnitty-$version.tar.gz)
+
+build()
+{
+  cd omnitty-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix" \
+       --mandir="$prefix/share/man"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/omnitty
+  install -m 644 [A-Z]*[A-Z]* $ROOT/share/doc/omnitty
+}

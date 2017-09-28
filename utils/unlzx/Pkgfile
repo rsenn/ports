@@ -1,0 +1,21 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=unlzx
+version=unlzx.c.gz
+release=1
+source=(http://us.aminet.net/pub/aminet/misc/unix/unlzx.c.gz)
+
+build()
+{
+  gzip -dc unlzx.c.gz >unlzx.c
+
+  ${CC-cc} $CFLAGS -o unlzx unlzx.c
+
+  install -d $ROOT/bin
+  install -m 755 unlzx $ROOT/bin
+}

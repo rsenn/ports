@@ -1,0 +1,32 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:44 roman Exp $
+#
+# Description: A diff/patch utility for source tarballs.
+#  sdelta analyzes two files and outputs the difference. It applies the
+#  difference to the first of the original files to construct a bit for bit
+#  clone of the second file. It is optimized for use with source tarballs,
+#  and also contains sdreq, the client for the Public Patch Repository,
+#  PPR. The PPR generates on demand source upgrade and downgrade patches
+#  for over a quarter of a million version specific source tarballs. By
+#  using sdreq you can acquire new source tarballs from the PPR several
+#  times faster and with only 10% of the downloading that you currently do.
+# URL: http://sdelta.berlios.de/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=sdelta3
+version=20060216
+release=1
+source=(ftp://ftp.berlios.de/pub/sdelta/files/sdelta3-$version.tar.bz2)
+
+build()
+{
+  cd sdelta3*
+
+  make
+  make PREFIX="$ROOT" install
+
+  install -d $ROOT/share/doc
+  mv $ROOT/share/$name $ROOT/share/doc
+
+  copy_license "LICENSE"
+}

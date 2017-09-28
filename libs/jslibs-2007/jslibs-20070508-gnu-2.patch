@@ -1,0 +1,141 @@
+diff -ru jslibs-20070508_orig/jsgraphics/GNUmakefile jslibs-20070508/jsgraphics/GNUmakefile
+--- jslibs-20070508_orig/jsgraphics/GNUmakefile	2008-11-09 14:59:25.000000000 +0100
++++ jslibs-20070508/jsgraphics/GNUmakefile	2008-11-09 15:05:26.000000000 +0100
+@@ -48,7 +48,7 @@
+ # ---------------------------------------------------------------------------
+ jsgraphics_LTOBJECTS = jsgl.lo jstransformation.lo jswindow.lo main.lo
+   
+-CXXFLAGS += -I. $(JS_CFLAGS)
++CXXFLAGS += -I. $(JS_CFLAGS) -msse
+ 
+ $(jsgraphics_LTOBJECTS): %.lo: %.cpp
+ 
+diff -ru jslibs-20070508_orig/jsgraphics/jstransformation.h jslibs-20070508/jsgraphics/jstransformation.h
+--- jslibs-20070508_orig/jsgraphics/jstransformation.h	2008-11-09 14:59:25.000000000 +0100
++++ jslibs-20070508/jsgraphics/jstransformation.h	2008-11-09 15:15:57.000000000 +0100
+@@ -28,7 +28,7 @@
+ 
+ 	RT_ASSERT( JSVAL_IS_OBJECT(val), "Object expected." );
+ 	JSObject *obj = JSVAL_TO_OBJECT(val);
+-	if ( JS_GetClass(obj) == &classTransformation ) { // ok, we know this object and the content of its jsprivate
++	if ( JS_GET_CLASS(cx, obj) == &classTransformation ) { // ok, we know this object and the content of its jsprivate
+ 
+ 		*m = (Matrix44*)JS_GetPrivate(cx, obj);
+ 		RT_ASSERT_RESOURCE(m); // (TBD) good place to throw an error ? ( shouldn't be the caller's job ? )
+diff -ru jslibs-20070508_orig/jsgraphics/matrix44.h jslibs-20070508/jsgraphics/matrix44.h
+--- jslibs-20070508_orig/jsgraphics/matrix44.h	2008-11-09 14:59:25.000000000 +0100
++++ jslibs-20070508/jsgraphics/matrix44.h	2008-11-09 15:15:25.000000000 +0100
+@@ -33,6 +33,7 @@
+ #include <xmmintrin.h>
+ 
+ #include <stdlib.h>
++#include <string.h>
+ #include <math.h>
+ 
+ //
+@@ -40,7 +41,15 @@
+ 
+ #include "vector3.h"
+ 
+-typedef __declspec(align(16)) union {
++#ifndef FORCEINLINE
++#define FORCEINLINE __inline__
++#endif // FORCEINLINE
++
++typedef 
++#ifdef _MSC_VER
++  __declspec(align(16)) 
++#endif
++union {
+     struct {
+         __m128 m1;
+         __m128 m2;
+@@ -66,7 +75,7 @@
+ 
+ inline void Matrix44Free( Matrix44 *m ) {
+ 
+-	 _aligned_free(m);
++	 free(m);
+ }
+ 
+ inline Matrix44 *Matrix44Alloc() {
+@@ -74,7 +83,7 @@
+ 	// Doc: For example, if you use malloc, the result depends on the operand size. If arg >= 8,
+ 	//      alignment will be 8 byte aligned. If arg < 8, alignment will be the first power of 2 less than arg.
+ 	//      For example, if you use malloc(7), alignment is 4 bytes.
+-	return (Matrix44*)_aligned_malloc(sizeof(Matrix44), __alignof(Matrix44));
++	return (Matrix44*)memalign(sizeof(Matrix44), __alignof(Matrix44));
+ }
+ 
+ inline void Matrix44Identity( Matrix44 *m ) {
+@@ -154,7 +163,7 @@
+ 	memcpy(m->raw, _tmp, sizeof(_tmp) );
+ }
+ 
+-
++#ifdef _MSC_VER
+ inline void Matrix44SetXRotation( Matrix44 *m, float radAngle ) {
+ 
+ 	__asm { // Intel's copyright notice: the content of the following __asm if provided by Intel (matlib)
+@@ -251,6 +260,8 @@
+ 	__asm fsqrt
+ }
+ 
++#endif // _MSC_VER
++
+ inline void Matrix44SetRotation( Matrix44 *m, const Vector3 *axis, float radAngle ) {
+ 
+ /*
+diff -ru jslibs-20070508_orig/jsgraphics/vector3.h jslibs-20070508/jsgraphics/vector3.h
+--- jslibs-20070508_orig/jsgraphics/vector3.h	2008-11-09 14:59:25.000000000 +0100
++++ jslibs-20070508/jsgraphics/vector3.h	2008-11-09 15:08:07.000000000 +0100
+@@ -12,6 +12,9 @@
+  * License.
+  * ***** END LICENSE BLOCK ***** */
+ 
++#ifndef __vector3_h
++#define __vector3_h
++
+ //#pragma once
+ /*
+ source: http://nebuladevice.svn.sourceforge.net/viewvc/nebuladevice/trunk/nebula2/code/nebula2/inc/mathlib/_vector3_sse.h?view=markup
+@@ -72,10 +75,10 @@
+     // horizontal add
+     __m128 b = _mm_add_ss(_mm_shuffle_ps(a, a, _MM_SHUFFLE(X,X,X,X)), _mm_add_ss(_mm_shuffle_ps(a, a, _MM_SHUFFLE(Y,Y,Y,Y)), _mm_shuffle_ps(a, a, _MM_SHUFFLE(Z,Z,Z,Z))));
+     __m128 l = _mm_sqrt_ss(b);
+-    return l.m128_f32[X];
++    return ((float *)&l)[X];
+ }
+ 
+-static __forceinline __m128 rsqrt_nr(const __m128& x) {
++static __inline__ __m128 rsqrt_nr(const __m128& x) {
+ 	static const __m128 v0pt5 = { 0.5f, 0.5f, 0.5f, 0.5f };
+ 	static const __m128 v3pt0 = { 3.0f, 3.0f, 3.0f, 3.0f };
+ 	__m128 t = _mm_rsqrt_ps(x);
+@@ -134,7 +137,7 @@
+ 
+ 	__m128 a = _mm_mul_ps(v0->m128, v1->m128);
+ 	__m128 b = _mm_add_ss(_mm_shuffle_ps(a, a, _MM_SHUFFLE(0,0,0,0)), _mm_add_ss(_mm_shuffle_ps(a, a, _MM_SHUFFLE(1,1,1,1)), _mm_shuffle_ps(a, a, _MM_SHUFFLE(2,2,2,2))));
+-	return b.m128_f32[0];
++	return ((float *)(&b))[0];
+ }
+ 
+ 
+@@ -150,3 +153,5 @@
+ 
+ 	v->m128 = _mm_sub_ps(e, f);
+ }
++
++#endif // __vector3_h
+--- jslibs-20070508_orig/GNUmakefile	2008-11-09 15:20:36.000000000 +0100
++++ jslibs-20070508/GNUmakefile	2008-11-09 15:22:18.000000000 +0100
+@@ -0,0 +1,9 @@
++SUBDIRS = jscrypt jsfastcgi jshost jsimage jsnspr jsode jssqlite jsstd jsz
++
++all: all-recursive
++install: install-recursive
++
++all-recursive install-recursive:
++	@TARGET="$@" && for dir in $(SUBDIRS); do \
++	  $(MAKE) -C "$$dir" "$${TARGET%-recursive}"; \
++	done

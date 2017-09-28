@@ -1,0 +1,40 @@
+# $Id: Pkgfile,v 1.9 2007/04/23 17:39:08 roman Exp $
+#
+# Description: A dynamic database engine.
+#  D_store is an alternative database-like storage library. It is very
+#  good at tagging, live searching, hierarchies, and any other kind of
+#  relationships that your data has. Its primary goal is an enabler for
+#  applications with lots of related data to be explored and manipulated
+#  by the user, with live search fields, while still remaining fast with
+#  lots of items. D_store works like a programatic spreadsheet: there are
+#  rows and rows store values in columns (called fields).
+# URL: http://tech.inhelsinki.nl/d_store/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=d-store
+version=0.2
+release=1
+source=(http://tech.inhelsinki.nl/d_store_download/d_store-$version.20070119.tar.gz)
+
+build()
+{
+  cd d_store*
+
+#  libtoolize --force --copy --install
+#  aclocal --force
+#  autoconf --force
+#  automake --force --add-missing --foreign
+
+  ./configure \
+      --prefix="$prefix"
+#        --build="$build" \
+#        --host="$host" \
+#        --${shared:=enable}-shared \
+#        --${static:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+
+  chown -R 0.0 $ROOT
+}

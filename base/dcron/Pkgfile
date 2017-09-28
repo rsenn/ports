@@ -1,0 +1,78 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: Yet another cron daemon.
+#  Dillon's Cron is a multi-user cron written from scratch, similar
+#  to vixie-cron but with major differences. Attention is paid less to
+#  feature-creep and more to usability and reliability.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: dietlibc
+
+name=dcron
+version=2.3.3
+release=1
+source=(http://www.ibiblio.org/pub/Linux/system/daemons/cron/dcron-$version.tar.gz
+        dcron-$version-fixes.patch
+        dcron-$version-bsd.patch
+        dcron-$version-term.patch)
+
+build()
+{
+  cd dcron-${version}
+  patch -N -p1 -i $SRC/dcron-$version-fixes.patch
+  patch -N -p1 -i $SRC/dcron-$version-bsd.patch
+  patch -N -p1 -i $SRC/dcron-$version-term.patch
+  make prefix="$prefix" DESTDIR="$PKG" \
+       CC="${CC} -fno-builtin" CFLAGS="${CFLAGS}" \
+       install
+
+  install -d $ROOT/var/cron/crontabs
+}
+
+postmerge()
+{
+  rm -f $prefix/service/crond
+
+  if isin "$services_run" "crond"; then
+    mkdir -p $prefix/service
+    ln -sf $sysconfdir/service/crond $prefix/service/crond
+  fi
+}
+
+config()
+{
+  # for daemontools
+  config_enter 'services' 'run'
+
+    config_value 'crond'  'Run crond at boot'
+    config_default        'yes'
+    config_end
+
+  config_leave
+}
+
+services()
+{
+  config_branch 'crond'
+
+    config_branch 'log'
+    config_end
+
+    config_set 'TITLE'   'Cron daemon'
+    config_set 'BIN'     "$prefix/bin/crond"
+    config_set 'START'   'crond [0-9\.]\+ dillon, started'
+    config_set 'STOP'    'crond [0-9\.]\+ dillon, terminated'
+
+  config_end
+
+}
+
+crond()
+{
+  exec 2>&1
+
+  source $sysconfdir/nexbyte.conf
+  export PATH="$prefix/bin:$prefix/sbin"
+
+  exec -a crond $prefix/sbin/crond -f
+}

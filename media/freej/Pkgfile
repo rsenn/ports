@@ -1,0 +1,42 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:50 roman Exp $
+#
+# Description: A vision mixer.
+#  FreeJ is a vision mixer: an instrument for realtime video manipulation
+#  used in the fields of dance and theater performance, veejaying, medical
+#  visualization, and TV. With FreeJ, multiple layers can be filtered through
+#  effect chains and then mixed together. The supported layer inputs are
+#  images, movies, live cameras, particle generators, text scrollers, and
+#  more. The resulting video mix can be shown on multiple and remote screens,
+#  encoded into a movie, and streamed live to the Internet. FreeJ can be
+#  controlled locally or remotely from multiple places at the same time,
+#  using a slick console interface. It can be automated via JavaScript and
+#  operated via MIDI and joystick.
+# URL: http://freej.dyne.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=freej
+version=0.8.1
+release=1
+source=(ftp://ftp.dyne.org/freej/releases/freej-$version.tar.gz
+        freej-0.8.1-fixes.patch)
+
+build()
+{
+  cd freej-$version
+
+  patch -N -p1 -i $SRC/freej-0.8.1-fixes.patch
+
+#  automake -a --foreign --copy
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --${shared:=enable}-shared \
+       --${static:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+}
+

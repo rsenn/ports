@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A fast compiler cache.
+#  ccache is a fast compiler cache. It is used as a front end to your
+#  compiler to safely cache compilation output. When the same code is
+#  compiled again the cached output is used giving a significant speedup
+#  (typically 5x).
+# URL: http://ccache.samba.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=ccache
+version=2.4
+release=1
+source=(http://samba.org/ftp/ccache/ccache-$version.tar.gz)
+
+build()
+{
+  cd ccache-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

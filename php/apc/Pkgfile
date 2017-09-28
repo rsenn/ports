@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Alternative PHP Cache
+#  APC is a free, open, and robust framework for caching
+#  and optimizing PHP intermediate code.
+#  .
+# URL: http://pecl.php.net/package/APC
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=apc
+version=3.1.2
+release=1
+source=(http://pecl.php.net/get/APC-$version.tgz)
+
+build()
+{
+  cd APC-$version
+
+  phpize
+
+  ./configure
+
+  make
+  make INSTALL_ROOT="$PKG" install
+}
+
+# EOF

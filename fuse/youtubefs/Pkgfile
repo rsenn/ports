@@ -1,0 +1,35 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Enables you to browse your favorite Youtube videos locally on your desktop without going to the youtube website.
+# Just create a youtube account and add videos to your playlists, favorites list or
+# subscribe to different channels. YoutubeFS then enables you to automatically
+# load these videos to a local folder on your desktop. You can then view
+# these videos (using a browser) as if they are local files.
+# URL: http://code.google.com/p/youtubefs/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: python-fuse
+
+name=youtubefs
+version=0.1
+release=1
+source=(http://youtubefs.googlecode.com/files/youtubefs-$version.tar.gz)
+
+build()
+{
+  cd youtubefs
+
+  mv -vf LICENSE.TXT youtube/LICENSE.txt
+
+  set -- $(IFS=". " && echo $(python --version 2>&1)) && shift
+
+  instdir=lib/python$1.$2/site-packages
+
+  install -d $ROOT/bin
+  mv youtubefs.py $ROOT/bin/youtubefs
+  chmod 755 $ROOT/bin/youtubefs
+
+  install -d $ROOT/$instdir
+
+  find * -not -wholename "*.svn*" >inst-files.txt
+  tar -c --files-from inst-files.txt | tar -C $ROOT/$instdir -xv
+}

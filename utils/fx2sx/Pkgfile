@@ -1,0 +1,40 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: fx2sx consists of a shell script and a xslt stylesheet for
+#              converting a flat xml file into a structured version.
+#              The rules for the structure are read from the file <prefix>.dsd.
+#              <prefix>.xsl - which follows these rules - is generated and
+#              applied to <prefix>.xml. The result is written to stdout.
+#              File locations and the path to the xsl processor are adjustable
+#              within this script.
+# URL:         http://www.msdd.net/fx2sx/index.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=fx2sx
+version=0.2.0
+release=1
+source=(http://www.msdd.net/fx2sx/fx2sx-$version.tgz)
+
+build()
+{
+  cd fx2sx-$version
+
+  sed -i \
+      -e "/^stylesheet=/ s:=.*:='${pkgdatadir=$prefix/share/fx2sx}/fx2sx.xsl':" \
+      -e "/^outputdir=/ s:=.*:=:" \
+    fx2sx
+
+  install -d $PKG${bindir=$prefix/bin}
+  install -m 755 fx2sx $PKG$bindir
+
+  install -d $PKG$pkgdatadir
+  install -m 644 fx2sx.xsl sx.dtd $PKG$pkgdatadir
+
+  install -d $PKG${mandir=$prefix/share/man/man1}
+  install -m 644 fx2sx.1 $PKG$mandir
+
+  install -d $PKG${docdir=$prefix/share/doc/fx2sx-$version}
+  cp -rf CHANGES COPYING README sample $PKG$docdir
+
+}

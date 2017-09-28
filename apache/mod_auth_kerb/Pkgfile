@@ -1,0 +1,46 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: kerberos v5/v4 authentication module for apache
+#  Mod_auth_kerb is an Apache module designed to provide Kerberos
+#  user authentication to the Apache web server. Using the Basic
+#  Auth mechanism, it retrieves a username/password pair from the
+#  browser and checks them against a Kerberos server as set up by
+#  your particular organization. It also supports mutual ticket
+#  authentication, although most browsers do not support that
+#  natively.
+#  .
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=mod_auth_kerb
+version=5.3
+release=1
+source=($mirror_sf/modauthkerb/mod_auth_kerb-$version.tar.gz
+        mod_auth_kerb-5.0rc7-pthread.patch)
+
+build()
+{
+  cd mod_auth_kerb-$version
+
+  # patch, substituting -pthread to -lpthread
+  patch -N -p1 -i $SRC/mod_auth_kerb-5.0rc7-pthread.patch
+
+  APXS=`ls $prefix/*bin/apxs*`
+
+  for apxs in $APXS; do
+
+    # configure and build for kerberos 5
+    ./configure \
+        --with-krb4="no" \
+        --with-krb5="$prefix" \
+        --with-apxs="$apxs"
+
+    make
+    make DESTDIR="$PKG" install
+  done
+
+  # install the module
+  #install -d $PKG/$libdir/apache
+  #install -m755 src/mod_auth_kerb.so $PKG/$libdir/apache/mod_auth_kerb.so
+}

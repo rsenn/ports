@@ -1,0 +1,36 @@
+diff -ru linux-2.6.23_orig/fs/unionfs/dentry.c linux-2.6.23/fs/unionfs/dentry.c
+--- linux-2.6.23_orig/fs/unionfs/dentry.c	2007-11-14 05:07:25.000000000 +0100
++++ linux-2.6.23/fs/unionfs/dentry.c	2007-11-14 06:08:24.000000000 +0100
+@@ -261,7 +261,7 @@
+ 	/* remove all non-private mappings */
+ 	unmap_mapping_range(inode->i_mapping, 0, 0, 0);
+ 
+-	if (inode->i_data.nrpages)
++	if (atomic_read(&inode->i_data.__nrpages))
+ 		truncate_inode_pages(&inode->i_data, 0);
+ }
+ 
+diff -ru linux-2.6.23_orig/fs/unionfs/mmap.c linux-2.6.23/fs/unionfs/mmap.c
+--- linux-2.6.23_orig/fs/unionfs/mmap.c	2007-11-14 05:07:25.000000000 +0100
++++ linux-2.6.23/fs/unionfs/mmap.c	2007-11-14 06:13:59.000000000 +0100
+@@ -96,7 +96,7 @@
+ 		goto out_release;
+ 	}
+ 	/* workaround for some lower file systems: see big comment on top */
+-	if (wbc->for_writepages && !wbc->fs_private)
++	if (wbc->for_writepages /*&& !wbc->fs_private*/)
+ 		wbc->for_writepages = 0;
+ 
+ 	BUG_ON(!lower_mapping->a_ops->writepage);
+diff -ru linux-2.6.23_orig/fs/unionfs/super.c linux-2.6.23/fs/unionfs/super.c
+--- linux-2.6.23_orig/fs/unionfs/super.c	2007-11-14 05:07:25.000000000 +0100
++++ linux-2.6.23/fs/unionfs/super.c	2007-11-14 06:12:56.000000000 +0100
+@@ -71,7 +71,7 @@
+ {
+ 	inode->i_size = 0;	/* every f/s seems to do that */
+ 
+-	if (inode->i_data.nrpages)
++	if (atomic_read(&inode->i_data.__nrpages))
+ 		truncate_inode_pages(&inode->i_data, 0);
+ 
+ 	clear_inode(inode);

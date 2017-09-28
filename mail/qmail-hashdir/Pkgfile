@@ -1,0 +1,49 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Hashed user directories for qmail
+#  This package extends qmail's functionality by adding a system to manage
+#  users directories (and the Maildirs there) in a scalable manner. In
+#  particular, it allows for hundreds of thousands or even millions of users
+#  on a system, across multiple domains, and implemented on multiple machines
+#  sharing storage for mailboxes. The package provides a set of tools
+#  enabling you to hash users' [mail] directories, avoiding the problems
+#  associated with placing them all in the same directory (esp. manageability
+#  for the sysadmin, and in certain cases filesystem limitations). The
+#  core of the package is a modification (patch) to qmail-local for how
+#  it searches for a user's 'Home' directory. qmail-hashdir uses the
+#  fairly ubiquitous P. J. Weinberger hash function, and avoids using
+#  system libraries where possible, using instead library functions from a
+#  neighbouring qmail installation (i.e. this software relies on the same
+#  functions written by Dan Bernstein that qmail itself does). Note that
+#  there are
+#  .
+#  security issues with this package. That doesn't mean the package is
+#  broken, but that it makes certain assumptions that you should understand
+#  fully before using qmail-hashdir - see the text file SECURITY provided
+#  as part of the distribution.
+#  .
+# URL: http://free.acrconsulting.co.uk/email/qmh.html
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=qmail-hashdir
+version=0.21
+release=1
+source=(http://free.acrconsulting.co.uk/sw/qmh/qmail-hashdir-$version.tar.gz)
+
+build()
+{
+  cd qmail-hashdir-$version
+
+  make
+
+  install -d $ROOT/bin
+  install -m 755 addhashalias addhashuser chhashdir showhashdir $ROOT/bin
+  install -m 755 qmail-local $ROOT/bin/qmail-local-hashdir
+
+  install -d $ROOT/share/doc/qmail-hashdir
+  install -m 644 COMMANDS INSTALL LIMITATIONS NOTES PITFALLS SECURITY TODO USAGE.* USERNAMES VERSIONS $ROOT/share/doc/qmail-hashdir
+
+}
+
+# EOF

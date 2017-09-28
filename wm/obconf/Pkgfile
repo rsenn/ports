@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Preferences manager for Openbox window manager
+#  ObConf is a small graphical utility which configures the window manager
+#  Openbox' preferences and configuration settings on the fly.
+#  If you are an Openbox user, you may want this package.
+# URL: http://icculus.org/openbox/index.php/ObConf:About
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=obconf
+version=1.6
+release=1
+source=(http://tr.openmonkey.com/files/obconf/obconf-$version.tar.gz)
+
+build()
+{
+  cd obconf-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

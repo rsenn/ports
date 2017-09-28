@@ -1,0 +1,38 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: LZMA compression utilities
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=lzma
+version=4.32.7
+release=1
+source=(http://tukaani.org/lzma/lzma-$version.tar.gz
+        lzma-4.32.5-shlib.patch)
+
+build()
+{
+  cd lzma-$version
+
+  patch -N -p1 -i $SRC/lzma-4.32.5-shlib.patch
+
+  libtoolize --force
+  aclocal --force -I m4
+  automake --force --copy --foreign --add-missing
+  aclocal --force -I m4
+  autoconf --force
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --${shared:=enable}-shared \
+      --${static:=enable}-shared
+
+  make
+  make prefix="$PKG$prefix" install
+
+  install -d $ROOT/share/doc/$name
+  mv -vt $ROOT/share/doc/$name ChangeLog [A-Z][A-Z]* extra
+}

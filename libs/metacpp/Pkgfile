@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A C++ external reflection and manipulation library.
+# MetaC++ is a library which is able to read and write C++ source code. It
+# makes the tree available to its clients by an API and in an XML format
+# it can read and write. Parsing is done by a patched GCC. The tree is a
+# representation of language constructs, not a syntax tree.
+#
+# URL: http://www-user.uni-bremen.de/~strasser/metacpp/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=metacpp
+version=0.1.tar.gz
+release=1
+source=(http://www-user.uni-bremen.de/~strasser/metacpp/metacpp-$version)
+
+build()
+{
+  cd metacpp
+
+  make
+
+  install -d $ROOT/lib
+  install -m 755 *.so $ROOT/lib
+
+  install -d $ROOT/include
+  install -m 644 *.h.gch $ROOT/include
+
+  install -d $ROOT/bin
+  install -m 755 util/virtuals $ROOT/bin
+}

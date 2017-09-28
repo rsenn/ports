@@ -1,0 +1,46 @@
+# $Id: Pkgfile,v 1.10 2007/05/10 16:59:30 roman Exp $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=vstgui
+version=3.0
+release=1
+source=(svn://jacklab.net/eXT2/vstplugins/vstgui
+        vstgui-3.0-linux.patch
+        vstgui-ext2-fixes.patch)
+
+build()
+{
+  cd vstgui
+
+  patch -N -p1 -i $SRC/vstgui-ext2-fixes.patch
+
+  VST_CFLAGS=`pkg-config vstsdk2.3 --cflags`
+
+  ${CXX-c++} ${CXXFLAGS--g -O2} ${VST_CFLAGS} -c *.cpp
+  ${AR-ar} src libvstgui.a *.o
+
+  install -d $ROOT/lib
+  install -m 644 libvstgui.a $ROOT/lib
+
+  install -d $ROOT/include/vstgui
+  install -m 644 *.h $ROOT/include/vstgui
+#  install -m 644 $SRC/vstgui-3.0/include/vstgui/aeffguieditor.h $ROOT/include/vstgui
+
+  return 0
+
+  cd vstgui-*
+  patch -N -p1 -i $SRC/vstgui-3.0-linux.patch
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+

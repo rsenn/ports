@@ -1,0 +1,33 @@
+--- Makefile_orig	2009-08-01 00:51:52.000000000 +0200
++++ Makefile	2009-08-01 00:54:17.000000000 +0200
+@@ -1,6 +1,9 @@
++prefix?=/usr
+ CC=g++
+ CFLAGS=-Wall -ansi -D_FILE_OFFSET_BITS=64 -DFUSE_USE_VERSION=26 -DRLOG_COMPONENT="loggedfs" `xml2-config --cflags`
+-LDFLAGS=-Wall -ansi -lpcre -lfuse -lrlog `xml2-config --libs`
++#LIBRLOG=-lrlog
++LIBRLOG=$(prefix)/lib/librlog.a
++LDFLAGS=-Wall -ansi -lpcre -lfuse $(LIBRLOG) `xml2-config --libs`
+ srcdir=src
+ builddir=build
+ 
+@@ -11,6 +14,8 @@
+ 
+ loggedfs: $(builddir)/loggedfs.o $(builddir)/Config.o $(builddir)/Filter.o
+ 	$(CC) -o loggedfs $(builddir)/loggedfs.o $(builddir)/Config.o $(builddir)/Filter.o $(LDFLAGS)
++loggedfs.static: $(builddir)/loggedfs.o $(builddir)/Config.o $(builddir)/Filter.o
++	$(CC) -static -o loggedfs $(builddir)/loggedfs.o $(builddir)/Config.o $(builddir)/Filter.o $(LDFLAGS)
+ $(builddir)/loggedfs.o: $(builddir)/Config.o $(builddir)/Filter.o $(srcdir)/loggedfs.cpp
+ 	$(CC) -o $(builddir)/loggedfs.o -c $(srcdir)/loggedfs.cpp $(CFLAGS)
+ 
+@@ -25,8 +30,8 @@
+ 	
+ install:
+ 	gzip loggedfs.1
+-	cp loggedfs.1.gz /usr/share/man/man1/
+-	cp loggedfs /usr/bin/
++	cp loggedfs.1.gz $(prefix)/share/man/man1/
++	cp loggedfs $(prefix)/bin/
+ 	cp loggedfs.xml /etc/
+ 
+ 

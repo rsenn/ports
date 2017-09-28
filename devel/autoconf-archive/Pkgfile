@@ -1,0 +1,26 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: The Autoconf Archive is a collection of more than 500 freely re-usable Autoconf macros. These macros have been contributed by friendly supporters of the cause from all over the Internet. 
+# URL: http://ac-archive.sourceforge.net/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=autoconf-archive
+version=2009-04-26
+release=1
+source=(http://autoconf-archive.cryp.to/autoconf-archive-$version.tar.bz2)
+
+build()
+{
+  cd autoconf-archive-$version
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

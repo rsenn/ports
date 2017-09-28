@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Netjack is a distributed addon for JACK, Jack audio connection
+# server. It allows for connecting JACK servers from several machines over the
+# network.
+# URL: http://netjack.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=netjack
+version=0.12
+release=1
+source=($mirror_sf/netjack/netjack-$version.tar.bz2
+        $mirror_sf/jackit/jack-audio-connection-kit-0.109.2.tar.gz)
+
+build()
+{
+  cd netjack-$version
+
+  scons
+
+  sed -i "s,/usr,$ROOT,g" SConstruct
+  scons install
+
+  install -d $ROOT/share/doc/$name-$version
+  install -m 644 COPYING README $ROOT/share/doc/$name-$version/
+
+  install -d $ROOT/include/jack
+  install -m 644 *.h $ROOT/include/jack/
+}

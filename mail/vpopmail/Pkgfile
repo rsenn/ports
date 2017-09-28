@@ -1,0 +1,42 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: $mirror_sf/vpopmail
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=vpopmail
+version=5.4.26
+release=1
+source=($mirror_sf/vpopmail/vpopmail-${version}d.tar.gz
+        vpopmail-5.4.26-dir.patch)
+
+build()
+{
+  cd vpopmail-$version
+
+  patch -N -p1 -i $SRC/vpopmail-5.4.26-dir.patch
+
+  aclocal --force
+  automake --force --copy --foreign --add-missing
+  aclocal --force
+  autoconf --force
+
+  case "$prefix" in
+    "/usr") sysconfdir="/etc" localstatedir="/var" ;;
+  esac
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix" \
+       --enable-qmail-newu="$prefix/bin/qmail-newu" \
+       --enable-qmail-newmrh="$prefix/bin/qmail-newmrh" \
+       --enable-vpopuser="root" \
+       --enable-vpopgroup="root" \
+       --with-vpopmaildir="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

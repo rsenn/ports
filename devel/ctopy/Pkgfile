@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A quick and dirty (but effective) C to Python translator.
+#  ctopy automates the parts of translating C source code to Python source
+#  code that are difficult for a human but easy for a machine. This
+#  allows a human programmer to concentrate on the nontrivial parts of
+#  the translation.
+#  .
+# URL: http://www.catb.org/~esr/ctopy/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=ctopy
+version=1.0
+release=1
+source=(http://www.catb.org/~esr/ctopy/ctopy-$version.tar.gz)
+
+build()
+{
+  cd ctopy-$version
+
+  make
+  make PREFIX="$ROOT" install
+
+  install -d $ROOT/share/doc/ctopy
+  install -m 644 COPYING README
+}
+
+# EOF

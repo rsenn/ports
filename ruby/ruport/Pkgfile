@@ -1,0 +1,41 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A Ruby report generation framework.
+#  Ruport (Ruby Reports) is a software library that aims to make
+#  the task of reporting less tedious and painful. It provides
+#  tools for data acquisition, database interaction, formatting, and
+#  parsing/munging. Designed to be extensible, it is possible to use
+#  Ruport for quick specific tasks as well as to build robust reporting
+#  applications.
+#  .
+# URL: http://rubyreports.org/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=ruport
+version=1.6.1
+release=1
+source=($mirror_rubyforge/ruport/ruport-$version.tar.bz2)
+
+build()
+{
+  cd ruport-$version
+
+  set `ruby --version`
+
+  RUBYVERSION=$2
+  RUBYLIBDIR=$prefix/lib/ruby/${RUBYVERSION%.*}
+
+  install -d $PKG/$RUBYLIBDIR
+  cp -rf lib/* $PKG/$RUBYLIBDIR
+
+  install -d $ROOT/share/doc/ruport
+  install -m 644 AUTHORS LICENSE README $ROOT/share/doc/ruport
+
+  cp -r examples $ROOT/share/doc/ruport
+
+  install -d $ROOT/share/ruport
+  cp -r test util $ROOT/share/ruport
+}
+
+# EOF

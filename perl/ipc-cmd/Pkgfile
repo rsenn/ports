@@ -1,0 +1,24 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Finding and running system commands made easy
+# URL: http://search.cpan.org/dist/IPC-Cmd/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libipc-run-perl, liblocale-maketext-simple-perl, libmodule-load-conditional-perl, libparams-check-perl, perl-base
+
+name=ipc-cmd
+version=0.40
+release=1
+source=(http://search.cpan.org/CPAN/authors/id/K/KA/KANE/IPC-Cmd-$version.tar.gz)
+
+build()
+{
+  cd IPC-Cmd-$version
+
+  perl Makefile.PL
+
+  make \
+       DESTDIR="$PKG" \
+       INSTALLDIRS="vendor" \
+       PREFIX="$prefix" \
+       install
+}

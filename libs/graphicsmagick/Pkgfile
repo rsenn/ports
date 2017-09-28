@@ -1,0 +1,36 @@
+# $Id: Pkgfile,v 1.4 2007/05/09 21:02:47 roman Exp $
+#
+# Description: A comprehensive image processing and 2D rendering system.
+#  GraphicsMagick is a robust collection of tools and libraries which
+#  support reading, writing, and manipulating an image in over 90 major
+#  formats including popular formats like TIFF, JPEG, JPEG-2000,PNG, PDF,
+#  PhotoCD, SVG, and GIF. A high-quality 2D renderer is included, which
+#  provides a subset of SVG capabilities. C, C++, Perl, Tcl, and Ruby are
+#  supported. Originally based on ImageMagick, GraphicsMagick focuses on
+#  performance, minimizing bugs, and providing stable APIs and ABIs. It
+#  runs on all modern variants of Unix, Windows, and Mac OS X.
+# URL: http://www.GraphicsMagick.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=graphicsmagick
+version=1.1.7
+release=1
+source=($mirror_sf/graphicsmagick/GraphicsMagick-$version.tar.bz2)
+
+build()
+{
+  cd GraphicsMagick-$version
+
+  ./configure \
+    --build="$build" \
+    --host="$host" \
+    --prefix="$prefix" \
+    --${shared:=enable}-shared \
+    --${static:=enable}-shared \
+    --without-x
+  make
+  make DESTDIR="$PKG" install
+
+  copy_license "Copyright.txt"
+}

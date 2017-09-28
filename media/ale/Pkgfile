@@ -1,0 +1,35 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A tool for rendering high-fidelity images of real scenes.
+#  ALE is an image-processing program used for tasks such as
+#  super-resolution, deblurring, noise reduction, and anti-aliasing. Its
+#  principle of operation is synthetic capture, combining multiple inputs
+#  representing the same scene.
+#  .
+# URL: http://auricle.dyndns.org/ALE/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=ale
+version=0.8.11.1
+release=1
+source=(http://auricle.dyndns.org/ALE/download/ale-$version.tar.gz)
+
+build()
+{
+  cd ale-$version
+
+  ./bootstrap
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/ale
+  install -m 644 REPORTING-BUGS COPYING NEWS AUTHORS README VERSION ChangeLog INSTALL TODO $ROOT/share/doc/ale
+}
+
+# EOF

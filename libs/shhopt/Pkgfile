@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Command line option parser - runtime
+#  This is Sverre H. Huseby's library for parsing command line options.
+#  Both traditional one-character options and GNU-style --long-options are
+#  supported. This library does a little more than standard getopt.
+#  This package contains what you need to run programs that use this library.
+#  upstream webpage: http://shh.thathost.com/
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=shhopt
+version=1.1.7
+release=1
+source=(http://shh.thathost.com/pub-unix/files/shhopt-$version.tar.gz)
+
+build()
+{
+  cd shhopt-$version
+
+  make INSTBASEDIR="$prefix"
+  make INSTBASEDIR="$ROOT" install
+
+  install -d $ROOT/share/doc/$name-$version
+
+  cp ChangeLog [A-Z][A-Z]* $ROOT/share/doc/$name-$version/
+}

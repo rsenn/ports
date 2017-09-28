@@ -1,0 +1,272 @@
+diff -ru NuppelVideo-0.52a_orig/Makefile NuppelVideo-0.52a/Makefile
+--- NuppelVideo-0.52a_orig/Makefile	2009-02-20 13:16:51.000000000 +0100
++++ NuppelVideo-0.52a/Makefile	2009-02-20 13:51:16.000000000 +0100
+@@ -1,10 +1,13 @@
+ CC=gcc
+-#CFLAGS= -g -Wall -O3  -mcpu=pentium -march=pentium -funroll-loops -fexpensive-optimizations -finline
+-CFLAGS= -Wall -O3 -DMMX -mcpu=pentium -march=pentium -funroll-loops -fexpensive-optimizations -finline-functions
++CFLAGS= -g -O3 -D_FORTIFY_SOURCE=0 -Wall
++CFLAGS+= -Wno-pointer-sign -Wno-unused
++#CFLAGS+= -DMMX
+ 
+-V4LDIR=/usr/src/linux/drivers/char/
++PREFIX=/usr
++V4LDIR=$(PREFIX)/src/linux/drivers/char/
+ COPTS=$(CFLAGS) -I$(V4LDIR)
+-COPTSRT= -O3 -Wall -DMMX -mcpu=pentium -funroll-loops -fexpensive-optimizations -finline-functions
++COPTSRT= $(CFLAGS)
++COPTSRT+= -funroll-loops -fexpensive-optimizations -finline-functions
+ 
+ all:   nuvplay nuvrec
+ 
+@@ -19,25 +22,25 @@
+ 
+ 
+ soxfuncs.o: soxfuncs.c
+-	$(CC) $(COPTS) -O3 -funroll-loops -finline-functions -c soxfuncs.c
++	$(CC) $(COPTS) -funroll-loops -finline-functions -c soxfuncs.c
+ 
+ 
+ resample.o: resample.c
+-	$(CC) $(COPTS) -O3 -funroll-loops -finline-functions -c resample.c
++	$(CC) $(COPTS) -funroll-loops -finline-functions -c resample.c
+ 
+ 
+ minilzo.o: minilzo.c minilzo.h
+-	$(CC) $(COPTS) -O3 -fexpensive-optimizations -funroll-loops -finline-functions -c minilzo.c
++	$(CC) $(COPTSRT) -c minilzo.c
+ 
+ 
+ yuv2rgb_mmx.o: yuv2rgb_mmx.c yuv2rgb.h
+-	$(CC) $(COPTS) -O3 -funroll-loops -finline-functions -c yuv2rgb_mmx.c
++	$(CC) $(COPTS) -funroll-loops -finline-functions -c yuv2rgb_mmx.c
+ 
+ areaDeinterlace.o: areaDeinterlace.h areaDeinterlace.c
+-	$(CC) $(COPTS) -O3 -fexpensive-optimizations -funroll-loops -finline-functions -c areaDeinterlace.c
++	$(CC) $(COPTSRT) -c areaDeinterlace.c
+ 
+ rtjpeg_plugin.o: rtjpeg_plugin.c rtjpeg_plugin.h
+-	$(CC) $(COPTS) -O3 -fexpensive-optimizations -funroll-loops -finline-functions -c rtjpeg_plugin.c
++	$(CC) $(COPTSRT) -c rtjpeg_plugin.c
+ 
+ nuvrec:	nuvrec.c RTjpegN.h RTjpegN.o minilzo.o
+ 	$(CC) $(COPTS) -o nuvrec minilzo.o RTjpegN.o nuvrec.c
+@@ -53,7 +56,8 @@
+ 
+ install: nuvrec nuvplay
+ 	 strip nuvrec nuvplay
+-	 install -m 755 nuvrec nuvplay nuvedit nuv2mpg nuv2vbr /usr/local/bin
++	 install -d $(DESTDIR)$(PREFIX)/bin
++	 install -m 755 nuvrec nuvplay nuvedit nuv2mpg nuv2vbr $(DESTDIR)$(PREFIX)/bin
+ 
+ clean:	
+ 	rm -f *.o nuvplay nuvrec 
+diff -ru NuppelVideo-0.52a_orig/RTjpegN.c NuppelVideo-0.52a/RTjpegN.c
+--- NuppelVideo-0.52a_orig/RTjpegN.c	2009-02-20 13:16:51.000000000 +0100
++++ NuppelVideo-0.52a/RTjpegN.c	2009-02-20 13:48:29.000000000 +0100
+@@ -153,8 +153,8 @@
+ // return 2;
+ 
+  // first byte allways written
+- (__u8)strm[0]=
+-      (__u8)(data[RTjpeg_ZZ[0]]>254) ? 254:((data[RTjpeg_ZZ[0]]<0)?0:data[RTjpeg_ZZ[0]]);
++ strm[0]=
++      (__s8)(__u8)(data[RTjpeg_ZZ[0]]>254) ? 254:((data[RTjpeg_ZZ[0]]<0)?0:data[RTjpeg_ZZ[0]]);
+ 
+ 
+  ci=63;
+@@ -163,7 +163,7 @@
+  bitten = ((unsigned char)ci) << 2;
+ 
+  if (ci==0) {
+-   (__u8)strm[1]= bitten; 
++   strm[1]= (__s8)bitten; 
+    co = 2;
+    return (int)co;
+  }
+@@ -192,7 +192,7 @@
+    }
+ 
+    if( bitoff == 0 ) {
+-      (__u8)strm[co]= bitten; 
++      strm[co]= (__s8)bitten; 
+       bitten = 0;
+       bitoff = 8; 
+       co++;
+@@ -204,7 +204,7 @@
+  /* ci must be 0 */
+  if(bitoff != 6) {
+ 
+-      (__u8)strm[co]= bitten; 
++      strm[co]= (__s8)bitten; 
+       co++;
+      
+  }
+@@ -221,7 +221,7 @@
+    break;
+  case 2:
+  case 0:
+-   (__u8)strm[co]= bitten; 
++   strm[co]= (__s8)bitten; 
+    bitoff = 4;
+    co++;
+    bitten = 0; // clear half nibble values in bitten
+@@ -242,7 +242,7 @@
+    bitten |= (ZZvalue&0xf)<<bitoff;
+ 
+    if( bitoff == 0 ) {
+-      (__u8)strm[co]= bitten; 
++      strm[co]= (__s8)bitten; 
+       bitten = 0;
+       bitoff = 8;
+       co++;
+@@ -252,14 +252,14 @@
+  
+  /* ci must be 0 */
+  if( bitoff == 0 ) {
+-    (__u8)strm[co]= bitten; 
++    strm[co]= (__s8)bitten; 
+     co++;
+  }  
+  goto BAUCHWEH;
+ 
+ HIRNWEH:
+ 
+- (__u8)strm[co]= bitten; 
++ strm[co]= (__s8)bitten; 
+  co++;
+   
+ 
+@@ -351,8 +351,8 @@
+   case 0x00:
+     data[i]= 0;
+     break;
+-  default: 
+-	
++  default:
++    break;
+   } 
+ 
+   if( bitoff == 0 ) {
+diff -ru NuppelVideo-0.52a_orig/RTjpegN.h NuppelVideo-0.52a/RTjpegN.h
+--- NuppelVideo-0.52a_orig/RTjpegN.h	2009-02-20 13:16:51.000000000 +0100
++++ NuppelVideo-0.52a/RTjpegN.h	2009-02-20 13:48:29.000000000 +0100
+@@ -25,12 +25,16 @@
+ #ifndef _I386_TYPES_H
+ typedef unsigned char __u8;
+ typedef unsigned short __u16;
++#ifndef _ASM_GENERIC_INT_LL64_H
+ typedef unsigned long __u32;
++#endif
+ typedef unsigned long long __u64;
+ typedef signed char __s8;
+ typedef signed short __s16;
++#ifndef _ASM_GENERIC_INT_LL64_H
+ typedef signed long __s32;
+ #endif
++#endif
+ 
+ extern void RTjpeg_init_Q(__u8 Q);
+ extern void RTjpeg_init_compress(long unsigned int *buf, int width, int height, __u8 Q);
+Only in NuppelVideo-0.52a: RTjpegN.o
+Only in NuppelVideo-0.52a: XJ.o
+diff -ru NuppelVideo-0.52a_orig/areaDeinterlace.c NuppelVideo-0.52a/areaDeinterlace.c
+--- NuppelVideo-0.52a_orig/areaDeinterlace.c	2009-02-20 13:16:51.000000000 +0100
++++ NuppelVideo-0.52a/areaDeinterlace.c	2009-02-20 13:48:29.000000000 +0100
+@@ -8,7 +8,7 @@
+ /* licensed under the GNU Public License (GPL) v2               */
+ 
+ #include <stdlib.h>
+-
++#include <string.h>
+ 
+ typedef struct MyFilterData
+ {
+Binary files NuppelVideo-0.52a_orig/areaDeinterlace.o and NuppelVideo-0.52a/areaDeinterlace.o differ
+Only in NuppelVideo-0.52a: minilzo.o
+Only in NuppelVideo-0.52a: nuvplay
+diff -ru NuppelVideo-0.52a_orig/nuvplay.c NuppelVideo-0.52a/nuvplay.c
+--- NuppelVideo-0.52a_orig/nuvplay.c	2009-02-20 13:16:51.000000000 +0100
++++ NuppelVideo-0.52a/nuvplay.c	2009-02-20 13:48:29.000000000 +0100
+@@ -132,7 +132,7 @@
+ int main(int argc, char *argv[])
+ {
+   int w=384, h=288;
+-  struct timeval now, last;
++  struct timeval now = {}, last = {};
+   struct timezone tzone;
+   //struct rtframeheader *frameheader;
+   // int r, out_len;
+Only in NuppelVideo-0.52a: nuvrec
+diff -ru NuppelVideo-0.52a_orig/nuvrec.c NuppelVideo-0.52a/nuvrec.c
+--- NuppelVideo-0.52a_orig/nuvrec.c	2009-02-20 13:16:51.000000000 +0100
++++ NuppelVideo-0.52a/nuvrec.c	2009-02-20 13:48:29.000000000 +0100
+@@ -1277,7 +1277,7 @@
+   testinput();
+ #else
+ 
+-  fd = open(videodevice, O_RDWR|O_CREAT);
++  fd = open(videodevice, O_RDWR|O_CREAT, 0644);
+   if(fd<=0){
+     perror("open");
+     fatherhandler(-1);
+diff -ru NuppelVideo-0.52a_orig/resample.c NuppelVideo-0.52a/resample.c
+--- NuppelVideo-0.52a_orig/resample.c	2009-02-20 13:16:51.000000000 +0100
++++ NuppelVideo-0.52a/resample.c	2009-02-20 13:48:29.000000000 +0100
+@@ -71,6 +71,7 @@
+ 
+ #include <math.h>
+ #include <stdlib.h>
++#include <string.h>
+ #include "st.h"
+ 
+ /* resample includes */
+Only in NuppelVideo-0.52a: resample.o
+Only in NuppelVideo-0.52a: rtjpeg_plugin.o
+Only in NuppelVideo-0.52a: soxfuncs.o
+diff -ru NuppelVideo-0.52a_orig/yuv2rgb_mmx.c NuppelVideo-0.52a/yuv2rgb_mmx.c
+--- NuppelVideo-0.52a_orig/yuv2rgb_mmx.c	2009-02-20 13:16:51.000000000 +0100
++++ NuppelVideo-0.52a/yuv2rgb_mmx.c	2009-02-20 13:48:29.000000000 +0100
+@@ -27,29 +27,30 @@
+ 
+ #include <stdio.h>
+ #include <stdlib.h>
++#include <stdint.h>
+ 
+ #include "mmx.h"
+ //#include "libmpeg2/mpeg2.h"
+ //#include "libmpeg2/mpeg2_internal.h"
+-#include <inttypes.h>
++//#include <inttypes.h>
+ 
+ #include "yuv2rgb.h"
+ 
+ /* hope these constant values are cache line aligned */
+-uint64_t mmx_80w = 0x0080008000800080;
+-uint64_t mmx_10w = 0x1010101010101010;
+-uint64_t mmx_00ffw = 0x00ff00ff00ff00ff;
+-uint64_t mmx_Y_coeff = 0x253f253f253f253f;
++uint64_t mmx_80w = 0x0080008000800080LL;
++uint64_t mmx_10w = 0x1010101010101010LL;
++uint64_t mmx_00ffw = 0x00ff00ff00ff00ffLL;
++uint64_t mmx_Y_coeff = 0x253f253f253f253fLL;
+ 
+ /* hope these constant values are cache line aligned */
+-uint64_t mmx_U_green = 0xf37df37df37df37d;
+-uint64_t mmx_U_blue = 0x4093409340934093;
+-uint64_t mmx_V_red = 0x3312331233123312;
+-uint64_t mmx_V_green = 0xe5fce5fce5fce5fc;
++uint64_t mmx_U_green = 0xf37df37df37df37dLL;
++uint64_t mmx_U_blue = 0x4093409340934093LL;
++uint64_t mmx_V_red = 0x3312331233123312LL;
++uint64_t mmx_V_green = 0xe5fce5fce5fce5fcLL;
+ 
+ /* hope these constant values are cache line aligned */
+-uint64_t mmx_redmask = 0xf8f8f8f8f8f8f8f8;
+-uint64_t mmx_grnmask = 0xfcfcfcfcfcfcfcfc;
++uint64_t mmx_redmask = 0xf8f8f8f8f8f8f8f8LL;
++uint64_t mmx_grnmask = 0xfcfcfcfcfcfcfcfcLL;
+ uint64_t mmx_grnshift = 0x03;
+ uint64_t mmx_blueshift = 0x03;
+ 
+Only in NuppelVideo-0.52a: yuv2rgb_mmx.o

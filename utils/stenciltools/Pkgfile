@@ -1,0 +1,37 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A collection of text generation/manipulation tools.
+#  StencilTools is a collection of miscellanous utilities, useful for text
+#  generation/manipulation and related tasks. It includes the following
+#  programs: count, which generates sequentially numbered strings; csvconv,
+#  which converts CSV files; linkget, which extracts links from HTML
+#  documents; memory, which implements file based hashtables; and rot13,
+#  a Rot13 encoder/decoder.
+# URL: http://onyxbits.de/node/11
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=stenciltools
+version=1.2
+release=1
+source=(http://onyxbits.de/sites/default/files/stenciltools-$version.tgz)
+
+build()
+{
+  cd stenciltools-$version
+
+  autoconf --force
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix"
+
+  make
+  make prefix="$ROOT" \
+       MANDIR="$ROOT/share/man" install
+
+  install -d $ROOT/share/doc/stenciltools
+  install -m 644 doc/[A-Z]*[A-Z]* $ROOT/share/doc/stenciltools
+  cp -rf data/csvconv $ROOT/share/doc/stenciltools
+}

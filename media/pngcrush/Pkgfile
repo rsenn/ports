@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An optimizer for PNG files that can also insert or delete specified chunks.
+#  pngcrush is an excellent batch-mode compression utility for PNG
+#  images. Depending on the application that created the original PNGs,
+#  it can improve the file size anywhere from a few percent to 40% or more
+#  (completely losslessly). The utility also allows specified PNG chunks
+#  (e.g. text comments) to be inserted or deleted, and it can fix incorrect
+#  gamma info written by Photoshop 5.0 as well as the erroneous iCCP chunk
+#  written by Photoshop 5.5.
+# URL: http://pmt.sourceforge.net/pngcrush/
+# Maintainer: 
+# Depends on: 
+
+name=pngcrush
+version=1.6.15
+release=1
+source=(http://heanet.dl.sourceforge.net/sourceforge/pmt/pngcrush-$version.tar.bz2)
+
+build() 
+{
+  cd pngcrush-$version
+  
+  make
+
+  install -d $ROOT/bin
+  install -m 755 pngcrush $ROOT/bin
+
+  install -d $ROOT/share/doc/pngcrush
+  install -m 644 ChangeLog.txt $ROOT/share/doc/pngcrush
+}
+
+# EOF

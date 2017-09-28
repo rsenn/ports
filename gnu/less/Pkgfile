@@ -1,0 +1,41 @@
+# $Id: Pkgfile,v 1.10 2007/04/22 23:07:56 roman Exp $
+#
+# Description: GNU Less
+#  'Less' is a paginator file similar to 'more' or 'pg,' but that allows
+#  backward as well as forward movement through the file. In addition,
+#  it doesn't have to read the entire input file before starting, so it
+#  starts large files faster than text editors like vi. Less uses termcap
+#  (or terminfo on some terminals) so it can run on a variety of terminals;
+#  there is even limited support for hard copy terminals.
+# URL: http://www.greenwoodsoftware.com/less/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: dietlibc
+
+name=less
+version=382
+release=1
+source=($mirror_gnu/less/less-$version.tar.gz
+        less-$version-link.patch
+        less.sh)
+
+build()
+{
+  cd less-$version
+
+  patch -N -p1 -i $SRC/less-$version-link.patch
+
+  case $prefix in
+    "/usr") sysconfdir="/etc" ;;
+  esac
+
+  ./configure \
+      --prefix="$prefix" \
+      --mandir="$prefix/share/man" \
+      --sysconfdir="${sysconfdir=$prefix/etc}"
+
+  make
+  make prefix="$ROOT" install
+
+  install -d $PKG${sysconfdir}/profile.d
+  install -m 644 $SRC/less.sh $PKG${sysconfdir}/profile.d
+}

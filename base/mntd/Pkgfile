@@ -1,0 +1,32 @@
+# $Id: Pkgfile 424 2008-08-10 01:52:57Z enki $
+#
+# Description: An automount daemon for hotplug devices.
+#  mntd is an automount daemon and shared library written for automatically
+#  mounting hotplug devices such as USB sticks, Compact Flash cards, or
+#  other mountable devices on Linux 2.4.x and 2.6.x kernels. You only have
+#  to plug in your hotplug device and wait a little bit. The library can
+#  be used for user mode programs that want to be informed when devices
+#  are mounted and unmounted. It will use now devfs to get the device
+#  changes. So no need for hal and udev any more.
+# URL: http://mntd.bambach.biz
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=mntd
+version=0.5.0
+release=1
+source=($mirror_sf/mntd/mntd-0.5.0.tar.gz)
+
+build()
+{
+  cd mntd-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

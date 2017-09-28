@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A utility that generates an extended .m3u MP3 playlist.
+#  extm3u.pl generates an extended .m3u playlist from a given directory. The
+#  generated playlist can be used with XMMS, Winamp, and other MPEG layer 3
+#  players. The playlist is printed to stdout. Extended .m3u files contain
+#  additional information, such as the length of the song and data from
+#  the ID3 tag. This script requires the MP3::Info Perl-module.
+#  .
+# URL: http://www.splitbrain.org/projects/extm3u
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=extm3u
+version=1.0
+release=1
+source=(http://www.splitbrain.org/_media/projects/extm3u.tgz)
+
+build()
+{
+  cd extm3u
+
+  install -d $ROOT/bin
+  install -m 755 extm3u.pl $ROOT/bin/extm3u
+
+  install -d $ROOT/share/doc/extm3u
+  install -m 644 COPYING $ROOT/share/doc/extm3u
+}
+
+# EOF

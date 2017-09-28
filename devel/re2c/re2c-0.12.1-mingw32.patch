@@ -1,0 +1,51 @@
+diff -r -u -- re2c-0.12.1_orig/config.h.in re2c-0.12.1/config.h.in
+--- re2c-0.12.1_orig/config.h.in	2007-05-31 14:26:28.000000000 +0200
++++ re2c-0.12.1/config.h.in	2007-05-31 14:28:18.000000000 +0200
+@@ -100,9 +100,6 @@
+ #undef inline
+ #endif
+ 
+-/* Define to rpl_malloc if the replacement function should be used. */
+-#undef malloc
+-
+ /* Define to `unsigned' if <sys/types.h> does not define. */
+ #undef size_t
+ 
+diff -r -u -- re2c-0.12.1_orig/main.cc re2c-0.12.1/main.cc
+--- re2c-0.12.1_orig/main.cc	2007-05-31 14:26:28.000000000 +0200
++++ re2c-0.12.1/main.cc	2007-05-31 14:26:55.000000000 +0200
+@@ -1,4 +1,6 @@
+ /* $Id: main.cc 733 2007-05-02 20:19:32Z helly $ */
++#include <stdlib.h>
++
+ #ifdef HAVE_CONFIG_H
+ #include "config.h"
+ #elif defined(_WIN32)
+@@ -7,7 +9,6 @@
+ 
+ #include <fstream>
+ #include <iostream>
+-#include <stdlib.h>
+ #include <string.h>
+ 
+ #include "globals.h"
+diff -r -u -- re2c-0.12.1_orig/parser.cc re2c-0.12.1/parser.cc
+--- re2c-0.12.1_orig/parser.cc	2007-05-31 14:26:28.000000000 +0200
++++ re2c-0.12.1/parser.cc	2007-05-31 14:27:15.000000000 +0200
+@@ -43,6 +43,8 @@
+    define necessary library symbols; they are noted "INFRINGES ON
+    USER NAME SPACE" below.  */
+ 
++#include <stdlib.h>
++
+ /* Identify Bison output.  */
+ #define YYBISON 1
+ 
+@@ -103,7 +105,6 @@
+ 
+ #include <time.h>
+ #include <string.h>
+-#include <stdlib.h>
+ #include <iostream>
+ 
+ #include "globals.h"

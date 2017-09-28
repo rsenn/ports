@@ -1,0 +1,118 @@
+# $Id: Pkgfile,v 1.2 2007/04/22 23:07:53 roman Exp $
+#
+# Description: gcc
+# URL: http://gcc.gnu.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=gcc-3.1
+version=3.1.1
+release=1
+source=($mirror_gnu/gcc/gcc-$version/gcc-$version.tar.bz2
+        gcc-3.1.1_final-patches-1.0.tbz2
+        gcc-3.1.1-obstack.patch)
+
+build()
+{
+  cd gcc-$version
+
+  patch -N -p0 -i $SRC/01_gcc31-boehm-gc-libs.patch
+  patch -N -p0 -i $SRC/02_gcc31-fde-merge-compat.patch
+  patch -N -p0 -i $SRC/03_gcc31-attr-visibility.patch
+  patch -N -p0 -i $SRC/04_gcc311-attr-visibility2.patch
+  patch -N -p0 -i $SRC/05_gcc311-trunc_int_for_mode.patch
+  patch -N -p0 -i $SRC/06_gcc311-x86_64-q_regs_operand.patch
+  patch -N -p0 -i $SRC/07_gcc31-dwarf2-pr6436-test.patch
+  patch -N -p0 -i $SRC/08_gcc311-c++-pretty_function.patch
+  patch -N -p0 -i $SRC/09_gcc311-c++-tsubst-asm.patch
+  patch -N -p0 -i $SRC/10_gcc311-i386-memtest-test.patch
+  patch -N -p0 -i $SRC/11_gcc31-fold-const2.patch
+  patch -N -p0 -i $SRC/12_gcc311-ada-addr2line.patch
+  patch -N -p0 -i $SRC/13_gcc311-ada-link.patch
+  patch -N -p0 -i $SRC/14_gcc311-java-no-rpath.patch
+  patch -N -p0 -i $SRC/15_gcc31-test-rotate.patch
+  patch -N -p0 -i $SRC/16_gcc311-x86_64-libiberty-pic.patch
+  patch -N -p0 -i $SRC/17_gcc311-test-rh65771.patch
+  patch -N -p0 -i $SRC/18_gcc311-i386-default-momit-leaf-frame-pointer.patch
+  patch -N -p0 -i $SRC/19_gcc311-i386-profile-olfp.patch
+  patch -N -p0 -i $SRC/20_gcc311-i386-pic-label-thunk.patch
+  patch -N -p0 -i $SRC/21_gcc311-pr6842.patch
+  patch -N -p0 -i $SRC/22_gcc311-tree-code.patch
+  patch -N -p0 -i $SRC/23_gcc311-hard-reg-sharing.patch
+  patch -N -p0 -i $SRC/24_gcc311-hard-reg-sharing2.patch
+  patch -N -p0 -i $SRC/25_gcc311-x86_64-addr-diff.patch
+  patch -N -p0 -i $SRC/26_gcc311-x86_64-profile.patch
+  patch -N -p0 -i $SRC/27_gcc311-x86_64-biarch.patch
+  patch -N -p1 -i $SRC/28_gcc31-c++-diagnostic-no-line-wrapping.patch
+
+  patch -N -p1 -i $SRC/gcc-$version-obstack.patch
+
+  # change runtime linker
+  case $target in
+    *linux*)
+      sed -i -e "s,/lib/ld-linux.so.2,$prefix/lib/ld-linux.so.2," \
+        gcc/config/i386/linux.h
+      ;;
+    *freebsd*)
+      sed -i -e '/FBSD_DYNAMIC_LINKER/ s,".*","'$prefix/lib/ld-elf.so.1'",' \
+        gcc/config/freebsd-spec.h
+      ;;
+  esac
+
+  if test "$host" != "$build"; then
+    CROSS=$host-
+#    args="
+#    --with-libs=$prefix/$target/lib
+#    --with-headers=$prefix/$target/include"
+  fi
+
+  if test -x "$prefix/bin/gcc-2.95"
+  then
+    CC="gcc-2.95"
+  fi
+
+#    --with-local-prefix="$prefix/$target" \
+  # now configure in a separate build tree
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       ${target+--target="$target"} \
+       --prefix="$prefix" \
+       --disable-nls \
+       --without-included-gettext \
+       --enable-threads="posix" \
+       --with-tls \
+       --disable-rpath \
+       --disable-shared \
+       --${static:=enable}-shared \
+       --enable-languages="c,c++" \
+       --with-system-zlib \
+       --with-system-libunwind \
+       --with-ld="$prefix/bin/${CROSS}ld" \
+       --with-as="$prefix/bin/${CROSS}as" \
+       $args
+
+  make \
+    DESTDIR="$PKG" all install
+
+  rm $ROOT/lib/libiberty.a
+  rm -f $ROOT/info/dir
+  chmod 644 $ROOT/lib/*.la
+
+  (cd $ROOT/bin
+   for bin in *; do
+     case $bin in
+       *-${version%%.*} | *-${version%.*} | *-$version) ;;
+       *) mv -vf $bin $bin-${version%.*} ;;
+     esac
+   done)
+}
+
+
+postmerge()
+{
+  cd ${bindir} && for bin in *-${version%.*}
+  do
+    test -e ${bin%-*} || ln -svf ${bin} ${bin%-*}
+  done
+}

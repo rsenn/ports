@@ -1,0 +1,36 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Standard portable library
+# URL: http://spl.sourceforge.net/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=libspl
+version=0.1.3
+release=1
+source=($mirror_sf/spl/libspl-$version.tar.gz
+        libspl-0.1.3-fixes.patch)
+
+build()
+{
+  cd libspl-$version
+
+  patch -N -p1 -i $SRC/libspl-0.1.3-fixes.patch
+
+  libtoolize --force --copy --automake
+  aclocal --force
+  automake --force --copy --foreign --add-missing
+  aclocal --force
+  autoconf --force
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

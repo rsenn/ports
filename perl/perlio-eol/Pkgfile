@@ -1,0 +1,26 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: PerlIO layer for normalizing line endings
+# URL: http://search.cpan.org/dist/PerlIO-eol/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=perlio-eol
+version=0.14
+release=1
+source=(http://search.cpan.org/CPAN/authors/id/A/AU/AUDREYT/PerlIO-eol-$version.tar.gz)
+
+build()
+{
+  cd PerlIO-eol-$version
+
+  perl Makefile.PL installdirs=vendor
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/perlio-eol
+  install -m 644 Changes MANIFEST MANIFEST.SKIP README SIGNATURE $ROOT/share/doc/perlio-eol
+}
+
+# EOF

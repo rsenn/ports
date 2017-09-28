@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A universal database code table.
+#  CodeKit is an interface to a universal database code table. It takes
+#  all of the programming work out of maintaining multiple database code
+#  definition sets. A single code administration page lets you define new
+#  virtual code tables and enter all codes and their descriptions. Perl and
+#  PHP classes retrieve the code descriptions and automatically generate
+#  HTML code selection elements.
+# URL: http://www.webbysoft.com/codekit/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=codekit
+version=1.07
+release=1
+source=(http://www.webbysoft.com/codekit/download/CodeKit-$version.tgz)
+
+build()
+{
+  cd ${srcdir=$SRC/CodeKit-$version}
+
+  install -d $ROOT/share/doc/$name-$version
+  install Changes MANIFEST README $ROOT/share/doc/$name-$version/
+
+  cd $srcdir/perl
+
+  perl Makefile.PL
+
+  make
+  make DESTDIR="$PKG" install
+}

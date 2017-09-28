@@ -1,0 +1,24 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description:  tool that integrates the processing of structured data, database access, and remote access to a cluster of nodes
+# These capabilities are made available through a command-line interface
+# (CLI) and a Python application programming interface (API).
+#
+# URL: http://geophile.com/osh/index.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=osh
+version=0.9.3
+release=1
+source=(http://geophile.com/osh/osh-$version.tar.gz)
+
+build()
+{
+  cd osh-$version
+
+  python setup.py install --prefix="$ROOT"
+
+  install -d $ROOT/share/doc/osh
+  cp -rf doc/* $ROOT/share/doc/osh
+}

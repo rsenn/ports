@@ -1,0 +1,44 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Package: libclutter-0.8
+# Provides: libclutter
+# Section: universe/libs
+# Description: Open GL based interactive canvas library
+# Clutter is an Open GL based interactive canvas library, designed for
+# creating fast, mainly 2D single window applications such as media box
+# UIs, presentations, kiosk style applications and so on.
+# URL: http://www.clutter-project.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libcairo2, libgl1, libglib2.0-0, libgtk2.0-0, libpango1.0-0, libxcomposite1, libxdamage1, libxext6, libxfixes3, libxi6
+
+name=clutter
+version=0.8.8
+release=1
+source=(http://www.clutter-project.org/sources/clutter/${version%.*}/clutter-$version.tar.bz2)
+
+build()
+{
+  cd clutter-$version
+
+#  if set -- $prefix/lib/libXext.* && test -e "$1"; then
+#    export LIBS="-lXext"
+#  fi
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/clutter
+  install -m 644 [A-Z]*[A-Z]* $ROOT/share/doc/clutter
+
+  cp -rf doc/* $ROOT/share/doc/clutter
+
+  find $ROOT/share/doc -type f -and \
+    '(' -name "Makefile*" -or -empty ')' \
+        -exec rm -v '{}' ';'
+}

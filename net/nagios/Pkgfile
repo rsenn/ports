@@ -1,0 +1,44 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A powerful network and system monitor.
+#  Nagios (formerly Netsaint) is a daemon written in C that is designed
+#  to monitor networked hosts and services. It has the ability to notify
+#  contacts (via email, pager or other methods) when problems arise
+#  and are resolved. Host and service checks are performed by external
+#  "plugins", making it easy to write custom checks in your language of
+#  choice. Several CGIs are included in order to allow you to view the
+#  current and historical status via a Web browser, and a WAP interface
+#  is also provided to allow you to acknowlege problems and disable
+#  notifications from an internet-ready cellphone.
+# URL: http://www.nagios.org
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=nagios
+version=2.10
+release=1
+source=($mirror_sf/nagios/nagios-$version.tar.gz)
+
+build()
+{
+  cd nagios-$version
+
+  case ${prefix=/usr} in
+    /usr) sysconfdir="/etc" localstatedir="/var" ;;
+  esac
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix" \
+       --sysconfdir="${sysconfdir=$prefix/etc}" \
+       --localstatedir="${localstatedir=$prefix/var}" \
+       --with-nagios-user="nobody" \
+       --with-nagios-group="nogroup" \
+       --with-init-dir="$sysconfdir/init.d" \
+       --with-httpd-conf="$sysconfdir/httpd"
+
+  make all
+  make DESTDIR="$PKG" install
+}

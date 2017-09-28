@@ -1,0 +1,25 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Fast, easy serialization in C
+# URL: http://tpl.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libtpl
+version=1.2
+release=1
+source=($mirror_sf/tpl/libtpl-$version.tar.bz2)
+
+build()
+{
+  cd libtpl-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

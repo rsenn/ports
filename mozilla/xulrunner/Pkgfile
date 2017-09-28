@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: XUL runtime that requires no browser.
+#  XULRunner is a Mozilla runtime package that can be used to bootstrap
+#  XUL+XPCOM applications that are as rich as Firefox and Thunderbird. It
+#  will provide mechanisms for installing, upgrading, and uninstalling these
+#  applications. XULRunner will also provide libxul, a solution which allows
+#  the embedding of Mozilla technologies in other projects and products.
+#  .
+# URL: https://developer.mozilla.org/en/XULRunner
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=xulrunner
+version=1.9.0.4
+release=1
+source=(http://releases.mozilla.org/pub/mozilla.org/xulrunner/releases/1.9.0.4/source/xulrunner-$version-source.tar.bz2)
+
+build()
+{
+  cd mozilla
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

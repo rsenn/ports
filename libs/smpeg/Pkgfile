@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An SDL MPEG player with sound.
+#  SMPEG is a general purpose MPEG video/audio player for Linux based on
+#  the mpeg_play and SPLAY MPEG decoders. It interfaces with the Simple
+#  DirectMedia Layer (SDL) to provide cross-platform MP3 playback for games.
+#  .
+# URL: http://www.lokigames.com/development/smpeg.php3
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=smpeg
+version=0.4.5
+release=1
+source=(smpeg-$version.tar.gz)
+
+build()
+{
+  cd smpeg-$version
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

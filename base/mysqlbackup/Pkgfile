@@ -1,0 +1,56 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: A Perl script to safely backup MySQL databases and tables.
+#  MySQL Backup is a Perl script that uses mysqlshow to grab the database
+#  names and "show tables" to grab the table names for a user's account,
+#  and then uses mysqldump to save the data in a subdirectory named in
+#  the script. It then tars and gzips the files, using the date and time
+#  for the file name. It can be run from cron on a daily basis. It removes
+#  old files and has an option to email the gzip file to an admin, and/or
+#  FTP the file to a remote server. It also has options to use "select data
+#  into outfile" or a regular "select" for users who can't use mysqldump. It
+#  supports LARGE sets of databases and tables.
+# URL: http://worldcommunity.com/opensource/utilities/mysql_backup.html
+# Maintainer: Roman Senn <smoli@paranoya.ch>
+# Depends on: dietlibc
+
+name=mysqlbackup
+version=1
+release=1
+source=(mysqlbackup.in
+        mysqlbackup.conf.in)
+
+build()
+{
+  for file in mysqlbackup.conf mysqlbackup
+  do
+    sed "s,@bindir@,$prefix/bin,g
+        s,@prefix@,$prefix,g" \
+      $SRC/$file.in >$file
+  done
+
+  install -d $ROOT/sbin
+  install -m 755 mysqlbackup $ROOT/sbin
+
+  install -d $ROOT/etc
+  install -m 644 mysqlbackup.conf $ROOT/etc/mysqlbackup.conf
+
+  install -d $ROOT/local/config
+  sed '/^[a-z0-9_]\+=/ s,^,#,' mysqlbackup.conf > $ROOT/local/config/mysqlbackup.conf
+
+#  install -d $ROOT/man/man1
+#  install -m 644 $SRC/mysqlbackup.1 $ROOT/man/man1
+}
+
+postmerge()
+{
+  $prefix/bin/sed -i "s,@services_run@,$services_run,g" \
+    $prefix/sbin/mysqlbackup \
+    $prefix/local/config/mysqlbackup.conf
+
+  crontab_add "0 0 * * * nice -n 19 mysqlbackup" || \
+    echo "mysqlbackup already in crontab"
+
+  crontab_add "0,5,10,15,20,25,30,35,40,45,50,55 * * * * nice -n 19 mysqlbackup --incremental" || \
+    echo "incremental mysqlbackup already in crontab"
+}

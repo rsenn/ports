@@ -1,0 +1,35 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A large scale machine learning toolbox.
+# SHOGUN is a machine learning toolbox whose focus is on large scale
+# kernel methods and especially on Support Vector Machines (SVM). It
+# provides a generic SVM object interfacing to several different SVM
+# implementations, all making use of the same underlying, efficient kernel
+# implementations. Apart from SVMs and regression, SHOGUN also features a
+# number of linear methods like Linear Discriminant Analysis (LDA), Linear
+# Programming Machine (LPM), (Kernel) Perceptrons, and algorithms to train
+# hidden Markov models. SHOGUN can be used from within C++, Matlab, R,
+# Octave, and Python.
+#
+# URL: http://www.shogun-toolbox.org/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=shogun
+version=0.6.3
+release=1
+source=(ftp://shogun-toolbox.org/shogun/releases/0.6/sources/shogun-$version.tar.bz2)
+
+build()
+{
+  cd shogun-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

@@ -1,0 +1,37 @@
+--- SDIF-3.11.1-src_orig/examples/Makefile.am	2009-02-28 13:23:23.000000000 +0100
++++ SDIF-3.11.1-src/examples/Makefile.am	2009-02-28 13:32:17.000000000 +0100
+@@ -14,14 +14,16 @@
+ 
+ INCLUDES  = -I../include -I$(top_srcdir)/include -I$(top_srcdir)/sdif
+ CFLAGS   = @CFLAGS@ '-DVERSION="$(VERSION)"'
++LDADD   = $(top_srcdir)/sdif/.libs/libsdif.a
++LIBS   = -lpthread
+ 
+ # this is for automake
+ EXTRA_DIST = list-types.c list-nvt.c
+ 
+ all:		list-types list-nvt
+ 
+-list-types: 	list-types.c
+-		gcc -I../include -g  -o list-types list-types.c -lsdif
++list-types: 	list-types.c  $(LDADD)
++		gcc -I../include -g  -o $@ $^ $(LIBS)
+ 
+-list-nvt: 	list-nvt.c  $(top_srcdir)/sdif/.libs/libsdif.a
+-		gcc -I../include -g  -o $@ $^ # -lsdif
++list-nvt: 	list-nvt.c  $(LDADD)
++		gcc -I../include -g  -o $@ $^ $(LIBS)
+--- SDIF-3.11.1-src_orig/autogen.sh	2009-02-28 13:35:13.000000000 +0100
++++ SDIF-3.11.1-src/autogen.sh	2009-02-28 13:35:01.000000000 +0100
+@@ -0,0 +1,11 @@
++#!/bin/sh
++#
++# 20090228
++
++
++libtoolize --force --copy --automake
++aclocal --force -I .
++autoheader --force
++automake --force --copy --foreign --add-missing
++aclocal --force -I .
++autoconf --force

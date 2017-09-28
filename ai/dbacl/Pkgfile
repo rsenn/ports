@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A system for statistically classifying text into user-defined categories.
+#  dbacl is a digramic Bayesian text classifier. Given some text, it
+#  calculates the posterior probabilities that the input resembles one of
+#  any number of previously learned document collections. It can be used to
+#  sort incoming email into arbitrary categories such as spam, work, and
+#  play, or simply to distinguish an English text from a French text. It
+#  fully supports international character sets, and uses sophisticated
+#  statistical models based on the Maximum Entropy Principle.
+#  .
+# URL: http://www.lbreyer.com/gpl.html
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=dbacl
+version=1.12
+release=1
+source=(http://www.lbreyer.com/gpl/dbacl-$version.tar.gz)
+
+build()
+{
+  cd dbacl-$version
+
+  ./configure \
+       --host="$host" \
+       --prefix="$prefix" \
+       --mandir="$prefix/share/man"
+
+  make DESTDIR="$PKG" install
+}
+
+# EOF

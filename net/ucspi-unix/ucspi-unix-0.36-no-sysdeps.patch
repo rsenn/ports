@@ -1,0 +1,34 @@
+diff -ru ucspi-unix-0.36_orig/Makefile ucspi-unix-0.36/Makefile
+--- ucspi-unix-0.36_orig/Makefile	2009-02-18 22:12:01.000000000 +0100
++++ ucspi-unix-0.36/Makefile	2009-02-18 22:14:51.000000000 +0100
+@@ -55,7 +55,7 @@
+ load: conf-ld
+ 	( echo '#!/bin/sh';\
+ 	  echo 'main="$$1"; shift';\
+-	  echo exec `head -1 conf-ld` '-o "$$main" "$$main.o" $${1+"$$@"}' -lsysdeps;\
++	  echo exec `head -1 conf-ld` '-o "$$main" "$$main.o" $${1+"$$@"}';\
+ 	) >load
+ 	chmod 755 load
+ 
+diff -ru ucspi-unix-0.36_orig/env.c ucspi-unix-0.36/env.c
+--- ucspi-unix-0.36_orig/env.c	2009-02-18 22:12:01.000000000 +0100
++++ ucspi-unix-0.36/env.c	2009-02-18 22:14:41.000000000 +0100
+@@ -1,7 +1,6 @@
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <unistd.h>
+-#include <sysdeps.h>
+ 
+ extern const char* utoa(unsigned long);
+ 
+diff -ru ucspi-unix-0.36_orig/unixserver.c ucspi-unix-0.36/unixserver.c
+--- ucspi-unix-0.36_orig/unixserver.c	2009-02-18 22:12:01.000000000 +0100
++++ ucspi-unix-0.36/unixserver.c	2009-02-18 22:15:00.000000000 +0100
+@@ -7,7 +7,6 @@
+ #include <sys/un.h>
+ #include <sys/wait.h>
+ #include <unistd.h>
+-#include <sysdeps.h>
+ 
+ extern void setup_env(int, const char*);
+ 

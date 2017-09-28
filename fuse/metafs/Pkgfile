@@ -1,0 +1,39 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Allows users to access information about their files easily and consistently using extended attributes
+#
+# MetaFS is an enhanced filesystem layer for Linux. It provides
+# additional information about files (such as MP3 tags) to the user through
+# standard filesystem interfaces (such as extended attributes). It also
+# provides more flexible file management, by building search and other such
+# services into the filesystem itself.
+# URL: http://metafs.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libboost-thread1.34.1, libc6, libdb4.6++, libfuse2, libgcc1, libmagic1, libstdc++6, libtag1c2a
+
+name=metafs
+version=0.1.5
+release=1
+source=($mirror_sf/metafs/metafs-$version.tar.gz
+        metafs-0.1.5-enoattr.patch)
+
+build()
+{
+  cd metafs-$version
+
+  patch -N -p1 -i $SRC/metafs-0.1.5-enoattr.patch
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS"
+  make DESTDIR="$PKG" install
+
+  rm -f ChangeLog
+
+  install -d $ROOT/share/doc/metafs
+  install -m 644 [A-Z]*[A-Z]* $ROOT/share/doc/metafs
+  cp -rf doc/* $ROOT/share/doc/metafs
+}

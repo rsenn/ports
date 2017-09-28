@@ -1,0 +1,32 @@
+# $Id: Pkgfile 424 2008-08-10 01:52:57Z enki $
+#
+# Description: A modular patch bay for audio and MIDI systems based on Jack, Lash, and Alsa audio systems
+# URL: http://wiki.drobilla.net/Patchage
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libart-2.0-2, libasound2, libatk1.0-0, libc6, libcairo-directfb2, libcairo2, libcairomm-1.0-1, libexpat1, libflowcanvas1, libfontconfig1, libfreetype6, libgcc1, libglade2-0, libglademm-2.4-1c2a, libglib2.0-0, libglibmm-2.4-1c2a, libgnomecanvas2-0, libgnomecanvasmm-2.6-1c2a, libgraphviz4, libgtk2.0-0, libgtkmm-2.4-1c2a, libjack0, liblash2, libltdl3, libpango1.0-0, libpixman-1-0, libpng12-0, libraul0, libreadline5, libsigc++-2.0-0c2a, libstdc++6, libuuid1, libx11-6, libxml2, libxrender1, zlib1g
+
+name=patchage
+version=0.4.1
+release=1
+source=(http://download.drobilla.net/patchage-$version.tar.gz)
+
+build()
+{
+  cd patchage-${version#*svn}
+
+  libtoolize --force --copy
+  aclocal --force
+  autoheader --force
+  automake --force --copy --foreign --add-missing
+  aclocal --force
+  autoconf --force
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

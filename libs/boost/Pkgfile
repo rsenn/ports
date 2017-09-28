@@ -1,0 +1,88 @@
+# $Id: Pkgfile,v 1.3 2007/05/09 21:02:45 roman Exp $
+#
+# Description: Boost C++ Libraries
+#  The Boost web site provides free, peer-reviewed, portable C++ source
+#  libraries. The emphasis is on libraries which work well with the C++
+#  Standard Library. One goal is to establish "existing practice" and
+#  provide reference implementations so that the Boost libraries are
+#  suitable for eventual standardization. Some of the libraries have
+#  already been proposed for inclusion in the C++ Standards Committee's
+#  upcoming C++ Standard Library Technical Report.
+#  .
+#  For the following subprojects separate packages exist:
+#  date-time, filesystem, graph, python, regex, signals, test, and thread.
+#  .
+# URL: http://www.boost.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=boost
+version=1.38.0
+release=1
+source=($mirror_sf/boost/boost_${version//./_}.tar.gz
+        build.mk
+        boost-1.34.0.mk
+        boost-1.34.0-lt.mk
+        boost-1.34.0-mt.mk
+        boost_1_34_0_regex.patch
+        boost_1_34_0_cygwin.patch)
+
+build()
+{
+  rm -rf ${builddir=$SRC/boost-$version-build} &&
+  mkdir -p $builddir
+
+  cd boost_${version//./_}
+
+  case $host in
+    *msvc*) toolset="msvc" ;;
+    *mingw*) toolset="mingw32-gcc" ;;
+    *-linux | *-linux-gnu) toolset="gcc" ;;
+  esac
+
+  EXPAT_INCLUDE=$prefix/include
+  EXPAT_LIBPATH=$prefix/lib
+
+  export EXPAT_INCLUDE EXPAT_LIBPATH
+
+  set -- \
+    --prefix="$ROOT" \
+    --builddir="$SRC/boost-$version-build" \
+    --toolset="$toolset" \
+    --layout="system" \
+    -sHAVE_ICU=1 \
+    -sICU_PATH="$prefix" \
+    -sICU_LINK="-licui18n"
+
+  if [ "$mpi" ]; then
+    echo "using mpi ;" >>tools/build/v2/user-config.jam
+    set -- "$@" --with-mpi
+  else
+    set -- "$@" --without-mpi
+  fi
+
+  CC="${CC-gcc}" CXX="${CXX-g++}"
+
+  export CC CXX
+
+  bjam "$@" release debug-symbols="off" optimization="speed" threading="multi"
+
+  install -d $ROOT/lib
+
+  find -type f "(" -name "*.so*" -or -name "*.a" ")" | while read path; do
+    mv "$path" $ROOT/lib/
+  done
+
+  install -d $ROOT/include
+  mv -f boost $ROOT/include/
+
+  cd $ROOT/lib
+
+  for lib in *.so; do
+    mv -f $lib $lib.${version%.*}
+    ln -sf $lib.${version%.*} $lib.${version%%.*}
+    ln -sf $lib.${version%.*} $lib
+  done
+
+  chown -R 0:0 $PKG
+}

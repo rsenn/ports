@@ -1,0 +1,42 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:52 roman Exp $
+#
+# Name:        Mini-XML
+# Description: a small XML parsing library that you can use to read XML and
+#              XML-like data files in your application without requiring
+#              large non-standard libraries.
+# URL:         http://www.easysw.com/~mike/mxml/
+# Maintainer:  Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=mxml
+version=2.6
+release=1
+source=(ftp://ftp.easysw.com/pub/mxml/$version/mxml-$version.tar.gz
+        mxml-2.5-libtool.patch)
+
+build()
+{
+  cd mxml-$version
+
+  #patch -N -p1 -i $SRC/mxml-2.5-libtool.patch
+
+  rm -f config.sub && autoreconf --force --verbose --install
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --${shared:=enable}-shared \
+      --${static:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+
+  rm -f $ROOT/share/doc/mxml/Makefile.am
+  install -d $ROOT/share/doc/mxml/html
+  mv -vf $ROOT/share/doc/mxml/*.{gif,html} $ROOT/share/doc/mxml/html/
+
+  install -d $ROOT/share/doc/mxml
+  install -m 644 ANNOUNCEMENT CHANGES COPYING README $ROOT/share/doc/mxml
+}
+

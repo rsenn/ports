@@ -1,0 +1,137 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:50 roman Exp $
+#
+# Description: A desktop and indexer independent desktop search engine.
+#  Strigi is a desktop and indexer independent desktop search engine. Its
+#  main features include very fast crawling, a very small memory footprint,
+#  no hammering of the system, and pluggable backends (currently clucene
+#  and hyperestraier was provided). Communication between the daemon and
+#  search program is done over an abstract interface which is desktop
+#  independent. A small Perl program with an example of how to query the
+#  database is included along with an example KDE client application and
+#  a KIO interface.
+# URL: http://strigi.sf.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=strigi
+version=0.5.7
+release=1
+source=(http://www.vandenoever.info/software/strigi/strigi-$version.tar.bz2)
+
+build()
+{
+  cd strigi-$version
+
+  export QTDIR="$prefix"
+
+  cmake -D CMAKE_INSTALL_PREFIX="$prefix" \
+        -D CMAKE_INCLUDE_PATH="$prefix/include" \
+        -D CMAKE_LIBRARY_PATH="$prefix/lib/qt-4.3:$prefix/lib" \
+        -D ENABLE_INOTIFY:BOOL="ON" \
+        -D ENABLE_LOG4CXX:BOOL="ON" \
+        -D ENABLE_DBUS:BOOL="ON" \
+        .
+
+  make DESTDIR="$PKG" all install
+
+  install -d $ROOT/share/doc
+
+  mv doc $ROOT/share/doc/$name-$version
+  mv AUTHORS COPYING ChangeLog NEWS README README.win32 TODO TODO.Phreedom TODOMONDAY $ROOT/share/doc/$name-$version
+  find $ROOT -size 0 -print0 | xargs -0 rm -f
+}
+
+# package configuration
+# --------------------------------------------------------------------------------
+config()
+{
+  # add the main-menu entry "strigidaemon"
+  config_branch 'strigidaemon'  'strigi daemon configuration'
+
+    # lets choose a user
+    config_value 'user'  'strigi daemon user'
+
+      config_description 'Username the strigi daemon will run under'
+      config_default     '$(user_find strigi nobody daemon)'
+      config_function    'choose --help-{button,label} Create $(user_list)'
+      config_extra       'input'
+
+    config_end
+
+    # choose a group
+    config_value 'group' 'strigi server group'
+
+      config_description 'Group the strigi daemon will run under'
+      config_default     '$(user_group $(config_getvalue strigidaemon_user) || group_find strigi nobody nogroup daemon)'
+      config_function    'choose --help-{button,label} Create $(group_list)'
+      config_extra       'input'
+
+    config_end
+
+  config_end
+
+  # enhance daemontools package configuration
+  config_enter 'services' 'run' 'strigidaemon'
+
+    config_label   'Run strigidaemon at boot'
+    config_default 'yes'
+    config_type    'value'
+
+  config_leave
+}
+
+# --------------------------------------------------------------------------------
+services()
+{
+  config_branch "strigidaemon"
+
+    config_branch "log"
+    config_end
+
+    config_set 'TITLE'   'strigi daemon'
+    config_set 'PIDFILE' '$prefix/var/run/strigidaemon.pid'
+#    config_set 'START'   ''
+    config_set 'STOP'    'TERM'
+
+  config_leave
+}
+
+# script to start strigidaemon from supervise
+# --------------------------------------------------------------------------------
+strigidaemon()
+{
+  exec 2>&1
+
+  # set default values
+  user=${strigidaemon_user:-nobody}
+
+  # check if the user is available to setuidgid
+  if ! user_avail "$user"; then
+    service_error "no such user:" "$user"
+  fi
+
+  # check if there's already an instance of httpd
+  if [ -f "$strigidaemon_PIDFILE" ]; then
+    pid=$(cat "$strigidaemon_PIDFILE")
+
+    if [ "$pid" ] && [ -d "$prefix/proc/$pid" ]; then
+      service_msg "strigidaemon already running, restarting..."
+      kill $pid
+      sleep 2
+      exit 1
+    fi
+  fi
+
+  # check whether host:port is bindable
+  if proc=$(inet_bound tcp "$host:$port"); then
+    service_error "$host:$port" "already bound"
+  fi
+
+  export NO_DETACH=1
+
+  # finally execute strigidaemon
+  export DISPLAY=:0
+  exec -a strigidaemon "$bindir/strigidaemon"
+  service_down "strigidaemon"
+}
+

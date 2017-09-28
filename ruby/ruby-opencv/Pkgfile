@@ -1,0 +1,37 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Ruby bindings for OpenCV
+#  OpenCV is "Open Source Computer Vision Library". OpenCV is developed by
+#  Intel and many opensource developers. This library include many useful
+#  function for Computer vision, such as Object-Detection.
+#  .
+# URL: http://rubyforge.org/projects/opencv/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=ruby-opencv
+version=0.0.6
+release=1
+source=(http://de.mirror.rubyforge.org/opencv/opencv-$version.gem
+        opencv-0.0.6-nogem.patch)
+
+build()
+{
+  mkdir -p opencv-$version
+  cd opencv-$version
+
+  tar -xvzf ../data.tar.gz
+
+  patch -N -p1 -i $SRC/opencv-0.0.6-nogem.patch
+
+  ruby ext/extconf.rb --with-opencv-include="$prefix/include/opencv"
+
+  make
+  make DESTDIR="$PKG" sitelibdir='$(RUBYLIBDIR)' install
+
+  install -d $ROOT/share/doc/ruby-opencv
+  install -m 644 *.txt $ROOT/share/doc/ruby-opencv
+  cp -rf examples test images $ROOT/share/doc/ruby-opencv
+}
+
+# EOF

@@ -1,0 +1,47 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:52 roman Exp $
+#
+# Description: Open dynamics engine.
+#  A free, industrial quality library for simulating articulated rigid body
+#  objects in VR environments. It's fast, flexible & robust. Built-in
+#  collision detection.
+#  .
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=ode
+version=0.11
+release=1
+source=($mirror_sf/opende/ode-$version.tar.bz2
+        ode-0.8-mingw32.patch)
+
+build()
+{
+  cd ode-$version
+
+#  libtoolize --force
+#  aclocal --force
+#  autoconf --force
+
+  case $host in
+    *-linux*)
+#      export LIBS="-lXdmcp -lXau -lXext -ldl"
+      ;;
+    *-mingw32*)
+      patch -N -p1 -i $SRC/ode-0.8-mingw32.patch
+      ;;
+  esac
+
+  automake -a --foreign --copy --force
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --${shared:=enable}-shared \
+      --${static:=enable}-shared
+
+  make X_LIBS="-lX11" X_EXTRA_LIBS="-lGLU -lGL" X_PRE_LIBS="-lXxf86vm"
+  make DESTDIR="$PKG" install
+}
+

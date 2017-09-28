@@ -1,0 +1,39 @@
+# $Id: Pkgfile,v 1.3 2007/05/09 21:02:41 roman Exp $
+#
+# Description: Documentation system for C, C++, Java, Python and other languages
+#  Doxygen is a documentation system for C, C++, Java, Objective-C, Python, IDL
+#  and to some extent PHP, C#, and D.  It can generate an on-line class browser
+#  (in HTML) and/or an off-line reference manual (in LaTeX) from a set of
+#  documented source files. There is also support for generating man pages
+#  and for converting the generated output into Postscript, hyperlinked PDF
+#  or compressed HTML.  The documentation is extracted directly from the sources.
+#  .
+# URL: www.stack.nl/~dimitri/doxygen/download.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=doxygen
+version=1.5.7
+release=1
+source=(ftp://ftp.stack.nl/pub/users/dimitri/doxygen-$version.src.tar.gz)
+
+build()
+{
+  cd doxygen-$version
+
+  ./configure \
+       --prefix "$prefix"
+
+  make all
+  make INSTALL="$ROOT" install
+
+  install -d $ROOT/share
+  mv $ROOT/man $ROOT/share
+
+  make -C doc
+
+  install -d $ROOT/share/doc
+  cp -rf doc $ROOT/share/doc/$name
+  rm -f $ROOT/share/doc/$name/[A-Z]*file*
+
+}

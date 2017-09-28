@@ -1,0 +1,26 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: This utility allows system administator to control Virtual
+# Environments, i.e. create, start, shutdown, set various options and limits etc.
+# URL: http://openvz.org/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=vzctl
+version=3.0.22
+release=1
+source=(http://download.openvz.org/utils/vzctl/$version/src/vzctl-$version.tar.bz2)
+
+build()
+{
+  cd vzctl-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

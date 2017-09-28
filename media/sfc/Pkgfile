@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A synthesizer and SoundFont tool.
+#  SoundFontCombi takes advantage of the ALSA sequencer to emulate a
+#  synthesizer or a master keyboard, routing MIDI events in eight parts
+#  with six MIDI outputs and two Midi inputs. It can also add functions to
+#  your master MIDI keyboard.
+# URL: http://personal.telefonica.terra.es/web/soudfontcombi/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=sfc
+version=0.016
+release=1
+source=(http://personal.telefonica.terra.es/web/soudfontcombi/sfc-$version.tar.gz)
+
+build()
+{
+  cd sfc-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

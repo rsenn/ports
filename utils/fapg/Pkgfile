@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A tool to generate a list of audio files in a variety of formats.
+#  FAPG is a tool to generate list of audio files (WAV, MP3, Ogg, etc.) in
+#  various formats (M3U, PLS, HTML, etc). It is very useful for quickly
+#  creating a playlist of a large number of audio files.
+#  .
+# URL: http://royale.zerezo.com/fapg/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=fapg
+version=0.41
+release=1
+source=(http://royale.zerezo.com/fapg/fapg-$version.tar.gz)
+
+build()
+{
+  cd fapg-$version
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Python/ORBit (CORBA) Bindings
+#  PyORBit is a Python binding for the ORBit2 CORBA ORB. It was developped to
+#  suit the needs of the bonobo bindings in GNOME-Python, but is usable for
+#  other purposes as well. It aims to follow the standard Python language
+#  mapping for CORBA. It can generate stubs at runtime from typelibs,
+#  IDL files, or by introspecting remote objects using ORBit2's IModule
+#  typelib capabilities.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=pyorbit
+version=2.14.0
+release=1
+source=(ftp://ftp.gnome.org./pub/gnome/sources/pyorbit/2.14/pyorbit-$version.tar.bz2)
+
+build()
+{
+  cd pyorbit-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

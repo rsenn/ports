@@ -1,0 +1,28 @@
+# $Id: Pkgfile,v 1.10 2007/04/22 23:07:53 roman Exp $
+#
+# Description: GNU gawk
+#  The awk utility interprets a special-purpose programming language that
+#  makes it possible to handle simple data-reformatting jobs with just a
+#  few lines of code. It is a free version of 'awk.' GNU Awk implements the
+#  AWK utility which is part of IEEE Std 1003.1 Shell and Utilities (XCU).
+# URL: http://www.gnu.org/software/gawk/gawk.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=gawk
+version=3.1.6
+release=1
+source=($mirror_gnu/gawk/gawk-$version.tar.bz2)
+
+build()
+{
+  cd gawk-$version
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

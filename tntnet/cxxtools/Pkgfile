@@ -1,0 +1,52 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A library of unrelated, useful C++ classes.
+#  cxxtools is a library of unrelated but useful C++ classes. It contains
+#  an argument parser, a base-64 encoder/decoder, a C++ interface to iconv,
+#  md5-stream for easy MD5 calculation, threading classes, socket classes,
+#  a dynamic exception-safe buffer, a wrapper for dlopen/dlsym, a pool
+#  template (e.g. for a connection pool in a multi-threaded application),
+#  query_params, and a class for easy parsing of CGI parameters (GET and
+#  POST) in a CGI program.
+# URL: http://www.tntnet.org/cxxtools.hms
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libgcc1, libstdc++6
+
+name=cxxtools
+version=1.4.8
+release=1
+source=(http://www.tntnet.org/download/cxxtools-$version.tar.gz
+        cxxtools-1.4.5-config-sh.patch
+        cxxtools-1.4.5-pthread-libs.patch
+        cxxtools-1.4.8-builddir.patch
+        cxxtools-1.4.5-cxx0x.patch)
+
+build()
+{
+  cd ${srcdir=$SRC/cxxtools-$version}
+
+#  patch -N -p1 -i $SRC/cxxtools-1.4.5-config-sh.patch
+#  patch -N -p1 -i $SRC/cxxtools-1.4.5-pthread-libs.patch
+  patch -N -p1 -i $SRC/cxxtools-1.4.8-builddir.patch
+#  patch -N -p1 -i $SRC/cxxtools-1.4.5-cxx0x.patch
+
+  libtoolize --force --copy
+  aclocal --force -I m4
+  autoheader --force
+  automake --force --copy --foreign --add-missing
+  aclocal --force -I m4
+  autoconf --force
+
+  rm -rf ${builddir=$srcdir/build/$host} && mkdir $builddir && cd $builddir
+
+  $srcdir/configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix" \
+       --${shared:=enable}-shared \
+       --${static:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+}

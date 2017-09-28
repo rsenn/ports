@@ -1,0 +1,36 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+# Package: libutio-dev
+# Description: The Useful Terminal I/O library is a C++ alternative to ncurses for working with terminfo-defined terminals
+# Included are raw terminfo string access and output, an efficient buffered
+# output system, and a keyboard driver.
+#
+# URL: http://utio.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=utio
+version=1.2
+release=1
+source=($mirror_sf/utio/utio-$version.0.tar.bz2)
+
+build()
+{
+  cd utio-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make CWARNOPTS="-Wall"
+  make \
+      INCDIR="$ROOT/include" \
+      LIBDIR="$ROOT/lib" \
+      BINDIR="$ROOT/bin" \
+    install
+
+  install -d $ROOT/share/doc/utio
+  install -m 644 [A-Z]*[A-Z]* $ROOT/share/doc/utio
+  cp -rf docs/* $ROOT/share/doc/utio
+}

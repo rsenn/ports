@@ -1,0 +1,59 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Section: libs
+# Description: A tool that enables bash dynamic-like shared libraries.
+#  libbash is a tool that enables bash dynamic-like shared libraries. It
+#  does this by managing bash scripts that contain functions you may want to
+#  use in various scripts. It is currently provided in Slackware, Gobolinux,
+#  CCux Linux, NimbleX, and FrugalWare.
+#  .
+# URL: http://libbash.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libbash
+version=0.9.10b
+release=3
+source=($mirror_sf/libbash/libbash-$version.tar.bz2
+        libbash-0.9.10b-ldbash.config.patch)
+
+build()
+{
+  cd libbash-$version
+
+  patch -N -p0 -i $SRC/libbash-0.9.10b-ldbash.config.patch
+
+  case $prefix in
+    "/usr")
+      sysconfdir="/etc"
+      localstatedir="/var"
+    ;;
+  esac
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --localstatedir="${localstatedir=$prefix/var}" \
+      --sysconfdir="${sysconfdir=$prefix/etc}"
+
+  make
+  make DESTDIR="$PKG" install
+
+  chmod -R og-rw $PKG/var
+
+  rm -f $ROOT/bin/ldbash
+  ln -sf ../lib/ldbash $ROOT/bin/ldbash
+}
+
+postinst()
+{
+  PS4="running: "
+  case "$1" in
+    reconfigure | configure)
+      /usr/sbin/ldbashconfig
+    ;;
+  esac
+}
+
+# EOF

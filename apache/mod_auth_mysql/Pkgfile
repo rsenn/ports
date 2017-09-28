@@ -1,0 +1,24 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: Authentication against MySQL databases.
+#  mod_auth_mysql is an Apache module that allows authentication using user
+#  Apache1, now also includes a version for Apache 2.
+# URL: http://modauthmysql.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=mod_auth_mysql
+version=3.0.0
+release=1
+source=($mirror_sf/modauthmysql/mod_auth_mysql-$version.tar.gz)
+
+build()
+{
+  cd mod_auth_mysql-$version
+
+
+  $prefix/sbin/apxs -c -I$prefix/include/mysql -lmysqlclient -lm -lz mod_auth_mysql.c
+
+  install -d $ROOT/lib/apache
+  install -m 755 mod_auth_mysql.so $ROOT/lib/apache
+}

@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A simple yet powerful implementation of genetic algorithms.
+# FGA (Fast Genetic Algorithm) is a simple yet powerful implementation of
+# genetic algorithms. The library provides many variants of crossover and
+# selection procedures, and a parallel version of the algorithm is included.
+#
+# URL: http://fga.sourceforge.net
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=fga
+version=1.4
+release=1
+source=($mirror_sf/fga/fga-$version.tar.gz)
+
+build()
+{
+  cd fga
+
+  sed -i \
+      -e 's,/usr/local,$(PREFIX),g' \
+      -e 's,/examples,/doc/fga/examples,g' \
+    Makefile
+
+  make
+
+  install -d $ROOT/bin
+  install -d $ROOT/include
+
+  make PREFIX="$ROOT" install
+}

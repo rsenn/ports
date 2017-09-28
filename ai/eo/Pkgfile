@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Templates-based, ANSI-C++ compliant evolutionary computation library
+#  EO is a templates-based, ANSI-C++ compliant evolutionary computation
+#  library. It contains classes for any kind of evolutionary computation
+#  (specially genetic algorithms) you might come up to. It is
+#  component-based, so that if you don't find the class you need in it,
+#  it is very easy to subclass existing abstract or concrete class.
+#  .
+# URL: http://eodev.sourceforge.net/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=eo
+version=1.0.1
+release=1
+source=($mirror_sf/eodev/eo-$version.tar.gz)
+
+build()
+{
+  cd eo-$version
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

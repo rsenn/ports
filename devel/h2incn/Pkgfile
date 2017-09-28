@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Directly convert C/C++ headers to Nasm-style include files, and can be used in a makefile
+# It is useful if you want to use the same structures or external variable
+# declarations in C and assembler code, and you don't want to use two separate
+# files and update both each time you change something. It is written in a mix
+# of C and C++ code. It currently works for simple files.
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=h2incn
+version=0.5
+release=1
+source=(http://edm-fps.net/h2incn/h2incn-$version.tar.gz)
+
+build()
+{
+  cd h2incn-$version
+
+  make -f makefile cc="$CXX $CXXFLAGS"
+
+  install -d $ROOT/bin
+  install -m 755 h2incn $ROOT/bin
+
+  install -d $ROOT/share/doc/h2incn
+  install -m 644 0* *.html $ROOT/share/doc/h2incn
+}

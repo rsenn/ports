@@ -1,0 +1,30 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: A simple utility to safely create temporary files.
+#  mktemp takes an optional filename template and overwrites a portion of
+#  it to create a unique filename. It will then create a temporary file or
+#  directory for the user, safe from file creation races.
+# URL: http://www.mktemp.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=mktemp
+version=1.5
+release=1
+source=(ftp://ftp.mktemp.org/pub/$name/$name-$version.tar.gz
+  mktemp-$version-static.patch)
+#sources=(http://distfiles.gentoo.org/distfiles/$name-$version.tar.gz)
+
+build() {
+  cd mktemp-${version}
+  patch -N -p1 -i "../mktemp-$version-static.patch"
+  ./configure --prefix=$prefix \
+       --with-random=/dev/urandom
+#              $prefix/dev/urandom"
+  make LIBS='-Wl,-rpath,$(prefix)/lib'
+  make prefix="$PKG/$prefix" install
+}
+
+cleanup() {
+  rm -r $ROOT/man
+}

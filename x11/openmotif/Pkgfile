@@ -1,0 +1,45 @@
+# $Id: Pkgfile,v 1.8 2007/04/22 23:07:58 roman Exp $
+#
+# Description: The traditional X11 GUI Toolkit for Unix.
+#  Motif is the industry standard graphical user interface (GUI) available
+#  on more than 200 hardware and software platforms. It is the de facto
+#  graphical user interface on UNIX systems in heterogeneous networked
+#  computing environments. Motif is fully specified by the IEEE 1295
+#  standard, providing application developers, system vendors, and end
+#  users with a stable, mature and reliable environment for application
+#  presentation on a wide range of platforms. Motif is also the base
+#  graphical user interface for the Common Desktop Environment (CDE) and
+#  a number of other desktops.
+# URL: http://www.opengroup.org/openmotif/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=openmotif
+version=2.2.3
+release=1
+source=(ftp://ftp.ics.com/openmotif/2.2/$version/src/openMotif-$version.tar.gz
+        openmotif-2.2-wmluiltok.patch
+        openmotif-2.2-nodemos.patch)
+
+build()
+{
+  cd openMotif-$version
+
+  patch -N -p1 -i $SRC/openmotif-2.2-wmluiltok.patch
+  patch -N -p1 -i $SRC/openmotif-2.2-nodemos.patch
+
+#  rm config.sub &&
+#  autoreconf --force --verbose --install
+
+#  LIBS="-lX11 -lXdmcp -lXau -lSM -lICE -ldl"
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --mandir="$prefix/share/man" \
+      --${shared:=enable}-shared \
+      --${static:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+}

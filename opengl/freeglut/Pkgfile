@@ -1,0 +1,36 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:03:14 roman Exp $
+#
+# Description: An OpenSourced clone of the GLUT library.
+#  freeglut is intended to be a 100% plug-compatible clone, and is released
+#  under the Xfree license. The GLUT (OpenGL Utility Toolkit) is a widely
+#  used library for doing window control, keyboard, and mouse input,
+#  and other basic functions for OpenGL programs. However, GLUT is not
+#  OpenSourced - although it's source code is available under a somewhat
+#  ill-defined set of restrictions. Hence, 'freeglut'.
+# URL: http://freeglut.sf.net/
+# Maintainer: Roman Senn <smoli@paranoya.ch>
+# Depends on:
+
+name=freeglut
+pkgname=libfreeglut
+version=2.4.0
+x11_version=X11R7.3
+
+release=1
+source=($mirror_sf/freeglut/freeglut-$version.tar.gz)
+
+build()
+{
+  cd freeglut-$version
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --${static:=enable}-shared \
+      --${shared:=enable}-shared \
+      --disable-warnings
+
+  make
+  make DESTDIR="$PKG" install
+}

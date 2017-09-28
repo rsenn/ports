@@ -1,0 +1,38 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A natural language processing infrastructure
+#  Ellogon is a multi-lingual, cross-platform, general-purpose language
+#  engineering environment, developed in order to aid both researchers
+#  who are doing research in computational linguistics, as well as
+#  companies who produce and deliver language engineering systems. As a
+#  language engineering platform, it offers an extensive set of facilities,
+#  including tools for processing and visualising textual/HTML/XML data and
+#  associated linguistic information, support for lexical resources (like
+#  creating and embedding lexicons), tools for creating annotated corpora,
+#  accessing databases, comparing annotated data, or transforming linguistic
+#  information into vectors for use with various machine learning algorithms.
+# URL: http://www.ellogon.org
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=ellogon
+version=01-01-08
+release=1
+source=(http://www.ellogon.org/component/option,com_docman/task,doc_download/gid,36/Itemid,62:ellogon-src-$version.tar.gz
+        ellogon-01-01-08-no-hstemmer.patch)
+
+build()
+{
+  cd Ellogon
+
+  patch -p1 -i $SRC/ellogon-01-01-08-no-hstemmer.patch
+
+  sh configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix/lib/ellogon"
+
+  make prefix="$ROOT/lib/ellogon" install
+
+
+}

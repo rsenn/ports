@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A full featured media player for KDE.
+#  Kaffeine is a simple and easy to use media player based on the xine-lib
+#  and full integrated in KDE3. It supports drag and drop and provides
+#  an editable playlist, a Konqueror plugin, a Mozilla plugin, OSD, and
+#  much more.
+# URL: http://kaffeine.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=kaffeine
+version=0.8.6
+release=1
+source=($mirror_sf/kaffeine/kaffeine-$version.tar.bz2)
+
+build()
+{
+  cd kaffeine-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --program-prefix="" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

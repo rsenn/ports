@@ -1,0 +1,34 @@
+# $Id: Pkgfile,v 1.1 2007/04/22 23:07:52 roman Exp $
+#
+# Description: patch
+# URL: http://www.gnu.org/software/patch
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=cygwin-pkgconfig
+version=0.21
+target=i686-pc-cygwin
+
+release=1
+source=(http://pkgconfig.freedesktop.org/releases/pkg-config-$version.tar.gz)
+
+build()
+{
+  cd pkg-config-$version
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      ${target+--target="$target"} \
+      --prefix="$prefix" \
+      --program-prefix="$target-" \
+      --with-pc-path="$prefix/$target/lib/pkgconfig"
+
+  make
+  make prefix="$ROOT" install
+
+  install -d $ROOT/$target/bin
+  ln -s ../../bin/$target-pkg-config $ROOT/$target/bin/pkg-config
+
+  copy_license "COPYING"
+}

@@ -1,0 +1,40 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: A GetOpt Java XML help format &amp; option parser.
+#  The Java GetOpt library implements option parsing and a common online
+#  help behaviour, including an XML format for topics, command, and options
+#  (which can be queried with '--help --xml') and support for online browsing
+#  with '--help --browse'.
+# URL: http://evcgen.sourceforge.net/getopt/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=getopt
+version=1.1.4
+release=1
+source=(http://software.frodo.looijaard.name/getopt/files/getopt-$version.tar.gz)
+
+build()
+{
+  cd getopt-$version
+
+  make \
+      CPPFLAGS='-DLIBCGETOPT=$(LIBCGETOPT) -DWITHOUT_GETTEXT=1 -DWITH_GETTEXT= -DLOCALEDIR=\"$(localedir)\" -DNOT_UTIL_LINUX' \
+      DESTDIR="$PKG" \
+      prefix="$prefix" \
+      mandir="$prefix/share/man" \
+    all install
+
+  make clean
+
+  make \
+      CPPFLAGS='-DLIBCGETOPT=$(LIBCGETOPT) -DWITHOUT_GETTEXT=1 -DWITH_GETTEXT= -DLOCALEDIR=\"$(localedir)\" -DNOT_UTIL_LINUX' \
+      LDFLAGS="-static" \
+      prefix="$prefix" \
+    all
+
+  install -m 755 getopt $ROOT/bin/getopt.static
+
+  install -d $ROOT/share/doc/getopt
+  install -m 644 Changelog COPYING README TODO $ROOT/share/doc/getopt
+}

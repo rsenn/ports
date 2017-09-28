@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A configuration file parser library.
+#  libConfuse is a configuration file parser library written in C. It's
+#  goal is to be easy to use and quick to integrate into existing code. It
+#  supports sections and (lists of) values (strings, integers, floats,
+#  booleans, or other sections), as well as some other features (such as
+#  single/double-quoted strings, environment variable expansion, functions,
+#  and nested include statements). It makes it very easy to add configuration
+#  file capability to a program using a simple API.
+# URL: http://www.nongnu.org/confuse/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=confuse
+version=1.2.3
+release=1
+source=(http://download.savannah.nongnu.org/releases/confuse/confuse-$version.tar.gz)
+
+build()
+{
+  cd confuse-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

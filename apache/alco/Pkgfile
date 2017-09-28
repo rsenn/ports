@@ -1,0 +1,26 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A script for colorizing Apache common or combined logs.
+#  Apache Log Colorizing Tool (Alco) is a script for colorizing Apache
+#  common or combined logs.
+#  .
+# URL: http://www.linuxpages.org/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=alco
+version=1.1
+release=1
+source=(http://www.linuxpages.org/download/alco-$version.tar.bz2)
+
+build()
+{
+  cd alco-$version
+
+  sed -i 's,/usr/local,$(PREFIX),g' Makefile
+
+  make
+  make PREFIX="$ROOT" install
+}
+
+# EOF

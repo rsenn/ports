@@ -1,0 +1,26 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An ALSA mixer made with AJAX.
+#  Ajaxmixer is a Web interface to adjust your ALSA sound card. It uses
+#  mootools 1.2.1 and amixer to get the card information.
+# URL: http://ajaxmixer.sourceforge.net
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=ajaxmixer
+version=0.1
+release=1
+source=(http://downloads.sourceforge.net/ajaxmixer/ajaxmixer-$version.tar.gz)
+
+build() 
+{
+  cd ajaxmixer-$version
+ 
+  install -d $ROOT/share/ajaxmixer
+  cp -r css images js lib $ROOT/share/ajaxmixer
+
+  install -d $ROOT/share/doc/ajaxmixer
+  install -m 644 README INSTALL $ROOT/share/doc/ajaxmixer
+}
+
+# EOF

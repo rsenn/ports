@@ -1,0 +1,102 @@
+diff -ru src_orig/CMakeLists.txt src/CMakeLists.txt
+--- src_orig/CMakeLists.txt	2007-10-25 00:27:24.000000000 +0000
++++ src/CMakeLists.txt	2007-10-25 00:31:36.000000000 +0000
+@@ -0,0 +1,26 @@
++SET(NAME boost-jam)
++SET(VERSION 3.1.15)
++
++PROJECT(${NAME} C)
++
++ADD_DEFINITIONS(-DINSTALL_PREFIX="\\"${CMAKE_INSTALL_PREFIX}\\"")
++
++SET(bjam_SOURCES builtins.c class.c command.c debug.c execvms.c expand.c fileos2.c filesys.c filevms.c glob.c hash.c hcache.c hdrmacro.c headers.c jam.c jambase.c jamgram.c lists.c make.c make1.c modules/order.c modules/property-set.c modules/path.c modules/set.c modules/sequence.c modules/regex.c modules.c native.c newstr.c option.c parse.c pathvms.c pwd.c regexp.c rules.c scan.c search.c strings.c subst.c timestamp.c variable.c w32_getreg.c compile.c)
++
++#
++#SET(bjam_DOCS images/blank.png images/caution.png images/draft.png images/home.png images/important.png images/next.png images/next_disabled.png images/note.png images/prev.png images/prev_disabled.png images/tip.png images/toc-blank.png images/toc-minus.png images/toc-plus.png images/up.png images/up_disabled.png images/warning.png index.html jam/building.html jam/history.html jam/language.html jam/miscellaneous.html jam/usage.html)
++
++IF(UNIX)
++  SET(bjam_SYSTEM unix)
++ENDIF(UNIX)
++
++IF(WIN32)
++  SET(bjam_SYSTEM nt)
++ENDIF(WIN32)
++
++ADD_EXECUTABLE(bjam ${bjam_SOURCES} path${bjam_SYSTEM}.c file${bjam_SYSTEM}.c exec${bjam_SYSTEM}.c)
++
++INSTALL(TARGETS bjam DESTINATION bin)
++
++#INSTALL(FILES index.html DESTINATION share/doc/${NAME}-${VERSION})
++#INSTALL(DIRECTORY jam images DESTINATION share/doc/${NAME}-${VERSION})
+diff -ru boost-jam-3.1.15_orig/jambase.c boost-jam-3.1.15/jambase.c
+--- boost-jam-3.1.15_orig/jambase.c	2007-10-25 00:01:21.000000000 +0000
++++ boost-jam-3.1.15/jambase.c	2007-10-25 00:05:03.000000000 +0000
+@@ -21,7 +21,7 @@
+ "BOOST_BUILD_PATH.user-value = $(BOOST_BUILD_PATH) ;\n",
+ "if ! $(BOOST_BUILD_PATH) && $(UNIX)\n",
+ "{\n",
+-"BOOST_BUILD_PATH = /usr/share/boost-build ;\n",
++"BOOST_BUILD_PATH = "INSTALL_PREFIX"/share/boost-build ;\n",
+ "}\n",
+ "rule _poke ( module-name ? : variables + : value * )\n",
+ "{\n",
+@@ -588,7 +588,7 @@
+ "CC          ?= gcc ;\n",
+ "C++         ?= gcc ;\n",
+ "CCFLAGS     += -D_POSIX_SOURCE ;\n",
+-"HDRS        += /usr/include ;\n",
++"HDRS        += "INSTALL_PREFIX"/include ;\n",
+ "RANLIB      ?= \"\" ; \n",
+ "NOARSCAN    ?= true ;\n",
+ "NOARUPDATE  ?= true ;\n",
+@@ -600,7 +600,7 @@
+ "case MACOSX :\n",
+ "AR          ?= libtool -o ;\n",
+ "C++         ?= c++ ;\n",
+-"MANDIR      ?= /usr/local/share/man ;\n",
++"MANDIR      ?= "INSTALL_PREFIX"/share/man ;\n",
+ "RANLIB      ?= \"\" ;\n",
+ "case NCR :\n",
+ "RANLIB      ?= \"\" ;\n",
+@@ -623,7 +623,7 @@
+ "RANLIB      ?= \"\" ;\n",
+ "case SOLARIS :\n",
+ "RANLIB      ?= \"\" ;\n",
+-"AR          ?= \"/usr/ccs/bin/ar ru\" ;\n",
++"AR          ?= \""INSTALL_PREFIX"/ccs/bin/ar ru\" ;\n",
+ "case UNICOS :\n",
+ "NOARSCAN    ?= true ;\n",
+ "OPTIM       ?= -O0 ;\n",
+@@ -649,7 +649,7 @@
+ "AS          ?= as ;\n",
+ "ASFLAGS     ?= ;\n",
+ "AWK         ?= awk ;\n",
+-"BINDIR      ?= /usr/local/bin ;\n",
++"BINDIR      ?= "INSTALL_PREFIX"/bin ;\n",
+ "C++         ?= cc ;\n",
+ "C++FLAGS    ?= ;\n",
+ "CC          ?= cc ;\n",
+@@ -667,12 +667,12 @@
+ "JAMFILE     ?= Jamfile ;\n",
+ "JAMRULES    ?= Jamrules ;\n",
+ "LEX         ?= ;\n",
+-"LIBDIR      ?= /usr/local/lib ;\n",
++"LIBDIR      ?= "INSTALL_PREFIX"/lib ;\n",
+ "LINK        ?= $(CC) ;\n",
+ "LINKFLAGS   ?= ;\n",
+ "LINKLIBS    ?= ;\n",
+ "LN          ?= ln ;\n",
+-"MANDIR      ?= /usr/local/man ;\n",
++"MANDIR      ?= "INSTALL_PREFIX"/man ;\n",
+ "MKDIR       ?= mkdir ;\n",
+ "MV          ?= mv -f ;\n",
+ "OPTIM       ?= ;\n",
+@@ -683,7 +683,7 @@
+ "SHELLHEADER ?= \"#!/bin/sh\" ;\n",
+ "SHELLMODE   ?= 755 ;\n",
+ "SLASH       ?= / ;\n",
+-"STDHDRS     ?= /usr/include ;\n",
++"STDHDRS     ?= "INSTALL_PREFIX"/include ;\n",
+ "SUFEXE      ?= \"\" ;\n",
+ "SUFLIB      ?= .a ;\n",
+ "SUFOBJ      ?= .o ;\n",

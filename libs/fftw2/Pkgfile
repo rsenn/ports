@@ -1,0 +1,59 @@
+# $Id: Pkgfile,v 1.3 2007/05/09 21:02:47 roman Exp $
+#
+# Description: library for computing Fast Fourier Transforms
+#  This library computes Fast Fourier Transforms (FFT) in one or more
+#  dimensions. It is extremely fast. This package contains the shared
+#  library version of the fftw libraries in double precision.
+#  To get the static library and the header files you need to install
+#  fftw-dev.
+#  For documentation and test programs, install fftw-docs
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=fftw2
+version=2.1.5
+release=1
+source=(http://www.fftw.org/fftw-$version.tar.gz
+        fftw-2.1.5-link.patch)
+
+build()
+{
+  cd fftw-$version
+
+  patch -N -p1 -i $SRC/fftw-2.1.5-link.patch
+
+  libtoolize --force --copy --install
+  aclocal --force
+  autoconf --force
+
+  (cd .. && cp -rf fftw-$version sfftw-$version)
+
+  ./configure \
+    --build="$build" \
+    --host="$host" \
+    --prefix="$prefix" \
+    --disable-float \
+    --${shared:=enable}-shared \
+    --${static:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+
+  cd ../sfftw-$version
+
+  ./configure \
+    --build="$build" \
+    --host="$host" \
+    --prefix="$prefix" \
+    --enable-float \
+    --enable-type-prefix \
+    --${shared:=enable}-shared \
+    --${static:=enable}-shared
+
+  make libsrfftw_la_LIBADD='$(top_builddir)/fftw/libsfftw.la'
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/fftw2
+  install -m 644 README AUTHORS COPYING ChangeLog INSTALL NEWS TODO COPYRIGHT $ROOT/share/doc/fftw2
+}

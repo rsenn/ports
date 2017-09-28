@@ -1,0 +1,28 @@
+# $Id: Pkgfile,v 1.5 2007/04/22 23:07:53 roman Exp $
+#
+# Description: exim
+# URL: http://www.exim.org
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=netqmail
+version=1.05
+release=1
+source=(http://qmail.omnis.ch/netqmail-$version.tar.gz)
+
+build()
+{
+  cd netqmail-${version}
+  sh collate.sh
+  cd netqmail-${version}
+
+  echo ${CC} > conf-cc
+  echo ${CC} > conf-ld
+
+  make
+}
+
+cleanup()
+{
+  :
+}

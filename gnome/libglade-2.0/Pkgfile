@@ -1,0 +1,36 @@
+# $Id: Pkgfile,v 1.3 2007/04/22 23:07:53 roman Exp $
+#
+# Description: library to load .glade files at runtime
+#  This library allows to load externally stored user interfaces into
+#  programs. This allows alteration of the interface without recompilation
+#  of the program.
+#  The interfaces can also be edited with GLADE.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+
+name=libglade
+version=2.6.3
+release=1
+source=($mirror_gnome/sources/libglade/${version%.*}/libglade-$version.tar.bz2
+        libglade-2.6.3-no-std-c9x.patch)
+
+build()
+{
+  cd libglade-$version
+
+  patch -N -p1 -i $SRC/libglade-2.6.3-no-std-c9x.patch
+
+  sh autogen.sh
+
+  [ -e $prefix/lib/libintl.so ] && export LIBS="-lintl"
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --${shared:=enable}-shared \
+       --${static:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+}

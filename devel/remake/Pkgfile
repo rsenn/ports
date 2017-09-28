@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: remake
+#  remake is a patched and modernized version of GNU make utility that
+#  adds improved error reporting, the ability to trace execution in a
+#  comprehensible way, and a debugger. The debugger lets you set breakpoints
+#  on targets, show and set variables in expanded or unexpanded form, inspect
+#  target descriptions, see the target call stack, and even execute arbitrary
+#  GNU make fragments (e.g. add a dependency to an existing target).
+# URL: http://bashdb.sourceforge.net/remake
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=remake
+version=3.81+dbg-0.1
+release=1
+source=($mirror_sf/bashdb/remake-$version.tar.bz2)
+
+build()
+{
+  cd remake-$version
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

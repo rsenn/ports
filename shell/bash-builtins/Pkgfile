@@ -1,0 +1,30 @@
+# $Id: Pkgfile,v 1.42 2007/05/09 21:02:56 roman Exp $
+#
+# Package: bash-builtins-dsfg
+# Section: universe/utils
+# Description: Bash loadable builtins - headers & examples
+#  Bash can dynamically load new builtin commands. Included are the necessary
+#  headers to compile your own builtins and lots of examples.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libcsv2, libexpat1, libgdbm3, libmysqlclient16, libpq5, libsqlite3-0, xulrunner-1.9
+# Split: bash-builtin-basename (*/basename.so), bash-builtin-binary (*/binary.so), bash-builtin-cat (*/cat.so), bash-builtin-csv (*/csv.so), bash-builtin-cut (*/cut.so), bash-builtin-dirname (*/dirname.so), bash-builtin-expat (*/expat.so), bash-builtin-finfo (*/finfo.so), bash-builtin-gdbm (*/gdbm.so), bash-builtin-getconf (*/getconf.so), bash-builtin-head (*/head.so), bash-builtin-hello (*/hello.so), bash-builtin-herefile (*/herefile.so), bash-builtin-id (*/id.so), bash-builtin-ln (*/ln.so), bash-builtin-logname (*/logname.so), bash-builtin-mkdir (*/mkdir.so), bash-builtin-mysql (*/mysql.so), bash-builtin-necho (*/necho.so), bash-builtin-pathchk (*/pathchk.so), bash-builtin-postgresql (*/postgresql.so), bash-builtin-print (*/print.so), bash-builtin-printenv (*/printenv.so), bash-builtin-push (*/push.so), bash-builtin-realpath (*/realpath.so), bash-builtin-rmdir (*/rmdir.so), bash-builtin-sleep (*/sleep.so), bash-builtin-sqlite (*/sqlite.so), bash-builtin-stack (*/stack.so), bash-builtin-strftime (*/strftime.so), bash-builtin-string (*/string.so), bash-builtin-sync (*/sync.so), bash-builtin-tee (*/tee.so), bash-builtin-template (*/template.so), bash-builtin-truefalse (*/truefalse.so), bash-builtin-tty (*/tty.so), bash-builtin-uname (*/uname.so), bash-builtin-unlink (*/unlink.so), bash-builtin-whoami (*/whoami.so)
+
+name=bash-builtins
+version=svn20080728
+release=4
+source=(bash-builtins-${version#svn}.tar.bz2)
+
+build()
+{
+  cd bash-builtins-trunk
+
+  svn up
+
+  cmake \
+      -D CMAKE_INSTALL_PREFIX:PATH="$prefix" \
+    .
+
+  make
+  make DESTDIR="$PKG" install
+}

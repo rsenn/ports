@@ -1,0 +1,26 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Sound Font 2 Player VST plugin for linux
+#  SoundCrab is a complex and clean instrument for playing back your
+#  favourite sound font sample packs. It is fully polyphonic and is very
+#  light on CPU, even if we used high order interpolation in sample
+#  playback. It presents a lot of controls typically used on high end
+#  hardware synths: tone controls, amplifier / modulation envelopes,
+#  filter, panning.
+# URL: http://www.anticore.org/jucetice/?page_id=7
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=soundcrab
+version=0.2.2
+release=1
+source=(http://www.anticore.org/jucetice/get.php?file=soundcrab-v$version.tar.bz2)
+
+build()
+{
+  install -d $ROOT/lib/vst
+  install -m 755 soundcrab.so $ROOT/lib/vst
+
+  install -d $ROOT/share/doc/soundcrab
+  install -m 644 readme.txt $ROOT/share/doc/soundcrab
+}

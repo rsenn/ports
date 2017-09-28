@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A tool that converts text files to HTML, LaTeX, man page, and more.
+#  Txt2tags converts a text file with minimal markup to HTML, XHTML, SGML,
+#  LaTeX, Lout, UNIX man page, Wikipedia, Google Code Wiki, DokuWiki,
+#  MoinMoin, MagicPoint (mgp), and PageMaker. It is simple and fast and
+#  features automatic TOC, macros, filters, include, tools, GUI, CLI,
+#  and Web interfaces, translations, and extensive documentation.
+# URL: http://txt2tags.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=txt2tags
+version=2.4
+release=1
+source=($mirror_sf/txt2tags/txt2tags-$version.tgz)
+
+build()
+{
+  cd txt2tags-$version
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix"
+
+  make
+
+  install -d $ROOT/share/doc/txt2tags
+  install -m 644 COPYING ChangeLog README TODO $ROOT/share/doc/txt2tags
+}

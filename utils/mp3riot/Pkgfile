@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Creates HTML index, playlists, and databases from a directory tree.
+#  mp3riot (formerly known as f2html.pl) is a command line utility that
+#  searches recursively through directories, builds a file list (with
+#  additional file information), and generates HTML files, playlists,
+#  etc. The output can be controlled, links can be corrected, and more. The
+#  script is mainly desigend to create Web pages, playlists, and databases
+#  for MP3 and Ogg files, but can also used for other purposes.
+#  .
+# URL: http://www.linuxsecure.de/index.php?action=55
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=mp3riot
+version=1.3
+release=1
+source=(http://www.linuxsecure.de/f2html/mp3riot-$version.tar.gz)
+
+build()
+{
+  cd mp3riot-$version
+
+  install -d $ROOT/bin
+  install -m 755 mp3riot $ROOT/bin
+
+  install -d $ROOT/share/doc/mp3riot
+  install -m 644 CHANGELOG COPYING INSTALL MANUAL README TODO WISHLIST example.unix example.win $ROOT/share/doc/mp3riot
+}
+
+# EOF

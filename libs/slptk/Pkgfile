@@ -1,0 +1,48 @@
+# $Id: Pkgfile,v 1.1 2007/05/10 16:59:30 roman Exp $
+#
+# Description: Natural language processing tools.
+#  SlpTK is an ANSI C library, a set of utilities, and scripts for natural
+#  language processing. It provides data structures and treatments related
+#  to lexical and syntactic levels.
+# URL: http://sourceforge.net/projects/slptk/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=slptk
+version=0.6.0
+release=1
+source=($mirror_sf/slptk/slptk-$version.tbz
+        slptk-0.6.0-ansi.patch
+        #api-doc.zip
+        design-doc.pdf)
+
+build()
+{
+  cd slptk-$version
+
+  patch -N -p1 -i $SRC/slptk-0.6.0-ansi.patch
+
+  libtoolize --force --copy --install
+  aclocal --force
+  autoconf --force
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --enable-static \
+      --enable-shared
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/slptk
+  install -m 644 COPYING INSTALL README $ROOT/share/doc/slptk
+
+  install -d $ROOT/share/doc/slptk
+  install -m 644 todo/TODO $ROOT/share/doc/slptk
+
+  install -d $ROOT/share/doc/slptk/html
+  install -m 644 $SRC/design-doc.pdf $ROOT/share/doc/slptk
+  mv -f $SRC/*.html $src/*doxygen* $ROOT/share/doc/slptk/html
+}

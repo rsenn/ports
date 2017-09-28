@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A library for finding visually similar bitmap pictures.
+#  The Puzzle library is designed to quickly find visually similar
+#  images (GIF, PNG, JPG), even if they have been resized, recompressed,
+#  recolored, or slightly modified. The library is lightweight yet very
+#  fast, configurable, and easy to use, and was designed with security in
+#  mind. This is a C library, but it also comes with a command-line tool
+#  and PHP bindings.
+#  .
+# URL: http://libpuzzle.pureftpd.org
+# Maintainer:  Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=libpuzzle
+version=0.9
+release=1
+source=(http://download.pureftpd.org/pub/pure-ftpd/misc/libpuzzle/releases/libpuzzle-0.9.tar.bz2)
+
+build()
+{
+  cd libpuzzle-$version
+./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+make
+make DESTDIR="$PKG" install
+}
+
+# EOF

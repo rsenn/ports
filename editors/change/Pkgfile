@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Non-interactive text editor, similar to sed, but much easier to use
+# It works by substituting a specified target pattern in the source text
+# with another specified text pattern. It can operate on multiple files
+# specified on the command line, or it can operate upon stdin/stdout in
+# filter mode.
+#
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=change
+version=1.31
+release=1
+source=(ftp://ftp.berlios.de/pub/change/change-$version.tar.gz)
+
+build()
+{
+  cd change-$version
+
+  make
+  make \
+      INS_BASE="$ROOT" \
+      MANDIR="share/man" \
+    install
+
+  chown -R 0:0 $PKG
+}

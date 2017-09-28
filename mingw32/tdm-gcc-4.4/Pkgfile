@@ -1,0 +1,72 @@
+# $Id: Pkgfile,v 1.2 2007/04/22 23:07:53 roman Exp $
+#
+# Description: gcc
+# URL: http://gcc.gnu.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=tdm-gcc-4.4
+version=4.4.0
+runtime_version=3.14
+w32api_version=3.13
+release=2
+target=i686-pc-mingw32
+
+source=($mirror_gnu/gcc/gcc-$version/gcc-$version.tar.bz2
+        $mirror_sf/mingw/mingw-runtime-$runtime_version-src.tar.gz
+        $mirror_sf/mingw/w32api-${w32api_version}-mingw32-src.tar.gz
+        $mirror_sf/tdm-gcc/gcc-$version-tdm-1-srcbase-$release.zip
+        
+        #gcc-4.2.3-mingw32-ioctl.patch
+        )
+
+build()
+{
+  cd ${srcdir=$SRC/gcc-$version}
+
+  patch -N -p1 -i $SRC/buildsys.patch
+  patch -N -p1 -i $SRC/ehstatic.patch
+  patch -N -p1 -i $SRC/headerpath.patch
+  patch -N -p1 -i $SRC/libgcceh.patch
+  patch -N -p1 -i $SRC/make-rel-pref.patch
+  
+  #rm -rf winsup && mkdir -p winsup && mkdir -p $target
+  #ln -sf ../winsup $target/
+  #ln -sf $SRC/mingw-runtime-${runtime_version} winsup/mingw
+  #ln -sf $SRC/w32api-${w32api_version}-mingw32 winsup/w32api
+
+  mkdir -p ${builddir=$srcdir/build}
+
+  cd $builddir && $srcdir/configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix" \
+       --libexecdir="$prefix/lib" \
+       --infodir="$prefix/share/info" \
+       --mandir="$prefix/share/man" \
+       --enable-languages=c,c++,fortran,objc,obj-c++ \
+       --disable-nls \
+       --disable-win32-registry \
+       --disable-werror \
+       --enable-threads \
+       --disable-shared \
+       --enable-static \
+       --disable-symvers \
+       --enable-cxx-flags='-fno-function-sections -fno-data-sections' \
+       --enable-fully-dynamic-string \
+       --enable-libgomp \
+       --enable-version-specific-runtime-libs \
+       --enable-sjlj-exceptions \
+       --with-pkgversion="TDM-1 $category" \
+       --with-bugurl="http://www.tdragon.net/recentgcc/bugs.php" \
+       --disable-bootstrap \
+       --with-system-zlib
+
+  make
+  make DESTDIR="$PKG" install
+
+  rm -f $ROOT/lib/libiberty.a
+  rm -rf $ROOT/share/info
+  rm -rf $ROOT/share/man/man7
+}

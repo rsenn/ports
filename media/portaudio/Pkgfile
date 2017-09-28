@@ -1,0 +1,37 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:52 roman Exp $
+#
+# Description: Portable audio I/O - shared library
+#  PortAudio is a portable audio I/O library designed for cross-platform
+#  support of audio. It uses a callback mechanism to request audio
+#  processing. Audio can be generated in various formats, including 32 bit
+#  floating point, and will be converted to the native format internally.
+#  This package contains the shared library.
+# URL: http://www.portaudio.com/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=portaudio
+version=1.9
+release=1
+source=(http://www.portaudio.com/archives/pa_snapshot_v${version/./}.tar.gz
+#http://www.portaudio.com/archives/pa_stable_v${version/./}_${date}.tar.gz
+)
+
+build()
+{
+  cd portaudio
+
+#  libtoolize --force
+#  aclocal --force
+#  autoconf --force
+
+  ./configure \
+      --prefix="$prefix" \
+      --build="$build" \
+      --host="$host" \
+      --with-host_os="linux"
+
+  make
+  make DESTDIR="$PKG" install
+}
+

@@ -1,0 +1,26 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Fast compression for waveform files.
+#  shorten is a lossy/lossless audio compressor.
+#  .
+# URL: http://www.etree.org/shnutils/shorten/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=shorten
+version=3.6.1
+release=1
+source=(http://www.etree.org/shnutils/shorten/dist/src/shorten-$version.tar.gz)
+
+build()
+{
+  cd shorten-$version
+
+  ./configure \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make DESTDIR="$PKG" install
+}
+
+# EOF

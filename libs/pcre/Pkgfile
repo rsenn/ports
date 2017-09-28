@@ -1,0 +1,50 @@
+# $Id: Pkgfile,v 1.13 2007/05/09 21:02:52 roman Exp $
+#
+# Description: A library that implements Perl 5-style regular expressions.
+#  The PCRE library is a set of functions that implement regular expression
+#  just a few differences. PCRE is used by many programs, including Exim,
+#  .
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=pcre
+version=7.8
+release=1
+source=($mirror_sf/pcre/pcre-$version.tar.bz2)
+
+build()
+{
+  cd pcre-$version
+
+  libtoolize --force --copy
+  aclocal --force
+  automake --force --copy --foreign --add-missing
+  aclocal --force
+  autoconf --force
+
+  if (${CXX-c++} -dumpmachine || ${CXX-c++} -V) 2>/dev/null; then
+    set -- --disable-cpp
+  fi
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --disable-dependency-tracking \
+      --disable-maintainer-mode \
+      --program-prefix="" \
+      --${shared:=enable}-shared \
+      --${static:=enable}-shared \
+      --enable-utf8 \
+      --enable-unicode-properties \
+      "$@"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/pcre/html
+
+  for file in `find doc -type f -not -name "*.3"`; do
+    install -m 644 $file $ROOT/share/doc/pcre/${file##*/}
+  done
+}

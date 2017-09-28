@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A tool that calculates CRC checksums on multiple files.
+#  minicrc is an application that helps to calculate CRC32 checksums. The
+#  package also includes a C++ class for developers.
+#  .
+# URL: http://sarovar.org/projects/minicrc/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=minicrc
+version=0.2.2
+release=1
+source=(http://sarovar.org/download.php/479/minicrc-v$version.tar.bz2)
+
+build()
+{
+  cd ccrc
+
+  make ${CC+CC="$CC"} CFLAGS="$CFLAGS"
+
+  install -d $ROOT/bin
+  install -d $ROOT/share/doc/minicrc
+
+  install -m 644 AUTHORS ChangeLog INSTALL MANIFEST README TODO $ROOT/share/doc/minicrc
+  install -m 644 minicrc/README $ROOT/share/doc/minicrc/README.minicrc
+
+  cp -rf minicrc/{html,example} $ROOT/share/doc/minicrc
+
+  make BINDIR="$ROOT/bin" install
+}
+
+# EOF

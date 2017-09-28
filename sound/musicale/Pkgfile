@@ -1,0 +1,27 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A music playlist player and builder.
+#  Musicale is a console player which allows the mixing of songs of different
+#  formats in the same playlist.
+#  .
+# URL: http://sourceforge.net/projects/musicale/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=musicale
+version=1.0.2
+release=1
+source=($mirror_sf/musicale/musicale-$version.tar.gz)
+
+build()
+{
+  cd musicale-$version
+
+  install -d $ROOT/bin
+  install -m 755 editlist makelist musicale playfile playlist playmidi splay $ROOT/bin
+
+  install -d $ROOT/share/doc/musicale
+  install -m 644 COPYING CHANGES README $ROOT/share/doc/musicale
+}
+
+# EOF

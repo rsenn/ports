@@ -1,0 +1,41 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A file and pipe progress monitor.
+#  This is the "progress" utility from NetBSD, ported to Linux and
+#  Solaris. The progress utility allows the file I/O of progresses to be
+#  monitored. It includes support for gzip-compressed files, so "progress
+#  -z -f file.tar.gz tar xf -" would show the progress of extracting
+#  file.tar.gz.
+# URL: http://progress.unixdev.net/
+# Maintainer: 
+# Depends on: 
+
+name=bsdprogress
+version=1.10
+release=1
+source=(http://progress.unixdev.net/progress-${version}_sol10sparc.tar.bz2
+        bsdprogress-1.10-build.patch
+        bsdprogress-1.10-linux.patch)
+
+build() 
+{
+  cd progress-$version
+
+  rm -f *.o
+
+  patch -N -p1 -i $SRC/bsdprogress-1.10-build.patch
+  patch -N -p1 -i $SRC/bsdprogress-1.10-linux.patch
+ 
+  ./configure --prefix="$prefix"
+
+  make \
+      CC="${CC-gcc}" \
+      CFLAGS="${CFLAGS--g -O2} -I. -DSTANDALONE_PROGRESS" \
+      PROG="bsdprogress" \
+      INSTALL="install" \
+      PREFIX="$ROOT" \
+      MANDIR="$ROOT/share/man" \
+    install
+}
+
+# EOF

@@ -1,0 +1,13 @@
+args: -r -u -- courier-imap-4.4.1_orig courier-imap-4.4.1
+diff -r -u -- courier-imap-4.4.1_orig/imap/imaplogin.c courier-imap-4.4.1/imap/imaplogin.c
+--- courier-imap-4.4.1_orig/imap/imaplogin.c	2008-11-03 19:17:39.000000000 +0100
++++ courier-imap-4.4.1/imap/imaplogin.c	2008-11-03 19:21:35.000000000 +0100
+@@ -232,7 +232,7 @@
+ 					       ainfo->address);
+ 					putenv(p);
+ 					alarm(0);
+-					execl(imapd, imapd,
++					(strchr(imapd, '/') ? execl : execlp)(imapd, imapd,
+ 					      ainfo->maildir ?
+ 					      ainfo->maildir:defaultmaildir,
+ 					      NULL);

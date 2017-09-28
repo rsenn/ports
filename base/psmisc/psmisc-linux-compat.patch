@@ -1,0 +1,35 @@
+Binary files psmisc-22.1_orig/src/killall and psmisc-22.1/src/killall differ
+diff -r -u -- psmisc-22.1_orig/src/killall.c psmisc-22.1/src/killall.c
+--- psmisc-22.1_orig/src/killall.c	2007-06-15 09:39:53.000000000 +0000
++++ psmisc-22.1/src/killall.c	2007-06-15 09:41:22.000000000 +0000
+@@ -48,12 +48,18 @@
+ 
+ #include "i18n.h"
+ #include "comm.h"
+-#include "signals.h"
+-
+ 
+-#define PROC_BASE "/proc"
++#define PREFIX "/usr/local"
++#define PROC_BASE PREFIX"/proc"
+ #define MAX_NAMES (int)(sizeof(unsigned long)*8)
+ 
++#include "signals.h"
++
++#ifndef __linux__
++#define CURPROC_PATH PROC_BASE"/curproc"
++#else
++#define CURPROC_PATH PROC_BASE"/self"
++#endif
+ 
+ static int verbose = 0, exact = 0, interactive = 0, reg = 0,
+            quiet = 0, wait_until_dead = 0, process_group = 0,
+@@ -634,7 +640,7 @@
+       fprintf (stderr, _("Maximum number of names is %d\n"), MAX_NAMES);
+       exit (1);
+     }
+-  if (stat("/proc/curproc/status", &isproc)==-1)
++  if (stat(CURPROC_PATH"/status", &isproc)==-1)
+     {
+       fprintf (stderr, _("%s is empty (not mounted ?)\n"), PROC_BASE);
+       exit (1);

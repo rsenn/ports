@@ -1,0 +1,26 @@
+diff -wru auch_orig/src/io.cpp auch/src/io.cpp
+--- auch_orig/src/io.cpp	2009-03-12 02:18:28.000000000 +0100
++++ auch/src/io.cpp	2009-03-12 02:18:31.000000000 +0100
+@@ -19,6 +19,8 @@
+ #include "settings.h"
+ #include "io.h"
+ 
++extern "C" int Pa_GetDefaultInputDevice();
++extern "C" int Pa_GetDefaultOutputDevice();
+ 
+ // ---------------------------------------------------------- globals
+ 
+@@ -267,11 +269,11 @@
+ #ifndef PA_COMPAT19
+   err = Pa_OpenStream(
+ 		      &stream,
+-		      Pa_GetDefaultOutputDeviceID(), //paNoDevice,/* default input device */
++		      Pa_GetDefaultOutputDevice(), //paNoDevice,/* default input device */
+ 		      2,              /* stereo input */
+ 		      paFloat32,  /* 32 bit floating point input */
+ 		      NULL,
+-		      Pa_GetDefaultInputDeviceID(), //OUTPUT_DEVICE,
++		      Pa_GetDefaultInputDevice(), //OUTPUT_DEVICE,
+ 		      2,              /* stereo output */
+ 		      paFloat32,      /* 32 bit floating point output */
+ 		      NULL,

@@ -1,0 +1,40 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A generic syntax highlighter for PHP.
+#  GeSHi is a generic syntax highlighter for PHP that takes any source
+#  code and highlights it in XHTML and CSS. It features case-sensitive or
+#  insensitive highlighting, auto-caps/non-caps of any keyword, an unlimited
+#  scope for styling, the use of CSS in which almost any aspect of the
+#  source can be highlighted, the use of CSS classes to massively reduce
+#  the amount of output code, function-to-URL capabilities, line numbering,
+#  and much more. Over 100 languages are supported, including Java, C, PHP,
+#  HTML, CSS, SQL, Pascal, C++, XML, ASP, and ASM.
+#  .
+# URL: http://qbnz.com/highlighter
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=geshi
+version=1.0.8.1
+release=2
+source=($mirror_sf/geshi/GeSHi-$version.tar.bz2
+        geshi-1.0.8.1-lang-cmake.patch)
+
+build()
+{
+  cd geshi
+
+  patch -N -p1 -i $SRC/geshi-1.0.8.1-lang-cmake.patch
+
+  find . -type f -exec chmod 644 "{}" ";"
+  find . -type d -exec chmod 755 "{}" ";"
+
+  install -d $ROOT/share/php
+  install -d $ROOT/share/doc
+
+  mv -f docs $ROOT/share/doc/geshi
+  mv -f geshi* $ROOT/share/php/
+  mv -f contrib $ROOT/share/php/geshi
+}
+
+# EOF

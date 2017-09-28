@@ -1,0 +1,26 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An embeddable SQL-like DBMS that stores data tables in plain ASCII text files.
+#  SHSQL is a standalone SQL database that stores data in ASCII text
+#  files. It has a small memory footprint and code size and can be
+#  embedded directly into applications; there is no server process. SHSQL
+#  is a pared-down SQL implementation but retains useful features such as
+#  timeout record locking and search engine comparison operators. A shsql
+#  database can be updated via SQL, or by editing data files with a text
+#  editor. Applications link to the supplied "C" language API. There is
+#  also a command-line SQL utility.
+# URL: http://shsql.sourceforge.net
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=quisp
+version=pl128
+release=1
+source=(http://quisp.sourceforge.net/download/quisp_$version.tar.gz)
+
+build()
+{
+  cd quisp_pl128
+
+  make CC="${CC-cc}" CFLAGS="$CFLAGS"
+}

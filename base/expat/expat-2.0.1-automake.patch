@@ -1,0 +1,212 @@
+diff -r -u -N -- expat-2.0.1_orig/Makefile.am expat-2.0.1/Makefile.am
+--- expat-2.0.1_orig/Makefile.am	1970-01-01 01:00:00.000000000 +0100
++++ expat-2.0.1/Makefile.am	2008-07-27 13:49:20.000000000 +0200
+@@ -0,0 +1,5 @@
++SUBDIRS = amiga bcb5 conftools doc examples lib tests vms win32 xmlwf
++
++include_HEADERS = expat_config.h
++
++expat_version = @PROGRAM_VERSION@
+diff -r -u -N -- expat-2.0.1_orig/amiga/Makefile.am expat-2.0.1/amiga/Makefile.am
+--- expat-2.0.1_orig/amiga/Makefile.am	1970-01-01 01:00:00.000000000 +0100
++++ expat-2.0.1/amiga/Makefile.am	2008-07-27 14:40:27.000000000 +0200
+@@ -0,0 +1 @@
++
+diff -r -u -N -- expat-2.0.1_orig/autogen.sh expat-2.0.1/autogen.sh
+--- expat-2.0.1_orig/autogen.sh	1970-01-01 01:00:00.000000000 +0100
++++ expat-2.0.1/autogen.sh	2008-07-27 13:40:59.000000000 +0200
+@@ -0,0 +1,10 @@
++#!/bin/sh
++#
++# 20080727
++
++libtoolize --force --copy --automake
++aclocal --force -I conftools
++automake --force --copy --add-missing --foreign --add-missing
++aclocal --force -I conftools
++autoheader --force
++autoconf --force
+diff -r -u -N -- expat-2.0.1_orig/bcb5/Makefile.am expat-2.0.1/bcb5/Makefile.am
+--- expat-2.0.1_orig/bcb5/Makefile.am	1970-01-01 01:00:00.000000000 +0100
++++ expat-2.0.1/bcb5/Makefile.am	2008-07-27 14:40:27.000000000 +0200
+@@ -0,0 +1 @@
++
+diff -r -u -N -- expat-2.0.1_orig/configure.in expat-2.0.1/configure.in
+--- expat-2.0.1_orig/configure.in	2008-07-27 13:35:09.000000000 +0200
++++ expat-2.0.1/configure.in	2008-07-27 14:10:54.000000000 +0200
+@@ -11,11 +11,11 @@
+ dnl
+ 
+ dnl Ensure that Expat is configured with autoconf 2.52 or newer
+-AC_PREREQ(2.52)
++AC_PREREQ(2.61)
+ 
+ dnl Get the version number of Expat, using m4's esyscmd() command to run
+ dnl the command at m4-generation time. This allows us to create an m4
+-dnl symbol holding the correct version number. AC_INIT() requires the
++dnl symbol holding the correct version number. AC_INIT requires the
+ dnl version number at m4-time, rather than when ./configure is run, so
+ dnl all this must happen as part of m4, not as part of the shell code
+ dnl contained in ./configure.
+@@ -26,11 +26,11 @@
+ define([expat_version], ifdef([__gnu__],
+                               [esyscmd(conftools/get-version.sh lib/expat.h)],
+                               [2.0.x]))
+-AC_INIT(expat, expat_version, expat-bugs@libexpat.org)
++AC_INIT([expat],[2.0.1],[expat-bugs@libexpat.org])
+ undefine([expat_version])
+ 
+-AC_CONFIG_SRCDIR(Makefile.in)
+-AC_CONFIG_AUX_DIR(conftools)
++AC_CONFIG_SRCDIR([lib/expat.h])
++AC_CONFIG_AUX_DIR([conftools])
+ 
+ 
+ dnl
+@@ -50,11 +50,18 @@
+ 
+ AC_CONFIG_HEADER(expat_config.h)
+ 
+-sinclude(conftools/libtool.m4)
++dnl sinclude(conftools/libtool.m4)
+ sinclude(conftools/ac_c_bigendian_cross.m4)
+ 
+-AC_LIBTOOL_WIN32_DLL
+-AC_PROG_LIBTOOL
++AC_CANONICAL_HOST
++
++AM_INIT_AUTOMAKE
++
++dnl AC_REQUIRE([AC_CANONICAL_HOST])_LT_SET_OPTION([LT_INIT],[win32-dll])
++AC_DIAGNOSE([obsolete],[AC_LIBTOOL_WIN32_DLL: Remove this warning and the call to _LT_SET_OPTION when you
++put the `win32-dll' option into LT_INIT's first parameter.])
++
++LT_INIT
+ 
+ AC_SUBST(LIBCURRENT)
+ AC_SUBST(LIBREVISION)
+@@ -73,9 +80,7 @@
+     OLDCFLAGS="$CFLAGS -Wall -Wmissing-prototypes -Wstrict-prototypes"
+     CFLAGS="$OLDCFLAGS -fexceptions"
+     AC_MSG_CHECKING(whether $CC accepts -fexceptions)
+-    AC_TRY_LINK( , ,
+-                   AC_MSG_RESULT(yes),
+-                   AC_MSG_RESULT(no); CFLAGS="$OLDCFLAGS")
++    AC_LINK_IFELSE([AC_LANG_PROGRAM([[]], [[]])],[AC_MSG_RESULT(yes)],[AC_MSG_RESULT(no); CFLAGS="$OLDCFLAGS"])
+     CXXFLAGS=`echo "$CFLAGS" | sed 's/ -Wmissing-prototypes -Wstrict-prototypes//'`
+ fi
+ 
+@@ -144,11 +149,21 @@
+ AC_DEFINE([XML_CONTEXT_BYTES], 1024,
+           [Define to specify how much context to retain around the current parse point.])
+ 
+-AC_CONFIG_FILES(Makefile)
++AC_CONFIG_FILES([Makefile
++amiga/Makefile
++bcb5/Makefile
++conftools/Makefile
++doc/Makefile
++examples/Makefile
++lib/Makefile
++tests/Makefile
++vms/Makefile
++win32/Makefile
++xmlwf/Makefile])
+ AC_OUTPUT
+ 
+ abs_srcdir="`cd $srcdir && pwd`"
+ abs_builddir="`pwd`"
+-if test "$abs_srcdir" != "$abs_builddir"; then
+-  make mkdir-init
+-fi
++dnl if test "$abs_srcdir" != "$abs_builddir"; then
++dnl   make mkdir-init
++dnl fi
+diff -r -u -N -- expat-2.0.1_orig/conftools/Makefile.am expat-2.0.1/conftools/Makefile.am
+--- expat-2.0.1_orig/conftools/Makefile.am	1970-01-01 01:00:00.000000000 +0100
++++ expat-2.0.1/conftools/Makefile.am	2008-07-27 14:40:27.000000000 +0200
+@@ -0,0 +1 @@
++
+diff -r -u -N -- expat-2.0.1_orig/conftools/expat.m4 expat-2.0.1/conftools/expat.m4
+--- expat-2.0.1_orig/conftools/expat.m4	2008-07-27 13:35:09.000000000 +0200
++++ expat-2.0.1/conftools/expat.m4	2008-07-27 13:38:51.000000000 +0200
+@@ -7,7 +7,7 @@
+ dnl In addition, an Automake conditional EXPAT_INSTALLED is set accordingly.
+ dnl This is necessary to adapt a whole lot of packages that have expat
+ dnl bundled as a static library.
+-AC_DEFUN(AM_WITH_EXPAT,
++AC_DEFUN([AM_WITH_EXPAT],
+ [ AC_ARG_WITH(expat,
+ 	      [  --with-expat=PREFIX     Use system Expat library],
+ 	      , with_expat=no)
+diff -r -u -N -- expat-2.0.1_orig/doc/Makefile.am expat-2.0.1/doc/Makefile.am
+--- expat-2.0.1_orig/doc/Makefile.am	1970-01-01 01:00:00.000000000 +0100
++++ expat-2.0.1/doc/Makefile.am	2008-07-27 14:40:27.000000000 +0200
+@@ -0,0 +1 @@
++
+diff -r -u -N -- expat-2.0.1_orig/examples/Makefile.am expat-2.0.1/examples/Makefile.am
+--- expat-2.0.1_orig/examples/Makefile.am	1970-01-01 01:00:00.000000000 +0100
++++ expat-2.0.1/examples/Makefile.am	2008-07-27 14:40:27.000000000 +0200
+@@ -0,0 +1 @@
++
+diff -r -u -N -- expat-2.0.1_orig/lib/Makefile.am expat-2.0.1/lib/Makefile.am
+--- expat-2.0.1_orig/lib/Makefile.am	1970-01-01 01:00:00.000000000 +0100
++++ expat-2.0.1/lib/Makefile.am	2008-07-27 14:36:35.000000000 +0200
+@@ -0,0 +1,32 @@
++lib_LTLIBRARIES = libexpat.la
++
++AM_CPPFLAGS = -DHAVE_EXPAT_CONFIG_H=1
++
++INCLUDES = \
++  -I$(top_srcdir) \
++  -I$(top_builddir)
++
++include_HEADERS = \
++  expat.h \
++  expat_external.h
++  
++libexpat_la_LDFLAGS = -rpath $(libdir) -no-undefined -version-info 6:2:5
++libexpat_la_SOURCES = \
++  amigaconfig.h \
++  ascii.h \
++  asciitab.h \
++  iasciitab.h \
++  internal.h \
++  latin1tab.h \
++  macconfig.h \
++  nametab.h \
++  utf8tab.h \
++  winconfig.h \
++  xmlparse.c \
++  xmlrole.c \
++  xmlrole.h \
++  xmltok.c \
++  xmltok.h \
++  xmltok_impl.c \
++  xmltok_impl.h \
++  xmltok_ns.c 
+diff -r -u -N -- expat-2.0.1_orig/tests/Makefile.am expat-2.0.1/tests/Makefile.am
+--- expat-2.0.1_orig/tests/Makefile.am	1970-01-01 01:00:00.000000000 +0100
++++ expat-2.0.1/tests/Makefile.am	2008-07-27 13:46:35.000000000 +0200
+@@ -0,0 +1,6 @@
++noinst_PROGRAMS = runtests
++
++INCLUDES = -I$(top_srcdir)/lib
++
++runtests_SOURCES = chardata.c chardata.h minicheck.c minicheck.h runtests.c
++runtests_LDADD = $(top_builddir)/lib/libexpat.la
+diff -r -u -N -- expat-2.0.1_orig/vms/Makefile.am expat-2.0.1/vms/Makefile.am
+--- expat-2.0.1_orig/vms/Makefile.am	1970-01-01 01:00:00.000000000 +0100
++++ expat-2.0.1/vms/Makefile.am	2008-07-27 14:40:27.000000000 +0200
+@@ -0,0 +1 @@
++
+diff -r -u -N -- expat-2.0.1_orig/win32/Makefile.am expat-2.0.1/win32/Makefile.am
+--- expat-2.0.1_orig/win32/Makefile.am	1970-01-01 01:00:00.000000000 +0100
++++ expat-2.0.1/win32/Makefile.am	2008-07-27 14:40:27.000000000 +0200
+@@ -0,0 +1 @@
++
+diff -r -u -N -- expat-2.0.1_orig/xmlwf/Makefile.am expat-2.0.1/xmlwf/Makefile.am
+--- expat-2.0.1_orig/xmlwf/Makefile.am	1970-01-01 01:00:00.000000000 +0100
++++ expat-2.0.1/xmlwf/Makefile.am	2008-07-27 14:40:27.000000000 +0200
+@@ -0,0 +1 @@
++

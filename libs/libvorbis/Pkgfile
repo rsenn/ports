@@ -1,0 +1,46 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:50 roman Exp $
+#
+# Description: Vorbis codec library.
+#  Ogg Vorbis is a high-quality lossy audio codec that is free of
+#  intellectual property restrictions. libvorbis is the main vorbis codec
+#  library. It depends on libogg for bitstream and framing support.
+#  .
+# URL: http://www.xiph.org/ogg/vorbis/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libvorbis
+version=1.2.0
+release=1
+source=(http://downloads.xiph.org/releases/vorbis/libvorbis-$version.tar.gz
+        #libvorbis-${version%svn}-20080605.diff
+        )
+
+build()
+{
+  cd libvorbis-$version
+
+#  patch -N -p1 -i $SRC/libvorbis-${version%svn}-20080605.diff
+
+  libtoolize --force --copy
+  aclocal --force -I . #-I m4
+  autoheader --force
+  automake --force --copy --foreign --add-missing
+  aclocal --force -I . #-I m4
+  autoconf --force
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --${shared:=enable}-shared \
+      --${static:=enable}-shared \
+      --with-ogg="$prefix"
+
+  make
+  make \
+      DESTDIR="$PKG" \
+      docdir='$(datadir)/doc/$(PACKAGE)' \
+    install
+}
+

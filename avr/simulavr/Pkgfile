@@ -1,0 +1,26 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: tavrasm - A GNU/Linux assembler for the Atmel AVR series of
+# micro-controllers.
+
+name=simulavr
+version=0.1.2.5
+release=1
+source=(http://savannah.inetbridge.net/simulavr/simulavr-$version.tar.gz)
+
+build()
+{
+  cd simulavr-$version
+
+  sed -i '/ENABLE_WARNINGS/ s, -Werror,,' \
+       configure
+
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

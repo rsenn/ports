@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: X11 Composite extension library
+#  libXcomposite provides an X Window System client interface to the
+#  Composite extension to the X protocol. . The Composite extension allows
+#  clients called compositing managers to control the final drawing of the
+#  screen. Rendering is done into an off-screen buffer. .
+#  .
+# URL: http://xorg.freedesktop.org
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=xcomposite
+version=0.4.0
+release=1
+source=(ftp://ftp.x.org/pub/individual/lib/libXcomposite-$version.tar.bz2)
+
+build()
+{
+  cd libXcomposite-$version
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

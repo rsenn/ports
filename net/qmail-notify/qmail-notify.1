@@ -1,0 +1,69 @@
+.TH qmail-notify 1
+.SH NAME
+.LP
+qmail-notify \- Delayed delivery notification for qmail
+.SH SYNOPSIS
+.B
+qmail-notify
+[
+.B \-dmNrh
+]
+[
+.B \-b \fIn
+]
+[
+.B \-f \fImessage-file
+]
+[
+.B \-t \fIn
+]
+.SH DESCRIPTION
+.B qmail-notify
+is a program to notify senders about email that has been held in the qmail queue.
+
+The simplest usage is to put qmail-notify into an hourly cron job.  For
+more details on the options, see below.
+
+To use an alternate response message, save the message to a file and
+specify the path to the file with the 
+.B \-f
+option. The file must contain three instances of "%s".
+The first is replaced with the server's hostname; the second is replaced
+with the notification delay (controlled by the 
+.B \-t
+option); the third is replaced with the message lifetime (controlled by the qmail control/queuelifetime file).
+.SH OPTIONS
+.TP
+.B \-b \fIn
+Copy \fIn\fB bytes from the original message into the notice.
+(Defaults to entire message)
+.TP
+.B \-d
+Show debugging messages.
+.TP
+.B \-f \fImessage-file
+Load the bounce response message from a file.
+.TP
+.B \-m
+Encode the original message as a MIME attachment.
+.TP
+.B \-N
+Don't send messages, just print them out.
+.TP
+.B \-r
+Only respond to senders with a domain listed in qmail's rcpthosts.
+.TP
+.B \-t \fIn
+Send notifications for messages that are at least \fIn\fB seconds old.
+(Defaults to 4 hours)
+.TP
+.B \-x
+Send a copy of the notification to the given recipient
+.TP
+.B \-h, \--help
+Display this help and exit
+.SH AUTHORS
+.LP
+Bruce Guenter <bruceg@em.ca>
+.SH SEE ALSO
+qmail-inject(1)

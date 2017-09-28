@@ -1,0 +1,37 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A configuration parsing library.
+#  OSSP cfg is a ISO-C library for parsing arbitrary C/C++-style
+#  configuration files. A configuration is sequence of directives,
+#  each directive consists of zero or more tokens, and each token
+#  can be either a string or again a complete sequence. This means the
+#  configuration syntax has a recursive structure and allows you to create
+#  configurations with arbitrarily-nested sections. The configuration
+#  syntax also provides complex single/double/balanced quoting of tokens,
+#  hexadecimal/octal/decimal character encodings, character escaping,
+#  C/C++ and shell-style comments, etc. The library API allows importing
+#  of a configuration text into an Abstract Syntax Tree (AST), traversing
+#  the AST, and optionally exporting the AST again as a configuration text.
+#  .
+# URL: http://www.ossp.org/pkg/lib/cfg/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=cfg
+version=0.9.11
+release=1
+source=(ftp://ftp.ossp.org/pkg/lib/cfg/cfg-0.9.11.tar.gz)
+
+build()
+{
+  cd cfg-0.9.11
+./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+make
+make DESTDIR="$PKG" install
+}
+
+# EOF

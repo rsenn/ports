@@ -1,0 +1,39 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Java SE Development Kit
+# URL: http://java.sun.com/javase/
+# Maintainer: 
+# Depends on: 
+
+name=jdk
+version=1.6.0
+release=16
+source=(http://software.mnidc.net/Java%20SE/jdk-6u$release-linux-i586.bin)
+
+build() 
+{
+  sh jdk-6u$release-linux-i586.bin <<EOF
+yes
+
+
+EOF
+
+  install -d $ROOT/lib/java
+  install -d $ROOT/share/java
+  install -d $ROOT/share/doc/jdk
+  install -d $ROOT/share/man
+
+  cd jdk${version}_${release}
+
+  mv -f include lib db jre $ROOT/lib/java
+  mv -f COPYRIGHT LICENSE README.html README_ja.html README_zh_CN.html THIRDPARTYLICENSEREADME.txt register.html register_ja.html register_zh_CN.html src.zip \
+    $ROOT/share/doc/jdk
+
+  mv -f man/man[0-9] $ROOT/share/man
+
+  mv -f demo sample $ROOT/share/java
+
+  mv -f bin $ROOT/
+}
+
+# EOF

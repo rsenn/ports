@@ -1,0 +1,35 @@
+diff -r -u automake-1.10_orig/lib/config.guess automake-1.10/lib/config.guess
+--- automake-1.10_orig/lib/config.guess	2007-09-21 08:16:31.000000000 +0200
++++ automake-1.10/lib/config.guess	2007-09-21 08:44:29.000000000 +0200
+@@ -999,7 +999,7 @@
+ 	#endif
+ 	#endif
+ 	#ifdef __dietlibc__
+-	LIBC=dietlibc
++	LIBC=diet
+ 	#endif
+ EOF
+ 	eval "`$CC_FOR_BUILD -E $dummy.c 2>/dev/null | sed -n '
+diff -r -u automake-1.10_orig/lib/config.sub automake-1.10/lib/config.sub
+--- automake-1.10_orig/lib/config.sub	2007-09-21 08:16:31.000000000 +0200
++++ automake-1.10/lib/config.sub	2007-09-21 08:44:14.000000000 +0200
+@@ -120,7 +120,7 @@
+ # Here we must recognize all the valid KERNEL-OS combinations.
+ maybe_os=`echo $1 | sed 's/^\(.*\)-\([^-]*-[^-]*\)$/\2/'`
+ case $maybe_os in
+-  nto-qnx* | linux-gnu* | linux-dietlibc | linux-newlib* | linux-uclibc* | \
++  nto-qnx* | linux-gnu* | linux-diet* | linux-newlib* | linux-uclibc* | \
+   uclinux-uclibc* | uclinux-gnu* | kfreebsd*-gnu* | knetbsd*-gnu* | netbsd*-gnu* | \
+   storm-chaos* | os2-emx* | rtmk-nova*)
+     os=-$maybe_os
+@@ -1247,8 +1247,8 @@
+ 	-mac*)
+ 		os=`echo $os | sed -e 's|mac|macos|'`
+ 		;;
+-	-linux-dietlibc)
+-		os=-linux-dietlibc
++	-linux-diet*)
++		os=-linux-diet
+ 		;;
+ 	-linux*)
+ 		os=`echo $os | sed -e 's|linux|linux-gnu|'`

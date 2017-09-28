@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A simple IRC bot which can be interfaced with any text-to-speech engine.
+#  PyPlet is a simple IRC bot which can be interfaced with any text-to-speech
+#  engine. Two samples scripts are provided to interface PyPlet with Festival
+#  or MBrola.
+#  .
+# URL: http://www.librelogiciel.com/software/pyplet/action_Presentation
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=pyplet
+version=1.30
+release=1
+source=(http://www.librelogiciel.com/software/pyplet/tarballs/pyplet-$version.tar.gz)
+
+build()
+{
+  cd pyplet-$version
+
+  yes y | python setup.py install --prefix="$ROOT"
+
+  install -d $ROOT/share/doc/pyplet
+  install -m 644 COPYING CREDITS NEWS PKG-INFO README $ROOT/share/doc/pyplet
+
+  rm -rf $ROOT/share/man
+}
+
+# EOF

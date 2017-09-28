@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An application for creating stop motion animation movies.
+#  Stopmotion is an application for creating stop motion animations from
+#  images imported from a v4l (or similar) device. The animations can be
+#  saved as .sto files and exported as video files. Grabbing of images
+#  and video export is plug-in based, so it is easy to use your favourite
+#  programs such as mencoder, ffmpeg, dvgrab, and vgrabbj to do the job.
+#  .
+# URL: http://developer.skolelinux.no/info/studentgrupper/2005-hig-stopmotion/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=stopmotion
+version=0.6.2
+release=1
+source=(http://developer.skolelinux.no/info/studentgrupper/2005-hig-stopmotion/project_management/webpage/releases/stopmotion-0.6.2.tar.gz)
+
+build()
+{
+  cd stopmotion-0.6.2
+./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+make
+make DESTDIR="$PKG" install
+}
+
+# EOF

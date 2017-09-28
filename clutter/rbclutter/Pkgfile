@@ -1,0 +1,21 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=rbclutter
+version=0.4.0
+release=1
+source=(http://www.busydoingnothing.co.uk/rbclutter-$version.tar.gz)
+
+build()
+{
+  cd rbclutter-$version
+
+  sed -i 's/clutter\(-[a-z]\+\)\?-0.4/clutter\1-0.6/g' \
+      */extconf.rb
+
+  ruby extconf.rb
+}

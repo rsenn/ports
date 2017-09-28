@@ -1,0 +1,25 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: ZNC is an IRC bounce with many advanced features like detaching, multiple users, per channel playback buffer, SSL, IPv6, transparent DCC bouncing, and c++ module support to name a few.
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libgcc1, libperl5.8, libssl0.9.8, libstdc++6
+
+name=znc
+version=0.056
+release=1
+source=($mirror_sf/znc/znc-$version.tar.gz)
+
+build()
+{
+  cd znc-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

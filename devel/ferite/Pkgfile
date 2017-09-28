@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A lighweight, portable, threadsafe scripting engine.
+#  ferite is a lighweight, portable, threadsafe scripting engine with a
+#  language that is very easy to pick up and use. It is fast, has a very
+#  small footprint, is object-oriented, and is designed to be modular and
+#  embeddable in other applications.
+# URL: http://www.ferite.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=ferite
+version=1.0.2
+release=1
+source=($mirror_sf/ferite/ferite-$version.tar.gz)
+
+build()
+{
+  cd ferite-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

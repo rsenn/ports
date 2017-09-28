@@ -1,0 +1,390 @@
+LKDDb database format
+
+all about lkddb.data
+
+Latest changes
+
+   31 October 2007
+          USB: hi and low bdc are now 4 digit hex-numbers (instead of
+          decimal numbers)
+
+File format
+
+   driver-db file is an text file. Lines starting with # are comments.
+
+   The fields are space separated. In the description of fields we use the
+   following (printf-like) convention:
+
+   %nx
+          an hexadecimal mask with n digits. The digit are always written
+          lowercase. A . means any single digit.
+
+   %s
+          a string. Eventually the double quotes and the backslashes are
+          quoted with an additional backslash
+
+   %C
+          a space separated list of kernel configuration items (CONFIG_).
+          Every token start with CONFIG_
+
+   %F
+          a kernel filename. Paths are relative to the top kernel source
+          directory
+
+   A standard line if formed by:
+
+   drv sub-sytem %nx... %s... %C # %F
+
+   where the configuration list (%C) is the kernel configuration symbols
+   that need to be set (m or y) to activate kernel driver relative to the
+   probed hardware. The special CONFIG__UNKNOW__ symbol is used both for
+   yet unknow symbol (error or unimplemented feature on the scanner), or
+   for the drivers that are always included in the kernel. The kernel
+   filename (%F) is the file that contain the hardware definition.
+
+Hardware data
+
+   In this section we enumerate the probes of numbers and strings provided
+   directly by hardware. Usually these detection are done on bus level and
+   should be complete.
+
+pci
+
+   PCI bus devices. Format:
+
+   pci '%4x %4x %4x %4x %4x' %C # %F
+
+   where the fields are (left to right):
+
+     * vendor
+     * device
+     * subvendor
+     * subdevice
+     * class-mask
+     * configuration list
+     * filename of the driver
+
+   Note: The pci.ids file from lspci package or from kernel translates the
+   codes into real names. An online version is in The Linux PCI ID
+   Repository
+
+usb
+
+   USB bus devices. Format
+
+   drv 'usb %4x %4x %2x%2x%2x %2x%2x%2x ....' %4x %4x %C # %F
+
+   where the fields are (left to right):
+
+     * idVendor
+     * idProduct
+     * bDeviceClass
+     * bDeviceSubClass
+     * bDeviceProtocol
+     * bInterfaceClass
+     * bInterfaceSubClass
+     * bInterfaceProtocol
+     * bcdDevice_lo
+     * bcdDevice_hi
+     * configuration list
+     * filename of the driver
+
+   The dots are used by detection for the bcdDevice fields, but in
+   database there is only the low and the hi limit of such number.
+
+   Note: A list of USB ID with full name is available as usb.ids file
+   (which is part of usbutils)
+
+IEEE1394 (FireWire)
+
+   IEEE1394 (FireWire) bus devices. Format:
+
+   ieee1394 '%6x %6x %6x %x6' %C # %F
+
+   where the fields are (left to right):
+
+     * vendor_id
+     * model_id
+     * specifier_id
+     * version
+     * configuration list
+     * filename of the driver
+
+s390 CCW
+
+   s390 CCW bus devices. Format:
+
+   ccw '%4x %2x %4x %2x' %C # %F
+
+   where the fields are (left to right):
+
+     * cu_type
+     * cu_model
+     * dev_type
+     * dev_model
+     * configuration list
+     * filename of the driver
+
+s390 AP
+
+   s390 AP bus devices. Format:
+
+   ap '%2x' %C # %F
+
+   where the fields are (left to right):
+
+     * dev_type
+     * configuration list
+     * filename of the driver
+
+ACPI
+
+   ACPI bus devices. Format:
+
+   ap "%s" %C # %F
+
+   where the fields are (left to right):
+
+     * id
+     * configuration list
+     * filename of the driver
+
+PnP (ISA plug and play)
+
+   >PnP (ISA plug and play) capable ISA devices. Format:
+
+   pnp "%s" %C # %F
+
+   where the fields are (left to right):
+
+     * id
+     * configuration list
+     * filename of the driver
+
+   pnp_card "%s" "%s" "%s" "%s" "%s" "%s" "%s" "%s" "%s" %C # %F
+
+   where the fields are (left to right):
+
+     * id
+     * devs 1
+     * devs 2
+     * devs 3
+     * devs 4
+     * devs 5
+     * devs 6
+     * devs 7
+     * devs 8
+     * configuration list
+     * filename of the driver
+
+SERIO
+
+   SERIO. Format:
+
+   serio '%2x %2x %2x %2x' %C # %F
+
+   where the fields are (left to right):
+
+     * type
+     * proto
+     * id
+     * extra
+     * configuration list
+     * filename of the driver
+
+OF
+
+   OF. Format:
+
+   of '%s %s %s' %C # %F
+
+   where the fields are (left to right):
+
+     * name
+     * type
+     * compat
+     * configuration list
+     * filename of the driver
+
+VIO
+
+   VIO devices. Format:
+
+   vio "%s" "%s" %C # %F
+
+   where the fields are (left to right):
+
+     * name
+     * compat
+     * configuration list
+     * filename of the driver
+
+PCMCIA
+
+   PCMCIA devices. Format:
+
+   pcmcia '%4x %4x %2x %2x %2x' %s %s %s %s %C # %F
+
+   where the fields are (left to right):
+
+     * manf_id
+     * card_id
+     * func_id
+     * function
+     * device_no
+     * prod_id 1
+     * prod_id 2
+     * prod_id 3
+     * prod_id 4
+     * configuration list
+     * filename of the driver
+
+input
+
+   Input devices. Format:
+
+   input '%4x %4x %4x %4x' %s %s %s %s %s %s %s %s %s %C # %F
+
+   where the fields are (left to right):
+
+     * bustype
+     * vendor
+     * product
+     * version
+     * evbit
+     * keybit
+     * relbit
+     * absbit
+     * mscbit
+     * ledbit
+     * sndbit
+     * ffbit
+     * swbit
+     * configuration list
+     * filename of the driver
+
+EISA
+
+   EISA devices. Format:
+
+   eisa "%s" %C # %F
+
+   where the fields are (left to right):
+     * sig
+     * configuration list
+     * filename of the driver
+
+parisc
+
+   parisc devices. Format:
+
+   parisc '%2x %2x %4x %8x' %C # %F
+
+   where the fields are (left to right):
+
+     * hw_type
+     * hversion_rev
+     * hversion
+     * sversion
+     * configuration list
+     * filename of the driver
+
+SDIO
+
+   SDIO devices. Format:
+
+   sdio '%2x %4x %4x' %C # %F
+
+   where the fields are (left to right):
+
+     * class
+     * vendor
+     * device
+     * configuration list
+     * filename of the driver
+
+SBB
+
+   SBB devices. Format:
+
+   sbb '%4x %4x %2x' %C # %F
+
+   where the fields are (left to right):
+
+     * vendor
+     * coreid
+     * revision
+     * configuration list
+     * filename of the driver
+
+virtio
+
+   virtio devices. Format:
+
+   virtio '%8x %8x' %C # %F
+
+   where the fields are (left to right):
+
+     * device
+     * vendor
+     * configuration list
+     * filename of the driver
+
+kernel strings
+
+   This section enumerate the probes about kernel provided strings, In
+   principle they could change depending on kernel version.
+
+I2C driver name
+
+   I2C driver name. Format:
+
+   i2c "%s" %C # %F
+
+   where the fields are (left to right):
+
+     * kernel driver name
+     * configuration list
+     * filename of the driver
+
+"platform" driver name
+
+   platform driver name. Format:
+
+   platform "%s" %C # %F
+
+   where the fields are (left to right):
+
+     * kernel driver name
+     * configuration list
+     * filename of the driver
+
+FS (file systems)
+
+   File systems. Format:
+
+   fs "%s" %C # %F
+
+   where the fields are (left to right):
+
+     * name
+     * configuration list
+     * filename of the driver
+
+   Note: the name is the name as seen from kernel view
+
+module (kernel modules)
+
+   Linux kernel modules names. Format:
+
+   module %s "%s" %C # %F
+
+   where the fields are (left to right):
+
+     * module name
+     * module description
+     * module configuration
+     * filename of the Kconfig file where the configuration is defined
+
+   Note: the name is the name as seen from kernel view, and description
+   could have a quoted (with backslash) doublequote

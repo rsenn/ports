@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An MCMC based statistical tool for association mapping.
+#  HapCluster++ is a software package for linkage disequilibrium mapping
+#  using coalescent theory. It is based on a Bayesian Markov-chain Monte
+#  Carlo (MCMC) method for fine-scale linkage-disequilibrium gene mapping
+#  using high-density marker maps. HapCluster++ is a C++ implementation
+#  of the method described in the paper "Fine Mapping of Disease Genes
+#  via Haplotype Clustering" by E.R.B. Waldron, J.C. Whitaker, and
+#  D.J. Balding. Genetic Epidemiology. 30: 170179. (2006).
+#  .
+# URL: http://www.daimi.au.dk/~mailund/HapCluster/index.html
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=hapcluster
+version=2.2.0
+release=1
+source=(http://www.daimi.au.dk/~mailund/HapCluster/download/hapcluster-2.2.0.tar.gz)
+
+build()
+{
+  cd hapcluster-2.2.0
+./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+make
+make DESTDIR="$PKG" install
+}
+
+# EOF

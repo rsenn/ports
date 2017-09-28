@@ -1,0 +1,35 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A very powerful audio stream generator for Internet radio stations.
+#  Liquidsoap is a powerful tool for building complex audio streaming
+#  systems, typically targetting Internet radio stations. It consists
+#  of a simple script language, which has a first-class notion of source
+#  (basically a stream) and provides elementary source constructors and
+#  source compositions from which you can build the streamer you want. There
+#  is no constraint on the streams, in contrast to many other tools which
+#  can only stream one file after another. Moreover, it is not restricted
+#  to a single stream. Finally, it interfaces well with external tools.
+#  .
+# URL: http://savonet.sourceforge.net/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=liquidsoap
+version=0.3.7
+release=1
+source=($mirror_sf/savonet/liquidsoap-0.3.7.tar.bz2)
+
+build()
+{
+  cd liquidsoap-0.3.7
+./bootstrap
+./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+make
+make DESTDIR="$PKG" install
+}
+
+# EOF

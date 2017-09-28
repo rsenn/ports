@@ -1,0 +1,26 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Beanmonitor monitors and notifies about changes in user_beancounters of OpenVZ.
+# URL: http://code.google.com/p/beanmonitor/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=beanmonitor
+version=0.0.4
+release=1
+source=(http://beanmonitor.googlecode.com/files/beanmonitor-src-0.0.4.tar.bz2)
+
+build()
+{
+  cd beanmonitor
+
+  rake
+
+  install -d $ROOT/bin
+  install -m 755 beanmonitor $ROOT/bin
+
+  install -d $ROOT/share/doc/beanmonitor
+  install -m 644 LICENSE Rakefile $ROOT/share/doc/beanmonitor
+}
+
+# EOF

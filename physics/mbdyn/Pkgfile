@@ -1,0 +1,36 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: MultiBody Dynamics analysis system
+#  MBDyn features the integrated multidisciplinary analysis of multi-body,
+#  multi-physics systems, including nonlinear mechanics of rigid and
+#  flexible constrained bodies, smart materials, electric networks, active
+#  control, hydraulic networks, and essential fixed-wing and rotorcraft
+#  aerodynamics. It allows you to simulate the behavior of heterogeneous
+#  mechanical, aero-servo-elastic systems based on first principles
+#  equations. It is being actively developed and used in the aerospace
+#  and automotive fields for dynamics analysis and simulation of complex
+#  systems. The extension of available analysis domains to new models,
+#  and new analysis domains, is planned and problem-driven.
+#  .
+# URL: http://www.aero.polimi.it/~mbdyn/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=mbdyn
+version=
+release=1
+source=(http://www.aero.polimi.it/~masarati/Download/mbdyn/mbdyn.tar.gz)
+
+build()
+{
+  cd mbdyn-1.2.7
+./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+make
+make DESTDIR="$PKG" install
+}
+
+# EOF

@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Fast and stable PHP opcode cacher
+#  XCache is a fast, stable PHP opcode cacher that
+#  has been tested and is now running on production
+#  servers under high load.
+#  .
+# URL: http://xcache.lighttpd.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=xcache
+version=1.2.2
+release=1
+source=(http://xcache.lighttpd.net/pub/Releases/$version/xcache-$version.tar.bz2)
+
+build()
+{
+  cd xcache-$version
+
+  phpize
+
+  ./configure
+
+  make
+  make INSTALL_ROOT="$PKG" install
+}
+
+# EOF

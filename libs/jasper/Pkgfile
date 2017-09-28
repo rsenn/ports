@@ -1,0 +1,31 @@
+# $Id: Pkgfile,v 1.13 2007/05/12 00:21:52 roman Exp $
+#
+# Description: RI for JPEG-2000 Part 1 Standard.
+#  The JasPer project is an open-source initiative to provide a free
+#  software-based reference implementation of the codec specified in the
+#  JPEG-2000/JPEG2000 Part-1 standard (i.e. ISO/IEC 15444-1).
+# URL: http://www.ece.uvic.ca/~mdadams/jasper/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=jasper
+version=1.900.1
+release=2
+source=(http://www.ece.uvic.ca/~mdadams/jasper/software/jasper-$version.zip)
+
+build()
+{
+  cd jasper-$version
+
+  aclocal --force
+  autoconf --force
+  libtoolize --force
+  automake -a --foreign --force
+
+  ./configure \
+       --prefix="$prefix" \
+       --host="$host" \
+       --build="$build"
+  make
+  make DESTDIR="$PKG" install
+}

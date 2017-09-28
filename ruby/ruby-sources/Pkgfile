@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: 
+# URL: http://rubyforge.org/projects/rubygems/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=ruby-sources
+version=0.0.1
+release=1
+source=($mirror_rubyforge/rubygems/sources-$version.gem)
+
+build() 
+{
+  gem unpack sources-$version.gem && 
+  cd sources-$version ||
+  tar -xzf data.tar.gz
+
+  IFS="$IFS[]"
+  set -- `ruby --version`
+
+  RUBYVERSION="$2"
+  RUBYLIBDIR="$prefix/lib/ruby/${RUBYVERSION%.*}"
+
+  install -d $PKG/$RUBYLIBDIR
+  cp -r lib/* $PKG/$RUBYLIBDIR
+}
+
+# EOF

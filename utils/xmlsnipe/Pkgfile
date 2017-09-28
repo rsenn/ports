@@ -1,0 +1,25 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Xmlsnipe is a command line tool to display, remove, and modify content of nodes within an XML document
+# URL: http://sourceforge.net/projects/xmlsnipe
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libglib2.0-0, libxml2
+
+name=xmlsnipe
+version=0.0.1
+release=1
+source=($mirror_sf/xmlsnipe/xmlsnipe-$version.tar.gz)
+
+build()
+{
+  cd xmlsnipe-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

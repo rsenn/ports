@@ -1,0 +1,43 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A daemon to stop SSH dictionary attacks.
+# sshutout is a daemon that periodically monitors log files, looking for
+# multiple failed login attempts via the Secure Shell daemon. The daemon
+# is meant to mitigate what are commonly known as amp;quot;dictionary
+# attacks,amp;quot; i.e. scripted brute force attacks that use lists of
+# user IDs and passwords to effect unauthorized intrusions. The sshutout
+# daemon blunts such attacks by creating firewall rules to block individual
+# offenders from accessing the system. These rules are created when an
+# attack signature is detected, and after a configurable expiry interval
+# has elapsed, the rules are deleted.
+#
+# URL: http://www.techfinesse.com/sshutout/sshutout.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6
+
+name=sshutout
+version=1.0.5
+release=1
+source=(http://www.techfinesse.com/tiki/tiki-download_file.php?fileId=16\&sshutout-$version.tar.gz)
+
+build()
+{
+  cd sshutout-$version
+
+  sed -i \
+      -e 's,/usr/local,$(PKG)$(PREFIX),g' \
+      -e 's,/usr/man,$(PKG)$(PREFIX)/share/man,g' \
+      -e 's,/etc,$(PKG)/etc,g' \
+    Makefile
+
+  make CC="${CC-cc}" COMPILE="$CFLAGS"
+
+  install -d $PKG/etc
+  install -d $ROOT/sbin
+  install -d $ROOT/share/man
+
+  make PKG="$PKG" PREFIX="$prefix" install
+
+  install -d $ROOT/share/doc/sshutout
+  install -m 644 [A-Z]*[A-Z]* $ROOT/share/doc/sshutout
+}

@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: cshampoo, a Vermont Department of Taxes project, is a portable library for writing web servers and web services in C. It includes an embedded web server library, yoctohttp, and a SOAP library, libcshampoo. To find out the current development status, when the next version will be released and what new features will be included, check out the status page.
+# URL: http://cshampoo.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=cshampoo
+version=1.2.0
+release=1
+source=($mirror_sf/cshampoo/cshampoo-1.2.0.tar.gz)
+
+build()
+{
+  rm -rf ${builddir=$SRC/cshampoo-$version/build} && mkdir $builddir && cd $builddir
+
+  case $CXXFLAGS in
+    *-ggdb*) build_type="Debug" ;;
+       *-g*) build_type="RelWithDebInfo" CXXFLAGS="$CXXFLAGS -DNDEBUG" ;;
+         *) build_type="Release" CXXFLAGS="$CXXFLAGS -DNDEBUG" ;;
+  esac
+
+  cmake \
+        -D CMAKE_INSTALL_PREFIX="$prefix" \
+        -LA \
+    ${srcdir=$SRC/cshampoo-$version}
+
+  make
+}

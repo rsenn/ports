@@ -1,0 +1,110 @@
+args: -r -u -- libgcrypt-1.4.1_orig libgcrypt-1.4.1
+diff -r -u -- libgcrypt-1.4.1_orig/Makefile libgcrypt-1.4.1/Makefile
+diff -r -u -- libgcrypt-1.4.1_orig/Makefile.in libgcrypt-1.4.1/Makefile.in
+diff -r -u -- libgcrypt-1.4.1_orig/autom4te.cache/output.0 libgcrypt-1.4.1/autom4te.cache/output.0
+diff -r -u -- libgcrypt-1.4.1_orig/autom4te.cache/output.1 libgcrypt-1.4.1/autom4te.cache/output.1
+diff -r -u -- libgcrypt-1.4.1_orig/autom4te.cache/traces.0 libgcrypt-1.4.1/autom4te.cache/traces.0
+diff -r -u -- libgcrypt-1.4.1_orig/autom4te.cache/traces.1 libgcrypt-1.4.1/autom4te.cache/traces.1
+diff -r -u -- libgcrypt-1.4.1_orig/cipher/Makefile libgcrypt-1.4.1/cipher/Makefile
+diff -r -u -- libgcrypt-1.4.1_orig/cipher/Makefile.in libgcrypt-1.4.1/cipher/Makefile.in
+diff -r -u -- libgcrypt-1.4.1_orig/config.h libgcrypt-1.4.1/config.h
+diff -r -u -- libgcrypt-1.4.1_orig/config.h.in libgcrypt-1.4.1/config.h.in
+diff -r -u -- libgcrypt-1.4.1_orig/config.h.in~ libgcrypt-1.4.1/config.h.in~
+diff -r -u -- libgcrypt-1.4.1_orig/config.log libgcrypt-1.4.1/config.log
+diff -r -u -- libgcrypt-1.4.1_orig/config.status libgcrypt-1.4.1/config.status
+diff -r -u -- libgcrypt-1.4.1_orig/configure libgcrypt-1.4.1/configure
+diff -r -u -- libgcrypt-1.4.1_orig/configure.ac libgcrypt-1.4.1/configure.ac
+--- libgcrypt-1.4.1_orig/configure.ac	2008-07-28 01:09:14.000000000 +0200
++++ libgcrypt-1.4.1/configure.ac	2008-07-28 01:22:23.000000000 +0200
+@@ -131,6 +131,7 @@
+ AC_LIBTOOL_RC
+ AM_PROG_LIBTOOL
+ 
++AC_CHECK_TOOL([WINDRES],[windres])
+ 
+ ##########################
+ ## General definitions. ##
+@@ -398,7 +399,7 @@
+     [  --with-egd-socket=NAME  Use NAME for the EGD socket)],
+             egd_socket_name="$withval", egd_socket_name="" )
+ AC_DEFINE_UNQUOTED(EGD_SOCKET_NAME, "$egd_socket_name",
+-                   [Define if you don't want the default EGD socket name.
++                   [Define if you dont want the default EGD socket name.
+                     For details see cipher/rndegd.c])
+ 
+ # Implementation of the --enable-random-daemon
+@@ -519,7 +520,7 @@
+   if test "$PTH_CONFIG" = "no"; then
+     AC_MSG_WARN([[
+ ***
+-*** To build the Libgcrypt's random number daemon
++*** To build the Libgcrypts random number daemon
+ *** we need the support of the GNU Portable Threads Library.
+ *** Download it from ftp://ftp.gnu.org/gnu/pth/
+ *** On a Debian GNU/Linux system you might want to try 
+@@ -808,7 +809,7 @@
+ AM_CONDITIONAL(CROSS_COMPILING, test x$cross_compiling = xyes)
+ 
+ 
+-# This is handy for debugging so the compiler doesn't rearrange
++# This is handy for debugging so the compiler doesnt rearrange
+ # things and eliminate variables.
+ AC_ARG_ENABLE(optimization,
+        AC_HELP_STRING([--disable-optimization],
+@@ -833,7 +834,7 @@
+             CFLAGS="$CFLAGS -Wdeclaration-after-statement"
+             CFLAGS="$CFLAGS -Wno-missing-field-initializers"
+             CFLAGS="$CFLAGS -Wno-sign-compare"
+-            # Note: We don't use -Wunreachable-code because this gives
++            # Note: We dont use -Wunreachable-code because this gives
+             # warnings for all asserts and many inline functions like
+             # gpg_error (gcc 4.1.2 20060928).
+         fi
+diff -r -u -- libgcrypt-1.4.1_orig/doc/Makefile libgcrypt-1.4.1/doc/Makefile
+diff -r -u -- libgcrypt-1.4.1_orig/doc/Makefile.in libgcrypt-1.4.1/doc/Makefile.in
+diff -r -u -- libgcrypt-1.4.1_orig/m4/Makefile libgcrypt-1.4.1/m4/Makefile
+diff -r -u -- libgcrypt-1.4.1_orig/m4/Makefile.in libgcrypt-1.4.1/m4/Makefile.in
+diff -r -u -- libgcrypt-1.4.1_orig/mpi/Makefile libgcrypt-1.4.1/mpi/Makefile
+diff -r -u -- libgcrypt-1.4.1_orig/mpi/Makefile.in libgcrypt-1.4.1/mpi/Makefile.in
+diff -r -u -- libgcrypt-1.4.1_orig/src/.deps/dumpsexp.Po libgcrypt-1.4.1/src/.deps/dumpsexp.Po
+diff -r -u -- libgcrypt-1.4.1_orig/src/Makefile libgcrypt-1.4.1/src/Makefile
+diff -r -u -- libgcrypt-1.4.1_orig/src/Makefile.am libgcrypt-1.4.1/src/Makefile.am
+--- libgcrypt-1.4.1_orig/src/Makefile.am	2008-07-28 01:09:14.000000000 +0200
++++ libgcrypt-1.4.1/src/Makefile.am	2008-07-28 01:23:44.000000000 +0200
+@@ -50,7 +50,7 @@
+ 
+ if HAVE_W32_SYSTEM
+ 
+-LTRCCOMPILE = $(LIBTOOL) --mode=compile $(RC) \
++LTRCCOMPILE = $(LIBTOOL) --mode=compile $(WINDRES) \
+      `echo $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) | \
+      sed -e 's/-I/--include-dir /g;s/-D/--define /g'`
+ 
+@@ -91,7 +91,7 @@
+ libgcrypt_la_DEPENDENCIES = ../cipher/libcipher.la ../mpi/libmpi.la \
+ 	$(srcdir)/libgcrypt.vers $(gcrypt_deps)
+ libgcrypt_la_LIBADD = ../cipher/libcipher.la ../mpi/libmpi.la \
+-	@LTLIBOBJS@ @GPG_ERROR_LIBS@
++	@LTLIBOBJS@ $(libdir)/libgpg-error.la
+ 
+ 
+ dumpsexp_SOURCES = dumpsexp.c
+diff -r -u -- libgcrypt-1.4.1_orig/src/Makefile.in libgcrypt-1.4.1/src/Makefile.in
+diff -r -u -- libgcrypt-1.4.1_orig/src/versioninfo.rc libgcrypt-1.4.1/src/versioninfo.rc
+diff -r -u -- libgcrypt-1.4.1_orig/tests/.deps/ac-data.Po libgcrypt-1.4.1/tests/.deps/ac-data.Po
+diff -r -u -- libgcrypt-1.4.1_orig/tests/.deps/ac-schemes.Po libgcrypt-1.4.1/tests/.deps/ac-schemes.Po
+diff -r -u -- libgcrypt-1.4.1_orig/tests/.deps/ac.Po libgcrypt-1.4.1/tests/.deps/ac.Po
+diff -r -u -- libgcrypt-1.4.1_orig/tests/.deps/basic.Po libgcrypt-1.4.1/tests/.deps/basic.Po
+diff -r -u -- libgcrypt-1.4.1_orig/tests/.deps/benchmark.Po libgcrypt-1.4.1/tests/.deps/benchmark.Po
+diff -r -u -- libgcrypt-1.4.1_orig/tests/.deps/hmac.Po libgcrypt-1.4.1/tests/.deps/hmac.Po
+diff -r -u -- libgcrypt-1.4.1_orig/tests/.deps/keygen.Po libgcrypt-1.4.1/tests/.deps/keygen.Po
+diff -r -u -- libgcrypt-1.4.1_orig/tests/.deps/keygrip.Po libgcrypt-1.4.1/tests/.deps/keygrip.Po
+diff -r -u -- libgcrypt-1.4.1_orig/tests/.deps/mpitests.Po libgcrypt-1.4.1/tests/.deps/mpitests.Po
+diff -r -u -- libgcrypt-1.4.1_orig/tests/.deps/prime.Po libgcrypt-1.4.1/tests/.deps/prime.Po
+diff -r -u -- libgcrypt-1.4.1_orig/tests/.deps/pubkey.Po libgcrypt-1.4.1/tests/.deps/pubkey.Po
+diff -r -u -- libgcrypt-1.4.1_orig/tests/.deps/register.Po libgcrypt-1.4.1/tests/.deps/register.Po
+diff -r -u -- libgcrypt-1.4.1_orig/tests/.deps/t-mpi-bit.Po libgcrypt-1.4.1/tests/.deps/t-mpi-bit.Po
+diff -r -u -- libgcrypt-1.4.1_orig/tests/.deps/tsexp.Po libgcrypt-1.4.1/tests/.deps/tsexp.Po
+diff -r -u -- libgcrypt-1.4.1_orig/tests/.deps/version.Po libgcrypt-1.4.1/tests/.deps/version.Po
+diff -r -u -- libgcrypt-1.4.1_orig/tests/Makefile libgcrypt-1.4.1/tests/Makefile
+diff -r -u -- libgcrypt-1.4.1_orig/tests/Makefile.in libgcrypt-1.4.1/tests/Makefile.in

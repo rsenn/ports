@@ -1,0 +1,38 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A note jotter that organizes ideas, notes, and facts in a heirarchy.
+#  gjots lets you organize text notes in a convenient, hierarchical way. It
+#  can be used for notes, jottings, bits and pieces, recipes, and even
+#  PINs and passwords, using encryption. It can also be used to "mind-map"
+#  larger compositions like manuals, Web pages, articles, etc. It is a bit
+#  like the KDE program "kjots", but uses the GTK library and supports a
+#  hierarchy of folders. Files can be output to HTML with an automatic table
+#  of contents or to docbook XML. Encryption is supported with ccrypt(1),
+#  gpg(1), and openssl(1), so that musings can be kept private.
+#  .
+# URL: http://bhepple.freeshell.org/gjots
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=gjots
+version=0.9
+release=1
+source=(http://bhepple.freeshell.org/gjots/gjots-$version.tar.gz)
+
+build()
+{
+  cd gjots-$version
+
+  #./autogen.sh
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

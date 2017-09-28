@@ -1,0 +1,25 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: upx
+# URL: http://upx.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=upx
+version=3.03
+release=1
+source=(http://upx.sourceforge.net/download/upx-$version-src.tar.bz2
+        upx-1.25-bsd.patch)
+
+build()
+{
+  cd upx-$version-src
+  #patch -N -p1 -i $SRC/upx-1.25-bsd.patch
+
+  make -C src CC="gcc -DWITH_UCL $CFLAGS" LDFLAGS="-lstdc++ -lucl" UCLDIR="$prefix" target=linux
+  mkdir -p $ROOT/bin
+  install -m755 src/upx.out $ROOT/bin/upx
+
+  install -d $ROOT/share/doc/upx
+  install -m 644 BUGS COPYING LICENSE NEWS PROJECTS README README.1ST README.SRC THANKS TODO $ROOT/share/doc/upx
+}

@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Package: vim-bash-support
+# Section: universe/editors
+# Recommends: bashdb
+# Description: Write BASH-scripts by inserting comments, statements, tests, variables, builtins, etc..
+#  Speed up writing new scripts considerably.
+#  Write code und comments with a professional appearance from the beginning.
+# URL: http://lug.fh-swf.de/vim/index.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: vim
+
+name=vim-bash
+version=2.7
+release=2
+source=(http://www.vim.org/scripts/download_script.php?src_id=9123)
+
+build()
+{
+  VIMPATH=`readlink -f $prefix/share/vim/vimcurrent || echo $prefix/share/vim/vimcurrent`
+  VIMNAME=`basename "$VIMPATH"`
+
+  install -d $ROOT/share/vim/$VIMNAME
+  install -d $ROOT/share/doc/
+
+  mv -vf bash-support/doc $ROOT/share/doc/vim-bash-support
+  cp README.bashsupport $ROOT/share/doc/vim-bash-support/
+
+  rm -f ftplugin/sh.vim
+
+  cp -av ./{bash-support,doc,plugin,ftplugin} \
+    $ROOT/share/vim/$VIMNAME/
+}

@@ -1,0 +1,28 @@
+# $Id: Pkgfile,v 1.5 2007/04/22 23:07:53 roman Exp $
+#
+# Description: GStreamer plugins from the "good" set
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+
+name=gst-plugins-good
+version=0.10.10
+release=1
+source=(ftp://ftp.gnome.org/pub/gnome/sources/gst-plugins-good/${version%.*}/gst-plugins-good-$version.tar.bz2
+        gst-plugins-good-0.10.10-notests.patch)
+
+build()
+{
+  cd gst-plugins-good-$version
+
+  patch -N -p1 -i $SRC/gst-plugins-good-0.10.10-notests.patch
+
+  ./configure \
+        --build="$build" \
+        --host="$host" \
+        --${shared:=enable}-shared \
+        --${static:=enable}-shared \
+        --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: MUD client for Linux
+#  mcl is a MUD client running in a Virtual Console under Linux or using
+#  standard TTY routines under any other UNIX. Embedded Perl or Python
+#  offer very high tweakability. Other features include huge scrollback,
+#  a stable input line with the MUD prompt, Perl regexps for actions and
+#  substitutions.
+# URL: http://www.andreasen.org/mcl/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=mcl
+version=0.8a19
+release=1
+source=(http://download.gna.org/ucl/mcl/mcl-$version-src.tar.bz2)
+
+build()
+{
+  cd mcl-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: OpenSound Control messaging utilities.
+#  Oscsend and oscdump are messaging utilities for OpenSound Control
+#  (OSC). Oscsend sends an OSC message specified by command line arguments,
+#  while oscdump receives OSC messages and prints them to standard
+#  output. Both tools use UDP for networking. Oscsend and oscdump are now
+#  included in liblo. Please check the latest releases of liblo for newer
+#  oscsend/oscdump versions.
+#  .
+# URL: http://megaui.net/fukuchi/works/oscsend/index.en.html
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=oscsend
+version=1.0.0
+release=1
+source=(http://megaui.net/fukuchi/works/oscsend/oscsend-1.0.0.tar.gz)
+
+build()
+{
+  cd oscsend-1.0.0
+./autogen.sh
+./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+make
+make DESTDIR="$PKG" install
+}
+
+# EOF

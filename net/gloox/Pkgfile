@@ -1,0 +1,35 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A high-level XMPP library for C++.
+#  gloox is a portable high-level Jabber/XMPP library for C++. It is
+#  fully compliant with the XMPP RFCs, supports all of the XMPP features
+#  (including SRV lookups, TLS, SASL, roster management, and privacy lists),
+#  and implements several XEPs that make it ideal for writing any kind of
+#  Jabber/XMPP client or component.
+#  .
+# URL: http://camaya.net/gloox
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=gloox
+version=0.9.9.5
+release=1
+source=(http://camaya.net/download/gloox-$version.tar.bz2)
+
+build()
+{
+  cd gloox-$version
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/gloox
+  install -m 644 TODO LICENSE README AUTHORS INSTALL ChangeLog COPYING Doxyfile $ROOT/share/doc/gloox
+}
+
+# EOF

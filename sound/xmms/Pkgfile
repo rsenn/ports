@@ -1,0 +1,36 @@
+# $Id: Pkgfile,v 1.1.1.1 2005/03/31 19:53:25 enki Exp $
+#
+# Description: XMMS is a multimedia player based on the look of WinAmp
+# XMMS plays MPEG layer 1/2/3, Ogg Vorbis, WAV, all formats supported by libmikmod,
+# and CD audio. XMMS has a plugin system for Input / Output / Effects /
+# Visualization, and through plugins it can play a lot more sound and video
+# formats
+# URL:
+# Maintainer: Roman Senn <smoli@paranoya.ch>
+# Depends on: libasound2, libaudiofile0, libc6, libesd-alsa0, libglib1.2ldbl, libgtk1.2, libice6, libmikmod2, libogg0, libsm6, libvorbis0a, libvorbisfile3, libx11-6, libxext6, libxi6, libxxf86vm1, zlib1g
+
+name=xmms
+version=1.2.11
+release=1
+source=(http://www.xmms.org/files/1.2.x/xmms-$version.tar.bz2
+        xmms-1.2.10-ir.patch
+        xmms-1.2.10-m4.patch)
+
+build()
+{
+  cd xmms-$version
+
+  patch -N -p1 -i $SRC/xmms-1.2.10-ir.patch
+#  patch -N -p1 -i $SRC/xmms-1.2.10-m4.patch
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --${shared:=enable}-shared \
+       --${static:=enable}-shared \
+       --disable-dependency-tracking
+
+  make
+  make DESTDIR="$PKG" install
+}

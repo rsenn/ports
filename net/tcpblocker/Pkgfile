@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Blocks too many connections from clients to tcpserver services.
+#  Tcpblocker is for sites that want to limit the number of times an IP
+#  address can connect to a tcpserver controlled service like SMTP within
+#  a time period. Each time tcpblock runs, it counts how many connections
+#  were made per client IP. If an IP exceeds the configurable maximum
+#  number of connections within the configurable time period, then tcpblock
+#  outputs a standard deny line that can be used to build a tcp.smtp style
+#  file. Combined with a cron job and a run script, tcpblocker can be
+#  configured to fit into just about any qmail or tcpserver installation.
+# URL: http://www.inter7.com/?page=tcpblocker
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=tcpblocker
+version=1.0
+release=1
+source=(http://www.inter7.com/tcpblocker/tcpblocker-$version.tar.gz)
+
+build()
+{
+  cd tcpblocker-$version
+
+  install -d $ROOT/bin
+
+  ${CC-cc} $CFLAGS -o $ROOT/bin/tcpblock tcpblock.c
+}

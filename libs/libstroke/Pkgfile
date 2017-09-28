@@ -1,0 +1,38 @@
+# $Id: Pkgfile,v 1.2 2007/05/09 21:02:53 roman Exp $
+# Name: LibStroke - a stroke translation library
+# Description: LibStroke is a stroke translation library. Strokes are motions
+# of the mouse that can be interpreted by a program as a command. Strokes are
+# used extensively in CAD programs. I fell in love with them when I was using
+# the CAD tools that use a stroke interface to select tools or perform actions.
+# I wrote this library so that others can see how useful strokes can be and so
+# that more programs take advantage of this extremely natural human-computer
+# interface.
+# URL: http://www.etla.net/libstroke/
+# Maintainer: Roman Senn <rs@adfinis.com>
+
+name=libstroke
+version=0.5.1
+release=1
+source=(http://www.etla.net/libstroke/libstroke-$version.tar.gz
+        libstroke-0.5.1-aclocal.patch)
+
+build()
+{
+  cd libstroke-$version
+
+  patch -N -p1 -i $SRC/libstroke-0.5.1-aclocal.patch
+
+  libtoolize --force --copy
+  aclocal --force
+  autoconf --force
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --${shared:=enable}-shared \
+       --${static:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+}

@@ -1,0 +1,54 @@
+# $Id: Pkgfile,v 1.20 2007/05/09 21:02:55 roman Exp $
+#
+# Package: vim
+# Section: editors
+# Provides: editor
+# Description: A popular vi clone that features syntax highlighting, a GUI, and much more.
+#  Vim is an almost fully-compatible version of the Unix editor Vi. Many new
+#  commandline history, online help, filename completion, and block
+#  and runs on many systems, including Unix, MS Windows, OS/2, Macintosh,
+# URL: http://www.vim.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=vim
+version=7.2
+release=1
+source=(ftp://ftp.vim.org/pub/vim/unix/vim-$version.tar.bz2)
+
+build()
+{
+  cd vim${version%%.*}${version#*.}
+
+  case ${prefix="/usr"} in
+    "/usr")
+      sysconfdir="/etc"
+      localstatedir="/var"
+      ;;
+  esac
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --mandir="$prefix/share/man" \
+       --infodir="$prefix/share/info" \
+       --sysconfdir="${sysconfdir=$prefix/etc}" \
+       --localstatedir="${localstatedir=$prefix/var}" \
+       --enable-gui="${gui=no}" \
+       --disable-xsmp \
+       --disable-xsmp-interact \
+       --enable-cscope \
+       --enable-perlinterp \
+       --enable-pythoninterp \
+       --enable-tclinterp \
+       --enable-rubyinterp \
+       --with-compiledby="adfinis GmbH" \
+       --with-modified-by="Roman Senn" \
+       --without-x \
+       --disable-gpm \
+       --disable-xim
+
+  make
+  make DESTDIR="$PKG" install
+}

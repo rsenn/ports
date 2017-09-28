@@ -1,0 +1,292 @@
+args: -r -u -- juce_orig juce
+diff -r -u -- juce_orig/extras/the_jucer/build/gnu/Makefile.am juce/extras/the_jucer/build/gnu/Makefile.am
+--- juce_orig/extras/the_jucer/build/gnu/Makefile.am	2008-07-28 11:55:49.000000000 +0200
++++ juce/extras/the_jucer/build/gnu/Makefile.am	2008-07-28 11:48:30.000000000 +0200
+@@ -0,0 +1,121 @@
++ACLOCAL_AMFLAGS = -I m4
++
++bin_PROGRAMS = jucer
++
++INCLUDES = \
++  -I$(top_srcdir)/../..
++
++AM_CPPFLAGS = -DDATADIR=\"$(pkgdatadir)\"
++
++pkgdatadir = $(datadir)/jucer
++pkgdata_DATA = \
++  ../../src/templates/jucer_ComponentTemplate.h \
++  ../../src/templates/jucer_ComponentTemplate.cpp
++
++jucer_LDADD = \
++  $(top_builddir)/../../../../libjuce.la
++  
++jucer_SOURCES = \
++  ../../src/BinaryData.cpp \
++  ../../src/BinaryData.h \
++  ../../src/juce_AppConfig.h \
++  ../../src/jucer_Headers.h \
++  ../../src/jucer_Main.cpp \
++  ../../src/model/components/jucer_ButtonHandler.h \
++  ../../src/model/components/jucer_ComboBoxHandler.h \
++  ../../src/model/components/jucer_ComponentNameProperty.h \
++  ../../src/model/components/jucer_ComponentTypeHandler.cpp \
++  ../../src/model/components/jucer_ComponentTypeHandler.h \
++  ../../src/model/components/jucer_ComponentUndoableAction.h \
++  ../../src/model/components/jucer_GenericComponentHandler.h \
++  ../../src/model/components/jucer_GroupComponentHandler.h \
++  ../../src/model/components/jucer_HyperlinkButtonHandler.h \
++  ../../src/model/components/jucer_ImageButtonHandler.h \
++  ../../src/model/components/jucer_JucerComponentHandler.h \
++  ../../src/model/components/jucer_LabelHandler.h \
++  ../../src/model/components/jucer_SliderHandler.h \
++  ../../src/model/components/jucer_TabbedComponentHandler.h \
++  ../../src/model/components/jucer_TextButtonHandler.h \
++  ../../src/model/components/jucer_TextEditorHandler.h \
++  ../../src/model/components/jucer_ToggleButtonHandler.h \
++  ../../src/model/components/jucer_TreeViewHandler.h \
++  ../../src/model/components/jucer_ViewportHandler.h \
++  ../../src/model/documents/jucer_ButtonDocument.cpp \
++  ../../src/model/documents/jucer_ButtonDocument.h \
++  ../../src/model/documents/jucer_ComponentDocument.cpp \
++  ../../src/model/documents/jucer_ComponentDocument.h \
++  ../../src/model/jucer_BinaryResources.cpp \
++  ../../src/model/jucer_BinaryResources.h \
++  ../../src/model/jucer_ComponentLayout.cpp \
++  ../../src/model/jucer_ComponentLayout.h \
++  ../../src/model/jucer_GeneratedCode.cpp \
++  ../../src/model/jucer_GeneratedCode.h \
++  ../../src/model/jucer_JucerDocument.cpp \
++  ../../src/model/jucer_JucerDocument.h \
++  ../../src/model/jucer_ObjectTypes.cpp \
++  ../../src/model/jucer_ObjectTypes.h \
++  ../../src/model/jucer_PaintRoutine.cpp \
++  ../../src/model/jucer_PaintRoutine.h \
++  ../../src/model/paintelements/jucer_ColouredElement.cpp \
++  ../../src/model/paintelements/jucer_ColouredElement.h \
++  ../../src/model/paintelements/jucer_ElementSiblingComponent.h \
++  ../../src/model/paintelements/jucer_FillType.cpp \
++  ../../src/model/paintelements/jucer_FillType.h \
++  ../../src/model/paintelements/jucer_GradientPointComponent.h \
++  ../../src/model/paintelements/jucer_ImageResourceProperty.h \
++  ../../src/model/paintelements/jucer_PaintElement.cpp \
++  ../../src/model/paintelements/jucer_PaintElement.h \
++  ../../src/model/paintelements/jucer_PaintElementEllipse.h \
++  ../../src/model/paintelements/jucer_PaintElementGroup.h \
++  ../../src/model/paintelements/jucer_PaintElementImage.h \
++  ../../src/model/paintelements/jucer_PaintElementPath.cpp \
++  ../../src/model/paintelements/jucer_PaintElementPath.h \
++  ../../src/model/paintelements/jucer_PaintElementRectangle.h \
++  ../../src/model/paintelements/jucer_PaintElementRoundedRectangle.h \
++  ../../src/model/paintelements/jucer_PaintElementText.h \
++  ../../src/model/paintelements/jucer_PaintElementUndoableAction.h \
++  ../../src/model/paintelements/jucer_PointComponent.h \
++  ../../src/model/paintelements/jucer_StrokeType.cpp \
++  ../../src/model/paintelements/jucer_StrokeType.h \
++  ../../src/properties/jucer_ColourPropertyComponent.h \
++  ../../src/properties/jucer_ComponentBooleanProperty.h \
++  ../../src/properties/jucer_ComponentChoiceProperty.h \
++  ../../src/properties/jucer_ComponentColourProperty.h \
++  ../../src/properties/jucer_ComponentTextProperty.h \
++  ../../src/properties/jucer_FilePropertyComponent.cpp \
++  ../../src/properties/jucer_FilePropertyComponent.h \
++  ../../src/properties/jucer_FontPropertyComponent.cpp \
++  ../../src/properties/jucer_FontPropertyComponent.h \
++  ../../src/properties/jucer_JustificationProperty.h \
++  ../../src/properties/jucer_PositionPropertyBase.h \
++  ../../src/ui/jucer_CommandIDs.h \
++  ../../src/ui/jucer_ComponentLayoutEditor.cpp \
++  ../../src/ui/jucer_ComponentLayoutEditor.h \
++  ../../src/ui/jucer_ComponentLayoutPanel.cpp \
++  ../../src/ui/jucer_ComponentLayoutPanel.h \
++  ../../src/ui/jucer_ComponentOverlayComponent.cpp \
++  ../../src/ui/jucer_ComponentOverlayComponent.h \
++  ../../src/ui/jucer_EditingPanelBase.cpp \
++  ../../src/ui/jucer_EditingPanelBase.h \
++  ../../src/ui/jucer_JucerDocumentHolder.cpp \
++  ../../src/ui/jucer_JucerDocumentHolder.h \
++  ../../src/ui/jucer_MainWindow.cpp \
++  ../../src/ui/jucer_MainWindow.h \
++  ../../src/ui/jucer_PaintRoutineEditor.cpp \
++  ../../src/ui/jucer_PaintRoutineEditor.h \
++  ../../src/ui/jucer_PaintRoutinePanel.cpp \
++  ../../src/ui/jucer_PaintRoutinePanel.h \
++  ../../src/ui/jucer_PrefsPanel.cpp \
++  ../../src/ui/jucer_PrefsPanel.h \
++  ../../src/ui/jucer_ResourceEditorPanel.cpp \
++  ../../src/ui/jucer_ResourceEditorPanel.h \
++  ../../src/ui/jucer_SnapGridPainter.cpp \
++  ../../src/ui/jucer_SnapGridPainter.h \
++  ../../src/ui/jucer_TestComponent.cpp \
++  ../../src/ui/jucer_TestComponent.h \
++  ../../src/utility/jucer_ColourEditorComponent.h \
++  ../../src/utility/jucer_Colours.h \
++  ../../src/utility/jucer_StoredSettings.cpp \
++  ../../src/utility/jucer_StoredSettings.h \
++  ../../src/utility/jucer_UtilityFunctions.cpp \
++  ../../src/utility/jucer_UtilityFunctions.h 
+diff -r -u -- juce_orig/extras/the_jucer/build/gnu/autogen.sh juce/extras/the_jucer/build/gnu/autogen.sh
+--- juce_orig/extras/the_jucer/build/gnu/autogen.sh	2008-07-28 11:55:49.000000000 +0200
++++ juce/extras/the_jucer/build/gnu/autogen.sh	2008-07-28 11:23:11.000000000 +0200
+@@ -0,0 +1,23 @@
++#!/bin/sh
++
++set -e
++
++test "aclocal.m4" -ot "configure.in" && rm -f "aclocal.m4"
++test "config.guess" -ot "configure.in" && rm -f "config.guess"
++
++for mkf in {,*/}Makefile{,.in}; do
++  if test "$mkf" -ot "${mkf%.in}.am"; then
++    rm -vf "$mkf"
++  fi 
++done
++
++#rm -f aclocal.m4 config.{guess,sub} install-sh missing ltmain.in 
++
++set -x
++
++libtoolize --force --copy
++aclocal --force -I m4
++autoheader --force
++automake --force --copy --foreign --add-missing
++aclocal --force -I m4
++autoconf --force
+diff -r -u -- juce_orig/extras/the_jucer/build/gnu/configure.in juce/extras/the_jucer/build/gnu/configure.in
+--- juce_orig/extras/the_jucer/build/gnu/configure.in	2008-07-28 11:55:49.000000000 +0200
++++ juce/extras/the_jucer/build/gnu/configure.in	2008-07-28 11:34:07.000000000 +0200
+@@ -0,0 +1,119 @@
++AC_INIT([jucer],[1.46])
++
++AC_CONFIG_SRCDIR([../../src/jucer_Main.cpp])
++AC_CONFIG_AUX_DIR([.])
++AC_CONFIG_MACRO_DIR([m4])
++AC_CONFIG_HEADER([config.h])
++
++ac_cv_juce_DEFAULT_BUILD_TYPE="RELWITHDEBINFO"
++
++ac_cv_juce_COMPILE_FLAGS_RELEASE="-fomit-frame-pointer -O3"
++ac_cv_juce_COMPILE_FLAGS_MINSIZEREL="-fomit-frame-pointer -Os"
++ac_cv_juce_COMPILE_FLAGS_RELWITHDEBINFO="-g -O2 -Wall"
++ac_cv_juce_COMPILE_FLAGS_DEBUG="-ggdb -O0 -Werror"
++
++dnl CXX_OPTIMIZE
++dnl JUCE_CXX_OPTIMIZE
++
++AC_DEFUN([AC_C_OPTIMIZE],[${ac_cv_juce_COMPILE_FLAGS}])
++
++AC_ARG_ENABLE([debug],
++  AC_HELP_STRING([--enable-debug], [Do a DEBUG build]),
++  [ac_cv_juce_build_debug="$enableval"],[ac_cv_juce_build_debug="no"])
++
++AC_ARG_ENABLE([release],
++  AC_HELP_STRING([--enable-release], [Do a RELEASE build]),
++  [ac_cv_juce_build_release="$enableval"],[ac_cv_juce_build_release="no"])
++
++AC_CANONICAL_HOST
++
++AM_INIT_AUTOMAKE
++
++AC_PROG_CXX
++AC_PROG_LIBTOOL
++
++ac_cv_juce_linux="no"
++ac_cv_juce_win32="no"
++ac_cv_juce_macosx="no"
++
++ac_cv_juce_x11="yes"
++ac_cv_juce_pthread="yes"
++
++case $host in
++  *-linux*) 
++    ac_cv_juce_linux="yes"
++    ;;
++  *-mingw* | *-cygwin* | *-msvc* | *-icl*)
++    ac_cv_juce_win32="yes"
++    ac_cv_juce_x11="no"
++    ac_cv_juce_pthread="no"
++    ;;
++  *-darwin* | *apple-*)
++    ac_cv_juce_macosx="yes"
++    ac_cv_juce_x11="no"
++    ;;
++esac
++
++dnl DEFAULT_FLAGS_DEBUG="-ggdb -O0 -Werror"
++dnl AC_ARG_WITH([debug-flags], AC_HELP_STRING([--with-debug-flags], [Set compiler flags for debugging mode]) []$DEFAULT_FLAGS_DEBUG[],
++
++AM_CONDITIONAL([OS_LINUX],[test "$ac_cv_juce_linux" = yes])
++AM_CONDITIONAL([OS_WIN32],[test "$ac_cv_juce_win32" = yes])
++AM_CONDITIONAL([OS_MACOSX],[test "$ac_cv_juce_macosx" = yes])
++
++if test "$ac_cv_juce_linux" = yes; then
++  CPPFLAGS="$CPPFLAGS -DLINUX=1"
++fi
++
++#if test "$ac_cv_juce_win32" = yes; then
++#  CPPFLAGS="$CPPFLAGS -DJUCE_WIN32=1"
++#fi
++#
++#if test "$ac_cv_juce_macosx" = yes; then
++#  CPPFLAGS="$CPPFLAGS -DJUCE_MAC=1"
++#fi
++
++dnl AM_PATH_ZLIB([ac_cv_juce_use_system_libz="yes"],[ac_cv_juce_use_system_libz="no"])
++dnl AM_CONDITIONAL([SYSTEM_LIBZ],[test "$ac_cv_juce_use_system_libz" = yes])
++
++dnl PKG_CHECK_MODULES([LIBPNG],[libpng],[ac_cv_juce_use_system_libpng="yes"],[ac_cv_juce_use_system_libpng="no"])
++dnl AM_CONDITIONAL([SYSTEM_LIBPNG],[test "$ac_cv_juce_use_system_libpng" = yes])
++
++dnl AC_CHECK_FT2([6.2.0],[ac_cv_juce_use_system_ft2="yes"],[ac_cv_juce_use_system_ft2="no"])
++dnl AM_CONDITIONAL([SYSTEM_FT2],[test "$ac_cv_juce_use_system_ft2" = yes])
++
++dnl AM_PATH_LIBPNG([ac_cv_juce_use_system_libpng="yes"], [ac_cv_juce_use_system_libpng="no"])
++dnl AM_CONDITIONAL([SYSTEM_LIBPNG],[test "$ac_cv_juce_use_system_libpng" = yes])
++
++dnl XIPH_PATH_OGG([ac_cv_juce_use_system_libogg="yes"], [ac_cv_juce_use_system_libogg="no"])
++dnl AM_CONDITIONAL([SYSTEM_LIBOGG],[test "$ac_cv_juce_use_system_libogg" = yes])
++
++dnl AM_PATH_LIBFLAC([ac_cv_juce_use_system_libflac="yes"], [ac_cv_juce_use_system_libflac="no"])
++dnl AM_CONDITIONAL([SYSTEM_LIBFLAC],[test "$ac_cv_juce_use_system_libflac" = yes])
++
++if test "$ac_cv_juce_x11" = yes
++then
++  AC_CHECK_LIB([Xau],[XauReadAuth],[X11_LIBS="-lXau $X11_LIBS"
++AC_CHECK_LIB([Xdmcp],[XdmcpFlush],[X11_LIBS="-lXdmcp $X11_LIBS"
++AC_CHECK_LIB([X11],[XOpenDisplay],[X11_LIBS="-lX11 $X11_LIBS"
++AC_CHECK_LIB([Xext],[XShmCreateImage],[X11_LIBS="-lXext $X11_LIBS"
++])dnl
++AC_CHECK_LIB([Xinerama],[XineramaIsActive],[X11_LIBS="-lXinerama $X11_LIBS"
++])dnl
++AC_CHECK_LIB([GL],[glXCreateContext],[X11_LIBS="-lGL $X11_LIBS"
++])dnl
++])dnl
++])dnl
++])dnl
++  AC_SUBST([X11_LIBS])
++fi
++
++if test "$ac_cv_juce_pthread" = yes
++then
++  AC_CHECK_LIB([pthread],[pthread_create],[PTHREAD_LIBS="-lpthread"])
++  AC_SUBST([PTHREAD_LIBS])
++fi
++
++AC_CONFIG_FILES([Makefile])
++
++AC_OUTPUT
+diff -r -u -- juce_orig/extras/the_jucer/src/utility/jucer_StoredSettings.cpp juce/extras/the_jucer/src/utility/jucer_StoredSettings.cpp
+--- juce_orig/extras/the_jucer/src/utility/jucer_StoredSettings.cpp	2008-07-28 11:21:48.000000000 +0200
++++ juce/extras/the_jucer/src/utility/jucer_StoredSettings.cpp	2008-07-28 11:51:00.000000000 +0200
+@@ -112,8 +112,10 @@
+ 
+ const File StoredSettings::getTemplatesDir() const
+ {
+-    File defaultTemplateDir (File::getSpecialLocation (File::currentExecutableFile)
+-                                .getParentDirectory());
++#ifndef DATADIR
++# define DATADIR File::getSpecialLocation(File::currentExecutableFile).getParentDirectory()
++#endif
++    File defaultTemplateDir (DATADIR);
+ 
+     return File (props->getValue (T("templateDir"),
+                                   defaultTemplateDir.getFullPathName()));

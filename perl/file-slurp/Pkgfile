@@ -1,0 +1,26 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Efficient Reading/Writing of Complete Files.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=file-slurp
+version=9999.13
+release=1
+source=(http://search.cpan.org/CPAN/authors/id/D/DR/DROLSKY/File-Slurp-$version.tar.gz)
+
+build() 
+{
+  cd File-Slurp-$version
+  
+  perl Makefile.PL installdirs=vendor
+  
+  make \
+       DESTDIR="$PKG" \
+       PREFIX="$prefix" \
+       INSTALLDIRS="vendor" \
+     install
+}
+
+# EOF

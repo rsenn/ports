@@ -1,0 +1,102 @@
+When using grep -r and redirecting output to a file in the traversed
+directory, grep sometimes enters in an infinite loop, and size of output
+file grows endelessly.
+
+What happens is : directory is traversed, and every file is searched for
+a pattern. The line containing the pattern is written to somefile. When
+it comes to somefile, its content is buffered. Pattern is found in it
+(because lines containing pattern have already been written). More output
+is then written to somefile. Then somefile is checked for more content
+(function fillbuff in grep.c), and newly written lines are parsed. Then
+more output, then more content, etc.
+
+If output of grep is less than 4096bytes (my system is debian i386) before
+coming to somefile, and grep is not called with --line-buffered option,
+that behaviour never occurs. I think that's because data have not been
+flushed yet. If output is more than 4096, that behaviour doesn't always
+occur. I couldn't figure out what makes the difference, but I can always
+reproduce it with that script :
+
+#!/bin/bash
+
+# creates a directory mkdir tmpdir
+
+cd tmpdir
+
+# creates two files touch a touch b
+
+# writes 5000 caracters in another file # name of that file comes after
+two other in lexical order I="0"; while [ $I -lt 5000 ] do echo "a" >>
+c I=$[$I+1] done
+
+# recursively grep directory, redirects output # output of grep must be
+more than 4096, grep -r a . > log
+
+One way to solve this problem would be to prevent grep from searching
+inside a file if that file is associated with stdout. `cat' has that
+feature. I'll submit a patch based on cat's implementation.
+
+--- grep-2.5.3_orig/src/grep.c	2008-07-18 19:16:15.000000000 +0200
++++ grep-2.5.3/src/grep.c	2008-07-18 19:18:06.000000000 +0200
+@@ -64,6 +64,12 @@
+   struct stat stat;
+ };
+ 
++/* Device number of the output.  */
++static dev_t out_dev;
++
++/* I-node number of the output.  */
++static ino_t out_ino;
++
+ /* base of chain of stat buffers, used to detect directory loops */
+ static struct stats stats_base;
+ 
+@@ -1278,6 +1284,24 @@
+       if (devices == SKIP_DEVICES && (S_ISCHR(stats->stat.st_mode) || S_ISBLK(stats->stat.st_mode)))
+ #endif
+         return 1;
++
++      /* Input files cannot be redirected to themselves.  If output is a regular
++       * file, compare st_ino and st_dev of output and of file.  Skip file if they
++       * are the same.  */
++        if (out_dev && out_ino)
++        {
++          struct stat stat_file;
++          if (stat (file, &stat_file) < 0)
++        {
++          error (0, errno, "%s", file);
++        return 1;
++        }
++        if (stat_file.st_dev == out_dev && stat_file.st_ino == out_ino)
++          {
++            error (0, 0, _("%s: input file is output file"), file);
++            return 1;
++          }
++        }
+       while ((desc = open (file, O_RDONLY)) < 0 && errno == EINTR)
+ 	continue;
+ 
+@@ -1867,10 +1891,23 @@
+   int opt, cc, status;
+   int default_context;
+   FILE *fp;
++  struct stat out_stat;
+   extern char *optarg;
+   extern int optind;
+   char **file_list;
+ 
++  if (fstat (STDOUT_FILENO, &out_stat) < 0)
++    error (2, errno, "fstat");
++
++  if (S_ISREG(out_stat.st_mode))
++  {
++    out_dev = out_stat.st_dev;
++    out_ino = out_stat.st_ino;
++  } else {
++    out_dev = 0;
++    out_ino = 0;
++  }
++
+   initialize_main (&argc, &argv);
+   program_name = argv[0];
+ 

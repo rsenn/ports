@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A curses-based top-like display for Apache.
+# A curses-based top-like display for Apache information, including requests
+# per second, bytes per second, most popular URLs, etc.
+#
+# URL: http://www.webta.org/projects/apachetop/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=apachetop
+version=0.12.6
+release=1
+source=(http://www.webta.org/apachetop/apachetop-$version.tar.gz
+        apachetop-0.12.6-fixes.patch)
+
+build()
+{
+  cd apachetop-$version
+
+  patch -N -p1 -i $SRC/apachetop-0.12.6-fixes.patch
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

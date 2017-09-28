@@ -1,0 +1,38 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:52 roman Exp $
+#
+# Description: PortVideo camera framework.
+#  A cross-platform framework that provides uniform access to camera devices
+#  for video processing or display. It comes with a SDL demo application
+#  which compiles on Win32, Linux and MacOS X and can address any camera
+#  already supported by the host OS.
+# URL: http://mtg.upf.es/reactable/?portvideo
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=portvideo
+version=0.3
+release=1
+source=($mirror_sf/portvideo/PortVideoSDL-$version.src.zip)
+
+build()
+{
+  cd PortVideoSDL-$version
+
+  make -C linux \
+      TARGET="portvideo" \
+      DESTDIR="$PKG" \
+      PREFIX="$prefix" \
+      BINDIR="$prefix/bin" \
+    install
+
+  ${AR-ar} x linux/libccvt.a
+  ${AR-ar} src libportvideo.a common/*.o linux/*.o *.o
+  ${AR-ar} d libportvideo.a common/Main.o
+
+  install -d $ROOT/lib
+  install -m 644 libportvideo.a $ROOT/lib
+
+  install -d $ROOT/include/portvideo
+  install -m 644 common/*.h $ROOT/include/portvideo
+}
+

@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: X11 Screen Saver extension wire protocol
+#  This package provides development headers describing the wire protocol
+#  for the MIT-SCREEN-SAVER extension, used to notify the server of client
+#  screen saver events.
+#  This package is built from the X.org scrnsaverproto proto module.
+# URL: http://www.X.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=scrnsaverproto
+version=1.1.0
+release=1
+source=(ftp://ftp.x.org/pub/individual/proto/scrnsaverproto-$version.tar.bz2)
+
+build()
+{
+  cd scrnsaverproto-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

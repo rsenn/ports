@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Logging library for Ruby
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=log4r
+version=1.0.5
+release=1
+source=($mirror_sf/log4r/log4r-$version.tgz)
+
+build()
+{
+  cd log4r-$version
+
+  set `ruby --version`
+
+  RUBYVERSION=$2
+  RUBYLIBDIR=$prefix/lib/ruby/${RUBYVERSION%.*}
+
+  install -d $PKG/$RUBYLIBDIR
+  cp -rf src/* $PKG/$RUBYLIBDIR
+
+  install -d $ROOT/share/doc/log4r
+  install -m 644 LICENSE README INSTALL changelog $ROOT/share/doc/log4r
+
+  cp -rf doc $ROOT/share/doc/log4r/html
+  cp -rf examples $ROOT/share/doc/log4r/
+}
+
+# EOF

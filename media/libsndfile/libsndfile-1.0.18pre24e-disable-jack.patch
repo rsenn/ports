@@ -1,0 +1,55 @@
+diff -r -u -N -- libsndfile-1.0.18pre24e_orig/configure.ac libsndfile-1.0.18pre24e/configure.ac
+--- libsndfile-1.0.18pre24e_orig/configure.ac	2008-11-29 23:34:55.000000000 +0100
++++ libsndfile-1.0.18pre24e/configure.ac	2008-11-29 23:56:23.000000000 +0100
+@@ -325,15 +325,21 @@
+ #====================================================================================
+ # Check for JACK (only used for examples/sndfile-jackplay).
+ 
+-PKG_CHECK_MOD_VERSION(JACK, jack >= 0.100, ac_cv_jack=yes, ac_cv_jack=no)
++AC_ARG_ENABLE(jack,
++	AC_HELP_STRING([--disable-jack], [disable use of JACK]))
+ 
+-if test x$ac_cv_jack = "xyes" ; then
+-	HAVE_JACK=1
+-else
+-	HAVE_JACK=0
++HAVE_JACK=0
++
++if test "x$enable_jack" = xyes; then
++  PKG_CHECK_MOD_VERSION(JACK, jack >= 0.100, ac_cv_jack=yes, ac_cv_jack=no)
++
++  if test x$ac_cv_jack = "xyes" ; then
++  	HAVE_JACK=1
+ 	fi
+ 
+-AC_DEFINE_UNQUOTED([HAVE_JACK],$HAVE_JACK,[Set to 1 if you have JACK.])
++  AC_DEFINE_UNQUOTED([HAVE_JACK],$HAVE_JACK,[Set to 1 if you have JACK.])
++fi
++AM_CONDITIONAL([JACK], [test "$ac_cv_jack" = yes])
+ 
+ #====================================================================================
+ # Determine if the processor can do clipping on float to int conversions.
+diff -r -u -N -- libsndfile-1.0.18pre24e_orig/examples/Makefile.am libsndfile-1.0.18pre24e/examples/Makefile.am
+--- libsndfile-1.0.18pre24e_orig/examples/Makefile.am	2008-11-29 23:34:55.000000000 +0100
++++ libsndfile-1.0.18pre24e/examples/Makefile.am	2008-11-29 23:38:50.000000000 +0100
+@@ -1,6 +1,6 @@
+ ## Process this file with automake to produce Makefile.in
+ 
+-bin_PROGRAMS = sndfile-info sndfile-play sndfile-convert sndfile-jackplay sndfile-cmp \
++bin_PROGRAMS = sndfile-info sndfile-play sndfile-convert sndfile-cmp \
+ 				sndfile-metadata-set sndfile-metadata-get
+ 
+ noinst_PROGRAMS = make_sine sfprocess list_formats generate sndfilehandle
+@@ -20,9 +20,12 @@
+ sndfile_play_SOURCES = sndfile-play.c
+ sndfile_play_LDADD = $(top_builddir)/src/libsndfile.la $(OS_SPECIFIC_LINKS) $(ALSA_LIBS)
+ 
++if JACK
++bin_PROGRAMS += sndfile-jackplay
+ sndfile_jackplay_SOURCES = sndfile-jackplay.c
+ sndfile_jackplay_CFLAGS = $(JACK_CFLAGS)
+ sndfile_jackplay_LDADD = $(top_builddir)/src/libsndfile.la $(JACK_LIBS)
++endif
+ 
+ sndfile_convert_SOURCES = sndfile-convert.c common.c common.h
+ sndfile_convert_LDADD = $(top_builddir)/src/libsndfile.la

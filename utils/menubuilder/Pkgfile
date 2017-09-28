@@ -1,0 +1,39 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A tool for making frontends for bash scripts.
+#  Bash menubuilder creates pretty bash pseudoGUIs which act as templates
+#  for shell scripts. It features a menu editor with preview which can
+#  save and load config files which can be translated with a shell script
+#  compiler to the final menu.
+# URL: http://www.secuserv.ch
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=menubuilder
+version=1
+release=1
+source=(http://www.secuserv.ch/pages/menubuilder.tar.gz)
+
+build()
+{
+  cd menubuilder
+
+  case $prefix in
+    "/usr") bindir="/bin" ;;
+  esac
+
+  sed -i "1 s:/bin/bash:${bindir=$prefix/bin}/bash:" \
+      *.sh
+
+  install -d $ROOT/bin
+  install -m 755 menubuilder.sh $ROOT/bin/menubuilder
+  install -m 755 buildmenu.sh $ROOT/bin/buildmenu
+
+  install -d $ROOT/share/doc/menubuilder-$version
+  install -m 644 README CHANGELOG $ROOT/share/doc/menubuilder-$version
+
+  install -d $ROOT/share/menubuilder
+  install -m 644 .mbp $ROOT/share/menubuilder
+
+  mv -f styles projects $ROOT/share/menubuilder
+}

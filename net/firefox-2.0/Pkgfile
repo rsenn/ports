@@ -1,0 +1,59 @@
+# $Id: Pkgfile,v 1.5 2007/05/09 21:02:56 roman Exp $
+#
+# Description: safe and easy web browser from Mozilla
+#  Firefox delivers safe, easy web browsing. A familiar user interface,
+#  enhanced security features including protection from online identity
+#  theft, and integrated search let you get the most out of the web.
+#  Install this firefox package too, if you want to be automatically upgraded
+#  to new major firefox versions in the future. safe and easy web browser
+#  from Mozilla Firefox delivers safe, easy web browsing. A familiar user
+#  interface, enhanced security features including protection from online
+#  identity theft, and integrated search let you get the most out of the web.
+#  Install this firefox package too, if you want to be automatically upgraded
+#  to new major firefox versions in the future.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=firefox
+version=2.0.0.20
+release=1
+source=(ftp://ftp.mozilla.org/pub/mozilla.org/firefox/releases/$version/source/firefox-$version-source.tar.bz2)
+
+build()
+{
+  cd mozilla
+
+  case $prefix in
+    /usr) sysconfdir="/etc" localstatedir="/var" ;;
+  esac
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --enable-application="browser" \
+       --enable-system-cairo \
+       --enable-svg-renderer="cairo" \
+       --without-system-nspr \
+       --without-system-nss \
+       --without-system-jpeg  \
+       --without-system-zlib \
+       --without-system-png \
+       --disable-system-cairo \
+       --with-pthreads \
+       --enable-application="browser" \
+       --enable-canvas \
+       --enable-ui-locale="en-US" \
+       --enable-official-branding \
+       --enable-pango \
+       --disable-gnomevfs \
+       --disable-gnomeui \
+       --enable-crypto \
+       --enable-jsd \
+       --enable-plugins \
+       --enable-extensions
+
+  make
+  make DESTDIR="$PKG" install
+}

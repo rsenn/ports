@@ -1,0 +1,38 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An (X)HTML preprocessor.
+#  HSC (HTML Sucks Completely) is a developer tool for HTML projects. It
+#  is mainly intended for creating and maintaining larger Web sites, with
+#  a focus on compact and standards-conforming code. Its source texts are
+#  HTML files that use an extended syntax allowing for macros, conditionals,
+#  variables, expressions, etc. These sources are transformed into static
+#  (X)HTML pages. HSC checks the result for many common errors such as
+#  missing end tags and nesting mistakes, both in the markup and, to a
+#  limited extent, in CSS. As a commandline tool, it can be used together
+#  with "make", and a dependency generator is included. The macro library
+#  features things like navigation menus, LaTeX-style sections, footnotes and
+#  bibliographies, semiautomatic table-based layout, and database/scripting
+#  interfaces.
+#  .
+# URL: http://www.linguistik.uni-erlangen.de/~msbethke/software.html
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=hsc
+version=1.0b
+release=1
+source=(http://www.linguistik.uni-erlangen.de/~msbethke/binaries/hsc-1.0b.tar.bz2)
+
+build()
+{
+  cd hsc-1.0
+./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+make
+make DESTDIR="$PKG" install
+}
+
+# EOF

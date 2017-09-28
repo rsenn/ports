@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Writes a message from standard input into a maildir reliably.
+#  maildir writes a message from standard input into a maildir reliably. It
+#  can auto-fold target names in an attempt to find the correct maildir,
+#  which is useful during migrations.
+#  .
+# URL: http://gpl.internetconnection.net/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=icmaildir
+version=
+release=1
+source=(http://gpl.internetconnection.net/files/maildir.tar.gz)
+
+build()
+{
+  cd maildir
+
+  ${CC-"cc"} ${CFLAGS-"-O2"} -o maildir maildir.c hostname.c
+
+  install -d $ROOT/bin
+  install -m 755 maildir $ROOT/bin
+
+  install -d $ROOT/share/doc/icmaildir
+  install -m 644 CHANGELOG DESCRIPTION LICENSE $ROOT/share/doc/icmaildir
+}
+
+# EOF

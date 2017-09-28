@@ -1,0 +1,33 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:50 roman Exp $
+#
+# Description:
+# URL: http://websvn.kde.org/branches/work/suse_kickoff/kicker/
+# Repository: svn://anonsvn.kde.org/home/kde/branches/work/suse_kickoff/kicker/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=suse-kicker
+version=20071026
+release=1
+source=(suse-kicker-$version.tar.bz2)
+
+build()
+{
+  cd suse-kicker-$version
+
+  test -f configure.in.in && mv configure.in.in configure.in
+
+  libtoolize --force --copy
+  aclocal --force
+  automake --force --copy --foreign --add-missing
+  autoconf --force
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+

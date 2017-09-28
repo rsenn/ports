@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Flat file extractor can be used for reading and parsing
+# different flat file structures and printing them in different formats. ffe
+# is a command line tool developed in GNU/Linux environment and it is
+# distributed under GPL.
+# URL: http://ff-extractor.sourceforge.net
+
+name=ffe
+version=0.2.5
+release=1
+source=($mirror_sf/ff-extractor/ffe-$version.tar.gz
+        ffe-0.2.5-fferc.patch)
+
+build()
+{
+  cd ffe-$version
+
+  patch -N -p1 -i $SRC/ffe-0.2.5-fferc.patch
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

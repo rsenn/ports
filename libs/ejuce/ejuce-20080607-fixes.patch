@@ -1,0 +1,777 @@
+Only in ejuce-20080607: bin
+diff -ru ejuce-20080607_orig/build/linux/EJUCE.make ejuce-20080607/build/linux/EJUCE.make
+--- ejuce-20080607_orig/build/linux/EJUCE.make	2008-06-07 04:43:11.000000000 +0200
++++ ejuce-20080607/build/linux/EJUCE.make	2008-06-07 04:48:48.000000000 +0200
+@@ -5,18 +5,22 @@
+   CONFIG=Debug
+ endif
+ 
++# if multiple archs are defined turn off automated dependency generation
++DEPFLAGS := $(if $(word 2, $(TARGET_ARCH)), , -MMD)
++
+ ifeq ($(CONFIG),Debug)
+   BINDIR := ../../bin
+   LIBDIR := ../../bin
+   OBJDIR := ../../bin/intermediate_linux/Debug
+   OUTDIR := ../../bin
+-  CPPFLAGS := -MD -D "LINUX=1" -D "DEBUG=1" -D "_DEBUG=1" -I "../../" -I "../../../juce" -I "/usr/include" -I "/usr/include/freetype2"
+-  CFLAGS += $(CPPFLAGS) -g -D_DEBUG -ggdb -Wall
++  CPPFLAGS := $(DEPFLAGS) -D "LINUX=1" -D "DEBUG=1" -D "_DEBUG=1" -I "../../" -I "../../../juce" -I "/usr/include" -I "/usr/include/freetype2"
++  CFLAGS += $(CPPFLAGS) $(TARGET_ARCH) -g -D_DEBUG -ggdb -Wall
+   CXXFLAGS := $(CFLAGS)
+-  LDFLAGS += -L$(BINDIR) -L$(LIBDIR) -L "/usr/X11R6/lib/" -L "../../../juce/bin" -lfreetype -lpthread -lX11 -lGL -lGLU -lXinerama -lasound -ljuce_debug
++  LDFLAGS += -L$(BINDIR) -L$(LIBDIR) -L"/usr/X11R6/lib/" -L"../../../juce/bin" -lfreetype -lpthread -lX11 -lGL -lGLU -lXinerama -lasound -ljuce_debug
+   LDDEPS :=
++  RESFLAGS := -D "LINUX=1" -D "DEBUG=1" -D "_DEBUG=1" -I "../../" -I "../../../juce" -I "/usr/include" -I "/usr/include/freetype2"
+   TARGET := libejuce_debug.a
+-  BLDCMD = ar -cr $(OUTDIR)/$(TARGET) $(OBJECTS); ranlib $(OUTDIR)/$(TARGET)
++  BLDCMD = ar -rcs $(OUTDIR)/$(TARGET) $(OBJECTS) $(TARGET_ARCH)
+ endif
+ 
+ ifeq ($(CONFIG),Release)
+@@ -24,93 +28,101 @@
+   LIBDIR := ../../bin
+   OBJDIR := ../../bin/intermediate_linux/Release
+   OUTDIR := ../../bin
+-  CPPFLAGS := -MD -D "LINUX=1" -D "NDEBUG=1" -I "../../" -I "../../../juce" -I "/usr/include" -I "/usr/include/freetype2"
+-  CFLAGS += $(CPPFLAGS) -O2 -Wall
++  CPPFLAGS := $(DEPFLAGS) -D "LINUX=1" -D "NDEBUG=1" -I "../../" -I "../../../juce" -I "/usr/include" -I "/usr/include/freetype2"
++  CFLAGS += $(CPPFLAGS) $(TARGET_ARCH) -O2 -Wall
+   CXXFLAGS := $(CFLAGS)
+-  LDFLAGS += -L$(BINDIR) -L$(LIBDIR) -s -L "/usr/X11R6/lib/" -L "../../../juce/bin" -lfreetype -lpthread -lX11 -lGL -lGLU -lXinerama -lasound -ljuce
++  LDFLAGS += -L$(BINDIR) -L$(LIBDIR) -s -L"/usr/X11R6/lib/" -L"../../../juce/bin" -lfreetype -lpthread -lX11 -lGL -lGLU -lXinerama -lasound -ljuce
+   LDDEPS :=
++  RESFLAGS := -D "LINUX=1" -D "NDEBUG=1" -I "../../" -I "../../../juce" -I "/usr/include" -I "/usr/include/freetype2"
+   TARGET := libejuce.a
+-  BLDCMD = ar -cr $(OUTDIR)/$(TARGET) $(OBJECTS); ranlib $(OUTDIR)/$(TARGET)
++  BLDCMD = ar -rcs $(OUTDIR)/$(TARGET) $(OBJECTS) $(TARGET_ARCH)
+ endif
+ 
+ OBJECTS := \
+-	$(OBJDIR)/InterpPack.o \
+-	$(OBJDIR)/BaseVoiceState.o \
+-	$(OBJDIR)/ResamplerFlt.o \
+-	$(OBJDIR)/Downsampler2Flt.o \
+-	$(OBJDIR)/MipMapFlt.o \
+-	$(OBJDIR)/ejuce_GrayScaleEffect.o \
+-	$(OBJDIR)/ejuce_MeterComponent.o \
+-	$(OBJDIR)/ejuce_WaveDisplay.o \
+-	$(OBJDIR)/ejuce_FilenameInput.o \
+ 	$(OBJDIR)/ejuce_Joystick.o \
+-	$(OBJDIR)/ejuce_MinimalLookAndFeel.o \
+-	$(OBJDIR)/StandardPhilToolbar.o \
+-	$(OBJDIR)/PhilComponent.o \
+-	$(OBJDIR)/FileView.o \
+-	$(OBJDIR)/FilePropertiesDialog.o \
++	$(OBJDIR)/ejuce_FilenameInput.o \
+ 	$(OBJDIR)/RunExternalProgram.o \
+-	$(OBJDIR)/ListFileView.o \
++	$(OBJDIR)/FilePropertiesDialog.o \
+ 	$(OBJDIR)/StandardPhilStatusbar.o \
+-	$(OBJDIR)/PhilChooserStatusbar.o \
++	$(OBJDIR)/FileView.o \
+ 	$(OBJDIR)/PhilChooser.o \
+-	$(OBJDIR)/ejuce_Box.o \
++	$(OBJDIR)/ListFileView.o \
++	$(OBJDIR)/StandardPhilToolbar.o \
++	$(OBJDIR)/PhilChooserStatusbar.o \
++	$(OBJDIR)/PhilComponent.o \
++	$(OBJDIR)/ejuce_MinimalLookAndFeel.o \
++	$(OBJDIR)/ejuce_WaveDisplay.o \
++	$(OBJDIR)/ejuce_MeterComponent.o \
++	$(OBJDIR)/ejuce_GrayScaleEffect.o \
+ 	$(OBJDIR)/ejuce_Texture.o \
+-	$(OBJDIR)/ejuce_Camera.o \
++	$(OBJDIR)/ejuce_Box.o \
+ 	$(OBJDIR)/ejuce_3dsFileFormat.o \
++	$(OBJDIR)/ejuce_Camera.o \
+ 	$(OBJDIR)/ejuce_TuningMap.o \
+ 	$(OBJDIR)/ejuce_Wavelets.o \
+ 	$(OBJDIR)/ejuce_Random.o \
+ 	$(OBJDIR)/ejuce_SpectrumManager.o \
++	$(OBJDIR)/ejuce_LFO.o \
+ 	$(OBJDIR)/ejuce_MipMapSampleBuffer.o \
+ 	$(OBJDIR)/ejuce_PADsynth.o \
+-	$(OBJDIR)/ejuce_LFO.o \
+-	$(OBJDIR)/ejuce_ExternalJoystick.o \
+ 	$(OBJDIR)/ejuce_WinampControl.o \
+-	$(OBJDIR)/ejuce_ExpressionValuator.o \
+-	$(OBJDIR)/ejuce_BugDumper.o \
++	$(OBJDIR)/ejuce_ExternalJoystick.o \
++	$(OBJDIR)/ResamplerFlt.o \
++	$(OBJDIR)/Downsampler2Flt.o \
++	$(OBJDIR)/InterpPack.o \
++	$(OBJDIR)/MipMapFlt.o \
++	$(OBJDIR)/BaseVoiceState.o \
++	$(OBJDIR)/ejuce_DirectedGraph.o \
++	$(OBJDIR)/ejuce_Heap.o \
++	$(OBJDIR)/ejuce_ServiceManager.o \
+ 	$(OBJDIR)/ejuce_TimelineSystem.o \
+-	$(OBJDIR)/ejuce_FunctionParser.o \
++	$(OBJDIR)/ejuce_BugDumper.o \
+ 	$(OBJDIR)/ejuce_SystemUtilities.o \
+-	$(OBJDIR)/ejuce_RegularExpression.o \
++	$(OBJDIR)/ejuce_FunctionParser.o \
++	$(OBJDIR)/ejuce_ExpressionValuator.o \
++	$(OBJDIR)/ejuce_Serializable.o \
+ 	$(OBJDIR)/ejuce_CommandLineTokenizer.o \
++	$(OBJDIR)/ejuce_RegularExpression.o \
++	$(OBJDIR)/ejuce_Dijkstra.o \
++	$(OBJDIR)/ejuce_NeuralNetwork.o \
++	$(OBJDIR)/ejuce_ODBCBase.o \
++	$(OBJDIR)/ejuce_ODBCRecordset.o \
+ 	$(OBJDIR)/ejuce_ODBCDateTime.o \
+-	$(OBJDIR)/ejuce_ODBCDatabase.o \
+ 	$(OBJDIR)/ejuce_ODBCDelete.o \
+ 	$(OBJDIR)/ejuce_ODBCUpdate.o \
+-	$(OBJDIR)/ejuce_ODBCRecordset.o \
+-	$(OBJDIR)/ejuce_ODBCBase.o \
+ 	$(OBJDIR)/ejuce_ODBCInsert.o \
+-	$(OBJDIR)/ejuce_DirectedGraph.o \
+-	$(OBJDIR)/ejuce_Heap.o \
+-	$(OBJDIR)/ejuce_Serializable.o \
+-	$(OBJDIR)/ejuce_Dijkstra.o \
+-	$(OBJDIR)/ejuce_NeuralNetwork.o \
+-	$(OBJDIR)/ejuce_ServiceManager.o \
+-	$(OBJDIR)/pcre_maketables.o \
++	$(OBJDIR)/ejuce_ODBCDatabase.o \
+ 	$(OBJDIR)/pcreposix.o \
++	$(OBJDIR)/pcre_ord2utf8.o \
+ 	$(OBJDIR)/pcre_chartables.o \
+-	$(OBJDIR)/pcre_get.o \
++	$(OBJDIR)/pcre_xclass.o \
+ 	$(OBJDIR)/pcre_globals.o \
+-	$(OBJDIR)/pcre_dfa_exec.o \
+-	$(OBJDIR)/pcre_valid_utf8.o \
+-	$(OBJDIR)/pcre_version.o \
++	$(OBJDIR)/pcre_study.o \
+ 	$(OBJDIR)/pcre_try_flipped.o \
+-	$(OBJDIR)/ucptable.o \
+-	$(OBJDIR)/pcre_ord2utf8.o \
+ 	$(OBJDIR)/pcre_exec.o \
+-	$(OBJDIR)/pcre_info.o \
+-	$(OBJDIR)/pcre_ucp_findchar.o \
+-	$(OBJDIR)/pcre_xclass.o \
+-	$(OBJDIR)/pcre_study.o \
+-	$(OBJDIR)/pcre_compile.o \
+-	$(OBJDIR)/pcre_config.o \
+ 	$(OBJDIR)/pcre_tables.o \
+-	$(OBJDIR)/pcre_fullinfo.o \
+ 	$(OBJDIR)/pcre_refcount.o \
++	$(OBJDIR)/pcre_valid_utf8.o \
++	$(OBJDIR)/pcre_fullinfo.o \
++	$(OBJDIR)/pcre_dfa_exec.o \
++	$(OBJDIR)/pcre_maketables.o \
++	$(OBJDIR)/pcre_config.o \
++	$(OBJDIR)/pcre_compile.o \
++	$(OBJDIR)/pcre_get.o \
++	$(OBJDIR)/pcre_info.o \
++	$(OBJDIR)/pcre_version.o \
++	$(OBJDIR)/pcre_ucp_findchar.o \
++	$(OBJDIR)/ucptable.o \
+ 
++MKDIR_TYPE := msdos
+ CMD := $(subst \,\\,$(ComSpec)$(COMSPEC))
+ ifeq (,$(CMD))
++  MKDIR_TYPE := posix
++endif
++ifeq (/bin/sh.exe,$(SHELL))
++  MKDIR_TYPE := posix
++endif
++ifeq ($(MKDIR_TYPE),posix)
+   CMD_MKBINDIR := mkdir -p $(BINDIR)
+   CMD_MKLIBDIR := mkdir -p $(LIBDIR)
+   CMD_MKOUTDIR := mkdir -p $(OUTDIR)
+@@ -133,279 +145,286 @@
+ 
+ clean:
+ 	@echo Cleaning EJUCE
+-	-@rm -rf $(OUTDIR)/$(TARGET) $(OBJDIR)
++ifeq ($(MKDIR_TYPE),posix)
++	-@rm -f $(OUTDIR)/$(TARGET)
++	-@rm -rf $(OBJDIR)
++else
++	-@if exist $(subst /,\,$(OUTDIR)/$(TARGET)) del /q $(subst /,\,$(OUTDIR)/$(TARGET))
++	-@if exist $(subst /,\,$(OBJDIR)) del /q $(subst /,\,$(OBJDIR))
++	-@if exist $(subst /,\,$(OBJDIR)) rmdir /s /q $(subst /,\,$(OBJDIR))
++endif
+ 
+-$(OBJDIR)/InterpPack.o: ../../src/ejuce_libraries/resampler/InterpPack.cpp
++$(OBJDIR)/ejuce_Joystick.o: ../../src/ejuce_appframework/gui/components/controls/ejuce_Joystick.cpp
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/BaseVoiceState.o: ../../src/ejuce_libraries/resampler/BaseVoiceState.cpp
++$(OBJDIR)/ejuce_FilenameInput.o: ../../src/ejuce_appframework/gui/components/controls/ejuce_FilenameInput.cpp
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/ResamplerFlt.o: ../../src/ejuce_libraries/resampler/ResamplerFlt.cpp
++$(OBJDIR)/RunExternalProgram.o: ../../src/ejuce_appframework/gui/components/filebrowser/RunExternalProgram.cpp
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/Downsampler2Flt.o: ../../src/ejuce_libraries/resampler/Downsampler2Flt.cpp
++$(OBJDIR)/FilePropertiesDialog.o: ../../src/ejuce_appframework/gui/components/filebrowser/FilePropertiesDialog.cpp
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/MipMapFlt.o: ../../src/ejuce_libraries/resampler/MipMapFlt.cpp
++$(OBJDIR)/StandardPhilStatusbar.o: ../../src/ejuce_appframework/gui/components/filebrowser/StandardPhilStatusbar.cpp
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/ejuce_GrayScaleEffect.o: ../../src/ejuce_appframework/gui/graphics/effects/ejuce_GrayScaleEffect.cpp
++$(OBJDIR)/FileView.o: ../../src/ejuce_appframework/gui/components/filebrowser/FileView.cpp
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/ejuce_MeterComponent.o: ../../src/ejuce_appframework/gui/components/special/ejuce_MeterComponent.cpp
++$(OBJDIR)/PhilChooser.o: ../../src/ejuce_appframework/gui/components/filebrowser/PhilChooser.cpp
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/ejuce_WaveDisplay.o: ../../src/ejuce_appframework/gui/components/special/ejuce_WaveDisplay.cpp
++$(OBJDIR)/ListFileView.o: ../../src/ejuce_appframework/gui/components/filebrowser/ListFileView.cpp
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/ejuce_FilenameInput.o: ../../src/ejuce_appframework/gui/components/controls/ejuce_FilenameInput.cpp
++$(OBJDIR)/StandardPhilToolbar.o: ../../src/ejuce_appframework/gui/components/filebrowser/StandardPhilToolbar.cpp
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/ejuce_Joystick.o: ../../src/ejuce_appframework/gui/components/controls/ejuce_Joystick.cpp
++$(OBJDIR)/PhilChooserStatusbar.o: ../../src/ejuce_appframework/gui/components/filebrowser/PhilChooserStatusbar.cpp
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/ejuce_MinimalLookAndFeel.o: ../../src/ejuce_appframework/gui/components/lookandfeel/ejuce_MinimalLookAndFeel.cpp
++$(OBJDIR)/PhilComponent.o: ../../src/ejuce_appframework/gui/components/filebrowser/PhilComponent.cpp
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/StandardPhilToolbar.o: ../../src/ejuce_appframework/gui/components/filebrowser/StandardPhilToolbar.cpp
++$(OBJDIR)/ejuce_MinimalLookAndFeel.o: ../../src/ejuce_appframework/gui/components/lookandfeel/ejuce_MinimalLookAndFeel.cpp
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/PhilComponent.o: ../../src/ejuce_appframework/gui/components/filebrowser/PhilComponent.cpp
++$(OBJDIR)/ejuce_WaveDisplay.o: ../../src/ejuce_appframework/gui/components/special/ejuce_WaveDisplay.cpp
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/FileView.o: ../../src/ejuce_appframework/gui/components/filebrowser/FileView.cpp
++$(OBJDIR)/ejuce_MeterComponent.o: ../../src/ejuce_appframework/gui/components/special/ejuce_MeterComponent.cpp
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/FilePropertiesDialog.o: ../../src/ejuce_appframework/gui/components/filebrowser/FilePropertiesDialog.cpp
++$(OBJDIR)/ejuce_GrayScaleEffect.o: ../../src/ejuce_appframework/gui/graphics/effects/ejuce_GrayScaleEffect.cpp
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/RunExternalProgram.o: ../../src/ejuce_appframework/gui/components/filebrowser/RunExternalProgram.cpp
++$(OBJDIR)/ejuce_Texture.o: ../../src/ejuce_appframework/gui/opengl/ejuce_Texture.cpp
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/ListFileView.o: ../../src/ejuce_appframework/gui/components/filebrowser/ListFileView.cpp
++$(OBJDIR)/ejuce_Box.o: ../../src/ejuce_appframework/gui/opengl/ejuce_Box.cpp
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/StandardPhilStatusbar.o: ../../src/ejuce_appframework/gui/components/filebrowser/StandardPhilStatusbar.cpp
++$(OBJDIR)/ejuce_3dsFileFormat.o: ../../src/ejuce_appframework/gui/opengl/ejuce_3dsFileFormat.cpp
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/PhilChooserStatusbar.o: ../../src/ejuce_appframework/gui/components/filebrowser/PhilChooserStatusbar.cpp
++$(OBJDIR)/ejuce_Camera.o: ../../src/ejuce_appframework/gui/opengl/ejuce_Camera.cpp
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/PhilChooser.o: ../../src/ejuce_appframework/gui/components/filebrowser/PhilChooser.cpp
++$(OBJDIR)/ejuce_TuningMap.o: ../../src/ejuce_appframework/audio/ejuce_TuningMap.cpp
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/ejuce_Box.o: ../../src/ejuce_appframework/gui/opengl/ejuce_Box.cpp
++$(OBJDIR)/ejuce_Wavelets.o: ../../src/ejuce_appframework/audio/ejuce_Wavelets.cpp
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/ejuce_Texture.o: ../../src/ejuce_appframework/gui/opengl/ejuce_Texture.cpp
++$(OBJDIR)/ejuce_Random.o: ../../src/ejuce_appframework/audio/granular/ejuce_Random.cpp
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/ejuce_Camera.o: ../../src/ejuce_appframework/gui/opengl/ejuce_Camera.cpp
++$(OBJDIR)/ejuce_SpectrumManager.o: ../../src/ejuce_appframework/audio/spectrum/ejuce_SpectrumManager.cpp
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/ejuce_3dsFileFormat.o: ../../src/ejuce_appframework/gui/opengl/ejuce_3dsFileFormat.cpp
++$(OBJDIR)/ejuce_LFO.o: ../../src/ejuce_appframework/audio/blocks/oscillators/ejuce_LFO.cpp
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/ejuce_TuningMap.o: ../../src/ejuce_appframework/audio/ejuce_TuningMap.cpp
++$(OBJDIR)/ejuce_MipMapSampleBuffer.o: ../../src/ejuce_appframework/audio/blocks/oscillators/ejuce_MipMapSampleBuffer.cpp
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/ejuce_Wavelets.o: ../../src/ejuce_appframework/audio/ejuce_Wavelets.cpp
++$(OBJDIR)/ejuce_PADsynth.o: ../../src/ejuce_appframework/audio/blocks/oscillators/ejuce_PADsynth.cpp
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/ejuce_Random.o: ../../src/ejuce_appframework/audio/granular/ejuce_Random.cpp
++$(OBJDIR)/ejuce_WinampControl.o: ../../src/ejuce_appframework/toolbag/ejuce_WinampControl.cpp
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/ejuce_SpectrumManager.o: ../../src/ejuce_appframework/audio/spectrum/ejuce_SpectrumManager.cpp
++$(OBJDIR)/ejuce_ExternalJoystick.o: ../../src/ejuce_appframework/input/ejuce_ExternalJoystick.cpp
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/ejuce_MipMapSampleBuffer.o: ../../src/ejuce_appframework/audio/blocks/oscillators/ejuce_MipMapSampleBuffer.cpp
++$(OBJDIR)/ResamplerFlt.o: ../../src/ejuce_libraries/resampler/ResamplerFlt.cpp
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/ejuce_PADsynth.o: ../../src/ejuce_appframework/audio/blocks/oscillators/ejuce_PADsynth.cpp
++$(OBJDIR)/Downsampler2Flt.o: ../../src/ejuce_libraries/resampler/Downsampler2Flt.cpp
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/ejuce_LFO.o: ../../src/ejuce_appframework/audio/blocks/oscillators/ejuce_LFO.cpp
++$(OBJDIR)/InterpPack.o: ../../src/ejuce_libraries/resampler/InterpPack.cpp
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/ejuce_ExternalJoystick.o: ../../src/ejuce_appframework/input/ejuce_ExternalJoystick.cpp
++$(OBJDIR)/MipMapFlt.o: ../../src/ejuce_libraries/resampler/MipMapFlt.cpp
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/ejuce_WinampControl.o: ../../src/ejuce_appframework/toolbag/ejuce_WinampControl.cpp
++$(OBJDIR)/BaseVoiceState.o: ../../src/ejuce_libraries/resampler/BaseVoiceState.cpp
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/ejuce_ExpressionValuator.o: ../../src/ejuce_core/misc/ejuce_ExpressionValuator.cpp
++$(OBJDIR)/ejuce_DirectedGraph.o: ../../src/ejuce_core/containers/ejuce_DirectedGraph.cpp
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/ejuce_BugDumper.o: ../../src/ejuce_core/misc/ejuce_BugDumper.cpp
++$(OBJDIR)/ejuce_Heap.o: ../../src/ejuce_core/containers/ejuce_Heap.cpp
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/ejuce_TimelineSystem.o: ../../src/ejuce_core/misc/ejuce_TimelineSystem.cpp
++$(OBJDIR)/ejuce_ServiceManager.o: ../../src/ejuce_core/services/ejuce_ServiceManager.cpp
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/ejuce_FunctionParser.o: ../../src/ejuce_core/misc/ejuce_FunctionParser.cpp
++$(OBJDIR)/ejuce_TimelineSystem.o: ../../src/ejuce_core/misc/ejuce_TimelineSystem.cpp
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/ejuce_SystemUtilities.o: ../../src/ejuce_core/misc/ejuce_SystemUtilities.cpp
++$(OBJDIR)/ejuce_BugDumper.o: ../../src/ejuce_core/misc/ejuce_BugDumper.cpp
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/ejuce_RegularExpression.o: ../../src/ejuce_core/text/ejuce_RegularExpression.cpp
++$(OBJDIR)/ejuce_SystemUtilities.o: ../../src/ejuce_core/misc/ejuce_SystemUtilities.cpp
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/ejuce_CommandLineTokenizer.o: ../../src/ejuce_core/text/ejuce_CommandLineTokenizer.cpp
++$(OBJDIR)/ejuce_FunctionParser.o: ../../src/ejuce_core/misc/ejuce_FunctionParser.cpp
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/ejuce_ODBCDateTime.o: ../../src/ejuce_core/database/ejuce_ODBCDateTime.cpp
++$(OBJDIR)/ejuce_ExpressionValuator.o: ../../src/ejuce_core/misc/ejuce_ExpressionValuator.cpp
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/ejuce_ODBCDatabase.o: ../../src/ejuce_core/database/ejuce_ODBCDatabase.cpp
++$(OBJDIR)/ejuce_Serializable.o: ../../src/ejuce_core/basics/ejuce_Serializable.cpp
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/ejuce_ODBCDelete.o: ../../src/ejuce_core/database/ejuce_ODBCDelete.cpp
++$(OBJDIR)/ejuce_CommandLineTokenizer.o: ../../src/ejuce_core/text/ejuce_CommandLineTokenizer.cpp
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/ejuce_ODBCUpdate.o: ../../src/ejuce_core/database/ejuce_ODBCUpdate.cpp
++$(OBJDIR)/ejuce_RegularExpression.o: ../../src/ejuce_core/text/ejuce_RegularExpression.cpp
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/ejuce_ODBCRecordset.o: ../../src/ejuce_core/database/ejuce_ODBCRecordset.cpp
++$(OBJDIR)/ejuce_Dijkstra.o: ../../src/ejuce_core/algorithms/ejuce_Dijkstra.cpp
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/ejuce_ODBCBase.o: ../../src/ejuce_core/database/ejuce_ODBCBase.cpp
++$(OBJDIR)/ejuce_NeuralNetwork.o: ../../src/ejuce_core/neural/ejuce_NeuralNetwork.cpp
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/ejuce_ODBCInsert.o: ../../src/ejuce_core/database/ejuce_ODBCInsert.cpp
++$(OBJDIR)/ejuce_ODBCBase.o: ../../src/ejuce_core/database/ejuce_ODBCBase.cpp
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/ejuce_DirectedGraph.o: ../../src/ejuce_core/containers/ejuce_DirectedGraph.cpp
++$(OBJDIR)/ejuce_ODBCRecordset.o: ../../src/ejuce_core/database/ejuce_ODBCRecordset.cpp
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/ejuce_Heap.o: ../../src/ejuce_core/containers/ejuce_Heap.cpp
++$(OBJDIR)/ejuce_ODBCDateTime.o: ../../src/ejuce_core/database/ejuce_ODBCDateTime.cpp
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/ejuce_Serializable.o: ../../src/ejuce_core/basics/ejuce_Serializable.cpp
++$(OBJDIR)/ejuce_ODBCDelete.o: ../../src/ejuce_core/database/ejuce_ODBCDelete.cpp
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/ejuce_Dijkstra.o: ../../src/ejuce_core/algorithms/ejuce_Dijkstra.cpp
++$(OBJDIR)/ejuce_ODBCUpdate.o: ../../src/ejuce_core/database/ejuce_ODBCUpdate.cpp
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/ejuce_NeuralNetwork.o: ../../src/ejuce_core/neural/ejuce_NeuralNetwork.cpp
++$(OBJDIR)/ejuce_ODBCInsert.o: ../../src/ejuce_core/database/ejuce_ODBCInsert.cpp
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/ejuce_ServiceManager.o: ../../src/ejuce_core/services/ejuce_ServiceManager.cpp
++$(OBJDIR)/ejuce_ODBCDatabase.o: ../../src/ejuce_core/database/ejuce_ODBCDatabase.cpp
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/pcre_maketables.o: ../../src/ejuce_libraries/pcre/pcre_maketables.c
++$(OBJDIR)/pcreposix.o: ../../src/ejuce_libraries/pcre/pcreposix.c
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CC) $(CFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/pcreposix.o: ../../src/ejuce_libraries/pcre/pcreposix.c
++$(OBJDIR)/pcre_ord2utf8.o: ../../src/ejuce_libraries/pcre/pcre_ord2utf8.c
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CC) $(CFLAGS) -o $@ -c $<
+@@ -415,7 +434,7 @@
+ 	@echo $(notdir $<)
+ 	@$(CC) $(CFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/pcre_get.o: ../../src/ejuce_libraries/pcre/pcre_get.c
++$(OBJDIR)/pcre_xclass.o: ../../src/ejuce_libraries/pcre/pcre_xclass.c
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CC) $(CFLAGS) -o $@ -c $<
+@@ -425,82 +444,82 @@
+ 	@echo $(notdir $<)
+ 	@$(CC) $(CFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/pcre_dfa_exec.o: ../../src/ejuce_libraries/pcre/pcre_dfa_exec.c
++$(OBJDIR)/pcre_study.o: ../../src/ejuce_libraries/pcre/pcre_study.c
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CC) $(CFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/pcre_valid_utf8.o: ../../src/ejuce_libraries/pcre/pcre_valid_utf8.c
++$(OBJDIR)/pcre_try_flipped.o: ../../src/ejuce_libraries/pcre/pcre_try_flipped.c
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CC) $(CFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/pcre_version.o: ../../src/ejuce_libraries/pcre/pcre_version.c
++$(OBJDIR)/pcre_exec.o: ../../src/ejuce_libraries/pcre/pcre_exec.c
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CC) $(CFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/pcre_try_flipped.o: ../../src/ejuce_libraries/pcre/pcre_try_flipped.c
++$(OBJDIR)/pcre_tables.o: ../../src/ejuce_libraries/pcre/pcre_tables.c
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CC) $(CFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/ucptable.o: ../../src/ejuce_libraries/pcre/ucptable.c
++$(OBJDIR)/pcre_refcount.o: ../../src/ejuce_libraries/pcre/pcre_refcount.c
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CC) $(CFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/pcre_ord2utf8.o: ../../src/ejuce_libraries/pcre/pcre_ord2utf8.c
++$(OBJDIR)/pcre_valid_utf8.o: ../../src/ejuce_libraries/pcre/pcre_valid_utf8.c
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CC) $(CFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/pcre_exec.o: ../../src/ejuce_libraries/pcre/pcre_exec.c
++$(OBJDIR)/pcre_fullinfo.o: ../../src/ejuce_libraries/pcre/pcre_fullinfo.c
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CC) $(CFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/pcre_info.o: ../../src/ejuce_libraries/pcre/pcre_info.c
++$(OBJDIR)/pcre_dfa_exec.o: ../../src/ejuce_libraries/pcre/pcre_dfa_exec.c
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CC) $(CFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/pcre_ucp_findchar.o: ../../src/ejuce_libraries/pcre/pcre_ucp_findchar.c
++$(OBJDIR)/pcre_maketables.o: ../../src/ejuce_libraries/pcre/pcre_maketables.c
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CC) $(CFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/pcre_xclass.o: ../../src/ejuce_libraries/pcre/pcre_xclass.c
++$(OBJDIR)/pcre_config.o: ../../src/ejuce_libraries/pcre/pcre_config.c
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CC) $(CFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/pcre_study.o: ../../src/ejuce_libraries/pcre/pcre_study.c
++$(OBJDIR)/pcre_compile.o: ../../src/ejuce_libraries/pcre/pcre_compile.c
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CC) $(CFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/pcre_compile.o: ../../src/ejuce_libraries/pcre/pcre_compile.c
++$(OBJDIR)/pcre_get.o: ../../src/ejuce_libraries/pcre/pcre_get.c
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CC) $(CFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/pcre_config.o: ../../src/ejuce_libraries/pcre/pcre_config.c
++$(OBJDIR)/pcre_info.o: ../../src/ejuce_libraries/pcre/pcre_info.c
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CC) $(CFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/pcre_tables.o: ../../src/ejuce_libraries/pcre/pcre_tables.c
++$(OBJDIR)/pcre_version.o: ../../src/ejuce_libraries/pcre/pcre_version.c
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CC) $(CFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/pcre_fullinfo.o: ../../src/ejuce_libraries/pcre/pcre_fullinfo.c
++$(OBJDIR)/pcre_ucp_findchar.o: ../../src/ejuce_libraries/pcre/pcre_ucp_findchar.c
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CC) $(CFLAGS) -o $@ -c $<
+ 
+-$(OBJDIR)/pcre_refcount.o: ../../src/ejuce_libraries/pcre/pcre_refcount.c
++$(OBJDIR)/ucptable.o: ../../src/ejuce_libraries/pcre/ucptable.c
+ 	-@$(CMD_MKOBJDIR)
+ 	@echo $(notdir $<)
+ 	@$(CC) $(CFLAGS) -o $@ -c $<
+Only in ejuce-20080607/build/linux: la
+diff -ru ejuce-20080607_orig/src/ejuce_appframework/gui/components/controls/ejuce_FilenameInput.cpp ejuce-20080607/src/ejuce_appframework/gui/components/controls/ejuce_FilenameInput.cpp
+--- ejuce-20080607_orig/src/ejuce_appframework/gui/components/controls/ejuce_FilenameInput.cpp	2008-06-07 04:43:11.000000000 +0200
++++ ejuce-20080607/src/ejuce_appframework/gui/components/controls/ejuce_FilenameInput.cpp	2008-06-07 04:58:36.000000000 +0200
+@@ -116,14 +116,12 @@
+     setCurrentFile (getCurrentFile(), true);
+ }
+ 
+-bool FilenameInput::filesDropped (const StringArray& filenames, int, int)
++void FilenameInput::filesDropped (const StringArray& filenames, int, int)
+ {
+     const File f (filenames[0]);
+ 
+     if (f.exists() && (f.isDirectory() == isDir))
+         setCurrentFile (f, true);
+-
+-    return true;
+ }
+ 
+ //==============================================================================
+diff -ru ejuce-20080607_orig/src/ejuce_appframework/gui/components/controls/ejuce_FilenameInput.h ejuce-20080607/src/ejuce_appframework/gui/components/controls/ejuce_FilenameInput.h
+--- ejuce-20080607_orig/src/ejuce_appframework/gui/components/controls/ejuce_FilenameInput.h	2008-06-07 04:43:11.000000000 +0200
++++ ejuce-20080607/src/ejuce_appframework/gui/components/controls/ejuce_FilenameInput.h	2008-06-07 04:58:25.000000000 +0200
+@@ -167,7 +167,7 @@
+     /** @internal */
+     void lookAndFeelChanged();
+     /** @internal */
+-    bool filesDropped (const StringArray& filenames, int mouseX, int mouseY);
++    void filesDropped (const StringArray& filenames, int mouseX, int mouseY);
+ 
+     //==============================================================================
+     juce_UseDebuggingNewOperator
+diff -ru ejuce-20080607_orig/src/ejuce_appframework/gui/components/controls/ejuce_Joystick.cpp ejuce-20080607/src/ejuce_appframework/gui/components/controls/ejuce_Joystick.cpp
+--- ejuce-20080607_orig/src/ejuce_appframework/gui/components/controls/ejuce_Joystick.cpp	2008-06-07 04:43:11.000000000 +0200
++++ ejuce-20080607/src/ejuce_appframework/gui/components/controls/ejuce_Joystick.cpp	2008-06-07 04:55:20.000000000 +0200
+@@ -559,7 +559,7 @@
+ 			sendChangeMessage (this);
+ 
+ 		// unbound mouse movements
+-		e.component->enableUnboundedMouseMovement (true, false);
++		e.originalComponent->enableUnboundedMouseMovement (true, false);
+ 		mouseWasHidden = true;
+ 
+ 		repaint(box_x-1,box_y-1,box_w+2,box_h+2);
+@@ -583,7 +583,6 @@
+ 			current_x = x_snap;
+ 			current_y = y_snap;
+ 		}
+-
+ 		if(popupDisplay)
+ 			deleteAndZero (popupDisplay);
+ 
+@@ -606,7 +605,7 @@
+ 
+ 
+ //==============================================================================
+-void Joystick::keyPressed (const KeyPress& key)
++bool Joystick::keyPressed (const KeyPress& key)
+ {
+     if (key.isKeyCode (KeyPress::upKey))
+     {
+@@ -626,11 +625,12 @@
+     }
+     else
+     {
+-        Component::keyPressed (key);
++        return Component::keyPressed (key);
+     }
++  return true;
+ }
+ 
+-void Joystick::keyStateChanged()
++bool Joystick::keyStateChanged()
+ {
+ /*
+     // only forward key events that aren't used by this component
+@@ -642,6 +642,7 @@
+         Component::keyStateChanged();
+     }
+ */
++  return false;
+ }
+ 
+ 
+diff -ru ejuce-20080607_orig/src/ejuce_appframework/gui/components/controls/ejuce_Joystick.h ejuce-20080607/src/ejuce_appframework/gui/components/controls/ejuce_Joystick.h
+--- ejuce-20080607_orig/src/ejuce_appframework/gui/components/controls/ejuce_Joystick.h	2008-06-07 04:43:11.000000000 +0200
++++ ejuce-20080607/src/ejuce_appframework/gui/components/controls/ejuce_Joystick.h	2008-06-07 04:52:08.000000000 +0200
+@@ -194,9 +194,9 @@
+     /** @internal */
+ 	void mouseMove(const MouseEvent& e);
+     /** @internal */
+-	void keyPressed (const KeyPress& key);
++	bool keyPressed (const KeyPress& key);
+     /** @internal */
+-	void keyStateChanged();
++	bool keyStateChanged();
+ 
+     /** @internal */
+ 	void parentSizeChanged();
+diff -ru ejuce-20080607_orig/src/ejuce_appframework/gui/components/filebrowser/ListFileView.cpp ejuce-20080607/src/ejuce_appframework/gui/components/filebrowser/ListFileView.cpp
+--- ejuce-20080607_orig/src/ejuce_appframework/gui/components/filebrowser/ListFileView.cpp	2008-06-07 04:43:11.000000000 +0200
++++ ejuce-20080607/src/ejuce_appframework/gui/components/filebrowser/ListFileView.cpp	2008-06-07 05:00:05.000000000 +0200
+@@ -334,7 +334,7 @@
+ }
+ 
+ //----------------------------------------------------------------------------
+-void ListFileView::keyPressed(const KeyPress &key)
++bool ListFileView::keyPressed(const KeyPress &key)
+ {
+ 	Phil *parent = getPhil();
+ 	//const StringArray& selectedFiles = parent->getCurrentlyHighlightedFiles();
+diff -ru ejuce-20080607_orig/src/ejuce_appframework/gui/components/filebrowser/ListFileView.h ejuce-20080607/src/ejuce_appframework/gui/components/filebrowser/ListFileView.h
+--- ejuce-20080607_orig/src/ejuce_appframework/gui/components/filebrowser/ListFileView.h	2008-06-07 04:43:11.000000000 +0200
++++ ejuce-20080607/src/ejuce_appframework/gui/components/filebrowser/ListFileView.h	2008-06-07 04:59:54.000000000 +0200
+@@ -79,7 +79,7 @@
+ 		I'd have preferred it to be in Phil, but I couldn't think of a sensible
+ 		way of doing that...
+ 	 */
+-	void keyPressed(const KeyPress &key);
++	bool keyPressed(const KeyPress &key);
+ 
+ 	///	Called by Phil to resize the view accordingly.
+ 	void updateSize(int width, int height, long numChildren);
+diff -ru ejuce-20080607_orig/src/ejuce_core/basics/ejuce_StandardHeader.h ejuce-20080607/src/ejuce_core/basics/ejuce_StandardHeader.h
+--- ejuce-20080607_orig/src/ejuce_core/basics/ejuce_StandardHeader.h	2008-06-07 04:43:11.000000000 +0200
++++ ejuce-20080607/src/ejuce_core/basics/ejuce_StandardHeader.h	2008-06-07 04:59:37.000000000 +0200
+@@ -36,10 +36,12 @@
+ //==============================================================================
+ /** Current eJUCE <> JUCE compatibility check. */
+ #define EJUCE_JUCE_MAJOR      1
+-#define EJUCE_JUCE_MINOR      39
++#define EJUCE_JUCE_MINOR      45
+ 
+-#if JUCE_VERSION != ((EJUCE_JUCE_MAJOR << 16) + (EJUCE_JUCE_MINOR << 8))
+-  #error Your JUCE version isn't compatible with this version of EJUCE !
++#define EJUCE_JUCE_VERSION    ((EJUCE_JUCE_MAJOR << 16) + (EJUCE_JUCE_MINOR << 8))
++
++#if 0 // JUCE_VERSION != EJUCE_JUCE_VERSION
++  #warning Your JUCE version isnt compatible with this version of EJUCE (JUCE_VERSION != EJUCE_JUCE_VERSION) !
+ #endif
+ 
+ //==============================================================================

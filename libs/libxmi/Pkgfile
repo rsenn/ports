@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: C/C++ function library for rasterizing 2-D vector graphics
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libxmi
+version=1.2
+release=1
+source=(http://ftp.uni-heidelberg.de/ftp/pub/gnu/libxmi/libxmi-$version.tar.gz)
+
+build()
+{
+  cd libxmi-$version
+
+  libtoolize --force --copy
+  aclocal --force
+  automake --force --copy --foreign --add-missing
+  aclocal --force
+  autoconf --force
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix" \
+       --infodir="$prefix/share/info"
+
+  make
+  make DESTDIR="$PKG" install
+}

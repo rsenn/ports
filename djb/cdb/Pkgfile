@@ -1,0 +1,30 @@
+# $Id: Pkgfile,v 1.3 2007/05/09 21:02:55 roman Exp $
+#
+# Description: 
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=cdb
+version=0.75
+release=1
+source=(http://cr.yp.to/cdb/cdb-$version.tar.gz
+        cdb-0.75-errno.patch)
+
+build()
+{
+  cd cdb-$version
+
+  patch -N -p1 -i $SRC/cdb-0.75-errno.patch
+
+  echo "${CC-cc} $CFLAGS -include errno.h" >cc-conf
+  echo "$ROOT" >conf-home
+
+  make
+
+  mkdir -p $ROOT/lib
+  make install setup
+
+  $AR cru $ROOT/lib/libcdb.a *.o
+  $RANLIB $ROOT/lib/libcdb.a
+}

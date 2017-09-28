@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A package manager.
+#  The Mongoose Package Manager is a full featured packager, supporting
+#  installation from source, advanced dependency resolution, and optional
+#  features.
+#  .
+# URL: http://www.nongnu.org/mpak
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=mpak
+version=0.0.1
+release=1
+source=(http://savannah.nongnu.org/download/mpak/mpak-0.0.1.tar.bz2)
+
+build()
+{
+  cd mpak-0.0.1
+./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+make
+make DESTDIR="$PKG" install
+}
+
+# EOF

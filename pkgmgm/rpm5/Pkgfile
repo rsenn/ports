@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: The RPM Package Manager (RPM) is a powerful command line driven package management system capable of installing, uninstalling, verifying, querying, and updating software packages. Each software package consists of an archive of files along with information about the package like its version, a description, etc. It also includes the RPM C library and header files. These development files will simplify the process of writing programs which manipulate RPM packages and databases and are intended to make it easier to create graphical package managers or any other tools that need an intimate knowledge of RPM packages in order to function.
+# URL: http://rpm5.org
+# Maintainer: 
+# Depends on: 
+
+name=rpm5
+version=5.1.8
+release=1
+source=(http://rpm5.org/files/rpm/rpm-${version%.*}/rpm-$version.tar.gz)
+
+build() 
+{
+  cd rpm-$version
+  
+  #./autogen.sh
+  
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+  
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

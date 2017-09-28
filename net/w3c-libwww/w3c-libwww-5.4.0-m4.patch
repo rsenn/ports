@@ -1,0 +1,46 @@
+--- w3c-libwww-5.4.0_orig/acinclude.m4	1998-06-03 17:58:09.000000000 +0200
++++ w3c-libwww-5.4.0/acinclude.m4	2007-08-15 11:44:03.000000000 +0200
+@@ -251,19 +251,6 @@
+ done
+ ])
+ 
+-dnl AC_C_VOLATILE
+-AC_DEFUN(AC_C_VOLATILE,
+-[ AC_MSG_CHECKING([for working volatile])
+-  AC_CACHE_VAL(ac_cv_c_volatile,
+-  [ AC_TRY_COMPILE(,[
+-extern volatile int errno;
+-], ac_cv_c_volatile=yes, ac_cv_c_volatile=no)])dnl
+-  AC_MSG_RESULT($ac_cv_c_volatile)
+-if test $ac_cv_c_volatile = no; then
+-  AC_DEFINE(volatile, )
+-fi
+-])
+-
+ dnl AC_C_NOSHARE
+ AC_DEFUN(AC_C_NOSHARE,
+ [ AC_MSG_CHECKING([for working noshare])
+@@ -403,23 +390,6 @@
+   fi
+ ])
+ 
+-dnl AC_HEADER_TIOCGWINSZ
+-AC_DEFUN(AC_HEADER_TIOCGWINSZ,
+-[ AC_MSG_CHECKING([for TIOCGWINSZ get-window-size capability])
+-  AC_CACHE_VAL(ac_cv_header_tiocgwinsz,
+-  [ AC_HEADER_INCLUDE(tmp_inc_termios, sys/termios.h termios.h)
+-    AC_EGREP_HEADER(yes, [
+-$tmp_inc_termios
+-#ifdef TIOCGWINSZ
+- yes
+-#endif
+-], ac_cv_header_tiocgwinsz=yes, ac_cv_header_tiocgwinsz=no)])dnl
+-  AC_MSG_RESULT($ac_cv_header_tiocgwinsz)
+-if test $ac_cv_header_tiocgwinsz = yes; then
+-  AC_DEFINE(GET_SCREEN_SIZE)
+-fi
+-])
+-
+ dnl AC_SYS_NEED_SIGNAL_RESET
+ dnl If signal handlers need to be reset, define NEED_SIGNAL_RESET
+ AC_DEFUN(AC_SYS_NEED_SIGNAL_RESET, 

@@ -1,0 +1,37 @@
+--- gtk-industrial-engine-0.2.36_orig/gtk1-engine/Makefile.am	2008-10-30 01:53:00.000000000 +0100
++++ gtk-industrial-engine-0.2.36/gtk1-engine/Makefile.am	2008-10-30 01:54:30.000000000 +0100
+@@ -1,13 +1,13 @@
+ SUBDIRS=gtk
+ 
+-INCLUDES = $(GTK_CFLAGS)
++INCLUDES = $(GTK_CFLAGS) -I$(top_srcdir)/gtk-common
+ 
+ enginedir = $(libdir)/gtk/themes/engines
+ engine_LTLIBRARIES = libindustrial.la
+ 
+ libindustrial_la_SOURCES =              	\
+         industrial1_theme_main.c        	\
+-        industrial_style.c			\
++        $(top_srcdir)/gtk-common/industrial_style.c			\
+ 	industrial_style_versioned_include.h	\
+ 	industrial_style_versioned_code.h	\
+         industrial1.h				\
+--- gtk-industrial-engine-0.2.36_orig/gtk2-engine/Makefile.am	2008-10-30 01:53:00.000000000 +0100
++++ gtk-industrial-engine-0.2.36/gtk2-engine/Makefile.am	2008-10-30 01:56:01.000000000 +0100
+@@ -1,6 +1,6 @@
+ SUBDIRS=gtk-2.0
+ 
+-INCLUDES=$(GTK2_CFLAGS)
++INCLUDES=$(GTK2_CFLAGS) -I$(top_srcdir)/gtk-common
+ 
+ enginedir=$(libdir)/gtk-2.0/$(GTK2_VERSION)/engines
+ engine_LTLIBRARIES=libindustrial.la
+@@ -8,7 +8,7 @@
+ libindustrial_la_SOURCES =			\
+ 	industrial_rc_style.c			\
+ 	industrial_rc_style.h			\
+-	industrial_style.c			\
++	$(top_srcdir)/gtk-common/industrial_style.c			\
+ 	industrial_style.h			\
+ 	industrial_style_versioned_code.h	\
+ 	industrial_style_versioned_include.h	\

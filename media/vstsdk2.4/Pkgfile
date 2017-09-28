@@ -1,0 +1,81 @@
+# $Id: Pkgfile,v 1.10 2007/05/10 16:59:30 roman Exp $
+#
+# Package: vstsdk2.4
+# Provides: vstsdk
+# Replaces: vstsdk, vstsdk2.3
+# Description: Steinberg VST plugin infrastructure SDK
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=vstsdk
+version=2.4r1
+release=5
+source=(vst_sdk2_4_rev1.zip)
+
+build()
+{
+#  unzip -o -a vstsdk$version.zip
+
+  cd vstsdk${version%[a-z]*}
+
+  rm -vf public.sdk/source/vst2.x/vst{gui,controls}.cpp
+
+  ${CXX-c++} ${CXXFLAGS--g -O2} -I. -Ipublic.sdk/source/vst2.x -c public.sdk/source/vst2.x/*.cpp
+
+  rm -vf public.sdk/source/vst2.x/vst{gui,controls}.h
+
+  ${AR-ar} src libvstsdk${version%[a-z]*}.a *.o
+
+  install -d $ROOT/lib
+  install -m 644 libvstsdk${version%[a-z]*}.a $ROOT/lib
+
+ # ln -sf libvstsdk${version%[a-z]*}.a $ROOT/lib/libvstsdk.a
+
+  install -d $ROOT/include/vstsdk${version%[a-z]*}
+
+  for file in {public.sdk/source/vst2.x,pluginterfaces/*}/*.{h,c}{,pp}; do
+    if [ -f "$file" ]; then
+      install -d $ROOT/include/vstsdk${version%[a-z]*}/${file%/*}
+      install -m 644 $file $ROOT/include/vstsdk${version%[a-z]*}/$file
+    fi
+  done
+
+  #ln -sf vstsdk${version%[a-z]*} $ROOT/include/vstsdk
+
+  mkdir -p $ROOT/lib/pkgconfig
+  sed >>$ROOT/lib/pkgconfig/vstsdk2.4.pc \
+      -e "s,@prefix@,$prefix,g" \
+<<EOF
+prefix=@prefix@
+exec_prefix=@prefix@
+libdir=@prefix@/lib
+includedir=@prefix@/include
+
+Name: vstsdk2.4
+Description: Steinberg VST plugin architecture SDK v2.4
+Version: 2.4
+Libs: -L\${libdir} -lvstsdk2.4
+Cflags: -DVST_FORCE_DEPRECATED=0 -I\${includedir}/vstsdk2.4
+EOF
+
+  cd $ROOT/include/vstsdk2.4
+
+  ln -sf public.sdk/source/vst2.x/aeffeditor.h AEffEditor.hpp
+  ln -sf public.sdk/source/vst2.x/audioeffectx.h audioeffectx.h
+  ln -sf public.sdk/source/vst2.x/audioeffect.h audioeffect.h
+
+  ln -sf audioeffect.h AudioEffect.hpp
+
+  ln -sf public.sdk/source/vst2.x/audioeffectx.cpp audioeffectx.cpp
+  ln -sf public.sdk/source/vst2.x/audioeffect.cpp AudioEffect.cpp
+  ln -sf public.sdk/source/vst2.x/aeffeditor.h aeffeditor.h
+
+ # install -d $ROOT/include/public.sdk/source/vst2.x
+
+# (cd $ROOT/include/public.sdk/source/vst2.x && ln -sf ../../vstsdk${version%[a-z]*}/* .)
+
+
+# (cd $ROOT/include && ln -sf vstsdk${version%[a-z]*}/*.{h,hpp} .)
+
+}
+

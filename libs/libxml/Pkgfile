@@ -1,0 +1,44 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A library for manipulating XML and HTML resources.
+#  Libxml2 is the XML C library developed for the Gnome project. The
+#  library code is portable (to Linux, Unix, Windows, embedded systems,
+#  etc.) and modular; most of the extensions can be compiled out. Libxml2
+#  implements a number of existing standards related to markup languages,
+#  including the XML standard, Namespaces in XML, XML Base, Relax NG,
+#  RFC 2396, XPath, XPointer, HTML4, XInclude, SGML Catalogs, and XML
+#  Catalogs. In most cases, libxml tries to implement the specifications
+#  in a relatively strict way. To some extent, it provides support for the
+#  following specifications, but doesn't claim to implement them: DOM,
+#  FTP client, HTTP client, and SAX2. Support for W3C XML Schemas is in
+#  progress. It includes xmllint, a command line XML validator.
+# URL: http://xmlsoft.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libxml
+version=1.8.20
+release=1
+source=(ftp://xmlsoft.org/libxml/old/libxml-$version.tar.gz)
+
+build()
+{
+  cd libxml-$version
+
+  libtoolize --force --copy
+  aclocal --force
+  automake --force --copy --foreign --add-missing
+  aclocal --force
+  autoconf --force
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --disable-dependency-tracking \
+      --${shared:=enable}-shared \
+      --${static:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+}

@@ -1,0 +1,4001 @@
+--- gettext-0.17_orig/configure	2008-05-30 14:12:00.000000000 +0200
++++ gettext-0.17/configure	2008-05-30 14:19:34.000000000 +0200
+@@ -1766,6 +1766,8 @@
+ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ ac_compiler_gnu=$ac_cv_c_compiler_gnu
++ac_compiler_msvc=$ac_cv_c_compiler_msvc
++ac_compiler_intel=$ac_cv_c_compiler_intel
+ 
+ 
+ 
+@@ -3816,8 +3818,6 @@
+ ' $ac_file_inputs` in
+ *datarootdir*) ac_datarootdir_seen=yes;;
+ *@datadir@*|*@docdir@*|*@infodir@*|*@localedir@*|*@mandir@*)
+-  { echo "$as_me:$LINENO: WARNING: $ac_file_inputs seems to ignore the --datarootdir setting" >&5
+-echo "$as_me: WARNING: $ac_file_inputs seems to ignore the --datarootdir setting" >&2;}
+ _ACEOF
+ cat >>$CONFIG_STATUS <<_ACEOF
+   ac_datarootdir_hack='
+--- gettext-0.17_orig/gettext-runtime/configure	2008-05-30 14:11:59.000000000 +0200
++++ gettext-0.17/gettext-runtime/configure	2008-05-30 14:18:22.000000000 +0200
+@@ -833,9 +833,10 @@
+ CFLAGS
+ LDFLAGS
+ CPPFLAGS
+-ac_ct_CC
+-EXEEXT
+ OBJEXT
++LIB
++INCLUDE
++EXEEXT
+ DEPDIR
+ am__include
+ am__quote
+@@ -2182,6 +2183,8 @@
+ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ ac_compiler_gnu=$ac_cv_c_compiler_gnu
++ac_compiler_msvc=$ac_cv_c_compiler_msvc
++ac_compiler_intel=$ac_cv_c_compiler_intel
+ 
+ 
+ 
+@@ -2537,13 +2540,13 @@
+ 
+ # Some tools Automake needs.
+ 
+-ACLOCAL=${ACLOCAL-"${am_missing_run}aclocal-${am__api_version}"}
++ACLOCAL=${ACLOCAL-"${am_missing_run}aclocal"}
+ 
+ 
+ AUTOCONF=${AUTOCONF-"${am_missing_run}autoconf"}
+ 
+ 
+-AUTOMAKE=${AUTOMAKE-"${am_missing_run}automake-${am__api_version}"}
++AUTOMAKE=${AUTOMAKE-"${am_missing_run}automake"}
+ 
+ 
+ AUTOHEADER=${AUTOHEADER-"${am_missing_run}autoheader"}
+@@ -2679,6 +2682,8 @@
+ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ ac_compiler_gnu=$ac_cv_c_compiler_gnu
++ac_compiler_msvc=$ac_cv_c_compiler_msvc
++ac_compiler_intel=$ac_cv_c_compiler_intel
+ if test -n "$ac_tool_prefix"; then
+   # Extract the first word of "${ac_tool_prefix}gcc", so it can be a program name with args.
+ set dummy ${ac_tool_prefix}gcc; ac_word=$2
+@@ -2873,11 +2878,8 @@
+ 
+ fi
+ if test -z "$CC"; then
+-  if test -n "$ac_tool_prefix"; then
+-  for ac_prog in cl.exe
+-  do
+-    # Extract the first word of "$ac_tool_prefix$ac_prog", so it can be a program name with args.
+-set dummy $ac_tool_prefix$ac_prog; ac_word=$2
++  # Extract the first word of "icl.exe", so it can be a program name with args.
++set dummy icl.exe; ac_word=$2
+ { echo "$as_me:$LINENO: checking for $ac_word" >&5
+ echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6; }
+ if test "${ac_cv_prog_CC+set}" = set; then
+@@ -2893,7 +2895,7 @@
+   test -z "$as_dir" && as_dir=.
+   for ac_exec_ext in '' $ac_executable_extensions; do
+   if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
+-    ac_cv_prog_CC="$ac_tool_prefix$ac_prog"
++    ac_cv_prog_CC=""
+     echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+     break 2
+   fi
+@@ -2913,22 +2915,17 @@
+ fi
+ 
+ 
+-    test -n "$CC" && break
+-  done
+ fi
+ if test -z "$CC"; then
+-  ac_ct_CC=$CC
+-  for ac_prog in cl.exe
+-do
+-  # Extract the first word of "$ac_prog", so it can be a program name with args.
+-set dummy $ac_prog; ac_word=$2
++  # Extract the first word of "cl.exe", so it can be a program name with args.
++set dummy cl.exe; ac_word=$2
+ { echo "$as_me:$LINENO: checking for $ac_word" >&5
+ echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6; }
+-if test "${ac_cv_prog_ac_ct_CC+set}" = set; then
++if test "${ac_cv_prog_CC+set}" = set; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test -n "$ac_ct_CC"; then
+-  ac_cv_prog_ac_ct_CC="$ac_ct_CC" # Let the user override the test.
++  if test -n "$CC"; then
++  ac_cv_prog_CC="$CC" # Let the user override the test.
+ else
+ as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+ for as_dir in $PATH
+@@ -2937,7 +2934,7 @@
+   test -z "$as_dir" && as_dir=.
+   for ac_exec_ext in '' $ac_executable_extensions; do
+   if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
+-    ac_cv_prog_ac_ct_CC="$ac_prog"
++    ac_cv_prog_CC=""
+     echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+     break 2
+   fi
+@@ -2947,36 +2944,16 @@
+ 
+ fi
+ fi
+-ac_ct_CC=$ac_cv_prog_ac_ct_CC
+-if test -n "$ac_ct_CC"; then
+-  { echo "$as_me:$LINENO: result: $ac_ct_CC" >&5
+-echo "${ECHO_T}$ac_ct_CC" >&6; }
++CC=$ac_cv_prog_CC
++if test -n "$CC"; then
++  { echo "$as_me:$LINENO: result: $CC" >&5
++echo "${ECHO_T}$CC" >&6; }
+ else
+   { echo "$as_me:$LINENO: result: no" >&5
+ echo "${ECHO_T}no" >&6; }
+ fi
+ 
+ 
+-  test -n "$ac_ct_CC" && break
+-done
+-
+-  if test "x$ac_ct_CC" = x; then
+-    CC=""
+-  else
+-    case $cross_compiling:$ac_tool_warned in
+-yes:)
+-{ echo "$as_me:$LINENO: WARNING: In the future, Autoconf will not detect cross-tools
+-whose name does not start with the host triplet.  If you think this
+-configuration is useful to you, please write to autoconf@gnu.org." >&5
+-echo "$as_me: WARNING: In the future, Autoconf will not detect cross-tools
+-whose name does not start with the host triplet.  If you think this
+-configuration is useful to you, please write to autoconf@gnu.org." >&2;}
+-ac_tool_warned=yes ;;
+-esac
+-    CC=$ac_ct_CC
+-  fi
+-fi
+-
+ fi
+ 
+ 
+@@ -2988,8 +2965,41 @@
+ 
+ # Provide some information about the compiler.
+ echo "$as_me:$LINENO: checking for C compiler version" >&5
+-ac_compiler=`set X $ac_compile; echo $2`
+-{ (ac_try="$ac_compiler --version >&5"
++set dummy $CC; ac_compiler=$2
++case $ac_compiler in
++  */*) ac_compiler_name="${ac_compiler##*/}"; ac_compiler_path="$ac_compiler" ;;
++  *) ac_compiler_name="$ac_compiler"; as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
++for as_dir in $PATH
++do
++  IFS=$as_save_IFS
++  test -z "$as_dir" && as_dir=.
++  for ac_exec_ext in '' $ac_executable_extensions; do
++  if { test -f "$as_dir/$ac_compiler$ac_exec_ext" && $as_test_x "$as_dir/$ac_compiler$ac_exec_ext"; }; then
++    ac_compiler_path="$as_dir/$ac_compiler$ac_exec_ext"
++    echo "$as_me:$LINENO: found $as_dir/$ac_compiler$ac_exec_ext" >&5
++    break 2
++  fi
++done
++done
++IFS=$as_save_IFS
++ ;;
++esac
++case $ac_compiler_name in
++  cl.exe|icl.exe)
++    # Windows compilers don't take --version, -v or -V arguments...
++    { (ac_try="$ac_compiler >&5"
++case "(($ac_try" in
++  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
++  *) ac_try_echo=$ac_try;;
++esac
++eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
++  (eval "$ac_compiler >&5") 2>&5
++  ac_status=$?
++  echo "$as_me:$LINENO: \$? = $ac_status" >&5
++  (exit $ac_status); }
++    ;;
++  *)
++    { (ac_try="$ac_compiler --version >&5"
+ case "(($ac_try" in
+   *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+   *) ac_try_echo=$ac_try;;
+@@ -2999,7 +3009,7 @@
+   ac_status=$?
+   echo "$as_me:$LINENO: \$? = $ac_status" >&5
+   (exit $ac_status); }
+-{ (ac_try="$ac_compiler -v >&5"
++    { (ac_try="$ac_compiler -v >&5"
+ case "(($ac_try" in
+   *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+   *) ac_try_echo=$ac_try;;
+@@ -3009,7 +3019,7 @@
+   ac_status=$?
+   echo "$as_me:$LINENO: \$? = $ac_status" >&5
+   (exit $ac_status); }
+-{ (ac_try="$ac_compiler -V >&5"
++    { (ac_try="$ac_compiler -V >&5"
+ case "(($ac_try" in
+   *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+   *) ac_try_echo=$ac_try;;
+@@ -3019,7 +3029,368 @@
+   ac_status=$?
+   echo "$as_me:$LINENO: \$? = $ac_status" >&5
+   (exit $ac_status); }
++    ;;
++esac
++
++{ echo "$as_me:$LINENO: checking for suffix of object files" >&5
++echo $ECHO_N "checking for suffix of object files... $ECHO_C" >&6; }
++if test "${ac_cv_objext+set}" = set; then
++  echo $ECHO_N "(cached) $ECHO_C" >&6
++else
++  cat >conftest.$ac_ext <<_ACEOF
++/* confdefs.h.  */
++_ACEOF
++cat confdefs.h >>conftest.$ac_ext
++cat >>conftest.$ac_ext <<_ACEOF
++/* end confdefs.h.  */
++
++int
++main ()
++{
++
++  ;
++  return 0;
++}
++_ACEOF
++rm -f conftest.o conftest.obj
++if { (ac_try="$ac_compile"
++case "(($ac_try" in
++  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
++  *) ac_try_echo=$ac_try;;
++esac
++eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
++  (eval "$ac_compile") 2>&5
++  ac_status=$?
++  echo "$as_me:$LINENO: \$? = $ac_status" >&5
++  (exit $ac_status); }; then
++  for ac_file in conftest.o conftest.obj conftest.*; do
++  test -f "$ac_file" || continue;
++  case $ac_file in
++    *.$ac_ext | *.xcoff | *.tds | *.d | *.pdb | *.xSYM | *.bb | *.bbg | *.map | *.inf ) ;;
++    *) ac_cv_objext=`expr "$ac_file" : '.*\.\(.*\)'`
++       break;;
++  esac
++done
++else
++  echo "$as_me: failed program was:" >&5
++sed 's/^/| /' conftest.$ac_ext >&5
++
++{ { echo "$as_me:$LINENO: error: cannot compute suffix of object files: cannot compile
++See \`config.log' for more details." >&5
++echo "$as_me: error: cannot compute suffix of object files: cannot compile
++See \`config.log' for more details." >&2;}
++   { (exit 1); exit 1; }; }
++fi
++
++rm -f conftest.$ac_cv_objext conftest.$ac_ext
++fi
++{ echo "$as_me:$LINENO: result: $ac_cv_objext" >&5
++echo "${ECHO_T}$ac_cv_objext" >&6; }
++OBJEXT=$ac_cv_objext
++ac_objext=$OBJEXT
++{ echo "$as_me:$LINENO: checking whether we are using the GNU C compiler" >&5
++echo $ECHO_N "checking whether we are using the GNU C compiler... $ECHO_C" >&6; }
++if test "${ac_cv_c_compiler_gnu+set}" = set; then
++  echo $ECHO_N "(cached) $ECHO_C" >&6
++else
++  cat >conftest.$ac_ext <<_ACEOF
++/* confdefs.h.  */
++_ACEOF
++cat confdefs.h >>conftest.$ac_ext
++cat >>conftest.$ac_ext <<_ACEOF
++/* end confdefs.h.  */
++
++int
++main ()
++{
++#ifndef __GNUC__
++       choke me
++#endif
++
++  ;
++  return 0;
++}
++_ACEOF
++rm -f conftest.$ac_objext
++if { (ac_try="$ac_compile"
++case "(($ac_try" in
++  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
++  *) ac_try_echo=$ac_try;;
++esac
++eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
++  (eval "$ac_compile") 2>conftest.er1
++  ac_status=$?
++  grep -v '^ *+' conftest.er1 >conftest.err
++  rm -f conftest.er1
++  cat conftest.err >&5
++  echo "$as_me:$LINENO: \$? = $ac_status" >&5
++  (exit $ac_status); } && {
++	 test -z "$ac_c_werror_flag" ||
++	 test ! -s conftest.err
++       } && test -s conftest.$ac_objext; then
++  ac_compiler_gnu=yes
++else
++  echo "$as_me: failed program was:" >&5
++sed 's/^/| /' conftest.$ac_ext >&5
+ 
++	ac_compiler_gnu=no
++fi
++
++rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
++ac_cv_c_compiler_gnu=$ac_compiler_gnu
++
++fi
++{ echo "$as_me:$LINENO: result: $ac_cv_c_compiler_gnu" >&5
++echo "${ECHO_T}$ac_cv_c_compiler_gnu" >&6; }
++if test "$ac_compiler_gnu" != yes
++then
++  { echo "$as_me:$LINENO: checking whether we are using the Visual C++ compiler" >&5
++echo $ECHO_N "checking whether we are using the Visual C++ compiler... $ECHO_C" >&6; }
++if test "${ac_cv_c_compiler_msvc+set}" = set; then
++  echo $ECHO_N "(cached) $ECHO_C" >&6
++else
++  cat >conftest.$ac_ext <<_ACEOF
++/* confdefs.h.  */
++_ACEOF
++cat confdefs.h >>conftest.$ac_ext
++cat >>conftest.$ac_ext <<_ACEOF
++/* end confdefs.h.  */
++
++int
++main ()
++{
++#ifndef _MSC_VER
++       choke me
++#endif
++
++  ;
++  return 0;
++}
++_ACEOF
++rm -f conftest.$ac_objext
++if { (ac_try="$ac_compile"
++case "(($ac_try" in
++  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
++  *) ac_try_echo=$ac_try;;
++esac
++eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
++  (eval "$ac_compile") 2>conftest.er1
++  ac_status=$?
++  grep -v '^ *+' conftest.er1 >conftest.err
++  rm -f conftest.er1
++  cat conftest.err >&5
++  echo "$as_me:$LINENO: \$? = $ac_status" >&5
++  (exit $ac_status); } && {
++	 test -z "$ac_c_werror_flag" ||
++	 test ! -s conftest.err
++       } && test -s conftest.$ac_objext; then
++  ac_compiler_msvc=yes
++else
++  echo "$as_me: failed program was:" >&5
++sed 's/^/| /' conftest.$ac_ext >&5
++
++	ac_compiler_msvc=no
++fi
++
++rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
++ac_cv_c_compiler_msvc=$ac_compiler_msvc
++
++fi
++{ echo "$as_me:$LINENO: result: $ac_cv_c_compiler_msvc" >&5
++echo "${ECHO_T}$ac_cv_c_compiler_msvc" >&6; }
++  if test "$ac_compiler_msvc" = yes
++  then
++    { echo "$as_me:$LINENO: checking whether we are using the Intel C++ compiler" >&5
++echo $ECHO_N "checking whether we are using the Intel C++ compiler... $ECHO_C" >&6; }
++if test "${ac_cv_c_compiler_intel+set}" = set; then
++  echo $ECHO_N "(cached) $ECHO_C" >&6
++else
++  cat >conftest.$ac_ext <<_ACEOF
++/* confdefs.h.  */
++_ACEOF
++cat confdefs.h >>conftest.$ac_ext
++cat >>conftest.$ac_ext <<_ACEOF
++/* end confdefs.h.  */
++
++int
++main ()
++{
++#ifndef __INTEL_COMPILER
++       choke me
++#endif
++
++  ;
++  return 0;
++}
++_ACEOF
++rm -f conftest.$ac_objext
++if { (ac_try="$ac_compile"
++case "(($ac_try" in
++  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
++  *) ac_try_echo=$ac_try;;
++esac
++eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
++  (eval "$ac_compile") 2>conftest.er1
++  ac_status=$?
++  grep -v '^ *+' conftest.er1 >conftest.err
++  rm -f conftest.er1
++  cat conftest.err >&5
++  echo "$as_me:$LINENO: \$? = $ac_status" >&5
++  (exit $ac_status); } && {
++	 test -z "$ac_c_werror_flag" ||
++	 test ! -s conftest.err
++       } && test -s conftest.$ac_objext; then
++  ac_compiler_intel=yes
++else
++  echo "$as_me: failed program was:" >&5
++sed 's/^/| /' conftest.$ac_ext >&5
++
++	ac_compiler_intel=no
++fi
++
++rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
++ac_cv_c_compiler_intel=$ac_compiler_intel
++
++fi
++{ echo "$as_me:$LINENO: result: $ac_cv_c_compiler_intel" >&5
++echo "${ECHO_T}$ac_cv_c_compiler_intel" >&6; }
++  fi
++fi
++GCC=`test "$ac_compiler_gnu" = yes && echo yes`
++MSVC=`test "$ac_compiler_msvc" = yes && echo yes`
++INTELC=`test "$ac_compiler_intel" = yes && echo yes`
++if test "$MSVC" = yes; then
++
++  ac_env_prefix_MSVC="${ac_compiler_path%/[Bb]in/*}"
++#  ac_env_paths="$ac_env_prefix_MSVC"
++
++  if test "$INTELC" = yes; then
++    # Extract the first word of "link.exe", so it can be a program name with args.
++set dummy link.exe; ac_word=$2
++{ echo "$as_me:$LINENO: checking for $ac_word" >&5
++echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6; }
++if test "${ac_cv_prog_LINK+set}" = set; then
++  echo $ECHO_N "(cached) $ECHO_C" >&6
++else
++  if test -n "$LINK"; then
++  ac_cv_prog_LINK="$LINK" # Let the user override the test.
++else
++as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
++for as_dir in $PATH
++do
++  IFS=$as_save_IFS
++  test -z "$as_dir" && as_dir=.
++  for ac_exec_ext in '' $ac_executable_extensions; do
++  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
++    ac_cv_prog_LINK="link.exe"
++    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
++    break 2
++  fi
++done
++done
++IFS=$as_save_IFS
++
++fi
++fi
++LINK=$ac_cv_prog_LINK
++if test -n "$LINK"; then
++  { echo "$as_me:$LINENO: result: $LINK" >&5
++echo "${ECHO_T}$LINK" >&6; }
++else
++  { echo "$as_me:$LINENO: result: no" >&5
++echo "${ECHO_T}no" >&6; }
++fi
++
++
++    test -z "$LINK" && { { echo "$as_me:$LINENO: error: the Intel C++ compiler for Visual Studio needs the link.exe from Visual Studio in \$PATH
++See \`config.log' for more details." >&5
++echo "$as_me: error: the Intel C++ compiler for Visual Studio needs the link.exe from Visual Studio in \$PATH
++See \`config.log' for more details." >&2;}
++   { (exit 1); exit 1; }; }
++
++    ac_env_prefix_INTELC="$ac_env_prefix_MSVC"
++    ac_env_prefix_MSVC="${as_dir%/[Bb]in}"
++
++#    ac_env_paths="$ac_env_paths:$ac_env_prefix_MSVC"
++  fi
++
++  { echo "$as_me:$LINENO: checking for the Windows SDK directory" >&5
++echo $ECHO_N "checking for the Windows SDK directory... $ECHO_C" >&6; }
++
++  # in Visual C++ 8.0 it is in VC/PlatformSDK
++  if test -d "$ac_env_prefix_MSVC/PlatformSDK/"; then
++    ac_env_prefix_WINSDK="$ac_env_prefix_MSVC/PlatformSDK"
++  else
++    # Check for the ildasm.exe tool which accompanies SDKs >= v6.0
++    as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
++for as_dir in $PATH
++do
++  IFS=$as_save_IFS
++  test -z "$as_dir" && as_dir=.
++  for ac_exec_ext in '' $ac_executable_extensions; do
++  if { test -f "$as_dir/ildasm.exe$ac_exec_ext" && $as_test_x "$as_dir/ildasm.exe$ac_exec_ext"; }; then
++    ac_cv_path_ILDASM="$as_dir/ildasm.exe$ac_exec_ext"
++    echo "$as_me:$LINENO: found $as_dir/ildasm.exe$ac_exec_ext" >&5
++    break 2
++  fi
++done
++done
++IFS=$as_save_IFS
++
++
++    if test -n "$ac_cv_path_ILDASM"; then
++      ac_env_prefix_WINSDK="${ac_cv_path_ILDASM%/[Bb]in/*}"
++    else
++      # Still not found? Walk through paths until we find a kernel32.lib in the subdir "Lib".
++      as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
++      for as_bindir in $PATH; do
++        as_dir=${as_bindir%/[Bb]in}
++        for as_subdir in lib Lib; do
++          if test -d "$as_dir/$as_subdir/"; then
++            for ac_word in kernel32.lib Kernel32.Lib; do
++              if test -f "$as_dir/$as_subdir/$ac_word"; then
++                ac_env_prefix_WINSDK="$as_dir"
++                break 3
++              fi
++            done
++          fi
++        done
++      done
++      IFS=$as_save_IFS
++    fi
++
++    test -z "$ac_env_prefix_WINSDK" && { { echo "$as_me:$LINENO: error: could not find the Windows SDK in \$PATH
++See \`config.log' for more details." >&5
++echo "$as_me: error: could not find the Windows SDK in \$PATH
++See \`config.log' for more details." >&2;}
++   { (exit 1); exit 1; }; }
++  fi
++
++  { echo "$as_me:$LINENO: result: $ac_env_prefix_WINSDK" >&5
++echo "${ECHO_T}$ac_env_prefix_WINSDK" >&6; }
++
++  for as_dir in $ac_env_prefix_WINSDK $ac_env_prefix_MSVC $ac_env_prefix_INTELC; do
++    for as_subdir in lib Lib; do
++      if test -d "$as_dir/$as_subdir/"; then
++        LIB="$as_dir/$as_subdir${LIB:+;$LIB}"
++        break
++      fi
++    done
++    for as_subdir in include Include; do
++      if test -d "$as_dir/$as_subdir/"; then
++        INCLUDE="$as_dir/$as_subdir${INCLUDE:+;$INCLUDE}"
++        break
++      fi
++    done
++  done
++  export LIB INCLUDE
++
++  echo "$as_me:$LINENO: environment variable LIB='$LIB'" >&5
++  echo "$as_me:$LINENO: environment variable INCLUDE='$INCLUDE'" >&5
++
++
++
++fi
+ cat >conftest.$ac_ext <<_ACEOF
+ /* confdefs.h.  */
+ _ACEOF
+@@ -3207,128 +3578,22 @@
+ rm -f conftest.$ac_ext
+ EXEEXT=$ac_cv_exeext
+ ac_exeext=$EXEEXT
+-{ echo "$as_me:$LINENO: checking for suffix of object files" >&5
+-echo $ECHO_N "checking for suffix of object files... $ECHO_C" >&6; }
+-if test "${ac_cv_objext+set}" = set; then
+-  echo $ECHO_N "(cached) $ECHO_C" >&6
+-else
+-  cat >conftest.$ac_ext <<_ACEOF
+-/* confdefs.h.  */
+-_ACEOF
+-cat confdefs.h >>conftest.$ac_ext
+-cat >>conftest.$ac_ext <<_ACEOF
+-/* end confdefs.h.  */
+-
+-int
+-main ()
+-{
+-
+-  ;
+-  return 0;
+-}
+-_ACEOF
+-rm -f conftest.o conftest.obj
+-if { (ac_try="$ac_compile"
+-case "(($ac_try" in
+-  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+-  *) ac_try_echo=$ac_try;;
+-esac
+-eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
+-  (eval "$ac_compile") 2>&5
+-  ac_status=$?
+-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+-  (exit $ac_status); }; then
+-  for ac_file in conftest.o conftest.obj conftest.*; do
+-  test -f "$ac_file" || continue;
+-  case $ac_file in
+-    *.$ac_ext | *.xcoff | *.tds | *.d | *.pdb | *.xSYM | *.bb | *.bbg | *.map | *.inf ) ;;
+-    *) ac_cv_objext=`expr "$ac_file" : '.*\.\(.*\)'`
+-       break;;
+-  esac
+-done
+-else
+-  echo "$as_me: failed program was:" >&5
+-sed 's/^/| /' conftest.$ac_ext >&5
+-
+-{ { echo "$as_me:$LINENO: error: cannot compute suffix of object files: cannot compile
+-See \`config.log' for more details." >&5
+-echo "$as_me: error: cannot compute suffix of object files: cannot compile
+-See \`config.log' for more details." >&2;}
+-   { (exit 1); exit 1; }; }
+-fi
+-
+-rm -f conftest.$ac_cv_objext conftest.$ac_ext
+-fi
+-{ echo "$as_me:$LINENO: result: $ac_cv_objext" >&5
+-echo "${ECHO_T}$ac_cv_objext" >&6; }
+-OBJEXT=$ac_cv_objext
+-ac_objext=$OBJEXT
+-{ echo "$as_me:$LINENO: checking whether we are using the GNU C compiler" >&5
+-echo $ECHO_N "checking whether we are using the GNU C compiler... $ECHO_C" >&6; }
+-if test "${ac_cv_c_compiler_gnu+set}" = set; then
+-  echo $ECHO_N "(cached) $ECHO_C" >&6
+-else
+-  cat >conftest.$ac_ext <<_ACEOF
+-/* confdefs.h.  */
+-_ACEOF
+-cat confdefs.h >>conftest.$ac_ext
+-cat >>conftest.$ac_ext <<_ACEOF
+-/* end confdefs.h.  */
+-
+-int
+-main ()
+-{
+-#ifndef __GNUC__
+-       choke me
+-#endif
+-
+-  ;
+-  return 0;
+-}
+-_ACEOF
+-rm -f conftest.$ac_objext
+-if { (ac_try="$ac_compile"
+-case "(($ac_try" in
+-  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+-  *) ac_try_echo=$ac_try;;
+-esac
+-eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
+-  (eval "$ac_compile") 2>conftest.er1
+-  ac_status=$?
+-  grep -v '^ *+' conftest.er1 >conftest.err
+-  rm -f conftest.er1
+-  cat conftest.err >&5
+-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+-  (exit $ac_status); } && {
+-	 test -z "$ac_c_werror_flag" ||
+-	 test ! -s conftest.err
+-       } && test -s conftest.$ac_objext; then
+-  ac_compiler_gnu=yes
+-else
+-  echo "$as_me: failed program was:" >&5
+-sed 's/^/| /' conftest.$ac_ext >&5
+-
+-	ac_compiler_gnu=no
+-fi
+-
+-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+-ac_cv_c_compiler_gnu=$ac_compiler_gnu
+-
+-fi
+-{ echo "$as_me:$LINENO: result: $ac_cv_c_compiler_gnu" >&5
+-echo "${ECHO_T}$ac_cv_c_compiler_gnu" >&6; }
+-GCC=`test $ac_compiler_gnu = yes && echo yes`
+ ac_test_CFLAGS=${CFLAGS+set}
+ ac_save_CFLAGS=$CFLAGS
+-{ echo "$as_me:$LINENO: checking whether $CC accepts -g" >&5
+-echo $ECHO_N "checking whether $CC accepts -g... $ECHO_C" >&6; }
++if test "$MSVC" = yes; then
++  ac_c_debug_flag="-Zi"
++else
++  ac_c_debug_flag="-g"
++fi
++{ echo "$as_me:$LINENO: checking whether $CC accepts $ac_c_debug_flag" >&5
++echo $ECHO_N "checking whether $CC accepts $ac_c_debug_flag... $ECHO_C" >&6; }
+ if test "${ac_cv_prog_cc_g+set}" = set; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+   ac_save_c_werror_flag=$ac_c_werror_flag
+    ac_c_werror_flag=yes
+    ac_cv_prog_cc_g=no
+-   CFLAGS="-g"
++   CFLAGS="$ac_c_debug_flag"
+    cat >conftest.$ac_ext <<_ACEOF
+ /* confdefs.h.  */
+ _ACEOF
+@@ -3405,7 +3670,7 @@
+ sed 's/^/| /' conftest.$ac_ext >&5
+ 
+ 	ac_c_werror_flag=$ac_save_c_werror_flag
+-	 CFLAGS="-g"
++	 CFLAGS="$ac_c_debug_flag"
+ 	 cat >conftest.$ac_ext <<_ACEOF
+ /* confdefs.h.  */
+ _ACEOF
+@@ -3460,18 +3725,21 @@
+ if test "$ac_test_CFLAGS" = set; then
+   CFLAGS=$ac_save_CFLAGS
+ elif test $ac_cv_prog_cc_g = yes; then
+-  if test "$GCC" = yes; then
+-    CFLAGS="-g -O2"
++  if test "$GCC" = yes || test "$MSVC" = yes; then
++    CFLAGS="$ac_c_debug_flag -O2"
+   else
+-    CFLAGS="-g"
++    CFLAGS="$ac_c_debug_flag"
+   fi
+ else
+-  if test "$GCC" = yes; then
++  if test "$GCC" = yes || test "$MSVC" = yes; then
+     CFLAGS="-O2"
+   else
+     CFLAGS=
+   fi
+ fi
++if test "$MSVC" = yes; then
++  CFLAGS="-nologo $CFLAGS"
++fi
+ { echo "$as_me:$LINENO: checking for $CC option to accept ISO C89" >&5
+ echo $ECHO_N "checking for $CC option to accept ISO C89... $ECHO_C" >&6; }
+ if test "${ac_cv_prog_cc_c89+set}" = set; then
+@@ -3592,6 +3860,8 @@
+ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ ac_compiler_gnu=$ac_cv_c_compiler_gnu
++ac_compiler_msvc=$ac_cv_c_compiler_msvc
++ac_compiler_intel=$ac_cv_c_compiler_intel
+ DEPDIR="${am__leading_dot}deps"
+ 
+ ac_config_commands="$ac_config_commands depfiles"
+@@ -3915,6 +4185,8 @@
+ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ ac_compiler_gnu=$ac_cv_c_compiler_gnu
++ac_compiler_msvc=$ac_cv_c_compiler_msvc
++ac_compiler_intel=$ac_cv_c_compiler_intel
+ { echo "$as_me:$LINENO: checking how to run the C preprocessor" >&5
+ echo $ECHO_N "checking how to run the C preprocessor... $ECHO_C" >&6; }
+ # On Suns, sometimes $CPP names a directory.
+@@ -4139,6 +4411,8 @@
+ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ ac_compiler_gnu=$ac_cv_c_compiler_gnu
++ac_compiler_msvc=$ac_cv_c_compiler_msvc
++ac_compiler_intel=$ac_cv_c_compiler_intel
+ 
+ 
+ { echo "$as_me:$LINENO: checking for grep that handles long lines and -e" >&5
+@@ -4389,23 +4663,23 @@
+         if $JAVAC --version 2>/dev/null | sed -e 1q | grep gcj > /dev/null; then
+             if $JAVAC --version 2>/dev/null | sed -e 's,^[^0-9]*,,' -e 1q | sed -e '/^4\.[012]/d' | grep '^[4-9]' >/dev/null; then
+                         rm -f conftest.class
+-        if { echo "$as_me:4392: $JAVAC -d . conftest.java" >&5
++        if { echo "$as_me:4666: $JAVAC -d . conftest.java" >&5
+              $JAVAC -d . conftest.java >&5 2>&1
+            } \
+            && test -f conftest.class \
+            && expr `func_classfile_version conftest.class` '<=' $cfversion >/dev/null 2>&5; then
+                     rm -f conftest.class
+           rm -f conftestfail.class
+-          if { echo "$as_me:4399: $JAVAC -fsource=$source_version -d . conftest.java" >&5
++          if { echo "$as_me:4673: $JAVAC -fsource=$source_version -d . conftest.java" >&5
+                $JAVAC -fsource="$source_version" -d . conftest.java >&5 2>&1
+              } \
+              && test -f conftest.class \
+              && expr `func_classfile_version conftest.class` '<=' $cfversion >/dev/null 2>&5 \
+-             && { echo "$as_me:4404: $JAVAC -d . conftestfail.java" >&5
++             && { echo "$as_me:4678: $JAVAC -d . conftestfail.java" >&5
+                   $JAVAC -d . conftestfail.java >&5 2>&1
+                 } \
+              && test -f conftestfail.class \
+-             && ! { echo "$as_me:4408: $JAVAC -fsource=$source_version -d . conftestfail.java" >&5
++             && ! { echo "$as_me:4682: $JAVAC -fsource=$source_version -d . conftestfail.java" >&5
+                     $JAVAC -fsource="$source_version" -d . conftestfail.java >&5 2>&1
+                   }; then
+             CONF_JAVAC="$JAVAC -fsource=$source_version"
+@@ -4419,7 +4693,7 @@
+         else
+                     rm -f conftest.class
+           rm -f conftestfail.class
+-          if { echo "$as_me:4422: $JAVAC -fsource=$source_version -ftarget=$target_version -d . conftest.java" >&5
++          if { echo "$as_me:4696: $JAVAC -fsource=$source_version -ftarget=$target_version -d . conftest.java" >&5
+                $JAVAC -fsource="$source_version" -ftarget="$target_version" -d . conftest.java >&5 2>&1
+              } \
+              && test -f conftest.class \
+@@ -4432,7 +4706,7 @@
+       else
+                 if test "$target_version" = 1.4 && test "$source_version" = 1.4; then
+                     rm -f conftest.class
+-          if { echo "$as_me:4435: $JAVAC -d . conftest.java" >&5
++          if { echo "$as_me:4709: $JAVAC -d . conftest.java" >&5
+                $JAVAC -d . conftest.java >&5 2>&1
+              } \
+              && test -f conftest.class; then
+@@ -4444,7 +4718,7 @@
+           if test "$target_version" = 1.4 && test "$source_version" = 1.3; then
+                                     javac_works=
+             rm -f conftest.class
+-            if { echo "$as_me:4447: $JAVAC -d . conftest.java" >&5
++            if { echo "$as_me:4721: $JAVAC -d . conftest.java" >&5
+                  $JAVAC -d . conftest.java >&5 2>&1
+                } \
+                && test -f conftest.class; then
+@@ -4452,7 +4726,7 @@
+             fi
+             javac_noassert_works=
+             rm -f conftest.class
+-            if { echo "$as_me:4455: $JAVAC -fno-assert -d . conftest.java" >&5
++            if { echo "$as_me:4729: $JAVAC -fno-assert -d . conftest.java" >&5
+                  $JAVAC -fno-assert -d . conftest.java >&5 2>&1
+                } \
+                && test -f conftest.class; then
+@@ -4460,11 +4734,11 @@
+             fi
+             if test -n "$javac_works" && test -n "$javac_noassert_works"; then
+               rm -f conftestfail.class
+-              if { echo "$as_me:4463: $JAVAC -d . conftestfail.java" >&5
++              if { echo "$as_me:4737: $JAVAC -d . conftestfail.java" >&5
+                    $JAVAC -d . conftestfail.java >&5 2>&1
+                  } \
+                  && test -f conftestfail.class \
+-                 && ! { echo "$as_me:4467: $JAVAC -fno-assert -d . conftestfail.java" >&5
++                 && ! { echo "$as_me:4741: $JAVAC -fno-assert -d . conftestfail.java" >&5
+                         $JAVAC -fno-assert -d . conftestfail.java >&5 2>&1
+                       }; then
+                                 javac_works=
+@@ -4486,23 +4760,23 @@
+       fi
+     else
+                   rm -f conftest.class
+-      if { echo "$as_me:4489: $JAVAC -d . conftest.java" >&5
++      if { echo "$as_me:4763: $JAVAC -d . conftest.java" >&5
+            $JAVAC -d . conftest.java >&5 2>&1
+          } \
+          && test -f conftest.class \
+          && expr `func_classfile_version conftest.class` '<=' $cfversion >/dev/null 2>&5; then
+                 rm -f conftest.class
+         rm -f conftestfail.class
+-        if { echo "$as_me:4496: $JAVAC -source $source_version -d . conftest.java" >&5
++        if { echo "$as_me:4770: $JAVAC -source $source_version -d . conftest.java" >&5
+              $JAVAC -source "$source_version" -d . conftest.java >&5 2>&1
+            } \
+            && test -f conftest.class \
+            && expr `func_classfile_version conftest.class` '<=' $cfversion >/dev/null 2>&5 \
+-           && { echo "$as_me:4501: $JAVAC -d . conftestfail.java" >&5
++           && { echo "$as_me:4775: $JAVAC -d . conftestfail.java" >&5
+                 $JAVAC -d . conftestfail.java >&5 2>&1
+               } \
+            && test -f conftestfail.class \
+-           && ! { echo "$as_me:4505: $JAVAC -source $source_version -d . conftestfail.java" >&5
++           && ! { echo "$as_me:4779: $JAVAC -source $source_version -d . conftestfail.java" >&5
+                   $JAVAC -source "$source_version" -d . conftestfail.java >&5 2>&1
+                 }; then
+           CONF_JAVAC="$JAVAC -source $source_version"
+@@ -4515,23 +4789,23 @@
+         fi
+       else
+                         rm -f conftest.class
+-        if { echo "$as_me:4518: $JAVAC -target $target_version -d . conftest.java" >&5
++        if { echo "$as_me:4792: $JAVAC -target $target_version -d . conftest.java" >&5
+              $JAVAC -target "$target_version" -d . conftest.java >&5 2>&1
+            } \
+            && test -f conftest.class \
+            && expr `func_classfile_version conftest.class` '<=' $cfversion >/dev/null 2>&5; then
+                     rm -f conftest.class
+           rm -f conftestfail.class
+-          if { echo "$as_me:4525: $JAVAC -target $target_version -source $source_version -d . conftest.java" >&5
++          if { echo "$as_me:4799: $JAVAC -target $target_version -source $source_version -d . conftest.java" >&5
+                $JAVAC -target "$target_version" -source "$source_version" -d . conftest.java >&5 2>&1
+              } \
+              && test -f conftest.class \
+              && expr `func_classfile_version conftest.class` '<=' $cfversion >/dev/null 2>&5 \
+-             && { echo "$as_me:4530: $JAVAC -target $target_version -d . conftestfail.java" >&5
++             && { echo "$as_me:4804: $JAVAC -target $target_version -d . conftestfail.java" >&5
+                   $JAVAC -target "$target_version" -d . conftestfail.java >&5 2>&1
+                 } \
+              && test -f conftestfail.class \
+-             && ! { echo "$as_me:4534: $JAVAC -target $target_version -source $source_version -d . conftestfail.java" >&5
++             && ! { echo "$as_me:4808: $JAVAC -target $target_version -source $source_version -d . conftestfail.java" >&5
+                     $JAVAC -target "$target_version" -source "$source_version" -d . conftestfail.java >&5 2>&1
+                   }; then
+             CONF_JAVAC="$JAVAC -target $target_version -source $source_version"
+@@ -4544,7 +4818,7 @@
+           fi
+         else
+                                         rm -f conftest.class
+-          if { echo "$as_me:4547: $JAVAC -target $target_version -source $source_version -d . conftest.java" >&5
++          if { echo "$as_me:4821: $JAVAC -target $target_version -source $source_version -d . conftest.java" >&5
+                $JAVAC -target "$target_version" -source "$source_version" -d . conftest.java >&5 2>&1
+              } \
+              && test -f conftest.class \
+@@ -4662,28 +4936,28 @@
+ 
+                 if test -z "$HAVE_JAVACOMP" && test -n "$HAVE_GCJ_IN_PATH"; then
+             if gcj --version 2>/dev/null | sed -e 's,^[^0-9]*,,' -e 1q | sed -e '/^3\.[01]/d' | grep '^[3-9]' >/dev/null; then
+-                if { echo "$as_me:4665: gcj -C -d . conftestlib.java" >&5
++                if { echo "$as_me:4939: gcj -C -d . conftestlib.java" >&5
+              gcj -C -d . conftestlib.java >&5 2>&1
+            }; then
+                     if gcj --version 2>/dev/null | sed -e 's,^[^0-9]*,,' -e 1q | sed -e '/^4\.[012]/d' | grep '^[4-9]' >/dev/null; then
+                                     rm -f conftest.class
+-            if { echo "$as_me:4670: gcj -C -d . conftest.java" >&5
++            if { echo "$as_me:4944: gcj -C -d . conftest.java" >&5
+                  gcj -C -d . conftest.java >&5 2>&1
+                } \
+                && test -f conftest.class \
+                && expr `func_classfile_version conftest.class` '<=' $cfversion >/dev/null 2>&5; then
+                             rm -f conftest.class
+               rm -f conftestfail.class
+-              if { echo "$as_me:4677: gcj -C -fsource=$source_version -d . conftest.java" >&5
++              if { echo "$as_me:4951: gcj -C -fsource=$source_version -d . conftest.java" >&5
+                    gcj -C -fsource="$source_version" -d . conftest.java >&5 2>&1
+                  } \
+                  && test -f conftest.class \
+                  && expr `func_classfile_version conftest.class` '<=' $cfversion >/dev/null 2>&5 \
+-                 && { echo "$as_me:4682: gcj -C -d . conftestfail.java" >&5
++                 && { echo "$as_me:4956: gcj -C -d . conftestfail.java" >&5
+                       gcj -C -d . conftestfail.java >&5 2>&1
+                     } \
+                  && test -f conftestfail.class \
+-                 && ! { echo "$as_me:4686: gcj -C -fsource=$source_version -d . conftestfail.java" >&5
++                 && ! { echo "$as_me:4960: gcj -C -fsource=$source_version -d . conftestfail.java" >&5
+                         gcj -C -fsource="$source_version" -d . conftestfail.java >&5 2>&1
+                       }; then
+                 CONF_JAVAC="gcj -C -fsource=$source_version"
+@@ -4697,7 +4971,7 @@
+             else
+                             rm -f conftest.class
+               rm -f conftestfail.class
+-              if { echo "$as_me:4700: gcj -C -fsource=$source_version -ftarget=$target_version -d . conftest.java" >&5
++              if { echo "$as_me:4974: gcj -C -fsource=$source_version -ftarget=$target_version -d . conftest.java" >&5
+                    gcj -C -fsource="$source_version" -ftarget="$target_version" -d . conftest.java >&5 2>&1
+                  } \
+                  && test -f conftest.class \
+@@ -4710,7 +4984,7 @@
+           else
+                                                 if test "$target_version" = 1.4 && test "$source_version" = 1.4; then
+               rm -f conftest.class
+-              if { echo "$as_me:4713: gcj -C -d . conftest.java" >&5
++              if { echo "$as_me:4987: gcj -C -d . conftest.java" >&5
+                    gcj -C -d . conftest.java >&5 2>&1
+                  } \
+                  && test -f conftest.class; then
+@@ -4721,7 +4995,7 @@
+             else
+               if test "$target_version" = 1.4 && test "$source_version" = 1.3; then
+                                                 rm -f conftest.class
+-                if { echo "$as_me:4724: gcj -C -fno-assert -d . conftest.java" >&5
++                if { echo "$as_me:4998: gcj -C -fno-assert -d . conftest.java" >&5
+                      gcj -C -fno-assert -d . conftest.java >&5 2>&1
+                    } \
+                    && test -f conftest.class; then
+@@ -4730,7 +5004,7 @@
+                   HAVE_JAVACOMP=1
+                 else
+                   rm -f conftest.class
+-                  if { echo "$as_me:4733: gcj -C -d . conftest.java" >&5
++                  if { echo "$as_me:5007: gcj -C -d . conftest.java" >&5
+                        gcj -C -d . conftest.java >&5 2>&1
+                      } \
+                      && test -f conftest.class; then
+@@ -4749,23 +5023,23 @@
+             if { javac -version >/dev/null 2>/dev/null || test $? -le 2; } \
+          && ( if javac -help 2>&1 >/dev/null | grep at.dms.kjc.Main >/dev/null && javac -help 2>/dev/null | grep 'released.*2000' >/dev/null ; then exit 1; else exit 0; fi ); then
+                                 rm -f conftest.class
+-        if { echo "$as_me:4752: javac -d . conftest.java" >&5
++        if { echo "$as_me:5026: javac -d . conftest.java" >&5
+              javac -d . conftest.java >&5 2>&1
+            } \
+            && test -f conftest.class \
+            && expr `func_classfile_version conftest.class` '<=' $cfversion >/dev/null 2>&5; then
+                     rm -f conftest.class
+           rm -f conftestfail.class
+-          if { echo "$as_me:4759: javac -source $source_version -d . conftest.java" >&5
++          if { echo "$as_me:5033: javac -source $source_version -d . conftest.java" >&5
+                javac -source "$source_version" -d . conftest.java >&5 2>&1
+              } \
+              && test -f conftest.class \
+              && expr `func_classfile_version conftest.class` '<=' $cfversion >/dev/null 2>&5 \
+-             && { echo "$as_me:4764: javac -d . conftestfail.java" >&5
++             && { echo "$as_me:5038: javac -d . conftestfail.java" >&5
+                   javac -d . conftestfail.java >&5 2>&1
+                 } \
+              && test -f conftestfail.class \
+-             && ! { echo "$as_me:4768: javac -source $source_version -d . conftestfail.java" >&5
++             && ! { echo "$as_me:5042: javac -source $source_version -d . conftestfail.java" >&5
+                     javac -source "$source_version" -d . conftestfail.java >&5 2>&1
+                   }; then
+             CONF_JAVAC="javac -source $source_version"
+@@ -4778,23 +5052,23 @@
+           fi
+         else
+                               rm -f conftest.class
+-          if { echo "$as_me:4781: javac -target $target_version -d . conftest.java" >&5
++          if { echo "$as_me:5055: javac -target $target_version -d . conftest.java" >&5
+                javac -target "$target_version" -d . conftest.java >&5 2>&1
+              } \
+              && test -f conftest.class \
+              && expr `func_classfile_version conftest.class` '<=' $cfversion >/dev/null 2>&5; then
+                         rm -f conftest.class
+             rm -f conftestfail.class
+-            if { echo "$as_me:4788: javac -target $target_version -source $source_version -d . conftest.java" >&5
++            if { echo "$as_me:5062: javac -target $target_version -source $source_version -d . conftest.java" >&5
+                  javac -target "$target_version" -source "$source_version" -d . conftest.java >&5 2>&1
+                } \
+                && test -f conftest.class \
+                && expr `func_classfile_version conftest.class` '<=' $cfversion >/dev/null 2>&5 \
+-               && { echo "$as_me:4793: javac -target $target_version -d . conftestfail.java" >&5
++               && { echo "$as_me:5067: javac -target $target_version -d . conftestfail.java" >&5
+                     javac -target "$target_version" -d . conftestfail.java >&5 2>&1
+                   } \
+                && test -f conftestfail.class \
+-               && ! { echo "$as_me:4797: javac -target $target_version -source $source_version -d . conftestfail.java" >&5
++               && ! { echo "$as_me:5071: javac -target $target_version -source $source_version -d . conftestfail.java" >&5
+                       javac -target "$target_version" -source "$source_version" -d . conftestfail.java >&5 2>&1
+                     }; then
+               CONF_JAVAC="javac -target $target_version -source $source_version"
+@@ -4807,7 +5081,7 @@
+             fi
+           else
+                                                 rm -f conftest.class
+-            if { echo "$as_me:4810: javac -target $target_version -source $source_version -d . conftest.java" >&5
++            if { echo "$as_me:5084: javac -target $target_version -source $source_version -d . conftest.java" >&5
+                  javac -target "$target_version" -source "$source_version" -d . conftest.java >&5 2>&1
+                } \
+                && test -f conftest.class \
+@@ -6516,7 +6790,7 @@
+   ;;
+ *-*-irix6*)
+   # Find out which ABI we are using.
+-  echo '#line 6519 "configure"' > conftest.$ac_ext
++  echo '#line 6793 "configure"' > conftest.$ac_ext
+   if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+   (eval $ac_compile) 2>&5
+   ac_status=$?
+@@ -6618,6 +6892,8 @@
+ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ ac_compiler_gnu=$ac_cv_c_compiler_gnu
++ac_compiler_msvc=$ac_cv_c_compiler_msvc
++ac_compiler_intel=$ac_cv_c_compiler_intel
+ 
+      cat >conftest.$ac_ext <<_ACEOF
+ /* confdefs.h.  */
+@@ -6667,6 +6943,8 @@
+ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ ac_compiler_gnu=$ac_cv_c_compiler_gnu
++ac_compiler_msvc=$ac_cv_c_compiler_msvc
++ac_compiler_intel=$ac_cv_c_compiler_intel
+ 
+ fi
+ { echo "$as_me:$LINENO: result: $lt_cv_cc_needs_belf" >&5
+@@ -7137,12 +7415,14 @@
+ ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
++ac_compiler_msvc=$ac_cv_cxx_compiler_msvc
++ac_compiler_intel=$ac_cv_cxx_compiler_intel
+ if test -z "$CXX"; then
+   if test -n "$CCC"; then
+     CXX=$CCC
+   else
+     if test -n "$ac_tool_prefix"; then
+-  for ac_prog in g++ c++ gpp aCC CC cxx cc++ cl.exe FCC KCC RCC xlC_r xlC
++  for ac_prog in g++ c++ gpp aCC CC cxx cc++ icl.exe cl.exe FCC KCC RCC xlC_r xlC
+   do
+     # Extract the first word of "$ac_tool_prefix$ac_prog", so it can be a program name with args.
+ set dummy $ac_tool_prefix$ac_prog; ac_word=$2
+@@ -7186,7 +7466,7 @@
+ fi
+ if test -z "$CXX"; then
+   ac_ct_CXX=$CXX
+-  for ac_prog in g++ c++ gpp aCC CC cxx cc++ cl.exe FCC KCC RCC xlC_r xlC
++  for ac_prog in g++ c++ gpp aCC CC cxx cc++ icl.exe cl.exe FCC KCC RCC xlC_r xlC
+ do
+   # Extract the first word of "$ac_prog", so it can be a program name with args.
+ set dummy $ac_prog; ac_word=$2
+@@ -7249,8 +7529,41 @@
+ fi
+ # Provide some information about the compiler.
+ echo "$as_me:$LINENO: checking for C++ compiler version" >&5
+-ac_compiler=`set X $ac_compile; echo $2`
+-{ (ac_try="$ac_compiler --version >&5"
++set dummy $CXX; ac_compiler=$2
++case $ac_compiler in
++  */*) ac_compiler_name="${ac_compiler##*/}"; ac_compiler_path="$ac_compiler" ;;
++  *) ac_compiler_name="$ac_compiler"; as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
++for as_dir in $PATH
++do
++  IFS=$as_save_IFS
++  test -z "$as_dir" && as_dir=.
++  for ac_exec_ext in '' $ac_executable_extensions; do
++  if { test -f "$as_dir/$ac_compiler$ac_exec_ext" && $as_test_x "$as_dir/$ac_compiler$ac_exec_ext"; }; then
++    ac_compiler_path="$as_dir/$ac_compiler$ac_exec_ext"
++    echo "$as_me:$LINENO: found $as_dir/$ac_compiler$ac_exec_ext" >&5
++    break 2
++  fi
++done
++done
++IFS=$as_save_IFS
++ ;;
++esac
++case $ac_compiler_name in
++  cl.exe|icl.exe)
++    # Windows compilers don't take --version, -v or -V arguments...
++    { (ac_try="$ac_compiler >&5"
++case "(($ac_try" in
++  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
++  *) ac_try_echo=$ac_try;;
++esac
++eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
++  (eval "$ac_compiler >&5") 2>&5
++  ac_status=$?
++  echo "$as_me:$LINENO: \$? = $ac_status" >&5
++  (exit $ac_status); }
++    ;;
++  *)
++    { (ac_try="$ac_compiler --version >&5"
+ case "(($ac_try" in
+   *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+   *) ac_try_echo=$ac_try;;
+@@ -7260,7 +7573,7 @@
+   ac_status=$?
+   echo "$as_me:$LINENO: \$? = $ac_status" >&5
+   (exit $ac_status); }
+-{ (ac_try="$ac_compiler -v >&5"
++    { (ac_try="$ac_compiler -v >&5"
+ case "(($ac_try" in
+   *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+   *) ac_try_echo=$ac_try;;
+@@ -7270,7 +7583,7 @@
+   ac_status=$?
+   echo "$as_me:$LINENO: \$? = $ac_status" >&5
+   (exit $ac_status); }
+-{ (ac_try="$ac_compiler -V >&5"
++    { (ac_try="$ac_compiler -V >&5"
+ case "(($ac_try" in
+   *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+   *) ac_try_echo=$ac_try;;
+@@ -7280,6 +7593,8 @@
+   ac_status=$?
+   echo "$as_me:$LINENO: \$? = $ac_status" >&5
+   (exit $ac_status); }
++    ;;
++esac
+ 
+ { echo "$as_me:$LINENO: checking whether we are using the GNU C++ compiler" >&5
+ echo $ECHO_N "checking whether we are using the GNU C++ compiler... $ECHO_C" >&6; }
+@@ -7335,18 +7650,140 @@
+ fi
+ { echo "$as_me:$LINENO: result: $ac_cv_cxx_compiler_gnu" >&5
+ echo "${ECHO_T}$ac_cv_cxx_compiler_gnu" >&6; }
+-GXX=`test $ac_compiler_gnu = yes && echo yes`
++if test "$ac_compiler_gnu" != yes
++then
++  { echo "$as_me:$LINENO: checking whether we are using the Visual C++ compiler" >&5
++echo $ECHO_N "checking whether we are using the Visual C++ compiler... $ECHO_C" >&6; }
++if test "${ac_cv_cxx_compiler_msvc+set}" = set; then
++  echo $ECHO_N "(cached) $ECHO_C" >&6
++else
++  cat >conftest.$ac_ext <<_ACEOF
++/* confdefs.h.  */
++_ACEOF
++cat confdefs.h >>conftest.$ac_ext
++cat >>conftest.$ac_ext <<_ACEOF
++/* end confdefs.h.  */
++
++int
++main ()
++{
++#ifndef _MSC_VER
++       choke me
++#endif
++
++  ;
++  return 0;
++}
++_ACEOF
++rm -f conftest.$ac_objext
++if { (ac_try="$ac_compile"
++case "(($ac_try" in
++  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
++  *) ac_try_echo=$ac_try;;
++esac
++eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
++  (eval "$ac_compile") 2>conftest.er1
++  ac_status=$?
++  grep -v '^ *+' conftest.er1 >conftest.err
++  rm -f conftest.er1
++  cat conftest.err >&5
++  echo "$as_me:$LINENO: \$? = $ac_status" >&5
++  (exit $ac_status); } && {
++	 test -z "$ac_cxx_werror_flag" ||
++	 test ! -s conftest.err
++       } && test -s conftest.$ac_objext; then
++  ac_compiler_msvc=yes
++else
++  echo "$as_me: failed program was:" >&5
++sed 's/^/| /' conftest.$ac_ext >&5
++
++	ac_compiler_msvc=no
++fi
++
++rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
++ac_cv_cxx_compiler_msvc=$ac_compiler_msvc
++
++fi
++{ echo "$as_me:$LINENO: result: $ac_cv_cxx_compiler_msvc" >&5
++echo "${ECHO_T}$ac_cv_cxx_compiler_msvc" >&6; }
++  if test "$ac_compiler_msvc" = yes
++  then
++    { echo "$as_me:$LINENO: checking whether we are using the Intel C++ compiler" >&5
++echo $ECHO_N "checking whether we are using the Intel C++ compiler... $ECHO_C" >&6; }
++if test "${ac_cv_cxx_compiler_intel+set}" = set; then
++  echo $ECHO_N "(cached) $ECHO_C" >&6
++else
++  cat >conftest.$ac_ext <<_ACEOF
++/* confdefs.h.  */
++_ACEOF
++cat confdefs.h >>conftest.$ac_ext
++cat >>conftest.$ac_ext <<_ACEOF
++/* end confdefs.h.  */
++
++int
++main ()
++{
++#ifndef __INTEL_COMPILER
++       choke me
++#endif
++
++  ;
++  return 0;
++}
++_ACEOF
++rm -f conftest.$ac_objext
++if { (ac_try="$ac_compile"
++case "(($ac_try" in
++  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
++  *) ac_try_echo=$ac_try;;
++esac
++eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
++  (eval "$ac_compile") 2>conftest.er1
++  ac_status=$?
++  grep -v '^ *+' conftest.er1 >conftest.err
++  rm -f conftest.er1
++  cat conftest.err >&5
++  echo "$as_me:$LINENO: \$? = $ac_status" >&5
++  (exit $ac_status); } && {
++	 test -z "$ac_cxx_werror_flag" ||
++	 test ! -s conftest.err
++       } && test -s conftest.$ac_objext; then
++  ac_compiler_intel=yes
++else
++  echo "$as_me: failed program was:" >&5
++sed 's/^/| /' conftest.$ac_ext >&5
++
++	ac_compiler_intel=no
++fi
++
++rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
++ac_cv_cxx_compiler_intel=$ac_compiler_intel
++
++fi
++{ echo "$as_me:$LINENO: result: $ac_cv_cxx_compiler_intel" >&5
++echo "${ECHO_T}$ac_cv_cxx_compiler_intel" >&6; }
++  fi
++fi
++GXX=`test "$ac_compiler_gnu" = yes && echo yes`
++MSVCP=`test "$ac_compiler_msvc" = yes && echo yes`
++INTELCP=`test "$ac_compiler_intel" = yes && echo yes`
+ ac_test_CXXFLAGS=${CXXFLAGS+set}
+ ac_save_CXXFLAGS=$CXXFLAGS
+-{ echo "$as_me:$LINENO: checking whether $CXX accepts -g" >&5
+-echo $ECHO_N "checking whether $CXX accepts -g... $ECHO_C" >&6; }
++ac_cv_prog_cxx_path=${CXX%%" "*}
++ac_cv_prog_cxx_name=${ac_cv_prog_cxx_path##*/}
++case ${ac_cv_prog_cxx_name%.exe} in
++  cl|icl) ac_cxx_debug_flag="-Zi" ;;
++  *) ac_cxx_debug_flag="-g" ;;
++esac
++{ echo "$as_me:$LINENO: checking whether $ac_cv_prog_cxx_name accepts $ac_cxx_debug_flag" >&5
++echo $ECHO_N "checking whether $ac_cv_prog_cxx_name accepts $ac_cxx_debug_flag... $ECHO_C" >&6; }
+ if test "${ac_cv_prog_cxx_g+set}" = set; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+   ac_save_cxx_werror_flag=$ac_cxx_werror_flag
+    ac_cxx_werror_flag=yes
+    ac_cv_prog_cxx_g=no
+-   CXXFLAGS="-g"
++   CXXFLAGS="$ac_cxx_debug_flag"
+    cat >conftest.$ac_ext <<_ACEOF
+ /* confdefs.h.  */
+ _ACEOF
+@@ -7423,7 +7860,7 @@
+ sed 's/^/| /' conftest.$ac_ext >&5
+ 
+ 	ac_cxx_werror_flag=$ac_save_cxx_werror_flag
+-	 CXXFLAGS="-g"
++	 CXXFLAGS="$ac_cxx_debug_flag"
+ 	 cat >conftest.$ac_ext <<_ACEOF
+ /* confdefs.h.  */
+ _ACEOF
+@@ -7479,9 +7916,9 @@
+   CXXFLAGS=$ac_save_CXXFLAGS
+ elif test $ac_cv_prog_cxx_g = yes; then
+   if test "$GXX" = yes; then
+-    CXXFLAGS="-g -O2"
++    CXXFLAGS="$ac_cxx_debug_flag -O2"
+   else
+-    CXXFLAGS="-g"
++    CXXFLAGS="$ac_cxx_debug_flag"
+   fi
+ else
+   if test "$GXX" = yes; then
+@@ -7495,6 +7932,8 @@
+ ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
++ac_compiler_msvc=$ac_cv_cxx_compiler_msvc
++ac_compiler_intel=$ac_cv_cxx_compiler_intel
+ 
+ depcc="$CXX"  am_compiler_list=
+ 
+@@ -7614,6 +8053,8 @@
+ ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
++ac_compiler_msvc=$ac_cv_cxx_compiler_msvc
++ac_compiler_intel=$ac_cv_cxx_compiler_intel
+ { echo "$as_me:$LINENO: checking how to run the C++ preprocessor" >&5
+ echo $ECHO_N "checking how to run the C++ preprocessor... $ECHO_C" >&6; }
+ if test -z "$CXXCPP"; then
+@@ -7834,6 +8275,8 @@
+ ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
++ac_compiler_msvc=$ac_cv_cxx_compiler_msvc
++ac_compiler_intel=$ac_cv_cxx_compiler_intel
+ 
+ fi
+ 
+@@ -8097,6 +8540,8 @@
+ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ ac_compiler_gnu=$ac_cv_c_compiler_gnu
++ac_compiler_msvc=$ac_cv_c_compiler_msvc
++ac_compiler_intel=$ac_cv_c_compiler_intel
+ 
+ 
+ 
+@@ -9004,6 +9449,8 @@
+ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ ac_compiler_gnu=$ac_cv_c_compiler_gnu
++ac_compiler_msvc=$ac_cv_c_compiler_msvc
++ac_compiler_intel=$ac_cv_c_compiler_intel
+ 
+ 
+ # Source file extension for C test sources.
+@@ -9073,11 +9520,11 @@
+    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
+    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
+    -e 's:$: $lt_compiler_flag:'`
+-   (eval echo "\"\$as_me:9076: $lt_compile\"" >&5)
++   (eval echo "\"\$as_me:9523: $lt_compile\"" >&5)
+    (eval "$lt_compile" 2>conftest.err)
+    ac_status=$?
+    cat conftest.err >&5
+-   echo "$as_me:9080: \$? = $ac_status" >&5
++   echo "$as_me:9527: \$? = $ac_status" >&5
+    if (exit $ac_status) && test -s "$ac_outfile"; then
+      # The compiler can only warn and ignore the option if not recognized
+      # So say no if there are warnings other than the usual output.
+@@ -9366,11 +9813,11 @@
+    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
+    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
+    -e 's:$: $lt_compiler_flag:'`
+-   (eval echo "\"\$as_me:9369: $lt_compile\"" >&5)
++   (eval echo "\"\$as_me:9816: $lt_compile\"" >&5)
+    (eval "$lt_compile" 2>conftest.err)
+    ac_status=$?
+    cat conftest.err >&5
+-   echo "$as_me:9373: \$? = $ac_status" >&5
++   echo "$as_me:9820: \$? = $ac_status" >&5
+    if (exit $ac_status) && test -s "$ac_outfile"; then
+      # The compiler can only warn and ignore the option if not recognized
+      # So say no if there are warnings other than the usual output.
+@@ -9470,11 +9917,11 @@
+    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
+    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
+    -e 's:$: $lt_compiler_flag:'`
+-   (eval echo "\"\$as_me:9473: $lt_compile\"" >&5)
++   (eval echo "\"\$as_me:9920: $lt_compile\"" >&5)
+    (eval "$lt_compile" 2>out/conftest.err)
+    ac_status=$?
+    cat out/conftest.err >&5
+-   echo "$as_me:9477: \$? = $ac_status" >&5
++   echo "$as_me:9924: \$? = $ac_status" >&5
+    if (exit $ac_status) && test -s out/conftest2.$ac_objext
+    then
+      # The compiler can only warn and ignore the option if not recognized
+@@ -11819,7 +12266,7 @@
+   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
+   lt_status=$lt_dlunknown
+   cat > conftest.$ac_ext <<EOF
+-#line 11822 "configure"
++#line 12269 "configure"
+ #include "confdefs.h"
+ 
+ #if HAVE_DLFCN_H
+@@ -11919,7 +12366,7 @@
+   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
+   lt_status=$lt_dlunknown
+   cat > conftest.$ac_ext <<EOF
+-#line 11922 "configure"
++#line 12369 "configure"
+ #include "confdefs.h"
+ 
+ #if HAVE_DLFCN_H
+@@ -12549,6 +12996,8 @@
+ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ ac_compiler_gnu=$ac_cv_c_compiler_gnu
++ac_compiler_msvc=$ac_cv_c_compiler_msvc
++ac_compiler_intel=$ac_cv_c_compiler_intel
+ 
+ CC="$lt_save_CC"
+ 
+@@ -12616,6 +13065,8 @@
+ ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
++ac_compiler_msvc=$ac_cv_cxx_compiler_msvc
++ac_compiler_intel=$ac_cv_cxx_compiler_intel
+ 
+ 
+ 
+@@ -14343,11 +14794,11 @@
+    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
+    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
+    -e 's:$: $lt_compiler_flag:'`
+-   (eval echo "\"\$as_me:14346: $lt_compile\"" >&5)
++   (eval echo "\"\$as_me:14797: $lt_compile\"" >&5)
+    (eval "$lt_compile" 2>conftest.err)
+    ac_status=$?
+    cat conftest.err >&5
+-   echo "$as_me:14350: \$? = $ac_status" >&5
++   echo "$as_me:14801: \$? = $ac_status" >&5
+    if (exit $ac_status) && test -s "$ac_outfile"; then
+      # The compiler can only warn and ignore the option if not recognized
+      # So say no if there are warnings other than the usual output.
+@@ -14447,11 +14898,11 @@
+    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
+    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
+    -e 's:$: $lt_compiler_flag:'`
+-   (eval echo "\"\$as_me:14450: $lt_compile\"" >&5)
++   (eval echo "\"\$as_me:14901: $lt_compile\"" >&5)
+    (eval "$lt_compile" 2>out/conftest.err)
+    ac_status=$?
+    cat out/conftest.err >&5
+-   echo "$as_me:14454: \$? = $ac_status" >&5
++   echo "$as_me:14905: \$? = $ac_status" >&5
+    if (exit $ac_status) && test -s out/conftest2.$ac_objext
+    then
+      # The compiler can only warn and ignore the option if not recognized
+@@ -15602,6 +16053,8 @@
+ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ ac_compiler_gnu=$ac_cv_c_compiler_gnu
++ac_compiler_msvc=$ac_cv_c_compiler_msvc
++ac_compiler_intel=$ac_cv_c_compiler_intel
+ 
+ CC=$lt_save_CC
+ LDCXX=$LD
+@@ -16012,11 +16465,11 @@
+    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
+    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
+    -e 's:$: $lt_compiler_flag:'`
+-   (eval echo "\"\$as_me:16015: $lt_compile\"" >&5)
++   (eval echo "\"\$as_me:16468: $lt_compile\"" >&5)
+    (eval "$lt_compile" 2>conftest.err)
+    ac_status=$?
+    cat conftest.err >&5
+-   echo "$as_me:16019: \$? = $ac_status" >&5
++   echo "$as_me:16472: \$? = $ac_status" >&5
+    if (exit $ac_status) && test -s "$ac_outfile"; then
+      # The compiler can only warn and ignore the option if not recognized
+      # So say no if there are warnings other than the usual output.
+@@ -16116,11 +16569,11 @@
+    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
+    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
+    -e 's:$: $lt_compiler_flag:'`
+-   (eval echo "\"\$as_me:16119: $lt_compile\"" >&5)
++   (eval echo "\"\$as_me:16572: $lt_compile\"" >&5)
+    (eval "$lt_compile" 2>out/conftest.err)
+    ac_status=$?
+    cat out/conftest.err >&5
+-   echo "$as_me:16123: \$? = $ac_status" >&5
++   echo "$as_me:16576: \$? = $ac_status" >&5
+    if (exit $ac_status) && test -s out/conftest2.$ac_objext
+    then
+      # The compiler can only warn and ignore the option if not recognized
+@@ -18206,6 +18659,8 @@
+ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ ac_compiler_gnu=$ac_cv_c_compiler_gnu
++ac_compiler_msvc=$ac_cv_c_compiler_msvc
++ac_compiler_intel=$ac_cv_c_compiler_intel
+ 
+ CC="$lt_save_CC"
+ 
+@@ -18307,11 +18762,11 @@
+    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
+    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
+    -e 's:$: $lt_compiler_flag:'`
+-   (eval echo "\"\$as_me:18310: $lt_compile\"" >&5)
++   (eval echo "\"\$as_me:18765: $lt_compile\"" >&5)
+    (eval "$lt_compile" 2>conftest.err)
+    ac_status=$?
+    cat conftest.err >&5
+-   echo "$as_me:18314: \$? = $ac_status" >&5
++   echo "$as_me:18769: \$? = $ac_status" >&5
+    if (exit $ac_status) && test -s "$ac_outfile"; then
+      # The compiler can only warn and ignore the option if not recognized
+      # So say no if there are warnings other than the usual output.
+@@ -18600,11 +19055,11 @@
+    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
+    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
+    -e 's:$: $lt_compiler_flag:'`
+-   (eval echo "\"\$as_me:18603: $lt_compile\"" >&5)
++   (eval echo "\"\$as_me:19058: $lt_compile\"" >&5)
+    (eval "$lt_compile" 2>conftest.err)
+    ac_status=$?
+    cat conftest.err >&5
+-   echo "$as_me:18607: \$? = $ac_status" >&5
++   echo "$as_me:19062: \$? = $ac_status" >&5
+    if (exit $ac_status) && test -s "$ac_outfile"; then
+      # The compiler can only warn and ignore the option if not recognized
+      # So say no if there are warnings other than the usual output.
+@@ -18704,11 +19159,11 @@
+    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
+    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
+    -e 's:$: $lt_compiler_flag:'`
+-   (eval echo "\"\$as_me:18707: $lt_compile\"" >&5)
++   (eval echo "\"\$as_me:19162: $lt_compile\"" >&5)
+    (eval "$lt_compile" 2>out/conftest.err)
+    ac_status=$?
+    cat out/conftest.err >&5
+-   echo "$as_me:18711: \$? = $ac_status" >&5
++   echo "$as_me:19166: \$? = $ac_status" >&5
+    if (exit $ac_status) && test -s out/conftest2.$ac_objext
+    then
+      # The compiler can only warn and ignore the option if not recognized
+@@ -20814,6 +21269,8 @@
+ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ ac_compiler_gnu=$ac_cv_c_compiler_gnu
++ac_compiler_msvc=$ac_cv_c_compiler_msvc
++ac_compiler_intel=$ac_cv_c_compiler_intel
+ 
+ CC="$lt_save_CC"
+ 
+@@ -21295,6 +21752,8 @@
+ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ ac_compiler_gnu=$ac_cv_c_compiler_gnu
++ac_compiler_msvc=$ac_cv_c_compiler_msvc
++ac_compiler_intel=$ac_cv_c_compiler_intel
+ 
+ CC="$lt_save_CC"
+ 
+@@ -21461,10 +21920,10 @@
+ echo "${ECHO_T}no" >&6; }
+ fi
+ 
+-  # Extract the first word of "gmsgfmt", so it can be a program name with args.
++  { echo "$as_me:$LINENO: checking for gmsgfmt" >&5
++echo $ECHO_N "checking for gmsgfmt... $ECHO_C" >&6; }
++# Extract the first word of "gmsgfmt", so it can be a program name with args.
+ set dummy gmsgfmt; ac_word=$2
+-{ echo "$as_me:$LINENO: checking for $ac_word" >&5
+-echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6; }
+ if test "${ac_cv_path_GMSGFMT+set}" = set; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+@@ -21493,6 +21952,7 @@
+ esac
+ fi
+ GMSGFMT=$ac_cv_path_GMSGFMT
++
+ if test -n "$GMSGFMT"; then
+   { echo "$as_me:$LINENO: result: $GMSGFMT" >&5
+ echo "${ECHO_T}$GMSGFMT" >&6; }
+@@ -21502,7 +21962,6 @@
+ fi
+ 
+ 
+-
+     case `$MSGFMT --version | sed 1q | sed -e 's,^[^0-9]*,,'` in
+     '' | 0.[0-9] | 0.[0-9].* | 0.1[0-4] | 0.1[0-4].*) MSGFMT_015=: ;;
+     *) MSGFMT_015=$MSGFMT ;;
+@@ -37301,10 +37760,10 @@
+ 
+ 
+ ac_aux_dir_abs=`cd $ac_aux_dir && pwd`
++{ echo "$as_me:$LINENO: checking for perl" >&5
++echo $ECHO_N "checking for perl... $ECHO_C" >&6; }
+ # Extract the first word of "perl", so it can be a program name with args.
+ set dummy perl; ac_word=$2
+-{ echo "$as_me:$LINENO: checking for $ac_word" >&5
+-echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6; }
+ if test "${ac_cv_path_PERL+set}" = set; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+@@ -37333,6 +37792,7 @@
+ esac
+ fi
+ PERL=$ac_cv_path_PERL
++
+ if test -n "$PERL"; then
+   { echo "$as_me:$LINENO: result: $PERL" >&5
+ echo "${ECHO_T}$PERL" >&6; }
+@@ -37342,10 +37802,167 @@
+ fi
+ 
+ 
+-
+ CROSS_COMPILING=$cross_compiling
+ 
+ 
++{ echo "$as_me:$LINENO: checking for stpcpy" >&5
++echo $ECHO_N "checking for stpcpy... $ECHO_C" >&6; }
++if test "${ac_cv_func_stpcpy+set}" = set; then
++  echo $ECHO_N "(cached) $ECHO_C" >&6
++else
++  cat >conftest.$ac_ext <<_ACEOF
++/* confdefs.h.  */
++_ACEOF
++cat confdefs.h >>conftest.$ac_ext
++cat >>conftest.$ac_ext <<_ACEOF
++/* end confdefs.h.  */
++/* Define stpcpy to an innocuous variant, in case <limits.h> declares stpcpy.
++   For example, HP-UX 11i <limits.h> declares gettimeofday.  */
++#define stpcpy innocuous_stpcpy
++
++/* System header to define __stub macros and hopefully few prototypes,
++    which can conflict with char stpcpy (); below.
++    Prefer <limits.h> to <assert.h> if __STDC__ is defined, since
++    <limits.h> exists even on freestanding compilers.  */
++
++#ifdef __STDC__
++# include <limits.h>
++#else
++# include <assert.h>
++#endif
++
++#undef stpcpy
++
++/* Override any GCC internal prototype to avoid an error.
++   Use char because int might match the return type of a GCC
++   builtin and then its argument prototype would still apply.  */
++#ifdef __cplusplus
++extern "C"
++#endif
++char stpcpy ();
++/* The GNU C library defines this for functions which it implements
++    to always fail with ENOSYS.  Some functions are actually named
++    something starting with __ and the normal name is an alias.  */
++#if defined __stub_stpcpy || defined __stub___stpcpy
++choke me
++#endif
++
++int
++main ()
++{
++return stpcpy ();
++  ;
++  return 0;
++}
++_ACEOF
++rm -f conftest.$ac_objext conftest$ac_exeext
++if { (ac_try="$ac_link"
++case "(($ac_try" in
++  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
++  *) ac_try_echo=$ac_try;;
++esac
++eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
++  (eval "$ac_link") 2>conftest.er1
++  ac_status=$?
++  grep -v '^ *+' conftest.er1 >conftest.err
++  rm -f conftest.er1
++  cat conftest.err >&5
++  echo "$as_me:$LINENO: \$? = $ac_status" >&5
++  (exit $ac_status); } && {
++	 test -z "$ac_c_werror_flag" ||
++	 test ! -s conftest.err
++       } && test -s conftest$ac_exeext &&
++       $as_test_x conftest$ac_exeext; then
++  ac_cv_func_stpcpy=yes
++else
++  echo "$as_me: failed program was:" >&5
++sed 's/^/| /' conftest.$ac_ext >&5
++
++	ac_cv_func_stpcpy=no
++fi
++
++rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
++      conftest$ac_exeext conftest.$ac_ext
++fi
++{ echo "$as_me:$LINENO: result: $ac_cv_func_stpcpy" >&5
++echo "${ECHO_T}$ac_cv_func_stpcpy" >&6; }
++if test $ac_cv_func_stpcpy = yes; then
++  :
++else
++  { echo "$as_me:$LINENO: checking for stpcpy in -lcompat" >&5
++echo $ECHO_N "checking for stpcpy in -lcompat... $ECHO_C" >&6; }
++if test "${ac_cv_lib_compat_stpcpy+set}" = set; then
++  echo $ECHO_N "(cached) $ECHO_C" >&6
++else
++  ac_check_lib_save_LIBS=$LIBS
++LIBS="-lcompat  $LIBS"
++cat >conftest.$ac_ext <<_ACEOF
++/* confdefs.h.  */
++_ACEOF
++cat confdefs.h >>conftest.$ac_ext
++cat >>conftest.$ac_ext <<_ACEOF
++/* end confdefs.h.  */
++
++/* Override any GCC internal prototype to avoid an error.
++   Use char because int might match the return type of a GCC
++   builtin and then its argument prototype would still apply.  */
++#ifdef __cplusplus
++extern "C"
++#endif
++char stpcpy ();
++int
++main ()
++{
++return stpcpy ();
++  ;
++  return 0;
++}
++_ACEOF
++rm -f conftest.$ac_objext conftest$ac_exeext
++if { (ac_try="$ac_link"
++case "(($ac_try" in
++  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
++  *) ac_try_echo=$ac_try;;
++esac
++eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
++  (eval "$ac_link") 2>conftest.er1
++  ac_status=$?
++  grep -v '^ *+' conftest.er1 >conftest.err
++  rm -f conftest.er1
++  cat conftest.err >&5
++  echo "$as_me:$LINENO: \$? = $ac_status" >&5
++  (exit $ac_status); } && {
++	 test -z "$ac_c_werror_flag" ||
++	 test ! -s conftest.err
++       } && test -s conftest$ac_exeext &&
++       $as_test_x conftest$ac_exeext; then
++  ac_cv_lib_compat_stpcpy=yes
++else
++  echo "$as_me: failed program was:" >&5
++sed 's/^/| /' conftest.$ac_ext >&5
++
++	ac_cv_lib_compat_stpcpy=no
++fi
++
++rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
++      conftest$ac_exeext conftest.$ac_ext
++LIBS=$ac_check_lib_save_LIBS
++fi
++{ echo "$as_me:$LINENO: result: $ac_cv_lib_compat_stpcpy" >&5
++echo "${ECHO_T}$ac_cv_lib_compat_stpcpy" >&6; }
++if test $ac_cv_lib_compat_stpcpy = yes; then
++  LIBS="$LIBS -lcompat"
++
++cat >>confdefs.h <<_ACEOF
++#define HAVE_STPCPY 1
++_ACEOF
++
++fi
++
++fi
++
++
++
+ 
+ for ac_prog in $CCC g++ c++ gpp aCC CC cxx cc++ cl FCC KCC RCC xlC_r xlC
+ do
+@@ -37398,6 +38015,8 @@
+ ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
++ac_compiler_msvc=$ac_cv_cxx_compiler_msvc
++ac_compiler_intel=$ac_cv_cxx_compiler_intel
+ 
+ 
+ 
+@@ -37422,6 +38041,8 @@
+ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ ac_compiler_gnu=$ac_cv_c_compiler_gnu
++ac_compiler_msvc=$ac_cv_c_compiler_msvc
++ac_compiler_intel=$ac_cv_c_compiler_intel
+ 
+   { echo "$as_me:$LINENO: result: $ac_cv_prog_cxx_works" >&5
+ echo "${ECHO_T}$ac_cv_prog_cxx_works" >&6; }
+@@ -37435,6 +38056,8 @@
+ ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
++ac_compiler_msvc=$ac_cv_cxx_compiler_msvc
++ac_compiler_intel=$ac_cv_cxx_compiler_intel
+ 
+     cat <<EOF > conftest.$ac_ext
+ #include <iostream>
+@@ -37457,6 +38080,8 @@
+ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ ac_compiler_gnu=$ac_cv_c_compiler_gnu
++ac_compiler_msvc=$ac_cv_c_compiler_msvc
++ac_compiler_intel=$ac_cv_c_compiler_intel
+ 
+     { echo "$as_me:$LINENO: result: $gt_cv_prog_cxx_namespaces" >&5
+ echo "${ECHO_T}$gt_cv_prog_cxx_namespaces" >&6; }
+@@ -38445,9 +39070,10 @@
+ CFLAGS!$CFLAGS$ac_delim
+ LDFLAGS!$LDFLAGS$ac_delim
+ CPPFLAGS!$CPPFLAGS$ac_delim
+-ac_ct_CC!$ac_ct_CC$ac_delim
+-EXEEXT!$EXEEXT$ac_delim
+ OBJEXT!$OBJEXT$ac_delim
++LIB!$LIB$ac_delim
++INCLUDE!$INCLUDE$ac_delim
++EXEEXT!$EXEEXT$ac_delim
+ DEPDIR!$DEPDIR$ac_delim
+ am__include!$am__include$ac_delim
+ am__quote!$am__quote$ac_delim
+@@ -38478,7 +39104,6 @@
+ CSHARP_CHOICE!$CSHARP_CHOICE$ac_delim
+ HAVE_CSCC_IN_PATH!$HAVE_CSCC_IN_PATH$ac_delim
+ HAVE_MCS_IN_PATH!$HAVE_MCS_IN_PATH$ac_delim
+-HAVE_CSC_IN_PATH!$HAVE_CSC_IN_PATH$ac_delim
+ _ACEOF
+ 
+   if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 97; then
+@@ -38520,6 +39145,7 @@
+ ac_delim='%!_!# '
+ for ac_last_try in false false false false false :; do
+   cat >conf$$subs.sed <<_ACEOF
++HAVE_CSC_IN_PATH!$HAVE_CSC_IN_PATH$ac_delim
+ HAVE_CSCC!$HAVE_CSCC$ac_delim
+ HAVE_MCS!$HAVE_MCS$ac_delim
+ HAVE_CSC!$HAVE_CSC$ac_delim
+@@ -38616,7 +39242,6 @@
+ GNULIB_REALLOC_POSIX!$GNULIB_REALLOC_POSIX$ac_delim
+ GNULIB_CALLOC_POSIX!$GNULIB_CALLOC_POSIX$ac_delim
+ GNULIB_GETSUBOPT!$GNULIB_GETSUBOPT$ac_delim
+-GNULIB_MKDTEMP!$GNULIB_MKDTEMP$ac_delim
+ _ACEOF
+ 
+   if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 97; then
+@@ -38658,6 +39283,7 @@
+ ac_delim='%!_!# '
+ for ac_last_try in false false false false false :; do
+   cat >conf$$subs.sed <<_ACEOF
++GNULIB_MKDTEMP!$GNULIB_MKDTEMP$ac_delim
+ GNULIB_MKSTEMP!$GNULIB_MKSTEMP$ac_delim
+ GNULIB_PUTENV!$GNULIB_PUTENV$ac_delim
+ HAVE_CALLOC_POSIX!$HAVE_CALLOC_POSIX$ac_delim
+@@ -38754,7 +39380,6 @@
+ BITSIZEOF_PTRDIFF_T!$BITSIZEOF_PTRDIFF_T$ac_delim
+ BITSIZEOF_SIG_ATOMIC_T!$BITSIZEOF_SIG_ATOMIC_T$ac_delim
+ BITSIZEOF_SIZE_T!$BITSIZEOF_SIZE_T$ac_delim
+-BITSIZEOF_WCHAR_T!$BITSIZEOF_WCHAR_T$ac_delim
+ _ACEOF
+ 
+   if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 97; then
+@@ -38796,6 +39421,7 @@
+ ac_delim='%!_!# '
+ for ac_last_try in false false false false false :; do
+   cat >conf$$subs.sed <<_ACEOF
++BITSIZEOF_WCHAR_T!$BITSIZEOF_WCHAR_T$ac_delim
+ BITSIZEOF_WINT_T!$BITSIZEOF_WINT_T$ac_delim
+ HAVE_SIGNED_SIG_ATOMIC_T!$HAVE_SIGNED_SIG_ATOMIC_T$ac_delim
+ HAVE_SIGNED_WCHAR_T!$HAVE_SIGNED_WCHAR_T$ac_delim
+@@ -38835,7 +39461,7 @@
+ gl_LTLIBOBJS!$gl_LTLIBOBJS$ac_delim
+ _ACEOF
+ 
+-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 37; then
++  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 38; then
+     break
+   elif $ac_last_try; then
+     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5
+@@ -39086,8 +39712,6 @@
+ ' $ac_file_inputs` in
+ *datarootdir*) ac_datarootdir_seen=yes;;
+ *@datadir@*|*@docdir@*|*@infodir@*|*@localedir@*|*@mandir@*)
+-  { echo "$as_me:$LINENO: WARNING: $ac_file_inputs seems to ignore the --datarootdir setting" >&5
+-echo "$as_me: WARNING: $ac_file_inputs seems to ignore the --datarootdir setting" >&2;}
+ _ACEOF
+ cat >>$CONFIG_STATUS <<_ACEOF
+   ac_datarootdir_hack='
+--- gettext-0.17_orig/gettext-runtime/configure.ac	2008-05-30 14:11:59.000000000 +0200
++++ gettext-0.17/gettext-runtime/configure.ac	2008-05-30 14:18:04.000000000 +0200
+@@ -109,6 +109,12 @@
+ CROSS_COMPILING=$cross_compiling
+ AC_SUBST(CROSS_COMPILING)
+ 
++AC_CHECK_FUNC([stpcpy], [],
++[AC_CHECK_LIB([compat], [stpcpy],
++[#LIBS="$LIBS -lcompat"
++AC_DEFINE_UNQUOTED([HAVE_STPCPY], [1], [Define this if you have the stpcpy() function])])])
++AC_SUBST([LIBS])
++
+ dnl Checks for optional programs for the tests/lang-* tests.
+ gt_PROG_ANSI_CXX
+ 
+--- gettext-0.17_orig/gettext-tools/configure	2008-05-30 14:12:00.000000000 +0200
++++ gettext-0.17/gettext-tools/configure	2008-05-30 14:29:05.000000000 +0200
+@@ -833,9 +833,10 @@
+ CFLAGS
+ LDFLAGS
+ CPPFLAGS
+-ac_ct_CC
+-EXEEXT
+ OBJEXT
++LIB
++INCLUDE
++EXEEXT
+ DEPDIR
+ am__include
+ am__quote
+@@ -2381,6 +2382,8 @@
+ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ ac_compiler_gnu=$ac_cv_c_compiler_gnu
++ac_compiler_msvc=$ac_cv_c_compiler_msvc
++ac_compiler_intel=$ac_cv_c_compiler_intel
+ 
+ 
+ 
+@@ -2736,13 +2739,13 @@
+ 
+ # Some tools Automake needs.
+ 
+-ACLOCAL=${ACLOCAL-"${am_missing_run}aclocal-${am__api_version}"}
++ACLOCAL=${ACLOCAL-"${am_missing_run}aclocal"}
+ 
+ 
+ AUTOCONF=${AUTOCONF-"${am_missing_run}autoconf"}
+ 
+ 
+-AUTOMAKE=${AUTOMAKE-"${am_missing_run}automake-${am__api_version}"}
++AUTOMAKE=${AUTOMAKE-"${am_missing_run}automake"}
+ 
+ 
+ AUTOHEADER=${AUTOHEADER-"${am_missing_run}autoheader"}
+@@ -2878,6 +2881,8 @@
+ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ ac_compiler_gnu=$ac_cv_c_compiler_gnu
++ac_compiler_msvc=$ac_cv_c_compiler_msvc
++ac_compiler_intel=$ac_cv_c_compiler_intel
+ if test -n "$ac_tool_prefix"; then
+   # Extract the first word of "${ac_tool_prefix}gcc", so it can be a program name with args.
+ set dummy ${ac_tool_prefix}gcc; ac_word=$2
+@@ -3072,11 +3077,8 @@
+ 
+ fi
+ if test -z "$CC"; then
+-  if test -n "$ac_tool_prefix"; then
+-  for ac_prog in cl.exe
+-  do
+-    # Extract the first word of "$ac_tool_prefix$ac_prog", so it can be a program name with args.
+-set dummy $ac_tool_prefix$ac_prog; ac_word=$2
++  # Extract the first word of "icl.exe", so it can be a program name with args.
++set dummy icl.exe; ac_word=$2
+ { echo "$as_me:$LINENO: checking for $ac_word" >&5
+ echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6; }
+ if test "${ac_cv_prog_CC+set}" = set; then
+@@ -3092,7 +3094,7 @@
+   test -z "$as_dir" && as_dir=.
+   for ac_exec_ext in '' $ac_executable_extensions; do
+   if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
+-    ac_cv_prog_CC="$ac_tool_prefix$ac_prog"
++    ac_cv_prog_CC=""
+     echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+     break 2
+   fi
+@@ -3112,22 +3114,17 @@
+ fi
+ 
+ 
+-    test -n "$CC" && break
+-  done
+ fi
+ if test -z "$CC"; then
+-  ac_ct_CC=$CC
+-  for ac_prog in cl.exe
+-do
+-  # Extract the first word of "$ac_prog", so it can be a program name with args.
+-set dummy $ac_prog; ac_word=$2
++  # Extract the first word of "cl.exe", so it can be a program name with args.
++set dummy cl.exe; ac_word=$2
+ { echo "$as_me:$LINENO: checking for $ac_word" >&5
+ echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6; }
+-if test "${ac_cv_prog_ac_ct_CC+set}" = set; then
++if test "${ac_cv_prog_CC+set}" = set; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test -n "$ac_ct_CC"; then
+-  ac_cv_prog_ac_ct_CC="$ac_ct_CC" # Let the user override the test.
++  if test -n "$CC"; then
++  ac_cv_prog_CC="$CC" # Let the user override the test.
+ else
+ as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+ for as_dir in $PATH
+@@ -3136,7 +3133,7 @@
+   test -z "$as_dir" && as_dir=.
+   for ac_exec_ext in '' $ac_executable_extensions; do
+   if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
+-    ac_cv_prog_ac_ct_CC="$ac_prog"
++    ac_cv_prog_CC=""
+     echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+     break 2
+   fi
+@@ -3146,36 +3143,16 @@
+ 
+ fi
+ fi
+-ac_ct_CC=$ac_cv_prog_ac_ct_CC
+-if test -n "$ac_ct_CC"; then
+-  { echo "$as_me:$LINENO: result: $ac_ct_CC" >&5
+-echo "${ECHO_T}$ac_ct_CC" >&6; }
++CC=$ac_cv_prog_CC
++if test -n "$CC"; then
++  { echo "$as_me:$LINENO: result: $CC" >&5
++echo "${ECHO_T}$CC" >&6; }
+ else
+   { echo "$as_me:$LINENO: result: no" >&5
+ echo "${ECHO_T}no" >&6; }
+ fi
+ 
+ 
+-  test -n "$ac_ct_CC" && break
+-done
+-
+-  if test "x$ac_ct_CC" = x; then
+-    CC=""
+-  else
+-    case $cross_compiling:$ac_tool_warned in
+-yes:)
+-{ echo "$as_me:$LINENO: WARNING: In the future, Autoconf will not detect cross-tools
+-whose name does not start with the host triplet.  If you think this
+-configuration is useful to you, please write to autoconf@gnu.org." >&5
+-echo "$as_me: WARNING: In the future, Autoconf will not detect cross-tools
+-whose name does not start with the host triplet.  If you think this
+-configuration is useful to you, please write to autoconf@gnu.org." >&2;}
+-ac_tool_warned=yes ;;
+-esac
+-    CC=$ac_ct_CC
+-  fi
+-fi
+-
+ fi
+ 
+ 
+@@ -3187,8 +3164,41 @@
+ 
+ # Provide some information about the compiler.
+ echo "$as_me:$LINENO: checking for C compiler version" >&5
+-ac_compiler=`set X $ac_compile; echo $2`
+-{ (ac_try="$ac_compiler --version >&5"
++set dummy $CC; ac_compiler=$2
++case $ac_compiler in
++  */*) ac_compiler_name="${ac_compiler##*/}"; ac_compiler_path="$ac_compiler" ;;
++  *) ac_compiler_name="$ac_compiler"; as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
++for as_dir in $PATH
++do
++  IFS=$as_save_IFS
++  test -z "$as_dir" && as_dir=.
++  for ac_exec_ext in '' $ac_executable_extensions; do
++  if { test -f "$as_dir/$ac_compiler$ac_exec_ext" && $as_test_x "$as_dir/$ac_compiler$ac_exec_ext"; }; then
++    ac_compiler_path="$as_dir/$ac_compiler$ac_exec_ext"
++    echo "$as_me:$LINENO: found $as_dir/$ac_compiler$ac_exec_ext" >&5
++    break 2
++  fi
++done
++done
++IFS=$as_save_IFS
++ ;;
++esac
++case $ac_compiler_name in
++  cl.exe|icl.exe)
++    # Windows compilers don't take --version, -v or -V arguments...
++    { (ac_try="$ac_compiler >&5"
++case "(($ac_try" in
++  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
++  *) ac_try_echo=$ac_try;;
++esac
++eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
++  (eval "$ac_compiler >&5") 2>&5
++  ac_status=$?
++  echo "$as_me:$LINENO: \$? = $ac_status" >&5
++  (exit $ac_status); }
++    ;;
++  *)
++    { (ac_try="$ac_compiler --version >&5"
+ case "(($ac_try" in
+   *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+   *) ac_try_echo=$ac_try;;
+@@ -3198,7 +3208,7 @@
+   ac_status=$?
+   echo "$as_me:$LINENO: \$? = $ac_status" >&5
+   (exit $ac_status); }
+-{ (ac_try="$ac_compiler -v >&5"
++    { (ac_try="$ac_compiler -v >&5"
+ case "(($ac_try" in
+   *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+   *) ac_try_echo=$ac_try;;
+@@ -3208,7 +3218,7 @@
+   ac_status=$?
+   echo "$as_me:$LINENO: \$? = $ac_status" >&5
+   (exit $ac_status); }
+-{ (ac_try="$ac_compiler -V >&5"
++    { (ac_try="$ac_compiler -V >&5"
+ case "(($ac_try" in
+   *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+   *) ac_try_echo=$ac_try;;
+@@ -3218,7 +3228,368 @@
+   ac_status=$?
+   echo "$as_me:$LINENO: \$? = $ac_status" >&5
+   (exit $ac_status); }
++    ;;
++esac
++
++{ echo "$as_me:$LINENO: checking for suffix of object files" >&5
++echo $ECHO_N "checking for suffix of object files... $ECHO_C" >&6; }
++if test "${ac_cv_objext+set}" = set; then
++  echo $ECHO_N "(cached) $ECHO_C" >&6
++else
++  cat >conftest.$ac_ext <<_ACEOF
++/* confdefs.h.  */
++_ACEOF
++cat confdefs.h >>conftest.$ac_ext
++cat >>conftest.$ac_ext <<_ACEOF
++/* end confdefs.h.  */
++
++int
++main ()
++{
++
++  ;
++  return 0;
++}
++_ACEOF
++rm -f conftest.o conftest.obj
++if { (ac_try="$ac_compile"
++case "(($ac_try" in
++  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
++  *) ac_try_echo=$ac_try;;
++esac
++eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
++  (eval "$ac_compile") 2>&5
++  ac_status=$?
++  echo "$as_me:$LINENO: \$? = $ac_status" >&5
++  (exit $ac_status); }; then
++  for ac_file in conftest.o conftest.obj conftest.*; do
++  test -f "$ac_file" || continue;
++  case $ac_file in
++    *.$ac_ext | *.xcoff | *.tds | *.d | *.pdb | *.xSYM | *.bb | *.bbg | *.map | *.inf ) ;;
++    *) ac_cv_objext=`expr "$ac_file" : '.*\.\(.*\)'`
++       break;;
++  esac
++done
++else
++  echo "$as_me: failed program was:" >&5
++sed 's/^/| /' conftest.$ac_ext >&5
++
++{ { echo "$as_me:$LINENO: error: cannot compute suffix of object files: cannot compile
++See \`config.log' for more details." >&5
++echo "$as_me: error: cannot compute suffix of object files: cannot compile
++See \`config.log' for more details." >&2;}
++   { (exit 1); exit 1; }; }
++fi
++
++rm -f conftest.$ac_cv_objext conftest.$ac_ext
++fi
++{ echo "$as_me:$LINENO: result: $ac_cv_objext" >&5
++echo "${ECHO_T}$ac_cv_objext" >&6; }
++OBJEXT=$ac_cv_objext
++ac_objext=$OBJEXT
++{ echo "$as_me:$LINENO: checking whether we are using the GNU C compiler" >&5
++echo $ECHO_N "checking whether we are using the GNU C compiler... $ECHO_C" >&6; }
++if test "${ac_cv_c_compiler_gnu+set}" = set; then
++  echo $ECHO_N "(cached) $ECHO_C" >&6
++else
++  cat >conftest.$ac_ext <<_ACEOF
++/* confdefs.h.  */
++_ACEOF
++cat confdefs.h >>conftest.$ac_ext
++cat >>conftest.$ac_ext <<_ACEOF
++/* end confdefs.h.  */
++
++int
++main ()
++{
++#ifndef __GNUC__
++       choke me
++#endif
++
++  ;
++  return 0;
++}
++_ACEOF
++rm -f conftest.$ac_objext
++if { (ac_try="$ac_compile"
++case "(($ac_try" in
++  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
++  *) ac_try_echo=$ac_try;;
++esac
++eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
++  (eval "$ac_compile") 2>conftest.er1
++  ac_status=$?
++  grep -v '^ *+' conftest.er1 >conftest.err
++  rm -f conftest.er1
++  cat conftest.err >&5
++  echo "$as_me:$LINENO: \$? = $ac_status" >&5
++  (exit $ac_status); } && {
++	 test -z "$ac_c_werror_flag" ||
++	 test ! -s conftest.err
++       } && test -s conftest.$ac_objext; then
++  ac_compiler_gnu=yes
++else
++  echo "$as_me: failed program was:" >&5
++sed 's/^/| /' conftest.$ac_ext >&5
++
++	ac_compiler_gnu=no
++fi
++
++rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
++ac_cv_c_compiler_gnu=$ac_compiler_gnu
++
++fi
++{ echo "$as_me:$LINENO: result: $ac_cv_c_compiler_gnu" >&5
++echo "${ECHO_T}$ac_cv_c_compiler_gnu" >&6; }
++if test "$ac_compiler_gnu" != yes
++then
++  { echo "$as_me:$LINENO: checking whether we are using the Visual C++ compiler" >&5
++echo $ECHO_N "checking whether we are using the Visual C++ compiler... $ECHO_C" >&6; }
++if test "${ac_cv_c_compiler_msvc+set}" = set; then
++  echo $ECHO_N "(cached) $ECHO_C" >&6
++else
++  cat >conftest.$ac_ext <<_ACEOF
++/* confdefs.h.  */
++_ACEOF
++cat confdefs.h >>conftest.$ac_ext
++cat >>conftest.$ac_ext <<_ACEOF
++/* end confdefs.h.  */
++
++int
++main ()
++{
++#ifndef _MSC_VER
++       choke me
++#endif
++
++  ;
++  return 0;
++}
++_ACEOF
++rm -f conftest.$ac_objext
++if { (ac_try="$ac_compile"
++case "(($ac_try" in
++  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
++  *) ac_try_echo=$ac_try;;
++esac
++eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
++  (eval "$ac_compile") 2>conftest.er1
++  ac_status=$?
++  grep -v '^ *+' conftest.er1 >conftest.err
++  rm -f conftest.er1
++  cat conftest.err >&5
++  echo "$as_me:$LINENO: \$? = $ac_status" >&5
++  (exit $ac_status); } && {
++	 test -z "$ac_c_werror_flag" ||
++	 test ! -s conftest.err
++       } && test -s conftest.$ac_objext; then
++  ac_compiler_msvc=yes
++else
++  echo "$as_me: failed program was:" >&5
++sed 's/^/| /' conftest.$ac_ext >&5
++
++	ac_compiler_msvc=no
++fi
++
++rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
++ac_cv_c_compiler_msvc=$ac_compiler_msvc
++
++fi
++{ echo "$as_me:$LINENO: result: $ac_cv_c_compiler_msvc" >&5
++echo "${ECHO_T}$ac_cv_c_compiler_msvc" >&6; }
++  if test "$ac_compiler_msvc" = yes
++  then
++    { echo "$as_me:$LINENO: checking whether we are using the Intel C++ compiler" >&5
++echo $ECHO_N "checking whether we are using the Intel C++ compiler... $ECHO_C" >&6; }
++if test "${ac_cv_c_compiler_intel+set}" = set; then
++  echo $ECHO_N "(cached) $ECHO_C" >&6
++else
++  cat >conftest.$ac_ext <<_ACEOF
++/* confdefs.h.  */
++_ACEOF
++cat confdefs.h >>conftest.$ac_ext
++cat >>conftest.$ac_ext <<_ACEOF
++/* end confdefs.h.  */
++
++int
++main ()
++{
++#ifndef __INTEL_COMPILER
++       choke me
++#endif
++
++  ;
++  return 0;
++}
++_ACEOF
++rm -f conftest.$ac_objext
++if { (ac_try="$ac_compile"
++case "(($ac_try" in
++  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
++  *) ac_try_echo=$ac_try;;
++esac
++eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
++  (eval "$ac_compile") 2>conftest.er1
++  ac_status=$?
++  grep -v '^ *+' conftest.er1 >conftest.err
++  rm -f conftest.er1
++  cat conftest.err >&5
++  echo "$as_me:$LINENO: \$? = $ac_status" >&5
++  (exit $ac_status); } && {
++	 test -z "$ac_c_werror_flag" ||
++	 test ! -s conftest.err
++       } && test -s conftest.$ac_objext; then
++  ac_compiler_intel=yes
++else
++  echo "$as_me: failed program was:" >&5
++sed 's/^/| /' conftest.$ac_ext >&5
++
++	ac_compiler_intel=no
++fi
++
++rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
++ac_cv_c_compiler_intel=$ac_compiler_intel
++
++fi
++{ echo "$as_me:$LINENO: result: $ac_cv_c_compiler_intel" >&5
++echo "${ECHO_T}$ac_cv_c_compiler_intel" >&6; }
++  fi
++fi
++GCC=`test "$ac_compiler_gnu" = yes && echo yes`
++MSVC=`test "$ac_compiler_msvc" = yes && echo yes`
++INTELC=`test "$ac_compiler_intel" = yes && echo yes`
++if test "$MSVC" = yes; then
++
++  ac_env_prefix_MSVC="${ac_compiler_path%/[Bb]in/*}"
++#  ac_env_paths="$ac_env_prefix_MSVC"
++
++  if test "$INTELC" = yes; then
++    # Extract the first word of "link.exe", so it can be a program name with args.
++set dummy link.exe; ac_word=$2
++{ echo "$as_me:$LINENO: checking for $ac_word" >&5
++echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6; }
++if test "${ac_cv_prog_LINK+set}" = set; then
++  echo $ECHO_N "(cached) $ECHO_C" >&6
++else
++  if test -n "$LINK"; then
++  ac_cv_prog_LINK="$LINK" # Let the user override the test.
++else
++as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
++for as_dir in $PATH
++do
++  IFS=$as_save_IFS
++  test -z "$as_dir" && as_dir=.
++  for ac_exec_ext in '' $ac_executable_extensions; do
++  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
++    ac_cv_prog_LINK="link.exe"
++    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
++    break 2
++  fi
++done
++done
++IFS=$as_save_IFS
++
++fi
++fi
++LINK=$ac_cv_prog_LINK
++if test -n "$LINK"; then
++  { echo "$as_me:$LINENO: result: $LINK" >&5
++echo "${ECHO_T}$LINK" >&6; }
++else
++  { echo "$as_me:$LINENO: result: no" >&5
++echo "${ECHO_T}no" >&6; }
++fi
+ 
++
++    test -z "$LINK" && { { echo "$as_me:$LINENO: error: the Intel C++ compiler for Visual Studio needs the link.exe from Visual Studio in \$PATH
++See \`config.log' for more details." >&5
++echo "$as_me: error: the Intel C++ compiler for Visual Studio needs the link.exe from Visual Studio in \$PATH
++See \`config.log' for more details." >&2;}
++   { (exit 1); exit 1; }; }
++
++    ac_env_prefix_INTELC="$ac_env_prefix_MSVC"
++    ac_env_prefix_MSVC="${as_dir%/[Bb]in}"
++
++#    ac_env_paths="$ac_env_paths:$ac_env_prefix_MSVC"
++  fi
++
++  { echo "$as_me:$LINENO: checking for the Windows SDK directory" >&5
++echo $ECHO_N "checking for the Windows SDK directory... $ECHO_C" >&6; }
++
++  # in Visual C++ 8.0 it is in VC/PlatformSDK
++  if test -d "$ac_env_prefix_MSVC/PlatformSDK/"; then
++    ac_env_prefix_WINSDK="$ac_env_prefix_MSVC/PlatformSDK"
++  else
++    # Check for the ildasm.exe tool which accompanies SDKs >= v6.0
++    as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
++for as_dir in $PATH
++do
++  IFS=$as_save_IFS
++  test -z "$as_dir" && as_dir=.
++  for ac_exec_ext in '' $ac_executable_extensions; do
++  if { test -f "$as_dir/ildasm.exe$ac_exec_ext" && $as_test_x "$as_dir/ildasm.exe$ac_exec_ext"; }; then
++    ac_cv_path_ILDASM="$as_dir/ildasm.exe$ac_exec_ext"
++    echo "$as_me:$LINENO: found $as_dir/ildasm.exe$ac_exec_ext" >&5
++    break 2
++  fi
++done
++done
++IFS=$as_save_IFS
++
++
++    if test -n "$ac_cv_path_ILDASM"; then
++      ac_env_prefix_WINSDK="${ac_cv_path_ILDASM%/[Bb]in/*}"
++    else
++      # Still not found? Walk through paths until we find a kernel32.lib in the subdir "Lib".
++      as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
++      for as_bindir in $PATH; do
++        as_dir=${as_bindir%/[Bb]in}
++        for as_subdir in lib Lib; do
++          if test -d "$as_dir/$as_subdir/"; then
++            for ac_word in kernel32.lib Kernel32.Lib; do
++              if test -f "$as_dir/$as_subdir/$ac_word"; then
++                ac_env_prefix_WINSDK="$as_dir"
++                break 3
++              fi
++            done
++          fi
++        done
++      done
++      IFS=$as_save_IFS
++    fi
++
++    test -z "$ac_env_prefix_WINSDK" && { { echo "$as_me:$LINENO: error: could not find the Windows SDK in \$PATH
++See \`config.log' for more details." >&5
++echo "$as_me: error: could not find the Windows SDK in \$PATH
++See \`config.log' for more details." >&2;}
++   { (exit 1); exit 1; }; }
++  fi
++
++  { echo "$as_me:$LINENO: result: $ac_env_prefix_WINSDK" >&5
++echo "${ECHO_T}$ac_env_prefix_WINSDK" >&6; }
++
++  for as_dir in $ac_env_prefix_WINSDK $ac_env_prefix_MSVC $ac_env_prefix_INTELC; do
++    for as_subdir in lib Lib; do
++      if test -d "$as_dir/$as_subdir/"; then
++        LIB="$as_dir/$as_subdir${LIB:+;$LIB}"
++        break
++      fi
++    done
++    for as_subdir in include Include; do
++      if test -d "$as_dir/$as_subdir/"; then
++        INCLUDE="$as_dir/$as_subdir${INCLUDE:+;$INCLUDE}"
++        break
++      fi
++    done
++  done
++  export LIB INCLUDE
++
++  echo "$as_me:$LINENO: environment variable LIB='$LIB'" >&5
++  echo "$as_me:$LINENO: environment variable INCLUDE='$INCLUDE'" >&5
++
++
++
++fi
+ cat >conftest.$ac_ext <<_ACEOF
+ /* confdefs.h.  */
+ _ACEOF
+@@ -3406,128 +3777,22 @@
+ rm -f conftest.$ac_ext
+ EXEEXT=$ac_cv_exeext
+ ac_exeext=$EXEEXT
+-{ echo "$as_me:$LINENO: checking for suffix of object files" >&5
+-echo $ECHO_N "checking for suffix of object files... $ECHO_C" >&6; }
+-if test "${ac_cv_objext+set}" = set; then
+-  echo $ECHO_N "(cached) $ECHO_C" >&6
+-else
+-  cat >conftest.$ac_ext <<_ACEOF
+-/* confdefs.h.  */
+-_ACEOF
+-cat confdefs.h >>conftest.$ac_ext
+-cat >>conftest.$ac_ext <<_ACEOF
+-/* end confdefs.h.  */
+-
+-int
+-main ()
+-{
+-
+-  ;
+-  return 0;
+-}
+-_ACEOF
+-rm -f conftest.o conftest.obj
+-if { (ac_try="$ac_compile"
+-case "(($ac_try" in
+-  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+-  *) ac_try_echo=$ac_try;;
+-esac
+-eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
+-  (eval "$ac_compile") 2>&5
+-  ac_status=$?
+-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+-  (exit $ac_status); }; then
+-  for ac_file in conftest.o conftest.obj conftest.*; do
+-  test -f "$ac_file" || continue;
+-  case $ac_file in
+-    *.$ac_ext | *.xcoff | *.tds | *.d | *.pdb | *.xSYM | *.bb | *.bbg | *.map | *.inf ) ;;
+-    *) ac_cv_objext=`expr "$ac_file" : '.*\.\(.*\)'`
+-       break;;
+-  esac
+-done
+-else
+-  echo "$as_me: failed program was:" >&5
+-sed 's/^/| /' conftest.$ac_ext >&5
+-
+-{ { echo "$as_me:$LINENO: error: cannot compute suffix of object files: cannot compile
+-See \`config.log' for more details." >&5
+-echo "$as_me: error: cannot compute suffix of object files: cannot compile
+-See \`config.log' for more details." >&2;}
+-   { (exit 1); exit 1; }; }
+-fi
+-
+-rm -f conftest.$ac_cv_objext conftest.$ac_ext
+-fi
+-{ echo "$as_me:$LINENO: result: $ac_cv_objext" >&5
+-echo "${ECHO_T}$ac_cv_objext" >&6; }
+-OBJEXT=$ac_cv_objext
+-ac_objext=$OBJEXT
+-{ echo "$as_me:$LINENO: checking whether we are using the GNU C compiler" >&5
+-echo $ECHO_N "checking whether we are using the GNU C compiler... $ECHO_C" >&6; }
+-if test "${ac_cv_c_compiler_gnu+set}" = set; then
+-  echo $ECHO_N "(cached) $ECHO_C" >&6
+-else
+-  cat >conftest.$ac_ext <<_ACEOF
+-/* confdefs.h.  */
+-_ACEOF
+-cat confdefs.h >>conftest.$ac_ext
+-cat >>conftest.$ac_ext <<_ACEOF
+-/* end confdefs.h.  */
+-
+-int
+-main ()
+-{
+-#ifndef __GNUC__
+-       choke me
+-#endif
+-
+-  ;
+-  return 0;
+-}
+-_ACEOF
+-rm -f conftest.$ac_objext
+-if { (ac_try="$ac_compile"
+-case "(($ac_try" in
+-  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+-  *) ac_try_echo=$ac_try;;
+-esac
+-eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
+-  (eval "$ac_compile") 2>conftest.er1
+-  ac_status=$?
+-  grep -v '^ *+' conftest.er1 >conftest.err
+-  rm -f conftest.er1
+-  cat conftest.err >&5
+-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+-  (exit $ac_status); } && {
+-	 test -z "$ac_c_werror_flag" ||
+-	 test ! -s conftest.err
+-       } && test -s conftest.$ac_objext; then
+-  ac_compiler_gnu=yes
+-else
+-  echo "$as_me: failed program was:" >&5
+-sed 's/^/| /' conftest.$ac_ext >&5
+-
+-	ac_compiler_gnu=no
+-fi
+-
+-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+-ac_cv_c_compiler_gnu=$ac_compiler_gnu
+-
+-fi
+-{ echo "$as_me:$LINENO: result: $ac_cv_c_compiler_gnu" >&5
+-echo "${ECHO_T}$ac_cv_c_compiler_gnu" >&6; }
+-GCC=`test $ac_compiler_gnu = yes && echo yes`
+ ac_test_CFLAGS=${CFLAGS+set}
+ ac_save_CFLAGS=$CFLAGS
+-{ echo "$as_me:$LINENO: checking whether $CC accepts -g" >&5
+-echo $ECHO_N "checking whether $CC accepts -g... $ECHO_C" >&6; }
++if test "$MSVC" = yes; then
++  ac_c_debug_flag="-Zi"
++else
++  ac_c_debug_flag="-g"
++fi
++{ echo "$as_me:$LINENO: checking whether $CC accepts $ac_c_debug_flag" >&5
++echo $ECHO_N "checking whether $CC accepts $ac_c_debug_flag... $ECHO_C" >&6; }
+ if test "${ac_cv_prog_cc_g+set}" = set; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+   ac_save_c_werror_flag=$ac_c_werror_flag
+    ac_c_werror_flag=yes
+    ac_cv_prog_cc_g=no
+-   CFLAGS="-g"
++   CFLAGS="$ac_c_debug_flag"
+    cat >conftest.$ac_ext <<_ACEOF
+ /* confdefs.h.  */
+ _ACEOF
+@@ -3604,7 +3869,7 @@
+ sed 's/^/| /' conftest.$ac_ext >&5
+ 
+ 	ac_c_werror_flag=$ac_save_c_werror_flag
+-	 CFLAGS="-g"
++	 CFLAGS="$ac_c_debug_flag"
+ 	 cat >conftest.$ac_ext <<_ACEOF
+ /* confdefs.h.  */
+ _ACEOF
+@@ -3659,18 +3924,21 @@
+ if test "$ac_test_CFLAGS" = set; then
+   CFLAGS=$ac_save_CFLAGS
+ elif test $ac_cv_prog_cc_g = yes; then
+-  if test "$GCC" = yes; then
+-    CFLAGS="-g -O2"
++  if test "$GCC" = yes || test "$MSVC" = yes; then
++    CFLAGS="$ac_c_debug_flag -O2"
+   else
+-    CFLAGS="-g"
++    CFLAGS="$ac_c_debug_flag"
+   fi
+ else
+-  if test "$GCC" = yes; then
++  if test "$GCC" = yes || test "$MSVC" = yes; then
+     CFLAGS="-O2"
+   else
+     CFLAGS=
+   fi
+ fi
++if test "$MSVC" = yes; then
++  CFLAGS="-nologo $CFLAGS"
++fi
+ { echo "$as_me:$LINENO: checking for $CC option to accept ISO C89" >&5
+ echo $ECHO_N "checking for $CC option to accept ISO C89... $ECHO_C" >&6; }
+ if test "${ac_cv_prog_cc_c89+set}" = set; then
+@@ -3791,6 +4059,8 @@
+ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ ac_compiler_gnu=$ac_cv_c_compiler_gnu
++ac_compiler_msvc=$ac_cv_c_compiler_msvc
++ac_compiler_intel=$ac_cv_c_compiler_intel
+ DEPDIR="${am__leading_dot}deps"
+ 
+ ac_config_commands="$ac_config_commands depfiles"
+@@ -4271,6 +4541,8 @@
+ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ ac_compiler_gnu=$ac_cv_c_compiler_gnu
++ac_compiler_msvc=$ac_cv_c_compiler_msvc
++ac_compiler_intel=$ac_cv_c_compiler_intel
+ { echo "$as_me:$LINENO: checking how to run the C preprocessor" >&5
+ echo $ECHO_N "checking how to run the C preprocessor... $ECHO_C" >&6; }
+ # On Suns, sometimes $CPP names a directory.
+@@ -4495,6 +4767,8 @@
+ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ ac_compiler_gnu=$ac_cv_c_compiler_gnu
++ac_compiler_msvc=$ac_cv_c_compiler_msvc
++ac_compiler_intel=$ac_cv_c_compiler_intel
+ 
+ 
+ { echo "$as_me:$LINENO: checking for grep that handles long lines and -e" >&5
+@@ -4920,7 +5194,7 @@
+          > conftestver.class
+        target_version=`{
+          unset JAVA_HOME
+-         echo "$as_me:4923: CLASSPATH=.${CLASSPATH:+$CLASSPATH_SEPARATOR$CLASSPATH} $CONF_JAVA conftestver" >&5
++         echo "$as_me:5197: CLASSPATH=.${CLASSPATH:+$CLASSPATH_SEPARATOR$CLASSPATH} $CONF_JAVA conftestver" >&5
+          CLASSPATH=.${CLASSPATH:+$CLASSPATH_SEPARATOR$CLASSPATH} $CONF_JAVA conftestver 2>&5
+        }`
+        case "$target_version" in
+@@ -4992,23 +5266,23 @@
+         if $JAVAC --version 2>/dev/null | sed -e 1q | grep gcj > /dev/null; then
+             if $JAVAC --version 2>/dev/null | sed -e 's,^[^0-9]*,,' -e 1q | sed -e '/^4\.[012]/d' | grep '^[4-9]' >/dev/null; then
+                         rm -f conftest.class
+-        if { echo "$as_me:4995: $JAVAC -d . conftest.java" >&5
++        if { echo "$as_me:5269: $JAVAC -d . conftest.java" >&5
+              $JAVAC -d . conftest.java >&5 2>&1
+            } \
+            && test -f conftest.class \
+            && expr `func_classfile_version conftest.class` '<=' $cfversion >/dev/null 2>&5; then
+                     rm -f conftest.class
+           rm -f conftestfail.class
+-          if { echo "$as_me:5002: $JAVAC -fsource=$source_version -d . conftest.java" >&5
++          if { echo "$as_me:5276: $JAVAC -fsource=$source_version -d . conftest.java" >&5
+                $JAVAC -fsource="$source_version" -d . conftest.java >&5 2>&1
+              } \
+              && test -f conftest.class \
+              && expr `func_classfile_version conftest.class` '<=' $cfversion >/dev/null 2>&5 \
+-             && { echo "$as_me:5007: $JAVAC -d . conftestfail.java" >&5
++             && { echo "$as_me:5281: $JAVAC -d . conftestfail.java" >&5
+                   $JAVAC -d . conftestfail.java >&5 2>&1
+                 } \
+              && test -f conftestfail.class \
+-             && ! { echo "$as_me:5011: $JAVAC -fsource=$source_version -d . conftestfail.java" >&5
++             && ! { echo "$as_me:5285: $JAVAC -fsource=$source_version -d . conftestfail.java" >&5
+                     $JAVAC -fsource="$source_version" -d . conftestfail.java >&5 2>&1
+                   }; then
+             CONF_JAVAC="$JAVAC -fsource=$source_version"
+@@ -5022,7 +5296,7 @@
+         else
+                     rm -f conftest.class
+           rm -f conftestfail.class
+-          if { echo "$as_me:5025: $JAVAC -fsource=$source_version -ftarget=$target_version -d . conftest.java" >&5
++          if { echo "$as_me:5299: $JAVAC -fsource=$source_version -ftarget=$target_version -d . conftest.java" >&5
+                $JAVAC -fsource="$source_version" -ftarget="$target_version" -d . conftest.java >&5 2>&1
+              } \
+              && test -f conftest.class \
+@@ -5035,7 +5309,7 @@
+       else
+                 if test "$target_version" = 1.4 && test "$source_version" = 1.4; then
+                     rm -f conftest.class
+-          if { echo "$as_me:5038: $JAVAC -d . conftest.java" >&5
++          if { echo "$as_me:5312: $JAVAC -d . conftest.java" >&5
+                $JAVAC -d . conftest.java >&5 2>&1
+              } \
+              && test -f conftest.class; then
+@@ -5047,7 +5321,7 @@
+           if test "$target_version" = 1.4 && test "$source_version" = 1.3; then
+                                     javac_works=
+             rm -f conftest.class
+-            if { echo "$as_me:5050: $JAVAC -d . conftest.java" >&5
++            if { echo "$as_me:5324: $JAVAC -d . conftest.java" >&5
+                  $JAVAC -d . conftest.java >&5 2>&1
+                } \
+                && test -f conftest.class; then
+@@ -5055,7 +5329,7 @@
+             fi
+             javac_noassert_works=
+             rm -f conftest.class
+-            if { echo "$as_me:5058: $JAVAC -fno-assert -d . conftest.java" >&5
++            if { echo "$as_me:5332: $JAVAC -fno-assert -d . conftest.java" >&5
+                  $JAVAC -fno-assert -d . conftest.java >&5 2>&1
+                } \
+                && test -f conftest.class; then
+@@ -5063,11 +5337,11 @@
+             fi
+             if test -n "$javac_works" && test -n "$javac_noassert_works"; then
+               rm -f conftestfail.class
+-              if { echo "$as_me:5066: $JAVAC -d . conftestfail.java" >&5
++              if { echo "$as_me:5340: $JAVAC -d . conftestfail.java" >&5
+                    $JAVAC -d . conftestfail.java >&5 2>&1
+                  } \
+                  && test -f conftestfail.class \
+-                 && ! { echo "$as_me:5070: $JAVAC -fno-assert -d . conftestfail.java" >&5
++                 && ! { echo "$as_me:5344: $JAVAC -fno-assert -d . conftestfail.java" >&5
+                         $JAVAC -fno-assert -d . conftestfail.java >&5 2>&1
+                       }; then
+                                 javac_works=
+@@ -5089,23 +5363,23 @@
+       fi
+     else
+                   rm -f conftest.class
+-      if { echo "$as_me:5092: $JAVAC -d . conftest.java" >&5
++      if { echo "$as_me:5366: $JAVAC -d . conftest.java" >&5
+            $JAVAC -d . conftest.java >&5 2>&1
+          } \
+          && test -f conftest.class \
+          && expr `func_classfile_version conftest.class` '<=' $cfversion >/dev/null 2>&5; then
+                 rm -f conftest.class
+         rm -f conftestfail.class
+-        if { echo "$as_me:5099: $JAVAC -source $source_version -d . conftest.java" >&5
++        if { echo "$as_me:5373: $JAVAC -source $source_version -d . conftest.java" >&5
+              $JAVAC -source "$source_version" -d . conftest.java >&5 2>&1
+            } \
+            && test -f conftest.class \
+            && expr `func_classfile_version conftest.class` '<=' $cfversion >/dev/null 2>&5 \
+-           && { echo "$as_me:5104: $JAVAC -d . conftestfail.java" >&5
++           && { echo "$as_me:5378: $JAVAC -d . conftestfail.java" >&5
+                 $JAVAC -d . conftestfail.java >&5 2>&1
+               } \
+            && test -f conftestfail.class \
+-           && ! { echo "$as_me:5108: $JAVAC -source $source_version -d . conftestfail.java" >&5
++           && ! { echo "$as_me:5382: $JAVAC -source $source_version -d . conftestfail.java" >&5
+                   $JAVAC -source "$source_version" -d . conftestfail.java >&5 2>&1
+                 }; then
+           CONF_JAVAC="$JAVAC -source $source_version"
+@@ -5118,23 +5392,23 @@
+         fi
+       else
+                         rm -f conftest.class
+-        if { echo "$as_me:5121: $JAVAC -target $target_version -d . conftest.java" >&5
++        if { echo "$as_me:5395: $JAVAC -target $target_version -d . conftest.java" >&5
+              $JAVAC -target "$target_version" -d . conftest.java >&5 2>&1
+            } \
+            && test -f conftest.class \
+            && expr `func_classfile_version conftest.class` '<=' $cfversion >/dev/null 2>&5; then
+                     rm -f conftest.class
+           rm -f conftestfail.class
+-          if { echo "$as_me:5128: $JAVAC -target $target_version -source $source_version -d . conftest.java" >&5
++          if { echo "$as_me:5402: $JAVAC -target $target_version -source $source_version -d . conftest.java" >&5
+                $JAVAC -target "$target_version" -source "$source_version" -d . conftest.java >&5 2>&1
+              } \
+              && test -f conftest.class \
+              && expr `func_classfile_version conftest.class` '<=' $cfversion >/dev/null 2>&5 \
+-             && { echo "$as_me:5133: $JAVAC -target $target_version -d . conftestfail.java" >&5
++             && { echo "$as_me:5407: $JAVAC -target $target_version -d . conftestfail.java" >&5
+                   $JAVAC -target "$target_version" -d . conftestfail.java >&5 2>&1
+                 } \
+              && test -f conftestfail.class \
+-             && ! { echo "$as_me:5137: $JAVAC -target $target_version -source $source_version -d . conftestfail.java" >&5
++             && ! { echo "$as_me:5411: $JAVAC -target $target_version -source $source_version -d . conftestfail.java" >&5
+                     $JAVAC -target "$target_version" -source "$source_version" -d . conftestfail.java >&5 2>&1
+                   }; then
+             CONF_JAVAC="$JAVAC -target $target_version -source $source_version"
+@@ -5147,7 +5421,7 @@
+           fi
+         else
+                                         rm -f conftest.class
+-          if { echo "$as_me:5150: $JAVAC -target $target_version -source $source_version -d . conftest.java" >&5
++          if { echo "$as_me:5424: $JAVAC -target $target_version -source $source_version -d . conftest.java" >&5
+                $JAVAC -target "$target_version" -source "$source_version" -d . conftest.java >&5 2>&1
+              } \
+              && test -f conftest.class \
+@@ -5265,28 +5539,28 @@
+ 
+                 if test -z "$HAVE_JAVACOMP" && test -n "$HAVE_GCJ_IN_PATH"; then
+             if gcj --version 2>/dev/null | sed -e 's,^[^0-9]*,,' -e 1q | sed -e '/^3\.[01]/d' | grep '^[3-9]' >/dev/null; then
+-                if { echo "$as_me:5268: gcj -C -d . conftestlib.java" >&5
++                if { echo "$as_me:5542: gcj -C -d . conftestlib.java" >&5
+              gcj -C -d . conftestlib.java >&5 2>&1
+            }; then
+                     if gcj --version 2>/dev/null | sed -e 's,^[^0-9]*,,' -e 1q | sed -e '/^4\.[012]/d' | grep '^[4-9]' >/dev/null; then
+                                     rm -f conftest.class
+-            if { echo "$as_me:5273: gcj -C -d . conftest.java" >&5
++            if { echo "$as_me:5547: gcj -C -d . conftest.java" >&5
+                  gcj -C -d . conftest.java >&5 2>&1
+                } \
+                && test -f conftest.class \
+                && expr `func_classfile_version conftest.class` '<=' $cfversion >/dev/null 2>&5; then
+                             rm -f conftest.class
+               rm -f conftestfail.class
+-              if { echo "$as_me:5280: gcj -C -fsource=$source_version -d . conftest.java" >&5
++              if { echo "$as_me:5554: gcj -C -fsource=$source_version -d . conftest.java" >&5
+                    gcj -C -fsource="$source_version" -d . conftest.java >&5 2>&1
+                  } \
+                  && test -f conftest.class \
+                  && expr `func_classfile_version conftest.class` '<=' $cfversion >/dev/null 2>&5 \
+-                 && { echo "$as_me:5285: gcj -C -d . conftestfail.java" >&5
++                 && { echo "$as_me:5559: gcj -C -d . conftestfail.java" >&5
+                       gcj -C -d . conftestfail.java >&5 2>&1
+                     } \
+                  && test -f conftestfail.class \
+-                 && ! { echo "$as_me:5289: gcj -C -fsource=$source_version -d . conftestfail.java" >&5
++                 && ! { echo "$as_me:5563: gcj -C -fsource=$source_version -d . conftestfail.java" >&5
+                         gcj -C -fsource="$source_version" -d . conftestfail.java >&5 2>&1
+                       }; then
+                 CONF_JAVAC="gcj -C -fsource=$source_version"
+@@ -5300,7 +5574,7 @@
+             else
+                             rm -f conftest.class
+               rm -f conftestfail.class
+-              if { echo "$as_me:5303: gcj -C -fsource=$source_version -ftarget=$target_version -d . conftest.java" >&5
++              if { echo "$as_me:5577: gcj -C -fsource=$source_version -ftarget=$target_version -d . conftest.java" >&5
+                    gcj -C -fsource="$source_version" -ftarget="$target_version" -d . conftest.java >&5 2>&1
+                  } \
+                  && test -f conftest.class \
+@@ -5313,7 +5587,7 @@
+           else
+                                                 if test "$target_version" = 1.4 && test "$source_version" = 1.4; then
+               rm -f conftest.class
+-              if { echo "$as_me:5316: gcj -C -d . conftest.java" >&5
++              if { echo "$as_me:5590: gcj -C -d . conftest.java" >&5
+                    gcj -C -d . conftest.java >&5 2>&1
+                  } \
+                  && test -f conftest.class; then
+@@ -5324,7 +5598,7 @@
+             else
+               if test "$target_version" = 1.4 && test "$source_version" = 1.3; then
+                                                 rm -f conftest.class
+-                if { echo "$as_me:5327: gcj -C -fno-assert -d . conftest.java" >&5
++                if { echo "$as_me:5601: gcj -C -fno-assert -d . conftest.java" >&5
+                      gcj -C -fno-assert -d . conftest.java >&5 2>&1
+                    } \
+                    && test -f conftest.class; then
+@@ -5333,7 +5607,7 @@
+                   HAVE_JAVACOMP=1
+                 else
+                   rm -f conftest.class
+-                  if { echo "$as_me:5336: gcj -C -d . conftest.java" >&5
++                  if { echo "$as_me:5610: gcj -C -d . conftest.java" >&5
+                        gcj -C -d . conftest.java >&5 2>&1
+                      } \
+                      && test -f conftest.class; then
+@@ -5352,23 +5626,23 @@
+             if { javac -version >/dev/null 2>/dev/null || test $? -le 2; } \
+          && ( if javac -help 2>&1 >/dev/null | grep at.dms.kjc.Main >/dev/null && javac -help 2>/dev/null | grep 'released.*2000' >/dev/null ; then exit 1; else exit 0; fi ); then
+                                 rm -f conftest.class
+-        if { echo "$as_me:5355: javac -d . conftest.java" >&5
++        if { echo "$as_me:5629: javac -d . conftest.java" >&5
+              javac -d . conftest.java >&5 2>&1
+            } \
+            && test -f conftest.class \
+            && expr `func_classfile_version conftest.class` '<=' $cfversion >/dev/null 2>&5; then
+                     rm -f conftest.class
+           rm -f conftestfail.class
+-          if { echo "$as_me:5362: javac -source $source_version -d . conftest.java" >&5
++          if { echo "$as_me:5636: javac -source $source_version -d . conftest.java" >&5
+                javac -source "$source_version" -d . conftest.java >&5 2>&1
+              } \
+              && test -f conftest.class \
+              && expr `func_classfile_version conftest.class` '<=' $cfversion >/dev/null 2>&5 \
+-             && { echo "$as_me:5367: javac -d . conftestfail.java" >&5
++             && { echo "$as_me:5641: javac -d . conftestfail.java" >&5
+                   javac -d . conftestfail.java >&5 2>&1
+                 } \
+              && test -f conftestfail.class \
+-             && ! { echo "$as_me:5371: javac -source $source_version -d . conftestfail.java" >&5
++             && ! { echo "$as_me:5645: javac -source $source_version -d . conftestfail.java" >&5
+                     javac -source "$source_version" -d . conftestfail.java >&5 2>&1
+                   }; then
+             CONF_JAVAC="javac -source $source_version"
+@@ -5381,23 +5655,23 @@
+           fi
+         else
+                               rm -f conftest.class
+-          if { echo "$as_me:5384: javac -target $target_version -d . conftest.java" >&5
++          if { echo "$as_me:5658: javac -target $target_version -d . conftest.java" >&5
+                javac -target "$target_version" -d . conftest.java >&5 2>&1
+              } \
+              && test -f conftest.class \
+              && expr `func_classfile_version conftest.class` '<=' $cfversion >/dev/null 2>&5; then
+                         rm -f conftest.class
+             rm -f conftestfail.class
+-            if { echo "$as_me:5391: javac -target $target_version -source $source_version -d . conftest.java" >&5
++            if { echo "$as_me:5665: javac -target $target_version -source $source_version -d . conftest.java" >&5
+                  javac -target "$target_version" -source "$source_version" -d . conftest.java >&5 2>&1
+                } \
+                && test -f conftest.class \
+                && expr `func_classfile_version conftest.class` '<=' $cfversion >/dev/null 2>&5 \
+-               && { echo "$as_me:5396: javac -target $target_version -d . conftestfail.java" >&5
++               && { echo "$as_me:5670: javac -target $target_version -d . conftestfail.java" >&5
+                     javac -target "$target_version" -d . conftestfail.java >&5 2>&1
+                   } \
+                && test -f conftestfail.class \
+-               && ! { echo "$as_me:5400: javac -target $target_version -source $source_version -d . conftestfail.java" >&5
++               && ! { echo "$as_me:5674: javac -target $target_version -source $source_version -d . conftestfail.java" >&5
+                       javac -target "$target_version" -source "$source_version" -d . conftestfail.java >&5 2>&1
+                     }; then
+               CONF_JAVAC="javac -target $target_version -source $source_version"
+@@ -5410,7 +5684,7 @@
+             fi
+           else
+                                                 rm -f conftest.class
+-            if { echo "$as_me:5413: javac -target $target_version -source $source_version -d . conftest.java" >&5
++            if { echo "$as_me:5687: javac -target $target_version -source $source_version -d . conftest.java" >&5
+                  javac -target "$target_version" -source "$source_version" -d . conftest.java >&5 2>&1
+                } \
+                && test -f conftest.class \
+@@ -7709,7 +7983,7 @@
+   ;;
+ *-*-irix6*)
+   # Find out which ABI we are using.
+-  echo '#line 7712 "configure"' > conftest.$ac_ext
++  echo '#line 7986 "configure"' > conftest.$ac_ext
+   if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+   (eval $ac_compile) 2>&5
+   ac_status=$?
+@@ -7811,6 +8085,8 @@
+ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ ac_compiler_gnu=$ac_cv_c_compiler_gnu
++ac_compiler_msvc=$ac_cv_c_compiler_msvc
++ac_compiler_intel=$ac_cv_c_compiler_intel
+ 
+      cat >conftest.$ac_ext <<_ACEOF
+ /* confdefs.h.  */
+@@ -7860,6 +8136,8 @@
+ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ ac_compiler_gnu=$ac_cv_c_compiler_gnu
++ac_compiler_msvc=$ac_cv_c_compiler_msvc
++ac_compiler_intel=$ac_cv_c_compiler_intel
+ 
+ fi
+ { echo "$as_me:$LINENO: result: $lt_cv_cc_needs_belf" >&5
+@@ -8330,12 +8608,14 @@
+ ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
++ac_compiler_msvc=$ac_cv_cxx_compiler_msvc
++ac_compiler_intel=$ac_cv_cxx_compiler_intel
+ if test -z "$CXX"; then
+   if test -n "$CCC"; then
+     CXX=$CCC
+   else
+     if test -n "$ac_tool_prefix"; then
+-  for ac_prog in g++ c++ gpp aCC CC cxx cc++ cl.exe FCC KCC RCC xlC_r xlC
++  for ac_prog in g++ c++ gpp aCC CC cxx cc++ icl.exe cl.exe FCC KCC RCC xlC_r xlC
+   do
+     # Extract the first word of "$ac_tool_prefix$ac_prog", so it can be a program name with args.
+ set dummy $ac_tool_prefix$ac_prog; ac_word=$2
+@@ -8379,7 +8659,7 @@
+ fi
+ if test -z "$CXX"; then
+   ac_ct_CXX=$CXX
+-  for ac_prog in g++ c++ gpp aCC CC cxx cc++ cl.exe FCC KCC RCC xlC_r xlC
++  for ac_prog in g++ c++ gpp aCC CC cxx cc++ icl.exe cl.exe FCC KCC RCC xlC_r xlC
+ do
+   # Extract the first word of "$ac_prog", so it can be a program name with args.
+ set dummy $ac_prog; ac_word=$2
+@@ -8442,8 +8722,41 @@
+ fi
+ # Provide some information about the compiler.
+ echo "$as_me:$LINENO: checking for C++ compiler version" >&5
+-ac_compiler=`set X $ac_compile; echo $2`
+-{ (ac_try="$ac_compiler --version >&5"
++set dummy $CXX; ac_compiler=$2
++case $ac_compiler in
++  */*) ac_compiler_name="${ac_compiler##*/}"; ac_compiler_path="$ac_compiler" ;;
++  *) ac_compiler_name="$ac_compiler"; as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
++for as_dir in $PATH
++do
++  IFS=$as_save_IFS
++  test -z "$as_dir" && as_dir=.
++  for ac_exec_ext in '' $ac_executable_extensions; do
++  if { test -f "$as_dir/$ac_compiler$ac_exec_ext" && $as_test_x "$as_dir/$ac_compiler$ac_exec_ext"; }; then
++    ac_compiler_path="$as_dir/$ac_compiler$ac_exec_ext"
++    echo "$as_me:$LINENO: found $as_dir/$ac_compiler$ac_exec_ext" >&5
++    break 2
++  fi
++done
++done
++IFS=$as_save_IFS
++ ;;
++esac
++case $ac_compiler_name in
++  cl.exe|icl.exe)
++    # Windows compilers don't take --version, -v or -V arguments...
++    { (ac_try="$ac_compiler >&5"
++case "(($ac_try" in
++  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
++  *) ac_try_echo=$ac_try;;
++esac
++eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
++  (eval "$ac_compiler >&5") 2>&5
++  ac_status=$?
++  echo "$as_me:$LINENO: \$? = $ac_status" >&5
++  (exit $ac_status); }
++    ;;
++  *)
++    { (ac_try="$ac_compiler --version >&5"
+ case "(($ac_try" in
+   *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+   *) ac_try_echo=$ac_try;;
+@@ -8453,7 +8766,7 @@
+   ac_status=$?
+   echo "$as_me:$LINENO: \$? = $ac_status" >&5
+   (exit $ac_status); }
+-{ (ac_try="$ac_compiler -v >&5"
++    { (ac_try="$ac_compiler -v >&5"
+ case "(($ac_try" in
+   *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+   *) ac_try_echo=$ac_try;;
+@@ -8463,7 +8776,7 @@
+   ac_status=$?
+   echo "$as_me:$LINENO: \$? = $ac_status" >&5
+   (exit $ac_status); }
+-{ (ac_try="$ac_compiler -V >&5"
++    { (ac_try="$ac_compiler -V >&5"
+ case "(($ac_try" in
+   *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+   *) ac_try_echo=$ac_try;;
+@@ -8473,6 +8786,8 @@
+   ac_status=$?
+   echo "$as_me:$LINENO: \$? = $ac_status" >&5
+   (exit $ac_status); }
++    ;;
++esac
+ 
+ { echo "$as_me:$LINENO: checking whether we are using the GNU C++ compiler" >&5
+ echo $ECHO_N "checking whether we are using the GNU C++ compiler... $ECHO_C" >&6; }
+@@ -8528,18 +8843,140 @@
+ fi
+ { echo "$as_me:$LINENO: result: $ac_cv_cxx_compiler_gnu" >&5
+ echo "${ECHO_T}$ac_cv_cxx_compiler_gnu" >&6; }
+-GXX=`test $ac_compiler_gnu = yes && echo yes`
++if test "$ac_compiler_gnu" != yes
++then
++  { echo "$as_me:$LINENO: checking whether we are using the Visual C++ compiler" >&5
++echo $ECHO_N "checking whether we are using the Visual C++ compiler... $ECHO_C" >&6; }
++if test "${ac_cv_cxx_compiler_msvc+set}" = set; then
++  echo $ECHO_N "(cached) $ECHO_C" >&6
++else
++  cat >conftest.$ac_ext <<_ACEOF
++/* confdefs.h.  */
++_ACEOF
++cat confdefs.h >>conftest.$ac_ext
++cat >>conftest.$ac_ext <<_ACEOF
++/* end confdefs.h.  */
++
++int
++main ()
++{
++#ifndef _MSC_VER
++       choke me
++#endif
++
++  ;
++  return 0;
++}
++_ACEOF
++rm -f conftest.$ac_objext
++if { (ac_try="$ac_compile"
++case "(($ac_try" in
++  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
++  *) ac_try_echo=$ac_try;;
++esac
++eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
++  (eval "$ac_compile") 2>conftest.er1
++  ac_status=$?
++  grep -v '^ *+' conftest.er1 >conftest.err
++  rm -f conftest.er1
++  cat conftest.err >&5
++  echo "$as_me:$LINENO: \$? = $ac_status" >&5
++  (exit $ac_status); } && {
++	 test -z "$ac_cxx_werror_flag" ||
++	 test ! -s conftest.err
++       } && test -s conftest.$ac_objext; then
++  ac_compiler_msvc=yes
++else
++  echo "$as_me: failed program was:" >&5
++sed 's/^/| /' conftest.$ac_ext >&5
++
++	ac_compiler_msvc=no
++fi
++
++rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
++ac_cv_cxx_compiler_msvc=$ac_compiler_msvc
++
++fi
++{ echo "$as_me:$LINENO: result: $ac_cv_cxx_compiler_msvc" >&5
++echo "${ECHO_T}$ac_cv_cxx_compiler_msvc" >&6; }
++  if test "$ac_compiler_msvc" = yes
++  then
++    { echo "$as_me:$LINENO: checking whether we are using the Intel C++ compiler" >&5
++echo $ECHO_N "checking whether we are using the Intel C++ compiler... $ECHO_C" >&6; }
++if test "${ac_cv_cxx_compiler_intel+set}" = set; then
++  echo $ECHO_N "(cached) $ECHO_C" >&6
++else
++  cat >conftest.$ac_ext <<_ACEOF
++/* confdefs.h.  */
++_ACEOF
++cat confdefs.h >>conftest.$ac_ext
++cat >>conftest.$ac_ext <<_ACEOF
++/* end confdefs.h.  */
++
++int
++main ()
++{
++#ifndef __INTEL_COMPILER
++       choke me
++#endif
++
++  ;
++  return 0;
++}
++_ACEOF
++rm -f conftest.$ac_objext
++if { (ac_try="$ac_compile"
++case "(($ac_try" in
++  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
++  *) ac_try_echo=$ac_try;;
++esac
++eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
++  (eval "$ac_compile") 2>conftest.er1
++  ac_status=$?
++  grep -v '^ *+' conftest.er1 >conftest.err
++  rm -f conftest.er1
++  cat conftest.err >&5
++  echo "$as_me:$LINENO: \$? = $ac_status" >&5
++  (exit $ac_status); } && {
++	 test -z "$ac_cxx_werror_flag" ||
++	 test ! -s conftest.err
++       } && test -s conftest.$ac_objext; then
++  ac_compiler_intel=yes
++else
++  echo "$as_me: failed program was:" >&5
++sed 's/^/| /' conftest.$ac_ext >&5
++
++	ac_compiler_intel=no
++fi
++
++rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
++ac_cv_cxx_compiler_intel=$ac_compiler_intel
++
++fi
++{ echo "$as_me:$LINENO: result: $ac_cv_cxx_compiler_intel" >&5
++echo "${ECHO_T}$ac_cv_cxx_compiler_intel" >&6; }
++  fi
++fi
++GXX=`test "$ac_compiler_gnu" = yes && echo yes`
++MSVCP=`test "$ac_compiler_msvc" = yes && echo yes`
++INTELCP=`test "$ac_compiler_intel" = yes && echo yes`
+ ac_test_CXXFLAGS=${CXXFLAGS+set}
+ ac_save_CXXFLAGS=$CXXFLAGS
+-{ echo "$as_me:$LINENO: checking whether $CXX accepts -g" >&5
+-echo $ECHO_N "checking whether $CXX accepts -g... $ECHO_C" >&6; }
++ac_cv_prog_cxx_path=${CXX%%" "*}
++ac_cv_prog_cxx_name=${ac_cv_prog_cxx_path##*/}
++case ${ac_cv_prog_cxx_name%.exe} in
++  cl|icl) ac_cxx_debug_flag="-Zi" ;;
++  *) ac_cxx_debug_flag="-g" ;;
++esac
++{ echo "$as_me:$LINENO: checking whether $ac_cv_prog_cxx_name accepts $ac_cxx_debug_flag" >&5
++echo $ECHO_N "checking whether $ac_cv_prog_cxx_name accepts $ac_cxx_debug_flag... $ECHO_C" >&6; }
+ if test "${ac_cv_prog_cxx_g+set}" = set; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+   ac_save_cxx_werror_flag=$ac_cxx_werror_flag
+    ac_cxx_werror_flag=yes
+    ac_cv_prog_cxx_g=no
+-   CXXFLAGS="-g"
++   CXXFLAGS="$ac_cxx_debug_flag"
+    cat >conftest.$ac_ext <<_ACEOF
+ /* confdefs.h.  */
+ _ACEOF
+@@ -8616,7 +9053,7 @@
+ sed 's/^/| /' conftest.$ac_ext >&5
+ 
+ 	ac_cxx_werror_flag=$ac_save_cxx_werror_flag
+-	 CXXFLAGS="-g"
++	 CXXFLAGS="$ac_cxx_debug_flag"
+ 	 cat >conftest.$ac_ext <<_ACEOF
+ /* confdefs.h.  */
+ _ACEOF
+@@ -8672,9 +9109,9 @@
+   CXXFLAGS=$ac_save_CXXFLAGS
+ elif test $ac_cv_prog_cxx_g = yes; then
+   if test "$GXX" = yes; then
+-    CXXFLAGS="-g -O2"
++    CXXFLAGS="$ac_cxx_debug_flag -O2"
+   else
+-    CXXFLAGS="-g"
++    CXXFLAGS="$ac_cxx_debug_flag"
+   fi
+ else
+   if test "$GXX" = yes; then
+@@ -8688,6 +9125,8 @@
+ ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
++ac_compiler_msvc=$ac_cv_cxx_compiler_msvc
++ac_compiler_intel=$ac_cv_cxx_compiler_intel
+ 
+ depcc="$CXX"  am_compiler_list=
+ 
+@@ -8807,6 +9246,8 @@
+ ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
++ac_compiler_msvc=$ac_cv_cxx_compiler_msvc
++ac_compiler_intel=$ac_cv_cxx_compiler_intel
+ { echo "$as_me:$LINENO: checking how to run the C++ preprocessor" >&5
+ echo $ECHO_N "checking how to run the C++ preprocessor... $ECHO_C" >&6; }
+ if test -z "$CXXCPP"; then
+@@ -9027,6 +9468,8 @@
+ ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
++ac_compiler_msvc=$ac_cv_cxx_compiler_msvc
++ac_compiler_intel=$ac_cv_cxx_compiler_intel
+ 
+ fi
+ 
+@@ -9290,6 +9733,8 @@
+ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ ac_compiler_gnu=$ac_cv_c_compiler_gnu
++ac_compiler_msvc=$ac_cv_c_compiler_msvc
++ac_compiler_intel=$ac_cv_c_compiler_intel
+ 
+ 
+ 
+@@ -10197,6 +10642,8 @@
+ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ ac_compiler_gnu=$ac_cv_c_compiler_gnu
++ac_compiler_msvc=$ac_cv_c_compiler_msvc
++ac_compiler_intel=$ac_cv_c_compiler_intel
+ 
+ 
+ # Source file extension for C test sources.
+@@ -10266,11 +10713,11 @@
+    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
+    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
+    -e 's:$: $lt_compiler_flag:'`
+-   (eval echo "\"\$as_me:10269: $lt_compile\"" >&5)
++   (eval echo "\"\$as_me:10716: $lt_compile\"" >&5)
+    (eval "$lt_compile" 2>conftest.err)
+    ac_status=$?
+    cat conftest.err >&5
+-   echo "$as_me:10273: \$? = $ac_status" >&5
++   echo "$as_me:10720: \$? = $ac_status" >&5
+    if (exit $ac_status) && test -s "$ac_outfile"; then
+      # The compiler can only warn and ignore the option if not recognized
+      # So say no if there are warnings other than the usual output.
+@@ -10559,11 +11006,11 @@
+    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
+    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
+    -e 's:$: $lt_compiler_flag:'`
+-   (eval echo "\"\$as_me:10562: $lt_compile\"" >&5)
++   (eval echo "\"\$as_me:11009: $lt_compile\"" >&5)
+    (eval "$lt_compile" 2>conftest.err)
+    ac_status=$?
+    cat conftest.err >&5
+-   echo "$as_me:10566: \$? = $ac_status" >&5
++   echo "$as_me:11013: \$? = $ac_status" >&5
+    if (exit $ac_status) && test -s "$ac_outfile"; then
+      # The compiler can only warn and ignore the option if not recognized
+      # So say no if there are warnings other than the usual output.
+@@ -10663,11 +11110,11 @@
+    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
+    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
+    -e 's:$: $lt_compiler_flag:'`
+-   (eval echo "\"\$as_me:10666: $lt_compile\"" >&5)
++   (eval echo "\"\$as_me:11113: $lt_compile\"" >&5)
+    (eval "$lt_compile" 2>out/conftest.err)
+    ac_status=$?
+    cat out/conftest.err >&5
+-   echo "$as_me:10670: \$? = $ac_status" >&5
++   echo "$as_me:11117: \$? = $ac_status" >&5
+    if (exit $ac_status) && test -s out/conftest2.$ac_objext
+    then
+      # The compiler can only warn and ignore the option if not recognized
+@@ -13012,7 +13459,7 @@
+   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
+   lt_status=$lt_dlunknown
+   cat > conftest.$ac_ext <<EOF
+-#line 13015 "configure"
++#line 13462 "configure"
+ #include "confdefs.h"
+ 
+ #if HAVE_DLFCN_H
+@@ -13112,7 +13559,7 @@
+   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
+   lt_status=$lt_dlunknown
+   cat > conftest.$ac_ext <<EOF
+-#line 13115 "configure"
++#line 13562 "configure"
+ #include "confdefs.h"
+ 
+ #if HAVE_DLFCN_H
+@@ -13742,6 +14189,8 @@
+ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ ac_compiler_gnu=$ac_cv_c_compiler_gnu
++ac_compiler_msvc=$ac_cv_c_compiler_msvc
++ac_compiler_intel=$ac_cv_c_compiler_intel
+ 
+ CC="$lt_save_CC"
+ 
+@@ -13809,6 +14258,8 @@
+ ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
++ac_compiler_msvc=$ac_cv_cxx_compiler_msvc
++ac_compiler_intel=$ac_cv_cxx_compiler_intel
+ 
+ 
+ 
+@@ -15536,11 +15987,11 @@
+    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
+    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
+    -e 's:$: $lt_compiler_flag:'`
+-   (eval echo "\"\$as_me:15539: $lt_compile\"" >&5)
++   (eval echo "\"\$as_me:15990: $lt_compile\"" >&5)
+    (eval "$lt_compile" 2>conftest.err)
+    ac_status=$?
+    cat conftest.err >&5
+-   echo "$as_me:15543: \$? = $ac_status" >&5
++   echo "$as_me:15994: \$? = $ac_status" >&5
+    if (exit $ac_status) && test -s "$ac_outfile"; then
+      # The compiler can only warn and ignore the option if not recognized
+      # So say no if there are warnings other than the usual output.
+@@ -15640,11 +16091,11 @@
+    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
+    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
+    -e 's:$: $lt_compiler_flag:'`
+-   (eval echo "\"\$as_me:15643: $lt_compile\"" >&5)
++   (eval echo "\"\$as_me:16094: $lt_compile\"" >&5)
+    (eval "$lt_compile" 2>out/conftest.err)
+    ac_status=$?
+    cat out/conftest.err >&5
+-   echo "$as_me:15647: \$? = $ac_status" >&5
++   echo "$as_me:16098: \$? = $ac_status" >&5
+    if (exit $ac_status) && test -s out/conftest2.$ac_objext
+    then
+      # The compiler can only warn and ignore the option if not recognized
+@@ -16795,6 +17246,8 @@
+ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ ac_compiler_gnu=$ac_cv_c_compiler_gnu
++ac_compiler_msvc=$ac_cv_c_compiler_msvc
++ac_compiler_intel=$ac_cv_c_compiler_intel
+ 
+ CC=$lt_save_CC
+ LDCXX=$LD
+@@ -17205,11 +17658,11 @@
+    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
+    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
+    -e 's:$: $lt_compiler_flag:'`
+-   (eval echo "\"\$as_me:17208: $lt_compile\"" >&5)
++   (eval echo "\"\$as_me:17661: $lt_compile\"" >&5)
+    (eval "$lt_compile" 2>conftest.err)
+    ac_status=$?
+    cat conftest.err >&5
+-   echo "$as_me:17212: \$? = $ac_status" >&5
++   echo "$as_me:17665: \$? = $ac_status" >&5
+    if (exit $ac_status) && test -s "$ac_outfile"; then
+      # The compiler can only warn and ignore the option if not recognized
+      # So say no if there are warnings other than the usual output.
+@@ -17309,11 +17762,11 @@
+    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
+    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
+    -e 's:$: $lt_compiler_flag:'`
+-   (eval echo "\"\$as_me:17312: $lt_compile\"" >&5)
++   (eval echo "\"\$as_me:17765: $lt_compile\"" >&5)
+    (eval "$lt_compile" 2>out/conftest.err)
+    ac_status=$?
+    cat out/conftest.err >&5
+-   echo "$as_me:17316: \$? = $ac_status" >&5
++   echo "$as_me:17769: \$? = $ac_status" >&5
+    if (exit $ac_status) && test -s out/conftest2.$ac_objext
+    then
+      # The compiler can only warn and ignore the option if not recognized
+@@ -19399,6 +19852,8 @@
+ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ ac_compiler_gnu=$ac_cv_c_compiler_gnu
++ac_compiler_msvc=$ac_cv_c_compiler_msvc
++ac_compiler_intel=$ac_cv_c_compiler_intel
+ 
+ CC="$lt_save_CC"
+ 
+@@ -19500,11 +19955,11 @@
+    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
+    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
+    -e 's:$: $lt_compiler_flag:'`
+-   (eval echo "\"\$as_me:19503: $lt_compile\"" >&5)
++   (eval echo "\"\$as_me:19958: $lt_compile\"" >&5)
+    (eval "$lt_compile" 2>conftest.err)
+    ac_status=$?
+    cat conftest.err >&5
+-   echo "$as_me:19507: \$? = $ac_status" >&5
++   echo "$as_me:19962: \$? = $ac_status" >&5
+    if (exit $ac_status) && test -s "$ac_outfile"; then
+      # The compiler can only warn and ignore the option if not recognized
+      # So say no if there are warnings other than the usual output.
+@@ -19793,11 +20248,11 @@
+    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
+    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
+    -e 's:$: $lt_compiler_flag:'`
+-   (eval echo "\"\$as_me:19796: $lt_compile\"" >&5)
++   (eval echo "\"\$as_me:20251: $lt_compile\"" >&5)
+    (eval "$lt_compile" 2>conftest.err)
+    ac_status=$?
+    cat conftest.err >&5
+-   echo "$as_me:19800: \$? = $ac_status" >&5
++   echo "$as_me:20255: \$? = $ac_status" >&5
+    if (exit $ac_status) && test -s "$ac_outfile"; then
+      # The compiler can only warn and ignore the option if not recognized
+      # So say no if there are warnings other than the usual output.
+@@ -19897,11 +20352,11 @@
+    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
+    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
+    -e 's:$: $lt_compiler_flag:'`
+-   (eval echo "\"\$as_me:19900: $lt_compile\"" >&5)
++   (eval echo "\"\$as_me:20355: $lt_compile\"" >&5)
+    (eval "$lt_compile" 2>out/conftest.err)
+    ac_status=$?
+    cat out/conftest.err >&5
+-   echo "$as_me:19904: \$? = $ac_status" >&5
++   echo "$as_me:20359: \$? = $ac_status" >&5
+    if (exit $ac_status) && test -s out/conftest2.$ac_objext
+    then
+      # The compiler can only warn and ignore the option if not recognized
+@@ -22007,6 +22462,8 @@
+ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ ac_compiler_gnu=$ac_cv_c_compiler_gnu
++ac_compiler_msvc=$ac_cv_c_compiler_msvc
++ac_compiler_intel=$ac_cv_c_compiler_intel
+ 
+ CC="$lt_save_CC"
+ 
+@@ -22488,6 +22945,8 @@
+ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ ac_compiler_gnu=$ac_cv_c_compiler_gnu
++ac_compiler_msvc=$ac_cv_c_compiler_msvc
++ac_compiler_intel=$ac_cv_c_compiler_intel
+ 
+ CC="$lt_save_CC"
+ 
+@@ -22661,10 +23120,10 @@
+ echo "${ECHO_T}no" >&6; }
+ fi
+ 
+-  # Extract the first word of "gmsgfmt", so it can be a program name with args.
++  { echo "$as_me:$LINENO: checking for gmsgfmt" >&5
++echo $ECHO_N "checking for gmsgfmt... $ECHO_C" >&6; }
++# Extract the first word of "gmsgfmt", so it can be a program name with args.
+ set dummy gmsgfmt; ac_word=$2
+-{ echo "$as_me:$LINENO: checking for $ac_word" >&5
+-echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6; }
+ if test "${ac_cv_path_GMSGFMT+set}" = set; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+@@ -22693,6 +23152,7 @@
+ esac
+ fi
+ GMSGFMT=$ac_cv_path_GMSGFMT
++
+ if test -n "$GMSGFMT"; then
+   { echo "$as_me:$LINENO: result: $GMSGFMT" >&5
+ echo "${ECHO_T}$GMSGFMT" >&6; }
+@@ -22702,7 +23162,6 @@
+ fi
+ 
+ 
+-
+     case `$MSGFMT --version | sed 1q | sed -e 's,^[^0-9]*,,'` in
+     '' | 0.[0-9] | 0.[0-9].* | 0.1[0-4] | 0.1[0-4].*) MSGFMT_015=: ;;
+     *) MSGFMT_015=$MSGFMT ;;
+@@ -65380,10 +65839,10 @@
+ 
+ 
+ ac_aux_dir_abs=`cd $ac_aux_dir && pwd`
++{ echo "$as_me:$LINENO: checking for dvips" >&5
++echo $ECHO_N "checking for dvips... $ECHO_C" >&6; }
+ # Extract the first word of "dvips", so it can be a program name with args.
+ set dummy dvips; ac_word=$2
+-{ echo "$as_me:$LINENO: checking for $ac_word" >&5
+-echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6; }
+ if test "${ac_cv_path_DVIPS+set}" = set; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+@@ -65412,6 +65871,7 @@
+ esac
+ fi
+ DVIPS=$ac_cv_path_DVIPS
++
+ if test -n "$DVIPS"; then
+   { echo "$as_me:$LINENO: result: $DVIPS" >&5
+ echo "${ECHO_T}$DVIPS" >&6; }
+@@ -65420,11 +65880,10 @@
+ echo "${ECHO_T}no" >&6; }
+ fi
+ 
+-
++{ echo "$as_me:$LINENO: checking for texi2pdf" >&5
++echo $ECHO_N "checking for texi2pdf... $ECHO_C" >&6; }
+ # Extract the first word of "texi2pdf", so it can be a program name with args.
+ set dummy texi2pdf; ac_word=$2
+-{ echo "$as_me:$LINENO: checking for $ac_word" >&5
+-echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6; }
+ if test "${ac_cv_path_TEXI2PDF+set}" = set; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+@@ -65453,6 +65912,7 @@
+ esac
+ fi
+ TEXI2PDF=$ac_cv_path_TEXI2PDF
++
+ if test -n "$TEXI2PDF"; then
+   { echo "$as_me:$LINENO: result: $TEXI2PDF" >&5
+ echo "${ECHO_T}$TEXI2PDF" >&6; }
+@@ -65461,11 +65921,10 @@
+ echo "${ECHO_T}no" >&6; }
+ fi
+ 
+-
++{ echo "$as_me:$LINENO: checking for perl" >&5
++echo $ECHO_N "checking for perl... $ECHO_C" >&6; }
+ # Extract the first word of "perl", so it can be a program name with args.
+ set dummy perl; ac_word=$2
+-{ echo "$as_me:$LINENO: checking for $ac_word" >&5
+-echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6; }
+ if test "${ac_cv_path_PERL+set}" = set; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+@@ -65494,6 +65953,7 @@
+ esac
+ fi
+ PERL=$ac_cv_path_PERL
++
+ if test -n "$PERL"; then
+   { echo "$as_me:$LINENO: result: $PERL" >&5
+ echo "${ECHO_T}$PERL" >&6; }
+@@ -65503,7 +65963,6 @@
+ fi
+ 
+ 
+-
+ CROSS_COMPILING=$cross_compiling
+ 
+ 
+@@ -65559,6 +66018,8 @@
+ ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
++ac_compiler_msvc=$ac_cv_cxx_compiler_msvc
++ac_compiler_intel=$ac_cv_cxx_compiler_intel
+ 
+ 
+ 
+@@ -65583,6 +66044,8 @@
+ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ ac_compiler_gnu=$ac_cv_c_compiler_gnu
++ac_compiler_msvc=$ac_cv_c_compiler_msvc
++ac_compiler_intel=$ac_cv_c_compiler_intel
+ 
+   { echo "$as_me:$LINENO: result: $ac_cv_prog_cxx_works" >&5
+ echo "${ECHO_T}$ac_cv_prog_cxx_works" >&6; }
+@@ -65596,6 +66059,8 @@
+ ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
++ac_compiler_msvc=$ac_cv_cxx_compiler_msvc
++ac_compiler_intel=$ac_cv_cxx_compiler_intel
+ 
+     cat <<EOF > conftest.$ac_ext
+ #include <iostream>
+@@ -65618,6 +66083,8 @@
+ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ ac_compiler_gnu=$ac_cv_c_compiler_gnu
++ac_compiler_msvc=$ac_cv_c_compiler_msvc
++ac_compiler_intel=$ac_cv_c_compiler_intel
+ 
+     { echo "$as_me:$LINENO: result: $gt_cv_prog_cxx_namespaces" >&5
+ echo "${ECHO_T}$gt_cv_prog_cxx_namespaces" >&6; }
+@@ -65971,6 +66438,164 @@
+ fi
+ 
+ 
++{ echo "$as_me:$LINENO: checking for stpcpy" >&5
++echo $ECHO_N "checking for stpcpy... $ECHO_C" >&6; }
++if test "${ac_cv_func_stpcpy+set}" = set; then
++  echo $ECHO_N "(cached) $ECHO_C" >&6
++else
++  cat >conftest.$ac_ext <<_ACEOF
++/* confdefs.h.  */
++_ACEOF
++cat confdefs.h >>conftest.$ac_ext
++cat >>conftest.$ac_ext <<_ACEOF
++/* end confdefs.h.  */
++/* Define stpcpy to an innocuous variant, in case <limits.h> declares stpcpy.
++   For example, HP-UX 11i <limits.h> declares gettimeofday.  */
++#define stpcpy innocuous_stpcpy
++
++/* System header to define __stub macros and hopefully few prototypes,
++    which can conflict with char stpcpy (); below.
++    Prefer <limits.h> to <assert.h> if __STDC__ is defined, since
++    <limits.h> exists even on freestanding compilers.  */
++
++#ifdef __STDC__
++# include <limits.h>
++#else
++# include <assert.h>
++#endif
++
++#undef stpcpy
++
++/* Override any GCC internal prototype to avoid an error.
++   Use char because int might match the return type of a GCC
++   builtin and then its argument prototype would still apply.  */
++#ifdef __cplusplus
++extern "C"
++#endif
++char stpcpy ();
++/* The GNU C library defines this for functions which it implements
++    to always fail with ENOSYS.  Some functions are actually named
++    something starting with __ and the normal name is an alias.  */
++#if defined __stub_stpcpy || defined __stub___stpcpy
++choke me
++#endif
++
++int
++main ()
++{
++return stpcpy ();
++  ;
++  return 0;
++}
++_ACEOF
++rm -f conftest.$ac_objext conftest$ac_exeext
++if { (ac_try="$ac_link"
++case "(($ac_try" in
++  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
++  *) ac_try_echo=$ac_try;;
++esac
++eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
++  (eval "$ac_link") 2>conftest.er1
++  ac_status=$?
++  grep -v '^ *+' conftest.er1 >conftest.err
++  rm -f conftest.er1
++  cat conftest.err >&5
++  echo "$as_me:$LINENO: \$? = $ac_status" >&5
++  (exit $ac_status); } && {
++	 test -z "$ac_c_werror_flag" ||
++	 test ! -s conftest.err
++       } && test -s conftest$ac_exeext &&
++       $as_test_x conftest$ac_exeext; then
++  ac_cv_func_stpcpy=yes
++else
++  echo "$as_me: failed program was:" >&5
++sed 's/^/| /' conftest.$ac_ext >&5
++
++	ac_cv_func_stpcpy=no
++fi
++
++rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
++      conftest$ac_exeext conftest.$ac_ext
++fi
++{ echo "$as_me:$LINENO: result: $ac_cv_func_stpcpy" >&5
++echo "${ECHO_T}$ac_cv_func_stpcpy" >&6; }
++if test $ac_cv_func_stpcpy = yes; then
++  :
++else
++  { echo "$as_me:$LINENO: checking for stpcpy in -lcompat" >&5
++echo $ECHO_N "checking for stpcpy in -lcompat... $ECHO_C" >&6; }
++if test "${ac_cv_lib_compat_stpcpy+set}" = set; then
++  echo $ECHO_N "(cached) $ECHO_C" >&6
++else
++  ac_check_lib_save_LIBS=$LIBS
++LIBS="-lcompat  $LIBS"
++cat >conftest.$ac_ext <<_ACEOF
++/* confdefs.h.  */
++_ACEOF
++cat confdefs.h >>conftest.$ac_ext
++cat >>conftest.$ac_ext <<_ACEOF
++/* end confdefs.h.  */
++
++/* Override any GCC internal prototype to avoid an error.
++   Use char because int might match the return type of a GCC
++   builtin and then its argument prototype would still apply.  */
++#ifdef __cplusplus
++extern "C"
++#endif
++char stpcpy ();
++int
++main ()
++{
++return stpcpy ();
++  ;
++  return 0;
++}
++_ACEOF
++rm -f conftest.$ac_objext conftest$ac_exeext
++if { (ac_try="$ac_link"
++case "(($ac_try" in
++  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
++  *) ac_try_echo=$ac_try;;
++esac
++eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
++  (eval "$ac_link") 2>conftest.er1
++  ac_status=$?
++  grep -v '^ *+' conftest.er1 >conftest.err
++  rm -f conftest.er1
++  cat conftest.err >&5
++  echo "$as_me:$LINENO: \$? = $ac_status" >&5
++  (exit $ac_status); } && {
++	 test -z "$ac_c_werror_flag" ||
++	 test ! -s conftest.err
++       } && test -s conftest$ac_exeext &&
++       $as_test_x conftest$ac_exeext; then
++  ac_cv_lib_compat_stpcpy=yes
++else
++  echo "$as_me: failed program was:" >&5
++sed 's/^/| /' conftest.$ac_ext >&5
++
++	ac_cv_lib_compat_stpcpy=no
++fi
++
++rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
++      conftest$ac_exeext conftest.$ac_ext
++LIBS=$ac_check_lib_save_LIBS
++fi
++{ echo "$as_me:$LINENO: result: $ac_cv_lib_compat_stpcpy" >&5
++echo "${ECHO_T}$ac_cv_lib_compat_stpcpy" >&6; }
++if test $ac_cv_lib_compat_stpcpy = yes; then
++  LIBS="$LIBS -lcompat"
++
++cat >>confdefs.h <<_ACEOF
++#define HAVE_STPCPY 1
++_ACEOF
++
++fi
++
++fi
++
++
++
+ test -d intl || mkdir intl
+ echo "GNU gettext library from gettext-$VERSION" > intl/VERSION
+ cat > intl/ChangeLog.inst <<EOF
+@@ -66881,9 +67506,10 @@
+ CFLAGS!$CFLAGS$ac_delim
+ LDFLAGS!$LDFLAGS$ac_delim
+ CPPFLAGS!$CPPFLAGS$ac_delim
+-ac_ct_CC!$ac_ct_CC$ac_delim
+-EXEEXT!$EXEEXT$ac_delim
+ OBJEXT!$OBJEXT$ac_delim
++LIB!$LIB$ac_delim
++INCLUDE!$INCLUDE$ac_delim
++EXEEXT!$EXEEXT$ac_delim
+ DEPDIR!$DEPDIR$ac_delim
+ am__include!$am__include$ac_delim
+ am__quote!$am__quote$ac_delim
+@@ -66911,7 +67537,6 @@
+ CLASSPATH!$CLASSPATH$ac_delim
+ CLASSPATH_SEPARATOR!$CLASSPATH_SEPARATOR$ac_delim
+ HAVE_JAVA_ENVVAR!$HAVE_JAVA_ENVVAR$ac_delim
+-HAVE_GIJ!$HAVE_GIJ$ac_delim
+ _ACEOF
+ 
+   if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 94; then
+@@ -66957,6 +67582,7 @@
+ ac_delim='%!_!# '
+ for ac_last_try in false false false false false :; do
+   cat >conf$$subs.sed <<_ACEOF
++HAVE_GIJ!$HAVE_GIJ$ac_delim
+ HAVE_JAVA!$HAVE_JAVA$ac_delim
+ HAVE_JRE!$HAVE_JRE$ac_delim
+ HAVE_JVIEW!$HAVE_JVIEW$ac_delim
+@@ -67053,7 +67679,6 @@
+ HAVE_SNPRINTF!$HAVE_SNPRINTF$ac_delim
+ HAVE_WPRINTF!$HAVE_WPRINTF$ac_delim
+ WOE32DLL!$WOE32DLL$ac_delim
+-WOE32!$WOE32$ac_delim
+ _ACEOF
+ 
+   if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 97; then
+@@ -67095,6 +67720,7 @@
+ ac_delim='%!_!# '
+ for ac_last_try in false false false false false :; do
+   cat >conf$$subs.sed <<_ACEOF
++WOE32!$WOE32$ac_delim
+ WINDRES!$WINDRES$ac_delim
+ LTLIBC!$LTLIBC$ac_delim
+ BUILD_INCLUDED_LIBINTL!$BUILD_INCLUDED_LIBINTL$ac_delim
+@@ -67191,7 +67817,6 @@
+ INCCROCO!$INCCROCO$ac_delim
+ INCLUDED_LIBCROCO_TRUE!$INCLUDED_LIBCROCO_TRUE$ac_delim
+ INCLUDED_LIBCROCO_FALSE!$INCLUDED_LIBCROCO_FALSE$ac_delim
+-LIBXML!$LIBXML$ac_delim
+ _ACEOF
+ 
+   if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 97; then
+@@ -67233,6 +67858,7 @@
+ ac_delim='%!_!# '
+ for ac_last_try in false false false false false :; do
+   cat >conf$$subs.sed <<_ACEOF
++LIBXML!$LIBXML$ac_delim
+ LTLIBXML!$LTLIBXML$ac_delim
+ INCXML!$INCXML$ac_delim
+ LIBXML_H!$LIBXML_H$ac_delim
+@@ -67329,7 +67955,6 @@
+ RELOCATABLE_LDFLAGS!$RELOCATABLE_LDFLAGS$ac_delim
+ INSTALL_PROGRAM_ENV!$INSTALL_PROGRAM_ENV$ac_delim
+ RELOCATABLE_VIA_LD_TRUE!$RELOCATABLE_VIA_LD_TRUE$ac_delim
+-RELOCATABLE_VIA_LD_FALSE!$RELOCATABLE_VIA_LD_FALSE$ac_delim
+ _ACEOF
+ 
+   if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 97; then
+@@ -67371,6 +67996,7 @@
+ ac_delim='%!_!# '
+ for ac_last_try in false false false false false :; do
+   cat >conf$$subs.sed <<_ACEOF
++RELOCATABLE_VIA_LD_FALSE!$RELOCATABLE_VIA_LD_FALSE$ac_delim
+ RELOCATABLE_LIBRARY_PATH!$RELOCATABLE_LIBRARY_PATH$ac_delim
+ RELOCATABLE_CONFIG_H_DIR!$RELOCATABLE_CONFIG_H_DIR$ac_delim
+ RELOCATABLE_SRC_DIR!$RELOCATABLE_SRC_DIR$ac_delim
+@@ -67457,7 +68083,7 @@
+ gtpo_LTLIBOBJS!$gtpo_LTLIBOBJS$ac_delim
+ _ACEOF
+ 
+-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 84; then
++  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 85; then
+     break
+   elif $ac_last_try; then
+     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5
+@@ -67708,8 +68334,6 @@
+ ' $ac_file_inputs` in
+ *datarootdir*) ac_datarootdir_seen=yes;;
+ *@datadir@*|*@docdir@*|*@infodir@*|*@localedir@*|*@mandir@*)
+-  { echo "$as_me:$LINENO: WARNING: $ac_file_inputs seems to ignore the --datarootdir setting" >&5
+-echo "$as_me: WARNING: $ac_file_inputs seems to ignore the --datarootdir setting" >&2;}
+ _ACEOF
+ cat >>$CONFIG_STATUS <<_ACEOF
+   ac_datarootdir_hack='
+--- gettext-0.17_orig/gettext-tools/configure.ac	2008-05-30 14:12:00.000000000 +0200
++++ gettext-0.17/gettext-tools/configure.ac	2008-05-30 14:20:10.000000000 +0200
+@@ -328,6 +328,12 @@
+ fi
+ AC_SUBST(TESTLIBASPRINTF)
+ 
++AC_CHECK_FUNC([stpcpy], [],
++[AC_CHECK_LIB([compat], [stpcpy],
++[LIBS="$LIBS -lcompat"
++AC_DEFINE_UNQUOTED([HAVE_STPCPY], [1], [Define this if you have the stpcpy() function])])])
++AC_SUBST([LIBS])
++
+ dnl Generate the version information file in the intl/ directory.
+ test -d intl || mkdir intl
+ echo "GNU gettext library from gettext-$VERSION" > intl/VERSION

@@ -1,0 +1,87 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+# Package: php-xajaxgrid
+# Description: Cross-browser javascript grid control
+# XajaxGrid is a cross-browser JavaScript grid control that represents data
+# in a sortable DHTML table. This component allows you to design quicky
+# user interface by organizing your data into configurable dynamic grid,
+# buffering and dynamical loading.
+#
+# URL: http://jvelazqu.glo.org.mx/xajaxGrid/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=xajaxgrid
+version=1.2.1
+release=1
+source=($mirror_sf/xajaxgrid/xajaxGrid-$version.tar.bz2
+        apache.conf)
+
+build()
+{
+  cd xajaxGrid
+
+  find . -name CVS -print0 | xargs -0 rm -rvf 2>/dev/null
+
+  install -d $ROOT/share/doc
+  cp -rf doc $ROOT/share/doc/xajaxgrid
+  cp -rf doc-es/html $ROOT/share/doc/xajaxgrid/html-es
+  rm -rf doc doc-es
+
+  install -d $ROOT/share/php/xajaxgrid
+  cp -rf * $ROOT/share/php/xajaxgrid
+
+  install -d $PKG/etc/xajaxgrid
+  install -m 644 $SRC/apache.conf $PKG/etc/xajaxgrid
+}
+
+postinst()
+{
+  case "$1" in
+      configure|upgrade)
+          WEBSERVERS="apache apache-ssl apache2"
+          for apache in $WEBSERVERS; do
+              if test -d "/etc/$apache/conf.d" && \
+                 test -x "/etc/init.d/$apache" && \
+                 test ! -e "/etc/$apache/conf.d/xajaxgrid.conf"
+              then
+                  echo "Installing xajaxgrid configuration file for $apache.."
+                  ln -sf /etc/xajaxgrid/apache.conf \
+                      /etc/$apache/conf.d/xajaxgrid.conf
+                  if test -f "/var/run/$apache.pid"; then
+                      invoke-rc.d $apache reload
+                  fi
+              fi
+          done
+          ;;
+      abort-upgrade|abort-remove|abort-deconfigure)
+          ;;
+      *)
+          echo "postinst called with unknown argument \`$1'" >&2
+          exit 0
+      ;;
+  esac
+}
+
+postrm()
+{
+  case "$1" in
+      purge|remove)
+          WEBSERVERS="apache apache-ssl apache2"
+          for apache in $WEBSERVERS; do
+              if test -f "/etc/$apache/conf.d/xajaxgrid.conf"; then
+                  echo "Removing xajaxgrid configuration file for $apache.."
+                  rm -f /etc/$apache/conf.d/xajaxgrid.conf
+                  if test -f "/var/run/$apache.pid"; then
+                      invoke-rc.d $apache reload
+                  fi
+              fi
+          done
+          ;;
+      upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
+          ;;
+
+      *)
+          echo "postrm called with unknown argument \`$1'" >&2
+          exit 1
+  esac
+}

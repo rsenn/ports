@@ -1,0 +1,79 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: Graph drawing utilities with web and graphical interfaces.
+#  graphviz is a set of graph drawing tools and libraries. It supports
+#  hierarchical and mass-spring drawings; although the tools are scalable,
+#  their emphasis is on making very good drawings of reasonably-sized
+#  graphs. Package components include batch layout filters and interactive
+#  editors for X11, Java, and a TCL/tk extension. The batch filters
+#  can be configured as a web visualization service (using GIF and
+#  click-maps). Typical applications include display of finite state
+#  machines, software diagrams, database schemas, and communication networks.
+# URL: http://www.graphviz.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=graphviz
+version=2.20.3
+#date=20090207
+#rev=0545
+release=1
+source=(#http://www.graphviz.org/pub/graphviz/CURRENT/graphviz-$version.$date.$rev.tar.gz
+        http://www.graphviz.org/pub/graphviz/stable/SOURCES/graphviz-$version.tar.gz
+        graphviz-2.12-extgd.patch
+        graphviz-2.12-swig-php.patch)
+
+build()
+{
+  cd graphviz-$version*
+#  patch -N -p1 -i $SRC/graphviz-2.12-extgd.patch
+#  patch -N -p1 -i $SRC/graphviz-2.12-swig-php.patch
+
+  sed -i -e "s,/usr/local,$prefix,g" \
+        -e "s,/usr,$prefix,g" \
+    configure
+
+  export CPPFLAGS="-DNDEBUG"
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --${shared:=enable}-shared \
+      --${static:=enable}-shared \
+      --enable-threads \
+      --with-tclsh="$prefix/bin/tclsh" \
+      --with-wish="$prefix/bin/wish" \
+      --with-expatincludedir="$prefix/include" \
+      --with-expatlibdir="$prefix/lib" \
+      --with-Xpmincludedir="$prefix/include" \
+      --with-Xpmlibdir="$prefix/lib" \
+      --with-Xawincludedir="$prefix/include" \
+      --with-Xawlibdir="$prefix/lib" \
+      --with-zincludedir="$prefix/include" \
+      --with-zlibdir="$prefix/lib" \
+      --with-pangocairo \
+      --without-gtk \
+      --with-libgd="$prefix" \
+      --with-gdincludedir="$prefix/include" \
+      --with-gdlibdir="$prefix/lib" \
+      --with-iconvincludedir="$prefix/include" \
+      --with-iconvlibdir="$prefix/lib" \
+      --with-libiconv-prefix="$prefix" \
+      --with-freetype="$prefix" \
+      --without-fontconfig \
+      --with-fontconfigincludedir="$prefix/include" \
+      --with-fontconfiglibdir="$prefix/lib" \
+      --with-pngincludedir="$prefix/include" \
+      --with-pnglibdir="$prefix/lib" \
+      --with-jpegincludedir="$prefix/include" \
+      --with-jpeglibdir="$prefix/lib" \
+      --with-extraincludedir="$prefix/include" \
+      --with-extralibdir="$prefix/lib"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/graphviz
+  install -m 644 README AUTHORS COPYING ChangeLog INSTALL NEWS cpl1.0.txt Makeargs Doxyfile $ROOT/share/doc/graphviz
+}

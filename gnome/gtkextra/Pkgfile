@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+# Package: libgtkextra-1.0
+# Description: A widget set for GTK+.
+# GTKExtra is a useful set of widgets for creating GUIs for the X Window
+# System using GTK+. It is written in C and includes the following
+# widgets: GtkSheet, GtkPlot, GtkPlotCanvas, GtkItemEntry, GtkComboBox,
+# GtkColorCombo, GtkBorderCombo, GtkFontCombo, GtkDirTree, GtkIconList,
+# GtkFileList, GtkIconFileSelection, and GtkCheckItem.
+#
+# URL: http://gtkextra.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libglib1.2ldbl, libgtk1.2, libx11-6, libxext6, libxi6
+
+name=gtkextra
+version=1.0.0
+release=1
+source=($mirror_sf/scigraphica/gtk+extra-$version.tar.gz
+        gtk+extra-1.0.0-m4.patch)
+
+build()
+{
+  cd gtk+extra-$version
+
+  patch -N -p1 -i $SRC/gtk+extra-1.0.0-m4.patch
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

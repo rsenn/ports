@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Database library implementing a persistent first-in-first-out cache
+# The database (or cache) size limits are configured at creation time, and as
+# soon as they are reached the oldest records are automatically removed.
+# A number of commandline tools for managing the database are included.
+# URL: http://www.ohse.de/uwe/dcache.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6
+
+name=dcache
+version=0.6.1
+release=1
+source=(http://www.ohse.de/uwe/dcache/dcache-$version.tar.gz)
+
+build()
+{
+  cd data/dcache-$version
+
+  make
+
+  install -d $ROOT/bin
+  install -m 755 command/* $ROOT/bin
+
+  install -d $ROOT/share/man/man{1,3,7}
+  install -m 755 doc/*.1 $ROOT/share/man/man1
+  install -m 755 doc/*.3 $ROOT/share/man/man3
+  install -m 755 doc/*.7 $ROOT/share/man/man7
+}

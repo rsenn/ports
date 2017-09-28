@@ -1,0 +1,91 @@
+diff -r -u -- slptk-0.6.0_orig/lib/Makefile.in slptk-0.6.0/lib/Makefile.in
+--- slptk-0.6.0_orig/lib/Makefile.in	2007-05-10 13:57:51.000000000 +0200
++++ slptk-0.6.0/lib/Makefile.in	2007-05-10 13:58:41.000000000 +0200
+@@ -249,7 +249,7 @@
+                      regularexpression.h reprmem.h securemalloc.h slptkbase.h \
+                      slptkversion.h token.h trie.h utils.h gdouble.h
+ 
+-libslptk_la_CFLAGS = -ansi -pedantic -Wall
++libslptk_la_CFLAGS = -Wall
+ libslptk_la_LDFLAGS = $(VERSION)
+ libslptk_la_SOURCES = autoconstr.c automaton.c bidirectionaltrie.c \
+                       chartdisplay.c charutils.c error.c flexconvert.c \
+diff -r -u -- slptk-0.6.0_orig/lib/grammar.c slptk-0.6.0/lib/grammar.c
+--- slptk-0.6.0_orig/lib/grammar.c	2007-05-10 13:57:51.000000000 +0200
++++ slptk-0.6.0/lib/grammar.c	2007-05-10 13:59:02.000000000 +0200
+@@ -58,7 +58,7 @@
+ #if HAVE_UNISTD_H
+ #include <unistd.h>     /* for readlink and getcwd */
+ #endif
+-#include <libgen.h>     /* for dirname */
++//#include <libgen.h>     /* for dirname */
+ 
+ 
+ /******************************************************************************
+diff -r -u -- slptk-0.6.0_orig/lib/Makefile.am slptk-0.6.0/lib/Makefile.am
+--- slptk-0.6.0_orig/lib/Makefile.am	2007-05-10 14:17:31.000000000 +0200
++++ slptk-0.6.0/lib/Makefile.am	2007-05-10 14:19:39.000000000 +0200
+@@ -48,6 +48,7 @@
+ libslptk_la_CFLAGS = -ansi -pedantic -Wall
+ 
+ libslptk_la_LDFLAGS = $(VERSION)
++libslptk_la_LIBADD = $(GLIB_LIBS)
+ 
+ libslptk_la_SOURCES = autoconstr.c automaton.c bidirectionaltrie.c \
+                       chartdisplay.c charutils.c error.c flexconvert.c \
+diff -r -u -- slptk-0.6.0_orig/lib/Makefile.in slptk-0.6.0/lib/Makefile.in
+--- slptk-0.6.0_orig/lib/Makefile.in	2007-05-10 14:17:31.000000000 +0200
++++ slptk-0.6.0/lib/Makefile.in	2007-05-10 14:19:40.000000000 +0200
+@@ -54,7 +54,8 @@
+ am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(includedir)"
+ libLTLIBRARIES_INSTALL = $(INSTALL)
+ LTLIBRARIES = $(lib_LTLIBRARIES)
+-libslptk_la_LIBADD =
++am__DEPENDENCIES_1 =
++libslptk_la_DEPENDENCIES = $(am__DEPENDENCIES_1)
+ am_libslptk_la_OBJECTS = libslptk_la-autoconstr.lo \
+ 	libslptk_la-automaton.lo libslptk_la-bidirectionaltrie.lo \
+ 	libslptk_la-chartdisplay.lo libslptk_la-charutils.lo \
+@@ -251,6 +252,7 @@
+ 
+ libslptk_la_CFLAGS = -ansi -pedantic -Wall
+ libslptk_la_LDFLAGS = $(VERSION)
++libslptk_la_LIBADD = $(GLIB_LIBS)
+ libslptk_la_SOURCES = autoconstr.c automaton.c bidirectionaltrie.c \
+                       chartdisplay.c charutils.c error.c flexconvert.c \
+                       genericarray.c genericstack.c generictree.c grammar.c \
+diff -r -u -- slptk-0.6.0_orig/lib/grammar.c slptk-0.6.0/lib/grammar.c
+--- slptk-0.6.0_orig/lib/grammar.c	2007-05-10 14:17:31.000000000 +0200
++++ slptk-0.6.0/lib/grammar.c	2007-05-10 14:17:59.000000000 +0200
+@@ -58,8 +58,9 @@
+ #if HAVE_UNISTD_H
+ #include <unistd.h>     /* for readlink and getcwd */
+ #endif
+-//#include <libgen.h>     /* for dirname */
+-
++#ifndef __MINGW32__
++#include <libgen.h>     /* for dirname */
++#endif
+ 
+ /******************************************************************************
+  * DEFINITIONS
+Only in slptk-0.6.0/src: automaton2re
+Only in slptk-0.6.0/src: checkword
+Only in slptk-0.6.0/src: compilegram
+Only in slptk-0.6.0/src: convertgram
+Only in slptk-0.6.0/src: createfsa
+Only in slptk-0.6.0/src: createlex
+Only in slptk-0.6.0/src: flex2fsa
+Only in slptk-0.6.0/src: lemmatize
+Only in slptk-0.6.0/src: lexematize
+Only in slptk-0.6.0/src: listfsa
+Only in slptk-0.6.0/src: listgram
+Only in slptk-0.6.0/src: listlex
+Only in slptk-0.6.0/src: listtrie
+Only in slptk-0.6.0/src: listtriestats
+Only in slptk-0.6.0/src: normalizelex
+Only in slptk-0.6.0/src: parse
+Only in slptk-0.6.0/src: spellcorrect
+Only in slptk-0.6.0/src: transducerapply
+Only in slptk-0.6.0/src: transduct
+Only in slptk-0.6.0/src: unionfsa

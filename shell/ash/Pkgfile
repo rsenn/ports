@@ -1,0 +1,33 @@
+# $Id: Pkgfile,v 1.1 2006/10/09 15:01:33 roman Exp $
+#
+# Section: universe/shells
+# Description: Almquist Shell
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6
+
+name=ash
+version=0.4.0
+release=1
+source=(ftp://ftp.osuosl.org/pub/blfs/conglomeration/ash/ash-$version.tar.gz
+        ash-0.4.0-cumulative_fixes-2.patch
+        ash-nexbyte.patch)
+
+build()
+{
+  cd ash-$version
+
+  case $prefix in
+    "/usr") bindir="/bin" sysconfdir="/etc" ;;
+  esac
+
+  patch -N -p1 -i $SRC/ash-0.4.0-cumulative_fixes-2.patch
+  patch -N -p1 -i $SRC/ash-nexbyte.patch
+
+  make OPT_FLAGS="$CFLAGS -D__UCLIBC__"
+
+  install -d $PKG/${bindir="$prefix/bin"}
+  install -m 755 sh $PKG/${bindir}/ash
+
+  install -d $ROOT/share/man/man1
+  install -m 755 sh.1 $ROOT/share/man/man1/ash.1
+}

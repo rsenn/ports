@@ -1,0 +1,38 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A simple CSV to XML converter
+# It reads csv files from standard input, and output a valid xml file on
+# standard output.
+# URL: http://csv2xml.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libgcc1, libstdc++6
+
+name=csv2xml
+version=0.6
+release=3
+source=($mirror_sf/csv2xml/csv2xml-$version.tar.bz2
+        csv2xml-0.6-options.patch
+        csv2xml-0.6-xmldoc.patch)
+
+build()
+{
+  cd csv2xml-$version
+
+  patch -N -p1 -i $SRC/csv2xml-0.6-options.patch
+  patch -N -p1 -i $SRC/csv2xml-0.6-xmldoc.patch
+
+  sed -i \
+      -e "s:local/man:local/share/man:g" \
+      -e "s:/usr/local:\$(DESTDIR)$prefix:g" \
+    */Makefile
+
+  make COMPILER="$CXX" FLAGS="$CXXFLAGS"
+
+  install -d $ROOT/bin
+  install -d $ROOT/share/man/man1
+
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/csv2xml
+  install -m 644 [D-Z]*[A-Z]* $ROOT/share/doc/csv2xml
+}

@@ -1,0 +1,26 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Mixed Integer Linear Programming (MILP) solver
+# lp_solve solves pure linear, (mixed) integer/binary, semi-continuous
+# and special ordered sets (SOS) models. lp_solve is written in ANSI C
+# and can be compiled on many different platforms like Linux and Windows.
+#
+# URL: http://lpsolve.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=lp-solve
+version=5.5
+release=1
+source=($mirror_sf/lpsolve/lp_solve_${version}_source.tar.gz)
+
+build()
+{
+  cd lp_solve_$version
+
+  (cd lpsolve55 && bash -x -e ccc)
+  (cd lp_solve && bash -x -e ccc)
+
+  install -d $ROOT/include/lpkit
+  install -m 644 lp*.h $ROOT/include/lpkit
+}

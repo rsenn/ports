@@ -1,0 +1,21 @@
+# $Id: Pkgfile,v 1.4 2007/04/22 23:07:52 roman Exp $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=inotify-utils
+version=0.25
+release=1
+source=(http://www.kernel.org/pub/linux/kernel/people/rml/inotify/utils/inotify-utils-$version.tar.bz2)
+
+build()
+{
+  cd inotify-utils-$version
+
+  ${CC-cc} -o inotify_test *.c
+
+  install -d $ROOT/bin
+  install -m 755 inotify_test $ROOT/bin
+}

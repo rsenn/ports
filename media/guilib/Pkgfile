@@ -1,0 +1,34 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:50 roman Exp $
+#
+# Description: Simple GUI framework library for SDL.
+#  GUIlib is a very simple GUI framework library
+#  This isn't a full GUI interface library - it's just something I quickly
+#  whipped up for some demos.
+# URL: http://www.libsdl.org/projects/GUIlib/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=guilib
+version=1.2.1
+release=1
+source=(http://www.libsdl.org/projects/GUIlib/src/GUIlib-$version.tar.gz)
+
+build()
+{
+  cd GUIlib-$version
+
+  sh autogen.sh
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --${shared:=enable}-shared \
+       --${static:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/guilib
+  install -m 644 CHANGES COPYING README $ROOT/share/doc/guilib
+}

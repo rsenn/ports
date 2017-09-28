@@ -1,0 +1,1606 @@
+diff -ru RTcmix-4.0.1_orig/Makefile RTcmix-4.0.1/Makefile
+--- RTcmix-4.0.1_orig/Makefile	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/Makefile	2009-02-28 01:27:27.000000000 +0100
+@@ -9,9 +9,9 @@
+ 
+ all:	install_dirs
+ 	@echo "making all ..."
+-	@for DIR in $(DIRS); \
++	for DIR in $(DIRS); \
+ 	do \
+-	  ( cd $$DIR; $(MAKE) $(MFLAGS) all ); \
++	  ( set -e; cd $$DIR; $(MAKE) $(MFLAGS) all ) || exit $?; \
+ 	done
+ 	@echo "done"
+ 
+@@ -20,66 +20,66 @@
+ 
+ include::
+ 	@echo "making and installing include..."
+-	@cd include; $(MAKE) $(MFLAGS) install
++	cd include; $(MAKE) $(MFLAGS) install
+ 	@echo "done."; echo ""
+ 
+ src::
+ 	@echo "making all in src..."
+-	@cd src; $(MAKE) $(MFLAGS) all
++	cd src; $(MAKE) $(MFLAGS) all
+ 	@echo "done."; echo ""
+ 
+ genlib::
+ 	@echo "making and installing genlib..."
+-	@cd genlib; $(MAKE) $(MFLAGS) all
++	cd genlib; $(MAKE) $(MFLAGS) all
+ 	@echo "done."; echo ""
+ 
+ utils::
+ 	@echo "making utils..."
+-	@cd utils; $(MAKE) $(MFLAGS) all
++	cd utils; $(MAKE) $(MFLAGS) all
+ 	@echo "done."; echo ""
+ 
+ docs::
+ 	@echo "making docs ..."
+-	@cd docs; $(MAKE) $(MFLAGS) all
++	cd docs; $(MAKE) $(MFLAGS) all
+ 	@echo "done."; echo ""
+ 
+ snd::
+ 	@echo "making snd ..."
+-	@cd snd; $(MAKE) $(MFLAGS) all
++	cd snd; $(MAKE) $(MFLAGS) all
+ 	@echo "done."; echo ""
+ 
+ insts::
+ 	@echo "making insts ..."
+-	@cd insts; $(MAKE) $(MFLAGS) all
++	cd insts; $(MAKE) $(MFLAGS) all
+ 	@echo "done."; echo ""
+ 
+ base::
+ 	@echo "making base insts ..."
+-	@cd insts; $(MAKE) $(MFLAGS) base
++	cd insts; $(MAKE) $(MFLAGS) base
+ 	@echo "done."; echo ""
+ 
+ imbed::
+ 	@echo "making imbed apps ..."
+-	@cd apps; $(MAKE) $(MFLAGS) imbed
++	cd apps; $(MAKE) $(MFLAGS) imbed
+ 	@echo "done."; echo ""
+ 
+ apps::
+ 	@echo "making apps ..."
+-	@cd apps; $(MAKE) $(MFLAGS) all
++	cd apps; $(MAKE) $(MFLAGS) all
+ 	@echo "done."; echo ""
+ 
+ dsos:: insts
+ 
+ standalone::
+ 	@echo "making standalone ..."
+-	@cd insts; $(MAKE) $(MFLAGS) standalone
++	cd insts; $(MAKE) $(MFLAGS) standalone
+ 	@echo "done."; echo ""
+ 
+ #############################################################  make install  ###
+ 
+ install:	install_dirs
+ 	@echo "beginning install..."
+-	@for DIR in $(DIRS); \
++	for DIR in $(DIRS); \
+ 	do \
+ 	  ( cd $$DIR; $(MAKE) $(MFLAGS) install ); \
+ 	done
+@@ -87,7 +87,7 @@
+ 
+ base_install:
+ 	@echo "beginning base_install..."
+-	@cd $(BASE); $(MAKE) $(MFLAGS) install;
++	cd $(BASE); $(MAKE) $(MFLAGS) install;
+ 	@echo "base_install done."; echo ""
+ 
+ dso_install: 
+@@ -97,18 +97,18 @@
+ 
+ standalone_install::
+ 	@echo "beginning standalone_install..."
+-	@cd insts; $(MAKE) $(MFLAGS) standalone_install;
++	cd insts; $(MAKE) $(MFLAGS) standalone_install;
+ 	@echo "standalone_install done."; echo ""
+ 
+ install_dirs::
+-	@if test ! -d $(LIBDIR); then mkdir $(LIBDIR); fi;
+-	@if test ! -d $(LIBDESTDIR); then mkdir $(LIBDESTDIR); fi;
++	if test ! -d $(LIBDIR); then mkdir $(LIBDIR); fi;
++	if test ! -d $(LIBDESTDIR); then mkdir $(LIBDESTDIR); fi;
+ 
+ ###########################################################  make uninstall  ###
+ 
+ uninstall::
+ 	@echo "beginning uninstall..."
+-	@for DIR in $(DIRS); \
++	for DIR in $(DIRS); \
+ 	do \
+ 	  ( cd $$DIR; $(MAKE) $(MFLAGS) uninstall ); \
+ 	done
+@@ -116,18 +116,18 @@
+ 
+ dso_uninstall: 
+ 	@echo "beginning dso_uninstall..."
+-	@cd insts; $(MAKE) $(MFLAGS) dso_uninstall; 
++	cd insts; $(MAKE) $(MFLAGS) dso_uninstall; 
+ 	@echo "dso_uninstall done."; echo ""
+ 
+ standalone_uninstall::
+ 	@echo "beginning standalone_uninstall..."
+-	@cd insts; $(MAKE) $(MFLAGS) standalone_uninstall; 
++	cd insts; $(MAKE) $(MFLAGS) standalone_uninstall; 
+ 	@echo "standalone_uninstall done."; echo ""
+ 
+ ###############################################################  make depend  ##
+ 
+ depend::
+-	@for DIR in $(DIRS); \
++	for DIR in $(DIRS); \
+ 	do \
+ 	  ( cd $$DIR; echo "making depend in $$DIR..."; \
+ 	  $(RM) depend; \
+@@ -137,14 +137,14 @@
+ ###############################################################  make clean  ###
+ 
+ clean::
+-	@for DIR in $(DIRS); \
++	for DIR in $(DIRS); \
+ 	do \
+ 	  ( cd $$DIR; echo "making clean in $$DIR..."; \
+ 	  $(MAKE) $(MFLAGS) clean ); \
+ 	done
+ 
+ cleanall::
+-	@for DIR in $(DIRS); \
++	for DIR in $(DIRS); \
+ 	do \
+ 	  ( cd $$DIR; echo "making cleanall in $$DIR..."; \
+ 	  $(MAKE) $(MFLAGS) cleanall ); \
+@@ -152,10 +152,10 @@
+ 
+ # Make it clean for distribution or for moving to another system
+ distclean: cleanall cleanac
+-	@cd insts; $(MAKE) $(MFLAGS) distclean; 
+-	@cd apps; $(MAKE) $(MFLAGS) distclean; 
+-	@find . -name depend -exec rm -f '{}' ';'
+-	@$(RM) defs.conf
++	cd insts; $(MAKE) $(MFLAGS) distclean; 
++	cd apps; $(MAKE) $(MFLAGS) distclean; 
++	find . -name depend -exec rm -f '{}' ';'
++	$(RM) defs.conf
+ 
+ ####################################################### for maintainers only ###
+ 
+@@ -165,5 +165,5 @@
+ 	autoconf
+ 
+ cleanac:
+-	@$(RM) -r autom4te.cache config.log config.status config.cache config.h
++	$(RM) -r autom4te.cache config.log config.status config.cache config.h
+ 
+diff -ru RTcmix-4.0.1_orig/apps/Makefile RTcmix-4.0.1/apps/Makefile
+--- RTcmix-4.0.1_orig/apps/Makefile	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/apps/Makefile	2009-02-28 02:01:58.000000000 +0100
+@@ -8,14 +8,14 @@
+ all: do_package
+ 	@for DIR in $(DIRS); \
+ 	do \
+-	  ( cd $$DIR; echo "making all in $$DIR..."; \
+-	  $(MAKE) $(MFLAGS) all; echo "done in $$DIR" ); \
++	  ( set -e; cd $$DIR; echo "making all in $$DIR..."; \
++	  $(MAKE) $(MFLAGS) all && echo "done in $$DIR" ) || exit $?; \
+ 	done
+ 
+ do_package:
+ 	@for DIR in $(DIRS); \
+ 	do \
+-	  ( cd $$DIR; echo "include $(MAKEFILE_CONF)" > package.conf; )\
++	  ( $$DIR; echo "include $(MAKEFILE_CONF)" > package.conf )\
+ 	done
+ 
+ imbed: do_package
+@@ -24,22 +24,22 @@
+ install: do_package
+ 	@for DIR in $(DIRS); \
+ 	do \
+-	  ( cd $$DIR; echo "making install in $$DIR..."; \
+-	  $(MAKE) $(MFLAGS) install; ); \
++	  ( set -e; cd $$DIR; echo "making install in $$DIR..."; \
++	  $(MAKE) $(MFLAGS) install; ) || exit $?; \
+ 	done
+ 
+ uninstall:
+ 	@for DIR in $(DIRS); \
+ 	do \
+-	( cd $$DIR; echo "making uninstall in $$DIR..."; \
+-	  $(MAKE) $(MFLAGS) uninstall; ); \
++	( set -e; cd $$DIR; echo "making uninstall in $$DIR..."; \
++	  $(MAKE) $(MFLAGS) uninstall; ) || exit $?; \
+ 	done
+ 
+ clean:
+ 	@for DIR in $(DIRS); \
+ 	do \
+-	  ( cd $$DIR; echo "making clean in $$DIR..."; \
+-		$(MAKE) $(MFLAGS) clean ); \
++	  ( set -e; cd $$DIR; echo "making clean in $$DIR..."; \
++		$(MAKE) $(MFLAGS) clean ) || exit $?; \
+ 	done
+ 
+ cleanall: clean uninstall
+diff -ru RTcmix-4.0.1_orig/apps/imbed/Makefile RTcmix-4.0.1/apps/imbed/Makefile
+--- RTcmix-4.0.1_orig/apps/imbed/Makefile	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/apps/imbed/Makefile	2009-02-28 02:03:11.000000000 +0100
+@@ -7,8 +7,8 @@
+ all:
+ 	@for DIR in $(DIRS); \
+ 	do \
+-	  ( cd $$DIR; echo "making in $$DIR..."; \
+-	  $(MAKE) $(MFLAGS); echo "done in $$DIR"; ) \
++	  ( set -e; cd $$DIR; echo "making in $$DIR..."; \
++	  $(MAKE) $(MFLAGS) && echo "done in $$DIR" ) || exit $?; \
+ 	done
+ 
+ install:
+@@ -20,7 +20,7 @@
+ clean:
+ 	@for DIR in $(DIRS); \
+ 	do \
+-	  ( cd $$DIR; $(MAKE) clean; ) \
++	  ( set -e; cd $$DIR; $(MAKE) clean ) || exit $?; \
+ 	done
+ 
+ cleanall: clean uninstall
+diff -ru RTcmix-4.0.1_orig/apps/imbed/arpeggiate/arpeggiate.cpp RTcmix-4.0.1/apps/imbed/arpeggiate/arpeggiate.cpp
+--- RTcmix-4.0.1_orig/apps/imbed/arpeggiate/arpeggiate.cpp	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/apps/imbed/arpeggiate/arpeggiate.cpp	2009-02-28 02:03:23.000000000 +0100
+@@ -5,7 +5,7 @@
+ */
+ 
+ #define MAIN
+-#include <iostream.h>
++#include <iostream>
+ #include <stdlib.h>
+ #include <unistd.h>
+ #include <math.h>
+diff -ru RTcmix-4.0.1_orig/apps/imbed/crudelooch/crudelooch.cpp RTcmix-4.0.1/apps/imbed/crudelooch/crudelooch.cpp
+--- RTcmix-4.0.1_orig/apps/imbed/crudelooch/crudelooch.cpp	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/apps/imbed/crudelooch/crudelooch.cpp	2009-02-28 02:03:49.000000000 +0100
+@@ -7,8 +7,9 @@
+ */
+ 
+ #define MAIN
+-#include <iostream.h>
++#include <iostream>
+ #include <unistd.h>
++#include <cstdlib>
+ 
+ #include <globals.h>
+ #include "RTcmix.h"
+diff -ru RTcmix-4.0.1_orig/apps/imbed/flutescale/flutescale.cpp RTcmix-4.0.1/apps/imbed/flutescale/flutescale.cpp
+--- RTcmix-4.0.1_orig/apps/imbed/flutescale/flutescale.cpp	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/apps/imbed/flutescale/flutescale.cpp	2009-02-28 02:03:23.000000000 +0100
+@@ -5,7 +5,7 @@
+ */
+ 
+ #define MAIN
+-#include <iostream.h>
++#include <iostream>
+ #include <unistd.h>
+ 
+ #include <globals.h>
+diff -ru RTcmix-4.0.1_orig/apps/imbed/happykeys/happykeys.cpp RTcmix-4.0.1/apps/imbed/happykeys/happykeys.cpp
+--- RTcmix-4.0.1_orig/apps/imbed/happykeys/happykeys.cpp	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/apps/imbed/happykeys/happykeys.cpp	2009-02-28 02:03:23.000000000 +0100
+@@ -16,7 +16,7 @@
+ */
+ 
+ #define MAIN
+-#include <iostream.h>
++#include <iostream>
+ #include <stdio.h>
+ #include <curses.h>
+ #include <fcntl.h>
+diff -ru RTcmix-4.0.1_orig/apps/imbed/mixit/mixit.cpp RTcmix-4.0.1/apps/imbed/mixit/mixit.cpp
+--- RTcmix-4.0.1_orig/apps/imbed/mixit/mixit.cpp	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/apps/imbed/mixit/mixit.cpp	2009-02-28 02:04:05.000000000 +0100
+@@ -4,7 +4,7 @@
+ */
+ 
+ #define MAIN
+-#include <iostream.h>
++#include <iostream>
+ #include <unistd.h>
+ 
+ #include <globals.h>
+@@ -13,6 +13,8 @@
+ 	#include "randfuncs.h"
+ }
+ 
++using namespace std;
++
+ int
+ main(int argc, char *argv[])
+ {
+diff -ru RTcmix-4.0.1_orig/apps/imbed/wanderfreq/MYWAVETABLE/MYWAVETABLE.cpp RTcmix-4.0.1/apps/imbed/wanderfreq/MYWAVETABLE/MYWAVETABLE.cpp
+--- RTcmix-4.0.1_orig/apps/imbed/wanderfreq/MYWAVETABLE/MYWAVETABLE.cpp	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/apps/imbed/wanderfreq/MYWAVETABLE/MYWAVETABLE.cpp	2009-02-28 02:04:15.000000000 +0100
+@@ -1,5 +1,5 @@
+ #include <stdlib.h>
+-#include <iostream.h>
++#include <iostream>
+ #include "MYWAVETABLE.h"
+ #include <rt.h>
+ #include <rtdefs.h>	/* for SR */
+diff -ru RTcmix-4.0.1_orig/apps/imbed/wanderfreq/wanderfreq.cpp RTcmix-4.0.1/apps/imbed/wanderfreq/wanderfreq.cpp
+--- RTcmix-4.0.1_orig/apps/imbed/wanderfreq/wanderfreq.cpp	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/apps/imbed/wanderfreq/wanderfreq.cpp	2009-02-28 02:03:23.000000000 +0100
+@@ -8,7 +8,7 @@
+ */
+ 
+ #define MAIN
+-#include <iostream.h>
++#include <iostream>
+ #include <unistd.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+diff -ru RTcmix-4.0.1_orig/genlib/Odelay.cpp RTcmix-4.0.1/genlib/Odelay.cpp
+--- RTcmix-4.0.1_orig/genlib/Odelay.cpp	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/genlib/Odelay.cpp	2009-02-28 01:27:40.000000000 +0100
+@@ -7,7 +7,7 @@
+ #include <stdlib.h>
+ #include <string.h>
+ #include <assert.h>
+-#include <iostream.h>
++#include <iostream>
+ 
+ Odelay::Odelay(long defaultLength) : _dline(NULL), _len(0)
+ {
+diff -ru RTcmix-4.0.1_orig/insts/Makefile RTcmix-4.0.1/insts/Makefile
+--- RTcmix-4.0.1_orig/insts/Makefile	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/insts/Makefile	2009-02-28 01:50:30.000000000 +0100
+@@ -10,14 +10,14 @@
+ all: do_package
+ 	@for DIR in $(DIRS); \
+ 	do \
+-	  ( cd $$DIR; echo "making all in $$DIR..."; \
+-	  $(MAKE) $(MFLAGS) all; echo "done in $$DIR" ); \
++	  ( set -e; cd $$DIR; echo "making all in $$DIR..."; \
++	  $(MAKE) $(MFLAGS) all && echo "done in $$DIR" ) || exit $?; \
+ 	done
+ 
+ do_package:
+ 	@for DIR in $(DIRS); \
+ 	do \
+-	  ( cd $$DIR; echo "include $(MAKEFILE_CONF)" > package.conf; )\
++	  ( set -e; cd $$DIR; echo "include $(MAKEFILE_CONF)" > package.conf; ) || exit $?; \
+ 	done
+ 
+ base: do_package
+@@ -31,56 +31,56 @@
+ standalone: do_package
+ 	@for DIR in $(DIRS); \
+ 	do \
+-	  ( cd $$DIR; echo "making standalone in $$DIR..."; \
+-	  $(MAKE) $(MFLAGS) standalone; echo "done in $$DIR" ); \
++	  ( set -e; cd $$DIR; echo "making standalone in $$DIR..."; \
++	  $(MAKE) $(MFLAGS) standalone && echo "done in $$DIR" ) || exit $?; \
+ 	done
+ 
+ install: do_package
+ 	@for DIR in $(DIRS); \
+ 	do \
+-	  ( cd $$DIR; echo "making install in $$DIR..."; \
+-	  $(MAKE) $(MFLAGS) install; ); \
++	  ( set -e; cd $$DIR; echo "making install in $$DIR..."; \
++	  $(MAKE) $(MFLAGS) install; ) || exit $?; \
+ 	done
+ 
+ dso_install: do_package
+ 	@for DIR in $(DIRS); \
+ 	do \
+-	( cd $$DIR; echo "making dso_install in $$DIR..."; \
+-	  $(MAKE) $(MFLAGS) dso_install; ); \
++	( set -e; cd $$DIR; echo "making dso_install in $$DIR..."; \
++	  $(MAKE) $(MFLAGS) dso_install; ) || exit $?; \
+ 	done
+ 
+ standalone_install: standalone
+ 	@for DIR in $(DIRS); \
+ 	do \
+-	( cd $$DIR; echo "making standalone_install in $$DIR..."; \
+-	  $(MAKE) $(MFLAGS) standalone_install; ); \
++	( set -e; cd $$DIR; echo "making standalone_install in $$DIR..."; \
++	  $(MAKE) $(MFLAGS) standalone_install; ) || exit $?; \
+ 	done
+ 
+ uninstall:
+ 	@for DIR in $(DIRS); \
+ 	do \
+-	( cd $$DIR; echo "making uninstall in $$DIR..."; \
+-	  $(MAKE) $(MFLAGS) uninstall; ); \
++	( set -e; cd $$DIR; echo "making uninstall in $$DIR..."; \
++	  $(MAKE) $(MFLAGS) uninstall; ) || exit $?; \
+ 	done
+ 
+ dso_uninstall:
+ 	@for DIR in $(DIRS); \
+ 	do \
+-	( cd $$DIR; echo "making dso_uninstall in $$DIR..."; \
+-	  $(MAKE) $(MFLAGS) dso_uninstall; ); \
++	( set -e; cd $$DIR; echo "making dso_uninstall in $$DIR..."; \
++	  $(MAKE) $(MFLAGS) dso_uninstall; ) || exit $?; \
+ 	done
+ 
+ standalone_uninstall:
+ 	@for DIR in $(DIRS); \
+ 	do \
+-	( cd $$DIR; echo "making standalone_uninstall in $$DIR..."; \
+-	  $(MAKE) $(MFLAGS) standalone_uninstall; ); \
++	( set -e; cd $$DIR; echo "making standalone_uninstall in $$DIR..."; \
++	  $(MAKE) $(MFLAGS) standalone_uninstall; ) || exit $?; \
+ 	done
+ 
+ clean:
+ 	@for DIR in $(DIRS); \
+ 	do \
+-	  ( cd $$DIR; echo "making clean in $$DIR..."; \
++	  ( set -e; cd $$DIR; echo "making clean in $$DIR..."; \
+ 		$(MAKE) $(MFLAGS) clean ); \
+ 	done
+ 
+diff -ru RTcmix-4.0.1_orig/insts/base/Makefile RTcmix-4.0.1/insts/base/Makefile
+--- RTcmix-4.0.1_orig/insts/base/Makefile	2009-02-28 01:20:28.000000000 +0100
++++ RTcmix-4.0.1/insts/base/Makefile	2009-02-28 01:56:08.000000000 +0100
+@@ -8,7 +8,7 @@
+ all:
+ 	@for DIR in $(DIRS); \
+ 	do \
+-	  ( cd $$DIR; $(MAKE) $(MFLAGS) all; ) \
++	  ( set -e; cd $$DIR; $(MAKE) $(MFLAGS) all; ) \
+ 	done
+ 
+ dsos: all
+@@ -16,56 +16,56 @@
+ standalone:
+ 	@for DIR in $(DIRS); \
+ 	do \
+-	  ( cd $$DIR; echo "making standalone in $$DIR..."; \
+-	  $(MAKE) $(MFLAGS) standalone; echo "done in $$DIR" ); \
++	  ( set -e; cd $$DIR; echo "making standalone in $$DIR..."; \
++	  $(MAKE) $(MFLAGS) standalone && echo "done in $$DIR" ); \
+ 	done
+ 
+ install:
+ 	@for DIR in $(DIRS); \
+ 	do \
+-	  ( cd $$DIR; echo "making install in $$DIR..."; \
++	  ( set -e; cd $$DIR; echo "making install in $$DIR..."; \
+ 	  $(MAKE) $(MFLAGS) install; ); \
+ 	done
+ 
+ dso_install:
+ 	@for DIR in $(DIRS); \
+ 	do \
+-	( cd $$DIR; echo "making dso_install in $$DIR..."; \
++	( set -e; cd $$DIR; echo "making dso_install in $$DIR..."; \
+ 	  $(MAKE) $(MFLAGS) dso_install; ); \
+ 	done
+ 
+ standalone_install:
+ 	@for DIR in $(DIRS); \
+ 	do \
+-	( cd $$DIR; echo "making standalone_install in $$DIR..."; \
++	( set -e; cd $$DIR; echo "making standalone_install in $$DIR..."; \
+ 	  $(MAKE) $(MFLAGS) standalone_install; ); \
+ 	done
+ 
+ uninstall:
+ 	@for DIR in $(DIRS); \
+ 	do \
+-	( cd $$DIR; echo "making uninstall in $$DIR..."; \
++	( set -e; cd $$DIR; echo "making uninstall in $$DIR..."; \
+ 	  $(MAKE) $(MFLAGS) uninstall; ); \
+ 	done
+ 
+ dso_uninstall:
+ 	@for DIR in $(DIRS); \
+ 	do \
+-	( cd $$DIR; echo "making dso_uninstall in $$DIR..."; \
++	( set -e; cd $$DIR; echo "making dso_uninstall in $$DIR..."; \
+ 	  $(MAKE) $(MFLAGS) dso_uninstall; ); \
+ 	done
+ 
+ standalone_uninstall:
+ 	@for DIR in $(DIRS); \
+ 	do \
+-	( cd $$DIR; echo "making standalone_uninstall in $$DIR..."; \
++	( set -e; cd $$DIR; echo "making standalone_uninstall in $$DIR..."; \
+ 	  $(MAKE) $(MFLAGS) standalone_uninstall; ); \
+ 	done
+ 
+ clean:
+ 	@for DIR in $(DIRS); \
+ 	do \
+-	  ( cd $$DIR; echo "making clean in $$DIR..."; \
++	  ( set -e; cd $$DIR; echo "making clean in $$DIR..."; \
+ 		$(MAKE) $(MFLAGS) clean; ); \
+ 	done
+ 
+diff -ru RTcmix-4.0.1_orig/insts/jg/Makefile RTcmix-4.0.1/insts/jg/Makefile
+--- RTcmix-4.0.1_orig/insts/jg/Makefile	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/insts/jg/Makefile	2009-02-28 01:56:08.000000000 +0100
+@@ -15,8 +15,8 @@
+ all: objlib
+ 	@for DIR in $(LIBDIRS); \
+ 	do \
+-	  ( if test -d $$DIR; then cd $$DIR; echo "making all in $$DIR..."; \
+-	  $(MAKE) $(MFLAGS) all; echo "done in $$DIR"; fi ) \
++	  ( if test -d $$DIR; then set -e; cd $$DIR; echo "making all in $$DIR..."; \
++	  $(MAKE) $(MFLAGS) all && echo "done in $$DIR"; fi ) || exit $?; \
+ 	done
+ 
+ progs: all
+@@ -25,65 +25,65 @@
+ 
+ objlib:
+ 	@( cd objlib; echo "making in objlib..."; \
+-	  $(MAKE) $(MFLAGS); echo "done in objlib" ); \
++	  $(MAKE) $(MFLAGS) && echo "done in objlib" ); \
+ 
+ standalone:
+ 	@for DIR in $(LIBDIRS); \
+ 	do \
+-	  ( if test -d $$DIR; then cd $$DIR; echo "making standalone in $$DIR..."; \
+-	  $(MAKE) $(MFLAGS) standalone; echo "done in $$DIR"; fi ) \
++	  ( if test -d $$DIR; then set -e; cd $$DIR; echo "making standalone in $$DIR..."; \
++	  $(MAKE) $(MFLAGS) standalone && echo "done in $$DIR"; fi ) || exit $?; \
+ 	done
+ 
+ install:
+ 	@for DIR in $(LIBDIRS); \
+ 	do \
+-	  ( if test -d $$DIR; then cd $$DIR; echo "making install in $$DIR..."; \
+-	  $(MAKE) $(MFLAGS) install; fi ) \
++	  ( if test -d $$DIR; then set -e; cd $$DIR; echo "making install in $$DIR..."; \
++	  $(MAKE) $(MFLAGS) install; fi ) || exit $?; \
+ 	done
+ 
+ dso_install:
+ 	@for DIR in $(LIBDIRS); \
+ 	do \
+-	  ( if test -d $$DIR; then cd $$DIR; echo "making dso_install in $$DIR..."; \
+-	  $(MAKE) $(MFLAGS) dso_install; fi ) \
++	  ( if test -d $$DIR; then set -e; cd $$DIR; echo "making dso_install in $$DIR..."; \
++	  $(MAKE) $(MFLAGS) dso_install; fi ) || exit $?; \
+ 	done
+ 
+ standalone_install:
+ 	@for DIR in $(LIBDIRS); \
+ 	do \
+-	  ( if test -d $$DIR; then cd $$DIR; \
++	  ( if test -d $$DIR; then set -e; cd $$DIR; \
+ 	  echo "making standalone_install in $$DIR..."; \
+-	  $(MAKE) $(MFLAGS) standalone_install; fi ) \
++	  $(MAKE) $(MFLAGS) standalone_install; fi ) || exit $?; \
+ 	done
+ 
+ uninstall:
+ 	@for DIR in $(LIBDIRS); \
+ 	do \
+-	  ( if test -d $$DIR; then cd $$DIR; echo "making uninstall in $$DIR..."; \
+-	  $(MAKE) $(MFLAGS) uninstall; fi ) \
++	  ( if test -d $$DIR; then set -e; cd $$DIR; echo "making uninstall in $$DIR..."; \
++	  $(MAKE) $(MFLAGS) uninstall; fi ) || exit $?; \
+ 	done
+ 
+ dso_uninstall:
+ 	@for DIR in $(LIBDIRS); \
+ 	do \
+-	  ( if test -d $$DIR; then cd $$DIR; \
++	  ( if test -d $$DIR; then set -e; cd $$DIR; \
+ 	  echo "making dso_uninstall in $$DIR..."; \
+-	  $(MAKE) $(MFLAGS) dso_uninstall; fi ) \
++	  $(MAKE) $(MFLAGS) dso_uninstall; fi ) || exit $?; \
+ 	done
+ 
+ standalone_uninstall:
+ 	@for DIR in $(LIBDIRS); \
+ 	do \
+-	  ( if test -d $$DIR; then cd $$DIR; \
++	  ( if test -d $$DIR; then set -e; cd $$DIR; \
+ 	  echo "making standalone_uninstall in $$DIR..."; \
+-	  $(MAKE) $(MFLAGS) standalone_uninstall; fi ) \
++	  $(MAKE) $(MFLAGS) standalone_uninstall; fi ) || exit $?; \
+ 	done
+ 
+ clean:
+ 	@for DIR in $(LIBDIRS); \
+ 	do \
+-	  ( if test -d $$DIR; then cd $$DIR; echo "making clean in $$DIR..."; \
+-		$(MAKE) $(MFLAGS) clean; fi ) \
++	  ( if test -d $$DIR; then set -e; cd $$DIR; echo "making clean in $$DIR..."; \
++		$(MAKE) $(MFLAGS) clean; fi ) || exit $?; \
+ 	done
+ 	@( cd objlib; echo "making clean in objlib..."; \
+ 		$(MAKE) $(MFLAGS) clean; )
+diff -ru RTcmix-4.0.1_orig/insts/jg/WAVY/WAVY.cpp RTcmix-4.0.1/insts/jg/WAVY/WAVY.cpp
+--- RTcmix-4.0.1_orig/insts/jg/WAVY/WAVY.cpp	2009-02-28 01:20:28.000000000 +0100
++++ RTcmix-4.0.1/insts/jg/WAVY/WAVY.cpp	2009-02-28 01:56:26.000000000 +0100
+@@ -42,6 +42,7 @@
+ #include <rt.h>
+ #include <rtdefs.h>
+ #include <assert.h>
++#include <cstring>
+ 
+ #define OPTIMIZE_EXPRESSION
+ //#define DEBUG
+Binary files RTcmix-4.0.1_orig/insts/std/CLAR/CLAR.o and RTcmix-4.0.1/insts/std/CLAR/CLAR.o differ
+Binary files RTcmix-4.0.1_orig/insts/std/CLAR/cfuncs.o and RTcmix-4.0.1/insts/std/CLAR/cfuncs.o differ
+Binary files RTcmix-4.0.1_orig/insts/std/COMBIT/COMBIT.o and RTcmix-4.0.1/insts/std/COMBIT/COMBIT.o differ
+Binary files RTcmix-4.0.1_orig/insts/std/DEL1/DEL1.o and RTcmix-4.0.1/insts/std/DEL1/DEL1.o differ
+Binary files RTcmix-4.0.1_orig/insts/std/DELAY/DELAY.o and RTcmix-4.0.1/insts/std/DELAY/DELAY.o differ
+Binary files RTcmix-4.0.1_orig/insts/std/DUMP/DUMP.o and RTcmix-4.0.1/insts/std/DUMP/DUMP.o differ
+diff -ru RTcmix-4.0.1_orig/insts/std/FIR/FIR.cpp RTcmix-4.0.1/insts/std/FIR/FIR.cpp
+--- RTcmix-4.0.1_orig/insts/std/FIR/FIR.cpp	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/insts/std/FIR/FIR.cpp	2009-02-28 01:42:49.000000000 +0100
+@@ -10,7 +10,7 @@
+ *  p3 (amp) can receive updates.
+ *  mono input / mono output only
+ */
+-#include <iostream.h>
++#include <iostream>
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <ugens.h>
+Binary files RTcmix-4.0.1_orig/insts/std/HOLO/HOLO.o and RTcmix-4.0.1/insts/std/HOLO/HOLO.o differ
+diff -ru RTcmix-4.0.1_orig/insts/std/IIR/rtprofile.cpp RTcmix-4.0.1/insts/std/IIR/rtprofile.cpp
+--- RTcmix-4.0.1_orig/insts/std/IIR/rtprofile.cpp	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/insts/std/IIR/rtprofile.cpp	2009-02-28 01:42:49.000000000 +0100
+@@ -1,4 +1,4 @@
+-#include <iostream.h>
++#include <iostream>
+ #include <mixerr.h>
+ #include <Instrument.h>
+ #include <rt.h>
+diff -ru RTcmix-4.0.1_orig/insts/std/LPCPLAY/Complex.h RTcmix-4.0.1/insts/std/LPCPLAY/Complex.h
+--- RTcmix-4.0.1_orig/insts/std/LPCPLAY/Complex.h	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/insts/std/LPCPLAY/Complex.h	2009-02-28 01:46:01.000000000 +0100
+@@ -23,7 +23,8 @@
+ #define _Complex_h 1
+ 
+ 
+-#include <iostream.h>
++#include <istream>
++#include <ostream>
+ #include <math.h>
+ 
+ class Complex
+@@ -84,8 +85,8 @@
+ Complex   pow(const Complex& x, double y);
+ Complex   sqrt(const Complex& x);
+    
+-istream&  operator >> (istream& s, Complex& x);
+-ostream&  operator << (ostream& s, const Complex& x);
++std::istream& operator >> (std::istream& s, Complex& x);
++std::ostream& operator << (std::ostream& s, const Complex& x);
+ 
+ // other functions defined as inlines
+ 
+Binary files RTcmix-4.0.1_orig/insts/std/LPCPLAY/DataSet.o and RTcmix-4.0.1/insts/std/LPCPLAY/DataSet.o differ
+Binary files RTcmix-4.0.1_orig/insts/std/LPCPLAY/LPCPLAY.o and RTcmix-4.0.1/insts/std/LPCPLAY/LPCPLAY.o differ
+Binary files RTcmix-4.0.1_orig/insts/std/LPCPLAY/bmultf.o and RTcmix-4.0.1/insts/std/LPCPLAY/bmultf.o differ
+Binary files RTcmix-4.0.1_orig/insts/std/LPCPLAY/buzz.o and RTcmix-4.0.1/insts/std/LPCPLAY/buzz.o differ
+Binary files RTcmix-4.0.1_orig/insts/std/LPCPLAY/lpcheader.o and RTcmix-4.0.1/insts/std/LPCPLAY/lpcheader.o differ
+Binary files RTcmix-4.0.1_orig/insts/std/LPCPLAY/rand.o and RTcmix-4.0.1/insts/std/LPCPLAY/rand.o differ
+Binary files RTcmix-4.0.1_orig/insts/std/LPCPLAY/setup.o and RTcmix-4.0.1/insts/std/LPCPLAY/setup.o differ
+Binary files RTcmix-4.0.1_orig/insts/std/LPCPLAY/shift.o and RTcmix-4.0.1/insts/std/LPCPLAY/shift.o differ
+diff -ru RTcmix-4.0.1_orig/insts/std/LPCPLAY/stabilize.cpp RTcmix-4.0.1/insts/std/LPCPLAY/stabilize.cpp
+--- RTcmix-4.0.1_orig/insts/std/LPCPLAY/stabilize.cpp	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/insts/std/LPCPLAY/stabilize.cpp	2009-02-28 01:44:57.000000000 +0100
+@@ -1,7 +1,6 @@
+ // stabilize.C
+ 
+ #include <Complex.h>
+-#include <stream.h>
+ #include "lp.h"
+ 
+ static int factor(double*, long*, double*, double*, long*, long*, double*);
+diff -ru RTcmix-4.0.1_orig/insts/std/MARAGRAN/SGRANR.cpp RTcmix-4.0.1/insts/std/MARAGRAN/SGRANR.cpp
+--- RTcmix-4.0.1_orig/insts/std/MARAGRAN/SGRANR.cpp	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/insts/std/MARAGRAN/SGRANR.cpp	2009-02-28 01:42:49.000000000 +0100
+@@ -1,4 +1,4 @@
+-#include <iostream.h>
++#include <iostream>
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <ugens.h>
+diff -ru RTcmix-4.0.1_orig/insts/std/MARAGRAN/STGRANR.cpp RTcmix-4.0.1/insts/std/MARAGRAN/STGRANR.cpp
+--- RTcmix-4.0.1_orig/insts/std/MARAGRAN/STGRANR.cpp	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/insts/std/MARAGRAN/STGRANR.cpp	2009-02-28 01:42:49.000000000 +0100
+@@ -1,4 +1,4 @@
+-#include <iostream.h>
++#include <iostream>
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <ugens.h>
+diff -ru RTcmix-4.0.1_orig/insts/std/METAFLUTE/LSFLUTE.cpp RTcmix-4.0.1/insts/std/METAFLUTE/LSFLUTE.cpp
+--- RTcmix-4.0.1_orig/insts/std/METAFLUTE/LSFLUTE.cpp	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/insts/std/METAFLUTE/LSFLUTE.cpp	2009-02-28 01:42:49.000000000 +0100
+@@ -1,4 +1,4 @@
+-#include <iostream.h>
++#include <iostream>
+ #include <ugens.h>
+ #include <mixerr.h>
+ #include <Instrument.h>
+diff -ru RTcmix-4.0.1_orig/insts/std/METAFLUTE/SFLUTE.cpp RTcmix-4.0.1/insts/std/METAFLUTE/SFLUTE.cpp
+--- RTcmix-4.0.1_orig/insts/std/METAFLUTE/SFLUTE.cpp	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/insts/std/METAFLUTE/SFLUTE.cpp	2009-02-28 01:42:49.000000000 +0100
+@@ -1,4 +1,4 @@
+-#include <iostream.h>
++#include <iostream>
+ #include <ugens.h>
+ #include <Instrument.h>
+ #include "SFLUTE.h"
+diff -ru RTcmix-4.0.1_orig/insts/std/METAFLUTE/VSFLUTE.cpp RTcmix-4.0.1/insts/std/METAFLUTE/VSFLUTE.cpp
+--- RTcmix-4.0.1_orig/insts/std/METAFLUTE/VSFLUTE.cpp	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/insts/std/METAFLUTE/VSFLUTE.cpp	2009-02-28 01:42:49.000000000 +0100
+@@ -1,4 +1,4 @@
+-#include <iostream.h>
++#include <iostream>
+ #include <ugens.h>
+ #include <Instrument.h>
+ #include "VSFLUTE.h"
+diff -ru RTcmix-4.0.1_orig/insts/std/METAFLUTE/rtprofile.cpp RTcmix-4.0.1/insts/std/METAFLUTE/rtprofile.cpp
+--- RTcmix-4.0.1_orig/insts/std/METAFLUTE/rtprofile.cpp	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/insts/std/METAFLUTE/rtprofile.cpp	2009-02-28 01:42:49.000000000 +0100
+@@ -1,4 +1,4 @@
+-#include <iostream.h>
++#include <iostream>
+ #include <rt.h>
+ 
+ void
+Binary files RTcmix-4.0.1_orig/insts/std/MMOVE/MPLACE.o and RTcmix-4.0.1/insts/std/MMOVE/MPLACE.o differ
+Binary files RTcmix-4.0.1_orig/insts/std/MMOVE/placeprof.o and RTcmix-4.0.1/insts/std/MMOVE/placeprof.o differ
+Binary files RTcmix-4.0.1_orig/insts/std/MOCKBEND/MOCKBEND.o and RTcmix-4.0.1/insts/std/MOCKBEND/MOCKBEND.o differ
+Binary files RTcmix-4.0.1_orig/insts/std/MOVE/BASE.o and RTcmix-4.0.1/insts/std/MOVE/BASE.o differ
+Binary files RTcmix-4.0.1_orig/insts/std/MOVE/PLACE.o and RTcmix-4.0.1/insts/std/MOVE/PLACE.o differ
+Binary files RTcmix-4.0.1_orig/insts/std/MOVE/cmixfuns.o and RTcmix-4.0.1/insts/std/MOVE/cmixfuns.o differ
+Binary files RTcmix-4.0.1_orig/insts/std/MOVE/common.o and RTcmix-4.0.1/insts/std/MOVE/common.o differ
+Binary files RTcmix-4.0.1_orig/insts/std/MOVE/placeprof.o and RTcmix-4.0.1/insts/std/MOVE/placeprof.o differ
+Binary files RTcmix-4.0.1_orig/insts/std/MOVE/setup.o and RTcmix-4.0.1/insts/std/MOVE/setup.o differ
+Binary files RTcmix-4.0.1_orig/insts/std/MULTICOMB/MULTICOMB.o and RTcmix-4.0.1/insts/std/MULTICOMB/MULTICOMB.o differ
+diff -ru RTcmix-4.0.1_orig/insts/std/Makefile RTcmix-4.0.1/insts/std/Makefile
+--- RTcmix-4.0.1_orig/insts/std/Makefile	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/insts/std/Makefile	2009-02-28 01:56:08.000000000 +0100
+@@ -15,8 +15,8 @@
+ all:
+ 	@for DIR in $(LIBDIRS); \
+ 	do \
+-	  ( if test -d $$DIR; then cd $$DIR; echo "making all in $$DIR..."; \
+-	  $(MAKE) $(MFLAGS); echo "done in $$DIR"; fi ) \
++	  ( if test -d $$DIR; then set -e; cd $$DIR; echo "making all in $$DIR..."; \
++	  $(MAKE) $(MFLAGS) && echo "done in $$DIR"; fi ) || exit $?; \
+ 	done
+ 
+ progs: all
+@@ -26,59 +26,59 @@
+ standalone:
+ 	@for DIR in $(LIBDIRS); \
+ 	do \
+-	  ( if test -d $$DIR; then cd $$DIR; echo "making standalone in $$DIR..."; \
+-	  $(MAKE) $(MFLAGS) standalone; echo "done in $$DIR"; fi ) \
++	  ( if test -d $$DIR; then set -e; cd $$DIR; echo "making standalone in $$DIR..."; \
++	  $(MAKE) $(MFLAGS) standalone && echo "done in $$DIR"; fi ) || exit $?; \
+ 	done
+ 
+ install:
+ 	@for DIR in $(LIBDIRS); \
+ 	do \
+-	  ( if test -d $$DIR; then cd $$DIR; echo "making install in $$DIR..."; \
+-	  $(MAKE) $(MFLAGS) install; fi ) \
++	  ( if test -d $$DIR; then set -e; cd $$DIR; echo "making install in $$DIR..."; \
++	  $(MAKE) $(MFLAGS) install; fi ) || exit $?; \
+ 	done
+ 
+ dso_install:
+ 	@for DIR in $(LIBDIRS); \
+ 	do \
+-	( if test -d $$DIR; then cd $$DIR; echo "making dso_install in $$DIR..."; \
+-	  $(MAKE) $(MFLAGS) dso_install; fi ) \
++	( if test -d $$DIR; then set -e; cd $$DIR; echo "making dso_install in $$DIR..."; \
++	  $(MAKE) $(MFLAGS) dso_install; fi ) || exit $?; \
+ 	done
+ 
+ standalone_install:
+ 	@for DIR in $(LIBDIRS); \
+ 	do \
+-	( if test -d $$DIR; then cd $$DIR; \
++	( if test -d $$DIR; then set -e; cd $$DIR; \
+ 	  echo "making standalone_install in $$DIR..."; \
+-	  $(MAKE) $(MFLAGS) standalone_install; fi ) \
++	  $(MAKE) $(MFLAGS) standalone_install; fi ) || exit $?; \
+ 	done
+ 
+ uninstall:
+ 	@for DIR in $(LIBDIRS); \
+ 	do \
+-	( if test -d $$DIR; then cd $$DIR; echo "making uninstall in $$DIR..."; \
+-	  $(MAKE) $(MFLAGS) uninstall; fi ) \
++	( if test -d $$DIR; then set -e; cd $$DIR; echo "making uninstall in $$DIR..."; \
++	  $(MAKE) $(MFLAGS) uninstall; fi ) || exit $?; \
+ 	done
+ 
+ dso_uninstall:
+ 	@for DIR in $(LIBDIRS); \
+ 	do \
+-	( if test -d $$DIR; then cd $$DIR; echo "making dso_uninstall in $$DIR..."; \
+-	  $(MAKE) $(MFLAGS) dso_uninstall; fi ) \
++	( if test -d $$DIR; then set -e; cd $$DIR; echo "making dso_uninstall in $$DIR..."; \
++	  $(MAKE) $(MFLAGS) dso_uninstall; fi ) || exit $?; \
+ 	done
+ 
+ standalone_uninstall:
+ 	@for DIR in $(LIBDIRS); \
+ 	do \
+-	( if test -d $$DIR; then cd $$DIR; \
++	( if test -d $$DIR; then set -e; cd $$DIR; \
+ 	  echo "making standalone_uninstall in $$DIR..."; \
+-	  $(MAKE) $(MFLAGS) standalone_uninstall; fi ) \
++	  $(MAKE) $(MFLAGS) standalone_uninstall; fi ) || exit $?; \
+ 	done
+ 
+ clean:
+ 	@for DIR in $(LIBDIRS); \
+ 	do \
+-	  ( if test -d $$DIR; then cd $$DIR; echo "making clean in $$DIR..."; \
+-		$(MAKE) $(MFLAGS) clean; fi ) \
++	  ( if test -d $$DIR; then set -e; cd $$DIR; echo "making clean in $$DIR..."; \
++		$(MAKE) $(MFLAGS) clean; fi ) || exit $?; \
+ 	done
+ 
+ cleanall: clean uninstall
+Binary files RTcmix-4.0.1_orig/insts/std/NOISE/NOISE.o and RTcmix-4.0.1/insts/std/NOISE/NOISE.o differ
+Binary files RTcmix-4.0.1_orig/insts/std/PANECHO/PANECHO.o and RTcmix-4.0.1/insts/std/PANECHO/PANECHO.o differ
+Binary files RTcmix-4.0.1_orig/insts/std/PVOC/PVOC.o and RTcmix-4.0.1/insts/std/PVOC/PVOC.o differ
+Binary files RTcmix-4.0.1_orig/insts/std/PVOC/setup.o and RTcmix-4.0.1/insts/std/PVOC/setup.o differ
+Binary files RTcmix-4.0.1_orig/insts/std/REVMIX/REVMIX.o and RTcmix-4.0.1/insts/std/REVMIX/REVMIX.o differ
+Binary files RTcmix-4.0.1_orig/insts/std/SCRUB/SCRUB.o and RTcmix-4.0.1/insts/std/SCRUB/SCRUB.o differ
+Binary files RTcmix-4.0.1_orig/insts/std/SCULPT/SCULPT.o and RTcmix-4.0.1/insts/std/SCULPT/SCULPT.o differ
+diff -ru RTcmix-4.0.1_orig/insts/std/STRUM/BEND.cpp RTcmix-4.0.1/insts/std/STRUM/BEND.cpp
+--- RTcmix-4.0.1_orig/insts/std/STRUM/BEND.cpp	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/insts/std/STRUM/BEND.cpp	2009-02-28 01:42:49.000000000 +0100
+@@ -1,4 +1,4 @@
+-#include <iostream.h>
++#include <iostream>
+ #include <ugens.h>
+ #include <Instrument.h>
+ #include "BEND.h"
+diff -ru RTcmix-4.0.1_orig/insts/std/STRUM/BEND1.cpp RTcmix-4.0.1/insts/std/STRUM/BEND1.cpp
+--- RTcmix-4.0.1_orig/insts/std/STRUM/BEND1.cpp	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/insts/std/STRUM/BEND1.cpp	2009-02-28 01:42:49.000000000 +0100
+@@ -1,4 +1,4 @@
+-#include <iostream.h>
++#include <iostream>
+ #include <ugens.h>
+ #include <Instrument.h>
+ #include "BEND1.h"
+Binary files RTcmix-4.0.1_orig/insts/std/STRUM/START.o and RTcmix-4.0.1/insts/std/STRUM/START.o differ
+diff -ru RTcmix-4.0.1_orig/insts/std/STRUM/rtprofile.cpp RTcmix-4.0.1/insts/std/STRUM/rtprofile.cpp
+--- RTcmix-4.0.1_orig/insts/std/STRUM/rtprofile.cpp	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/insts/std/STRUM/rtprofile.cpp	2009-02-28 01:42:49.000000000 +0100
+@@ -1,4 +1,4 @@
+-#include <iostream.h>
++#include <iostream>
+ #include <rt.h>
+ 
+ void
+Binary files RTcmix-4.0.1_orig/insts/std/STRUM2/STRUM2.o and RTcmix-4.0.1/insts/std/STRUM2/STRUM2.o differ
+Binary files RTcmix-4.0.1_orig/insts/std/STRUMFB/STRUMFB.o and RTcmix-4.0.1/insts/std/STRUMFB/STRUMFB.o differ
+Binary files RTcmix-4.0.1_orig/insts/std/TRANSBEND/TRANSBEND.o and RTcmix-4.0.1/insts/std/TRANSBEND/TRANSBEND.o differ
+Binary files RTcmix-4.0.1_orig/insts/std/convolve/fft.o and RTcmix-4.0.1/insts/std/convolve/fft.o differ
+diff -ru RTcmix-4.0.1_orig/insts/stk/MBANDEDWG/MBANDEDWG.cpp RTcmix-4.0.1/insts/stk/MBANDEDWG/MBANDEDWG.cpp
+--- RTcmix-4.0.1_orig/insts/stk/MBANDEDWG/MBANDEDWG.cpp	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/insts/stk/MBANDEDWG/MBANDEDWG.cpp	2009-02-28 01:50:39.000000000 +0100
+@@ -35,7 +35,7 @@
+ #include <Stk.h>
+ #include <BandedWG.h> // from the stk library
+ 
+-#include <iostream.h>        /* needed only for cout, etc. if you want it */
++#include <iostream>        /* needed only for cout, etc. if you want it */
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <ugens.h>
+diff -ru RTcmix-4.0.1_orig/insts/stk/MBLOWBOTL/MBLOWBOTL.cpp RTcmix-4.0.1/insts/stk/MBLOWBOTL/MBLOWBOTL.cpp
+--- RTcmix-4.0.1_orig/insts/stk/MBLOWBOTL/MBLOWBOTL.cpp	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/insts/stk/MBLOWBOTL/MBLOWBOTL.cpp	2009-02-28 01:50:39.000000000 +0100
+@@ -24,7 +24,7 @@
+ #include <Stk.h>
+ #include <BlowBotl.h> // from the stk library
+ 
+-#include <iostream.h>        /* needed only for cout, etc. if you want it */
++#include <iostream>        /* needed only for cout, etc. if you want it */
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <ugens.h>
+diff -ru RTcmix-4.0.1_orig/insts/stk/MBLOWHOLE/MBLOWHOLE.cpp RTcmix-4.0.1/insts/stk/MBLOWHOLE/MBLOWHOLE.cpp
+--- RTcmix-4.0.1_orig/insts/stk/MBLOWHOLE/MBLOWHOLE.cpp	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/insts/stk/MBLOWHOLE/MBLOWHOLE.cpp	2009-02-28 01:50:39.000000000 +0100
+@@ -31,7 +31,7 @@
+ #include <Stk.h>
+ #include <BlowHole.h> // from the stk library
+ 
+-#include <iostream.h>        /* needed only for cout, etc. if you want it */
++#include <iostream>        /* needed only for cout, etc. if you want it */
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <ugens.h>
+diff -ru RTcmix-4.0.1_orig/insts/stk/MBOWED/MBOWED.cpp RTcmix-4.0.1/insts/stk/MBOWED/MBOWED.cpp
+--- RTcmix-4.0.1_orig/insts/stk/MBOWED/MBOWED.cpp	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/insts/stk/MBOWED/MBOWED.cpp	2009-02-28 01:50:39.000000000 +0100
+@@ -31,7 +31,7 @@
+ #include <Stk.h>
+ #include <Bowed.h> // from the stk library
+ 
+-#include <iostream.h>        /* needed only for cout, etc. if you want it */
++#include <iostream>        /* needed only for cout, etc. if you want it */
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <ugens.h>
+diff -ru RTcmix-4.0.1_orig/insts/stk/MBRASS/MBRASS.cpp RTcmix-4.0.1/insts/stk/MBRASS/MBRASS.cpp
+--- RTcmix-4.0.1_orig/insts/stk/MBRASS/MBRASS.cpp	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/insts/stk/MBRASS/MBRASS.cpp	2009-02-28 01:50:39.000000000 +0100
+@@ -25,7 +25,7 @@
+ #include <Stk.h>
+ #include <Brass.h> // from the stk library
+ 
+-#include <iostream.h>        /* needed only for cout, etc. if you want it */
++#include <iostream>        /* needed only for cout, etc. if you want it */
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <ugens.h>
+diff -ru RTcmix-4.0.1_orig/insts/stk/MCLAR/MCLAR.cpp RTcmix-4.0.1/insts/stk/MCLAR/MCLAR.cpp
+--- RTcmix-4.0.1_orig/insts/stk/MCLAR/MCLAR.cpp	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/insts/stk/MCLAR/MCLAR.cpp	2009-02-28 01:50:39.000000000 +0100
+@@ -26,7 +26,7 @@
+ #include <Stk.h>
+ #include <Clarinet.h> // from the stk library
+ 
+-#include <iostream.h>        /* needed only for cout, etc. if you want it */
++#include <iostream>        /* needed only for cout, etc. if you want it */
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <ugens.h>
+diff -ru RTcmix-4.0.1_orig/insts/stk/MMESH2D/MMESH2D.cpp RTcmix-4.0.1/insts/stk/MMESH2D/MMESH2D.cpp
+--- RTcmix-4.0.1_orig/insts/stk/MMESH2D/MMESH2D.cpp	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/insts/stk/MMESH2D/MMESH2D.cpp	2009-02-28 01:50:39.000000000 +0100
+@@ -21,7 +21,7 @@
+ 
+ #include <Stk.h>
+ #include <Mesh2D.h> // from the stk library
+-#include <iostream.h>        /* needed only for cout, etc. if you want it */
++#include <iostream>        /* needed only for cout, etc. if you want it */
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <ugens.h>
+diff -ru RTcmix-4.0.1_orig/insts/stk/MMODALBAR/MMODALBAR.cpp RTcmix-4.0.1/insts/stk/MMODALBAR/MMODALBAR.cpp
+--- RTcmix-4.0.1_orig/insts/stk/MMODALBAR/MMODALBAR.cpp	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/insts/stk/MMODALBAR/MMODALBAR.cpp	2009-02-28 01:50:39.000000000 +0100
+@@ -33,7 +33,7 @@
+ #include <Stk.h>
+ #include <ModalBar.h> // from the stk library
+ 
+-#include <iostream.h>        /* needed only for cout, etc. if you want it */
++#include <iostream>        /* needed only for cout, etc. if you want it */
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <ugens.h>
+diff -ru RTcmix-4.0.1_orig/insts/stk/MSAXOFONY/MSAXOFONY.cpp RTcmix-4.0.1/insts/stk/MSAXOFONY/MSAXOFONY.cpp
+--- RTcmix-4.0.1_orig/insts/stk/MSAXOFONY/MSAXOFONY.cpp	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/insts/stk/MSAXOFONY/MSAXOFONY.cpp	2009-02-28 01:50:39.000000000 +0100
+@@ -31,7 +31,7 @@
+ #include <Stk.h>
+ #include <Saxofony.h> // from the stk library
+ 
+-#include <iostream.h>        /* needed only for cout, etc. if you want it */
++#include <iostream>        /* needed only for cout, etc. if you want it */
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <ugens.h>
+diff -ru RTcmix-4.0.1_orig/insts/stk/MSHAKERS/MSHAKERS.cpp RTcmix-4.0.1/insts/stk/MSHAKERS/MSHAKERS.cpp
+--- RTcmix-4.0.1_orig/insts/stk/MSHAKERS/MSHAKERS.cpp	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/insts/stk/MSHAKERS/MSHAKERS.cpp	2009-02-28 01:50:39.000000000 +0100
+@@ -24,7 +24,7 @@
+ #include <Stk.h>
+ #include <Shakers.h> // from the stk library
+ 
+-#include <iostream.h>        /* needed only for cout, etc. if you want it */
++#include <iostream>        /* needed only for cout, etc. if you want it */
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <ugens.h>
+diff -ru RTcmix-4.0.1_orig/insts/stk/MSITAR/MSITAR.cpp RTcmix-4.0.1/insts/stk/MSITAR/MSITAR.cpp
+--- RTcmix-4.0.1_orig/insts/stk/MSITAR/MSITAR.cpp	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/insts/stk/MSITAR/MSITAR.cpp	2009-02-28 01:50:39.000000000 +0100
+@@ -23,7 +23,7 @@
+ #include <Stk.h>
+ #include <Sitar.h> // from the stk library
+ 
+-#include <iostream.h>        /* needed only for cout, etc. if you want it */
++#include <iostream>        /* needed only for cout, etc. if you want it */
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <ugens.h>
+diff -ru RTcmix-4.0.1_orig/insts/stk/Makefile RTcmix-4.0.1/insts/stk/Makefile
+--- RTcmix-4.0.1_orig/insts/stk/Makefile	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/insts/stk/Makefile	2009-02-28 01:56:08.000000000 +0100
+@@ -12,13 +12,13 @@
+ 
+ stklib:
+ 	@( cd stklib; echo "making in stklib..."; \
+-	  $(MAKE) $(MFLAGS); echo "done in stklib" ); \
++	  $(MAKE) $(MFLAGS) && echo "done in stklib" ); \
+ 
+ progs:
+ 	@for DIR in $(LIBDIRS); \
+ 	do \
+-	  ( if test -d $$DIR; then cd $$DIR; echo "making in $$DIR..."; \
+-	  $(MAKE) $(MFLAGS); echo "done in $$DIR"; fi ) \
++	  ( if test -d $$DIR; then set -e; cd $$DIR; echo "making in $$DIR..."; \
++	  $(MAKE) $(MFLAGS) && echo "done in $$DIR"; fi ) || exit $?; \
+ 	done
+ 
+ dsos: all
+@@ -26,60 +26,60 @@
+ standalone:
+ 	@for DIR in $(LIBDIRS); \
+ 	do \
+-	  ( if test -d $$DIR; then cd $$DIR; echo "making standalone in $$DIR..."; \
+-	  $(MAKE) $(MFLAGS) standalone; echo "done in $$DIR"; fi ) \
++	  ( if test -d $$DIR; then set -e; cd $$DIR; echo "making standalone in $$DIR..."; \
++	  $(MAKE) $(MFLAGS) standalone && echo "done in $$DIR"; fi ) || exit $?; \
+ 	done
+ 
+ install: stklib
+ 	@for DIR in $(LIBDIRS); \
+ 	do \
+-	  ( if test -d $$DIR; then cd $$DIR; echo "making install in $$DIR..."; \
+-	  $(MAKE) $(MFLAGS) install; fi ) \
++	  ( if test -d $$DIR; then set -e; cd $$DIR; echo "making install in $$DIR..."; \
++	  $(MAKE) $(MFLAGS) install; fi ) || exit $?; \
+ 	done
+ 
+ dso_install:
+ 	@for DIR in $(LIBDIRS); \
+ 	do \
+-	  ( if test -d $$DIR; then cd $$DIR; echo "making dso_install in $$DIR..."; \
+-	  $(MAKE) $(MFLAGS) dso_install; fi ) \
++	  ( if test -d $$DIR; then set -e; cd $$DIR; echo "making dso_install in $$DIR..."; \
++	  $(MAKE) $(MFLAGS) dso_install; fi ) || exit $?; \
+ 	done
+ 
+ standalone_install:
+ 	@for DIR in $(LIBDIRS); \
+ 	do \
+-	  ( if test -d $$DIR; then cd $$DIR; \
++	  ( if test -d $$DIR; then set -e; cd $$DIR; \
+ 	  echo "making standalone_install in $$DIR..."; \
+-	  $(MAKE) $(MFLAGS) standalone_install; fi ) \
++	  $(MAKE) $(MFLAGS) standalone_install; fi ) || exit $?; \
+ 	done
+ 
+ uninstall:
+ 	@for DIR in $(LIBDIRS); \
+ 	do \
+-	  ( if test -d $$DIR; then cd $$DIR; echo "making uninstall in $$DIR..."; \
+-	  $(MAKE) $(MFLAGS) uninstall; fi ) \
++	  ( if test -d $$DIR; then set -e; cd $$DIR; echo "making uninstall in $$DIR..."; \
++	  $(MAKE) $(MFLAGS) uninstall; fi ) || exit $?; \
+ 	done
+ 
+ dso_uninstall:
+ 	@for DIR in $(LIBDIRS); \
+ 	do \
+-	  ( if test -d $$DIR; then cd $$DIR; \
++	  ( if test -d $$DIR; then set -e; cd $$DIR; \
+ 	  echo "making dso_uninstall in $$DIR..."; \
+-	  $(MAKE) $(MFLAGS) dso_uninstall; fi ) \
++	  $(MAKE) $(MFLAGS) dso_uninstall; fi ) || exit $?; \
+ 	done
+ 
+ standalone_uninstall:
+ 	@for DIR in $(LIBDIRS); \
+ 	do \
+-	  ( if test -d $$DIR; then cd $$DIR; \
++	  ( if test -d $$DIR; then set -e; cd $$DIR; \
+ 	  echo "making standalone_uninstall in $$DIR..."; \
+-	  $(MAKE) $(MFLAGS) standalone_uninstall; fi ) \
++	  $(MAKE) $(MFLAGS) standalone_uninstall; fi ) || exit $?; \
+ 	done
+ 
+ clean:
+ 	@for DIR in $(LIBDIRS); \
+ 	do \
+-	  ( if test -d $$DIR; then cd $$DIR; echo "making clean in $$DIR..."; \
+-		$(MAKE) $(MFLAGS) clean; fi ) \
++	  ( if test -d $$DIR; then set -e; cd $$DIR; echo "making clean in $$DIR..."; \
++		$(MAKE) $(MFLAGS) clean; fi ) || exit $?; \
+ 	done
+ 	@( cd stklib; echo "making clean in stklib..."; \
+ 		$(MAKE) $(MFLAGS) clean; )
+diff -ru RTcmix-4.0.1_orig/insts/stk/stklib/BandedWG.cpp RTcmix-4.0.1/insts/stk/stklib/BandedWG.cpp
+--- RTcmix-4.0.1_orig/insts/stk/stklib/BandedWG.cpp	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/insts/stk/stklib/BandedWG.cpp	2009-02-28 01:51:52.000000000 +0100
+@@ -37,6 +37,8 @@
+ #include "Noise.h"
+ #include <math.h>
+ 
++using namespace std;
++
+ BandedWG :: BandedWG()
+ {
+   doPluck = true;
+diff -ru RTcmix-4.0.1_orig/insts/stk/stklib/BlowBotl.cpp RTcmix-4.0.1/insts/stk/stklib/BlowBotl.cpp
+--- RTcmix-4.0.1_orig/insts/stk/stklib/BlowBotl.cpp	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/insts/stk/stklib/BlowBotl.cpp	2009-02-28 01:52:06.000000000 +0100
+@@ -23,6 +23,8 @@
+ #include "BlowBotl.h"
+ #include <string.h>
+ 
++using namespace std;
++
+ #define __BOTTLE_RADIUS_ 0.999
+ 
+ BlowBotl :: BlowBotl()
+diff -ru RTcmix-4.0.1_orig/insts/stk/stklib/BlowHole.cpp RTcmix-4.0.1/insts/stk/stklib/BlowHole.cpp
+--- RTcmix-4.0.1_orig/insts/stk/stklib/BlowHole.cpp	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/insts/stk/stklib/BlowHole.cpp	2009-02-28 01:52:18.000000000 +0100
+@@ -41,6 +41,8 @@
+ #include <math.h>
+ #include <string.h>
+ 
++using namespace std;
++
+ BlowHole :: BlowHole(MY_FLOAT lowestFrequency)
+ {
+   length = (long) (Stk::sampleRate() / lowestFrequency + 1);
+diff -ru RTcmix-4.0.1_orig/insts/stk/stklib/Bowed.cpp RTcmix-4.0.1/insts/stk/stklib/Bowed.cpp
+--- RTcmix-4.0.1_orig/insts/stk/stklib/Bowed.cpp	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/insts/stk/stklib/Bowed.cpp	2009-02-28 01:52:31.000000000 +0100
+@@ -28,6 +28,8 @@
+ #include "Bowed.h"
+ #include <string.h>
+ 
++using namespace std;
++
+ Bowed :: Bowed(MY_FLOAT lowestFrequency)
+ {
+   long length;
+diff -ru RTcmix-4.0.1_orig/insts/stk/stklib/Brass.cpp RTcmix-4.0.1/insts/stk/stklib/Brass.cpp
+--- RTcmix-4.0.1_orig/insts/stk/stklib/Brass.cpp	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/insts/stk/stklib/Brass.cpp	2009-02-28 01:50:52.000000000 +0100
+@@ -28,6 +28,8 @@
+ #include <string.h>
+ #include <math.h>
+ 
++using namespace std;
++
+ // BGG -- eliminated the ADSR (breath amp now comes in through
+ // 	the tick() method) and the vibrato
+ Brass :: Brass(MY_FLOAT lowestFrequency)
+diff -ru RTcmix-4.0.1_orig/insts/stk/stklib/Clarinet.cpp RTcmix-4.0.1/insts/stk/stklib/Clarinet.cpp
+--- RTcmix-4.0.1_orig/insts/stk/stklib/Clarinet.cpp	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/insts/stk/stklib/Clarinet.cpp	2009-02-28 01:52:42.000000000 +0100
+@@ -29,6 +29,8 @@
+ #include "Clarinet.h"
+ #include <string.h>
+ 
++using namespace std;
++
+ Clarinet :: Clarinet(MY_FLOAT lowestFrequency)
+ {
+   length = (long) (Stk::sampleRate() / lowestFrequency + 1);
+diff -ru RTcmix-4.0.1_orig/insts/stk/stklib/Delay.cpp RTcmix-4.0.1/insts/stk/stklib/Delay.cpp
+--- RTcmix-4.0.1_orig/insts/stk/stklib/Delay.cpp	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/insts/stk/stklib/Delay.cpp	2009-02-28 01:51:30.000000000 +0100
+@@ -23,7 +23,9 @@
+ /***************************************************/
+ 
+ #include "Delay.h"
+-#include <iostream.h>
++#include <iostream>
++
++using namespace std;
+ 
+ Delay :: Delay()
+ {
+diff -ru RTcmix-4.0.1_orig/insts/stk/stklib/DelayA.cpp RTcmix-4.0.1/insts/stk/stklib/DelayA.cpp
+--- RTcmix-4.0.1_orig/insts/stk/stklib/DelayA.cpp	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/insts/stk/stklib/DelayA.cpp	2009-02-28 01:51:04.000000000 +0100
+@@ -27,7 +27,9 @@
+ /***************************************************/
+ 
+ #include "DelayA.h"
+-#include <iostream.h>
++#include <iostream>
++
++using namespace std;
+ 
+ DelayA :: DelayA()
+ {
+diff -ru RTcmix-4.0.1_orig/insts/stk/stklib/DelayL.cpp RTcmix-4.0.1/insts/stk/stklib/DelayL.cpp
+--- RTcmix-4.0.1_orig/insts/stk/stklib/DelayL.cpp	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/insts/stk/stklib/DelayL.cpp	2009-02-28 01:51:40.000000000 +0100
+@@ -27,7 +27,9 @@
+ /***************************************************/
+ 
+ #include "DelayL.h"
+-#include <iostream.h>
++#include <iostream>
++
++using namespace std;
+ 
+ DelayL :: DelayL()
+ {
+diff -ru RTcmix-4.0.1_orig/insts/stk/stklib/Flute.cpp RTcmix-4.0.1/insts/stk/stklib/Flute.cpp
+--- RTcmix-4.0.1_orig/insts/stk/stklib/Flute.cpp	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/insts/stk/stklib/Flute.cpp	2009-02-28 01:52:54.000000000 +0100
+@@ -29,6 +29,8 @@
+ #include "Flute.h"
+ #include <string.h>
+ 
++using namespace std;
++
+ Flute :: Flute(MY_FLOAT lowestFrequency)
+ {
+   length = (long) (Stk::sampleRate() / lowestFrequency + 1);
+diff -ru RTcmix-4.0.1_orig/insts/stk/stklib/Instrmnt.cpp RTcmix-4.0.1/insts/stk/stklib/Instrmnt.cpp
+--- RTcmix-4.0.1_orig/insts/stk/stklib/Instrmnt.cpp	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/insts/stk/stklib/Instrmnt.cpp	2009-02-28 01:51:18.000000000 +0100
+@@ -17,6 +17,8 @@
+ 
+ #include "Instrmnt.h"
+ 
++using namespace std;
++
+ Instrmnt :: Instrmnt()
+ {
+ }
+diff -ru RTcmix-4.0.1_orig/insts/stk/stklib/Instrmnt.h RTcmix-4.0.1/insts/stk/stklib/Instrmnt.h
+--- RTcmix-4.0.1_orig/insts/stk/stklib/Instrmnt.h	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/insts/stk/stklib/Instrmnt.h	2009-02-28 01:50:38.000000000 +0100
+@@ -19,7 +19,7 @@
+ #define __INSTRMNT_H
+ 
+ #include "Stk.h"
+-#include <iostream.h>
++#include <iostream>
+ 
+ class Instrmnt : public Stk
+ {
+diff -ru RTcmix-4.0.1_orig/insts/stk/stklib/Mesh2D.cpp RTcmix-4.0.1/insts/stk/stklib/Mesh2D.cpp
+--- RTcmix-4.0.1_orig/insts/stk/stklib/Mesh2D.cpp	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/insts/stk/stklib/Mesh2D.cpp	2009-02-28 01:53:55.000000000 +0100
+@@ -31,6 +31,8 @@
+ #include "Mesh2D.h"
+ #include <stdlib.h>
+ 
++using namespace std;
++
+ Mesh2D :: Mesh2D(short nX, short nY)
+ {
+   this->setNX(nX);
+diff -ru RTcmix-4.0.1_orig/insts/stk/stklib/Modal.cpp RTcmix-4.0.1/insts/stk/stklib/Modal.cpp
+--- RTcmix-4.0.1_orig/insts/stk/stklib/Modal.cpp	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/insts/stk/stklib/Modal.cpp	2009-02-28 01:53:05.000000000 +0100
+@@ -21,6 +21,8 @@
+ #include <stdlib.h>
+ #include <stdio.h>
+ 
++using namespace std;
++
+ Modal :: Modal(int modes)
+   : nModes(modes)
+ {
+diff -ru RTcmix-4.0.1_orig/insts/stk/stklib/ModalBar.cpp RTcmix-4.0.1/insts/stk/stklib/ModalBar.cpp
+--- RTcmix-4.0.1_orig/insts/stk/stklib/ModalBar.cpp	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/insts/stk/stklib/ModalBar.cpp	2009-02-28 01:54:06.000000000 +0100
+@@ -37,6 +37,8 @@
+ #include <string.h>
+ #include <math.h>
+ 
++using namespace std;
++
+ ModalBar :: ModalBar()
+   : Modal()
+ {
+diff -ru RTcmix-4.0.1_orig/insts/stk/stklib/Saxofony.cpp RTcmix-4.0.1/insts/stk/stklib/Saxofony.cpp
+--- RTcmix-4.0.1_orig/insts/stk/stklib/Saxofony.cpp	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/insts/stk/stklib/Saxofony.cpp	2009-02-28 01:54:17.000000000 +0100
+@@ -42,6 +42,8 @@
+ #include "Saxofony.h"
+ #include <string.h>
+ 
++using namespace std;
++
+ Saxofony :: Saxofony(MY_FLOAT lowestFrequency)
+ {
+   length = (long) (Stk::sampleRate() / lowestFrequency + 1);
+diff -ru RTcmix-4.0.1_orig/insts/stk/stklib/Shakers.cpp RTcmix-4.0.1/insts/stk/stklib/Shakers.cpp
+--- RTcmix-4.0.1_orig/insts/stk/stklib/Shakers.cpp	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/insts/stk/stklib/Shakers.cpp	2009-02-28 01:54:33.000000000 +0100
+@@ -61,6 +61,8 @@
+ #include <string.h>
+ #include <math.h>
+ 
++using namespace std;
++
+ int my_random(int max) //  Return Random Int Between 0 and max
+ {
+   int temp = (int) ((float)max * rand() / (RAND_MAX + 1.0) );
+diff -ru RTcmix-4.0.1_orig/insts/stk/stklib/Sitar.cpp RTcmix-4.0.1/insts/stk/stklib/Sitar.cpp
+--- RTcmix-4.0.1_orig/insts/stk/stklib/Sitar.cpp	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/insts/stk/stklib/Sitar.cpp	2009-02-28 01:54:46.000000000 +0100
+@@ -24,6 +24,8 @@
+ #include "Sitar.h"
+ #include <math.h>
+ 
++using namespace std;
++
+ Sitar :: Sitar(MY_FLOAT lowestFrequency)
+ {
+   length = (long) (Stk::sampleRate() / lowestFrequency + 1);
+diff -ru RTcmix-4.0.1_orig/src/control/maxmsp/RTInletPField.cpp RTcmix-4.0.1/src/control/maxmsp/RTInletPField.cpp
+--- RTcmix-4.0.1_orig/src/control/maxmsp/RTInletPField.cpp	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/src/control/maxmsp/RTInletPField.cpp	2009-02-28 01:33:29.000000000 +0100
+@@ -3,13 +3,15 @@
+   the license to this software and for a DISCLAIMER OF ALL WARRANTIES.
+ */
+ 
+-#include <iostream.h>
++#include <iostream>
+ #include <RTInletPField.h>
+ #include <PField.h>
+ #include <stdio.h>
+ #include <math.h>
+ #include <assert.h>
+ 
++using namespace std;
++
+ // BGG -- this is set by pfield_set() in main.cpp
+ //		the index is the inlet, the value is the value
+ extern float inletvals[];
+diff -ru RTcmix-4.0.1_orig/src/control/maxmsp/inletglue.cpp RTcmix-4.0.1/src/control/maxmsp/inletglue.cpp
+--- RTcmix-4.0.1_orig/src/control/maxmsp/inletglue.cpp	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/src/control/maxmsp/inletglue.cpp	2009-02-28 01:33:17.000000000 +0100
+@@ -2,7 +2,7 @@
+    See ``AUTHORS'' for a list of contributors. See ``LICENSE'' for
+    the license to this software and for a DISCLAIMER OF ALL WARRANTIES.
+ */
+-#include <iostream.h>
++#include <iostream>
+ #include <stdlib.h>
+ #include <stdio.h>
+ #include <string.h>
+@@ -12,6 +12,7 @@
+ #include <RTInletPField.h>
+ #include <ugens.h>		// for warn, die
+ 
++using namespace std;
+ 
+ // ------------------------------------------------------ max/msp_connection ---
+ //
+diff -ru RTcmix-4.0.1_orig/src/rtcmix/Instrument.cpp RTcmix-4.0.1/src/rtcmix/Instrument.cpp
+--- RTcmix-4.0.1_orig/src/rtcmix/Instrument.cpp	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/src/rtcmix/Instrument.cpp	2009-02-28 01:29:24.000000000 +0100
+@@ -7,7 +7,7 @@
+ #include <stdlib.h>
+ #include <string.h>
+ #include <pthread.h>
+-#include <iostream.h>
++#include <iostream>
+ #include "Instrument.h"
+ #include <RTcmix.h>
+ #include "rt.h"
+@@ -223,8 +223,8 @@
+    slot = piloc(instnum);
+    return 777;
+ #else /* !RTUPDATE */
+-   cout << "You haven't defined an init member of your Instrument class!"
+-                                                                 << endl;
++   std::cout << "You haven't defined an init member of your Instrument class!"
++                                                                 << std::endl;
+    return -1;
+ #endif /* !RTUPDATE */
+ }
+diff -ru RTcmix-4.0.1_orig/src/rtcmix/Option.cpp RTcmix-4.0.1/src/rtcmix/Option.cpp
+--- RTcmix-4.0.1_orig/src/rtcmix/Option.cpp	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/src/rtcmix/Option.cpp	2009-02-28 01:29:58.000000000 +0100
+@@ -11,7 +11,9 @@
+ #include "Option.h"
+ #include <Config.h>
+ #include <string.h>
+-#include <iostream.h>
++#include <iostream>
++
++using namespace std;
+ 
+ #define DEVICE_MAX   64
+ #define DSOPATH_MAX  PATH_MAX * 2
+diff -ru RTcmix-4.0.1_orig/src/rtcmix/PField.h RTcmix-4.0.1/src/rtcmix/PField.h
+--- RTcmix-4.0.1_orig/src/rtcmix/PField.h	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/src/rtcmix/PField.h	2009-02-28 01:27:56.000000000 +0100
+@@ -233,7 +233,7 @@
+ 	virtual double	doubleValue(double didx) const;
+ 	virtual double	doubleValue(int idx) const;
+ protected:
+-	virtual ModifiedIndexPFieldWrapper::~ModifiedIndexPFieldWrapper();
++	virtual ~ModifiedIndexPFieldWrapper();
+ private:
+ 	IIFunctor *_iifun;
+ 	DIFunctor *_difun;
+diff -ru RTcmix-4.0.1_orig/src/rtcmix/RTcmix.cpp RTcmix-4.0.1/src/rtcmix/RTcmix.cpp
+--- RTcmix-4.0.1_orig/src/rtcmix/RTcmix.cpp	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/src/rtcmix/RTcmix.cpp	2009-02-28 01:30:16.000000000 +0100
+@@ -17,7 +17,7 @@
+ #include <stdio.h>
+ #include <stdarg.h>
+ #include <stdlib.h>
+-#include <iostream.h>
++#include <iostream>
+ #include <unistd.h>
+ #include <sys/time.h>
+ #include <string.h>
+@@ -35,6 +35,7 @@
+ #include "maxdispargs.h"
+ #include "dbug.h"
+ 
++using namespace std;
+ 
+ // This is declared (still) in globals.h for use in gen routines.
+ 
+diff -ru RTcmix-4.0.1_orig/src/rtcmix/RTcmixMain.cpp RTcmix-4.0.1/src/rtcmix/RTcmixMain.cpp
+--- RTcmix-4.0.1_orig/src/rtcmix/RTcmixMain.cpp	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/src/rtcmix/RTcmixMain.cpp	2009-02-28 01:32:17.000000000 +0100
+@@ -5,11 +5,12 @@
+ 
+ #include <signal.h>
+ #include <stdlib.h>
+-#include <iostream.h>
++#include <iostream>
+ #include <sys/socket.h>
+ #include <sys/stat.h>
+ #include <sys/types.h>
+ #include <unistd.h>
++#include <climits>
+ 
+ #include <RTcmixMain.h>
+ #include <AudioDevice.h>
+@@ -21,6 +22,8 @@
+ #include "../parser/rtcmix_parse.h"
+ #include <sockdefs.h>
+ 
++using namespace std;
++
+ #ifdef NETAUDIO
+ extern int setnetplay(char *, char *);    // in setnetplay.cpp
+ #endif
+diff -ru RTcmix-4.0.1_orig/src/rtcmix/heap/heap.cpp RTcmix-4.0.1/src/rtcmix/heap/heap.cpp
+--- RTcmix-4.0.1_orig/src/rtcmix/heap/heap.cpp	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/src/rtcmix/heap/heap.cpp	2009-02-28 01:31:14.000000000 +0100
+@@ -5,7 +5,9 @@
+ #include "heap.h"
+ #include <lock.h>
+ #include <Instrument.h>
+-#include <iostream.h>
++#include <iostream>
++
++using namespace std;
+ 
+ heapslot::heapslot() : chunkStart(0), inst(NULL), 
+ 					   left(NULL), right(NULL), parent(NULL)   
+diff -ru RTcmix-4.0.1_orig/src/rtcmix/heap/queue.cpp RTcmix-4.0.1/src/rtcmix/heap/queue.cpp
+--- RTcmix-4.0.1_orig/src/rtcmix/heap/queue.cpp	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/src/rtcmix/heap/queue.cpp	2009-02-28 01:31:27.000000000 +0100
+@@ -2,9 +2,11 @@
+    See ``AUTHORS'' for a list of contributors. See ``LICENSE'' for
+    the license to this software and for a DISCLAIMER OF ALL WARRANTIES.
+ */
+-#include <iostream.h>
++#include <iostream>
+ #include "heap.h"
+ 
++using namespace std;
++
+ queue::~queue()
+ {
+ //	cout << "queue::~queue()\n";
+diff -ru RTcmix-4.0.1_orig/src/rtcmix/heap/rtQueue.cpp RTcmix-4.0.1/src/rtcmix/heap/rtQueue.cpp
+--- RTcmix-4.0.1_orig/src/rtcmix/heap/rtQueue.cpp	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/src/rtcmix/heap/rtQueue.cpp	2009-02-28 01:31:43.000000000 +0100
+@@ -2,13 +2,15 @@
+    See ``AUTHORS'' for a list of contributors. See ``LICENSE'' for
+    the license to this software and for a DISCLAIMER OF ALL WARRANTIES.
+ */
+-#include <iostream.h>
++#include <iostream>
+ #include "heap.h"
+ #include <dbug.h>
+ #include <rtdefs.h>
+ #include <RTcmix.h>
+ #include <Instrument.h>
+ 
++using namespace std;
++
+ //#define DBUG
+ 
+ RTQueue::~RTQueue()
+diff -ru RTcmix-4.0.1_orig/src/rtcmix/intraverse.cpp RTcmix-4.0.1/src/rtcmix/intraverse.cpp
+--- RTcmix-4.0.1_orig/src/rtcmix/intraverse.cpp	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/src/rtcmix/intraverse.cpp	2009-02-28 01:29:41.000000000 +0100
+@@ -5,7 +5,7 @@
+ #include <RTcmix.h>
+ #include <prototypes.h>
+ #include <pthread.h>
+-#include <iostream.h>
++#include <iostream>
+ #include <stdio.h>
+ #include <unistd.h>
+ #include <assert.h>
+@@ -23,6 +23,8 @@
+ //#define DBUG
+ //#define WBUG	/* this new one turns on prints of where we are */
+ 
++using namespace std;
++
+ // Temporary globals
+ 
+ static unsigned long bufEndSamp;
+diff -ru RTcmix-4.0.1_orig/src/rtcmix/main.cpp RTcmix-4.0.1/src/rtcmix/main.cpp
+--- RTcmix-4.0.1_orig/src/rtcmix/main.cpp	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/src/rtcmix/main.cpp	2009-02-28 01:32:33.000000000 +0100
+@@ -14,7 +14,7 @@
+ #include <stdlib.h>
+ #include <sys/socket.h>
+ #include <netinet/in.h>
+-#include <iostream.h>
++#include <iostream>
+ #include <signal.h>
+ 
+ #include <RTcmixMain.h>
+@@ -28,6 +28,7 @@
+ #include "notetags.h"           // contains defs for note-tagging
+ #include "dbug.h"
+ 
++using namespace std;
+ 
+ extern "C" {
+ #ifdef SGI
+diff -ru RTcmix-4.0.1_orig/src/rtcmix/sockit.cpp RTcmix-4.0.1/src/rtcmix/sockit.cpp
+--- RTcmix-4.0.1_orig/src/rtcmix/sockit.cpp	2009-02-28 01:20:27.000000000 +0100
++++ RTcmix-4.0.1/src/rtcmix/sockit.cpp	2009-02-28 01:33:07.000000000 +0100
+@@ -3,7 +3,7 @@
+    the license to this software and for a DISCLAIMER OF ALL WARRANTIES.
+ */
+ #include <pthread.h>
+-#include <iostream.h>
++#include <iostream>
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <unistd.h>
+@@ -24,6 +24,8 @@
+ 
+ #include "notetags.h"
+ 
++using namespace std;
++
+ // #define DBUG
+ // #define ALLBUG
+ 

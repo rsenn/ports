@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Machine perception and machine learning tools.
+# The Kolmogorov project provides tools for machine perception and tutorials
+# for machine learning, machine perception, and statistics. It supports fast
+# face detection in images and information on Hidden Markov models, Gabor
+# filters, Multivariate Logistic Regression, and Stochastic Differential
+# Equations. It includes MPISearch, a library for detecting objects in
+# images very quickly (real-time in some cases).
+#
+# URL: http://sourceforge.net/projects/kolmogorov
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=kolmogorov
+version=2.0.4
+release=1
+source=($mirror_sf/kolmogorov/mpisearch-$version.tgz)
+
+build()
+{
+  cd mpisearch
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

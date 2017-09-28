@@ -1,0 +1,69 @@
+# $Id: Pkgfile,v 1.2 2007/04/22 23:07:53 roman Exp $
+#
+# Description: A distributed source code management system.
+#  Git is a "directory content manager" that was designed to handle massive
+#  projects such as the Linux kernel with speed and efficiency. It falls in
+#  the category of distributed source code management tools and is similar
+#  to GNU Arch, Monotone, and BitKeeper. Every Git working directory is a
+#  fully-fledged repository with full revision tracking capabilities and
+#  is not dependent on network access to a central server.
+#  .
+# URL: http://git.or.cz/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=git
+version=1.6.4.3
+release=1
+source=(http://kernel.org/pub/software/scm/git/git-$version.tar.bz2
+        http://kernel.org/pub/software/scm/git/git-{manpages,htmldocs}-$version.tar.bz2
+        git.bashcomp
+        apache.conf)
+
+build()
+{
+  cd git-$version
+
+  case $prefix in
+    "/usr") sysconfdir="/etc" localstatedir="/var" ;;
+  esac
+
+  make \
+      prefix="$prefix" \
+      libexecdir="$prefix/bin" \
+      DESTDIR="$PKG" \
+      DESTDIR_SQ="$PKG" \
+    install #install-doc
+
+  # prepare cache dir
+  gitcachedir=$PKG/${localstatedir="$prefix/var"}/cache/git
+
+  install -d $gitcachedir
+
+  # install premade documentation
+  install -d $ROOT/share/man
+  cp -rf $SRC/man[157] $ROOT/share/man/
+
+  # install the bash completion module
+  bashcompdir=$PKG/${sysconfdir="$prefix/etc"}/bash_completion.d
+
+  install -d $bashcompdir
+  install -m 644 $SRC/git.bashcomp $bashcompdir/git
+
+  # install the gitweb CGI
+  install -d $ROOT/lib/cgi-bin
+  install -m 644 gitweb/gitweb.perl $ROOT/lib/cgi-bin/gitweb.cgi
+
+  install -d $ROOT/share/doc/git
+  install -m 644 gitweb/README $ROOT/share/doc/git/README.gitweb
+  install -m 644 gitweb/INSTALL $ROOT/share/doc/git/INSTALL.gitweb
+
+  install -d $ROOT/share/git/gitweb
+  install -m 644 gitweb/*.png gitweb/*.css $ROOT/share/git/gitweb
+
+  install -d $PKG${localstatedir=$prefix/var}/cache/git
+
+  install -d $PKG${sysconfdir=$prefix/etc}/gitweb
+  install -m 644 $SRC/apache.conf $PKG${sysconfdir=$prefix/etc}/gitweb
+
+}

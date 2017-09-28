@@ -1,0 +1,28 @@
+# $Id: Pkgfile,v 1.8 2007/04/22 23:07:58 roman Exp $
+# Name: QtSqlView -  Qt-based SQL Database Viewer
+# Description: A simple and easy to use SQL database browser written in Qt 4.x
+# using the excellent QtSql components. Using QtSql drivers it can natively
+# connect to MySQL, PostgreSQL and SQLite databases. Furthermore other database
+# systems may be accessed using their ODBC drivers.
+# License: GNU General Public License
+# URL: http://idlebox.net/2006/qtsqlview/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=qtsqlview
+version=0.8.0
+release=1
+source=(http://idlebox.net/2006/qtsqlview/src/QtSqlView-$version.tar.bz2
+        qtsqlview-0.8.0-c++0x.patch)
+
+build()
+{
+  cd QtSqlView-$version
+
+  patch -N -p1 -i $SRC/qtsqlview-0.8.0-c++0x.patch
+
+  qmake && make CXX="$CXX" CXXFLAGS="$CXXFLAGS"
+
+  install -d $ROOT/bin
+  install -m 755 src/QtSqlView $ROOT/bin/
+}

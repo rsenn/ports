@@ -1,0 +1,71 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Generator of lexical analyzers
+# The classes Parse::Lex and Parse::CLex create lexical analyzers. They
+# use different analysis techniques:
+#
+# 1. Parse::Lex steps through the analysis by moving a pointer within the
+# character strings to be analyzed (use of pos() together with \G),
+#
+# 2. Parse::CLex steps through the analysis by consuming the data recognized
+# (use of s///).
+#
+# Analyzers of the Parse::CLex class do not allow the use of anchoring
+# in regular expressions. In addition, the subclasses of Parse::Token are
+# not implemented for this type of analyzer.
+#
+# A lexical analyzer is specified by means of a list of tokens passed as
+# arguments to the new() method. Tokens are instances of the Parse::Token
+# class, which comes with Parse::Lex. The definition of a token usually
+# comprises two arguments: a symbolic name (like INTEGER), followed by
+# a regular expression. If a sub ref (anonymous subroutine) is given as
+# third argument, it is called when the token is recognized. Its arguments
+# are the Parse::Token instance and the string recognized by the regular
+# expression. The anonymous subroutine's return value is used as the new
+# string contents of the Parse::Token instance.
+#
+# The order in which the lexical analyzer examines the regular expressions
+# is determined by the order in which these expressions are passed
+# as arguments to the new() method. The token returned by the lexical
+# analyzer corresponds to the first regular expression which matches
+# (this strategy is different from that used by Lex, which returns the
+# longest match possible out of all that can be recognized).
+#
+# The lexical analyzer can recognize tokens which span multiple records. If
+# the definition of the token comprises more than one regular expression
+# (placed within a reference to an anonymous array), the analyzer reads as
+# many records as required to recognize the token (see the documentation
+# for the Parse::Token class). When the start pattern is found, the analyzer
+# looks for the end, and if necessary, reads more records. No backtracking
+# is done in case of failure.
+#
+# The analyzer can be used to analyze an isolated character string or a
+# stream of data coming from a file handle. At the end of the input data
+# the analyzer returns a Parse::Token instance named EOI (End Of Input).
+#
+# URL: http://search.cpan.org/~pverd/ParseLex-2.15/lib/Parse/Lex.pm
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libparse-lex-perl
+version=2.15
+release=2adfinis1
+source=(http://search.cpan.org/CPAN/authors/id/P/PV/PVERD/ParseLex-$version.tar.gz
+        libparse-lex-perl-2.15-no-strict.patch)
+
+build()
+{
+  cd ParseLex-$version
+
+  patch -N -p1 -i $SRC/libparse-lex-perl-2.15-no-strict.patch
+
+  perl Makefile.PL
+
+  make \
+      DESTDIR="$PKG" \
+      SITEPREFIX='$(PREFIX)' \
+      INSTALLSITELIB='$(INSTALLVENDORLIB)' \
+      INSTALLSITEARCH='$(INSTALLVENDORARCH)' \
+      INSTALLSITEMAN3DIR="$prefix/share/man/man3" \
+    install
+}

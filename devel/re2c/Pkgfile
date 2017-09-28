@@ -1,0 +1,32 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:44 roman Exp $
+#
+# Description: scons
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=re2c
+version=0.12.1
+release=1
+source=($mirror_sf/re2c/re2c-$version.tar.gz
+        re2c-0.12.1-mingw32.patch)
+
+build()
+{
+  cd re2c-$version
+  patch -N -p1 -i $SRC/re2c-0.12.1-mingw32.patch
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/
+
+#  ps2pdf doc/loplas.ps
+  cp -rf doc $ROOT/share/doc/$name-$version
+  cp -rf examples lessons $ROOT/share/doc/$name-$version
+}

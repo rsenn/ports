@@ -1,0 +1,36 @@
+# $Id: Pkgfile,v 1.15 2007/05/09 21:02:55 roman Exp $
+#
+# Description: A Linux disk editor with ext2 and other fs editing.
+#  LDE allows you to view some Linux filesystems (a la Norton disk edit). Hex
+#  block and inode editing are supported and you can use it to recover
+#  erased files. It also supports ext2, minix, xiafs, and generic binary
+#  editor mode.
+# URL: http://lde.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=lde
+version=2.6.1
+release=1
+source=($mirror_sf/lde/lde-$version.tar.gz
+        lde-2.6.1-fixes.patch)
+
+build()
+{
+  cd lde
+
+  patch -N -p1 -i $SRC/lde-2.6.1-fixes.patch
+
+  install -d $ROOT/{man/man8,sbin}
+
+  LDFLAGS="-static" \
+  ./configure \
+        --build="$build" \
+        --host="$host" \
+        --prefix="$prefix" \
+        --${shared:=enable}-shared \
+        --${static:=enable}-shared
+
+  make LIBS="-lncurses"
+  make sbindir="$ROOT/sbin" libdir="$ROOT/lib" prefix="$ROOT" install
+}

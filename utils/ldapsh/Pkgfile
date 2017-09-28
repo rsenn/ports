@@ -1,0 +1,49 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An LDAP shell
+# An interactive LDAP shell written in Perl.
+# LDAP Shell is an interactive LDAP shell written in Perl and allowing basic
+# administrative functionality, such as crawling the directory tree and
+# modifying entries.
+# URL: http://reductivelabs.com/projects/ldapsh/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libnet-ldap-perl, libparse-lex-perl, perl, perl-base, perl-modules
+
+name=ldapsh
+version=2.0
+release=1adfinis3
+source=(http://reductivelabs.com/downloads/ldapsh/ldapsh-$version.tgz)
+
+build()
+{
+  cd ldapsh
+
+  case $prefix in
+    "/usr") sysconfdir="/etc" ;;
+  esac
+
+  perl Makefile.PL
+
+  make
+
+  sed -i -e "s:/usr/local:$prefix:g" \
+      blib/lib/Net/LDAP/Config.pm \
+      blib/man1/ldapsh.1p \
+      blib/script/ldapsh \
+      examples/ocprint \
+      ldapsh \
+      lib/Net/LDAP/Config.pm
+
+  make \
+      DESTDIR="$PKG" \
+      INSTALLDIRS="vendor" \
+      SITEPREFIX='$(PREFIX)' \
+      INSTALLSITEMAN1DIR='$(SITEPREFIX)/share/man/man1' \
+      INSTALLSITEMAN3DIR='$(SITEPREFIX)/share/man/man3' \
+    install
+
+  rm -f $ROOT/lib/perl/*/perllocal.pod
+
+  install -d $PKG${sysconfdir="$prefix/etc"}
+  install -m 644 examples/ldapsh_config $PKG${sysconfdir}
+}

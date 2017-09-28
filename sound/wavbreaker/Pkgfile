@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A tool to split a wave file into multiple files.
+#  wavbreaker is a tool to take a wave file and break it up into multiple
+#  wave files. It makes a clean break at the correct position to burn the
+#  files to an audio CD without any dead space between the tracks. There
+#  is also a commandline tool to merge wave files together (wavmerge).
+#  .
+# URL: http://wavbreaker.sourceforge.net/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=wavbreaker
+version=0.8.1
+release=1
+source=($mirror_sf/wavbreaker/wavbreaker-0.8.1.tar.gz)
+
+build()
+{
+  cd wavbreaker-0.8.1
+./autogen.sh
+./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+make
+make DESTDIR="$PKG" install
+}
+
+# EOF

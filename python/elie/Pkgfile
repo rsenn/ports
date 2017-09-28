@@ -1,0 +1,27 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An adaptive information extraction system.
+#  ELIE is a tool for adaptive information extraction from text. It also
+#  provides a number of other text processing tools, such as POS tagging,
+#  chunking, gazetteer, and stemming.
+# URL: http://www.aidanf.net/elie
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=elie
+version=0.4.1
+release=1
+source=(http://www.aidanf.net/downloads/elie.tar.gz)
+
+build()
+{
+  cd Elie4
+
+  set -- $(set -- $(python --version 2>&1) && IFS="." && echo $2)
+
+  find -name "*~" -exec rm -v '{}' ';'
+
+  install -d $ROOT/lib/python$1.$2/Elie4
+  cp -rvf * $ROOT/lib/python$1.$2/Elie4
+
+}

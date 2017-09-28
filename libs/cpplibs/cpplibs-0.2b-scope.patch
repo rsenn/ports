@@ -1,0 +1,3145 @@
+diff -ru -ru cpplibs-0.2b-20031008_orig/base.mk cpplibs-0.2b-20031008/base.mk
+--- cpplibs-0.2b-20031008_orig/base.mk	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/base.mk	2006-08-21 18:24:09.000000000 +0200
+@@ -129,7 +129,7 @@
+ 	$(CC) -c $(CPPFLAGS) $< -o $@
+ # compile C++
+ %.o : %.cc
+-	$(CXX) -c $(CPPFLAGS) $< -o $@
++	$(CXX) -fpermissive -c $(CPPFLAGS) $< -o $@
+ # crate list of dependencies for C++ sources
+ %.d: %.cc
+ 	$(SHELL) -ec '$(CPP) -MM $(CPPFLAGS) $< \
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/BmpCodec.h cpplibs-0.2b-20031008/prapi/BmpCodec.h
+--- cpplibs-0.2b-20031008_orig/prapi/BmpCodec.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/BmpCodec.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _BMPCODEC_H
+-#define _BMPCODEC_H
++#ifndef PR_BMPCODEC_H
++#define PR_BMPCODEC_H
+ 
+ #include <iostream>
+ #include <stdlib.h>
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/ClassificationException.h cpplibs-0.2b-20031008/prapi/ClassificationException.h
+--- cpplibs-0.2b-20031008_orig/prapi/ClassificationException.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/ClassificationException.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _CLASSIFICATIONEXCEPTION_H
+-#define _CLASSIFICATIONEXCEPTION_H
++#ifndef PR_CLASSIFICATIONEXCEPTION_H
++#define PR_CLASSIFICATIONEXCEPTION_H
+ 
+ #include <Exception.h>
+ 
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/Classifier.h cpplibs-0.2b-20031008/prapi/Classifier.h
+--- cpplibs-0.2b-20031008_orig/prapi/Classifier.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/Classifier.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _CLASSIFIER_H
+-#define _CLASSIFIER_H
++#ifndef PR_CLASSIFIER_H
++#define PR_CLASSIFIER_H
+ 
+ #include <SortedList.h>
+ #include <Event.h>
+@@ -534,20 +534,20 @@
+ 
+ 	template <class T, class I, class C> C NNClassifier<T,I,C>::getClassification(Sample<T,I,C>& sample) throw (ClassificationException&)
+ 	{
+-		if (!_lstpTrainingSamples)
++		if (!Classifier<T,I,C>::_lstpTrainingSamples)
+ 			throw ClassificationException("NNClassifier<T,I,C>::getClassification(Sample<T,I,C>&): No training samples.");
+-		if (!_proximityMeasure)
++		if (!Classifier<T,I,C>::_proximityMeasure)
+ 			throw ClassificationException("NNClassifier<T,I,C>::getClassification(Sample<T,I,C>&): No proximity measure.");
+ 
+ 		double minProximity = MAXDOUBLE;
+ 		C classification = 0;
+-		for (int i=0;i<_lstpTrainingSamples->getLength();i++)
++		for (int i=0;i<Classifier<T,I,C>::_lstpTrainingSamples->getLength();i++)
+ 			{
+-				double proximity = _proximityMeasure->getProximity(sample, _lstpTrainingSamples->elementAt(i), minProximity);
++				double proximity = Classifier<T,I,C>::_proximityMeasure->getProximity(sample, Classifier<T,I,C>::_lstpTrainingSamples->elementAt(i), minProximity);
+ 				if (proximity < minProximity)
+ 					{
+ 						minProximity = proximity;
+-						classification = _lstpTrainingSamples->elementAt(i).getTrueClass();
++						classification = Classifier<T,I,C>::_lstpTrainingSamples->elementAt(i).getTrueClass();
+ 					}
+ 			}
+ 		return classification;
+@@ -631,23 +631,23 @@
+ 
+ 	template <class T, class I, class C> C kNNClassifier<T,I,C>::getClassification(Sample<T,I,C>& sample) throw (ClassificationException&)
+ 	{
+-		if (!_lstpTrainingSamples)
++		if (!Classifier<T,I,C>::_lstpTrainingSamples)
+ 			throw ClassificationException("kNNClassifier<T,I,C>::getClassification(Sample<T,I,C>&): No training samples.");
+-		if (!_proximityMeasure)
++		if (!Classifier<T,I,C>::_proximityMeasure)
+ 			throw ClassificationException("kNNClassifier<T,I,C>::getClassification(Sample<T,I,C>&): No proximity measure.");
+ 		_lstProximities.clear();
+ 		_lstProximities.setLength(_iK,ValueHolder<C>(MAXDOUBLE,C(-1))); //fill with extreme distances
+-		for (int i=0;i<_lstpTrainingSamples->getLength();i++)
++		for (int i=0;i<Classifier<T,I,C>::_lstpTrainingSamples->getLength();i++)
+ 			{
+-				//cerr << "_lstpTrainingSamples->elementAt(i): " << _lstpTrainingSamples->elementAt(i) << endl;
+-				double proximity = _proximityMeasure->getProximity(sample, _lstpTrainingSamples->elementAt(i),_lstProximities[_iK-1].getValue());
+-				ValueHolder<C> holder(proximity,_lstpTrainingSamples->elementAt(i).getTrueClass());
++				//cerr << "Classifier<T,I,C>::_lstpTrainingSamples->elementAt(i): " << Classifier<T,I,C>::_lstpTrainingSamples->elementAt(i) << endl;
++				double proximity = Classifier<T,I,C>::_proximityMeasure->getProximity(sample, Classifier<T,I,C>::_lstpTrainingSamples->elementAt(i),_lstProximities[_iK-1].getValue());
++				ValueHolder<C> holder(proximity,Classifier<T,I,C>::_lstpTrainingSamples->elementAt(i).getTrueClass());
+ 				_lstProximities.addElement(holder);
+ 			}
+ 		if (_iK>1)
+ 			{
+-				int votes[_iClassCount];
+-				memset(votes,0,_iClassCount*sizeof(int));
++				int votes[Classifier<T,I,C>::_iClassCount];
++				memset(votes,0,Classifier<T,I,C>::_iClassCount*sizeof(int));
+ 				
+ 				for (int i=0;i<_iK;i++)
+ 					votes[_lstProximities[i].getObject()]++;
+@@ -656,7 +656,7 @@
+ 				util::List<int> winners(_iK);
+ 
+ 				//find the winner
+-				for (int i=0;i<_iClassCount;i++)
++				for (int i=0;i<Classifier<T,I,C>::_iClassCount;i++)
+ 					{
+ 						if (votes[i] > votes[votedClass])
+ 							{
+@@ -714,7 +714,7 @@
+ 		MinimumDistanceClassifier(util::List<Sample<T,I,C> >& trainingSamples, ProximityMeasure<T>& measure, int classCount) :
+ 			Classifier<T,I,C>(trainingSamples, measure, classCount),_lstPrototypeVectors(classCount),_lstTrueClasses(classCount) {}
+ 
+-		void setTrainingSamples(util::List<Sample<T,I,C> >* lst) { _lstpTrainingSamples = lst; if (lst) initialize(); }
++		void setTrainingSamples(util::List<Sample<T,I,C> >* lst) { Classifier<T,I,C>::_lstpTrainingSamples = lst; if (lst) initialize(); }
+ 
+ 		C getClassification(Sample<T,I,C>& sample) throw (ClassificationException&);
+ 
+@@ -743,14 +743,14 @@
+ 	template <class T,class I,class C> void MinimumDistanceClassifier<T,I,C>::initialize()
+ 		throw (ClassificationException&)
+ 	{
+-		if (!_lstpTrainingSamples)
++		if (!Classifier<T,I,C>::_lstpTrainingSamples)
+ 			throw ClassificationException("MinimumDistanceClassifier<T,I,C>::initialize(): No training samples.");
+ 		// first divide training samples for own groups.
+-		util::List<int> classes(_iClassCount);
+-		for(int i=0;i<_iClassCount;i++)classes+=i;
+-		util::List<util::List<Sample<T,I,C> > > trainData(divideByTrueClass(*_lstpTrainingSamples,classes));
++		util::List<int> classes(Classifier<T,I,C>::_iClassCount);
++		for(int i=0;i<Classifier<T,I,C>::_iClassCount;i++)classes+=i;
++		util::List<util::List<Sample<T,I,C> > > trainData(divideByTrueClass(*Classifier<T,I,C>::_lstpTrainingSamples,classes));
+ 
+-		if(_iClassCount != trainData.getLength())
++		if(Classifier<T,I,C>::_iClassCount != trainData.getLength())
+ 			throw ClassificationException("MinimumDistanceClassifier<T,I,C>::initialize(): Class counts differ.");
+ 
+ 		// calculate mean and stdev for all classes in trainData.
+@@ -779,16 +779,16 @@
+ 	template <class T, class I, class C> C MinimumDistanceClassifier<T,I,C>::getClassification(Sample<T,I,C>& sample)
+ 		throw (ClassificationException&)
+ 	{
+-		if (!_proximityMeasure)
++		if (!Classifier<T,I,C>::_proximityMeasure)
+ 			throw ClassificationException("MinimumDistanceClassifier<T,I,C>::getClassification(Sample<T,I,C>&): No proximity measure.");
+ 
+ 		double minProximity = MAXDOUBLE;
+ 		C classification = 0;
+-		for (int i=0;i<_iClassCount;i++)
++		for (int i=0;i<Classifier<T,I,C>::_iClassCount;i++)
+ 			{
+ 				util::List<T> feature(sample.featureVector());
+ 				feature.divide(_lstPrototypeVectors[i][1]);
+-				double proximity = _proximityMeasure->getProximity(feature, _lstPrototypeVectors[i][0], minProximity);
++				double proximity = Classifier<T,I,C>::_proximityMeasure->getProximity(feature, _lstPrototypeVectors[i][0], minProximity);
+ 				if (proximity < minProximity)
+ 					{
+ 						minProximity = proximity;
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/Cluster.h cpplibs-0.2b-20031008/prapi/Cluster.h
+--- cpplibs-0.2b-20031008_orig/prapi/Cluster.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/Cluster.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _CLUSTER_H
+-#define _CLUSTER_H
++#ifndef PR_CLUSTER_H
++#define PR_CLUSTER_H
+ 
+ #include <List.h>
+ #include <string>
+@@ -64,7 +64,7 @@
+ 	template <class T, class I, class C> Cluster<T,I,C>& Cluster<T,I,C>::operator= (const Cluster<T,I,C>& other)
+ 	{
+ 		util::List<Sample<T,I,C> >::operator=(other);
+-		_representatiteSample = other._representativeSample;
++		Cluster<T,I,C>::_representatiteSample = other._representativeSample;
+ 		return *this;
+ 	}
+ }
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/Color.h cpplibs-0.2b-20031008/prapi/Color.h
+--- cpplibs-0.2b-20031008_orig/prapi/Color.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/Color.h	2006-08-22 09:19:13.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _COLOR_H
+-#define _COLOR_H
++#ifndef PR_COLOR_H
++#define PR_COLOR_H
+ 
+ #include <iostream>
+ #include <string.h>
+@@ -433,7 +433,7 @@
+ 		using namespace util::xml;
+ 
+ 		XMLParser parser;
+-		sin >> ws;
++		sin >> std::ws;
+ 		
+ 		util::SmartPtr<Node> node(parser.readFragment(sin));
+ 		if (node.get() && node->getNodeType() == Node::ELEMENT_NODE)
+@@ -637,45 +637,45 @@
+ 		/**
+ 		 * Get the value of the red color channel.
+ 		 **/
+-		T getRed() const { return _aComponents[0]; }
++		T getRed() const { return Color<T,3>::_aComponents[0]; }
+ 		/**
+ 		 * Get the value of the green color channel.
+ 		 **/
+-		T getGreen() const { return _aComponents[1]; }
++		T getGreen() const { return Color<T,3>::_aComponents[1]; }
+ 		/**
+ 		 * Get the value of the blue color channel.
+ 		 **/
+-		T getBlue() const { return _aComponents[2]; }
++		T getBlue() const { return Color<T,3>::_aComponents[2]; }
+ 
+ 		/**
+ 		 * Set the red color channel.
+ 		 **/
+-		void setRed(T value) { _aComponents[0] = value; }
++		void setRed(T value) { Color<T,3>::_aComponents[0] = value; }
+ 		/**
+ 		 * Set the green color channel.
+ 		 **/
+-		void setGreen(T value) { _aComponents[1] = value; }
++		void setGreen(T value) { Color<T,3>::_aComponents[1] = value; }
+ 		/**
+ 		 * Set the blue color channel.
+ 		 **/
+-		void setBlue(T value) { _aComponents[2] = value; }
++		void setBlue(T value) { Color<T,3>::_aComponents[2] = value; }
+ 
+ 		/**
+ 		 * Convert an RGB color to an integer. The result is the intensity
+ 		 * of this color, i.e. the average of R, G, and B.
+ 		 **/
+-		operator int() const { return int((_aComponents[0]+_aComponents[1]+_aComponents[2])/3 + 0.5); }
+-		//operator int() const { return (299*_aComponents[0]+587*_aComponents[1]+114*_aComponents[2]+500)/1000; }
++		operator int() const { return int((Color<T,3>::_aComponents[0]+Color<T,3>::_aComponents[1]+Color<T,3>::_aComponents[2])/3 + 0.5); }
++		//operator int() const { return (299*Color<T,3>::_aComponents[0]+587*Color<T,3>::_aComponents[1]+114*Color<T,3>::_aComponents[2]+500)/1000; }
+ 		/**
+ 		 * Convert an RGB color to a float. The result is the intensity of
+ 		 * this color, i.e. the average of R, G, and B.
+ 		 **/
+-		operator float() const { return (_aComponents[0]+_aComponents[1]+_aComponents[2])/3.0f; }
++		operator float() const { return (Color<T,3>::_aComponents[0]+Color<T,3>::_aComponents[1]+Color<T,3>::_aComponents[2])/3.0f; }
+ 		/**
+ 		 * Convert an RGB color to a double. The result is the intensity
+ 		 * of this color, i.e. the average of R, G, and B.
+ 		 **/
+-		operator double() const { return (_aComponents[0]+_aComponents[1]+_aComponents[2])/3.0; }
++		operator double() const { return (Color<T,3>::_aComponents[0]+Color<T,3>::_aComponents[1]+Color<T,3>::_aComponents[2])/3.0; }
+ 
+ 		/**
+ 		 * Convert an RGB color to HSV. This method works correctly only
+@@ -710,22 +710,22 @@
+ 	typedef RGBColor<float> FloatRGBColor;
+ 	typedef RGBColor<double> DoubleRGBColor;
+ 		
+-	template <class T> RGBColor<T>::RGBColor<T>(T r,T g,T b)
++	template <class T> RGBColor<T>::RGBColor(T r,T g,T b)
+ 	{
+-		_aComponents[0] = r;
+-		_aComponents[1] = g;
+-		_aComponents[2] = b;
++		Color<T,3>::_aComponents[0] = r;
++		Color<T,3>::_aComponents[1] = g;
++		Color<T,3>::_aComponents[2] = b;
+ 	}
+ 
+ 	template <class T> RGBColor<double> RGBColor<T>::getNormalizedColor(void) const
+ 	{
+ 		RGBColor<double> result;
+-		double intensity = double(_aComponents[0] + _aComponents[1] + _aComponents[2]);
++		double intensity = double(Color<T,3>::_aComponents[0] + Color<T,3>::_aComponents[1] + Color<T,3>::_aComponents[2]);
+ 		if(intensity !=0.0)
+ 			{
+-				result[0] = double(_aComponents[0]) / intensity;
+-				result[1] = double(_aComponents[1]) / intensity;
+-				result[2] = double(_aComponents[2]) / intensity;
++				result[0] = double(Color<T,3>::_aComponents[0]) / intensity;
++				result[1] = double(Color<T,3>::_aComponents[1]) / intensity;
++				result[2] = double(Color<T,3>::_aComponents[2]) / intensity;
+ 			}
+ 		else
+ 			{
+@@ -776,41 +776,41 @@
+ 		/**
+ 		 * Get the value of the 'hue' channel.
+ 		 **/
+-		T getHue() const { return _aComponents[0]; }
++		T getHue() const { return Color<T,3>::_aComponents[0]; }
+ 		/**
+ 		 * Get the value of the 'saturation' channel.
+ 		 **/
+-		T getSaturation() const { return _aComponents[1]; }
++		T getSaturation() const { return Color<T,3>::_aComponents[1]; }
+ 		/**
+ 		 * Get the value of the 'value' channel.
+ 		 **/
+-		T getValue() const { return _aComponents[2]; }
++		T getValue() const { return Color<T,3>::_aComponents[2]; }
+ 
+ 		/**
+ 		 * Set hue.
+ 		 **/
+-		void setHue(T value) { _aComponents[0] = value; }
++		void setHue(T value) { Color<T,3>::_aComponents[0] = value; }
+ 		/**
+ 		 * Set saturation.
+ 		 **/
+-		void setSaturation(T value) { _aComponents[1] = value; }
++		void setSaturation(T value) { Color<T,3>::_aComponents[1] = value; }
+ 		/**
+ 		 * Set value.
+ 		 **/
+-		void setValue(T value) { _aComponents[2] = value; }
++		void setValue(T value) { Color<T,3>::_aComponents[2] = value; }
+ 
+ 		/**
+ 		 * Get the intensity (V) channel as an integer.
+ 		 **/
+-		operator int() const { return int(_aComponents[0]); }
++		operator int() const { return int(Color<T,3>::_aComponents[0]); }
+ 		/**
+ 		 * Get the intensity (V) channel as a float.
+ 		 **/
+-		operator float() const { return float(_aComponents[0]); }
++		operator float() const { return float(Color<T,3>::_aComponents[0]); }
+ 		/**
+ 		 * Get the intensity (V) channel as a double.
+ 		 **/
+-		operator double() const { return double(_aComponents[0]); }
++		operator double() const { return double(Color<T,3>::_aComponents[0]); }
+ 
+ 		/**
+ 		 * Convert this color to the RGB color space. For integer-valued
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/ColorMap.h cpplibs-0.2b-20031008/prapi/ColorMap.h
+--- cpplibs-0.2b-20031008_orig/prapi/ColorMap.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/ColorMap.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _COLORMAP_H
+-#define _COLORMAP_H
++#ifndef PR_COLORMAP_H
++#define PR_COLORMAP_H
+ 
+ #include <List.h>
+ #include "Color.h"
+@@ -57,11 +57,11 @@
+ 	template <class T>
+ 	List<T> ColorMap<T>::getChannel(int index)
+ 	{
+-		List<T> result(_iCurrentItems);
+-		result.setLength(_iCurrentItems);
+-		for (int i=0;i<_iCurrentItems;i++)
++		List<T> result(List< RGBColor<T> >::_iCurrentItems);
++		result.setLength(List< RGBColor<T> >::_iCurrentItems);
++		for (int i=0;i < List< RGBColor<T> >::_iCurrentItems;i++)
+ 			{
+-				result[i] = _internalArray[i][index];
++				result[i] = List< RGBColor<T> >::_internalArray[i][index];
+ 				//cerr << result[i] << " ";
+ 			}
+ 		return result;
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/ColorViffCodec.h cpplibs-0.2b-20031008/prapi/ColorViffCodec.h
+--- cpplibs-0.2b-20031008_orig/prapi/ColorViffCodec.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/ColorViffCodec.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _COLORVIFFCODEC_H
+-#define _COLORVIFFCODEC_H
++#ifndef PR_COLORVIFFCODEC_H
++#define PR_COLORVIFFCODEC_H
+ 
+ #include "ViffCodec.h"
+ #include "Color.h"
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/ConfusionMatrix.h cpplibs-0.2b-20031008/prapi/ConfusionMatrix.h
+--- cpplibs-0.2b-20031008_orig/prapi/ConfusionMatrix.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/ConfusionMatrix.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _CONFUSIONMATRIX_H
+-#define _CONFUSIONMATRIX_H
++#ifndef PR_CONFUSIONMATRIX_H
++#define PR_CONFUSIONMATRIX_H
+ 
+ #include "Sample.h"
+ #include <List.h>
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/ConvolutionMask.h cpplibs-0.2b-20031008/prapi/ConvolutionMask.h
+--- cpplibs-0.2b-20031008_orig/prapi/ConvolutionMask.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/ConvolutionMask.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _CONVOLUTIONMASK_H
+-#define _CONVOLUTIONMASK_H
++#ifndef PR_CONVOLUTIONMASK_H
++#define PR_CONVOLUTIONMASK_H
+ 
+ #include "graphics/Point.h"
+ #include <Matrix.h>
+@@ -34,15 +34,15 @@
+ 		 * All constructors will initially set the origin of the mask to
+ 		 * its center.
+ 		 **/
+-		ConvolutionMask(int size=1) : util::Matrix<T>(size), _pntOrigin(_iColumns >> 1, _iRows >> 1), _divisor(1) {}
++		ConvolutionMask(int size=1) : util::Matrix<T>(size), _pntOrigin(util::Matrix<T>::_iColumns >> 1, util::Matrix<T>::_iRows >> 1), _divisor(1) {}
+ 		/**
+ 		 * Constructor which makes empty mask.
+ 		 **/
+-		ConvolutionMask(int rows, int columns) : util::Matrix<T>(rows,columns), _pntOrigin(_iColumns >> 1, _iRows >> 1), _divisor(1) {}
++		ConvolutionMask(int rows, int columns) : util::Matrix<T>(rows,columns), _pntOrigin(util::Matrix<T>::_iColumns >> 1, util::Matrix<T>::_iRows >> 1), _divisor(1) {}
+ 		/**
+ 		 * Constructor which makes empty mask.
+ 		 **/
+-		ConvolutionMask(const util::Matrix<T>& mat) : util::Matrix<T>(mat), _pntOrigin(_iColumns >> 1, _iRows >> 1), _divisor(1) {}
++		ConvolutionMask(const util::Matrix<T>& mat) : util::Matrix<T>(mat), _pntOrigin(util::Matrix<T>::_iColumns >> 1, util::Matrix<T>::_iRows >> 1), _divisor(1) {}
+ 		/**
+ 		 * The copy constructor.
+ 		 **/
+@@ -51,7 +51,7 @@
+ 		 * Constructor which takes the size of mask and the data array.
+ 		 **/
+ 		ConvolutionMask(int rows, int columns, T* initialData) :
+-			util::Matrix<T>(rows,columns,initialData), _pntOrigin(_iColumns >> 1, _iRows >> 1), _divisor(1) {}
++			util::Matrix<T>(rows,columns,initialData), _pntOrigin(util::Matrix<T>::_iColumns >> 1, util::Matrix<T>::_iRows >> 1), _divisor(1) {}
+ 		
+ 		/**
+ 		 * Substitution operator.
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/Distribution.h cpplibs-0.2b-20031008/prapi/Distribution.h
+--- cpplibs-0.2b-20031008_orig/prapi/Distribution.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/Distribution.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _DISTRIBUTION_H
+-#define _DISTRIBUTION_H
++#ifndef PR_DISTRIBUTION_H
++#define PR_DISTRIBUTION_H
+ 
+ #include <List.h>
+ #include <Exception.h>
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/FeatureExtractor.h cpplibs-0.2b-20031008/prapi/FeatureExtractor.h
+--- cpplibs-0.2b-20031008_orig/prapi/FeatureExtractor.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/FeatureExtractor.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _FEATUREEXTRACTOR_H
+-#define _FEATUREEXTRACTOR_H
++#ifndef PR_FEATUREEXTRACTOR_H
++#define PR_FEATUREEXTRACTOR_H
+ 
+ #include <List.h>
+ #include <Exception.h>
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/FeatureScaling.h cpplibs-0.2b-20031008/prapi/FeatureScaling.h
+--- cpplibs-0.2b-20031008_orig/prapi/FeatureScaling.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/FeatureScaling.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _FEATURESCALING_H
+-#define _FEATURESCALING_H
++#ifndef PR_FEATURESCALING_H
++#define PR_FEATURESCALING_H
+ 
+ #include "Sample.h"
+ 
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/FeatureSelector.h cpplibs-0.2b-20031008/prapi/FeatureSelector.h
+--- cpplibs-0.2b-20031008_orig/prapi/FeatureSelector.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/FeatureSelector.h	2006-08-21 18:24:09.000000000 +0200
+@@ -15,8 +15,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _FEATURESELECTOR_H
+-#define _FEATURESELECTOR_H
++#ifndef PR_FEATURESELECTOR_H
++#define PR_FEATURESELECTOR_H
+ 
+ #include <Event.h>
+ 
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/Gaussian.h cpplibs-0.2b-20031008/prapi/Gaussian.h
+--- cpplibs-0.2b-20031008_orig/prapi/Gaussian.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/Gaussian.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _GAUSSIAN_H
+-#define _GAUSSIAN_H
++#ifndef PR_GAUSSIAN_H
++#define PR_GAUSSIAN_H
+ 
+ #include <Matrix.h>
+ #include <math.h>
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/Histogram.h cpplibs-0.2b-20031008/prapi/Histogram.h
+--- cpplibs-0.2b-20031008_orig/prapi/Histogram.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/Histogram.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _HISTOGRAM_H
+-#define _HISTOGRAM_H
++#ifndef PR_HISTOGRAM_H
++#define PR_HISTOGRAM_H
+ 
+ #include <Matrix.h>
+ #include "FeatureExtractor.h"
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/Image.h cpplibs-0.2b-20031008/prapi/Image.h
+--- cpplibs-0.2b-20031008_orig/prapi/Image.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/Image.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _IMAGE_H
+-#define _IMAGE_H
++#ifndef PR_IMAGE_H
++#define PR_IMAGE_H
+ 
+ #include "ConvolutionMask.h"
+ #include "Color.h"
+@@ -369,7 +369,7 @@
+ 			}// if value == -1
+ 		else
+ 			{
+-				cerr << "starting else"<<endl;
++				std::cerr << "starting else"<<std::endl;
+ 				for(c=0;c<cols-width;c++)
+ 					{
+ 						splitDone=false;
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/ImageTransform.h cpplibs-0.2b-20031008/prapi/ImageTransform.h
+--- cpplibs-0.2b-20031008_orig/prapi/ImageTransform.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/ImageTransform.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _IMAGETRANSFORM_H
+-#define _IMAGETRANSFORM_H
++#ifndef PR_IMAGETRANSFORM_H
++#define PR_IMAGETRANSFORM_H
+ 
+ #include <Matrix.h>
+ 
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/Indexer.h cpplibs-0.2b-20031008/prapi/Indexer.h
+--- cpplibs-0.2b-20031008_orig/prapi/Indexer.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/Indexer.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _INDEXER_H
+-#define _INDEXER_H
++#ifndef PR_INDEXER_H
++#define PR_INDEXER_H
+ 
+ #include <Matrix.h>
+ #include "Quantizer.h"
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/Kernel.h cpplibs-0.2b-20031008/prapi/Kernel.h
+--- cpplibs-0.2b-20031008_orig/prapi/Kernel.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/Kernel.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _KERNEL_H
+-#define _KERNEL_H
++#ifndef PR_KERNEL_H
++#define PR_KERNEL_H
+ 
+ #include <Matrix.h>
+ 
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/MagickCodec.h cpplibs-0.2b-20031008/prapi/MagickCodec.h
+--- cpplibs-0.2b-20031008_orig/prapi/MagickCodec.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/MagickCodec.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,15 +14,15 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _MAGICKCODEC_H
+-#define _MAGICKCODEC_H
++#ifndef PR_MAGICKCODEC_H
++#define PR_MAGICKCODEC_H
+ 
+ #ifdef USE_IMAGEMAGICK
+ 
+ //We do not need drawing operations - fortunately.
+ //Including magick/draw.h causes a name clash.
+-#define _MAGICK_DRAW_H
+-#define _MAGICK_GEM_H
++#define PR_MAGICK_DRAW_H
++#define PR_MAGICK_GEM_H
+ 
+ //How much memory is allocated for image data when reading from a
+ //stream? When the input buffer is filled, new space will be allocated
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/MahalanobisClassifier.h cpplibs-0.2b-20031008/prapi/MahalanobisClassifier.h
+--- cpplibs-0.2b-20031008_orig/prapi/MahalanobisClassifier.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/MahalanobisClassifier.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _MAHALANOBISCLASSIFIER_H
+-#define _MAHALANOBISCLASSIFIER_H
++#ifndef PR_MAHALANOBISCLASSIFIER_H
++#define PR_MAHALANOBISCLASSIFIER_H
+ 
+ #include <values.h>
+ #include "Classifier.h"
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/MultiClassifier.h cpplibs-0.2b-20031008/prapi/MultiClassifier.h
+--- cpplibs-0.2b-20031008_orig/prapi/MultiClassifier.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/MultiClassifier.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _MULTICLASSIFIER_H
+-#define _MULTICLASSIFIER_H
++#ifndef PR_MULTICLASSIFIER_H
++#define PR_MULTICLASSIFIER_H
+ 
+ #include "Classifier.h"
+ 
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/MultiFeature.h cpplibs-0.2b-20031008/prapi/MultiFeature.h
+--- cpplibs-0.2b-20031008_orig/prapi/MultiFeature.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/MultiFeature.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _MULTIFEATURE_H
+-#define _MULTIFEATURE_H
++#ifndef PR_MULTIFEATURE_H
++#define PR_MULTIFEATURE_H
+ 
+ #include <List.h>
+ #include <Hashtable.h>
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/PeakDetector.h cpplibs-0.2b-20031008/prapi/PeakDetector.h
+--- cpplibs-0.2b-20031008_orig/prapi/PeakDetector.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/PeakDetector.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _PEAKDETECTOR_H
+-#define _PEAKDETECTOR_H
++#ifndef PR_PEAKDETECTOR_H
++#define PR_PEAKDETECTOR_H
+ 
+ #include <Math.h>
+ #include <MatrixUtils.h>
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/PnmCodec.h cpplibs-0.2b-20031008/prapi/PnmCodec.h
+--- cpplibs-0.2b-20031008_orig/prapi/PnmCodec.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/PnmCodec.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _PNMCODEC_H
+-#define _PNMCODEC_H
++#ifndef PR_PNMCODEC_H
++#define PR_PNMCODEC_H
+ 
+ #include <iostream>
+ #include <ctype.h>
+@@ -62,7 +62,7 @@
+ 		/**
+ 		 * Check if binary output format is allowed (if possible).
+ 		 **/
+-		bool isBinaryAllowed() { return _bBinaryAllowed; }
++		bool isBinaryAllowed() { return util::MatrixCodec<T>::_bBinaryAllowed; }
+ 		/**
+ 		 * Enable or disable binary output. If allowed, binary file will
+ 		 * be produced when the data to be encoded contains only ones and
+@@ -241,7 +241,7 @@
+ 				data = new unsigned char[size];
+ 				while (index < size)
+ 					{
+-						in >> ws; //.ws();
++						in >> std::ws; //.ws();
+ 						in.getline(line,128);
+ 						if (!in)
+ 							throw util::MatrixException("PnmCodec<T>::readMatrix(stream&,int&,int&): Unexcepted end of input while reading plain pnm.");
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/ProximityMatrix.h cpplibs-0.2b-20031008/prapi/ProximityMatrix.h
+--- cpplibs-0.2b-20031008_orig/prapi/ProximityMatrix.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/ProximityMatrix.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _PROXIMITYMATRIX_H
+-#define _PROXIMITYMATRIX_H
++#ifndef PR_PROXIMITYMATRIX_H
++#define PR_PROXIMITYMATRIX_H
+ 
+ #include "ProximityMeasure.h"
+ #include "MultiFeature.h"
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/ProximityMeasure.h cpplibs-0.2b-20031008/prapi/ProximityMeasure.h
+--- cpplibs-0.2b-20031008_orig/prapi/ProximityMeasure.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/ProximityMeasure.h	2006-08-21 18:24:09.000000000 +0200
+@@ -15,8 +15,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _PROXIMITYMEASURE_H
+-#define _PROXIMITYMEASURE_H
++#ifndef PR_PROXIMITYMEASURE_H
++#define PR_PROXIMITYMEASURE_H
+ 
+ #include <math.h>
+ #include <values.h>
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/Quantizer.cc cpplibs-0.2b-20031008/prapi/Quantizer.cc
+--- cpplibs-0.2b-20031008_orig/prapi/Quantizer.cc	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/Quantizer.cc	2006-08-21 18:24:09.000000000 +0200
+@@ -54,7 +54,7 @@
+ 	
+ 	istream& operator>> (istream& sin, EqualAreaQuantizer& quantizer)
+ 	{
+-		sin >> ws;
++		sin >> std::ws;
+ 		XMLParser parser;
+ 		SmartPtr<Node> node(parser.getNextNode(sin));
+ 		const Node* child = node->getChildNode("equalareaquantizer.attribute[levels]");
+@@ -62,18 +62,18 @@
+ 			throw util::io::IOException("operator>> (istream&, EqualAreaQuantizer): "
+ 																	"The input stream does not contain a valid equalareaquantizer object.");
+ 		quantizer._iLevels = String::parse<int>(((Attr*)child)->value);
+-		sin >> ws;
++		sin >> std::ws;
+ 		node = parser.getNextNode(sin);
+ 		if (node->getNodeType() != Node::ELEMENT_NODE || node->getName() != "cutvalues")
+ 			throw util::io::IOException("operator>> (istream&, EqualAreaQuantizer): Expecting <cutvalues>, read " +
+ 																	node->getName() + ".");
+ 		sin >> quantizer._lstCutvalues;
+-		sin >> ws;
++		sin >> std::ws;
+ 		node = parser.getNextNode(sin);
+ 		if (node->getNodeType() != Node::ELEMENT_NODE || ((Element*)node.get())->tagType != Element::TAG_CLOSING ||
+ 				node->getName() != "cutvalues")
+ 			throw util::io::IOException("operator>> (istream&, EqualAreaQuantizer): Expecting </cutvalues>.");
+-		sin >> ws;
++		sin >> std::ws;
+ 		node = parser.getNextNode(sin);
+ 		if (node->getNodeType() != Node::ELEMENT_NODE || ((Element*)node.get())->tagType != Element::TAG_CLOSING ||
+ 				node->getName() != "equalareaquantizer")
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/Quantizer.h cpplibs-0.2b-20031008/prapi/Quantizer.h
+--- cpplibs-0.2b-20031008_orig/prapi/Quantizer.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/Quantizer.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _QUANTIZER_H
+-#define _QUANTIZER_H
++#ifndef PR_QUANTIZER_H
++#define PR_QUANTIZER_H
+ 
+ #include "Distribution.h"
+ #include <Matrix.h>
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/RGBColorImage.h cpplibs-0.2b-20031008/prapi/RGBColorImage.h
+--- cpplibs-0.2b-20031008_orig/prapi/RGBColorImage.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/RGBColorImage.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _RGBCOLORIMAGE_H
+-#define _RGBCOLORIMAGE_H
++#ifndef PR_RGBCOLORIMAGE_H
++#define PR_RGBCOLORIMAGE_H
+ 
+ #include "Color.h"
+ #include <Matrix.h>
+@@ -110,45 +110,45 @@
+ 	template <class T>
+ 	template <class U> void RGBColorImage<T>::transform(Matrix<U>& mat) throw (MatrixException&)
+ 	{
+-		for (int i=0;i<_iRows*_iColumns;i++)
+-			_pData[i] = mat * _pData[i];
++		for (int i=0;i<Matrix< RGBColor<T> >::_iRows*Matrix< RGBColor<T> >::_iColumns;i++)
++			Matrix< RGBColor<T> >::_pData[i] = mat * Matrix< RGBColor<T> >::_pData[i];
+ 	}
+ 	
+ 	template <class T>
+ 	template <class U> RGBColorImage<T> RGBColorImage<T>::getTransform(Matrix<U>& mat) const throw (MatrixException&)
+ 	{
+-		RGBColorImage<T> result(_iRows, _iColumns);
+-		for (int i=0;i<_iRows*_iColumns;i++)
+-			result._pData[i] = mat * _pData[i];
++		RGBColorImage<T> result(Matrix< RGBColor<T> >::_iRows, Matrix< RGBColor<T> >::_iColumns);
++		for (int i=0;i<Matrix< RGBColor<T> >::_iRows*Matrix< RGBColor<T> >::_iColumns;i++)
++			result.Matrix< RGBColor<T> >::_pData[i] = mat * Matrix< RGBColor<T> >::_pData[i];
+ 		return result;
+ 	}
+ 
+ 	template <class T> Matrix<T> RGBColorImage<T>::getChannel(int c) const
+ 	{
+-		Matrix<T> result(_iRows,_iColumns);
++		Matrix<T> result(Matrix< RGBColor<T> >::_iRows,Matrix< RGBColor<T> >::_iColumns);
+ 		T* rData = result.getData();
+-		for (int i=0;i<_iRows*_iColumns;i++)
+-			rData[i] = _pData[i][c];
++		for (int i=0;i<Matrix< RGBColor<T> >::_iRows*Matrix< RGBColor<T> >::_iColumns;i++)
++			rData[i] = Matrix< RGBColor<T> >::_pData[i][c];
+ 		return result;
+ 	}
+ 
+ 	template <class T> RGBColorImage<double> RGBColorImage<T>::getNormalizedImage(void) const
+ 	{
+-		RGBColorImage<double> result(_iRows,_iColumns);
++		RGBColorImage<double> result(Matrix< RGBColor<T> >::_iRows,Matrix< RGBColor<T> >::_iColumns);
+ 
+ 		Color<double,3>* rData = result.getData();
+-		for (int i=0;i<_iRows*_iColumns;i++)
+-			rData[i] = _pData[i].getNormalizedColor();
++		for (int i=0;i<Matrix< RGBColor<T> >::_iRows*Matrix< RGBColor<T> >::_iColumns;i++)
++			rData[i] = Matrix< RGBColor<T> >::_pData[i].getNormalizedColor();
+ 		return result;
+ 	}
+ 
+ 	template <class T> Matrix<double> RGBColorImage<T>::getNormalizedChannel(int c) const
+ 	{
+-		Matrix<double> result(_iRows,_iColumns);
++		Matrix<double> result(Matrix< RGBColor<T> >::_iRows,Matrix< RGBColor<T> >::_iColumns);
+ 
+ 		double* rData = result.getData();
+-		for (int i=0;i<_iRows*_iColumns;i++)
+-			rData[i] = _pData[i].getNormalizedColor()[c];
++		for (int i=0;i<Matrix< RGBColor<T> >::_iRows*Matrix< RGBColor<T> >::_iColumns;i++)
++			rData[i] = Matrix< RGBColor<T> >::_pData[i].getNormalizedColor()[c];
+ 		return result;
+ 	}
+ }	
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/Random.h cpplibs-0.2b-20031008/prapi/Random.h
+--- cpplibs-0.2b-20031008_orig/prapi/Random.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/Random.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _RANDOM_H
+-#define _RANDOM_H
++#ifndef PR_RANDOM_H
++#define PR_RANDOM_H
+ 
+ #include <stdlib.h>
+ #include <unistd.h>
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/RasterCodec.h cpplibs-0.2b-20031008/prapi/RasterCodec.h
+--- cpplibs-0.2b-20031008_orig/prapi/RasterCodec.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/RasterCodec.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _RASTERCODEC_H
+-#define _RASTERCODEC_H
++#ifndef PR_RASTERCODEC_H
++#define PR_RASTERCODEC_H
+ 
+ #include <iostream>
+ #include <Matrix.h>
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/Sample.cc cpplibs-0.2b-20031008/prapi/Sample.cc
+--- cpplibs-0.2b-20031008_orig/prapi/Sample.cc	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/Sample.cc	2006-08-21 18:24:09.000000000 +0200
+@@ -78,7 +78,7 @@
+ 	{
+ 		using namespace xml;
+ 		XMLParser parser;
+-		sin >> ws;
++		sin >> std::ws;
+ 		if (sin && sin.peek() != '<')
+ 			return oldRead(sin,obj);
+ 		
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/Sample.h cpplibs-0.2b-20031008/prapi/Sample.h
+--- cpplibs-0.2b-20031008_orig/prapi/Sample.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/Sample.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _SAMPLE_H
+-#define _SAMPLE_H
++#ifndef PR_SAMPLE_H
++#define PR_SAMPLE_H
+ 
+ #include <List.h>
+ #include <iostream>
+@@ -492,7 +492,7 @@
+ 	template <class T, class I, class C>
+ 	template <class U, class V, class W> Sample<T,I,C>::operator Sample<U,V,W>()
+ 	{
+-		Sample<U,V,W> result(lstFeatureVector, (W)_trueClass);
++		Sample<U,V,W> result(_lstFeatureVector, (W)_trueClass);
+ 		result.setClassification((W)_classification);
+ 		result.setIdentifier((V)_identifier);
+ 		return *this;
+@@ -510,23 +510,23 @@
+ 		for (int i=0;i<samples.getLength();i++)
+ 			{
+ 				samples[i].print(sout,classList);
+-				sout << endl;
++				sout << std::endl;
+ 			}
+ 	}
+ 
+ 	template <class T, class I, class C> std::ostream& operator<< (std::ostream& sout, const Sample<T,I,C>& smpl)
+ 	{
+-		sout << "<sample>" << endl;
++		sout << "<sample>" << std::endl;
+ 		sout << "<trueClass>";
+ 		Util::writeXMLItem(sout,smpl._trueClass);
+-		sout << "</trueClass>" << endl;
++		sout << "</trueClass>" << std::endl;
+ 		sout << "<classification>";
+ 		Util::writeXMLItem(sout,smpl._classification);
+-		sout << "</classification>" << endl;
++		sout << "</classification>" << std::endl;
+ 		sout << "<identifier>";
+ 		Util::writeXMLItem(sout,smpl._identifier);
+-		sout << "</identifier>" << endl;
+-		sout << "<featureVector>" << smpl._lstFeatureVector << "</featureVector>" << endl;
++		sout << "</identifier>" << std::endl;
++		sout << "<featureVector>" << smpl._lstFeatureVector << "</featureVector>" << std::endl;
+ 		sout << "</sample>";
+ 		return sout;
+ 	}
+@@ -538,10 +538,10 @@
+ 	
+ 	template <class T, class I, class C> std::istream& operator>> (std::istream& sin, Sample<T,I,C>& smpl)
+ 	{
+-		using namespace util::xml;
++/*		using namespace util::xml;
+ 		
+ 		XMLParser parser;
+-		sin >> ws;
++		sin >> std::ws;
+ 		if (sin && sin.peek() != '<')
+ 			return oldRead(sin,smpl);
+ 
+@@ -556,7 +556,7 @@
+ 				while (true)
+ 					{
+ 						
+-						sin >> ws;
++						sin >> std::ws;
+ 						std::auto_ptr<Node> child(parser.getNextNode(sin));
+ 						if (!child.get() || child->getNodeType() != Node::ELEMENT_NODE)
+ 							throw util::io::IOException("operator>> (istream&, Sample<T,I,C>&): Expecting a tag.");
+@@ -605,7 +605,7 @@
+ 									default:
+ 										break;
+ 									}
+-								sin >> ws;
++								sin >> std::ws;
+ 								std::auto_ptr<Node> closing(parser.getNextNode(sin));
+ 								if (!checkClosingTag(closing,properties[i]))
+ 									throw util::io::IOException("operator>> (istream&, Sample<T,I,C>&): </" + properties[i] + "> missing.");
+@@ -614,7 +614,7 @@
+ 			}
+ 		else
+ 			throw util::io::IOException("operator>> (istream&, Sample<T,I,C>&): Input stream does not contain a sample.");
+-		return sin;
++		return sin;*/
+ 	}
+ 
+ #undef checkClosingTag
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/SampleUtils.h cpplibs-0.2b-20031008/prapi/SampleUtils.h
+--- cpplibs-0.2b-20031008_orig/prapi/SampleUtils.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/SampleUtils.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _SAMPLEUTILS_H
+-#define _SAMPLEUTILS_H
++#ifndef PR_SAMPLEUTILS_H
++#define PR_SAMPLEUTILS_H
+ 
+ 
+ #include <List.h>
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/TreeClassifier.h cpplibs-0.2b-20031008/prapi/TreeClassifier.h
+--- cpplibs-0.2b-20031008_orig/prapi/TreeClassifier.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/TreeClassifier.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _TREECLASSIFIER_H
+-#define _TREECLASSIFIER_H
++#ifndef PR_TREECLASSIFIER_H
++#define PR_TREECLASSIFIER_H
+ 
+ #include <List.h>
+ #include <Serialization.h>
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/ValueHolder.cc cpplibs-0.2b-20031008/prapi/ValueHolder.cc
+--- cpplibs-0.2b-20031008_orig/prapi/ValueHolder.cc	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/ValueHolder.cc	2006-08-21 18:24:09.000000000 +0200
+@@ -14,4 +14,5 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
++#define _LIST_INCLUDED_FROM_XMLPARSER_H
+ #include "ValueHolder.h"
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/ValueHolder.h cpplibs-0.2b-20031008/prapi/ValueHolder.h
+--- cpplibs-0.2b-20031008_orig/prapi/ValueHolder.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/ValueHolder.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _VALUEHOLDER_H
+-#define _VALUEHOLDER_H
++#ifndef PR_VALUEHOLDER_H
++#define PR_VALUEHOLDER_H
+ 
+ #include <Object.h>
+ #include <Util.h>
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/VectorQuantizer.h cpplibs-0.2b-20031008/prapi/VectorQuantizer.h
+--- cpplibs-0.2b-20031008_orig/prapi/VectorQuantizer.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/VectorQuantizer.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _VECTORQUANTIZER_H
+-#define _VECTORQUANTIZER_H
++#ifndef PR_VECTORQUANTIZER_H
++#define PR_VECTORQUANTIZER_H
+ 
+ #include "Classifier.h"
+ 
+@@ -153,14 +153,14 @@
+ 																															int classCount) :
+ 		Classifier<double,I,C>(NULL,measure,classCount), _bBinIndexMode(false)
+ 	{
+-		_lstpTrainingSamples = &_lstCodeBook;
++		Classifier<double,I,C>::_lstpTrainingSamples = &_lstCodeBook;
+ 	}
+ 
+ 	template <class I, class C> VQClassifier<I,C>::VQClassifier(ProximityMeasure<double>& measure,
+ 																															int classCount) :
+ 		Classifier<double,I,C>(NULL,measure,classCount), _bBinIndexMode(false)
+ 	{
+-		_lstpTrainingSamples = &_lstCodeBook;
++		Classifier<double,I,C>::_lstpTrainingSamples = &_lstCodeBook;
+ 	}
+ 
+ 	template <class I, class C> int VQClassifier<I,C>::getBinIndex(const util::List<double>& sample) const
+@@ -170,7 +170,7 @@
+ 		int minIndex = -1;
+ 		for (int i=_lstCodeBook.getLength();i--;)
+ 			{
+-				double dist = _proximityMeasure->getProximity(sample,_lstCodeBook[i].featureVector(), minDist);
++				double dist = Classifier<double,I,C>::_proximityMeasure->getProximity(sample,_lstCodeBook[i].featureVector(), minDist);
+ 				if (dist < minDist)
+ 					{
+ 						minDist = dist;
+@@ -233,12 +233,12 @@
+ 																										 double initialAlpha,
+ 																										 unsigned int iterations)
+ 	{
+-		_lstCodeBook = initialCodeBook;
+-		util::List<double> alpha(_lstCodeBook.getLength());
+-		alpha.setLength(_lstCodeBook.getLength(),initialAlpha);
++		Classifier<double,I,C>::_lstCodeBook = initialCodeBook;
++		util::List<double> alpha(Classifier<double,I,C>::_lstCodeBook.getLength());
++		alpha.setLength(Classifier<double,I,C>::_lstCodeBook.getLength(),initialAlpha);
+ 
+ 		if (!iterations)
+-			iterations = 40*_lstCodeBook.getLength();
++			iterations = 40*Classifier<double,I,C>::_lstCodeBook.getLength();
+ 
+ 		for (int t=iterations;t--;)
+ 			{
+@@ -246,17 +246,17 @@
+ 					{
+ 						int index = getBinIndex(trainingSamples[i]);
+ 						util::List<double> tmp(trainingSamples[i].featureVector());
+-						tmp.subtract(_lstCodeBook[index].featureVector());
+-						if ((int)_lstCodeBook[index].trueClass() == -1 ||
+-								_lstCodeBook[index].trueClass() == trainingSamples[i].getTrueClass())
++						tmp.subtract(Classifier<double,I,C>::_lstCodeBook[index].featureVector());
++						if ((int)Classifier<double,I,C>::_lstCodeBook[index].trueClass() == -1 ||
++								Classifier<double,I,C>::_lstCodeBook[index].trueClass() == trainingSamples[i].getTrueClass())
+ 							{
+ 								alpha[index] /= (1+alpha[index]);
+-								_lstCodeBook[index].featureVector().add(tmp*alpha[index]);
++								Classifier<double,I,C>::_lstCodeBook[index].featureVector().add(tmp*alpha[index]);
+ 							}
+ 						else
+ 							{
+ 								alpha[index] /= (1-alpha[index]);
+-								_lstCodeBook[index].featureVector().subtract(tmp*alpha[index]);
++								Classifier<double,I,C>::_lstCodeBook[index].featureVector().subtract(tmp*alpha[index]);
+ 							}
+ 						if (alpha[index] > initialAlpha)
+ 							alpha[index] = initialAlpha;
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/XWindows.h cpplibs-0.2b-20031008/prapi/XWindows.h
+--- cpplibs-0.2b-20031008_orig/prapi/XWindows.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/XWindows.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _XWINDOWS_H
+-#define _XWINDOWS_H
++#ifndef PR_XWINDOWS_H
++#define PR_XWINDOWS_H
+ 
+ #include <Matrix.h>
+ #include <X11/Xlib.h>
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/binary/BinaryMorphology.h cpplibs-0.2b-20031008/prapi/binary/BinaryMorphology.h
+--- cpplibs-0.2b-20031008_orig/prapi/binary/BinaryMorphology.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/binary/BinaryMorphology.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _BINARYMORPHOLOGY_H
+-#define _BINARYMORPHOLOGY_H
++#ifndef PR_BINARYMORPHOLOGY_H
++#define PR_BINARYMORPHOLOGY_H
+ 
+ #include <Matrix.h>
+ #include "../ImageTransform.h"
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/binary/Component.h cpplibs-0.2b-20031008/prapi/binary/Component.h
+--- cpplibs-0.2b-20031008_orig/prapi/binary/Component.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/binary/Component.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _COMPONENT_H
+-#define _COMPONENT_H
++#ifndef PR_COMPONENT_H
++#define PR_COMPONENT_H
+ 
+ namespace prapi { namespace binary {
+ 
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/binary/Labeling.h cpplibs-0.2b-20031008/prapi/binary/Labeling.h
+--- cpplibs-0.2b-20031008_orig/prapi/binary/Labeling.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/binary/Labeling.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _LABELING_H
+-#define _LABELING_H
++#ifndef PR_LABELING_H
++#define PR_LABELING_H
+ 
+ #include "../ImageTransform.h"
+ #include "../Image.h"
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/clustering/BSAS.h cpplibs-0.2b-20031008/prapi/clustering/BSAS.h
+--- cpplibs-0.2b-20031008_orig/prapi/clustering/BSAS.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/clustering/BSAS.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _BSAS_H
+-#define _BSAS_H
++#ifndef PR_BSAS_H
++#define PR_BSAS_H
+ 
+ #include <values.h>
+ #include <string.h>
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/clustering/ClusteringAlgorithm.h cpplibs-0.2b-20031008/prapi/clustering/ClusteringAlgorithm.h
+--- cpplibs-0.2b-20031008_orig/prapi/clustering/ClusteringAlgorithm.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/clustering/ClusteringAlgorithm.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _CLUSTERINGALGORITHM_H
+-#define _CLUSTERINGALGORITHM_H
++#ifndef PR_CLUSTERINGALGORITHM_H
++#define PR_CLUSTERINGALGORITHM_H
+ 
+ #include <List.h>
+ #include <string>
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/clustering/Refiner.h cpplibs-0.2b-20031008/prapi/clustering/Refiner.h
+--- cpplibs-0.2b-20031008_orig/prapi/clustering/Refiner.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/clustering/Refiner.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _REFINEMENT_H
+-#define _REFINEMENT_H
++#ifndef PR_REFINEMENT_H
++#define PR_REFINEMENT_H
+ 
+ namespace prapi { namespace clustering {
+ 	
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/color/ColorCorrelogram.h cpplibs-0.2b-20031008/prapi/color/ColorCorrelogram.h
+--- cpplibs-0.2b-20031008_orig/prapi/color/ColorCorrelogram.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/color/ColorCorrelogram.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _COLORCORRELOGRAM_H
+-#define _COLORCORRELOGRAM_H
++#ifndef PR_COLORCORRELOGRAM_H
++#define PR_COLORCORRELOGRAM_H
+ 
+ #include <Matrix.h>
+ #include <List.h>
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/color/ColorCubeExtractor.h cpplibs-0.2b-20031008/prapi/color/ColorCubeExtractor.h
+--- cpplibs-0.2b-20031008_orig/prapi/color/ColorCubeExtractor.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/color/ColorCubeExtractor.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _COLORCUBEEXTRACTOR_H
+-#define _COLORCUBEEXTRACTOR_H
++#ifndef PR_COLORCUBEEXTRACTOR_H
++#define PR_COLORCUBEEXTRACTOR_H
+ 
+ #include <List.h>
+ #include <Matrix.h>
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/color/ColorPercentile.h cpplibs-0.2b-20031008/prapi/color/ColorPercentile.h
+--- cpplibs-0.2b-20031008_orig/prapi/color/ColorPercentile.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/color/ColorPercentile.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _COLORPERCENTILE_H
+-#define _COLORPERCENTILE_H
++#ifndef PR_COLORPERCENTILE_H
++#define PR_COLORPERCENTILE_H
+ 
+ #include <List.h>
+ #include <Math.h>
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/color/ColorRatio.h cpplibs-0.2b-20031008/prapi/color/ColorRatio.h
+--- cpplibs-0.2b-20031008_orig/prapi/color/ColorRatio.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/color/ColorRatio.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _COLORRATIO_H
+-#define _COLORRATIO_H
++#ifndef PR_COLORRATIO_H
++#define PR_COLORRATIO_H
+ 
+ #include "../Color.h"
+ #include "../ImageTransform.h"
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/color/CompNorm.h cpplibs-0.2b-20031008/prapi/color/CompNorm.h
+--- cpplibs-0.2b-20031008_orig/prapi/color/CompNorm.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/color/CompNorm.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _COMPNORM_H
+-#define _COMPNORM_H
++#ifndef PR_COMPNORM_H
++#define PR_COMPNORM_H
+ 
+ #include "../ImageTransform.h"
+ #include "../Color.h"
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/dsp/Convolution.h cpplibs-0.2b-20031008/prapi/dsp/Convolution.h
+--- cpplibs-0.2b-20031008_orig/prapi/dsp/Convolution.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/dsp/Convolution.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _CONVOLUTION_H
+-#define _CONVOLUTION_H
++#ifndef PR_CONVOLUTION_H
++#define PR_CONVOLUTION_H
+ 
+ #include <List.h>
+ #include <Matrix.h>
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/dsp/Daubechies.h cpplibs-0.2b-20031008/prapi/dsp/Daubechies.h
+--- cpplibs-0.2b-20031008_orig/prapi/dsp/Daubechies.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/dsp/Daubechies.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _DAUBECHIES_H
+-#define _DAUBECHIES_H
++#ifndef PR_DAUBECHIES_H
++#define PR_DAUBECHIES_H
+ 
+ #include <List.h>
+ 
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/dsp/Wavelet.h cpplibs-0.2b-20031008/prapi/dsp/Wavelet.h
+--- cpplibs-0.2b-20031008_orig/prapi/dsp/Wavelet.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/dsp/Wavelet.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _WAVELET_H
+-#define _WAVELET_H
++#ifndef PR_WAVELET_H
++#define PR_WAVELET_H
+ 
+ #include <List.h>
+ 
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/extras/EdgeFeatures.h cpplibs-0.2b-20031008/prapi/extras/EdgeFeatures.h
+--- cpplibs-0.2b-20031008_orig/prapi/extras/EdgeFeatures.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/extras/EdgeFeatures.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _EDGEFEATURES_H
+-#define _EDGEFEATURES_H
++#ifndef PR_EDGEFEATURES_H
++#define PR_EDGEFEATURES_H
+ 
+ #include <math.h>
+ #include <SortedList.h>
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/extras/JainAndHealeyFeatureExtractor.h cpplibs-0.2b-20031008/prapi/extras/JainAndHealeyFeatureExtractor.h
+--- cpplibs-0.2b-20031008_orig/prapi/extras/JainAndHealeyFeatureExtractor.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/extras/JainAndHealeyFeatureExtractor.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _JAINANDHEALEYFEATUREEXTRACTOR_H
+-#define _JAINANDHEALEYFEATUREEXTRACTOR_H
++#ifndef PR_JAINANDHEALEYFEATUREEXTRACTOR_H
++#define PR_JAINANDHEALEYFEATUREEXTRACTOR_H
+ 
+ #include "../FeatureExtractor.h"
+ #include "../RGBColorImage.h"
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/extras/OutexClassificationEngine.h cpplibs-0.2b-20031008/prapi/extras/OutexClassificationEngine.h
+--- cpplibs-0.2b-20031008_orig/prapi/extras/OutexClassificationEngine.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/extras/OutexClassificationEngine.h	2006-08-21 18:24:09.000000000 +0200
+@@ -15,8 +15,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _OUTEXCLASSIFICATIONENGINE_H
+-#define _OUTEXCLASSIFICATIONENGINE_H
++#ifndef PR_OUTEXCLASSIFICATIONENGINE_H
++#define PR_OUTEXCLASSIFICATIONENGINE_H
+ 
+ #include <fstream>
+ #include <string>
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/extras/OutexResult.h cpplibs-0.2b-20031008/prapi/extras/OutexResult.h
+--- cpplibs-0.2b-20031008_orig/prapi/extras/OutexResult.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/extras/OutexResult.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _OUTEXRESULT_H
+-#define _OUTEXRESULT_H
++#ifndef PR_OUTEXRESULT_H
++#define PR_OUTEXRESULT_H
+ 
+ #include <fstream>
+ 
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/extras/PCExtractor.h cpplibs-0.2b-20031008/prapi/extras/PCExtractor.h
+--- cpplibs-0.2b-20031008_orig/prapi/extras/PCExtractor.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/extras/PCExtractor.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _PCFEATUREEXTRACTOR_H
+-#define _PCFEATUREEXTRACTOR_H
++#ifndef PR_PCFEATUREEXTRACTOR_H
++#define PR_PCFEATUREEXTRACTOR_H
+ 
+ #include <List.h>
+ #include <Matrix.h>
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/extras/SmallFilters.h cpplibs-0.2b-20031008/prapi/extras/SmallFilters.h
+--- cpplibs-0.2b-20031008_orig/prapi/extras/SmallFilters.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/extras/SmallFilters.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _SMALLFILTERS_H
+-#define _SMALLFILTERS_H
++#ifndef PR_SMALLFILTERS_H
++#define PR_SMALLFILTERS_H
+ 
+ /**
+  * See the comments for Filters.h. This file contains the same Gabor filter bank with
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/ga/GeneticEngine.h cpplibs-0.2b-20031008/prapi/ga/GeneticEngine.h
+--- cpplibs-0.2b-20031008_orig/prapi/ga/GeneticEngine.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/ga/GeneticEngine.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _GENETICENGINE_H
+-#define _GENETICENGINE_H
++#ifndef PR_GENETICENGINE_H
++#define PR_GENETICENGINE_H
+ 
+ #include <List.h>
+ #include <Matrix.h>
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/ga/Individual.h cpplibs-0.2b-20031008/prapi/ga/Individual.h
+--- cpplibs-0.2b-20031008_orig/prapi/ga/Individual.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/ga/Individual.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _INDIVIDUAL_H
+-#define _INDIVIDUAL_H
++#ifndef PR_INDIVIDUAL_H
++#define PR_INDIVIDUAL_H
+ 
+ #include <List.h>
+ 
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/graphics/Dimension.h cpplibs-0.2b-20031008/prapi/graphics/Dimension.h
+--- cpplibs-0.2b-20031008_orig/prapi/graphics/Dimension.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/graphics/Dimension.h	2006-08-21 18:24:09.000000000 +0200
+@@ -31,15 +31,15 @@
+ 		/**
+ 		 * Create a new Dimension with the given width and height.
+ 		 **/
+-		Dimension(T width=0, T height=0) : Point<T>(width,height), width(x), height(y) {}
++		Dimension(T width=0, T height=0) : Point<T>(width,height), width(Point<T>::x), height(Point<T>::y) {}
+ 		/**
+ 		 * Copy a dimension.
+ 		 **/
+-		Dimension(const Dimension<T>& other) : Point<T>(other), width(x), height(y) {}
++		Dimension(const Dimension<T>& other) : Point<T>(other), width(Point<T>::x), height(Point<T>::y) {}
+ 		/**
+ 		 * Copy a point to a dimension.
+ 		 **/
+-		Dimension(const Point<T>& other) : Point<T>(other), width(x), height(y) {}
++		Dimension(const Point<T>& other) : Point<T>(other), width(Point<T>::x), height(Point<T>::y) {}
+ 
+ 		/**
+ 		 * Set width and height according to the given Point object.
+@@ -62,17 +62,17 @@
+ 
+ 	template <class T> std::ostream& operator<< (std::ostream& sout, const Dimension<T>& dim)
+ 	{
+-		sout << "<dimension width='" << dim.x << "' height='" << dim.y << "'/>";
++		sout << "<dimension width='" << dim.x << "' height='" << dim.qy << "'/>";
+ 		return sout;
+ 	}
+ 
+ 	template <class T> std::istream& operator>> (std::istream& sin, Dimension<T>& dim)
+ 	{
+-		using namespace util;
++/*		using namespace util;
+ 		using namespace util::xml;
+ 		
+ 		XMLParser parser;
+-		sin >> ws;
++		sin >> std::ws;
+ 		
+ 		SmartPtr<Node> node(parser.readFragment(sin));
+ 		if (node.get() && node->getNodeType() == Node::ELEMENT_NODE)
+@@ -89,6 +89,6 @@
+ 				else
+ 					throw io::IOException("operator>>(istream&,Dimension&): Input stream does not contain a properly formatted Dimension object.");
+ 			}
+-		return sin;
++		return sin;*/
+ 	}
+ }}
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/graphics/Graphics.h cpplibs-0.2b-20031008/prapi/graphics/Graphics.h
+--- cpplibs-0.2b-20031008_orig/prapi/graphics/Graphics.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/graphics/Graphics.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _GRAPHICS_H
+-#define _GRAPHICS_H
++#ifndef PR_GRAPHICS_H
++#define PR_GRAPHICS_H
+ 
+ #include <Matrix.h>
+ #include <math.h>
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/graphics/Point.h cpplibs-0.2b-20031008/prapi/graphics/Point.h
+--- cpplibs-0.2b-20031008_orig/prapi/graphics/Point.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/graphics/Point.h	2006-08-21 18:24:09.000000000 +0200
+@@ -15,8 +15,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _POINT_H
+-#define _POINT_H
++#ifndef PR_POINT_H
++#define PR_POINT_H
+ 
+ #include <SmartPtr.h>
+ #include <String.h>
+@@ -192,13 +192,13 @@
+ 		return sout;
+ 	}
+ 
+-	template <class T> std::istream& operator>> (std::istream& sin, Point<T>& point)
++/*	template <class T> std::istream& operator>> (std::istream& sin, Point<T>& point)
+ 	{
+ 		using namespace util;
+ 		using namespace util::xml;
+ 		
+ 		XMLParser parser;
+-		sin >> ws;
++		sin >> std::ws;
+ 		
+ 		SmartPtr<Node> node(parser.readFragment(sin));
+ 		if (node.get() && node->getNodeType() == Node::ELEMENT_NODE)
+@@ -216,7 +216,7 @@
+ 					throw io::IOException("operator>>(istream&,Point&): Input stream does not contain a properly formatted Point object.");
+ 			}
+ 		return sin;
+-	}
++	}*/
+ }}
+ 
+ #endif
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/graphics/Shape.h cpplibs-0.2b-20031008/prapi/graphics/Shape.h
+--- cpplibs-0.2b-20031008_orig/prapi/graphics/Shape.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/graphics/Shape.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _SHAPE_H
+-#define _SHAPE_H
++#ifndef PR_SHAPE_H
++#define PR_SHAPE_H
+ 
+ #include "Dimension.h"
+ 
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/texture/CALBP.h cpplibs-0.2b-20031008/prapi/texture/CALBP.h
+--- cpplibs-0.2b-20031008_orig/prapi/texture/CALBP.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/texture/CALBP.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _CALBP_H
+-#define _CALBP_H
++#ifndef PR_CALBP_H
++#define PR_CALBP_H
+ 
+ #include "LBP.h"
+ 
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/texture/CircularLocalSampler.h cpplibs-0.2b-20031008/prapi/texture/CircularLocalSampler.h
+--- cpplibs-0.2b-20031008_orig/prapi/texture/CircularLocalSampler.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/texture/CircularLocalSampler.h	2006-08-21 18:24:09.000000000 +0200
+@@ -15,18 +15,18 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _CIRCULARLOCALSAMPLER_H
+-#define _CIRCULARLOCALSAMPLER_H
++#ifndef PR_CIRCULARLOCALSAMPLER_H
++#define PR_CIRCULARLOCALSAMPLER_H
+ 
+ #include "../graphics/Point.h"
+ #include "../ImageTransform.h"
+ #include <math.h>
+ 
+-#define interpolateAtPtr(u,i,c) ((_dpMultipliers[(i<<2)] != 1.0) ? \
+-(*(u)*_dpMultipliers[(i<<2)] + *(u+1)*_dpMultipliers[(i<<2)+1] + *(u+c)*_dpMultipliers[(i<<2)+2] + *(u+c+1)*_dpMultipliers[(i<<2)+3] + 1e-10) : \
++#define interpolateAtPtr(t,u,i,c) ((t[(i<<2)] != 1.0) ? \
++(*(u)*t[(i<<2)] + *(u+1)*t[(i<<2)+1] + *(u+c)*t[(i<<2)+2] + *(u+c+1)*t[(i<<2)+3] + 1e-10) : \
+ *(u))
+ 
+-#define intRound(u,i,c) int(interpolateAtPtr(u,i,c)+0.5)
++#define intRound(t,u,i,c) int(interpolateAtPtr(t,u,i,c)+0.5)
+ #define round(x) int(x + ((x>=0)? 0.5 : -0.5))
+ 
+ namespace prapi { namespace texture {
+@@ -377,7 +377,7 @@
+ 							{
+ 								for (unsigned int i=0;i<_uiSamples;i++)
+ 									{
+-										values[i] = U(interpolateAtPtr(ptr[i],i,columns));
++										values[i] = U(interpolateAtPtr(_dpMultipliers,ptr[i],i,columns));
+ 										ptr[i]++;
+ 									}
+ 									
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/texture/CoOccurence.h cpplibs-0.2b-20031008/prapi/texture/CoOccurence.h
+--- cpplibs-0.2b-20031008_orig/prapi/texture/CoOccurence.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/texture/CoOccurence.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _COOCCURENCE_H
+-#define _COOCCURENCE_H
++#ifndef PR_COOCCURENCE_H
++#define PR_COOCCURENCE_H
+ 
+ #include <Matrix.h>
+ #include "../ImageTransform.h"
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/texture/Contrast.h cpplibs-0.2b-20031008/prapi/texture/Contrast.h
+--- cpplibs-0.2b-20031008_orig/prapi/texture/Contrast.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/texture/Contrast.h	2006-08-21 18:24:09.000000000 +0200
+@@ -15,8 +15,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _CONTRAST_H
+-#define _CONTRAST_H
++#ifndef PR_CONTRAST_H
++#define PR_CONTRAST_H
+ 
+ #include "../FeatureExtractor.h"
+ #include "../ImageTransform.h"
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/texture/EdgeDetector.h cpplibs-0.2b-20031008/prapi/texture/EdgeDetector.h
+--- cpplibs-0.2b-20031008_orig/prapi/texture/EdgeDetector.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/texture/EdgeDetector.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _EDGEDETECTOR_H
+-#define _EDGEDETECTOR_H
++#ifndef PR_EDGEDETECTOR_H
++#define PR_EDGEDETECTOR_H
+ 
+ #include "../ImageTransform.h"
+ #include "../ConvolutionMask.h"
+@@ -390,8 +390,8 @@
+ 		int rows=mat.getRows();
+ 		int cols=mat.getColumns();
+ 		
+-		util::Matrix<T> tempX(Image::convolve(mat,_ConvolutionMaskX, _BorderAction));
+-		util::Matrix<T> tempY(Image::convolve(mat,_ConvolutionMaskY, _BorderAction));
++		util::Matrix<T> tempX(Image::convolve(mat,_ConvolutionMaskX, EdgeDetector<T,U>::_BorderAction));
++		util::Matrix<T> tempY(Image::convolve(mat,_ConvolutionMaskY, EdgeDetector<T,U>::_BorderAction));
+ 		
+ 		util::Matrix<prapi::graphics::Point<double> > result(rows,cols);
+ 		T* matXData = tempX.getData();
+@@ -412,8 +412,8 @@
+ 		int rows=mat.getRows();
+ 		int cols=mat.getColumns();
+ 		
+-		util::Matrix<T> tempX(Image::convolve(mat,_ConvolutionMaskX, _BorderAction));
+-		util::Matrix<T> tempY(Image::convolve(mat,_ConvolutionMaskY, _BorderAction));
++		util::Matrix<T> tempX(Image::convolve(mat,_ConvolutionMaskX, EdgeDetector<T,U>::_BorderAction));
++		util::Matrix<T> tempY(Image::convolve(mat,_ConvolutionMaskY, EdgeDetector<T,U>::_BorderAction));
+ 		
+ 		util::Matrix<prapi::graphics::Point<double> > result(rows,cols);
+ 		T* matXData = tempX.getData();
+@@ -445,23 +445,23 @@
+ 		ConvolutionMask<double> LOGMask(3,3,maskFactors); // the LOG mask
+ 
+ 		// then before returning typycast all items to U
+-		return util::Matrix<U>(Image::convolve(mat,LOGMask, _BorderAction));
++		return util::Matrix<U>(Image::convolve(mat,LOGMask, EdgeDetector<T,U>::_BorderAction));
+ 	}
+ 
+ 	template <class T,class U> Canny<T,U>::Canny(double sigma, int suppressRadius, BorderAction borderAction):
+ 		DifferentialEdgeDetector<T,U>(suppressRadius,borderAction),_dSigma(sigma)
+ 	{
+-		_ConvolutionMaskX = makeCannyMask(_dSigma);
+-		ConvolutionMask<double> tmp(_ConvolutionMaskX.getColumns(),_ConvolutionMaskX.getRows(),_ConvolutionMaskX.getData());
+-		_ConvolutionMaskY = tmp;
++		DifferentialEdgeDetector<T,U>::_ConvolutionMaskX = makeCannyMask(_dSigma);
++		ConvolutionMask<double> tmp(DifferentialEdgeDetector<T,U>::_ConvolutionMaskX.getColumns(),DifferentialEdgeDetector<T,U>::_ConvolutionMaskX.getRows(),DifferentialEdgeDetector<T,U>::_ConvolutionMaskX.getData());
++		DifferentialEdgeDetector<T,U>::_ConvolutionMaskY = tmp;
+ 	}
+ 
+ 	template <class T,class U> void Canny<T,U>::setSigma(double sigma)
+ 	{
+ 		_dSigma = sigma;
+-		_ConvolutionMaskX = makeCannyMask(_dSigma);
+-		ConvolutionMask<double> tmp(_ConvolutionMaskX.getColumns(),_ConvolutionMaskX.getRows(),_ConvolutionMaskX.getData());
+-		_ConvolutionMaskY = tmp;
++		DifferentialEdgeDetector<T,U>::_ConvolutionMaskX = makeCannyMask(_dSigma);
++		ConvolutionMask<double> tmp(DifferentialEdgeDetector<T,U>::_ConvolutionMaskX.getColumns(),DifferentialEdgeDetector<T,U>::_ConvolutionMaskX.getRows(),DifferentialEdgeDetector<T,U>::_ConvolutionMaskX.getData());
++		DifferentialEdgeDetector<T,U>::_ConvolutionMaskY = tmp;
+ 	}
+ 	
+ 	template <class T,class U> ConvolutionMask<double> Canny<T,U>::makeCannyMask(double sigma)
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/texture/LBP.cc cpplibs-0.2b-20031008/prapi/texture/LBP.cc
+--- cpplibs-0.2b-20031008_orig/prapi/texture/LBP.cc	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/texture/LBP.cc	2006-08-21 18:24:09.000000000 +0200
+@@ -176,10 +176,10 @@
+ 								compab_mask_inc(p5,5);
+ 								compab_mask_inc(p7,7);
+ 								
+-								compab_mask(intRound(p0,5,columns),0); //p0
+-								compab_mask(intRound(p2,7,columns),2); //p2
+-								compab_mask(intRound(p4,1,columns),4); //p4
+-								compab_mask(intRound(p6,3,columns),6); //p6
++								compab_mask(intRound(_dpMultipliers,p0,5,columns),0); //p0
++								compab_mask(intRound(_dpMultipliers,p2,7,columns),2); //p2
++								compab_mask(intRound(_dpMultipliers,p4,1,columns),4); //p4
++								compab_mask(intRound(_dpMultipliers,p6,3,columns),6); //p6
+ 								p0++;
+ 								p2++;
+ 								p4++;
+@@ -277,10 +277,10 @@
+ 								compab_mask_inc(p5,5);
+ 								compab_mask_inc(p7,7);
+ 								
+-								compab_mask(intRound(p0,5,columns),0); //p0
+-								compab_mask(intRound(p2,7,columns),2); //p2
+-								compab_mask(intRound(p4,1,columns),4); //p4
+-								compab_mask(intRound(p6,3,columns),6); //p6
++								compab_mask(intRound(_dpMultipliers,p0,5,columns),0); //p0
++								compab_mask(intRound(_dpMultipliers,p2,7,columns),2); //p2
++								compab_mask(intRound(_dpMultipliers,p4,1,columns),4); //p4
++								compab_mask(intRound(_dpMultipliers,p6,3,columns),6); //p6
+ 								p0++;
+ 								p2++;
+ 								p4++;
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/texture/LBP.h cpplibs-0.2b-20031008/prapi/texture/LBP.h
+--- cpplibs-0.2b-20031008_orig/prapi/texture/LBP.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/texture/LBP.h	2006-08-21 18:24:09.000000000 +0200
+@@ -15,8 +15,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _LBP_H
+-#define _LBP_H
++#ifndef PR_LBP_H
++#define PR_LBP_H
+ 
+ #include <math.h>
+ #include <List.h>
+@@ -180,7 +180,7 @@
+ 		 *
+ 		 * @return the maximum value for a feature +1.
+ 		 **/
+-		int getMaxValue() const { return _ipPatternMap? _iMaxMappingValue : (1<<_uiSamples); }
++		int getMaxValue() const { return _ipPatternMap? _iMaxMappingValue : (1<<LBPExtractor<T>::_uiSamples); }
+ 
+ 		/**
+ 		 * Get the currently active mapping.
+@@ -188,14 +188,14 @@
+ 		 * @return the currently active mapping (2<sup>bits</sup> values)
+ 		 * or NULL, if there is no mapping defined
+ 		 **/
+-		const int* getMapping() const { return _ipPatternMap; }
++		const int* getMapping() const { return LBPExtractor<T>::_ipPatternMap; }
+ 		/**
+ 		 * Get the currently active mapping.
+ 		 *
+ 		 * @return the currently active mapping (2<sup>bits</sup> values)
+ 		 * or NULL, if there is no mapping defined
+ 		 **/
+-		int* getMapping() { return _ipPatternMap; }
++		int* getMapping() { return LBPExtractor<T>::_ipPatternMap; }
+ 		
+ 	private:
+ 		int* _ipPatternMap;
+@@ -250,35 +250,35 @@
+ 
+ 	template <class T> void GeneralLBP<T>::setMapping(LBPMapping::MappingType type)
+ 	{
+-		setMapping(LBPMapping::getMapping(_uiSamples, type),
+-							 LBPMapping::getSize(_uiSamples, type));
++		setMapping(LBPMapping::getMapping(LBPExtractor<T>::_uiSamples, type),
++							 LBPMapping::getSize(LBPExtractor<T>::_uiSamples, type));
+ 	}
+ 
+ 	template <class T> void GeneralLBP<T>::setMapping(MappingType type)
+ 	{
+-		setMapping(LBPMapping::getMapping(_uiSamples, (LBPMapping::MappingType)type),
+-							 LBPMapping::getSize(_uiSamples, (LBPMapping::MappingType)type));
++		setMapping(LBPMapping::getMapping(LBPExtractor<T>::_uiSamples, (LBPMapping::MappingType)type),
++							 LBPMapping::getSize(LBPExtractor<T>::_uiSamples, (LBPMapping::MappingType)type));
+ 	}
+ 
+ 	template <class T> util::List<int> GeneralLBP<T>::getFeatureVector(const util::Matrix<T>& mat) throw (FeatureExtractionException&)
+ 	{
+-		int resultSize = (_ipPatternMap != NULL)? _iMaxMappingValue : (1<<_uiSamples);
++		int resultSize = (_ipPatternMap != NULL)? _iMaxMappingValue : (1<<LBPExtractor<T>::_uiSamples);
+ 		util::IntegerList result(resultSize);
+ 		result.setLength(resultSize);
+ 		memset(result.getData(),0,sizeof(int)*resultSize);
+ 		
+ 		int rows = mat.getRows(), columns = mat.getColumns();
+-		const T* center = mat.getData() + _uiPredicate * (1 + columns);
+-		const T* ptr[_uiSamples];
++		const T* center = mat.getData() + CircularLocalSampler<int,T>::_uiPredicate * (1 + columns);
++		const T* ptr[LBPExtractor<T>::_uiSamples];
+ 		
+ 		unsigned int value,base;
+-		int pred2 = _uiPredicate << 1;
+-		if (!_bInterpolated)
++		int pred2 = CircularLocalSampler<int,T>::_uiPredicate << 1;
++		if (!CircularLocalSampler<int,T>::_bInterpolated)
+ 			{
+-				for (unsigned int i=0;i<_uiSamples;i++)
++				for (unsigned int i=0;i<LBPExtractor<T>::_uiSamples;i++)
+ 					{
+-						int xc = round(_pPoints[i].x + _pOffsets[i].x);
+-						int yc = round(_pPoints[i].y + _pOffsets[i].y);
++						int xc = round((CircularLocalSampler<int,T>::_pPoints[i].x + CircularLocalSampler<int,T>::_pOffsets[i].x));
++						int yc = round((CircularLocalSampler<int,T>::_pPoints[i].y + CircularLocalSampler<int,T>::_pOffsets[i].y));
+ 						ptr[i] = center + xc + yc * columns;
+ 					}
+ 
+@@ -288,7 +288,7 @@
+ 							{
+ 								value = 0;
+ 								base = 1;
+-								for (unsigned int i=0;i<_uiSamples;i++)
++								for (unsigned int i=0;i<LBPExtractor<T>::_uiSamples;i++)
+ 									{
+ 										if (*ptr[i] >= *center)
+ 											value |= base;
+@@ -303,15 +303,15 @@
+ 								else
+ 									result[_ipPatternMap[value]]++;
+ 							}
+-						for (unsigned int i=0;i<_uiSamples;i++)
++						for (unsigned int i=0;i<LBPExtractor<T>::_uiSamples;i++)
+ 							ptr[i] += pred2;
+ 						center += pred2;
+ 					}
+ 			}
+ 		else
+ 			{
+-				for (unsigned int i=0;i<_uiSamples;i++)
+-					ptr[i] = center + _pPoints[i].x + _pPoints[i].y * columns;
++				for (unsigned int i=0;i<LBPExtractor<T>::_uiSamples;i++)
++					ptr[i] = center + CircularLocalSampler<int,T>::_pPoints[i].x + CircularLocalSampler<int,T>::_pPoints[i].y * columns;
+ 				
+ 				for (int r=0;r<rows-pred2;r++)
+ 					{
+@@ -319,9 +319,9 @@
+ 							{
+ 								value = 0;
+ 								base = 1;
+-								for (unsigned int i=0;i<_uiSamples;i++)
++								for (unsigned int i=0;i<LBPExtractor<T>::_uiSamples;i++)
+ 									{
+-										if (interpolateAtPtr(ptr[i],i,columns) >= *center)
++										if (interpolateAtPtr((CircularLocalSampler<int,T>::_dpMultipliers),ptr[i],i,columns) >= *center)
+ 											value |= base;
+ 										base <<= 1;
+ 										ptr[i]++;
+@@ -334,7 +334,7 @@
+ 								else
+ 									result[_ipPatternMap[value]]++;
+ 							}
+-						for (unsigned int i=0;i<_uiSamples;i++)
++						for (unsigned int i=0;i<LBPExtractor<T>::_uiSamples;i++)
+ 							ptr[i] += pred2;
+ 						center += pred2;
+ 					}
+@@ -346,21 +346,21 @@
+ 	template <class T> util::Matrix<int> GeneralLBP<T>::getTransformedImage(const util::Matrix<T>& mat) throw (ImageTransformException&)
+ 	{
+ 		int rows = mat.getRows(), columns = mat.getColumns();
+-		const T* center = mat.getData() + _uiPredicate * (1 + columns);
+-		const T* ptr[_uiSamples];
++		const T* center = mat.getData() + CircularLocalSampler<int,T>::_uiPredicate * (1 + columns);
++		const T* ptr[LBPExtractor<T>::_uiSamples];
+ 
+-		int pred2 = _uiPredicate << 1;
++		int pred2 = CircularLocalSampler<int,T>::_uiPredicate << 1;
+ 
+ 		util::Matrix<int> result(rows-pred2,columns-pred2);
+ 		int *resultPtr = result.getData();
+ 		
+ 		unsigned int value,base;
+-		if (!_bInterpolated)
++		if (!CircularLocalSampler<int,T>::_bInterpolated)
+ 			{
+-				for (unsigned int i=0;i<_uiSamples;i++)
++				for (unsigned int i=0;i<LBPExtractor<T>::_uiSamples;i++)
+ 					{
+-						int xc = round(_pPoints[i].x + _pOffsets[i].x);
+-						int yc = round(_pPoints[i].y + _pOffsets[i].y);
++						int xc = round((CircularLocalSampler<int,T>::_pPoints[i].x + CircularLocalSampler<int,T>::_pOffsets[i].x));
++						int yc = round((CircularLocalSampler<int,T>::_pPoints[i].y + CircularLocalSampler<int,T>::_pOffsets[i].y));
+ 						ptr[i] = center + xc + yc * columns;
+ 					}
+ 				
+@@ -370,7 +370,7 @@
+ 							{
+ 								value = 0;
+ 								base = 1;
+-								for (unsigned int i=0;i<_uiSamples;i++)
++								for (unsigned int i=0;i<LBPExtractor<T>::_uiSamples;i++)
+ 									{
+ 										if (*ptr[i] >= *center)
+ 											value |= base;
+@@ -386,15 +386,15 @@
+ 									*resultPtr = _ipPatternMap[value];
+ 								resultPtr++;
+ 							}
+-						for (unsigned int i=0;i<_uiSamples;i++)
++						for (unsigned int i=0;i<LBPExtractor<T>::_uiSamples;i++)
+ 							ptr[i] += pred2;
+ 						center += pred2;
+ 					}
+ 			}
+ 		else
+ 			{
+-				for (unsigned int i=0;i<_uiSamples;i++)
+-					ptr[i] = center + _pPoints[i].x + _pPoints[i].y * columns;
++				for (unsigned int i=0;i<LBPExtractor<T>::_uiSamples;i++)
++					ptr[i] = center + CircularLocalSampler<int,T>::_pPoints[i].x + CircularLocalSampler<int,T>::_pPoints[i].y * columns;
+ 				for (int r=0;r<rows-pred2;r++)
+ 					{
+ 						for (int c=0;c<columns-pred2;c++)
+@@ -402,11 +402,11 @@
+ 								value = 0;
+ 								base = 1;
+ 								//cerr << "Center: " << *center << endl;
+-								for (unsigned int i=0;i<_uiSamples;i++)
++								for (unsigned int i=0;i<LBPExtractor<T>::_uiSamples;i++)
+ 									{
+ 										//cerr << "*ptr[" << i << "]: " << *ptr[i] << " -> "; // << interpolateAtPtr(ptr[i],i,columns) << endl;
+ 										//fprintf(stderr,"%30.28f\n",interpolateAtPtr(ptr[i],i,columns));
+-										if (interpolateAtPtr(ptr[i],i,columns) >= *center)
++										if (interpolateAtPtr((CircularLocalSampler<int,T>::_dpMultipliers),ptr[i],i,columns) >= *center)
+ 											value |= base;
+ 										base <<= 1;
+ 										ptr[i]++;
+@@ -420,7 +420,7 @@
+ 									*resultPtr = _ipPatternMap[value];
+ 								resultPtr++;
+ 							}
+-						for (unsigned int i=0;i<_uiSamples;i++)
++						for (unsigned int i=0;i<LBPExtractor<T>::_uiSamples;i++)
+ 							ptr[i] += pred2;
+ 						center += pred2;
+ 					}
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/texture/OpponentColorLBP.h cpplibs-0.2b-20031008/prapi/texture/OpponentColorLBP.h
+--- cpplibs-0.2b-20031008_orig/prapi/texture/OpponentColorLBP.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/texture/OpponentColorLBP.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _OPPONENTCOLORLBP_H
+-#define _OPPONENTCOLORLBP_H
++#ifndef PR_OPPONENTCOLORLBP_H
++#define PR_OPPONENTCOLORLBP_H
+ 
+ #include "CircularLocalSampler.h"
+ #include "../FeatureExtractor.h"
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/texture/Segmentation.h cpplibs-0.2b-20031008/prapi/texture/Segmentation.h
+--- cpplibs-0.2b-20031008_orig/prapi/texture/Segmentation.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/texture/Segmentation.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _SEGMENTATION_H
+-#define _SEGMENTATION_H
++#ifndef PR_SEGMENTATION_H
++#define PR_SEGMENTATION_H
+ 
+ #include <List.h>
+ #include <Exception.h>
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/texture/SgnDiff.h cpplibs-0.2b-20031008/prapi/texture/SgnDiff.h
+--- cpplibs-0.2b-20031008_orig/prapi/texture/SgnDiff.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/texture/SgnDiff.h	2006-08-21 18:24:09.000000000 +0200
+@@ -15,8 +15,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _SGNDIFF_H
+-#define _SGNDIFF_H
++#ifndef PR_SGNDIFF_H
++#define PR_SGNDIFF_H
+ 
+ #include "CircularLocalSampler.h"
+ 
+@@ -63,7 +63,7 @@
+ 
+ 	template <class T> void SgnDiff<T>::setDifferenceIndex(unsigned int index) throw (util::InvalidArgumentException&)
+ 	{
+-		if (index >= _uiSamples)
++		if (index >= CircularLocalSampler<T,T>::_uiSamples)
+ 			throw util::InvalidArgumentException("SgnDiff::setDifferenceIndex(int): difference index too large.");
+ 		_uiDiffIndex = index;
+ 	}	
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/texture/Thresholding.h cpplibs-0.2b-20031008/prapi/texture/Thresholding.h
+--- cpplibs-0.2b-20031008_orig/prapi/texture/Thresholding.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/texture/Thresholding.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _THRESHOLDING_H
+-#define _THRESHOLDING_H
++#ifndef PR_THRESHOLDING_H
++#define PR_THRESHOLDING_H
+ 
+ #include "../ImageTransform.h"
+ #include <Matrix.h>
+@@ -208,7 +208,7 @@
+ 		// tracing edge pixels that are above the low threshold.                
+ 		for (int i=0; i<rows; i++)
+ 			for (int j=0; j<cols; j++)
+-				if (mat(i,j) >= _upperThreshold)traceEdge(mat,result,i,j);
++				if (mat(i,j) >= Thresholding<T>::_upperThreshold)traceEdge(mat,result,i,j);
+ 	
+ 		return result;
+ 	}
+@@ -225,7 +225,7 @@
+ 				for (int r= -1; r<=1; r++)
+ 					{
+ 						for(int c= -1; c<=1; c++)
+-							if ((i+r > 0 && i+r < rows)&&(j+c>0 && j+c<cols) && mat(i+r,j+c) >= _lowerThreshold)
++							if ((i+r > 0 && i+r < rows)&&(j+c>0 && j+c<cols) && mat(i+r,j+c) >= Thresholding<T>::_lowerThreshold)
+ 								{
+ 									flag=traceEdge(mat,result,i+r, j+c);
+ 									if (flag)break;
+@@ -247,11 +247,11 @@
+ 		int count = histogram[maxLimit];
+ 		// find max limit while 
+ 		while (count < limit && !(--maxLimit))count += histogram[maxLimit];
+-		_upperThreshold=T(maxLimit);
++		Thresholding<T>::_upperThreshold=T(maxLimit);
+ 		//then find the lower threshold
+ 		int i=0;
+ 		while (histogram[i]==0) i++;
+-		_lowerThreshold = T(double(maxLimit+i)/2.0);
++		Thresholding<T>::_lowerThreshold = T(double(maxLimit+i)/2.0);
+ 	}
+ 	
+ }}
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/texture/Variance.h cpplibs-0.2b-20031008/prapi/texture/Variance.h
+--- cpplibs-0.2b-20031008_orig/prapi/texture/Variance.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/texture/Variance.h	2006-08-21 18:24:09.000000000 +0200
+@@ -15,8 +15,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _VARIANCE_H
+-#define _VARIANCE_H
++#ifndef PR_VARIANCE_H
++#define PR_VARIANCE_H
+ 
+ #include "../FeatureExtractor.h"
+ #include "../ImageTransform.h"
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/transforms/FFT.h cpplibs-0.2b-20031008/prapi/transforms/FFT.h
+--- cpplibs-0.2b-20031008_orig/prapi/transforms/FFT.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/transforms/FFT.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _FFT_H
+-#define _FFT_H
++#ifndef PR_FFT_H
++#define PR_FFT_H
+ 
+ #include "../ImageTransform.h"
+ #include <Matrix.h>
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/transforms/Hough.h cpplibs-0.2b-20031008/prapi/transforms/Hough.h
+--- cpplibs-0.2b-20031008_orig/prapi/transforms/Hough.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/transforms/Hough.h	2006-08-21 18:24:09.000000000 +0200
+@@ -15,8 +15,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _HOUGH_H
+-#define _HOUGH_H
++#ifndef PR_HOUGH_H
++#define PR_HOUGH_H
+ 
+ #include "../ImageTransform.h"
+ #include "../graphics/Graphics.h"
+@@ -383,7 +383,7 @@
+ 		graphics::MemoryGraphics<double> transform(result);
+ 		graphics::Rectangle<int> rect(0, 0, cols, rows);
+ 		transform.setClip(&rect);
+-		transform.setDrawMode(DRAWMODE_PLUS);
++		transform.setDrawMode(prapi::graphics::DRAWMODE_PLUS);
+ 
+ 		int r,c;
+ 		AllItems(r,c,mat)
+diff -ru -ru cpplibs-0.2b-20031008_orig/util/AsciiCodec.h cpplibs-0.2b-20031008/util/AsciiCodec.h
+--- cpplibs-0.2b-20031008_orig/util/AsciiCodec.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/util/AsciiCodec.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _ASCIICODEC_H
+-#define _ASCIICODEC_H
++#ifndef UTIL_ASCIICODEC_H
++#define UTIL_ASCIICODEC_H
+ 
+ #include "MatrixCodec.h"
+ #include "List.h"
+diff -ru -ru cpplibs-0.2b-20031008_orig/util/BitOperation.h cpplibs-0.2b-20031008/util/BitOperation.h
+--- cpplibs-0.2b-20031008_orig/util/BitOperation.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/util/BitOperation.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _BITOPERATION_H
+-#define _BITOPERATION_H
++#ifndef UTIL_BITOPERATION_H
++#define UTIL_BITOPERATION_H
+ 
+ #include <string>
+ 
+diff -ru -ru cpplibs-0.2b-20031008_orig/util/Blob.h cpplibs-0.2b-20031008/util/Blob.h
+--- cpplibs-0.2b-20031008_orig/util/Blob.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/util/Blob.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _BLOB_H
+-#define _BLOB_H
++#ifndef UTIL_BLOB_H
++#define UTIL_BLOB_H
+ 
+ #include "Object.h"
+ 
+@@ -62,9 +62,9 @@
+ 		 **/
+ 		Blob& operator= (const Blob& other)
+ 		{
+-			if (other._pData != _pData)
++			if (other.getData() != _pData)
+ 				{
+-					if (_bRelease) deleteData(data);
++					if (_bRelease) deleteData();
+ 					_pData = other._pData;
+ 					_iLen = other._iLen;
+ 					_bArray = other._bArray;
+diff -ru -ru cpplibs-0.2b-20031008_orig/util/Boolean.h cpplibs-0.2b-20031008/util/Boolean.h
+--- cpplibs-0.2b-20031008_orig/util/Boolean.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/util/Boolean.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _BOOLEAN_H
+-#define _BOOLEAN_H
++#ifndef UTIL_BOOLEAN_H
++#define UTIL_BOOLEAN_H
+ 
+ #include "PrimitiveType.h"
+ 
+diff -ru -ru cpplibs-0.2b-20031008_orig/util/Complex.h cpplibs-0.2b-20031008/util/Complex.h
+--- cpplibs-0.2b-20031008_orig/util/Complex.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/util/Complex.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _COMPLEX_H
+-#define _COMPLEX_H
++#ifndef UTIL_COMPLEX_H
++#define UTIL_COMPLEX_H
+ 
+ #include <math.h>
+ #include "SmartPtr.h"
+diff -ru -ru cpplibs-0.2b-20031008_orig/util/Computable.h cpplibs-0.2b-20031008/util/Computable.h
+--- cpplibs-0.2b-20031008_orig/util/Computable.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/util/Computable.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _COMPUTABLE_H
+-#define _COMPUTABLE_H
++#ifndef UTIL_COMPUTABLE_H
++#define UTIL_COMPUTABLE_H
+ 
+ #include "SmartPtr.h"
+ #include "Exception.h"
+diff -ru -ru cpplibs-0.2b-20031008_orig/util/Event.h cpplibs-0.2b-20031008/util/Event.h
+--- cpplibs-0.2b-20031008_orig/util/Event.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/util/Event.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _EVENT_H
+-#define _EVENT_H
++#ifndef UTIL_EVENT_H
++#define UTIL_EVENT_H
+ 
+ #include "List.h"
+ 
+diff -ru -ru cpplibs-0.2b-20031008_orig/util/Exception.h cpplibs-0.2b-20031008/util/Exception.h
+--- cpplibs-0.2b-20031008_orig/util/Exception.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/util/Exception.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _EXCEPTION_H
+-#define _EXCEPTION_H
++#ifndef UTIL_EXCEPTION_H
++#define UTIL_EXCEPTION_H
+ 
+ #include "Object.h"
+ 
+diff -ru -ru cpplibs-0.2b-20031008_orig/util/Fifo.h cpplibs-0.2b-20031008/util/Fifo.h
+--- cpplibs-0.2b-20031008_orig/util/Fifo.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/util/Fifo.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _FIFO_H
+-#define _FIFO_H
++#ifndef UTIL_FIFO_H
++#define UTIL_FIFO_H
+ 
+ namespace util
+ {
+diff -ru -ru cpplibs-0.2b-20031008_orig/util/Hashtable.cc cpplibs-0.2b-20031008/util/Hashtable.cc
+--- cpplibs-0.2b-20031008_orig/util/Hashtable.cc	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/util/Hashtable.cc	2006-08-21 18:24:09.000000000 +0200
+@@ -14,6 +14,10 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
++#define UTIL_XMLDOCUMENT_H
++#define UTIL_XMLPARSER_H
++#define UTIL_LISTCLASS_H
++
+ #include "Hashtable.h"
+ 
+ namespace util
+diff -ru -ru cpplibs-0.2b-20031008_orig/util/Hashtable.h cpplibs-0.2b-20031008/util/Hashtable.h
+--- cpplibs-0.2b-20031008_orig/util/Hashtable.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/util/Hashtable.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _HASHTABLE_H
+-#define _HASHTABLE_H
++#ifndef _UTIL_HASHTABLE_H
++#define _UTIL_HASHTABLE_H
+ 
+ #include "Map.h"
+ #include "LinkedList.h"
+diff -ru -ru cpplibs-0.2b-20031008_orig/util/Heap.h cpplibs-0.2b-20031008/util/Heap.h
+--- cpplibs-0.2b-20031008_orig/util/Heap.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/util/Heap.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _HEAP_H
+-#define _HEAP_H
++#ifndef UTIL_HEAP_H
++#define UTIL_HEAP_H
+ 
+ #include "List.h"
+ #include <functional>
+@@ -118,8 +118,8 @@
+ 
+ 	template <class T, class comparator> void Heap<T,comparator>::sort()
+ 	{
+-		int size = _iCurrentItems;
+-		while (_iCurrentItems > 1)
++		int size = List<T>::_iCurrentItems;
++		while (List<T>::_iCurrentItems > 1)
+ 			{
+ 				//The value returned by removeElementAt(0) cannot be directly
+ 				//assigned to _internalArray[_iCurrentItems] because (at least
+@@ -129,24 +129,24 @@
+ 				//elementary types, direct assignment works, but for complex
+ 				//ones it does not.
+ 				T tmp(removeElementAt(0));
+-				_internalArray[_iCurrentItems] = tmp;
++				List<T>::_internalArray[List<T>::_iCurrentItems] = tmp;
+ 			}
+-		_iCurrentItems = size;
++		List<T>::_iCurrentItems = size;
+ 	}
+ 
+ 	template <class T, class comparator> void Heap<T,comparator>::swap(int i, int t)
+ 	{
+-		T tmp(_internalArray[i]);
+-		_internalArray[i] = _internalArray[t];
+-		_internalArray[t] = tmp;
++		T tmp(List<T>::_internalArray[i]);
++		List<T>::_internalArray[i] = List<T>::_internalArray[t];
++		List<T>::_internalArray[t] = tmp;
+ 	}
+ 
+ 	template <class T, class comparator> void Heap<T,comparator>::addElement(const T& element)
+ 	{
+ 		List<T>::addElement(element);
+-		int childIndex = _iCurrentItems-1;
++		int childIndex = List<T>::_iCurrentItems-1;
+ 		int parentIndex = HEAP_PARENT_INDEX(childIndex);
+-		while (parentIndex >=0 && _comparator(_internalArray[childIndex],_internalArray[parentIndex]))
++		while (parentIndex >=0 && _comparator(List<T>::_internalArray[childIndex],List<T>::_internalArray[parentIndex]))
+ 			{
+ 				swap(parentIndex,childIndex);
+ 				childIndex = parentIndex;
+@@ -157,24 +157,24 @@
+ 	template <class T, class comparator> T Heap<T,comparator>::removeElementAt(int index)
+ 	{
+ 		//Store the removed element.
+-		T tmp(_internalArray[index]);
+-		_iCurrentItems--;
++		T tmp(List<T>::_internalArray[index]);
++		List<T>::_iCurrentItems--;
+ 
+ 		//Check if we need to heapize the list
+-		if (index < _iCurrentItems)
++		if (index < List<T>::_iCurrentItems)
+ 			{
+ 				//Move the last element to the free place.
+-				_internalArray[index] = _internalArray[_iCurrentItems];
++				List<T>::_internalArray[index] = List<T>::_internalArray[List<T>::_iCurrentItems];
+ 
+ 				//Update the heap downwards. If the new parent for a child
+ 				//node is smaller than a child, then swap the parent with
+ 				//larger of its children.
+ 				int parentIndex = index;
+ 				int childIndex = HEAP_CHILD_INDEX(index);
+-				while ((_iCurrentItems > childIndex && _comparator(_internalArray[childIndex],_internalArray[parentIndex])) ||
+-							 (_iCurrentItems > childIndex+1 && _comparator(_internalArray[childIndex+1],_internalArray[parentIndex])))
++				while ((List<T>::_iCurrentItems > childIndex && _comparator(List<T>::_internalArray[childIndex],List<T>::_internalArray[parentIndex])) ||
++							 (List<T>::_iCurrentItems > childIndex+1 && _comparator(List<T>::_internalArray[childIndex+1],List<T>::_internalArray[parentIndex])))
+ 					{
+-						if (_iCurrentItems > childIndex+1 && _comparator(_internalArray[childIndex+1], _internalArray[childIndex]))
++						if (List<T>::_iCurrentItems > childIndex+1 && _comparator(List<T>::_internalArray[childIndex+1], List<T>::_internalArray[childIndex]))
+ 							childIndex++;
+ 						swap(parentIndex,childIndex);
+ 						parentIndex = childIndex;
+@@ -185,7 +185,7 @@
+ 				//swap the two.
+ 				childIndex = index;
+ 				parentIndex = HEAP_PARENT_INDEX(childIndex);
+-				while (parentIndex >=0 && _comparator(_internalArray[childIndex],_internalArray[parentIndex]))
++				while (parentIndex >=0 && _comparator(List<T>::_internalArray[childIndex],List<T>::_internalArray[parentIndex]))
+ 					{
+ 						swap(parentIndex,childIndex);
+ 						childIndex = parentIndex;
+diff -ru -ru cpplibs-0.2b-20031008_orig/util/Iterator.h cpplibs-0.2b-20031008/util/Iterator.h
+--- cpplibs-0.2b-20031008_orig/util/Iterator.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/util/Iterator.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _ITERATOR_H
+-#define _ITERATOR_H
++#ifndef UTIL_ITERATOR_H
++#define UTIL_ITERATOR_H
+ 
+ #include "Object.h"
+ 
+diff -ru -ru cpplibs-0.2b-20031008_orig/util/LinkedList.h cpplibs-0.2b-20031008/util/LinkedList.h
+--- cpplibs-0.2b-20031008_orig/util/LinkedList.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/util/LinkedList.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _LINKEDLIST_H
+-#define _LINKEDLIST_H
++#ifndef UTIL_LINKEDLIST_H
++#define UTIL_LINKEDLIST_H
+ 
+ #include <stdlib.h>
+ #include "Object.h"
+@@ -258,9 +258,9 @@
+ 
+ 	template <class content> void DoublyLinkedList<content>::setNext(DoublyLinkedList* node)
+ 	{
+-		node->_pNext = _pNext;
+-		if (_pNext)
+-			_pNext->_pPrevious = node;
++		node->_pNext = LinkedList<content>::_pNext;
++		if (LinkedList<content>::_pNext)
++			LinkedList<content>::_pNext->_pPrevious = node;
+ 	}
+ 
+ 	template <class content> void DoublyLinkedList<content>::insertAfter(DoublyLinkedList* node)
+@@ -268,23 +268,23 @@
+ 		if (node)
+ 			{
+ 				DoublyLinkedList* last = (DoublyLinkedList*)node->getLastElement();
+-				last->_pNext = _pNext;
+-				if (_pNext)
+-					_pNext->_pPrevious = last;
++				last->_pNext = LinkedList<content>::_pNext;
++				if (LinkedList<content>::_pNext)
++					LinkedList<content>::_pNext->_pPrevious = last;
+ 				node->_pPrevious = this;
+ 			}
+-		_pNext = node;
++		LinkedList<content>::_pNext = node;
+ 	}
+ 
+ 	template <class content> void DoublyLinkedList<content>::remove(void)
+ 	{
+-		if (_pNext)
+-			_pNext->_pPrevious = _pPrevious;
++		if (LinkedList<content>::_pNext)
++			LinkedList<content>::_pNext->_pPrevious = _pPrevious;
+ 		if (_pPrevious)
+-			_pPrevious->_pNext = _pNext;
++			_pPrevious->_pNext = LinkedList<content>::_pNext;
+ 
+ 		_pPrevious = NULL;
+-		_pNext = NULL;
++		LinkedList<content>::_pNext = NULL;
+ 	}
+ 
+ 
+diff -ru -ru cpplibs-0.2b-20031008_orig/util/List.h cpplibs-0.2b-20031008/util/List.h
+--- cpplibs-0.2b-20031008_orig/util/List.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/util/List.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _LISTCLASS_H
+-#define _LISTCLASS_H
++#ifndef UTIL_LISTCLASS_H
++#define UTIL_LISTCLASS_H
+ 
+ #include "Iterator.h"
+ #include "Util.h"
+diff -ru -ru cpplibs-0.2b-20031008_orig/util/ListUtils.h cpplibs-0.2b-20031008/util/ListUtils.h
+--- cpplibs-0.2b-20031008_orig/util/ListUtils.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/util/ListUtils.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,9 +14,10 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _LISTUTILS_H
+-#define _LISTUTILS_H
++#ifndef UTIL_LISTUTILS_H
++#define UTIL_LISTUTILS_H
+ 
++#define _LIST_INCLUDED_FROM_XMLPARSER_H
+ #include "Util.h"
+ #include "List.h"
+ #include <time.h>
+diff -ru -ru cpplibs-0.2b-20031008_orig/util/Map.h cpplibs-0.2b-20031008/util/Map.h
+--- cpplibs-0.2b-20031008_orig/util/Map.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/util/Map.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _MAP_H
+-#define _MAP_H
++#ifndef UTIL_MAP_H
++#define UTIL_MAP_H
+ 
+ #include "Object.h"
+ 
+diff -ru -ru cpplibs-0.2b-20031008_orig/util/Math.h cpplibs-0.2b-20031008/util/Math.h
+--- cpplibs-0.2b-20031008_orig/util/Math.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/util/Math.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _MATHCLASS_H
+-#define _MATHCLASS_H
++#ifndef UTIL_MATHCLASS_H
++#define UTIL_MATHCLASS_H
+ 
+ #include <math.h>
+ #include "Matrix.h"
+diff -ru -ru cpplibs-0.2b-20031008_orig/util/Matrix.h cpplibs-0.2b-20031008/util/Matrix.h
+--- cpplibs-0.2b-20031008_orig/util/Matrix.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/util/Matrix.h	2006-08-21 18:24:09.000000000 +0200
+@@ -15,8 +15,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _MATRIX_H
+-#define _MATRIX_H
++#ifndef UTIL_MATRIX_H
++#define UTIL_MATRIX_H
+ 
+ #include "Exception.h"
+ #include "List.h"
+@@ -1183,6 +1183,8 @@
+ 		
+ 		Matrix<T> tmp(_iRows-1,_iColumns-1);
+ 		
++    int j,r,c;
++    
+ 		for (int i=j=r=c=0;i<_iRows;i++)
+ 			{
+ 				if (i==row)continue;
+diff -ru -ru cpplibs-0.2b-20031008_orig/util/MatrixCodec.h cpplibs-0.2b-20031008/util/MatrixCodec.h
+--- cpplibs-0.2b-20031008_orig/util/MatrixCodec.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/util/MatrixCodec.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _MATRIXCODEC_H
+-#define _MATRIXCODEC_H
++#ifndef UTIL_MATRIXCODEC_H
++#define UTIL_MATRIXCODEC_H
+ 
+ #include <fstream>
+ #include <string>
+diff -ru -ru cpplibs-0.2b-20031008_orig/util/MatrixUtils.h cpplibs-0.2b-20031008/util/MatrixUtils.h
+--- cpplibs-0.2b-20031008_orig/util/MatrixUtils.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/util/MatrixUtils.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _MATRIXUTILS_H
+-#define _MATRIXUTILS_H
++#ifndef UTIL_MATRIXUTILS_H
++#define UTIL_MATRIXUTILS_H
+ 
+ #include <Matrix.h>
+ 
+diff -ru -ru cpplibs-0.2b-20031008_orig/util/Mutex.h cpplibs-0.2b-20031008/util/Mutex.h
+--- cpplibs-0.2b-20031008_orig/util/Mutex.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/util/Mutex.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _MUTEX_H
+-#define _MUTEX_H
++#ifndef UTIL_MUTEX_H
++#define UTIL_MUTEX_H
+ 
+ #include "Exception.h"
+ #include <pthread.h>
+diff -ru -ru cpplibs-0.2b-20031008_orig/util/Number.h cpplibs-0.2b-20031008/util/Number.h
+--- cpplibs-0.2b-20031008_orig/util/Number.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/util/Number.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _NUMBER_H
+-#define _NUMBER_H
++#ifndef UTIL_NUMBER_H
++#define UTIL_NUMBER_H
+ 
+ #include "String.h"
+ #include "PrimitiveType.h"
+diff -ru -ru cpplibs-0.2b-20031008_orig/util/Object.cc cpplibs-0.2b-20031008/util/Object.cc
+--- cpplibs-0.2b-20031008_orig/util/Object.cc	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/util/Object.cc	2006-08-21 18:24:09.000000000 +0200
+@@ -15,6 +15,7 @@
+  *********************************************************************/
+ 
+ #include "Object.h"
++#define _LIST_INCLUDED_FROM_XMLPARSER_H
+ #include "Util.h"
+ #include "Exception.h"
+ 
+diff -ru -ru cpplibs-0.2b-20031008_orig/util/Object.h cpplibs-0.2b-20031008/util/Object.h
+--- cpplibs-0.2b-20031008_orig/util/Object.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/util/Object.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _OBJECT_H
+-#define _OBJECT_H
++#ifndef UTIL_OBJECT_H
++#define UTIL_OBJECT_H
+ 
+ #include <string>
+ 
+diff -ru -ru cpplibs-0.2b-20031008_orig/util/Pair.h cpplibs-0.2b-20031008/util/Pair.h
+--- cpplibs-0.2b-20031008_orig/util/Pair.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/util/Pair.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _PAIR_H
+-#define _PAIR_H
++#ifndef UTIL_PAIR_H
++#define UTIL_PAIR_H
+ 
+ #include "Object.h"
+ #include <iostream>
+diff -ru -ru cpplibs-0.2b-20031008_orig/util/PrimitiveType.h cpplibs-0.2b-20031008/util/PrimitiveType.h
+--- cpplibs-0.2b-20031008_orig/util/PrimitiveType.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/util/PrimitiveType.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _PRIMITIVETYPE_H
+-#define _PRIMITIVETYPE_H
++#ifndef UTIL_PRIMITIVETYPE_H
++#define UTIL_PRIMITIVETYPE_H
+ 
+ #include "Computable.h"
+ 
+diff -ru -ru cpplibs-0.2b-20031008_orig/util/Properties.cc cpplibs-0.2b-20031008/util/Properties.cc
+--- cpplibs-0.2b-20031008_orig/util/Properties.cc	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/util/Properties.cc	2006-08-21 18:24:09.000000000 +0200
+@@ -14,6 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
++#define _LIST_INCLUDED_FROM_STREAMTOKENIZER_H
++
+ #include "Properties.h"
+ 
+ #include <fstream>
+diff -ru -ru cpplibs-0.2b-20031008_orig/util/Properties.h cpplibs-0.2b-20031008/util/Properties.h
+--- cpplibs-0.2b-20031008_orig/util/Properties.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/util/Properties.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _PROPERTIES_H
+-#define _PROPERTIES_H
++#ifndef UTIL_PROPERTIES_H
++#define UTIL_PROPERTIES_H
+ 
+ #include "Hashtable.h"
+ #include "io/IO.h"
+diff -ru -ru cpplibs-0.2b-20031008_orig/util/Regex.h cpplibs-0.2b-20031008/util/Regex.h
+--- cpplibs-0.2b-20031008_orig/util/Regex.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/util/Regex.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _UTIL_REGEX_H
+-#define _UTIL_REGEX_H
++#ifndef UTIL_UTIL_REGEX_H
++#define UTIL_UTIL_REGEX_H
+ 
+ #include <string>
+ #include <List.h>
+diff -ru -ru cpplibs-0.2b-20031008_orig/util/Runnable.cc cpplibs-0.2b-20031008/util/Runnable.cc
+--- cpplibs-0.2b-20031008_orig/util/Runnable.cc	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/util/Runnable.cc	2006-08-21 18:24:09.000000000 +0200
+@@ -14,6 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
++#define _LIST_INCLUDED_FROM_STREAMTOKENIZER_H
++
+ #include "Runnable.h"
+ #include <pthread.h>
+ #include <iostream>
+diff -ru -ru cpplibs-0.2b-20031008_orig/util/Runnable.h cpplibs-0.2b-20031008/util/Runnable.h
+--- cpplibs-0.2b-20031008_orig/util/Runnable.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/util/Runnable.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _RUNNABLE_H
+-#define _RUNNABLE_H
++#ifndef UTIL_RUNNABLE_H
++#define UTIL_RUNNABLE_H
+ 
+ #ifndef _REENTRANT
+ #define _REENTRANT
+diff -ru -ru cpplibs-0.2b-20031008_orig/util/Serialization.cc cpplibs-0.2b-20031008/util/Serialization.cc
+--- cpplibs-0.2b-20031008_orig/util/Serialization.cc	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/util/Serialization.cc	2006-08-21 18:24:09.000000000 +0200
+@@ -14,6 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
++#define _LIST_INCLUDED_FROM_STREAMTOKENIZER_H
++
+ #include "Serialization.h"
+ 
+ #include "StreamTokenizer.h"
+diff -ru -ru cpplibs-0.2b-20031008_orig/util/Serialization.h cpplibs-0.2b-20031008/util/Serialization.h
+--- cpplibs-0.2b-20031008_orig/util/Serialization.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/util/Serialization.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _SERIALIZATION_H
+-#define _SERIALIZATION_H
++#ifndef UTIL_SERIALIZATION_H
++#define UTIL_SERIALIZATION_H
+ 
+ #include "io/IO.h"
+ #include "Hashtable.h"
+diff -ru -ru cpplibs-0.2b-20031008_orig/util/SignalHandler.h cpplibs-0.2b-20031008/util/SignalHandler.h
+--- cpplibs-0.2b-20031008_orig/util/SignalHandler.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/util/SignalHandler.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _SIGNALHANDLER_H
+-#define _SIGNALHANDLER_H
++#ifndef UTIL_SIGNALHANDLER_H
++#define UTIL_SIGNALHANDLER_H
+ 
+ #include "Runnable.h"
+ #include "Mutex.h"
+diff -ru -ru cpplibs-0.2b-20031008_orig/util/SmartPtr.h cpplibs-0.2b-20031008/util/SmartPtr.h
+--- cpplibs-0.2b-20031008_orig/util/SmartPtr.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/util/SmartPtr.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _SMARTPTR_H
+-#define _SMARTPTR_H
++#ifndef UTIL_SMARTPTR_H
++#define UTIL_SMARTPTR_H
+ 
+ #include "Object.h"
+ 
+diff -ru -ru cpplibs-0.2b-20031008_orig/util/SortedList.h cpplibs-0.2b-20031008/util/SortedList.h
+--- cpplibs-0.2b-20031008_orig/util/SortedList.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/util/SortedList.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _SORTEDLIST_H
+-#define _SORTEDLIST_H
++#ifndef UTIL_SORTEDLIST_H
++#define UTIL_SORTEDLIST_H
+ 
+ #include "List.h"
+ #include <values.h>
+@@ -97,33 +97,33 @@
+ 
+ 	template <class T, class comparator> void SortedList<T,comparator>::addElement(const T& element)
+ 	{
+-		int start=0,end=_iCurrentItems;
++		int start=0,end=List<T>::_iCurrentItems;
+ 		while(start<end)
+ 			{
+ 				int half = (start+end)>>1;
+-				if (_comparator(_internalArray[half],element))
++				if (_comparator(List<T>::_internalArray[half],element))
+ 					end = half;
+ 				else
+ 					start = half+1;
+ 			}
+ 		insertElementAt(element,start);
+-		//cerr << "Inserting " << element << " at " << start << ". Items: " << _iCurrentItems << endl;
+-		if (_iCurrentItems > _iMaximumSize)
+-			_iCurrentItems = _iMaximumSize;
++		//cerr << "Inserting " << element << " at " << start << ". Items: " << List<T>::_iCurrentItems << endl;
++		if (List<T>::_iCurrentItems > _iMaximumSize)
++			List<T>::_iCurrentItems = _iMaximumSize;
+ 	}
+ 
+ 	template <class T, class comparator> int SortedList<T,comparator>::indexOf(const T& element) const
+ 	{
+-		int start=0,end=_iCurrentItems;
++		int start=0,end=List<T>::_iCurrentItems;
+ 		while(start<end)
+ 			{
+ 				int half = (start+end)>>1;
+-				if (!_comparator(element,_internalArray[half]))
++				if (!_comparator(element,List<T>::_internalArray[half]))
+ 					end = half;
+ 				else
+ 					start = half+1;
+ 			}
+-		return ((end < _iCurrentItems) && (_internalArray[end] == element))? end : -1;
++		return ((end < List<T>::_iCurrentItems) && (List<T>::_internalArray[end] == element))? end : -1;
+ 	}
+ 
+ 	template <class T, class comparator> void SortedList<T,comparator>::setMaximumSize(int size)
+diff -ru -ru cpplibs-0.2b-20031008_orig/util/Stack.h cpplibs-0.2b-20031008/util/Stack.h
+--- cpplibs-0.2b-20031008_orig/util/Stack.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/util/Stack.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _STACK_H
+-#define _STACK_H
++#ifndef UTIL_STACK_H
++#define UTIL_STACK_H
+ 
+ namespace util
+ {
+diff -ru -ru cpplibs-0.2b-20031008_orig/util/StreamTokenizer.cc cpplibs-0.2b-20031008/util/StreamTokenizer.cc
+--- cpplibs-0.2b-20031008_orig/util/StreamTokenizer.cc	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/util/StreamTokenizer.cc	2006-08-21 18:24:09.000000000 +0200
+@@ -14,6 +14,9 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
++#define _LIST_INCLUDED_FROM_STREAMTOKENIZER_H
++
++
+ #include "StreamTokenizer.h"
+ #include <stdlib.h>
+ 
+diff -ru -ru cpplibs-0.2b-20031008_orig/util/StreamTokenizer.h cpplibs-0.2b-20031008/util/StreamTokenizer.h
+--- cpplibs-0.2b-20031008_orig/util/StreamTokenizer.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/util/StreamTokenizer.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _STREAMTOKENIZER_H
+-#define _STREAMTOKENIZER_H
++#ifndef UTIL_STREAMTOKENIZER_H
++#define UTIL_STREAMTOKENIZER_H
+ 
+ #include <iostream>
+ #include <string>
+diff -ru -ru cpplibs-0.2b-20031008_orig/util/String.h cpplibs-0.2b-20031008/util/String.h
+--- cpplibs-0.2b-20031008_orig/util/String.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/util/String.h	2006-08-22 09:18:24.000000000 +0200
+@@ -14,12 +14,14 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _STRINGUTIL_H
+-#define _STRINGUTIL_H
++#ifndef UTIL_STRINGUTIL_H
++#define UTIL_STRINGUTIL_H
+ 
+ namespace util { class String; }
+ 
++#define _LIST_INCLUDED_FROM_XMLPARSER_H
+ #include "List.h"
++#undef _LIST_INCLUDED_FROM_XMLPARSER_H
+ #include "Computable.h"
+ #include <string>
+ #include "Map.h"
+diff -ru -ru cpplibs-0.2b-20031008_orig/util/Timer.h cpplibs-0.2b-20031008/util/Timer.h
+--- cpplibs-0.2b-20031008_orig/util/Timer.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/util/Timer.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _TIMER_H
+-#define _TIMER_H
++#ifndef UTIL_TIMER_H
++#define UTIL_TIMER_H
+ 
+ #include <time.h>
+ #include "Object.h"
+diff -ru -ru cpplibs-0.2b-20031008_orig/util/Tree.h cpplibs-0.2b-20031008/util/Tree.h
+--- cpplibs-0.2b-20031008_orig/util/Tree.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/util/Tree.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _TREE_H
+-#define _TREE_H
++#ifndef UTIL_TREE_H
++#define UTIL_TREE_H
+ 
+ #include "List.h"
+ 
+diff -ru -ru cpplibs-0.2b-20031008_orig/util/Util.cc cpplibs-0.2b-20031008/util/Util.cc
+--- cpplibs-0.2b-20031008_orig/util/Util.cc	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/util/Util.cc	2006-08-21 18:24:09.000000000 +0200
+@@ -14,6 +14,7 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
++#define _LIST_INCLUDED_FROM_XMLPARSER_H
+ #include "Util.h"
+ 
+ #include "String.h"
+@@ -262,7 +263,7 @@
+ 	{
+ 		using namespace util::xml;
+ 		XMLParser parser;
+-		sin >> ws;
++		sin >> std::ws;
+ 		SmartPtr<Node> str(parser.readFragment(sin));
+ 		if (str.get())
+ 			{
+diff -ru -ru cpplibs-0.2b-20031008_orig/util/Util.h cpplibs-0.2b-20031008/util/Util.h
+--- cpplibs-0.2b-20031008_orig/util/Util.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/util/Util.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _UTIL_H
+-#define _UTIL_H
++#ifndef UTIL_UTIL_H
++#define UTIL_UTIL_H
+ 
+ namespace util { class Util; }
+ 
+diff -ru -ru cpplibs-0.2b-20031008_orig/util/io/File.h cpplibs-0.2b-20031008/util/io/File.h
+--- cpplibs-0.2b-20031008_orig/util/io/File.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/util/io/File.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _IO_FILE_H
+-#define _IO_FILE_H
++#ifndef UTIL_IO_FILE_H
++#define UTIL_IO_FILE_H
+ 
+ #include <sys/stat.h>
+ #include <string>
+diff -ru -ru cpplibs-0.2b-20031008_orig/util/io/GeneralFile.cc cpplibs-0.2b-20031008/util/io/GeneralFile.cc
+--- cpplibs-0.2b-20031008_orig/util/io/GeneralFile.cc	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/util/io/GeneralFile.cc	2006-08-21 18:24:09.000000000 +0200
+@@ -28,7 +28,7 @@
+ 				if (sent == -1)
+ 					throw IOException("Write: write failed");
+ 				sentTotal += sent;
+-				(char*)msg += sent;
++				msg += sent;
+ 				len -= sent;
+ 			}
+ 	}
+@@ -76,7 +76,7 @@
+ 				if (received == -1)
+ 					throw IOException("Read: read failed");
+ 				receivedTotal += received;
+-				(char*)start += received;
++				start += received;
+ 				readNext -= received;
+ 			}
+ 		return buf;
+diff -ru -ru cpplibs-0.2b-20031008_orig/util/io/GeneralFile.h cpplibs-0.2b-20031008/util/io/GeneralFile.h
+--- cpplibs-0.2b-20031008_orig/util/io/GeneralFile.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/util/io/GeneralFile.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _GENERALFILE_H
+-#define _GENERALFILE_H
++#ifndef UTIL_GENERALFILE_H
++#define UTIL_GENERALFILE_H
+ 
+ #include <stdio.h>
+ #include <unistd.h>
+diff -ru -ru cpplibs-0.2b-20031008_orig/util/io/IO.h cpplibs-0.2b-20031008/util/io/IO.h
+--- cpplibs-0.2b-20031008_orig/util/io/IO.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/util/io/IO.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _IO_H
+-#define _IO_H
++#ifndef UTIL_IO_H
++#define UTIL_IO_H
+ 
+ #include "../Exception.h"
+ 
+diff -ru -ru cpplibs-0.2b-20031008_orig/util/io/ListStream.h cpplibs-0.2b-20031008/util/io/ListStream.h
+--- cpplibs-0.2b-20031008_orig/util/io/ListStream.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/util/io/ListStream.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _LISTSTREAM_H
+-#define _LISTSTREAM_H
++#ifndef UTIL_LISTSTREAM_H
++#define UTIL_LISTSTREAM_H
+ 
+ #include <iostream>
+ #include "../List.h"
+diff -ru -ru cpplibs-0.2b-20031008_orig/util/io/LogFile.cc cpplibs-0.2b-20031008/util/io/LogFile.cc
+--- cpplibs-0.2b-20031008_orig/util/io/LogFile.cc	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/util/io/LogFile.cc	2006-08-21 18:24:09.000000000 +0200
+@@ -16,6 +16,7 @@
+ 
+ #include "LogFile.h"
+ #include "IO.h"
++#define _LIST_INCLUDED_FROM_XMLPARSER_H
+ #include "../Util.h"
+ 
+ #include <iostream>
+diff -ru -ru cpplibs-0.2b-20031008_orig/util/io/LogFile.h cpplibs-0.2b-20031008/util/io/LogFile.h
+--- cpplibs-0.2b-20031008_orig/util/io/LogFile.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/util/io/LogFile.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _LOGFILE_H
+-#define _LOGFILE_H
++#ifndef UTIL_LOGFILE_H
++#define UTIL_LOGFILE_H
+ 
+ #include <fstream>
+ #include <string>
+diff -ru -ru cpplibs-0.2b-20031008_orig/util/xml/XMLDocument.h cpplibs-0.2b-20031008/util/xml/XMLDocument.h
+--- cpplibs-0.2b-20031008_orig/util/xml/XMLDocument.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/util/xml/XMLDocument.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _XMLDOCUMENT_H
+-#define _XMLDOCUMENT_H
++#ifndef UTIL_XMLDOCUMENT_H
++#define UTIL_XMLDOCUMENT_H
+ 
+ #include <string>
+ #define _LIST_INCLUDED_FROM_XMLPARSER_H
+diff -ru -ru cpplibs-0.2b-20031008_orig/util/xml/XMLException.h cpplibs-0.2b-20031008/util/xml/XMLException.h
+--- cpplibs-0.2b-20031008_orig/util/xml/XMLException.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/util/xml/XMLException.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _XMLEXCEPTION_H
+-#define _XMLEXCEPTION_H
++#ifndef UTIL_XMLEXCEPTION_H
++#define UTIL_XMLEXCEPTION_H
+ 
+ #include <Exception.h>
+ 
+diff -ru -ru cpplibs-0.2b-20031008_orig/util/xml/XMLObject.h cpplibs-0.2b-20031008/util/xml/XMLObject.h
+--- cpplibs-0.2b-20031008_orig/util/xml/XMLObject.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/util/xml/XMLObject.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _XMLOBJECT_H
+-#define _XMLOBJECT_H
++#ifndef UTIL_XMLOBJECT_H
++#define UTIL_XMLOBJECT_H
+ 
+ #include "XMLDocument.h"
+ #include "XMLException.h"
+diff -ru -ru cpplibs-0.2b-20031008_orig/util/xml/XMLParser.h cpplibs-0.2b-20031008/util/xml/XMLParser.h
+--- cpplibs-0.2b-20031008_orig/util/xml/XMLParser.h	2006-08-21 18:35:14.000000000 +0200
++++ cpplibs-0.2b-20031008/util/xml/XMLParser.h	2006-08-21 18:24:09.000000000 +0200
+@@ -14,8 +14,8 @@
+  * $Revision: 1.1 $
+  *********************************************************************/
+ 
+-#ifndef _XMLPARSER_H
+-#define _XMLPARSER_H
++#ifndef UTIL_XMLPARSER_H
++#define UTIL_XMLPARSER_H
+ 
+ #include "XMLDocument.h"
+ #include "../StreamTokenizer.h"
+@@ -23,8 +23,12 @@
+ #include <string>
+ #include "XMLException.h"
+ 
++
+ namespace util { namespace xml {
+ 	
++  class Node;
++  class Document;
++  
+ 	/**
+ 	 * XMLParser is a class that can be used to parse XML documents. It
+ 	 * may be used in a streaming mode or as a DOM-like parser. The
+diff -ru -ru cpplibs-0.2b-20031008_orig/prapi/Makefile cpplibs-0.2b-20031008/prapi/Makefile
+--- cpplibs-0.2b-20031008_orig/prapi/Makefile	2006-08-22 10:17:02.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/Makefile	2006-08-22 10:21:25.000000000 +0200
+@@ -1,9 +1,10 @@
+ INCLUDEPATH     = -I../util
+ SUBDIRS         = texture color clustering binary transforms dsp ga extras graphics neuro
+ MODULEDIRS      = $(SUBDIRS)
+-PROGRAM         = libpr.so
++PROGRAM         = libcpp-pr.so
+ SO_VERSION      = 0.2.0
+ BASE            = ..
+ MAKEMODULES			= imagemagick
+ include $(BASE)/base.mk
+-CPPFLAGS				+= -DUSE_IMAGEMAGICK
++CPPFLAGS	     += -DUSE_IMAGEMAGICK
++SOFLAGS        += -L../util -lcpp-util /usr/local/lib/libX11.a /usr/local/lib/libXdmcp.a /usr/local/lib/libXau.a
+diff -ru -ru cpplibs-0.2b-20031008_orig/util/Makefile cpplibs-0.2b-20031008/util/Makefile
+--- cpplibs-0.2b-20031008_orig/util/Makefile	2006-08-22 10:17:01.000000000 +0200
++++ cpplibs-0.2b-20031008/util/Makefile	2006-08-22 10:20:16.000000000 +0200
+@@ -1,6 +1,7 @@
+-PROGRAM        = libutil.so
++PROGRAM        = libcpp-util.so
+ SUBDIRS        = xml io
+ MODULEDIRS     = $(SUBDIRS)
+ SO_VERSION     = 0.2.0
+ BASE           = ..
+ include $(BASE)/base.mk
++SOFLAGS       += -lrt
+diff -ru cpplibs-0.2b-20031008_orig/prapi/Makefile cpplibs-0.2b-20031008/prapi/Makefile
+--- cpplibs-0.2b-20031008_orig/prapi/Makefile	2008-07-14 01:32:50.000000000 +0200
++++ cpplibs-0.2b-20031008/prapi/Makefile	2008-07-14 01:33:42.000000000 +0200
+@@ -7,4 +7,4 @@
+ MAKEMODULES			= imagemagick
+ include $(BASE)/base.mk
+ CPPFLAGS	     += -DUSE_IMAGEMAGICK
+-SOFLAGS        += -L../util -lcpp-util /usr/local/lib/libX11.a /usr/local/lib/libXdmcp.a /usr/local/lib/libXau.a
++SOFLAGS        += -L../util -lcpp-util -lX11 -lXdmcp -lXau

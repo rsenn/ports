@@ -1,0 +1,26 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A suite of DVD and CD burning software.
+# URL: 
+# Maintainer: 
+# Depends on: 
+
+name=dvdrtools
+version=0.3.1
+release=1
+source=(http://www.sourcefiles.org/Multimedia/Video/Tools/dvdrtools-0.3.1.tar.bz2)
+
+build() 
+{
+  cd dvdrtools-$version
+  
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+  
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

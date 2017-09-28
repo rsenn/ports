@@ -1,0 +1,40 @@
+# $Id: Pkgfile,v 1.10 2007/05/10 16:59:30 roman Exp $
+#
+# Description: 
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=tuio-simulator
+version=1.3
+release=1
+source=($mirror_sf/reactivision/TUIO_Simulator-$version.zip)
+
+build()
+{
+  cd TUIO_Simulator
+
+  install -d $ROOT/share
+  install -m 644 TuioSimulator.jar $ROOT/share/TUIOSimulator.jar
+
+  rm -rf resources/.DS_Store
+  cp -rf resources $ROOT/share
+
+  install -d $ROOT/bin
+
+  cat >$ROOT/bin/$name <<EOF
+#!/bin/sh
+prefix="$prefix"
+
+cd \$prefix/share
+exec java -jar TUIOSimulator.jar "\$@"
+EOF
+  chmod 755 $ROOT/bin/$name
+
+  install -d $ROOT/share/doc/$name-$version
+  install -m 644 README.txt $ROOT/share/doc/$name-$version
+
+
+  copy_license "LICENSE.txt"
+}
+

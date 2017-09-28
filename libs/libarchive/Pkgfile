@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Libarchive is a programming library that can create and read several different streaming archive formats, including most popular tar variants, several cpio formats, and both BSD and GNU ar variants. It can also write shar archives and read ISO9660 CDROM images and ZIP archives. The bsdtar program is an implementation of tar(1) that is built on top of libarchive. It started as a test harness, but has grown into a feature-competitive replacement for GNU tar. The bsdcpio program is an implementation of cpio(1) that is built on top of libarchive.
+
+
+# URL: http://people.freebsd.org/~kientzle/libarchive/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libarchive
+version=2.5.4b
+release=1
+source=(http://people.freebsd.org/~kientzle/libarchive/src/libarchive-$version.tar.gz
+        libarchive-2.5.4b-regex.patch)
+
+build()
+{
+  cd libarchive-$version
+
+  patch -N -p1 -i $SRC/libarchive-2.5.4b-regex.patch
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

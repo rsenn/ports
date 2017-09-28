@@ -1,0 +1,23 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=dev86
+version=0.16.17
+release=1
+source=(http://homepage.ntlworld.com/robert.debath/dev86/Dev86src-$version.tar.gz)
+
+build()
+{
+  cd dev86-$version
+
+  mkdir -p lib
+
+  ln -sf rules.186 rules.286
+  ln -sf rules.186 lib/rules.286
+
+  make CC="gcc-2.95" CFLAGS="$CFLAGS"
+}

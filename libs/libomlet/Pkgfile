@@ -1,0 +1,43 @@
+# $Id: Pkgfile,v 1.1 2007/05/10 16:59:30 roman Exp $
+#
+# Description: Open Machine Learning Enhanced Toolkit
+# This package is part of FreeLing, an open source suite of language analyzers
+# URL: http://garraf.epsevg.upc.es/freeling/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libgcc1, libstdc++6
+
+name=libomlet
+version=0.98
+release=1
+source=(https://lafarga.cpl.upc.edu/frs/download.php/166/libomlet-$version.tar.gz
+        libomlet-0.98-libtool.patch
+        libomlet-0.98-c++0x.patch)
+
+build()
+{
+  cd libomlet-$version
+
+  patch -N -p1 -i $SRC/libomlet-0.98-libtool.patch
+  patch -N -p1 -i $SRC/libomlet-0.98-c++0x.patch
+
+  libtoolize --force --copy
+  aclocal --force
+  automake --force --copy --foreign --add-missing
+  aclocal --force
+  autoconf --force
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --${shared:=enable}-shared \
+      --${static:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/
+  cp -rf doc $ROOT/share/doc/libomlet
+
+  find $ROOT -name .svn -print0 | xargs -0 rm -rf
+}

@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A tool to detect CD/DVD types without mounting.
+#  cddetect detects the types of CDs and DVDs without mounting them. 
+#  It can detect audio, ISO, VCD, SVCD, DataDVD, and VideoDVD.
+#  .
+# URL: http://www.bellut.net/projects.html#cddetect
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=cddetect
+version=2.1
+release=1
+source=(http://www.bellut.net/files/cddetect-$version.tar.gz
+        cddetect-2.1-limits.patch)
+
+build() 
+{
+  patch -N -p0 -i cddetect-2.1-limits.patch
+
+  make -f Makefile
+
+  install -d $ROOT/bin
+  install -m 755 cddetect $ROOT/bin
+
+  install -d $ROOT/share/doc/cddetect
+  install -m 644 COPYING $ROOT/share/doc/cddetect
+}
+
+# EOF

@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An application which plays Tarot cards.
+#  xtarot is a program which tells your fortune with virtual Tarot
+#  cards. Three tarot spreads are available via a simple user interface.
+# URL: http://www.hawklord.uklinux.net/xtarot/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=xtarot
+version=1.0.3
+release=1
+source=(http://www.hawklord.uklinux.net/xtarot/xtarot-$version.tgz
+        http://www.hawklord.uklinux.net/xtarot/xtarot-resources.tgz
+        xtarot-1.0.3-font.patch)
+
+build()
+{
+  cd xtarot-$version
+
+  mv ../{cards,tdeck,README.resources} .
+
+  patch -N -p1 -i $SRC/xtarot-1.0.3-font.patch
+
+  sh configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

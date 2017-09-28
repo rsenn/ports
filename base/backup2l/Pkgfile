@@ -1,0 +1,57 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: A lightweight tar-based backup/restore tool.
+#  backup2l is a command line tool for generating, maintaining, and
+#  restoring backups on a mountable file system. The main design goals are
+#  low maintenance effort, efficiency, transparency, and robustness. In
+#  a default installation, backups are created autonomously by a cron
+#  script. It supports hierarchical differential backups with a user-
+#  specified number of levels and backups per level.
+# URL: http://backup2l.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: dietlibc
+
+name=backup2l
+version=1.4
+release=1
+source=($mirror_sf/backup2l/backup2l_$version.tar.gz
+        backup2l
+        backup2l.8
+        first-time.conf
+        backup2l.local.conf
+        backup2ljob)
+
+build()
+{
+#  cd backup2l-${version}
+
+  sed -i "s,/bin/bash,$prefix/bin/bash,g" backup2l
+
+  sed -i "/^BACKUP_DIR/ s,\".*\",\"${prefix%/*}/backup/files\",
+         /^UNCONFIGURED/ s,^,#," \
+    first-time.conf
+
+  install -d $ROOT/etc
+  install -m 644 first-time.conf $ROOT/etc/backup2l.conf
+
+  sed -ni ":lp
+         /^$/ { p; n; b lp }
+         /^#/ { p; n; b lp }
+         s,^,#, p" backup2l.local.conf
+
+  install -d $ROOT/local/config/backup2l
+  install -m 644 backup2l.local.conf $ROOT/local/config/backup2l/local.conf
+
+  install -d $ROOT/bin
+  install -m 755 $SRC/backup2l $ROOT/bin
+  install -m 755 $SRC/backup2ljob $ROOT/bin
+
+  install -d $ROOT/man/man8
+  install -m 644 $SRC/backup2l.8 $ROOT/man/man8
+}
+
+postmerge()
+{
+  crontab_add "0 0 * * * nice -n 19 backup2l" || echo "backup2l already in crontab"
+}
+

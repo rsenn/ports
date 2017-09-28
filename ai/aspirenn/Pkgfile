@@ -1,0 +1,37 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A C library with Python bindings to simulate spiking neural networks.
+#  ASpiReNN is a little C library (with Python bindings) which provides
+#  support for simple (leaky integrate-and-fire) spiking neural networks. It
+#  is primarily designed for highly recurrent networks, but it can also be
+#  used with multi-layer nets, though performance won't be the same. Though
+#  only Leaky integrate-and-fire (for the neurons) and Spike-Timing Dependent
+#  Plasticity (for learning rules) are currently implemented, adding new
+#  models shouldn't be too difficult.
+#  .
+# URL: http://neryel.nerim.net/nn/index.html
+# Maintainer:  Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=aspirenn
+version=0.0.1
+release=1
+source=(http://neryel.nerim.net/nn/dl/archives/aspirenn-$version.tar.gz)
+
+build()
+{
+  cd aspirenn-$version
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/aspirenn
+  install -m 644 COPYING INSTALL README $ROOT/share/doc/aspirenn/
+}
+
+# EOF

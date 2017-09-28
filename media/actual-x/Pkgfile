@@ -1,0 +1,36 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Allows broadcasters to use available sound-bits in their broadcasts.
+#  Actual-X is an online audio actuality search program that allows
+#  broadcasters to load, search by subject, audibly preview and if satisfied
+#  with a selection, copy a news actuality into an online networked
+#  digital system. Actual-X allows broadcaster to easily incorporate
+#  available digital audio sound-bits into the next broadcast. Actual-X
+#  tries to take a realistic view of the news workflow and the use of news
+#  actualities. Actual-X was developed under these workflow guidelines to
+#  make the use of audio cuts user friendly. Audio cuts on Actual-X average
+#  40-seconds in length though the program is not length restrictive, nor
+#  is it restrictive with regard to the number of cuts that can be archived
+#  in the system.
+#  .
+# URL: http://techweb.rfa.org/index.php?option=contenttask=viewid=87Itemid=115limit=1limitstart=5
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=actual-x
+version=0.6.1
+release=1
+source=(ftp://techweb.rfa.org/pub/r-boss/actual-x/actual-x-$version.tar.gz)
+
+build()
+{
+  cd actual-x-$version
+
+  install -d $ROOT/share/actual-x
+  cp -rf html/* $ROOT/share/actual-x
+
+  install -d $ROOT/share/doc/actual-x
+  install -m 644 AUTHORS COPYING README INSTALL $ROOT/share/doc/actual-x
+}
+
+# EOF

@@ -1,0 +1,216 @@
+# $Id: Pkgfile,v 1.2 2007/04/22 23:07:53 roman Exp $
+#
+# Description: gcc
+# URL: http://gcc.gnu.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=gcc
+version=4.2.4
+release=1
+source=($mirror_gnu/gcc/gcc-$version/gcc-$version.tar.bz2
+        #$mirror_gnu/gcc/gcc-$version/gcc-g++-$version.tar.bz2
+        #http://distfiles.gentoo.org/distfiles/gcc-4.2.3-patches-1.0.tar.bz2
+        http://mirror.switch.ch/mirror/gentoo/distfiles/gcc-4.2.4-patches-1.0.tar.bz2
+        gcc-4.2.3-nofixinc.patch
+        gcc-4.2.3-diet.patch
+        gcc-4.2.3-no-oldincdir.patch
+	gcc-4.0.2-softfloat.patch
+	gcc-spec-env.patch)
+
+build()
+{
+  cd ${srcdir=$SRC/gcc-$version}
+
+#  patch -N -p0 -i $SRC/gcc-4.2.2-config-gcc.patch
+
+  (echo "#!/bin/sh" && echo 'echo "$@"') >config.sub
+
+  patch -N -p1 -i $SRC/gcc-4.2.3-nofixinc.patch
+  patch -N -p1 -i $SRC/gcc-4.2.3-diet.patch
+  patch -N -p1 -i $SRC/gcc-4.2.3-no-oldincdir.patch
+
+  # Apply gentoo patchset
+  patch -N -p1 -i $SRC/patch/00_all_gcc-4.1-alpha-mieee-default.patch
+  patch -N -p1 -i $SRC/patch/00_all_gcc-trampolinewarn.patch
+  patch -N -p0 -i $SRC/patch/01_all_gcc4-ice-hack.patch
+  patch -N -p0 -i $SRC/patch/02_all_gcc4-ppc64-m32-m64-multilib-only.patch
+  patch -N -p0 -i $SRC/patch/03_all_gcc4-java-nomulti.patch
+  patch -N -p0 -i $SRC/patch/06_all_gcc4-slow-pthread-self.patch
+  patch -N -p0 -i $SRC/patch/08_all_gcc-4.1-cross-compile.patch
+  patch -N -p0 -i $SRC/patch/10_all_gcc4-libltdl-multilib.patch
+  patch -N -p0 -i $SRC/patch/11_all_gcc-netbsd-symbolic.patch
+  patch -N -p1 -i $SRC/patch/14_all_gcc-sparc64-bsd.patch
+  patch -N -p1 -i $SRC/patch/18_all_904-flatten-switch-stmt-00.patch
+  patch -N -p1 -i $SRC/patch/20_all_cris-dont-force-limits-header.patch
+  patch -N -p1 -i $SRC/patch/34_all_arm-bigendian.patch
+  patch -N -p0 -i $SRC/patch/35_all_gcc-arm-pragma-pack.patch
+  patch -N -p1 -i $SRC/patch/36_all_gcc-arm-pr30486.patch
+  patch -N -p1 -i $SRC/patch/51_all_gcc-3.4-libiberty-pic.patch
+  patch -N -p1 -i $SRC/patch/53_all_gcc4-superh-default-multilib.patch
+  patch -N -p1 -i $SRC/patch/54_all_300-libstdc++-pic.patch
+  patch -N -p1 -i $SRC/patch/56_all_gcc-4-pr32177.patch
+  patch -N -p1 -i $SRC/patch/59_all_gcc-4-pr32893.patch
+  patch -N -p0 -i $SRC/patch/61_all_gcc4-ia64-noteGNUstack.patch
+  patch -N -p0 -i $SRC/patch/62_all_gcc4-noteGNUstack.patch
+  patch -N -p1 -i $SRC/patch/74_all_sh-pr24836.patch
+  patch -N -p1 -i $SRC/patch/90_all_mips-add-march-r10k.patch
+  patch -N -p1 -i $SRC/patch/91_all_mips-ip28_cache_barriers-v4.patch
+  patch -N -p0 -i $SRC/patch/92_all_mips-pthread-with-shared.patch
+
+#  patch -N -p1 -i $SRC/gcc-4.0.2-softfloat.patch
+#  patch -N -p1 -i $SRC/gcc-spec-env.patch
+
+  # adjust directory layout
+  case $prefix,$target in
+
+    /usr,*diet*)
+      dietprefix="$prefix/lib/diet"
+      localstatedir="$dietprefix/var"
+      rtlibdir="$dietprefix/lib"
+      ;;
+
+    /usr,*)
+      localstatedir="/var"
+      rtlibdir="/lib"
+      ;;
+  esac
+
+  case $prefix in
+
+    /usr)
+      sysconfdir="/etc"
+      libexecdir="$prefix/lib"
+      ;;
+  esac
+
+  # change runtime linker
+  case $target in
+    *diet*)
+      sed -i -e "s,/lib/ld-linux.so.2,${rtlibdir=$prefix/lib}/libdl.so," \
+        gcc/config/i386/linux.h
+      ;;
+    *linux*)
+      sed -i -e "s,/lib/ld-linux.so.2,${rtlibdir=$prefix/lib}/ld-linux.so.2," \
+        gcc/config/i386/linux.h
+      ;;
+    *freebsd*)
+      sed -i -e '/FBSD_DYNAMIC_LINKER/ s,".*","'${rtlibdir=$prefix/lib}/ld-elf.so.1'",' \
+        gcc/config/freebsd-spec.h
+      ;;
+  esac
+
+  # Apply a sed  substitution that will suppress the installation of libiberty.a
+  # The version of libiberty.a provided by Binutils will be used instead:
+  sed -i 's/install_to_$(INSTALL_DEST) //' libiberty/Makefile.in
+
+  sed -i 's/^XCFLAGS =$/& -fomit-frame-pointer/' gcc/Makefile.in
+
+  # The fixincludes  script is known to occasionally erroneously attempt to "fix" the system
+  # headers installed so far. As the headers installed by GCC-4.2.3 and Glibc-2.7 are known
+  # to not require fixing, issue the following command to prevent the fixincludes script from
+  # running:
+  sed -i 's@\./fixinc\.sh@-c true@' gcc/Makefile.in
+
+#  cd ..
+
+  case $CXXFLAGS in
+    *-ggdb*) libstdcxx_debug="enable" ;;
+  esac
+
+  # Decide which languages to support
+  languages="all"
+
+  case $target in
+    *diet*) languages="c" shared="disable" static="enable" ;;
+  esac
+
+  # now configure in a separate build tree
+  builddir="$srcdir/build/$host"
+
+  rm -rf $builddir && mkdir -p $builddir && cd $builddir
+
+  # Reset arguments
+  set --
+
+  if test "$host" != "$target"
+  then
+    program_prefix="${target}-"
+
+    case "$host,$target" in
+      *diet*,*) program_prefix="${target##*-}" ;;
+      *,*diet*) program_prefix="diet-" ;;
+    esac
+
+    set -- "$@" \
+      --with-headers="${prefix%/$target}${target+/$target}/include" \
+      --with-libs="${prefix%/$target}${target+/$target}/lib"
+  fi
+
+#  case $host in
+#    *diet*) export LIBS="${LIBS:+$LIBS }-lcompat" ;;
+#  esac
+
+  $srcdir/configure \
+       --build="$build" \
+       --host="$host" \
+       ${target+--target="$target"} \
+       --prefix="$prefix" \
+       --infodir="$prefix/share/info" \
+       --mandir="$prefix/share/man" \
+       --libexecdir="${libexecdir:=$prefix/libexec}" \
+       --${shared:=enable}-shared \
+       ${static:+--${static:=disable}-static} \
+       --without-included-gettext \
+       --enable-threads="posix" \
+       --enable-tls \
+       --disable-rpath \
+       --enable-initfini-array \
+       --with-gnu-as \
+       --with-gnu-ld \
+       --with-demangler-in-ld \
+       --with-libiconv-prefix="$prefix" \
+       --with-libintl-prefix="$prefix" \
+       --with-long-double-128 \
+       ${multilib+--${multilib:-disable}-multilib} \
+       ${libstdcxx_debug+--${libstdcxx_debug:-disable}-libstdcxx-debug} \
+       ${libada+--${libada:-disable}-libada} \
+       ${libssp+--${libssp:-disable}-libssp} \
+       ${objc_gc+--${objc_gc:-disable}-objc-gc} \
+       --with-gc="page" \
+       ${gmp+--${gmp:-without}-gmp${gmp_dir+="$gmp_dir"}} \
+       ${mpfr:--with}-mpfr${mpfr+${mpfr_dir+="$mpfr_dir"}} \
+       --enable-languages="${languages-all}" \
+       --with-system-zlib \
+       --disable-bootstrap \
+       --with-gxx-include-dir="${includedir=$prefix/include}/c++/$version" \
+       --enable-clocale="gnu" \
+       --enable-checking="release" \
+       ${program_prefix+--program-prefix${program_prefix:+="$program_prefix"}} \
+       "$@"
+
+  make \
+     ${libstdcxx_debug+debug_builddir="."} \
+     DESTDIR="$PKG" \
+     all \
+     install
+
+  # remove duplicate binaries
+#  rm -f $ROOT/bin/gcc
+#  rm -f $ROOT/bin/$target-gcc-$version
+
+  # make symlinks instead
+#  ln -sf $target-gcc $ROOT/bin/gcc
+#  ln -sf $target-gcc $ROOT/bin/cc
+
+  cd $srcdir
+
+  rm -f \
+     $ROOT/bin/cc{,-${version%.*}} \
+     $ROOT/lib/libiberty.a \
+     $ROOT/share/info/dir
+
+#  chmod 644 $ROOT/lib/*.la || true
+
+  mv -vf $ROOT/lib/*.{a,so} $ROOT/lib/gcc/$target/$version || true
+}

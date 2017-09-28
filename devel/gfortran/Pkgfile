@@ -1,0 +1,163 @@
+# $Id: Pkgfile,v 1.6 2007/05/09 21:02:41 roman Exp $
+#
+# Description: GNU gfortran
+#  gfortran is a freely redistributable fortran compiler. It is part of gcc,
+#  the GNU compiler suite, and is currently part of that distribution.
+# URL: http://gcc.gnu.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=gfortran
+version=4.2.2
+release=1
+source=($mirror_gnu/gcc/gcc-$version/gcc-core-$version.tar.bz2
+        $mirror_gnu/gcc/gcc-$version/gcc-fortran-$version.tar.bz2
+        gcc-4.2.2-nofixinc.patch
+        gcc-4.1.0-path.patch
+        gcc-4.1.0-rpath.patch
+        gcc-4.1.0-cxxincludes.patch
+        gcc-4.1.1-libgcj-iconv.patch
+        gcc-4.1.1-rpathspec.patch
+        gcc-4.1.2-ssize-max.patch
+        fortran-gcc-4.2.2.patch)
+
+build()
+{
+  cd ${srcdir=$SRC/gcc-$version}
+
+
+  patch -N -p1 -i $SRC/gcc-4.2.2-nofixinc.patch
+
+
+#  patch -N -p1 -i $SRC/gcc-4.1.0-path.patch
+#  patch -N -p1 -i $SRC/gcc-4.1.0-rpath.patch
+#  patch -N -p1 -i $SRC/gcc-4.1.0-cxxincludes.patch
+#  patch -N -p1 -i $SRC/gcc-4.1.1-rpathspec.patch
+#  patch -N -p1 -i $SRC/gcc-4.1.2-ssize-max.patch
+#  cp -rf $srcdir ${srcdir}_orig
+  patch -N -p1 -i $SRC/fortran-gcc-4.2.2.patch
+
+#  return 0
+
+
+
+  case ${prefix=/usr} in
+    /usr) sysconfdir="/etc" localstatedir="/var" rootlibdir="/lib" ;;
+       *) sysconfdir="$prefix/etc" localstatedir="$prefix/var" rootlibdir="$prefix/lib" ;;
+  esac
+
+  # change runtime linker
+  case ${target=${host=${build=$(${CC-cc} -dumpmachine)}}} in
+    *linux*)
+      sed -i -e "s,/lib/ld-linux.so.2,$ROOTlibdir/ld-linux.so.2," gcc/config/i386/linux.h
+      ;;
+    *freebsd*)
+      sed -i -e '/FBSD_DYNAMIC_LINKER/ s,".*","'$prefix/lib/ld-elf.so.1'",' \
+        gcc/config/freebsd-spec.h
+      ;;
+  esac
+
+  cd ..
+
+  for binutil in as ld
+  do
+    for path in ${bindir="$prefix/bin"}/$target-$binutil \
+               $prefix/$target/bin/$binutil \
+               $bindir/$binutil
+    do
+      if test -e "$path"
+      then
+        eval ${binutil}_PATH='"$path"'
+        continue
+      fi
+    done
+  done
+
+  # now configure in a separate build tree
+  rm -rf ${builddir=$SRC/gcc-build-$version} && mkdir -p $builddir && cd $builddir
+
+  $SRC/gcc-$version/configure \
+      --build="$build" \
+      --host="$host" \
+      --target="$target" \
+      --prefix="$prefix" \
+      --sysconfdir="$sysconfdir" \
+      --localstatedir="$localstatedir" \
+      --libexecdir="$prefix/libexec" \
+      --with-local-prefix="$prefix" \
+      --disable-nls \
+      --without-included-gettext \
+      --enable-threads="posix" \
+      --with-tls \
+      --disable-rpath \
+      --${shared:=enable}-shared \
+      --${static:=enable}-shared \
+      --enable-languages="c,fortran" \
+      --with-ld="${ld_PATH=$prefix/$target/bin/ld}" \
+      --with-as="${as_PATH=$prefix/$target/bin/as}" \
+      --with-system-zlib \
+      --with-slibdir="$prefix/lib" \
+      --with-cpp-install-dir="$prefix/lib"
+
+  make \
+     DESTDIR="$PKG" \
+     LDFLAGS="$LDFLAGS" \
+     BUILD_LDFLAGS="$LDFLAGS" \
+     all \
+     install
+
+  # remove duplicate binaries
+  rm -f $ROOT/bin/{c,g}++
+  rm -f $ROOT/bin/gcc
+  rm -f $ROOT/bin/$target-c++
+  rm -f $ROOT/bin/$target-gcc-$version
+
+  # make symlinks instead
+  ln -s $target-g++ $ROOT/bin/$target-c++
+  ln -s $target-g++ $ROOT/bin/g++
+  ln -s $target-g++ $ROOT/bin/c++
+  ln -s $target-gcc $ROOT/bin/gcc
+  ln -s $target-gcc $ROOT/bin/cc
+
+  cd $srcdir
+
+  copy_license COPYING{,.LIB}
+
+  rm -f $ROOT/lib/*.so*
+  rm $ROOT/lib/libiberty.a
+
+  chmod 644 $ROOT/lib/*.la
+
+  rm -f $ROOT/info/dir
+
+  # remove basic gcc stuff
+  rm -f $ROOT/man/man1/{cpp,gcc,gcov}.1
+  rm -f $ROOT/man/man7/{fsf-funding,gfdl,gpl}.7
+  rm -rf $ROOT/info
+  rm -f $ROOT/include/mf-runtime.h
+  rm -f $ROOT/libexec/gcc/$target/$version/{cc1,collect2}
+  rm -rf $ROOT/lib{,exec}/gcc/$target/$version/{include,install-tools,*.o,lib{gcc,gcov}.a}
+  rm -f $ROOT/$target/lib/{libgcc.a,libgcc_eh.a,libgcov.a,crtbegin.o,crtbeginS.o,crtend.o,crtendS.o}
+  rm -f $ROOT/bin/{$target-gcc,gcov,gccbug,gcc,cpp,cc}
+  rm -f $ROOT/lib/lib{mudflap,ssp}*
+#  rm -rf $ROOT/lib/gcc/$target/$version/include/ssp
+  rm -f $ROOT/bin/*[cg]++
+  rm -rf $ROOT/lib/gcc
+
+  # remove stuff installed due to library-install-patch
+  rm -rf $ROOT/include/gcc
+  rm -rf $ROOT/lib/lib{cpp,backend}.a
+
+  # fortran stuff
+#  rm -f $ROOT/lib/libgfortran{,begin}.{,l}a
+#  rm -f $ROOT/bin/*gfortran
+#  rm -f $ROOT/libexec/gcc/$target/$version/f951
+#  rm -f $ROOT/man/man1/gfortran.1*
+
+  # symlinks
+  for path in $ROOT/bin/*
+  do
+    name=${path##*/}
+    ln -s $name $ROOT/bin/${name/fortran/77}
+  done
+}

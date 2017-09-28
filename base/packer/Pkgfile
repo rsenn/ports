@@ -1,0 +1,26 @@
+# $Id: Pkgfile 424 2008-08-10 01:52:57Z enki $
+#
+# Description: Packer automatically generates quality RPM, Debian, Slackware,
+# and Autopackage packages based on answers to its questions. Unlike similar
+# tools, the quality of its packages are comparable to packages that are
+# hand-coded.
+# URL: http://packer.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=packer
+version=0.1.5
+release=1
+source=($mirror_sf/packer/packer-$version.tar.bz2)
+
+build()
+{
+  cd packer-$version
+
+  sed -i 's,/usr,$(prefix),g' Makefile
+
+  install -d $ROOT/bin
+  install -d $ROOT/share/man/man1
+
+  make DESTDIR="$PKG" prefix="$prefix" install
+}

@@ -1,0 +1,35 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A text-mode window manager and terminal emulator.
+#  Twin is a text-mode window environment. It turns a text terminal into
+#  a X11-style display with window manager, terminal windows, and can also
+#  serve as display for remote applications. Each terminal window provides
+#  the functions of a text-mode Linux console. Twin runs on X11, libggi,
+#  itself, the Linux console, and any termcap/ncurses-compatible tty. It
+#  supports multiple simultaneous displays, and can attach/detach each
+#  display on the fly.
+#  .
+# URL: http://sourceforge.net/projects/twin/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=twin
+version=0.6.0
+release=1
+source=($mirror_sf/twin/twin-$version.tar.gz)
+
+build()
+{
+  cd twin-$version
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+
+  make ECHO_E="echo"
+  make DESTDIR="$PKG" install
+}
+
+# EOF

@@ -1,0 +1,24 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: bicl is a tool for editing the builtin command line boot
+# arguments in binary files like the PPC64 Linux compressed kernel image
+# and the PPC64 Xen compressed hypervisor boot image.
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=bicl
+version=1.0
+release=1
+source=(http://www.cs.unm.edu/~k42/tools/bicl/bicl.tar.gz)
+
+build()
+{
+  cd bicl
+
+  install -d $ROOT/share/doc/bicl-$version
+  install -m 644 README $ROOT/share/doc/bicl-$version
+
+  install -d $ROOT/bin
+  install -m 755 bicl $ROOT/bin
+}

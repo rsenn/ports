@@ -1,0 +1,27 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: BTTV capture program.
+# URL: http://frost.htu.tuwien.ac.at/~roman/nuppelvideo/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=nuppelvideo
+version=0.52a
+release=1
+source=($mirror_gentoo/NuppelVideo-$version.tar.gz
+        nuppelvideo-0.52a-fixes-2.patch)
+
+build() 
+{
+  cd NuppelVideo-$version
+
+  patch -N -p1 -i $SRC/nuppelvideo-0.52a-fixes-2.patch
+  
+  make
+  make DESTDIR="$PKG" PREFIX="$prefix" install
+
+  install -d $ROOT/share/doc/nuppelvideo
+  install -m 644 LICENSE* README* $ROOT/share/doc/nuppelvideo
+}
+
+# EOF

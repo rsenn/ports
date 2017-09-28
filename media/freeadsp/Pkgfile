@@ -1,0 +1,27 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Audio-oriented, real-time, cross-platform DSP software.
+#  FreeADSP is audio-oriented, real-time, cross-platform DSP software
+#  heavily relying on external plugins for I/O, UI, and effects.
+# URL: http://freeadsp.sourceforge.net
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=freeadsp
+version=0.0.2
+release=1
+source=($mirror_sf/freeadsp/freeadsp-$version.tar.bz2)
+
+build()
+{
+  cd freeadsp-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

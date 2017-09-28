@@ -1,0 +1,25 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: 
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=newt
+version=0.51.6
+release=1
+source=(http://distfiles.gentoo.org/distfiles/newt-$version.tar.gz)
+
+build()
+{
+  cd newt-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make prefix="$ROOT" install
+}

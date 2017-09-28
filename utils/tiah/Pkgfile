@@ -1,0 +1,32 @@
+# $Id: Pkgfile,v 1.11 2007/04/22 23:07:53 roman Exp $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=tiah
+version=05b
+release=1
+source=(http://kawomi.tripod.com/tiah/tiah$version.tar.bz2
+        tiah05b-link.patch)
+
+build()
+{
+  cd tiah$version
+
+  patch -N -p3 -i $SRC/tiah05b-link.patch
+
+  make LDFLAGS="-static" LIBS="-lncurses -lterminfo"
+
+  install -d $ROOT/{bin,man/man1,share/doc/$name$version}
+
+  make \
+       INSTPATH="$ROOT/bin" \
+       MANPATH="$ROOT/man/man1" \
+       DOCPATH="$ROOT/share/doc/$name$version" \
+    install
+
+#  install -d $ROOT/bin
+#  install -m 755 tiah $ROOT/bin
+}

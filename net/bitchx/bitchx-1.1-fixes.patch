@@ -1,0 +1,144 @@
+diff -r -u -- BitchX_orig/include/ircaux.h BitchX/include/ircaux.h
+--- BitchX_orig/include/ircaux.h	2007-05-15 11:45:03.000000000 +0200
++++ BitchX/include/ircaux.h	2007-05-15 11:47:07.000000000 +0200
+@@ -252,7 +252,7 @@
+ #define SAFE(x) (((x) && *(x)) ? (x) : empty_string)
+ 
+ /* Used in compat.c */
+-#ifndef HAVE_TPARM
++#if 0
+ 	char 	*tparm (const char *, ...);
+ #endif
+ 
+Only in BitchX/source: BitchX
+diff -r -u -- BitchX_orig/source/ctcp.c BitchX/source/ctcp.c
+--- BitchX_orig/source/ctcp.c	2007-05-15 11:45:03.000000000 +0200
++++ BitchX/source/ctcp.c	2007-05-15 11:45:22.000000000 +0200
+@@ -176,7 +176,7 @@
+ 
+ /* CDE do ops and unban logging */
+ 
+-static char	*ctcp_type[] =
++char	*ctcp_type[] =
+ {
+ 	"PRIVMSG",
+ 	"NOTICE"
+Only in BitchX/source: scr-bx
+Only in BitchX/source: sterm.c
+diff -r -u -- BitchX_orig/source/term.c BitchX/source/term.c
+--- BitchX_orig/source/term.c	2007-05-15 11:45:03.000000000 +0200
++++ BitchX/source/term.c	2007-05-15 11:46:53.000000000 +0200
+@@ -92,7 +92,7 @@
+ #endif
+ 
+ extern  char    *getenv();
+-extern	char	*tparm();
++/*extern	char	*tparm(const char *, ...);*/
+ 
+ /*
+  * The old code assumed termcap. termcap is almost always present, but on
+diff -r -u -- BitchX_orig/source/timer.c BitchX/source/timer.c
+--- BitchX_orig/source/timer.c	2007-05-15 11:45:03.000000000 +0200
++++ BitchX/source/timer.c	2007-05-15 11:56:31.000000000 +0200
+@@ -148,7 +148,7 @@
+  * This is put here on purpose -- we dont want any of the above functions
+  * to have any knowledge of this struct.
+  */
+-static TimerList *PendingTimers;
++/*static*/ TimerList *PendingTimers;
+ static char *schedule_timer (TimerList *ntimer);
+ 
+ static char *current_exec_timer = empty_string;
+Only in BitchX/source: wnetwork.c
+Only in BitchX/source: wserv
+Only in BitchX/source: wterm.c
+Only in BitchX/dll/aim: aim.so
+diff -r -u -- BitchX_orig/dll/aim/toc/server.c BitchX/dll/aim/toc/server.c
+--- BitchX_orig/dll/aim/toc/server.c	2007-05-15 12:02:14.000000000 +0200
++++ BitchX/dll/aim/toc/server.c	2007-05-15 12:02:57.000000000 +0200
+@@ -7,14 +7,14 @@
+ #include <unistd.h>
+ #include "toc.h"
+ 
+-static time_t lastsent = 0;
++/*static*/ time_t lastsent = 0;
+ time_t login_time = 0;
+ int my_evil;
+ int is_idle = 0;
+ int lag_ms = 0;
+ int time_to_idle = 600;
+ int is_away = 0;
+-static struct timeval lag_tv;
++/*static*/ struct timeval lag_tv;
+ 
+ void serv_add_buddy(char *name)
+ {
+diff -r -u -- BitchX_orig/dll/aim/toc/toc.c BitchX/dll/aim/toc/toc.c
+--- BitchX_orig/dll/aim/toc/toc.c	2007-05-15 12:02:14.000000000 +0200
++++ BitchX/dll/aim/toc/toc.c	2007-05-15 12:02:40.000000000 +0200
+@@ -39,9 +39,9 @@
+ #include "toc.h"
+ 
+ /* descriptor for talking to TOC */
+-static int toc_fd;
+-static int seqno;
+-static unsigned int peer_ver=0;
++/*static*/ int toc_fd;
++/*static*/ int seqno;
++/*static*/ unsigned int peer_ver=0;
+ int state;
+ /* static int inpa=-1; */
+ int permdeny = PERMIT_PERMITALL;
+Only in BitchX/dll/arcfour: arcfour.so
+Only in BitchX/dll/autocycle: autocycle.so
+Only in BitchX/dll/blowfish: blowfish.so
+Only in BitchX/dll/cavlink: cavlink.so
+Only in BitchX/dll/encrypt: encrypt.so
+Only in BitchX/dll/europa: europa.so
+Only in BitchX/dll/fserv: fserv.so
+Only in BitchX/dll/hint: hint.so
+Only in BitchX/dll/identd: identd.so
+Only in BitchX/dll/nap: nap.so
+Only in BitchX/dll/pkga: pkga.so
+Only in BitchX/dll/possum: possum.so
+Only in BitchX/dll/qbx: qbx.so
+Only in BitchX/dll/qmail: qmail.so
+Only in BitchX/dll/scan: scan.so
+Only in BitchX/dll/wavplay: wavplay.so
+diff -r -u -- BitchX_orig/include/modval.h BitchX/include/modval.h
+--- BitchX_orig/include/modval.h	2007-05-15 12:02:15.000000000 +0200
++++ BitchX/include/modval.h	2007-05-15 12:04:14.000000000 +0200
+@@ -650,7 +650,7 @@
+ #define start_time ((time_t) *((time_t *)global[START_TIME]))
+ #define idle_time() ((time_t) *((time_t *)global[IDLE_TIME]()))
+ 
+-#define loading_global ((int) *((int *)global[LOADING_GLOBAL]))
++#define loading_global (/*(int)*/ *((int *)global[LOADING_GLOBAL]))
+ #define target_window (*((Window **)global[TARGET_WINDOW]))
+ #define current_window (*((Window **)global[CURRENT_WINDOW]))
+ #define invisible_list (*((Window **)global[INVISIBLE_LIST]))
+@@ -669,7 +669,7 @@
+ #define status_update_flag ((int) *((int *)global[STATUS_UPDATE_FLAG]))
+ #define tabkey_array (*((NickTab **)global[TABKEY_ARRAY]))
+ #define autoreply_array (*((NickTab *)global[AUTOREPLY_ARRAY]))
+-#define identd ((int) *((int *)global[IDENTD_SOCKET]))
++#define identd (/*(int)*/ *((int *)global[IDENTD_SOCKET]))
+ #define doing_notice ((int) *((int *)global[DOING_NOTICE]))
+ #define last_sent_msg_body (*((char **)global[LAST_SENT_MSG_BODY]))
+ #define sent_nick (*((char **)global[SENT_NICK]))
+diff -r -u -- BitchX_orig/configure BitchX/configure
+--- BitchX_orig/configure	2007-05-15 12:56:44.000000000 +0200
++++ BitchX/configure	2007-05-15 12:56:54.000000000 +0200
+@@ -14776,9 +14776,9 @@
+ 
+ 
+ 
+-if test x"$GCC" = x"yes" -a -z "`echo "$CFLAGS" | grep \\\-Wall`"; then
+-  CFLAGS="$CFLAGS -Wall"
+-fi
++#if test x"$GCC" = x"yes" -a -z "`echo "$CFLAGS" | grep \\\-Wall`"; then
++#  CFLAGS="$CFLAGS -Wall"
++#fi
+ 
+ LIBS="`echo "$LIBS" | sed -e 's/-rdynamic//g'`"
+ 

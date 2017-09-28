@@ -1,0 +1,34 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Avahi is a system which facilitates service discovery on a local network. This means that you can plug your laptop or computer into a network and instantly be able to view other people who you can chat with, find printers to print to or find files being shared.
+# URL: http://avahi.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=avahi
+version=0.6.22
+release=1
+source=(http://avahi.org/download/avahi-0.6.22.tar.gz)
+
+build()
+{
+  cd avahi-$version
+
+  case $prefix in
+    "/usr") sysconfdir="/etc" localstatedir="/var" ;;
+  esac
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix" \
+       --sysconfdir="${sysconfdir=$prefix/etc}" \
+       --localstatedir="${localstatedir=$prefix/var}" \
+       --disable-pygtk \
+       --enable-python-dbus \
+       --disable-mono
+
+  make
+  make DESTDIR="$PKG" install
+}

@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: X11 Video Mode extension wire protocol
+#  This package provides development headers describing the wire protocol
+#  for the XFree86-VidMode extension, which provides access to detailed
+#  timings of video modes currently in use, and a means to modify them.
+#  This package is built from the X.org xf86vidmodeproto proto module.
+# URL: http://www.X.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=xf86vidmodeproto
+version=2.2.2
+release=1
+source=(ftp://ftp.x.org/pub/individual/proto/xf86vidmodeproto-$version.tar.bz2)
+
+build()
+{
+  cd xf86vidmodeproto-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

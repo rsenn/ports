@@ -1,0 +1,33 @@
+# $Id: Pkgfile,v 1.10 2007/05/10 16:59:30 roman Exp $
+#
+# Description: Live looping tool.
+#  FreeWheeling is an audio tool for live looping. It provides a highly
+#  configurable, fluid user interface for instrumentalists to capture
+#  loops in real-time. FreeWheeling runs under Linux (PC/Mac) and Mac OS X
+#  (PPC/Intel).
+# URL: http://freewheeling.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=fweelin
+version=0.6
+release=1
+source=($mirror_sf/freewheeling/fweelin-$version-src.tar.bz2)
+
+build()
+{
+  cd fweelin-$version
+
+  ./configure \
+        --build="$build" \
+        --host="$host" \
+        --prefix="$prefix" \
+        --x-includes="$prefix/include" \
+        --x-libraries="$prefix/lib"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/fweelin
+  cp -r examples scripts $ROOT/share/fweelin
+}

@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A simple live looping program.
+# URL: 
+# Maintainer: 
+# Depends on: 
+
+name=miniloop
+version=0.0
+release=1
+source=(http://miniloop.googlecode.com/files/miniloop-$version.zip
+        miniloop-0.0-cstring.patch)
+
+build() 
+{
+  cd miniloop-$version
+
+  patch -p1 -i $SRC/miniloop-0.0-cstring.patch
+  
+  make
+
+  install -d $ROOT/bin
+  install -m 755 miniloop $ROOT/bin
+
+  install -d $ROOT/share/doc/miniloop
+  install -m 644 TODO README variable-speed.txt $ROOT/share/doc/miniloop
+}
+
+# EOF

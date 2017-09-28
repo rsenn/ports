@@ -1,0 +1,27 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Iostat - Linux I/O performance monitoring utility
+# URL: 
+# Maintainer: 
+# Depends on: 
+
+name=iostat
+version=2.2
+release=1
+source=(http://www.linuxinsight.com/files/iostat-$version.tar.gz
+        iostat-2.2-destdir.patch)
+
+build() 
+{
+  cd iostat-$version
+
+  patch -p1 -i $SRC/iostat-2.2-destdir.patch
+  
+  make
+  make PREFIX="$ROOT" install
+
+  install -d $ROOT/share/doc/iostat
+  install -m 644 LICENSE INSTALL README $ROOT/share/doc/iostat
+}
+
+# EOF

@@ -1,0 +1,26 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: HTTP and SOCKS
+# URL: 
+# Maintainer: 
+# Depends on: 
+
+name=proxychains
+version=3.1
+release=1
+source=(ftp://heanet.dl.sourceforge.net/mirrors/sourceforge/p/project/pr/proxychains/proxychains/version%203.1/proxychains-3.1.tar.gz)
+
+build() 
+{
+  cd proxychains-3.1
+  
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+  
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

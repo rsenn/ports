@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: The next generation of aircrack.
+#  aircrack-ng is a set of tools for auditing wireless networks. It's an
+#  enhanced/reborn version of aircrack. It consists of airodump (an 802.11
+#  packet capture program), aireplay (an 802.11 packet injection program),
+#  aircrack (static WEP and WPA-PSK cracking), airdecap (decrypts WEP/WPA
+#  capture files), and some tools to handle capture files (merge, convert,
+#  etc.).
+#  .
+# URL: http://www.aircrack-ng.org
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=aircrack-ng
+version=1.0-rc3
+release=1
+source=(http://download.aircrack-ng.org/aircrack-ng-$version.tar.gz)
+
+build()
+{
+  cd aircrack-ng-$version
+
+  export CFLAGS
+
+  make CC="${CC-gcc} " #OPTFLAGS="${CFLAGS--g -O2}" 
+  make prefix="$ROOT" mandir="$ROOT/share/man" install
+
+  install -d $ROOT/share/doc/aircrack-ng
+  install -m 644 ChangeLog LICENSE AUTHORS VERSION LICENSE.OpenSSL README INSTALLING $ROOT/share/doc/aircrack-ng
+}
+
+# EOF

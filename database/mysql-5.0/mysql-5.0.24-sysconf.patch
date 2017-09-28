@@ -1,0 +1,55 @@
+diff -ru -ru mysql-5.0.24_orig/libmysql/Makefile.in mysql-5.0.24/libmysql/Makefile.in
+--- mysql-5.0.24_orig/libmysql/Makefile.in	2006-10-05 14:59:14.000000000 +0200
++++ mysql-5.0.24/libmysql/Makefile.in	2006-10-05 14:59:40.000000000 +0200
+@@ -239,7 +239,8 @@
+ 			-DDEFAULT_HOME_ENV=MYSQL_HOME \
+ 			-DDEFAULT_GROUP_SUFFIX_ENV=MYSQL_GROUP_SUFFIX \
+ 			-DDEFAULT_SYSCONFDIR="\"$(sysconfdir)\"" \
+-			-DSHAREDIR="\"$(MYSQLSHAREdir)\"" $(target_defs)
++			-DSHAREDIR="\"$(MYSQLSHAREdir)\"" \
++      -DSYSCONFDIR="\"$(sysconfdir)\"" $(target_defs)
+ 
+ DEPDIR = @DEPDIR@
+ DOT_FRM_VERSION = @DOT_FRM_VERSION@
+diff -ru -ru mysql-5.0.24_orig/libmysql_r/Makefile.in mysql-5.0.24/libmysql_r/Makefile.in
+--- mysql-5.0.24_orig/libmysql_r/Makefile.in	2006-10-05 14:59:14.000000000 +0200
++++ mysql-5.0.24/libmysql_r/Makefile.in	2006-10-05 15:00:54.000000000 +0200
+@@ -236,7 +236,9 @@
+ 			-DDEFAULT_HOME_ENV=MYSQL_HOME \
+ 			-DDEFAULT_GROUP_SUFFIX_ENV=MYSQL_GROUP_SUFFIX \
+ 			-DDEFAULT_SYSCONFDIR="\"$(sysconfdir)\"" \
+-			-DSHAREDIR="\"$(MYSQLSHAREdir)\"" $(target_defs)
++			-DSHAREDIR="\"$(MYSQLSHAREdir)\"" \
++      -DSYSCONFDIR="\"$(sysconfdir)\"" \
++      $(target_defs)
+ 
+ DEPDIR = @DEPDIR@
+ DOT_FRM_VERSION = @DOT_FRM_VERSION@
+diff -ru -ru mysql-5.0.24_orig/mysys/Makefile.in mysql-5.0.24/mysys/Makefile.in
+--- mysql-5.0.24_orig/mysys/Makefile.in	2006-10-05 14:59:14.000000000 +0200
++++ mysql-5.0.24/mysys/Makefile.in	2006-10-05 15:00:22.000000000 +0200
+@@ -134,10 +134,10 @@
+ depcomp = $(SHELL) $(top_srcdir)/depcomp
+ am__depfiles_maybe = depfiles
+ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
+-	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
++	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -DSYSCONFDIR=\"$(sysconfdir)\"
+ LTCOMPILE = $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) \
+ 	$(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) \
+-	$(AM_CFLAGS) $(CFLAGS)
++	$(AM_CFLAGS) $(CFLAGS) -DSYSCONFDIR=\"$(sysconfdir)\"
+ CCLD = $(CC)
+ LINK = $(LIBTOOL) --tag=CC --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+ 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
+diff -ru -ru mysql-5.0.24_orig/mysys/default.c mysql-5.0.24/mysys/default.c
+--- mysql-5.0.24_orig/mysys/default.c	2006-10-05 14:59:14.000000000 +0200
++++ mysql-5.0.24/mysys/default.c	2006-10-05 14:56:12.000000000 +0200
+@@ -1007,7 +1007,7 @@
+   if ((env= getenv("ETC")))
+     *ptr++= env;
+ #endif
+-  *ptr++= "/etc/";
++  *ptr++= SYSCONFDIR"/";
+ #endif
+   if ((env= getenv(STRINGIFY_ARG(DEFAULT_HOME_ENV))))
+     *ptr++= env;

@@ -1,0 +1,158 @@
+Only in Particle221Src/DMcTools/Half: half.o
+Only in Particle221Src/DMcTools/Image: Bmp.o
+Only in Particle221Src/DMcTools/Image: Filter.o
+Only in Particle221Src/DMcTools/Image: Gif.o
+Only in Particle221Src/DMcTools/Image: ImageAlgorithms.o
+Only in Particle221Src/DMcTools/Image: ImageLoadSave.o
+Only in Particle221Src/DMcTools/Image: Quant.o
+Only in Particle221Src/DMcTools/Image: RGBEio.o
+Only in Particle221Src/DMcTools/Image: Targa.o
+Only in Particle221Src/DMcTools/Image: tLoadSave.o
+Only in Particle221Src/DMcTools: Makefile.deps
+Only in Particle221Src/DMcTools: Makefile.deps.bak
+diff -ru Particle221Src_orig/DMcTools/Makefile.std Particle221Src/DMcTools/Makefile.std
+--- Particle221Src_orig/DMcTools/Makefile.std	2009-02-28 11:58:56.000000000 +0100
++++ Particle221Src/DMcTools/Makefile.std	2009-02-28 12:07:53.000000000 +0100
+@@ -72,9 +72,9 @@
+ 	$(CC) $(CFLAGS) $(EXEOBJS) $(EXELIBS) -o $@
+ 
+ # make depend
+-Makefile.deps Depend depend :
+-	@touch Makefile.deps
+-	makedepend -fMakefile.deps -- $(CFLAGS) -- $(SRCS)
++#Makefile.deps Depend depend :
++#	@touch Makefile.deps
++#	makedepend -fMakefile.deps -- $(CFLAGS) -- $(SRCS)
+ 
+ Clean clean:
+ 	rm -f *.o $(ALL) $(LIBOBJS) $(TRASH) Makefile.deps *.a *~ *.bak #*# tags TAGS core
+Only in Particle221Src/DMcTools/Math: CatmullRomSpline.o
+Only in Particle221Src/DMcTools/Math: DownSimplex.o
+Only in Particle221Src/DMcTools/Math: HVector.o
+Only in Particle221Src/DMcTools/Math: HermiteSpline.o
+Only in Particle221Src/DMcTools/Math: Matrix44.o
+Only in Particle221Src/DMcTools/Math: Perlin.o
+Only in Particle221Src/DMcTools/Math: Quadric.o
+Only in Particle221Src/DMcTools/Model: BisonMe.o
+Only in Particle221Src/DMcTools/Model: Camera.o
+Only in Particle221Src/DMcTools/Model: LoadOBJ.o
+Only in Particle221Src/DMcTools/Model: LoadVRML.o
+Only in Particle221Src/DMcTools/Model: Mesh.o
+Only in Particle221Src/DMcTools/Model: Model.o
+Only in Particle221Src/DMcTools/Model: RenderObject.o
+Only in Particle221Src/DMcTools/Model: SaveOBJ.o
+Only in Particle221Src/DMcTools/Model: SaveVRML.o
+Only in Particle221Src/DMcTools/Model: TextureDB.o
+Only in Particle221Src/DMcTools/Model: TriObject.o
+Only in Particle221Src/DMcTools/Util: Timer.o
+Only in Particle221Src/DMcTools/Util: Utils.o
+Only in Particle221Src/DMcTools: libDMcTools.a
+diff -ru Particle221Src_orig/DMcTools/makefile Particle221Src/DMcTools/makefile
+--- Particle221Src_orig/DMcTools/makefile	2009-02-28 11:58:56.000000000 +0100
++++ Particle221Src/DMcTools/makefile	2009-02-28 12:09:36.000000000 +0100
+@@ -10,12 +10,12 @@
+ INSTALL_LIB_DIR =
+ INSTALL_EXE_DIR = ./bin
+ INSTALL_HEADER_DIR =
+-GCCPATH = /home/utils/gcc-4.3.2
++GCCPATH = /usr
+ 
+ #########################################################
+ # FILES
+ 
+-LIB	= Release_i686/libDMcTools.a
++LIB	= libDMcTools.a
+ LIBSRCS	= Half/half.cpp Image/Bmp.cpp Image/Filter.cpp Image/Gif.cpp Image/ImageAlgorithms.cpp Image/ImageLoadSave.cpp Image/tLoadSave.cpp Image/Quant.cpp Image/RGBEio.cpp Image/Targa.cpp Math/CatmullRomSpline.cpp Math/DownSimplex.cpp Math/HVector.cpp Math/HermiteSpline.cpp Math/Matrix44.cpp Math/Perlin.cpp Math/Quadric.cpp Model/BisonMe.cpp Model/Camera.cpp Model/LoadOBJ.cpp Model/LoadVRML.cpp Model/Mesh.cpp Model/Model.cpp Model/RenderObject.cpp Model/SaveOBJ.cpp Model/SaveVRML.cpp Model/TextureDB.cpp Model/TriObject.cpp Util/Timer.cpp Util/Utils.cpp
+ LIBOBJS = $(LIBSRCS:.cpp=.o)
+ 
+Only in Particle221Src/Particle2/Example: Example.o
+Only in Particle221Src/Particle2/Example: example
+Only in Particle221Src/Particle2/ParBench: Effects.o
+diff -ru Particle221Src_orig/Particle2/ParBench/Makefile Particle221Src/Particle2/ParBench/Makefile
+--- Particle221Src_orig/Particle2/ParBench/Makefile	2009-02-28 11:58:56.000000000 +0100
++++ Particle221Src/Particle2/ParBench/Makefile	2009-02-28 12:10:24.000000000 +0100
+@@ -14,8 +14,8 @@
+ 
+ CFLAGS = -DNO_OGL_OBSTACLES $(COPT) $(COMPFLAGS) -I. -I$(PHOME) -I$(DMCTOOLS_HOME)
+ 
+-LIBDIR =-L$(PHOME)/ParticleLib -L$(DMCTOOLS_HOME)/Release_i686
+-LIBS =$(LIBDIR) -lParticle -lDMcTools -lm
++LIBDIR =-L$(PHOME)/ParticleLib -L$(DMCTOOLS_HOME)
++LIBS =$(LIBDIR) -lParticle -lDMcTools -ltiff -ljpeg -lpng -lz -lm
+ 
+ OBJS = ParBench.o Effects.o
+ 
+diff -ru Particle221Src_orig/Particle2/ParBench/ParBench.cpp Particle221Src/Particle2/ParBench/ParBench.cpp
+--- Particle221Src_orig/Particle2/ParBench/ParBench.cpp	2009-02-28 11:58:56.000000000 +0100
++++ Particle221Src/Particle2/ParBench/ParBench.cpp	2009-02-28 12:06:18.000000000 +0100
+@@ -146,10 +146,10 @@
+ 
+     const int OuterLoops = 1000;
+ 
+-    cerr << "PDPoint\n"; for(int i=0; i<OuterLoops; i++) TestOneDomain(PDPoint(pVec(RN(),RN(),RN())));
+-    cerr << "PDLine\n"; for(int i=0; i<OuterLoops; i++) TestOneDomain(PDLine(pVec(RN(),RN(),RN()), pVec(RN(),RN(),RN())));
+-    cerr << "PDTriangle\n"; for(int i=0; i<OuterLoops; i++) TestOneDomain(PDTriangle(pVec(RN(),RN(),RN()), pVec(RN(),RN(),RN()), pVec(RN(),RN(),RN())));
+-    cerr << "PDRectangle\n"; for(int i=0; i<OuterLoops; i++) TestOneDomain(PDRectangle(pVec(RN(),RN(),RN()), pVec(RN(),RN(),RN()), pVec(RN(),RN(),RN())));
++    cerr << "PDPoint\n"; for(int i=0; i<OuterLoops; i++) PDPoint Temp(pVec(RN(),RN(),RN())), TestOneDomain(Temp);
++    cerr << "PDLine\n"; for(int i=0; i<OuterLoops; i++) PDLine Temp(pVec(RN(),RN(),RN()), pVec(RN(),RN(),RN())), TestOneDomain(Temp); 
++    cerr << "PDTriangle\n"; for(int i=0; i<OuterLoops; i++) PDTriangle Temp(pVec(RN(),RN(),RN()), pVec(RN(),RN(),RN()), pVec(RN(),RN(),RN())), TestOneDomain(Temp);
++    /*cerr << "PDRectangle\n"; for(int i=0; i<OuterLoops; i++) TestOneDomain(PDRectangle(pVec(RN(),RN(),RN()), pVec(RN(),RN(),RN()), pVec(RN(),RN(),RN())));
+     cerr << "PDPlane\n"; for(int i=0; i<OuterLoops; i++) TestOneDomain(PDPlane(pVec(RN(),RN(),RN()), pVec(RN(),RN(),RN())));
+     cerr << "PDBox\n"; for(int i=0; i<OuterLoops; i++) TestOneDomain(PDBox(pVec(RN(),RN(),RN()), pVec(RN(),RN(),RN())));
+     cerr << "PDCylinder\n"; for(int i=0; i<OuterLoops; i++) TestOneDomain(PDCylinder(pVec(RN(),RN(),RN()), pVec(RN(),RN(),RN()), fabs(RN()), fabs(RN())));
+@@ -157,7 +157,7 @@
+     cerr << "PDSphere\n"; for(int i=0; i<OuterLoops; i++) TestOneDomain(PDSphere(pVec(RN(),RN(),RN()), fabs(RN()), fabs(RN())));
+     cerr << "PDBlob\n"; for(int i=0; i<OuterLoops; i++) TestOneDomain(PDBlob(pVec(RN(),RN(),RN()), fabs(RN())));
+     cerr << "PDDisc\n"; for(int i=0; i<OuterLoops; i++) TestOneDomain(PDDisc(pVec(RN(),RN(),RN()), pVec(RN(),RN(),RN()), fabs(RN()), fabs(RN())));
+-
++*/
+     cerr << "Done testing domains.\n";
+ }
+ 
+Only in Particle221Src/Particle2/ParBench: ParBench.o
+Only in Particle221Src/Particle2/ParBench: parbench
+diff -ru Particle221Src_orig/Particle2/Particle/pVec.h Particle221Src/Particle2/Particle/pVec.h
+--- Particle221Src_orig/Particle2/Particle/pVec.h	2009-02-28 11:58:56.000000000 +0100
++++ Particle221Src/Particle2/Particle/pVec.h	2009-02-28 12:01:15.000000000 +0100
+@@ -15,6 +15,7 @@
+ 
+ #include <iostream>
+ #include <cmath>
++#include <cstdlib>
+ 
+ #ifndef M_PI
+ #define M_PI 3.1415926535897932384626433f
+Only in Particle221Src/Particle2/ParticleLib: Actions.o
+Only in Particle221Src/Particle2/ParticleLib: ActionsAPI.o
+Only in Particle221Src/Particle2/ParticleLib: OtherAPI.o
+Only in Particle221Src/Particle2/ParticleLib: PInternalState.o
+Only in Particle221Src/Particle2/ParticleLib: libParticle.a
+diff -ru Particle221Src_orig/DMcTools/Makefile.std Particle221Src/DMcTools/Makefile.std
+--- Particle221Src_orig/DMcTools/Makefile.std	2009-02-28 12:16:07.000000000 +0100
++++ Particle221Src/DMcTools/Makefile.std	2009-02-28 12:16:42.000000000 +0100
+@@ -117,4 +117,4 @@
+ #########################################################
+ # Dependencies
+ 
+-include Makefile.deps
++#include Makefile.deps
+Only in Particle221Src/DMcTools/Half: half.o
+Only in Particle221Src/DMcTools/Image: Bmp.o
+Only in Particle221Src/DMcTools/Image: Filter.o
+Only in Particle221Src/DMcTools/Image: Gif.o
+diff -ru Particle221Src_orig/DMcTools/Makefile.std Particle221Src/DMcTools/Makefile.std
+--- Particle221Src_orig/DMcTools/Makefile.std	2009-02-28 12:19:23.000000000 +0100
++++ Particle221Src/DMcTools/Makefile.std	2009-02-28 12:20:52.000000000 +0100
+@@ -55,10 +55,10 @@
+ .PHONY:	clean Clean depend Depend install_all \
+ 	install_lib install_shared_lib install_exe install_headers
+ 
+-%.o: 	%.c Makefile.deps
++%.o: 	%.c 
+ 	$(CC) -c $(CFLAGS) $< -o $@
+ 
+-%.o: 	%.cpp Makefile.deps
++%.o: 	%.cpp 
+ 	$(CC) -c $(CFLAGS) $< -o $@
+ 
+ $(LIB): $(LIBOBJS)

@@ -1,0 +1,33 @@
+diff -r -u -N -- js-1.6.20070208_orig/configure.ac js-1.6.20070208/configure.ac
+--- js-1.6.20070208_orig/configure.ac	2008-06-25 04:02:31.000000000 +0200
++++ js-1.6.20070208/configure.ac	2008-06-25 04:15:52.000000000 +0200
+@@ -80,6 +80,29 @@
+ CLI_LIBS=""
+ CLI_OBJS=""
+ 
++AC_ARG_ENABLE([threads], AC_HELP_STRING([--enable-threads], [Makes the engine thread-safe using NSPR4 locks]),
++    [ac_cv_enable_threads=$enableval], [ac_cv_enable_threads=no])
++
++if test ".$ac_cv_enable_threads" != ".no"; then
++  AC_SEARCH_LIBS([PR_Lock], [nspr nspr4])
++  
++  for dir in \
++      $includedir/nspr \
++      $includedir/nspr4 \
++      $prefix/include/nspr \
++      $prefix/include/nspr4
++  do
++    if test -e "$dir"
++    then
++      CPPFLAGS="$CPPFLAGS -I$dir"
++    fi
++  done
++  
++  CPPFLAGS="$CPPFLAGS -DJS_THREADSAFE"
++  
++  AC_SUBST([CPPFLAGS])
++fi
++
+ dnl #   configure option --with-editline[=path]
+ AC_ARG_WITH([editline],
+     AC_HELP_STRING([--with-editline], [build command line interface with line editing support via editline, libedit or GNU readline]),

@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: C++ library and a command line utility to access image
+# metadata. Exiv2 is available as free software and with a commercial
+# license, and is used in a growing number of projects.
+# URL: http://www.exiv2.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=exiv2
+version=0.15
+release=1
+source=(http://www.exiv2.org/exiv2-$version.tar.gz
+        http://www.exiv2.org/exiv2-$version-doc.tar.gz)
+
+build()
+{
+  cd exiv2-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc
+  cp -rf doc $ROOT/share/doc/$name-$version
+}

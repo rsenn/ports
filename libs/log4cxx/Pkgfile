@@ -1,0 +1,30 @@
+# $Id: Pkgfile,v 1.4 2007/05/12 00:21:52 roman Exp $
+#
+# Description: A logging framework for C++.
+#  log4cxx is a port to C++ of the log4j project.
+# URL: http://logging.apache.org/log4cxx/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=log4cxx
+version=0.9.7
+release=1
+source=($mirror_gentoo/log4cxx-$version.tar.gz
+        log4cxx-0.9.7-fix.patch)
+
+build()
+{
+  cd log4cxx-$version
+
+  patch -N -p1 -i $SRC/log4cxx-0.9.7-fix.patch
+
+  sh autogen.sh
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make #LIBS="-lxml2 -lz -liconv -lpthread -lm"
+  make DESTDIR="$PKG" install
+}

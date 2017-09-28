@@ -1,0 +1,160 @@
+diff -ru moses-0.1_orig/moses/Makefile moses-0.1/moses/Makefile
+--- moses-0.1_orig/moses/Makefile	2009-02-21 10:04:07.000000000 +0100
++++ moses-0.1/moses/Makefile	2009-02-21 10:05:11.000000000 +0100
+@@ -4,7 +4,7 @@
+ 
+ LINK_FLAGS = -Wall -Iutils/ -Itrees/ -Irewrite -I./ -Imodeling/ -Ifitness/ \
+              -Ialignment/ -Isim/ -Ilocal/ -O3
+-COMP_FLAGS = -Wall -Wno-sign-compare -Iutils/ -Itrees/ -Irewrite -I./ \
++COMP_FLAGS = -Wall -Wno-sign-compare -Wno-deprecated -Iutils/ -Itrees/ -Irewrite -I./ \
+              -Imodeling/ -Ifitness/ -Ialignment/ -Isim/ -Ilocal/ -O3
+ 
+ src := $(wildcard *.cc) $(wildcard utils/*.cc) $(wildcard trees/*.cc) $(wildcard modeling/*.cc) $(wildcard fitness/*.cc) $(wildcard alignment/*.cc) $(wildcard main/*.cc) $(wildcard rewrite/*.cc) $(wildcard sim/*.cc) $(wildcard local/*.cc)
+Only in moses-0.1/moses/alignment: ProtoVertex.o
+Only in moses-0.1/moses/alignment: scoring.o
+Only in moses-0.1/moses/local: knobs.o
+Only in moses-0.1/moses/local: lmodeling.o
+diff -ru moses-0.1_orig/moses/local/moses.h moses-0.1/moses/local/moses.h
+--- moses-0.1_orig/moses/local/moses.h	2009-02-21 10:04:07.000000000 +0100
++++ moses-0.1/moses/local/moses.h	2009-02-21 10:12:29.000000000 +0100
+@@ -116,10 +116,10 @@
+   
+   template<typename Simplify,typename FF,typename TreeDist>
+   struct population : public noncopyable {
+-    typedef neighborhood<Simplify> neighborhood;
+-    typedef config<FF,TreeDist> config;
++    typedef neighborhood<Simplify> neighborhood_type;
++    typedef config<FF,TreeDist> config_type;
+ 
+-    population(const neighborhood_params<Simplify>& np,const config& c,
++    population(const neighborhood_params<Simplify>& np,const config_type& c,
+                const vtree& vtr) : _ni(np),_c(c) {
+       _ni.exemplar(vtr);
+     }
+@@ -222,11 +222,11 @@
+       return n_evals;
+     }
+ 
+-    const neighborhood& ni() const { return _ni; }
++    const neighborhood_type& ni() const { return _ni; }
+     int size() const { return _pts.size(); }
+     const tpmap& trees() const { return _pts; }
+     comp fitness_comp() const { return comp(); }
+-    const config& configuration() const { return _c; }
++    const config_type& configuration() const { return _c; }
+ 
+     void nondominating(candidate_map& cmap,const hash_set<vtree>& vis) const {
+       for (tpmap::const_iterator it=_pts.begin();it!=_pts.end();++it) {
+@@ -267,8 +267,8 @@
+       }
+     }
+   private:
+-    neighborhood _ni;
+-    const config& _c;
++    neighborhood_type _ni;
++    const config_type& _c;
+     tpmap _pts;
+ 
+     tpmap::iterator rtr_tournament(const vtree& tr,fitness_t f,int tsize) {
+@@ -408,12 +408,12 @@
+ 
+   template<typename Simplify,typename FF,typename TreeDist>
+   struct region_expander : public noncopyable {
+-    typedef neighborhood_params<Simplify> neighborhood_params;
+-    typedef neighborhood<Simplify> neighborhood;
+-    typedef config<FF,TreeDist> config;
+-    typedef population<Simplify,FF,TreeDist> population;
++    typedef neighborhood_params<Simplify> neighborhood_params_type;
++    typedef neighborhood<Simplify> neighborhood_type;
++    typedef config<FF,TreeDist> config_type;
++    typedef population<Simplify,FF,TreeDist> population_type;
+ 
+-    region_expander(const neighborhood_params& ni_params,const config& c,int n,
++    region_expander(const neighborhood_params_type& ni_params,const config_type& c,int n,
+                     const tree<Vertex>& tr)
+       : _ni_params(ni_params),_c(c),_n(n),_best_seen(NEG_INFINITY),
+         _n_evals(0),_ss(_ni_params.selector())
+@@ -452,7 +452,7 @@
+                                select2nd<pair<candidate_map::iterator,int> >(),
+                                ssum)->first;
+       
+-      population pop(_ni_params,_c,exemplar->first);
++      population_type pop(_ni_params,_c,exemplar->first);
+       _visited.insert(exemplar->first);
+       _cmap.erase(exemplar);
+ 
+@@ -524,8 +524,8 @@
+     bool empty() const { return _cmap.empty(); }
+ 
+   private:
+-    const neighborhood_params _ni_params;
+-    const config& _c;
++    const neighborhood_params_type _ni_params;
++    const config_type& _c;
+     int _n;
+     fitness_t _best_seen;    
+     int _n_evals;
+Only in moses-0.1/moses/local: moses.o
+Only in moses-0.1/moses/main: main.o
+Only in moses-0.1/moses/modeling: BDe.o
+Only in moses-0.1/moses/modeling: build_tree.o
+Only in moses-0.1/moses/modeling: dtree.o
+Only in moses-0.1/moses/modeling: dtree_learn.o
+Only in moses-0.1/moses/modeling: make_empty_model.o
+Only in moses-0.1/moses: moses
+Only in moses-0.1/moses/rewrite: enf.o
+Only in moses-0.1/moses/rewrite: flat_normal_form.o
+diff -ru moses-0.1_orig/moses/utils/hash_util.h moses-0.1/moses/utils/hash_util.h
+--- moses-0.1_orig/moses/utils/hash_util.h	2009-02-21 10:04:07.000000000 +0100
++++ moses-0.1/moses/utils/hash_util.h	2009-02-21 10:07:39.000000000 +0100
+@@ -70,7 +70,7 @@
+     typedef typename vector<value_type>::iterator iterator;
+     typedef typename vector<value_type>::const_iterator const_iterator;
+     typedef hash_map<const Key*,iterator,
+-		     ptr_hash_val<Hash>,ptr_hash_val<Hash>,Alloc> hash_map;
++		     ptr_hash_val<Hash>,ptr_hash_val<Hash>,Alloc> hash_map_type;
+     typedef typename vector<value_type>::size_type size_type;
+ 
+     iterator begin() { return _values.begin(); }
+@@ -79,17 +79,17 @@
+     const_iterator end() const { return _values.end(); }
+ 
+     iterator find(const Key& x) {
+-      typename hash_map::iterator it=_map.find(&x);
++      typename hash_map_type::iterator it=_map.find(&x);
+       return (it==_map.end() ? _values.end() : it->second);
+       
+     }
+     const_iterator find(const Key& x) const {
+-      typename hash_map::const_iterator it=_map.find(&x);
++      typename hash_map_type::const_iterator it=_map.find(&x);
+       return (it==_map.end() ? _values.end() : it->second);
+     }
+ 
+     std::pair<iterator,bool> insert(const value_type& x) {
+-      typename hash_map::const_iterator it=_map.find(&x.first);
++      typename hash_map_type::const_iterator it=_map.find(&x.first);
+       if (it!=_map.end())
+         return make_pair(it->second,false);
+       if (_values.size()>=_values.capacity()) {
+@@ -135,7 +135,7 @@
+     }
+   private:
+     vector<value_type> _values;
+-    hash_map _map;
++    hash_map_type _map;
+   };
+ 
+ } //~namespace __gnu_cxx
+diff -ru moses-0.1_orig/moses/utils/utils.h moses-0.1/moses/utils/utils.h
+--- moses-0.1_orig/moses/utils/utils.h	2009-02-21 10:04:07.000000000 +0100
++++ moses-0.1/moses/utils/utils.h	2009-02-21 10:04:48.000000000 +0100
+@@ -30,6 +30,7 @@
+ #include "config.h"
+ #endif
+ 
++#include <cstring>
+ #include <ext/hash_map>
+ 
+ using namespace __gnu_cxx;
+Only in moses-0.1/moses/utils: utils.o

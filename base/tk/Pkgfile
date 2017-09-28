@@ -1,0 +1,37 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: The Tk toolkit for Tcl and X11 (default version) - run-time files
+#  Tk is a cross-platform graphical toolkit which provides the Motif
+#  look-and-feel and is implemented using the Tcl scripting language.
+#  This package is a dependency package, which depends on Debian's default
+#  Tk version (currently 8.4).
+# URL: http://www.tcl.tk/software/tcltk/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=tk
+version=8.4.19
+release=1
+source=($mirror_sf/tcl/tk$version-src.tar.gz)
+
+build()
+{
+  cd tk$version/unix
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --mandir="$prefix/share/man" \
+       --${shared:=enable}-shared \
+       --${static:=enable}-shared \
+       --enable-threads \
+       --with-tcl="$prefix/lib" \
+       --enable-symbols
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/bin
+  ln -sf wish${version%.*} $ROOT/bin/wish
+}

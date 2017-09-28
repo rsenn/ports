@@ -1,0 +1,242 @@
+# $Id: Pkgfile,v 1.10 2007/05/09 21:02:53 roman Exp $
+#
+# Description: MySQL web administration tool
+#  This package allows administering of MySQL with a web interface.
+#  .
+#  It allows administrators to:
+#   - browse through databases and tables;
+#   - create, copy, rename, alter and drop databases;
+#   - create, copy, rename, alter and drop tables;
+#   - perform table maintenance;
+#   - add, edit and drop fields;
+#   - execute any SQL-statement, even multiple queries;
+#   - create, alter and drop indexes;
+#   - load text files into tables;
+#   - create and read dumps of tables or databases;
+#   - export data to SQL, CSV, XML, Word, Excel, PDF and LaTeX formats;
+#   - administer multiple servers;
+#   - manage MySQL users and privileges;
+#   - check server settings and runtime information with configuration hints;
+#   - check referential integrity in MyISAM tables;
+#   - create complex queries using Query-by-example (QBE), automatically
+#     connecting required tables;
+#   - create PDF graphics of database layout;
+#   - search globally in a database or a subset of it;
+#   - transform stored data into any format using a set of predefined
+#     functions, such as displaying BLOB-data as image or download-link;
+#   - support InnoDB tables and foreign keys;
+#   - support mysqli, the improved MySQL extension;
+#  and is fully internationalized and localized in dozens of languages.
+#  .
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=phpmyadmin
+version=3.0.1.1
+release=1
+source=($mirror_sf/phpmyadmin/phpMyAdmin-$version-all-languages.tar.bz2
+        apache.conf
+        config.footer.inc.php
+        config.header.inc.php
+        config.inc.php
+        config.src.php
+        lighttpd.conf
+        phpmyadmin-3.0.1-integration.patch)
+
+build()
+{
+  cd phpMyAdmin-$version-all-languages/
+
+  patch -N -p1 -i $SRC/phpmyadmin-3.0.1-integration.patch
+
+  case $prefix in
+    "/usr") sysconfdir="/etc" localstatedir="/var" ;;
+  esac
+
+  install -d $ROOT/share/phpmyadmin
+  install -d $ROOT/share/doc/phpmyadmin
+
+  mv -f contrib test $ROOT/share/doc/phpmyadmin/
+  mv -f *.txt $ROOT/share/doc/phpmyadmin/
+  mv -f CREDITS  ChangeLog INSTALL LICENSE README* RELEASE-DATE-* TODO $ROOT/share/doc/phpmyadmin/
+  mv -f translators.html Documentation.html docs.css $ROOT/share/doc/phpmyadmin/
+
+  cp -rf * $ROOT/share/phpmyadmin/
+
+  pkgsysconfdir=$PKG${sysconfdir="$prefix/etc"}/phpmyadmin
+  pkglocalstatedir=$PKG${localstatedir="$prefix/var"}/phpmyadmin
+
+  install -d $pkgsysconfdir/
+  install -d $pkglocalstatedir/
+
+  for FILE in $SRC/apache.conf $SRC/lighttpd.conf $SRC/config.*inc.php; do
+    sed \
+      -e "s,@prefix@,${prefix},g" \
+      -e "s,@sysconfdir@,${sysconfdir=$prefix/etc},g" \
+      -e "s,@localstatedir@,${localstatedir=$prefix/var},g" \
+    $FILE >$pkgsysconfdir/${FILE##*/}
+  done
+
+  sed "s,@sysconfdir@,${sysconfdir},g ;; s,@localstatedir@,${localstatedir},g" \
+    $SRC/config.src.php \
+   >$ROOT/share/phpmyadmin/config.inc.php
+}
+
+postrm()
+{
+  lighttpd_remove() {
+    if [ -f /etc/lighttpd/conf-available/50-phpmyadmin.conf ] ; then
+      rm -f /etc/lighttpd/conf-available/50-phpmyadmin.conf
+      if [ ! -x /usr/sbin/lighty-disable-mod ] ; then
+        echo "Lighttpd not installed, skipping"
+      else
+        /usr/sbin/lighty-disable-mod phpmyadmin
+        # We also enabled auth in postinst, but I think it's safer to keep it there
+      fi
+      # See bug #448682
+      if [ -h /etc/lighttpd/conf-enabled/50-phpmyadmin.conf ] ; then
+          echo 'Manually deleting lighttpd/phpMyAdmin configuration link'
+          rm /etc/lighttpd/conf-enabled/50-phpmyadmin.conf
+      fi
+    fi
+  }
+
+  apache_remove() {
+    if [ -d /etc/$webserver/conf.d ] && [ -L /etc/$webserver/conf.d/phpmyadmin.conf ]; then
+      rm -f /etc/$webserver/conf.d/phpmyadmin.conf
+    fi
+  }
+  if [ "$1" = "remove" ] || [ "$1" = "purge" ]; then
+
+    if [ -f /usr/share/debconf/confmodule ]; then
+      . /usr/share/debconf/confmodule
+      db_version 2.0
+
+      db_get phpmyadmin/reconfigure-webserver
+
+      webservers="$RET"
+
+      for webserver in $webservers; do
+        webserver=${webserver%,}
+        if [ "$webserver" = "lighttpd" ] ; then
+          lighttpd_remove
+        else
+          apache_remove $webserver
+        fi
+        # Redirection of 3 is needed because Debconf uses it and it might
+        # be inherited by webserver. See bug #446324.
+        if [ -x /usr/sbin/invoke-rc.d ]; then
+          invoke-rc.d $webserver reload 3>/dev/null || true
+        else
+          /etc/init.d/$webserver reload 3>/dev/null || true
+        fi
+      done
+    fi
+
+    if [ "$1" = "purge" ]; then
+      rm -rf /etc/phpmyadmin /var/lib/phpmyadmin
+    fi
+  fi
+}
+
+postinst()
+{
+  lighttpd_install() {
+    if [ ! -f /etc/lighttpd/conf-available/50-phpmyadmin.conf ] ; then
+      if [ ! -x /usr/sbin/lighty-enable-mod ] ; then
+        echo "Lighttpd not installed, skipping"
+      else
+        ln -s ../../phpmyadmin/lighttpd.conf /etc/lighttpd/conf-available/50-phpmyadmin.conf
+        # We also need auth to protect setup.php
+        /usr/sbin/lighty-enable-mod phpmyadmin auth
+      fi
+    fi
+  }
+
+  apache_install() {
+    webserver=$1
+    if [ -d /etc/$webserver/conf.d ] && [ ! -e /etc/$webserver/conf.d/phpmyadmin.conf ]; then
+      ln -s ../../phpmyadmin/apache.conf /etc/$webserver/conf.d/phpmyadmin.conf
+    fi
+  }
+
+  if [ "$1" = "configure" ]; then
+
+    # Generate secret for cookie encryption
+    if [ ! -f /var/lib/phpmyadmin/blowfish_secret.inc.php ]; then
+      touch /var/lib/phpmyadmin/blowfish_secret.inc.php
+      chgrp www-data /var/lib/phpmyadmin/blowfish_secret.inc.php
+      chmod 640 /var/lib/phpmyadmin/blowfish_secret.inc.php
+      printf "<?php\n\$cfg['blowfish_secret'] = '%s';\n" \
+      `perl -le 'print map{("a".."z","A".."Z",0..9)[int(rand(62))]}(1..24)'` \
+        >> /var/lib/phpmyadmin/blowfish_secret.inc.php
+    fi
+
+    . /usr/share/debconf/confmodule
+    db_version 2.0
+
+    # The following only on a new install
+    if [ "$2" = "" ]; then
+
+      # Generate an htpasswd file for the web based setup
+      if [ ! -f /etc/phpmyadmin/htpasswd.setup ]; then
+
+        touch /etc/phpmyadmin/htpasswd.setup
+        chgrp www-data /etc/phpmyadmin/htpasswd.setup
+        chmod 0640 /etc/phpmyadmin/htpasswd.setup
+        db_get phpmyadmin/setup-username
+        setup_username=${RET:-admin}
+        db_get phpmyadmin/setup-password
+        if [ -n "$RET" ]; then
+          setup_password=`perl -le 'print crypt($ARGV[0], join("", map{("a".."z","A".."Z",0..9)[int(rand(62))]}(1..2)))' "$RET"`
+        else
+          setup_password="*"
+        fi
+        echo "$setup_username:$setup_password" > /etc/phpmyadmin/htpasswd.setup
+        db_reset phpmyadmin/setup-username || true
+        db_reset phpmyadmin/setup-password || true
+
+        if [ ! -f /var/lib/phpmyadmin/config.inc.php ]; then
+          touch /var/lib/phpmyadmin/config.inc.php
+          chgrp www-data /var/lib/phpmyadmin/config.inc.php
+          chmod 0660 /var/lib/phpmyadmin/config.inc.php
+        fi
+
+      fi
+
+    fi
+
+    # Configure Apache
+    db_get phpmyadmin/reconfigure-webserver
+
+    webservers="$RET"
+
+    for webserver in $webservers; do
+      webserver=${webserver%,}
+      if [ "$webserver" = "lighttpd" ] ; then
+        lighttpd_install
+      else
+        apache_install $webserver
+      fi
+      # Reload webserver in any case, configuration might have changed
+      # Redirection of 3 is needed because Debconf uses it and it might
+      # be inherited by webserver. See bug #446324.
+      if [ -x /usr/sbin/invoke-rc.d ]; then
+        invoke-rc.d $webserver reload 3>/dev/null || true
+      else
+        /etc/init.d/$webserver reload 3>/dev/null || true
+      fi
+    done
+
+    # warn about old pre-lenny symlink. Remove post-lenny.
+    if dpkg --compare-versions "$2" lt-nl "4:2.10.1-1" \
+      && [ -L /var/www/phpmyadmin ] \
+      && [ `readlink -n /var/www/phpmyadmin` = "/usr/share/phpmyadmin" ]; then
+        echo "You have a symlink /var/www/phpmyadmin still present. This was needed "
+        echo "in older versions of the phpMyAdmin package to make it web-accessible. "
+        echo "It can now be removed because the package is configured directly "
+        echo "within the webserver."
+        echo
+    fi
+  fi
+}

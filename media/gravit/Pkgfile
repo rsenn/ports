@@ -1,0 +1,40 @@
+# $Id: Pkgfile,v 1.2 2007/05/09 21:02:48 roman Exp $
+#
+# Description: An OpenGL gravity simulator.
+#  Gravit is a gravity simulator. It uses Newtonian physics using the
+#  Barnes-Hut N-body algorithm. Although the main goal of Gravit is to
+#  be as accurate as possible, it also creates beautiful looking gravity
+#  patterns. It records the history of each particle so that it can animate
+#  and display a path of its travels. At any stage you can rotate your
+#  view in 3D and zoom in and out. Gravit uses OpenGL, Lua, SDL, SDL_ttf,
+#  and SDL_image.
+# URL: http://gravit.slowchop.com/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=gravit
+version=0.4.2
+release=1
+source=(http://gravit.slowchop.com/dist/gravit-$version.tar.gz)
+
+build()
+{
+  cd gravit-$version
+
+#  libtoolize --force
+#  aclocal --force -I autotools/aclocal
+#  autoconf --force
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --without-quicktime \
+      --with-1394libs \
+      $args
+
+  make
+  make DESTDIR="$PKG" install
+
+#  ln -s opencv $ROOT/include/cv
+}

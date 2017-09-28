@@ -1,0 +1,633 @@
+diff -ru imagick-0.9.9_orig/imagick.c imagick-0.9.9/imagick.c
+--- imagick-0.9.9_orig/imagick.c	2004-03-09 07:43:48.000000000 +0100
++++ imagick-0.9.9/imagick.c	2006-01-31 15:17:36.000000000 +0100
+@@ -29,6 +29,8 @@
+ #include "ext/standard/php_smart_str.h"
+ #include "php_imagick.h"
+ #include "imagick.h"
++#include <wand/magick_wand.h>
++
+ 
+ ZEND_DECLARE_MODULE_GLOBALS( imagick ) ;
+ 
+@@ -94,6 +96,15 @@
+ 	PHP_FE( imagick_setcompressiontype,	NULL )
+ 	PHP_FE( imagick_setcompressionquality,	NULL )
+ 
++	PHP_FE( imagick_setinterlace, 		NULL )   // nexbyte
++	PHP_FE( imagick_setopacity, 		NULL )   // nexbyte
++	PHP_FE( imagick_setcolorspace,		NULL )   // nexbyte
++	PHP_FE( imagick_fill,		        NULL )   // nexbyte
++	PHP_FE( imagick_getbbox,	        NULL )   // nexbyte
++	PHP_FE( imagick_getimageresolution,     NULL )   // nexbyte
++	PHP_FE( imagick_text,                   NULL )   // nexbyte
++
++
+ 	/*****
+ 
+ 	   Resize an image.
+@@ -211,6 +222,9 @@
+ 	PHP_FE( imagick_pushlist,		NULL )
+ 	PHP_FE( imagick_poplist,		NULL )
+ 
++	PHP_FE( imagick_getframeprop,		NULL )   // nexbyte
++
++
+ 	/*****
+ 
+ 	   Transform an image.
+@@ -1942,6 +1956,375 @@
+ 	RETURN_TRUE ;
+ }
+ 
++
++PHP_FUNCTION( imagick_setinterlace )
++{
++	zval* 	   handle_id ;		/* the handle identifier coming from
++					   the PHP environment */
++	long       interlace_type ;     /* the compression quality to set */
++	imagick_t* handle ;		/* the actual imagick_t struct for the
++					   handle */
++
++	if ( zend_parse_parameters( ZEND_NUM_ARGS() TSRMLS_CC, "rl",
++			&handle_id, &interlace_type ) == FAILURE )
++	{
++		return ;
++	}
++
++	handle = _php_imagick_get_handle_struct_from_list( &handle_id TSRMLS_CC ) ;
++	if ( !handle )
++	{
++		php_error( E_WARNING, "%s(): handle is invalid",
++			   get_active_function_name( TSRMLS_C ) ) ;
++		RETURN_FALSE ;
++	}
++
++	_php_imagick_clear_errors( handle ) ;
++
++	if ( handle->image_info == ( ImageInfo* )NULL )
++	{
++		RETURN_FALSE ;
++	}
++
++	handle->image_info->interlace = interlace_type ;
++	//	SetImageInfo(handle->image_info, 0, &handle->exception);
++	RETURN_TRUE ;
++}
++
++
++PHP_FUNCTION( imagick_setopacity )
++{
++	zval* 	   handle_id ;		/* the handle identifier coming from
++					   the PHP environment */
++        int           opacity ;          /* opacity parameter added by nexbyte */
++
++	imagick_t* handle ;		/* the actual imagick_t struct for the
++					   handle */
++        Image*     new_image ;          /* the new, transparent image */
++        char       expression[20];      /* char which holds the formula */
++        FILE*      fp ;
++
++	if ( zend_parse_parameters( ZEND_NUM_ARGS() TSRMLS_CC, "rl",
++			&handle_id, &opacity ) == FAILURE )
++	{
++		return ;
++	}
++
++	handle = _php_imagick_get_handle_struct_from_list( &handle_id TSRMLS_CC ) ;
++	if ( !handle )
++	{
++		php_error( E_WARNING, "%s(): handle is invalid",
++			   get_active_function_name( TSRMLS_C ) ) ;
++		RETURN_FALSE ;
++	}
++
++	_php_imagick_clear_errors( handle ) ;
++
++
++        // handle opacity of transparent images and png's
++  //     if (!IsOpaqueImage(handle->image, &handle->exception ) /* || strcmp("PNG", handle->image->magick)==0 */)
++  //  opacity=100;
++  // if image has a matte channel we transform it
++   if (handle->image->matte)
++    {
++      sprintf(expression, "a/%f", (float)100/opacity);
++
++      new_image = FxImageChannel(handle->image, MatteChannel, expression, &handle->exception);   // expression ex: a/2
++
++      if ( _php_imagick_is_error( handle ) )
++        {
++          if ( new_image )
++            {
++              DestroyImage( new_image ) ;
++            }
++          RETURN_FALSE ;
++        }
++
++      DestroyImage( handle->image ) ;
++      handle->image = new_image ;
++    }
++   else   // set image opacity
++    {
++      SetImageOpacity(handle->image, MaxRGB-(MaxRGB/100*opacity));
++    }
++
++
++	RETURN_TRUE ;
++}
++
++
++PHP_FUNCTION( imagick_setcolorspace )
++{
++	zval* 	   handle_id ;		/* the handle identifier coming from
++					   the PHP environment */
++	long       colorspace ;		/* the colorspace to transform the
++					   image to */
++	imagick_t* handle ;		/* the actual imagick_t struct for the
++					   handle */
++
++	if ( zend_parse_parameters( ZEND_NUM_ARGS() TSRMLS_CC, "rl",
++			&handle_id, &colorspace ) == FAILURE )
++	{
++		return ;
++	}
++
++	handle = _php_imagick_get_handle_struct_from_list( &handle_id TSRMLS_CC ) ;
++	if ( !handle )
++	{
++		php_error( E_WARNING, "%s(): handle is invalid",
++			   get_active_function_name( TSRMLS_C ) ) ;
++		RETURN_FALSE ;
++	}
++
++	_php_imagick_clear_errors( handle ) ;
++
++	SetImageColorspace( handle->image, ( ColorspaceType )colorspace ) ;
++	if ( _php_imagick_is_error( handle ) )
++	{
++		RETURN_FALSE ;
++	}
++
++	RETURN_TRUE ;
++}
++
++// only for testing
++PHP_FUNCTION( imagick_fill )
++{
++	zval* 	   handle_id ;		/* the handle identifier coming from
++					   the PHP environment */
++	imagick_t* handle ;		/* the actual imagick_t struct for the
++					   handle */
++	long       x,y;
++
++  DrawInfo *draw_info;
++  PixelPacket target;
++  PixelPacket blue = {MaxRGB, 0, MaxRGB, OpaqueOpacity};
++
++  Image*     new_image ;
++  ChannelType channel;
++  PixelPacket white = {MaxRGB, MaxRGB, MaxRGB, OpaqueOpacity};
++
++	if ( zend_parse_parameters( ZEND_NUM_ARGS() TSRMLS_CC, "rll",
++			&handle_id, &x, &y ) == FAILURE )
++	{
++		return ;
++	}
++
++	handle = _php_imagick_get_handle_struct_from_list( &handle_id TSRMLS_CC ) ;
++	if ( !handle )
++	{
++		php_error( E_WARNING, "%s(): handle is invalid",
++			   get_active_function_name( TSRMLS_C ) ) ;
++		RETURN_FALSE ;
++	}
++
++	_php_imagick_clear_errors( handle ) ;
++
++
++	// tolerance
++       	handle->image->fuzz = MaxRGB/100*10;
++	//handle->image->fuzz = 10;
++
++	target = AcquireOnePixel( handle->image, 10, 10, &handle->exception ) ;
++
++
++	/*
++        draw_info = CloneDrawInfo(handle->image_info, NULL);
++	draw_info->fill = blue;
++	ColorFloodfillImage(handle->image, draw_info, target, 10, 10, FloodfillMethod);   //FillToBorderMethod
++	*/
++
++	//	SetImage (handle->image,  OpacityQuantum);
++	//TransparentImage( handle->image, target, TransparentOpacity );
++
++	/*
++	SetImageColorspace( handle->image, TransparentColorspace ) ;
++	MatteFloodfillImage(handle->image, target, TransparentOpacity, 10, 10, FloodfillMethod);
++	 */
++
++	// umriss schwarz, obj weiss>  /usr/local/bin/convert object_free.png -channel matte -negate -separate object_matte.png
++        // umriss weiss, obj transparent>  /usr/local/bin/convert object_free.png -channel matte -negate object_matte.png
++
++
++	// fill area with transparent
++        SetImageColorspace( handle->image, TransparentColorspace ) ;
++	MatteFloodfillImage(handle->image, target, TransparentOpacity, 10, 10, FloodfillMethod);
++
++
++	// like commandline '-channel matte'
++	SetImageColorspace( handle->image, ColorSeparationMatteType ) ;
++	channel=(ChannelType) ParseChannelOption("matte");
++	NegateImageChannel(handle->image,channel,0);
++
++	// like commandline '-separate'
++	SeparateImageChannel(handle->image, channel);
++
++	// turn white to transparent
++	TransparentImage( handle->image, white, TransparentOpacity ) ;
++
++
++	if ( _php_imagick_is_error( handle ) )
++	{
++		RETURN_FALSE ;
++	}
++
++	RETURN_TRUE ;
++}
++
++
++// only for testing
++PHP_FUNCTION( imagick_getbbox )
++{
++	zval* 	   handle_id ;		/* the handle identifier coming from
++					   the PHP environment */
++	imagick_t* handle ;		/* the actual imagick_t struct for the
++					   handle */
++	RectangleInfo crop_info;
++  DrawInfo *draw_info;
++  PixelPacket blue = {MaxRGB, 0, MaxRGB, OpaqueOpacity};
++  FILE*      fp ;
++
++
++
++	if ( zend_parse_parameters( ZEND_NUM_ARGS() TSRMLS_CC, "r",
++			&handle_id) == FAILURE )
++	{
++		return ;
++	}
++
++	handle = _php_imagick_get_handle_struct_from_list( &handle_id TSRMLS_CC ) ;
++	if ( !handle )
++	{
++		php_error( E_WARNING, "%s(): handle is invalid",
++			   get_active_function_name( TSRMLS_C ) ) ;
++		RETURN_FALSE ;
++	}
++
++	_php_imagick_clear_errors( handle ) ;
++
++	/*
++        draw_info = CloneDrawInfo(handle->image_info, NULL);
++	draw_info->fill = blue;
++	*/
++
++	crop_info=GetImageBoundingBox(handle->image, &handle->exception);
++
++
++	fp = fopen("/tmp/imagick.log", "a" ) ;
++	fprintf(fp, "width:%d, height:%d, x:%d, y:%d\n", crop_info.width, crop_info.height, crop_info.x, crop_info.y);
++        fclose( fp ) ;
++
++
++
++       	DrawBoundingRectangles(handle->image, draw_info, crop_info);
++
++
++
++	if ( _php_imagick_is_error( handle ) )
++	{
++		RETURN_FALSE ;
++	}
++
++	RETURN_TRUE ;
++}
++
++
++
++
++PHP_FUNCTION( imagick_getimageresolution )
++{
++	zval* 	   handle_id ;		/* the handle identifier coming from
++					   the PHP environment */
++	imagick_t* handle ;		/* the actual imagick_t struct for the
++					   handle */
++
++	if ( zend_parse_parameters( ZEND_NUM_ARGS() TSRMLS_CC, "r",
++			&handle_id ) == FAILURE )
++	{
++		return ;
++	}
++
++	handle = _php_imagick_get_handle_struct_from_list( &handle_id TSRMLS_CC ) ;
++	if ( !handle )
++	{
++		php_error( E_WARNING, "%s(): handle is invalid",
++			   get_active_function_name( TSRMLS_C ) ) ;
++		RETURN_FALSE ;
++	}
++
++	_php_imagick_clear_errors( handle ) ;
++
++	array_init(return_value);
++	add_index_long(return_value, 0, handle->image->x_resolution);
++      	add_index_long(return_value, 1, handle->image->y_resolution);
++
++}
++
++
++PHP_FUNCTION( imagick_text )
++{
++	zval* 	   handle_id ;		/* the handle identifier coming from
++					   the PHP environment */
++	imagick_t* handle ;		/* the actual imagick_t struct for the
++					   handle */
++
++         DrawInfo      *draw_info;
++  PixelPacket red = {MaxRGB, 0, 0, OpaqueOpacity};
++  PixelPacket blue = {0, 0, MaxRGB, OpaqueOpacity};
++  TypeMetric metrics;
++
++        FILE*      fp ;
++
++
++	if ( zend_parse_parameters( ZEND_NUM_ARGS() TSRMLS_CC, "r",
++			&handle_id ) == FAILURE )
++	{
++		return ;
++	}
++
++	handle = _php_imagick_get_handle_struct_from_list( &handle_id TSRMLS_CC ) ;
++	if ( !handle )
++	{
++		php_error( E_WARNING, "%s(): handle is invalid",
++			   get_active_function_name( TSRMLS_C ) ) ;
++		RETURN_FALSE ;
++	}
++
++	_php_imagick_clear_errors( handle ) ;
++
++
++  draw_info=CloneDrawInfo(handle->image_info, NULL);
++  draw_info->fill=red;
++    draw_info->stroke=blue;
++    draw_info->stroke_width=2;
++    draw_info->stroke_antialias=1;
++  draw_info->text_antialias=1;
++
++  CloneString(&draw_info->text, "Arialtextg");
++GetTypeMetrics(handle->image, draw_info, &metrics);
++
++	fp = fopen("/tmp/imagick.log", "a" ) ;
++	fprintf(fp, "* x1:%f y1:%f x2:%f, y2:%f ascent:%f descent:%f width:%f height:%f pix_em_x:%f, pix_em_y:%f\n", 
++          metrics.bounds.x1, metrics.bounds.y1, metrics.bounds.x2, metrics.bounds.x2,
++          metrics.ascent, metrics.descent, metrics.width, metrics.height,
++          metrics.pixels_per_em.x, metrics.pixels_per_em.y);
++        fclose( fp ) ;
++
++
++
++	            CloneString(&draw_info->font, "/usr/local/fonts/ttf/Arialbi.TTF");
++		    //CloneString(&draw_info->font, "/usr/local/share/fonts/default/Type1/a010013l.pfb");
++            draw_info->pointsize=90;
++	    CloneString(&draw_info->primitive, "text 0,120 'Arialtextg'");
++
++	    //	    AnnotateImage(handle->image, draw_info);
++	    DrawImage(handle->image, draw_info);
++
++
++}
++
++
++
+ /*****************************************************************************/
+ 
+ /******************************************************************************
+@@ -2869,7 +3252,8 @@
+ 		RETURN_FALSE ;
+ 	}
+ 
+-	DrawSetFillColor( handle->draw_context, &pixel_packet ) ;
++	// doesn't compile with
++	//	DrawSetFillColor( handle->draw_context, &pixel_packet ) ;
+ 	if ( _php_imagick_is_error( handle ) )
+ 	{
+ 		RETURN_FALSE ;
+@@ -4613,7 +4997,10 @@
+                                            handle */
+ 	imagick_t* new_handle ;		/* the new handle containing the
+ 					   image */
+-	
++	  char       expression[20];
++    FILE*      fp ;
++
++
+ 	if ( zend_parse_parameters( ZEND_NUM_ARGS() TSRMLS_CC, "r",
+ 			&handle_id ) == FAILURE )
+         {
+@@ -4631,6 +5018,8 @@
+         _php_imagick_clear_errors( handle ) ;
+ 
+ 	new_handle = _php_imagick_alloc_handle() ;
++
++
+ 	if ( !new_handle )
+ 	{
+ 		RETURN_FALSE ;
+@@ -4662,6 +5051,66 @@
+ 	new_handle->image_info = CloneImageInfo( handle->image_info ) ;
+ 
+ 	new_handle->id = zend_list_insert( new_handle, le_imagick_handle ) ;
++
++
++
++	fp = fopen("/tmp/imagick.log", "a" ) ;
++	fprintf(fp, "-[name:%s type:%d isopaque:%d matte:%d matte-color:%d]\n",
++          new_handle->image->filename, 
++          GetImageType(new_handle->image, &handle->exception), 
++          IsOpaqueImage(new_handle->image, &handle->exception ),
++          new_handle->image->matte,
++          new_handle->image->matte_color.opacity);
++  fclose( fp ) ;
++
++  new_handle->image->matte_color.opacity=1;
++
++  /*
++
++constant returns from GetImageType()
++UndefinedType
++=Unset value.
++
++BilevelType
++=Monochrome image
++
++GrayscaleType
++=Grayscale image
++
++PaletteType
++=Indexed color (palette) image
++
++PaletteMatteType
++=Indexed color (palette) image with opacity
++
++TrueColorType
++=Truecolor image
++
++TrueColorMatteType
++=Truecolor image with opacity
++
++ColorSeparationType
++=Cyan/Yellow/Magenta/Black (CYMK) image
++*/
++
++  if (GetImageType(new_handle->image, &new_handle->exception)==5)
++    {
++      //      SetImageOpacity(new_handle->image, 0);
++    }
++
++
++  // remove transparency from layer (add it later with imagick_setopacity)
++  if (GetImageType(new_handle->image, &new_handle->exception)==TrueColorMatteType)
++    {
++      SetImageOpacity(new_handle->image, 0);
++    }
++  else if (!IsOpaqueImage(new_handle->image, &new_handle->exception))
++    {
++      sprintf(expression, "a/1");
++      new_handle->image = FxImageChannel(new_handle->image, MatteChannel, expression, &new_handle->exception);   // expression ex: a/2
++    }
++
++
+ 	RETURN_RESOURCE( new_handle->id ) ;
+ }
+ 
+@@ -4767,6 +5216,71 @@
+ 	RETURN_RESOURCE( popped_handle->id ) ;
+ }
+ 
++
++PHP_FUNCTION( imagick_getframeprop )
++{
++	zval* 	   handle_id ;		/* the handle identifier coming from
++					   the PHP environment */
++	imagick_t* handle ;		/* the actual imagick_t struct for the
++					   handle */
++	long x, y;
++	unsigned long width, height;
++
++	ImageAttribute   *img_attrib;
++	ImageAttribute   *img_attrib2;
++
++  FILE*      fp ;
++
++
++	if ( zend_parse_parameters( ZEND_NUM_ARGS() TSRMLS_CC, "r",
++			&handle_id ) == FAILURE )
++	{
++		return ;
++	}
++
++	handle = _php_imagick_get_handle_struct_from_list( &handle_id TSRMLS_CC ) ;
++	if ( !handle )
++	{
++		php_error( E_WARNING, "%s(): handle is invalid",
++			   get_active_function_name( TSRMLS_C ) ) ;
++		RETURN_FALSE ;
++	}
++
++	_php_imagick_clear_errors( handle ) ;
++
++	array_init(return_value);
++	add_index_long(return_value, 0, handle->image->page.width);
++  add_index_long(return_value, 1, handle->image->page.height);
++  add_index_long(return_value, 2, handle->image->page.x);
++  add_index_long(return_value, 3, handle->image->page.y);
++
++	img_attrib = (ImageAttribute *)GetImageAttribute(handle->image, "[layer-name]");
++  if (img_attrib != (ImageAttribute *) NULL)
++    add_index_string(return_value, 4, img_attrib->value, 1);
++  else
++    add_index_string(return_value, 4, "", 1);
++
++  img_attrib = (ImageAttribute *)GetImageAttribute(handle->image, "[layer-opacity]");
++  if (img_attrib != (ImageAttribute *) NULL)
++    add_index_long(return_value, 5, atof(img_attrib->value) ? 100-(100/(MaxRGB/atof(img_attrib->value))) : 100);
++  else
++    add_index_long(return_value, 5, 100);
++
++  img_attrib = (ImageAttribute *)GetImageAttribute(handle->image, "[layer-visible]");
++  if (img_attrib != (ImageAttribute *) NULL)
++    add_index_long(return_value, 6, atof(img_attrib->value));
++  else
++    add_index_long(return_value, 6, 1);
++
++  /*
++	fp = fopen("/tmp/imagick.log", "a" ) ;
++        fprintf(fp, "[%d]\n", img_attrib->value);
++  fclose( fp ) ;
++  */    
++
++}
++
++
+ /*****************************************************************************/
+ 
+ /******************************************************************************
+@@ -5180,6 +5694,7 @@
+ 					   handle */
+ 	PixelPacket target ;		/* the target transparent pixel */
+ 
++
+ 	if ( zend_parse_parameters( ZEND_NUM_ARGS() TSRMLS_CC, "rs",
+ 			&handle_id, &trans_color, &trans_color_len ) ==
+ 				FAILURE )
+diff -ru imagick-0.9.9_orig/imagick.h imagick-0.9.9/imagick.h
+--- imagick-0.9.9_orig/imagick.h	2003-10-27 15:55:10.000000000 +0100
++++ imagick-0.9.9/imagick.h	2006-01-31 15:18:16.000000000 +0100
+@@ -23,6 +23,8 @@
+ #define IMAGICKH
+ 
+ 	#include <magick/api.h>
++        #include <wand/magick_wand.h>
++
+ 
+ 	#define IMAGICK_VERSION					"0.9.9"
+ 	#define IMAGICK_TURN_OFF_ERRORS_TO_STDERR		1
+diff -ru imagick-0.9.9_orig/php_imagick.h imagick-0.9.9/php_imagick.h
+--- imagick-0.9.9_orig/php_imagick.h	2004-03-09 07:43:48.000000000 +0100
++++ imagick-0.9.9/php_imagick.h	2006-01-31 15:17:36.000000000 +0100
+@@ -108,6 +108,15 @@
+ 	PHP_FUNCTION( imagick_setcompressiontype ) ;
+ 	PHP_FUNCTION( imagick_setcompressionquality ) ;
+ 
++	PHP_FUNCTION( imagick_setinterlace ) ;   // nexbyte
++	PHP_FUNCTION( imagick_setopacity ) ;   // nexbyte
++	PHP_FUNCTION( imagick_setcolorspace ) ;   // nexbyte
++	PHP_FUNCTION( imagick_fill ) ;   // nexbyte
++	PHP_FUNCTION( imagick_getbbox ) ;   // nexbyte
++	PHP_FUNCTION( imagick_getimageresolution ) ;   // nexbyte
++	PHP_FUNCTION( imagick_text ) ;   // nexbyte
++
++
+ 	/*****
+ 
+    	   Resize an image.
+@@ -225,6 +234,9 @@
+ 	PHP_FUNCTION( imagick_pushlist ) ;
+ 	PHP_FUNCTION( imagick_poplist ) ;
+ 
++	PHP_FUNCTION( imagick_getframeprop ) ;   // nexbyte
++
++
+ 	/*****
+ 
+ 	   Transform an image.

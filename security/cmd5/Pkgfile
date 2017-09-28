@@ -1,0 +1,27 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: CRAM-MD5 authentication tester
+# URL: http://www.net-track.ch/opensource/cmd5/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=cmd5
+version=0.1
+release=1
+source=(http://www.net-track.ch/php/d.php?f=/opensource/cmd5/cmd5-$version.tar.gz
+        cmd5-0.1-fixes.patch)
+
+build()
+{
+  cd cmd5-$version
+
+  make
+
+  install -d $ROOT/bin
+  install -m 755 cmd5 $ROOT/bin
+
+  install -d $ROOT/share/doc/cmd5
+  install -m 644 README README.html $ROOT/share/doc/cmd5
+}
+
+# EOF

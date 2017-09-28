@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Shows process information and statistics using the kernel /proc interface.
+#  psinfo shows process information and statistics using the kernel /proc
+#  interface. This information includes: process state, environment,
+#  arguments and flags; CPU usage; scheduling; I/O usage; virtual memory
+#  status; pagefaults; capabilities; and signals. psinfo is useful for
+#  providing a detailed view of the current state of an application when
+#  diagnosing issues or performance problems.
+#  .
+# URL: http://www.ward.nu/computer/psinfo
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=psinfo
+version=0.1
+release=1
+source=(http://www.ward.nu/computer/psinfo/psinfo-$version.tar.gz)
+
+build()
+{
+  cd psinfo-$version
+
+  install -d $ROOT/bin
+
+  make
+  make TARGETDIR="$ROOT/bin" install
+
+  install -d $ROOT/share/doc/psinfo
+  install -m 644 README $ROOT/share/doc/psinfo
+}
+
+# EOF

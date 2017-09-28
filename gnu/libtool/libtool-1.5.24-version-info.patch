@@ -1,0 +1,53 @@
+diff -r -u libtool-1.5.24_orig/ltmain.in libtool-1.5.24/ltmain.in
+--- libtool-1.5.24_orig/ltmain.in	2007-09-10 02:49:39.000000000 +0200
++++ libtool-1.5.24/ltmain.in	2007-09-10 02:51:46.000000000 +0200
+@@ -1293,6 +1293,11 @@
+ 	  prev=
+ 	  continue
+ 	  ;;
++	vinfo)
++	  vinfo="$arg"
++	  prev=
++	  continue
++	  ;;
+ 	objectlist)
+ 	  if test -f "$arg"; then
+ 	    save_arg=$arg
+@@ -2638,10 +2643,11 @@
+ 	      case $host in
+ 	      *cygwin* | mingw*)
+ 		major=`expr $current - $age`
+-		versuffix="-$major"
++		versuffix="${major:+-$major}"
+ 		;;
+ 	      esac
+ 	      eval soname=\"$soname_spec\"
++        soname=${soname//--/-}
+ 	    else
+ 	      soname="$realname"
+ 	    fi
+@@ -3281,11 +3282,11 @@
+ 	  ;;
+ 	esac
+ 
+-	if test "$age" -gt "$current"; then
+-	  $echo "$modename: AGE \`$age' is greater than the current interface number \`$current'" 1>&2
+-	  $echo "$modename: \`$vinfo' is not valid version information" 1>&2
+-	  exit $EXIT_FAILURE
+-	fi
++#	if test "$age" -gt "$current"; then
++#	  $echo "$modename: AGE \`$age' is greater than the current interface number \`$current'" 1>&2
++#	  $echo "$modename: \`$vinfo' is not valid version information" 1>&2
++#	  exit $EXIT_FAILURE
++#	fi
+ 
+ 	# Calculate the version variables.
+ 	major=
+@@ -3958,6 +3954,7 @@
+ 
+ 	if test -n "$soname_spec"; then
+ 	  eval soname=\"$soname_spec\"
++    soname=${soname//--/-}
+ 	else
+ 	  soname="$realname"
+ 	fi

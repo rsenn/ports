@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description:
+# URL: http://download.savannah.gnu.org/releases/pysndfile/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=python-sndfile
+version=0.1
+release=1
+source=(http://download.savannah.gnu.org/releases/pysndfile/python-sndfile-0.1.tar.gz)
+
+build()
+{
+  cd python-sndfile-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --mandir="$prefix/share/man"
+
+  make
+  make DESTDIR="$PKG" install
+
+  rm -f ChangeLog TODO* NEWS README INSTALL
+
+  install -d $ROOT/share/doc/python-sndfile
+  install -m 644 [A-Z]*[A-Z]* $ROOT/share/doc/python-sndfile
+}

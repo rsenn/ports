@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Command-line tools for building local-domain client-server applications
+# URL: http://www.superscript.com/ucspi-ipc/intro.html
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=ucspi-ipc
+version=0.67
+release=1
+source=(http://www.superscript.com/ucspi-ipc/ucspi-ipc-$version.tar.gz)
+
+build()
+{
+  cd host/superscript.com/net/ucspi-ipc-$version
+
+  package/compile
+
+  install -d $ROOT/bin
+  install -m 755 command/* $ROOT/bin
+
+  install -d $ROOT/share/doc/ucspi-ipc
+  install -m 644 src/CHANGES src/TODO $ROOT/share/doc/ucspi-ipc
+
+#  make
+#  make PREFIX="$ROOT" install
+}
+
+# EOF

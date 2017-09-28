@@ -1,0 +1,87 @@
+Only in file-4.17/doc: file.1
+Only in file-4.17/doc: libmagic.3
+Only in file-4.17/doc: magic.4
+Only in file-4.17/magic: magic
+Only in file-4.17/magic: magic.mgc
+Only in file-4.17/magic: magic.mime.mgc
+diff -r -u -- file-4.17_orig/src/apprentice.c file-4.17/src/apprentice.c
+--- file-4.17_orig/src/apprentice.c	2007-06-18 16:25:19.000000000 +0000
++++ file-4.17/src/apprentice.c	2007-06-18 16:28:30.000000000 +0000
+@@ -220,10 +220,12 @@
+ 	if (p == NULL)
+ 		return;
+ 	switch (type) {
++#ifdef QUICK
+ 	case 2:
+ 		p--;
+ 		(void)munmap((void *)p, sizeof(*p) * (entries + 1));
+ 		break;
++#endif
+ 	case 1:
+ 		p--;
+ 		/*FALLTHROUGH*/
+diff -r -u -- file-4.17_orig/src/compress.c file-4.17/src/compress.c
+--- file-4.17_orig/src/compress.c	2007-06-18 16:25:19.000000000 +0000
++++ file-4.17/src/compress.c	2007-06-18 16:28:00.000000000 +0000
+@@ -322,6 +322,10 @@
+ 	if (method == 2)
+ 		return uncompressgzipped(ms, old, newch, n);
+ #endif
++  
++#ifdef __MINGW32__
++  return 0;
++#else
+ 	(void)fflush(stdout);
+ 	(void)fflush(stderr);
+ 
+@@ -433,4 +437,5 @@
+ #endif
+ 		return n;
+ 	}
++#endif
+ }
+Only in file-4.17/src: file
+diff -r -u -- file-4.17_orig/src/file.c file-4.17/src/file.c
+--- file-4.17_orig/src/file.c	2007-06-18 16:25:19.000000000 +0000
++++ file-4.17/src/file.c	2007-06-18 16:28:47.000000000 +0000
+@@ -66,7 +66,9 @@
+ #undef HAVE_GETOPT_LONG
+ #endif
+ 
++#ifndef __MINGW32__
+ #include <netinet/in.h>		/* for byte swapping */
++#endif
+ 
+ #include "patchlevel.h"
+ 
+diff -r -u -- file-4.17_orig/src/magic.c file-4.17/src/magic.c
+--- file-4.17_orig/src/magic.c	2007-06-18 16:25:19.000000000 +0000
++++ file-4.17/src/magic.c	2007-06-18 16:25:32.000000000 +0000
+@@ -57,7 +57,9 @@
+ #include <locale.h>
+ #endif
+ 
++#ifndef __MINGW32__
+ #include <netinet/in.h>		/* for byte swapping */
++#endif
+ 
+ #include "patchlevel.h"
+ 
+diff -r -u -- file-4.17_orig/src/readelf.c file-4.17/src/readelf.c
+--- file-4.17_orig/src/readelf.c	2007-06-18 16:25:19.000000000 +0000
++++ file-4.17/src/readelf.c	2007-06-18 16:26:35.000000000 +0000
+@@ -403,10 +403,10 @@
+ 		 * p = patchlevel
+ 		 */
+ 		if (desc > 100000000U) {
+-			u_int ver_patch = (desc / 100) % 100;
+-			u_int ver_rel = (desc / 10000) % 100;
+-			u_int ver_min = (desc / 1000000) % 100;
+-			u_int ver_maj = desc / 100000000;
++			unsigned int ver_patch = (desc / 100) % 100;
++			unsigned int ver_rel = (desc / 10000) % 100;
++			unsigned int ver_min = (desc / 1000000) % 100;
++			unsigned int ver_maj = desc / 100000000;
+ 
+ 			if (file_printf(ms, " %u.%u", ver_maj, ver_min) == -1)
+ 				return size;

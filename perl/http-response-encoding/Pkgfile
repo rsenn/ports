@@ -1,0 +1,27 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Adds encoding() to HTTP::Response
+# URL: 
+# Maintainer: 
+# Depends on: 
+
+name=http-response-encoding
+version=0.05
+release=1
+source=(http://search.cpan.org/CPAN/authors/id/D/DA/DANKOGAI/HTTP-Response-Encoding-0.05.tar.gz)
+
+build() 
+{
+  cd HTTP-Response-Encoding-0.05
+  
+  perl Makefile.PL installdirs=vendor
+
+  make \
+      DESTDIR="$PKG" \
+    install
+
+  install -d $ROOT/share/doc/http-response-encoding
+  install -m 644 Changes MANIFEST README $ROOT/share/doc/http-response-encoding
+}
+
+# EOF

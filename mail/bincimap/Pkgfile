@@ -1,0 +1,38 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A well designed IMAP server for Maildir depositories.
+#  Binc IMAP is a well designed, modular IMAP server for Maildir. Its goals
+#  are to be secure, stable, and fast, yet flexible and easy to maintain. It
+#  is designed to be familiar for qmail-pop3d users, uses checkpassword to
+#  authenticate, and is very easy to set up.
+#  .
+# URL: http://www.bincimap.org/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=bincimap
+version=1.2.13
+release=1
+source=(http://www.bincimap.org/dl/tarballs/1.2/bincimap-${version}final.tar.bz2)
+
+build()
+{
+  cd bincimap-${version}final
+
+  case $prefix in
+    "/usr") sysconfdir="/etc" localstatedir="/var" ;;
+  esac
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --prefix="$prefix" \
+     --mandir="$prefix/share/man" \
+     --sysconfdir="${sysconfdir=$prefix/etc}" \
+     --localstatedir="${sysconfdir}"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

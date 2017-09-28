@@ -1,0 +1,37 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An xsl stylesheet for generating a classic GNU-style ChangeLog from a subversion repository log
+# It is made from several changelog-like scripts using common xslt
+# constructs found in different places. This is just my implementation.
+#
+# I made it because it was the only thing that I missed from cvs after I
+# converted a repository to subversion. I used cvs2cl before.
+#
+# URL: http://ch.tudelft.nl/~arthur/svn2cl/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=svn2cl
+version=0.10
+release=1
+source=(http://ch.tudelft.nl/~arthur/svn2cl/svn2cl-$version.tar.gz
+        svn2cl-0.10-datadir.patch)
+
+build()
+{
+  cd svn2cl-$version
+
+  patch -N -p1 -i $SRC/svn2cl-0.10-datadir.patch
+
+  install -d $ROOT/bin
+  install -m 755 svn2cl.sh $ROOT/bin/svn2cl
+
+  install -d $ROOT/share/svn2cl
+  install -m 644 *.{css,xsl} $ROOT/share/svn2cl
+
+  install -d $ROOT/share/doc/svn2cl
+  install -m 644 [A-Z]*[A-Z]* *.xml $ROOT/share/doc/svn2cl
+
+  install -d $ROOT/share/man/man1
+  install -m 644 svn2cl.1 $ROOT/share/man/man1
+}

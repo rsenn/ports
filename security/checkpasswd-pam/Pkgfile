@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A PAM-based checkpassword tool.
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=checkpassword-pam
+version=0.99
+release=1
+source=($mirror_sf/checkpasswd-pam/checkpassword-pam-$version.tar.gz)
+
+build()
+{
+  cd checkpassword-pam-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --mandir="$prefix/share/man"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/checkpasswd-pam
+  install -m 644 README AUTHORS COPYING ChangeLog INSTALL NEWS $ROOT/share/doc/checkpasswd-pam
+
+  chmod 4711 $ROOT/bin/checkpassword-pam
+}
+
+# EOF

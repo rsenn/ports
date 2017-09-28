@@ -1,0 +1,354 @@
+diff -ru -x CVS -ru jed-0.99-16_orig/lib/idl.sl jed-0.99-16/lib/idl.sl
+--- jed-0.99-16_orig/lib/idl.sl	2006-06-08 09:48:49.000000000 +0200
++++ jed-0.99-16/lib/idl.sl	2006-06-08 09:48:58.000000000 +0200
+@@ -1,254 +1,79 @@
+-% idl mode
++% JavaScript mode is just a superset of C mode so make sure it is loaded.
++require ("cmode");
+ 
+-$1 = "IDL";
+-create_syntax_table ($1);
++$1 = "idl";
+ 
+-define_syntax (";", "", '%', $1);
++create_syntax_table ($1);
++define_syntax ("/*", "*/", '%', $1);
++define_syntax ("//", "", '%', $1);
+ define_syntax ("([{", ")]}", '(', $1);
+-%define_syntax ('"', '"', $1);
+-define_syntax ('\'', '"', $1);
++define_syntax ('"', '"', $1);
++define_syntax ('\'', '\'', $1);
+ define_syntax ('\\', '\\', $1);
+-define_syntax ("$0-9a-zA-Z_", 'w', $1);        % words
++define_syntax ("0-9a-zA-Z_", 'w', $1);        % words
+ define_syntax ("-+0-9a-fA-F.xXL", '0', $1);   % Numbers
+-define_syntax (",.?:", ',', $1);
++define_syntax (",;.?:", ',', $1);
++define_syntax ('#', '#', $1);
+ define_syntax ("%-+/&*=<>|!~^", '+', $1);
+-define_syntax ('@', '#', $1);
++set_syntax_flags ($1, 4);
+ 
+-set_syntax_flags ($1, 1);	       %  case insensitive
++#ifdef HAS_DFA_SYNTAX
++%%% DFA_CACHE_BEGIN %%%
++static define setup_dfa_callback (name)
++{
++   dfa_enable_highlight_cache("idlmode.dfa", name);
++   dfa_define_highlight_rule("^[ \t]*#", "PQpreprocess", name);
++   dfa_define_highlight_rule("//.*", "comment", name);
++   dfa_define_highlight_rule("/\\*.*\\*/", "Qcomment", name);
++   dfa_define_highlight_rule("^([^/]|/[^\\*])*\\*/", "Qcomment", name);
++   dfa_define_highlight_rule("/\\*.*", "comment", name);
++   dfa_define_highlight_rule("^[ \t]*\\*+([ \t].*)?$", "comment", name);
++   dfa_define_highlight_rule("[A-Za-z_\\$][A-Za-z_0-9\\$]*", "Knormal", name);
++   dfa_define_highlight_rule("[0-9]+(\\.[0-9]*)?([Ee][\\+\\-]?[0-9]*)?",
++			 "number", name);
++   dfa_define_highlight_rule("0[xX][0-9A-Fa-f]*[LU]*", "number", name);
++   dfa_define_highlight_rule("[0-9]+[LU]*", "number", name);
++   dfa_define_highlight_rule("\"([^\"\\\\]|\\\\.)*\"", "string", name);
++   dfa_define_highlight_rule("\"([^\"\\\\]|\\\\.)*\\\\?$", "string", name);
++   dfa_define_highlight_rule("'([^'\\\\]|\\\\.)*'", "string", name);
++   dfa_define_highlight_rule("'([^'\\\\]|\\\\.)*\\\\?$", "string", name);
++   dfa_define_highlight_rule("[ \t]+", "normal", name);
++   dfa_define_highlight_rule("[\\(\\[{}\\]\\),;\\.\\?:]", "delimiter", name);
++   dfa_define_highlight_rule("[%\\-\\+/&\\*=<>\\|!~\\^]", "operator", name);
++   dfa_build_highlight_table(name);
++}
++dfa_set_init_callback (&setup_dfa_callback, "idl");
++%%% DFA_CACHE_END %%%
++#endif
+ 
+ % These are IDL reserved words
+ 
+ () = define_keywords ($1, "$", 1);
+-() = define_keywords ($1, "doeqgegtifleltneofor", 2);
+-() = define_keywords ($1, "andendformodnotproxor", 3);
+-() = define_keywords ($1, "caseelsegotothen", 4);
+-() = define_keywords ($1, "beginendifuntilwhile", 5);
+-() = define_keywords ($1, "commonendforendrependwhirepeatreturn", 6);
+-() = define_keywords ($1, "endcaseendelse", 7);
+-() = define_keywords ($1, "endwhilefunctionon_error", 8);
+-() = define_keywords ($1, "endrepeat", 9);
+-() = define_keywords ($1, "on_ioerror", 10);
+-
+-define_keywords_n ($1,"abscoseofexpfixhdrmaxminsintan", 3, 1);
+-define_keywords_n ($1,"alogplotsavesizesortsqrtstopuniqwset", 4, 1);
+-define_keywords_n ($1,"closefloatflooropenropenwplotsprintranksreadfreadsreadurebinspawntotalwherewshow", 5, 1);
+-define_keywords_n ($1,"alog10dblarrdoublefinitefltarrindgenintarrlonarrprintfstrarrstringstrlenstrmidstrposstrputwriteuwindow", 6, 1);
+-define_keywords_n ($1,"defsysvdindgenexecutefindgenget_lunintegerrandomnrandomustr_sepstretchstrtrim", 7, 1);
+-define_keywords_n ($1,"findfilefree_lunn_params", 8, 1);
+-define_keywords_n ($1,"histogramimaginaryreplicatestrupcasetranspose", 9, 1);
+-define_keywords_n ($1,"n_elementsstrlowcasestrmessage", 10, 1);
+-define_keywords_n ($1,"keyword_setstrcompress", 11, 1);
+-
+-% idl indentation routines
+-
+-define idl_find_effective_eol ()
+-{
+-   bol ();
+-   while (ffind_char (';'))
+-     {
+-	go_right_1 ();
+-	if (parse_to_point () == -2)
+-	  {
+-	     go_left_1 ();
+-	     return;
+-	  }
+-     }
+-   eol ();
+-}
+-
+-define idl_beginning_of_statement ()
+-{
+-   variable n = 0;
+-   bol_skip_white ();
+-   
+-   if (looking_at ("pro ") or looking_at ("function "))
+-     {
+-	return 0;
+-     }
+-   
+-   while (up_1 ())
+-     {
+-	idl_find_effective_eol (); bskip_white ();
+-	!if (blooking_at ("$"))
+-	  {
+-#iffalse
+-	     if (bolp ())
+-	       {
+-		  skip_white ();
+-		  if (looking_at_char (';')) continue;
+-	       }
+-#endif     
+-	     go_down_1 ();
+-	     break;
+-	  }
+-	n++;
+-     }
+-   bol_skip_white ();
+-   return n;
+-}
+-
+-define idl_indent_to (col)
+-{
+-   push_spot ();
+-   bol_skip_white ();
+-   if (col != what_column ())
+-     {
+-	col--;
+-	bol_trim ();
+-	whitespace (col);
+-     }
+-   pop_spot ();
+-}
+-
+-define idl_looking_at_block (word, begin)
+-{
+-   !if (looking_at (word)) return 0;
+-   EXIT_BLOCK
+-     {
+-	pop_spot ();
+-     }
+-   
+-   push_spot ();
+-   go_right (strlen (word));
+-   if (ffind (begin)) return 1;
+-   do 
+-     {
+-	idl_find_effective_eol ();
+-	bskip_white ();
+-	!if (blooking_at ("$")) break;
+-     }
+-   while (down (1));
+-   bol ();
+-   return ffind(begin);
+-}
+-
+-
+-define idl_is_block_beginnning ()
+-{
+-   push_spot ();
+-   bol_skip_white ();
+-   orelse
+-     {idl_looking_at_block ("if ", " begin")}
+-     {idl_looking_at_block ("while", " begin")}
+-     {idl_looking_at_block ("else ", " begin")}
+-     {idl_looking_at_block ("for ", " begin")}
+-     {idl_looking_at_block ("case ", " of")}
+-     {idl_looking_at_block ("endif else", " begin")}
+-     {idl_looking_at_block ("repeat", " begin")}
+-     {looking_at ("function ")}
+-     {looking_at ("pro ")}
+-     {
+-	idl_find_effective_eol (),
+-	bskip_chars ("$ \t"),
+-	blooking_at ("BEGIN") and bfind(":")
+-     };
+-
+-   pop_spot ();
+-}
+-
+-custom_variable ("Idl_Indent_Amount", 2);
+-define idl_indent_line ()
+-{
+-   variable len = 0, extra_indent = 0;
+-   variable word;
+-   
+-   push_spot ();
+-   EXIT_BLOCK
+-     {
+-	pop_spot ();
+-	idl_indent_to (len + extra_indent);
+-	push_mark ();
+-	bskip_white ();
+-	pop_mark (not(bolp ()), skip_white ());
+-     }
+-   
+-
+-   if (idl_beginning_of_statement ())
+-     {
+-	push_mark ();
+-	pop_spot ();
+-	push_spot ();
+-	bol ();
+-	if (1 == find_matching_delimiter (')'))
+-	  {
+-	     len = what_column ();
+-	     pop_mark_0 ();
+-	     len++;
+-	     return;
+-	  }
+-	pop_mark_1 ();
+-	if (looking_at ("pro ") or looking_at ("function "))
+-	  {
+-	     () = ffind_char (' ');
+-	     skip_white ();
+-	  }
+-	skip_chars ("A-Za-z$_!");
+-	len = what_column () + Idl_Indent_Amount;
+-	return;
+-     }
+-   
+-   if (looking_at_char ('@')) return;
+-   
+-   if (looking_at ("end")) extra_indent = -Idl_Indent_Amount;
+-   else if (looking_at ("else"))
+-     {
+-	go_right (4); skip_white ();
+-	if (not(looking_at_char (':')))
+-	  {
+-	     extra_indent = -Idl_Indent_Amount;
+-	  }
+-     }
+-   
+-   
+-   !if (up_1 ())
+-     {
+-	len = 0;
+-	return;
+-     }
+-   
+-   do
+-     {
+-	bol_skip_white ();
+-	!if (eolp () or looking_at_char (';') or looking_at_char ('@'))
+-	  break;
+-     }
+-   while (up_1 ());
+-   () = idl_beginning_of_statement ();
+-   len = what_column ();
+-   
+-   if (idl_is_block_beginnning ())
+-     {
+-	len += Idl_Indent_Amount;
+-     }
+-}
+-
+-define idl_newline_and_indent ()
+-{
+-   if (idl_is_block_beginnning ()) idl_indent_line ();
+-   bskip_white ();
+-   if (blooking_at (",")) insert (" $");
+-   newline ();
+-   idl_indent_line ();
+-}
+-
+-$1 = "IDL";
+-!if (keymap_p ($1))
+-{
+-   make_keymap ($1);
+-   definekey ("newline_and_indent", "\r", $1);
+-   definekey ("indent_line", "\t", $1);
+-}
++() = define_keywords ($1, "in", 2);
++%() = define_keywords ($1, "andendformodnotproxor", 3);
++() = define_keywords ($1, "longvoid", 4);
++() = define_keywords ($1, "constshort", 5);
++() = define_keywords ($1, "moduleraises", 6);
++() = define_keywords ($1, "booleantypedef", 7);
++() = define_keywords ($1, "readonlysequenceunsigned", 8);
++() = define_keywords ($1, "attributeexceptioninterfacevaluetype", 9);
++%() = define_keywords ($1, "on_ioerror", 10);
++
++%define_keywords_n ($1,"abscoseofexpfixhdrmaxminsintan", 3, 1);
++%define_keywords_n ($1,"alogplotsavesizesortsqrtstopuniqwset", 4, 1);
++%define_keywords_n ($1,"closefloatflooropenropenwplotsprintranksreadfreadsreadurebinspawntotalwherewshow", 5, 1);
++%define_keywords_n ($1,"alog10dblarrdoublefinitefltarrindgenintarrlonarrprintfstrarrstringstrlenstrmidstrposstrputwriteuwindow", 6, 1);
++%define_keywords_n ($1,"defsysvdindgenexecutefindgenget_lunintegerrandomnrandomustr_sepstretchstrtrim", 7, 1);
++%define_keywords_n ($1,"findfilefree_lunn_params", 8, 1);
++%define_keywords_n ($1,"histogramimaginaryreplicatestrupcasetranspose", 9, 1);
++%define_keywords_n ($1,"n_elementsstrlowcasestrmessage", 10, 1);
++%define_keywords_n ($1,"keyword_setstrcompress", 11, 1);
+ 
+ define idl_mode ()
+ {
+-   variable idl = "IDL";
+-   set_mode (idl, 0);
++   variable idl = "idl";
++   c_mode ();
++   set_mode (idl, 2);
+    use_syntax_table (idl);
+-   use_keymap (idl);
+-   set_buffer_hook ("indent_hook", "idl_indent_line");
+-   set_buffer_hook ("newline_indent_hook", "idl_newline_and_indent");
+-   run_mode_hooks ("idl_mode_hook");
+-   % This is called after the hook to give the hook a chance to load the
+-   % abbrev table.
+-   if (abbrev_table_p (idl)) use_abbrev_table (idl);
++   run_mode_hooks("idl_mode_hook");
+ }
+diff -ru -x CVS -ru jed-0.99-16_orig/lib/jed.conf jed-0.99-16/lib/jed.conf
+--- jed-0.99-16_orig/lib/jed.conf	2006-06-08 09:48:49.000000000 +0200
++++ jed-0.99-16/lib/jed.conf	2006-06-08 09:49:02.000000000 +0200
+@@ -13,12 +13,17 @@
+ add_mode_for_extension("c","l");
+ add_mode_for_extension("c","cc");
+ add_mode_for_extension("c","hh");
++add_mode_for_extension("idl","idl");
+ add_mode_for_extension("js","js");
++add_mode_for_extension("js","css");
+ add_mode_for_extension("sh","ebuild");
+ add_mode_for_extension("sh","nexconfig");
+ add_mode_for_extension("sh","nexmonitor");
+-add_mode_for_extension("make","in");
+-add_mode_for_extension("make","");
++add_mode_for_extension("sh","configure.in");
++add_mode_for_extension("sh","in");
++add_mode_for_extension("sh","ac");
++add_mode_for_extension("sh","mk");
++add_mode_for_extension("sh","");
+ %add_mode_for_extension("sh","");
+ add_mode_for_extension("sh","am");
+ add_mode_for_extension("sh","m4");
+@@ -200,7 +205,8 @@
+ %---------------------------------------------------------------------------
+ % C-mode indentation style
+ %---------------------------------------------------------------------------
+-c_set_style ("nexbyte"); % or "linux", "gnu", "bsd", "k&r"
++%c_set_style ("nexbyte"); % or "linux", "gnu", "bsd", "k&r"
++c_set_style ("smolen"); % or "linux", "gnu", "bsd", "k&r"
+ 
+ #ifdef IBMPC_SYSTEM
+ % If non-zero, treat file names as case sensitive

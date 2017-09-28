@@ -1,0 +1,31 @@
+diff -r -u -- FreeLing-1.5_orig/data/Makefile.am FreeLing-1.5/data/Makefile.am
+--- FreeLing-1.5_orig/data/Makefile.am	2007-05-10 17:22:29.000000000 +0200
++++ FreeLing-1.5/data/Makefile.am	2007-05-10 17:22:44.000000000 +0200
+@@ -44,9 +44,9 @@
+ 	@for lg in $(languages); do \
+ 	   echo "...Indexing "$$lg" dictionary, please wait."; \
+ 	   rm -f $(pkgdatadir)/$$lg/maco.db; \
+-	   zcat $(pkgdatadir)/$$lg/dicc.src.gz | $(bindir)/indexdict $(pkgdatadir)/$$lg/maco.db; \
++	   zcat $(pkgdatadir)/$$lg/dicc.src.gz | $(EXE) $(bindir)/indexdict $(pkgdatadir)/$$lg/maco.db; \
+ 	   chmod +r $(pkgdatadir)/$$lg/maco.db; \
+ 	   rm -f $(pkgdatadir)/$$lg/senses.db; \
+-	   zcat $(pkgdatadir)/$$lg/senses.src.gz | $(bindir)/indexdict $(pkgdatadir)/$$lg/senses.db; \
++	   zcat $(pkgdatadir)/$$lg/senses.src.gz | $(EXE) $(bindir)/indexdict $(pkgdatadir)/$$lg/senses.db; \
+ 	   chmod +r $(pkgdatadir)/$$lg/senses.db; \
+ 	done
+diff -r -u -- FreeLing-1.5_orig/data/Makefile.in FreeLing-1.5/data/Makefile.in
+--- FreeLing-1.5_orig/data/Makefile.in	2007-05-10 17:22:29.000000000 +0200
++++ FreeLing-1.5/data/Makefile.in	2007-05-10 17:22:54.000000000 +0200
+@@ -652,10 +652,10 @@
+ 	@for lg in $(languages); do \
+ 	   echo "...Indexing "$$lg" dictionary, please wait."; \
+ 	   rm -f $(pkgdatadir)/$$lg/maco.db; \
+-	   zcat $(pkgdatadir)/$$lg/dicc.src.gz | $(bindir)/indexdict $(pkgdatadir)/$$lg/maco.db; \
++	   zcat $(pkgdatadir)/$$lg/dicc.src.gz | $(EXE) $(bindir)/indexdict $(pkgdatadir)/$$lg/maco.db; \
+ 	   chmod +r $(pkgdatadir)/$$lg/maco.db; \
+ 	   rm -f $(pkgdatadir)/$$lg/senses.db; \
+-	   zcat $(pkgdatadir)/$$lg/senses.src.gz | $(bindir)/indexdict $(pkgdatadir)/$$lg/senses.db; \
++	   zcat $(pkgdatadir)/$$lg/senses.src.gz | $(EXE) $(bindir)/indexdict $(pkgdatadir)/$$lg/senses.db; \
+ 	   chmod +r $(pkgdatadir)/$$lg/senses.db; \
+ 	done
+ # Tell versions [3.59,3.63) of GNU make to not export all variables.

@@ -1,0 +1,774 @@
+--- openssh-4.7p1_orig/auth-rh-rsa.c	2008-05-15 12:31:02.000000000 +0200
++++ openssh-4.7p1/auth-rh-rsa.c	2008-05-15 12:54:20.000000000 +0200
+@@ -42,12 +42,12 @@
+ 
+ int
+ auth_rhosts_rsa_key_allowed(struct passwd *pw, char *cuser, char *chost,
+-    Key *client_host_key)
++    Key *client_host_key, const char *blacklist)
+ {
+ 	char *fp;
+ 	HostStatus host_status;
+ 
+-	if (blacklisted_key(client_host_key)) {
++	if (blacklisted_key(client_host_key, blacklist)) {
+ 		fp = key_fingerprint(client_host_key, SSH_FP_MD5, SSH_FP_HEX);
+ 		if (options.permit_blacklisted_keys)
+ 			logit("Public key %s blacklisted (see "
+@@ -76,7 +76,7 @@
+  * its host key.  Returns true if authentication succeeds.
+  */
+ int
+-auth_rhosts_rsa(Authctxt *authctxt, char *cuser, Key *client_host_key)
++auth_rhosts_rsa(Authctxt *authctxt, char *cuser, Key *client_host_key, const char *blacklist)
+ {
+ 	char *chost;
+ 	struct passwd *pw = authctxt->pw;
+@@ -91,7 +91,7 @@
+ 	chost = (char *)get_canonical_hostname(options.use_dns);
+ 	debug("Rhosts RSA authentication: canonical host %.900s", chost);
+ 
+-	if (!PRIVSEP(auth_rhosts_rsa_key_allowed(pw, cuser, chost, client_host_key))) {
++	if (!PRIVSEP(auth_rhosts_rsa_key_allowed(pw, cuser, chost, client_host_key, blacklist))) {
+ 		debug("Rhosts with RSA host authentication denied: unknown or invalid host key");
+ 		packet_send_debug("Your host key cannot be verified: unknown or invalid host key.");
+ 		return 0;
+--- openssh-4.7p1_orig/auth-rsa.c	2008-05-15 12:31:02.000000000 +0200
++++ openssh-4.7p1/auth-rsa.c	2008-05-15 12:52:37.000000000 +0200
+@@ -167,7 +167,7 @@
+  */
+ 
+ int
+-auth_rsa_key_allowed(struct passwd *pw, BIGNUM *client_n, Key **rkey)
++auth_rsa_key_allowed(struct passwd *pw, BIGNUM *client_n, Key **rkey, const char *blacklist)
+ {
+ 	char line[SSH_MAX_PUBKEY_BYTES], *file;
+ 	int allowed = 0;
+@@ -267,7 +267,7 @@
+ 			    "actual %d vs. announced %d.",
+ 			    file, linenum, BN_num_bits(key->rsa->n), bits);
+ 
+-		if (blacklisted_key(key)) {
++		if (blacklisted_key(key, blacklist)) {
+ 			fp = key_fingerprint(key, SSH_FP_MD5, SSH_FP_HEX);
+ 			if (options.permit_blacklisted_keys)
+ 				logit("Public key %s blacklisted (see "
+@@ -314,7 +314,7 @@
+  * successful.  This may exit if there is a serious protocol violation.
+  */
+ int
+-auth_rsa(Authctxt *authctxt, BIGNUM *client_n)
++auth_rsa(Authctxt *authctxt, BIGNUM *client_n, const char *blacklist)
+ {
+ 	Key *key;
+ 	char *fp;
+@@ -324,7 +324,7 @@
+ 	if (!authctxt->valid)
+ 		return 0;
+ 
+-	if (!PRIVSEP(auth_rsa_key_allowed(pw, client_n, &key))) {
++	if (!PRIVSEP(auth_rsa_key_allowed(pw, client_n, &key, blacklist))) {
+ 		auth_clear_options();
+ 		return (0);
+ 	}
+--- openssh-4.7p1_orig/auth.h	2008-05-15 12:31:02.000000000 +0200
++++ openssh-4.7p1/auth.h	2008-05-15 12:57:19.000000000 +0200
+@@ -108,17 +108,17 @@
+ int
+ auth_rhosts2(struct passwd *, const char *, const char *, const char *);
+ 
+-int	 auth_rhosts_rsa(Authctxt *, char *, Key *);
++int	 auth_rhosts_rsa(Authctxt *, char *, Key *, const char *);
+ int      auth_password(Authctxt *, const char *);
+-int      auth_rsa(Authctxt *, BIGNUM *);
++int      auth_rsa(Authctxt *, BIGNUM *, const char *);
+ int      auth_rsa_challenge_dialog(Key *);
+ BIGNUM	*auth_rsa_generate_challenge(Key *);
+ int	 auth_rsa_verify_response(Key *, BIGNUM *, u_char[]);
+-int	 auth_rsa_key_allowed(struct passwd *, BIGNUM *, Key **);
++int	 auth_rsa_key_allowed(struct passwd *, BIGNUM *, Key **, const char *);
+ 
+-int	 auth_rhosts_rsa_key_allowed(struct passwd *, char *, char *, Key *);
+-int	 hostbased_key_allowed(struct passwd *, const char *, char *, Key *);
+-int	 user_key_allowed(struct passwd *, Key *);
++int	 auth_rhosts_rsa_key_allowed(struct passwd *, char *, char *, Key *, const char *);
++int	 hostbased_key_allowed(struct passwd *, const char *, char *, Key *, const char *);
++int	 user_key_allowed(struct passwd *, Key *, const char *);
+ 
+ #ifdef KRB5
+ int	auth_krb5(Authctxt *authctxt, krb5_data *auth, char **client, krb5_data *);
+--- openssh-4.7p1_orig/auth1.c	2008-05-15 12:31:01.000000000 +0200
++++ openssh-4.7p1/auth1.c	2008-05-15 12:55:46.000000000 +0200
+@@ -45,8 +45,8 @@
+ extern Buffer loginmsg;
+ 
+ static int auth1_process_password(Authctxt *, char *, size_t);
+-static int auth1_process_rsa(Authctxt *, char *, size_t);
+-static int auth1_process_rhosts_rsa(Authctxt *, char *, size_t);
++static int auth1_process_rsa(Authctxt *, char *, size_t, const char *);
++static int auth1_process_rhosts_rsa(Authctxt *, char *, size_t, const char *);
+ static int auth1_process_tis_challenge(Authctxt *, char *, size_t);
+ static int auth1_process_tis_response(Authctxt *, char *, size_t);
+ 
+@@ -136,7 +136,7 @@
+ 
+ /*ARGSUSED*/
+ static int
+-auth1_process_rsa(Authctxt *authctxt, char *info, size_t infolen)
++auth1_process_rsa(Authctxt *authctxt, char *info, size_t infolen, const char *blacklist)
+ {
+ 	int authenticated = 0;
+ 	BIGNUM *n;
+@@ -146,7 +146,7 @@
+ 		fatal("do_authloop: BN_new failed");
+ 	packet_get_bignum(n);
+ 	packet_check_eom();
+-	authenticated = auth_rsa(authctxt, n);
++	authenticated = auth_rsa(authctxt, n, blacklist);
+ 	BN_clear_free(n);
+ 
+ 	return (authenticated);
+@@ -154,7 +154,7 @@
+ 
+ /*ARGSUSED*/
+ static int
+-auth1_process_rhosts_rsa(Authctxt *authctxt, char *info, size_t infolen)
++auth1_process_rhosts_rsa(Authctxt *authctxt, char *info, size_t infolen, const char *blacklist)
+ {
+ 	int keybits, authenticated = 0;
+ 	u_int bits;
+@@ -183,7 +183,7 @@
+ 	packet_check_eom();
+ 
+ 	authenticated = auth_rhosts_rsa(authctxt, client_user,
+-	    client_host_key);
++	    client_host_key, blacklist);
+ 	key_free(client_host_key);
+ 
+ 	snprintf(info, infolen, " ruser %.100s", client_user);
+--- openssh-4.7p1_orig/auth2-hostbased.c	2008-05-15 12:31:02.000000000 +0200
++++ openssh-4.7p1/auth2-hostbased.c	2008-05-15 12:56:31.000000000 +0200
+@@ -55,7 +55,7 @@
+ extern u_int session_id2_len;
+ 
+ static int
+-userauth_hostbased(Authctxt *authctxt)
++userauth_hostbased(Authctxt *authctxt, const char *blacklist)
+ {
+ 	Buffer b;
+ 	Key *key = NULL;
+@@ -119,7 +119,7 @@
+ #endif
+ 	/* test for allowed key and correct signature */
+ 	authenticated = 0;
+-	if (PRIVSEP(hostbased_key_allowed(authctxt->pw, cuser, chost, key)) &&
++	if (PRIVSEP(hostbased_key_allowed(authctxt->pw, cuser, chost, key, blacklist)) &&
+ 	    PRIVSEP(key_verify(key, sig, slen, buffer_ptr(&b),
+ 			buffer_len(&b))) == 1)
+ 		authenticated = 1;
+@@ -140,14 +140,14 @@
+ /* return 1 if given hostkey is allowed */
+ int
+ hostbased_key_allowed(struct passwd *pw, const char *cuser, char *chost,
+-    Key *key)
++    Key *key, const char *blacklist)
+ {
+ 	char *fp;
+ 	const char *resolvedname, *ipaddr, *lookup;
+ 	HostStatus host_status;
+ 	int len;
+ 
+-	if (blacklisted_key(key)) {
++	if (blacklisted_key(key, blacklist)) {
+ 		fp = key_fingerprint(key, SSH_FP_MD5, SSH_FP_HEX);
+ 		if (options.permit_blacklisted_keys)
+ 			logit("Public key %s blacklisted (see "
+--- openssh-4.7p1_orig/auth2-pubkey.c	2008-05-15 12:31:02.000000000 +0200
++++ openssh-4.7p1/auth2-pubkey.c	2008-05-15 12:58:04.000000000 +0200
+@@ -60,7 +60,7 @@
+ extern u_int session_id2_len;
+ 
+ static int
+-userauth_pubkey(Authctxt *authctxt)
++userauth_pubkey(Authctxt *authctxt, const char *blacklist)
+ {
+ 	Buffer b;
+ 	Key *key = NULL;
+@@ -134,7 +134,7 @@
+ #endif
+ 		/* test for correct signature */
+ 		authenticated = 0;
+-		if (PRIVSEP(user_key_allowed(authctxt->pw, key)) &&
++		if (PRIVSEP(user_key_allowed(authctxt->pw, key, blacklist)) &&
+ 		    PRIVSEP(key_verify(key, sig, slen, buffer_ptr(&b),
+ 		    buffer_len(&b))) == 1)
+ 			authenticated = 1;
+@@ -152,7 +152,7 @@
+ 		 * if a user is not allowed to login. is this an
+ 		 * issue? -markus
+ 		 */
+-		if (PRIVSEP(user_key_allowed(authctxt->pw, key))) {
++		if (PRIVSEP(user_key_allowed(authctxt->pw, key, blacklist))) {
+ 			packet_start(SSH2_MSG_USERAUTH_PK_OK);
+ 			packet_put_string(pkalg, alen);
+ 			packet_put_string(pkblob, blen);
+@@ -268,13 +268,13 @@
+ 
+ /* check whether given key is in .ssh/authorized_keys* */
+ int
+-user_key_allowed(struct passwd *pw, Key *key)
++user_key_allowed(struct passwd *pw, Key *key, const char *blacklist)
+ {
+ 	char *fp;
+ 	int success;
+ 	char *file;
+ 
+-	if (blacklisted_key(key)) {
++	if (blacklisted_key(key, blacklist)) {
+ 		fp = key_fingerprint(key, SSH_FP_MD5, SSH_FP_HEX);
+ 		if (options.permit_blacklisted_keys)
+ 			logit("Public key %s blacklisted (see "
+--- openssh-4.7p1_orig/authfile.c	2008-05-15 12:31:02.000000000 +0200
++++ openssh-4.7p1/authfile.c	2008-05-15 12:35:06.000000000 +0200
+@@ -680,18 +680,18 @@
+ }
+ 
+ char *
+-blacklist_filename(const Key *key)
++blacklist_filename(const Key *key, const char *path)
+ {
+ 	char *name;
+ 
+ 	xasprintf(&name, "%s.%s-%u",
+-	    _PATH_BLACKLIST, key_type(key), key_size(key));
++	    path, key_type(key), key_size(key));
+ 	return name;
+ }
+ 
+ /* Scan a blacklist of known-vulnerable keys. */
+ int
+-blacklisted_key(const Key *key)
++blacklisted_key(const Key *key, const char *path)
+ {
+ 	char *blacklist_file;
+ 	int fd = -1;
+@@ -704,7 +704,7 @@
+ 	off_t start, lower, upper;
+ 	int ret = 0;
+ 
+-	blacklist_file = blacklist_filename(key);
++	blacklist_file = blacklist_filename(key, path);
+ 	debug("Checking blacklist file %s", blacklist_file);
+ 	fd = open(blacklist_file, O_RDONLY);
+ 	if (fd < 0)
+--- openssh-4.7p1_orig/authfile.h	2008-05-15 12:31:01.000000000 +0200
++++ openssh-4.7p1/authfile.h	2008-05-15 12:35:14.000000000 +0200
+@@ -23,7 +23,7 @@
+ Key	*key_load_private_pem(int, int, const char *, char **);
+ int	 key_perm_ok(int, const char *);
+ 
+-char	*blacklist_filename(const Key *key);
+-int	 blacklisted_key(const Key *key);
++char	*blacklist_filename(const Key *key, const char *path);
++int	 blacklisted_key(const Key *key, const char *path);
+ 
+ #endif
+--- openssh-4.7p1_orig/includes.h	2008-05-15 12:31:02.000000000 +0200
++++ openssh-4.7p1/includes.h	2008-05-15 12:46:49.000000000 +0200
+@@ -66,7 +66,7 @@
+ #ifdef HAVE_UTMP_H
+ #  include <utmp.h>
+ #endif
+-#ifdef HAVE_UTMPX_H
++#if defined(HAVE_UTMPX_H) && !defined(DISABLE_UTMPX)
+ #  include <utmpx.h>
+ #endif
+ #ifdef HAVE_LASTLOG_H
+--- openssh-4.7p1_orig/monitor.c	2008-05-15 12:31:02.000000000 +0200
++++ openssh-4.7p1/monitor.c	2008-05-15 12:59:12.000000000 +0200
+@@ -142,12 +142,12 @@
+ int mm_answer_bsdauthrespond(int, Buffer *);
+ int mm_answer_skeyquery(int, Buffer *);
+ int mm_answer_skeyrespond(int, Buffer *);
+-int mm_answer_keyallowed(int, Buffer *);
++int mm_answer_keyallowed(int, Buffer *, const char *);
+ int mm_answer_keyverify(int, Buffer *);
+ int mm_answer_pty(int, Buffer *);
+ int mm_answer_pty_cleanup(int, Buffer *);
+ int mm_answer_term(int, Buffer *);
+-int mm_answer_rsa_keyallowed(int, Buffer *);
++int mm_answer_rsa_keyallowed(int, Buffer *, const char *);
+ int mm_answer_rsa_challenge(int, Buffer *);
+ int mm_answer_rsa_response(int, Buffer *);
+ int mm_answer_sesskey(int, Buffer *);
+@@ -1041,7 +1041,7 @@
+ }
+ 
+ int
+-mm_answer_keyallowed(int sock, Buffer *m)
++mm_answer_keyallowed(int sock, Buffer *m, const char *blacklist)
+ {
+ 	Key *key;
+ 	char *cuser, *chost;
+@@ -1069,20 +1069,20 @@
+ 		switch (type) {
+ 		case MM_USERKEY:
+ 			allowed = options.pubkey_authentication &&
+-			    user_key_allowed(authctxt->pw, key);
++			    user_key_allowed(authctxt->pw, key, blacklist);
+ 			auth_method = "publickey";
+ 			break;
+ 		case MM_HOSTKEY:
+ 			allowed = options.hostbased_authentication &&
+ 			    hostbased_key_allowed(authctxt->pw,
+-			    cuser, chost, key);
++			    cuser, chost, key, blacklist);
+ 			auth_method = "hostbased";
+ 			break;
+ 		case MM_RSAHOSTKEY:
+ 			key->type = KEY_RSA1; /* XXX */
+ 			allowed = options.rhosts_rsa_authentication &&
+ 			    auth_rhosts_rsa_key_allowed(authctxt->pw,
+-			    cuser, chost, key);
++			    cuser, chost, key, blacklist);
+ 			auth_method = "rsa";
+ 			break;
+ 		default:
+@@ -1463,7 +1463,7 @@
+ }
+ 
+ int
+-mm_answer_rsa_keyallowed(int sock, Buffer *m)
++mm_answer_rsa_keyallowed(int sock, Buffer *m, const char *blacklist)
+ {
+ 	BIGNUM *client_n;
+ 	Key *key = NULL;
+@@ -1478,7 +1478,7 @@
+ 		if ((client_n = BN_new()) == NULL)
+ 			fatal("%s: BN_new", __func__);
+ 		buffer_get_bignum2(m, client_n);
+-		allowed = auth_rsa_key_allowed(authctxt->pw, client_n, &key);
++		allowed = auth_rsa_key_allowed(authctxt->pw, client_n, &key, blacklist);
+ 		BN_clear_free(client_n);
+ 	}
+ 	buffer_clear(m);
+--- openssh-4.7p1_orig/monitor_wrap.c	2008-05-15 12:31:02.000000000 +0200
++++ openssh-4.7p1/monitor_wrap.c	2008-05-15 13:01:07.000000000 +0200
+@@ -338,26 +338,26 @@
+ }
+ 
+ int
+-mm_user_key_allowed(struct passwd *pw, Key *key)
++mm_user_key_allowed(struct passwd *pw, Key *key, const char *blacklist)
+ {
+-	return (mm_key_allowed(MM_USERKEY, NULL, NULL, key));
++	return (mm_key_allowed(MM_USERKEY, NULL, NULL, key, blacklist));
+ }
+ 
+ int
+ mm_hostbased_key_allowed(struct passwd *pw, char *user, char *host,
+-    Key *key)
++    Key *key, const char *blacklist)
+ {
+-	return (mm_key_allowed(MM_HOSTKEY, user, host, key));
++	return (mm_key_allowed(MM_HOSTKEY, user, host, key, blacklist));
+ }
+ 
+ int
+ mm_auth_rhosts_rsa_key_allowed(struct passwd *pw, char *user,
+-    char *host, Key *key)
++    char *host, Key *key, const char *blacklist)
+ {
+ 	int ret;
+ 
+ 	key->type = KEY_RSA; /* XXX hack for key_to_blob */
+-	ret = mm_key_allowed(MM_RSAHOSTKEY, user, host, key);
++	ret = mm_key_allowed(MM_RSAHOSTKEY, user, host, key, blacklist);
+ 	key->type = KEY_RSA1;
+ 	return (ret);
+ }
+@@ -376,7 +376,7 @@
+ }
+ 
+ int
+-mm_key_allowed(enum mm_keytype type, char *user, char *host, Key *key)
++mm_key_allowed(enum mm_keytype type, char *user, char *host, Key *key, const char *blacklist)
+ {
+ 	Buffer m;
+ 	u_char *blob;
+@@ -1044,7 +1044,7 @@
+ }
+ 
+ int
+-mm_auth_rsa_key_allowed(struct passwd *pw, BIGNUM *client_n, Key **rkey)
++mm_auth_rsa_key_allowed(struct passwd *pw, BIGNUM *client_n, Key **rkey, const char *blacklist)
+ {
+ 	Buffer m;
+ 	Key *key;
+--- openssh-4.7p1_orig/monitor_wrap.h	2008-05-15 12:31:02.000000000 +0200
++++ openssh-4.7p1/monitor_wrap.h	2008-05-15 13:00:10.000000000 +0200
+@@ -45,12 +45,12 @@
+ struct passwd *mm_getpwnamallow(const char *);
+ char *mm_auth2_read_banner(void);
+ int mm_auth_password(struct Authctxt *, char *);
+-int mm_key_allowed(enum mm_keytype, char *, char *, Key *);
+-int mm_user_key_allowed(struct passwd *, Key *);
+-int mm_hostbased_key_allowed(struct passwd *, char *, char *, Key *);
+-int mm_auth_rhosts_rsa_key_allowed(struct passwd *, char *, char *, Key *);
++int mm_key_allowed(enum mm_keytype, char *, char *, Key *, const char *);
++int mm_user_key_allowed(struct passwd *, Key *, const char *);
++int mm_hostbased_key_allowed(struct passwd *, char *, char *, Key *, const char *);
++int mm_auth_rhosts_rsa_key_allowed(struct passwd *, char *, char *, Key *, const char *);
+ int mm_key_verify(Key *, u_char *, u_int, u_char *, u_int);
+-int mm_auth_rsa_key_allowed(struct passwd *, BIGNUM *, Key **);
++int mm_auth_rsa_key_allowed(struct passwd *, BIGNUM *, Key **, const char *);
+ int mm_auth_rsa_verify_response(Key *, BIGNUM *, u_char *);
+ BIGNUM *mm_auth_rsa_generate_challenge(Key *);
+ 
+--- openssh-4.7p1_orig/ssh-vulnkey.c	2008-05-15 12:31:01.000000000 +0200
++++ openssh-4.7p1/ssh-vulnkey.c	2008-05-15 13:01:51.000000000 +0200
+@@ -59,7 +59,7 @@
+ 	_PATH_SSH_USER_PERMITTED_KEYS2,
+ 	NULL
+ };
+-
++static const char *blacklist_path = _PATH_BLACKLIST;
+ static int quiet = 0;
+ 
+ static void
+@@ -68,6 +68,7 @@
+ 	fprintf(stderr, "usage: %s [-aq] [file ...]\n", __progname);
+ 	fprintf(stderr, "Options:\n");
+ 	fprintf(stderr, "  -a          Check keys of all users.\n");
++	fprintf(stderr, "  -B <path>   Specify blacklist path ["_PATH_BLACKLIST"]\n");
+ 	fprintf(stderr, "  -q          Quiet mode.\n");
+ 	exit(1);
+ }
+@@ -90,11 +91,11 @@
+ 	struct stat st;
+ 	int ret = 1;
+ 
+-	blacklist_file = blacklist_filename(key);
++	blacklist_file = blacklist_filename(key, blacklist_path);
+ 	if (stat(blacklist_file, &st) < 0)
+ 		describe_key("Unknown (no blacklist information)",
+ 		    key, comment);
+-	else if (blacklisted_key(key)) {
++	else if (blacklisted_key(key, blacklist_path)) {
+ 		describe_key("COMPROMISED", key, comment);
+ 		ret = 0;
+ 	} else
+@@ -261,6 +262,7 @@
+ 	int opt, all_users = 0;
+ 	int ret = 1;
+ 	extern int optind;
++  extern const char *optarg;
+ 
+ 	/* Ensure that fds 0, 1 and 2 are open or directed to /dev/null */
+ 	sanitise_stdfd();
+@@ -276,11 +278,14 @@
+ 	init_rng();
+ 	seed_rng();
+ 
+-	while ((opt = getopt(argc, argv, "ahq")) != -1) {
++	while ((opt = getopt(argc, argv, "B:ahq")) != -1) {
+ 		switch (opt) {
+ 		case 'a':
+ 			all_users = 1;
+ 			break;
++		case 'B':
++			blacklist_path = optarg;
++			break;
+ 		case 'q':
+ 			quiet = 1;
+ 			break;
+--- openssh-4.7p1_orig/sshd.c	2008-05-15 12:31:02.000000000 +0200
++++ openssh-4.7p1/sshd.c	2008-05-15 13:02:21.000000000 +0200
+@@ -258,6 +258,9 @@
+ static void do_ssh1_kex(void);
+ static void do_ssh2_kex(void);
+ 
++/* Customizeable blacklist path */
++static const char *blacklist_path = _PATH_BLACKLIST;
++
+ /*
+  * Close all listening sockets
+  */
+@@ -1271,7 +1274,7 @@
+ 	initialize_server_options(&options);
+ 
+ 	/* Parse command-line arguments. */
+-	while ((opt = getopt(ac, av, "f:p:b:k:h:g:u:o:dDeiqrtQR46")) != -1) {
++	while ((opt = getopt(ac, av, "f:p:b:k:h:g:u:o:dDeiqrtQR46B:")) != -1) {
+ 		switch (opt) {
+ 		case '4':
+ 			options.address_family = AF_INET;
+@@ -1368,6 +1371,9 @@
+ 				exit(1);
+ 			xfree(line);
+ 			break;
++		case 'B':
++			blacklist_path = optarg;
++			break;
+ 		case '?':
+ 		default:
+ 			usage();
+@@ -1466,7 +1472,7 @@
+ 
+ 	for (i = 0; i < options.num_host_key_files; i++) {
+ 		key = key_load_private(options.host_key_files[i], "", NULL);
+-		if (key && blacklisted_key(key)) {
++		if (key && blacklisted_key(key, blacklist_path)) {
+ 			char *fp;
+ 			fp = key_fingerprint(key, SSH_FP_MD5, SSH_FP_HEX);
+ 			if (options.permit_blacklisted_keys)
+Only in openssh-4.7p1: audit-bsm.o
+Only in openssh-4.7p1: audit.o
+Only in openssh-4.7p1: auth-bsdauth.o
+Only in openssh-4.7p1: auth-chall.o
+Only in openssh-4.7p1: auth-krb5.o
+Only in openssh-4.7p1: auth-options.o
+Only in openssh-4.7p1: auth-pam.o
+Only in openssh-4.7p1: auth-shadow.o
+Only in openssh-4.7p1: auth-sia.o
+Only in openssh-4.7p1: auth-skey.o
+Only in openssh-4.7p1: auth2-chall.o
+Only in openssh-4.7p1: auth2-gss.o
+Only in openssh-4.7p1: auth2-hostbased.o
+Only in openssh-4.7p1: auth2-kbdint.o
+Only in openssh-4.7p1: auth2-none.o
+Only in openssh-4.7p1: auth2-passwd.o
+Only in openssh-4.7p1: auth2-pubkey.o
+diff -ru openssh-4.7p1_orig/auth2.c openssh-4.7p1/auth2.c
+--- openssh-4.7p1_orig/auth2.c	2008-05-15 13:11:52.000000000 +0200
++++ openssh-4.7p1/auth2.c	2008-05-15 13:12:05.000000000 +0200
+@@ -89,7 +89,7 @@
+ /* helper */
+ static Authmethod *authmethod_lookup(const char *);
+ static char *authmethods_get(void);
+-int user_key_allowed(struct passwd *, Key *);
++int user_key_allowed(struct passwd *, Key *, const char *);
+ 
+ /*
+  * loop until authctxt->success == TRUE
+Only in openssh-4.7p1: auth2.o
+Only in openssh-4.7p1: consolekit.o
+Only in openssh-4.7p1: groupaccess.o
+Only in openssh-4.7p1: gss-serv-krb5.o
+Only in openssh-4.7p1: gss-serv.o
+Only in openssh-4.7p1: kexdhs.o
+Only in openssh-4.7p1: kexgexs.o
+Only in openssh-4.7p1: kexgsss.o
+Only in openssh-4.7p1: loginrec.o
+Only in openssh-4.7p1: md5crypt.o
+Only in openssh-4.7p1: monitor.o
+Only in openssh-4.7p1: monitor_mm.o
+Only in openssh-4.7p1: monitor_wrap.o
+Only in openssh-4.7p1: platform.o
+Only in openssh-4.7p1: scp
+Only in openssh-4.7p1: scp.o
+Only in openssh-4.7p1: session.o
+Only in openssh-4.7p1: sftp
+Only in openssh-4.7p1: sftp-client.o
+Only in openssh-4.7p1: sftp-common.o
+Only in openssh-4.7p1: sftp-glob.o
+Only in openssh-4.7p1: sftp-server
+Only in openssh-4.7p1: sftp-server.o
+Only in openssh-4.7p1: sftp.o
+Only in openssh-4.7p1: ssh-add
+Only in openssh-4.7p1: ssh-add.o
+Only in openssh-4.7p1: ssh-agent
+Only in openssh-4.7p1: ssh-agent.o
+Only in openssh-4.7p1: ssh-keygen
+Only in openssh-4.7p1: ssh-keygen.o
+Only in openssh-4.7p1: ssh-keyscan
+Only in openssh-4.7p1: ssh-keyscan.o
+Only in openssh-4.7p1: ssh-keysign
+Only in openssh-4.7p1: ssh-keysign.o
+Only in openssh-4.7p1: ssh-rand-helper
+Only in openssh-4.7p1: ssh-rand-helper.o
+Only in openssh-4.7p1: ssh-vulnkey
+diff -ru openssh-4.7p1_orig/ssh-vulnkey.c openssh-4.7p1/ssh-vulnkey.c
+--- openssh-4.7p1_orig/ssh-vulnkey.c	2008-05-15 13:11:52.000000000 +0200
++++ openssh-4.7p1/ssh-vulnkey.c	2008-05-15 13:12:56.000000000 +0200
+@@ -261,8 +261,6 @@
+ {
+ 	int opt, all_users = 0;
+ 	int ret = 1;
+-	extern int optind;
+-  extern const char *optarg;
+ 
+ 	/* Ensure that fds 0, 1 and 2 are open or directed to /dev/null */
+ 	sanitise_stdfd();
+Only in openssh-4.7p1: ssh-vulnkey.o
+Only in openssh-4.7p1: sshd
+--- openssh-4.7p1/authfile.c	2008-05-15 13:38:10.000000000 +0200
++++ openssh-4.7p1-ubuntu/authfile.c	2008-05-15 13:37:06.000000000 +0200
+@@ -679,13 +679,18 @@
+ 	return NULL;
+ }
+ 
++#define BLACKLIST_PAD_SIZE 1024
++#define BLACKLIST_PAD_BITS (BLACKLIST_PAD_SIZE - 1)
++#define BLACKLIST_PAD_MASK (~(BLACKLIST_PAD_BITS))
++
+ char *
+ blacklist_filename(const Key *key, const char *path)
+ {
+ 	char *name;
+ 
+-	xasprintf(&name, "%s.%s-%u",
+-	    path, key_type(key), key_size(key));
++	xasprintf(&name, "%s.%s-%u", path, 
++            key_type(key),
++           (key_size(key) + BLACKLIST_PAD_BITS) & BLACKLIST_PAD_MASK);
+ 	return name;
+ }
+ 
+openssh-4.7p1/config.h.in
+openssh-4.7p1/configure
+openssh-4.7p1/configure.ac
+openssh-4.7p1/defines.h
+openssh-4.7p1/ssh-vulnkey.c
+openssh-4.7p1/config.h.in
+openssh-4.7p1/configure
+openssh-4.7p1/configure.ac
+openssh-4.7p1/defines.h
+Only in openssh-4.7p1: autom4te.cache
+diff -ru openssh-4.7p1_orig/config.h.in openssh-4.7p1/config.h.in
+--- openssh-4.7p1_orig/config.h.in	2008-05-15 15:48:48.000000000 +0200
++++ openssh-4.7p1/config.h.in	2008-05-15 15:49:20.000000000 +0200
+@@ -176,6 +176,9 @@
+ /* Define to 1 if you have the `bindresvport_sa' function. */
+ #undef HAVE_BINDRESVPORT_SA
+ 
++/* Define this if you have BSDgetopt */
++#undef HAVE_BSD_GETOPT
++
+ /* Define this if you have BSDoptarg */
+ #undef HAVE_BSD_OPTARG
+ 
+Only in openssh-4.7p1: config.h.in~
+diff -ru openssh-4.7p1_orig/configure openssh-4.7p1/configure
+--- openssh-4.7p1_orig/configure	2008-05-15 15:48:48.000000000 +0200
++++ openssh-4.7p1/configure	2008-05-15 15:49:28.000000000 +0200
+@@ -9712,6 +9712,95 @@
+ 
+ 
+ 
++{ echo "$as_me:$LINENO: checking for BSDgetopt" >&5
++echo $ECHO_N "checking for BSDgetopt... $ECHO_C" >&6; }
++if test "${ac_cv_func_BSDgetopt+set}" = set; then
++  echo $ECHO_N "(cached) $ECHO_C" >&6
++else
++  cat >conftest.$ac_ext <<_ACEOF
++/* confdefs.h.  */
++_ACEOF
++cat confdefs.h >>conftest.$ac_ext
++cat >>conftest.$ac_ext <<_ACEOF
++/* end confdefs.h.  */
++/* Define BSDgetopt to an innocuous variant, in case <limits.h> declares BSDgetopt.
++   For example, HP-UX 11i <limits.h> declares gettimeofday.  */
++#define BSDgetopt innocuous_BSDgetopt
++
++/* System header to define __stub macros and hopefully few prototypes,
++    which can conflict with char BSDgetopt (); below.
++    Prefer <limits.h> to <assert.h> if __STDC__ is defined, since
++    <limits.h> exists even on freestanding compilers.  */
++
++#ifdef __STDC__
++# include <limits.h>
++#else
++# include <assert.h>
++#endif
++
++#undef BSDgetopt
++
++/* Override any GCC internal prototype to avoid an error.
++   Use char because int might match the return type of a GCC
++   builtin and then its argument prototype would still apply.  */
++#ifdef __cplusplus
++extern "C"
++#endif
++char BSDgetopt ();
++/* The GNU C library defines this for functions which it implements
++    to always fail with ENOSYS.  Some functions are actually named
++    something starting with __ and the normal name is an alias.  */
++#if defined __stub_BSDgetopt || defined __stub___BSDgetopt
++choke me
++#endif
++
++int
++main ()
++{
++return BSDgetopt ();
++  ;
++  return 0;
++}
++_ACEOF
++rm -f conftest.$ac_objext conftest$ac_exeext
++if { (ac_try="$ac_link"
++case "(($ac_try" in
++  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
++  *) ac_try_echo=$ac_try;;
++esac
++eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
++  (eval "$ac_link") 2>conftest.er1
++  ac_status=$?
++  grep -v '^ *+' conftest.er1 >conftest.err
++  rm -f conftest.er1
++  cat conftest.err >&5
++  echo "$as_me:$LINENO: \$? = $ac_status" >&5
++  (exit $ac_status); } && {
++	 test -z "$ac_c_werror_flag" ||
++	 test ! -s conftest.err
++       } && test -s conftest$ac_exeext &&
++       $as_test_x conftest$ac_exeext; then
++  ac_cv_func_BSDgetopt=yes
++else
++  echo "$as_me: failed program was:" >&5
++sed 's/^/| /' conftest.$ac_ext >&5
++
++	ac_cv_func_BSDgetopt=no
++fi
++
++rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
++      conftest$ac_exeext conftest.$ac_ext
++fi
++{ echo "$as_me:$LINENO: result: $ac_cv_func_BSDgetopt" >&5
++echo "${ECHO_T}$ac_cv_func_BSDgetopt" >&6; }
++if test $ac_cv_func_BSDgetopt = yes; then
++
++cat >>confdefs.h <<_ACEOF
++#define HAVE_BSD_GETOPT 1
++_ACEOF
++
++fi
++
+ { echo "$as_me:$LINENO: checking for BSDoptarg" >&5
+ echo $ECHO_N "checking for BSDoptarg... $ECHO_C" >&6; }
+ if test "${ac_cv_func_BSDoptarg+set}" = set; then
+diff -ru openssh-4.7p1_orig/configure.ac openssh-4.7p1/configure.ac
+--- openssh-4.7p1_orig/configure.ac	2008-05-15 15:48:48.000000000 +0200
++++ openssh-4.7p1/configure.ac	2008-05-15 15:49:04.000000000 +0200
+@@ -859,6 +859,7 @@
+ AC_CHECK_FUNC(setsockopt, , AC_CHECK_LIB(socket, setsockopt))
+ 
+ 
++AC_CHECK_FUNC(BSDgetopt, AC_DEFINE_UNQUOTED([HAVE_BSD_GETOPT], [1], [Define this if you have BSDgetopt]))
+ AC_CHECK_FUNC(BSDoptarg, AC_DEFINE_UNQUOTED([HAVE_BSD_OPTARG], [1], [Define this if you have BSDoptarg]))
+ AC_CHECK_FUNC(BSDoptind, AC_DEFINE_UNQUOTED([HAVE_BSD_OPTIND], [1], [Define this if you have BSDoptind]))
+ 
+diff -ru openssh-4.7p1_orig/defines.h openssh-4.7p1/defines.h
+--- openssh-4.7p1_orig/defines.h	2008-05-15 15:48:48.000000000 +0200
++++ openssh-4.7p1/defines.h	2008-05-15 15:49:11.000000000 +0200
+@@ -518,7 +518,9 @@
+ # undef optopt
+ # undef optreset
+ # undef optarg
++#ifdef HAVE_BSD_GETOPT
+ # define getopt(ac, av, o)  BSDgetopt(ac, av, o)
++#endif
+ # define opterr             BSDopterr
+ #ifdef HAVE_BSD_OPTIND
+ # define optind             BSDoptind

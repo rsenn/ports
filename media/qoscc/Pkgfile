@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A software oscilloscope for sound cards and serial multimeters.
+#  QOscC is a highly flexible and configurable software Oscilloscope. It
+#  supports capturing data from audio devices via ALSA, OSS, or JACK,
+#  and serial digital multimeters. Each scope display can be configured
+#  individually to different display types (Y-T, X-Y, and FFT). The
+#  captured data can be stored to data files. This software is intended for
+#  electronic hobbyists who cannot afford a hardware oscilloscope or need
+#  a simple spectrum analyzer, as well as for musicians for doing basic
+#  signal analysis.
+# URL: http://flup.homelinux.org/qoscc.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=qoscc
+version=0.3.1
+release=1
+source=(http://flup.homelinux.org/cpp/qoscc-$version.tar.gz)
+
+build()
+{
+  cd qoscc-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

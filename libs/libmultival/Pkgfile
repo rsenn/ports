@@ -1,0 +1,27 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A library for C++ multi-precision interval arithmetic.
+# URL:
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=libmultival
+version=0.2.1
+release=1
+source=(http://www.losderover.be/old/libmultival/libmultival-$version.tar.gz)
+
+build()
+{
+  cd libmultival-$version
+
+  ./bootstrap
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

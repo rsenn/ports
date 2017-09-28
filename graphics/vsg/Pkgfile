@@ -1,0 +1,34 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A 2D/3D geometric library.
+#  LibVsg (Visaurin Geometric Library) is a 2D/3D software library with a
+#  focus on basic geometric manipulations. Written for use by C programs,
+#  it provides support for single and double precision arithmetics. A Python
+#  wrapper also comes with the distribution.
+#  .
+# URL: http://www.libvsg.org/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=vsg
+version=0.2.0
+release=1
+source=(http://download.berlios.de/vsg/vsg-$version.tar.gz)
+
+build()
+{
+  cd vsg-$version
+
+  #./autogen.sh
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

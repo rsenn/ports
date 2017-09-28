@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A number of simple utilties for manipulating HTML and XML files.
+#  HTML-XML-utils consists of a set of small C programs (filters) that read
+#  HTML and XML files and can add a table of contents, an alphabetical index,
+#  a bibliography, cross-references, numbered headings, remove elements,
+#  count elements, pretty-print them, etc. When it reads HTML, it assumes
+#  the code is correct HTML 4.0 or close to it.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=html-xml-utils
+version=4.5
+release=1
+source=(http://www.w3.org/Tools/HTML-XML-utils/html-xml-utils-$version.tar.gz)
+
+build()
+{
+  cd html-xml-utils-$version
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --${shared:=enable}-shared \
+      --${static:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+}

@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Run a command supervising its execution.
+#  launchtool lets you run a user-supplied command supervising its execution
+#  in many ways, such as controlling its environment, blocking signals,
+#  logging its output, changing user and group permissions, limiting
+#  resource usage, restarting it if it fails, running it continuously,
+#  turning it into a daemon, and more.
+#  .
+# URL: http://people.debian.org/~enrico/launchtool.html
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=launchtool
+version=0.7
+release=1
+source=(http://people.debian.org/~enrico/woody/source/launchtool_$version-1.tar.gz)
+
+build()
+{
+  cd launchtool-$version
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

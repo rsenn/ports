@@ -1,0 +1,60 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Automatic configure script builder.
+#  The standard for FSF source packages. This is only useful if you
+#  write your own programs or if you extensively modify other people's
+#  programs.
+#  .
+#  For an extensive library of additional Autoconf macros, install the
+#  `autoconf-archive' package. For a book that explains how to use
+#  Autoconf, Automake, and Libtool in conjunction, install the
+#  `autobook' package.
+#  .
+#  The Debian project regards the full documentation for autoconf to be
+#  non-free, so it is not included in Debian. Nevertheless, the
+#  non-free distribution that accompanies Debian includes the manual in
+#  its `autoconf-doc' package.
+#  .
+#  This version of autoconf is not compatible with scripts meant for
+#  Autoconf 2.13 or earlier. If you need support for such scripts,
+#  you must also install the autoconf2.13 package.
+#  .
+# URL: 
+# Maintainer: 
+# Depends on: 
+
+name=autoconf2.59
+version=2.59
+release=1
+source=(ftp://ftp.gnu.org/gnu/autoconf/autoconf-$version.tar.bz2)
+
+build() 
+{
+  cd autoconf-$version
+  
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --program-suffix="$version"
+ 
+  pkgdatadir="$prefix/share/autoconf$version"  
+  autoconflibdir="$pkgdatadir/autoconf"
+
+  make autoconflibdir="$autoconflibdir" pkg{data,lib,include}dir="$pkgdatadir"
+
+  sed -i \
+    -e "s,$prefix/share/autoconf\\([^${version%%.*}]\\),$pkgdatadir\\1,g" \
+    -e "s,\\([^_\\\$]autoheader\s*\\)\\([^\._${version%%.*}()]\\),\\1$version\\2,g" \
+    -e "s,\\([^_\\\$]autom4te\s*\\)\\([^\._${version%%.*}()]\\),\\1$version\\2,g" \
+    -e "s,\\([^_\\\$]autoscan\s*\\)\\([^\._${version%%.*}()]\\),\\1$version\\2,g" \
+    -e "s,\\([^_\\\$]autoupdated\s*\\)\\([^\._${version%%.*}()]\\),\\1$version\\2,g" \
+    -e "s,\\([^_\\\$]ifnames\s*\\)\\([^\._${version%%.*}()]\\),\\1$version\\2,g" \
+     `find bin/ lib/ -type f -and -not -name "Makefile*"`
+
+  make autoconflibdir="$autoconflibdir" pkg{data,lib,include}dir="$pkgdatadir" \
+      DESTDIR="$PKG" \
+    install
+}
+
+# EOF

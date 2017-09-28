@@ -1,0 +1,100 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description:
+# Longdescription:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=gcc
+version=4.0.1
+release=1
+source=(svn://gcc.gnu.org/svn/gcc/branches/apple/trunk
+        gcc-5363.patch)
+build()
+{
+  cd trunk
+
+  patch -N -p1 -i $SRC/gcc-5363.patch
+
+  for target in powerpc i386
+  do
+    mkdir build-$target
+    pushd build-$target
+
+    ../configure \
+        --prefix="$prefix" \
+        --build="$build" \
+        --host="$host" \
+        --target="$target-apple-darwin8" \
+        --disable-shared \
+        --disable-nls \
+        --with-libs="$prefix/$target/lib" \
+        --with-headers="$prefix/$target/include" \
+        --enable-languages="c,c++,objc,obj-c++"
+
+    #make configure-host maybe-all-gcc CROSS_SYSTEM_HEADER_DIR="%{rootdir}/%{target}/include"
+    make configure-host maybe-all-gcc
+    pushd gcc
+    make cc1objplus
+    popd
+    popd
+  done
+
+
+
+for target in powerpc i386; do
+
+        PLATDIR="${prefix}/${target}-apple-darwin8"
+
+        for dir in libiberty gcc; do
+               pushd build-${target}/$dir
+
+                       install -d -m 755 ${pkg}${prefix}/lib/gcc/${target}-apple-darwin8/${version}/install-tools/include
+                       make install DESTDIR=${pkg}
+
+                       if [ -f "${pkg}${prefix}/lib/libiberty.a" ]; then
+                               install -d -m 755 ${pkg}$PLATDIR/lib
+                               mv ${pkg}${prefix}/lib/*.a ${pkg}$PLATDIR/lib/
+                       fi
+
+                       if [ -d ${pkg}${prefix}/bin ]; then
+
+                               pushd ${pkg}${prefix}/bin
+                                       if [ ! -e ${target}-apple-darwin8-g++-4.0 ] && [ -e ${target}-apple-darwin8-c++-4.0 ]; then
+                                               ln ${target}-apple-darwin8-c++-4.0 ${target}-apple-darwin8-g++-4.0
+                                       fi
+                                       for file in cpp cc gcc c++ g++ gccbug gcov; do
+#                                                if [ -e ${target}-apple-darwin8-${file} ] && [ ! -e ${target}-apple-darwin8-${file}-4.0 ]; then
+#                                                        mv ${target}-apple-darwin8-${file} ${target}-apple-darwin8-${file}-4.0
+#                                                fi
+                                               if [ -e ${file}-4.0 ] && [ ! -e ${target}-apple-darwin8-${file}-4.0 ]; then
+                                                       mv ${file}-4.0 ${target}-apple-darwin8-${file}-4.0
+                                               fi
+                                       done
+                                       # remove the spares, if any
+                                       rm -f gcc-4.0 g++-4.0 || :
+                                       rm -f *-gcj
+                               popd
+
+                               for badfiles in grepjar fastjar gcj; do
+                                       find ${pkg} -name "*-${badfiles}" -exec rm -rf {} \;
+                               done
+
+                               install -d -m 755 ${pkg}$PLATDIR/bin
+                               pushd ${pkg}$PLATDIR/bin
+                                       for file in `cd ${pkg}${prefix}/bin; ls | grep "^${target}"`; do
+                                               if [ ! -f ${file/$target-apple-darwin8-/} ]; then
+                                                       ln ../../bin/$file ${file/$target-apple-darwin8-/}
+                                               fi
+                                       done
+                               popd
+                       fi
+
+               popd
+
+        done
+done
+
+
+}

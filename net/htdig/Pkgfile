@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Complete world wide web indexing and searching system
+#  The ht://Dig system is a complete WWW indexing and searching system
+#  for a domain or intranet. This system is not meant to replace the need
+#  for internet-wide search systems like Lycos, Infoseek, Google, and
+#  AltaVista. Instead, it is meant to cover the search needs for a single
+#  company, campus, or even a particular sub-section of a Web site.
+#  .
+# URL: http://www.htdig.org/
+# Maintainer:  Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=htdig
+version=3.1.6
+release=1
+source=(http://www.htdig.org/files/htdig-3.1.6.tar.gz)
+
+build()
+{
+  cd htdig-3.1.6
+./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+make
+make DESTDIR="$PKG" install
+}
+
+# EOF

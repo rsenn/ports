@@ -1,0 +1,92 @@
+# $Id: Pkgfile,v 1.3 2007/05/09 21:02:55 roman Exp $
+#
+# Description: IRC daemon
+#  chaosircd is an IRC daemon with commands, channel modes, user modes,
+#  and flood control implemented as runtime (re)loadable modules. DNS and
+#  AUTH (ident) queries are done in a single child process so as to not
+#  waste valuable file descriptors and responsiveness.
+#  It also features a server-server protocol using timestamps for netsplit
+#  handling similar to TS5 (hybrid), and OpenSSL encrypted server-server
+#  and client-server connections.
+# URL: http://oss.digitall.ch/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libssl0.9.8
+# Split: libchaos (libchaos*)
+
+name=chaosircd
+version=2.2.2
+release=3adfinis2
+source=( http://oss.digitall.ch/chaosircd/releases/chaosircd-$version.tar.gz
+        #svn+http://svn.digitall.ch/chaosircd/trunk:chaosircd-trunk
+        chaosircd-2.2.1-install-config-h.patch)
+
+build()
+{
+#  svn co svn+ssh://oss.digitall.ch/data/svn/chaosircd/trunk chaosircd
+
+  cd chaosircd-$version
+
+  #patch -N -p0 -i $SRC/chaosircd-2.2.1-install-config-h.patch
+
+  [ -e autogen.sh ] && sh autogen.sh
+
+  case $prefix in
+    "/usr") sysconfdir="/etc" localstatedir="/var" ;;
+  esac
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --sysconfdir="${sysconfdir=$prefix/etc}" \
+       --localstatedir="${localstatedir=$prefix/var}" \
+       --sharedstatedir="$localstatedir/lib" \
+       --enable-debug \
+       --disable-color \
+       --disable-quiet \
+       --disable-maintainer \
+       --disable-deps \
+       --${shared:=enable}-shared \
+       --${static:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# set up the service for chaosircd
+# -----------------------------------------------------------------------------
+#services()
+#{
+#  config_branch 'chaosircd'#
+#
+#    config_branch 'log'
+#    config_end
+#
+#    config_set 'TITLE'   'ChaosIRCD'
+#    config_set 'PIDFILE' "$prefix/db/$hostname.pid"
+#    config_set 'BIN'     "$prefix/bin/chaosircd"
+#    config_set 'START'   '.*ready.*'
+#    config_set 'STOP'    'Shutdown complete'
+#
+#  config_end
+#}
+#
+#chaosircd()
+#{
+#  exec 2>&1#
+#
+#  # set default values
+#  host=${chaosircd_host:-127.0.0.1}
+#  port=${chaosircd_port:-994}
+#
+#  export PATH="$bindir:$sbindir:$prefix/libexec"
+#
+#  # wait for the listener to become active
+#  if ! inet_wait_unbind tcp $host:$port; then
+#    service_error $host:$port "wasn't available after waiting $inet_timeout msecs"
+#  fi#
+#
+#  # finally execute chaosircd
+#  exec $prefix/bin/argv0 $prefix/bin/chaosircd chaosircd -d
+#}
+

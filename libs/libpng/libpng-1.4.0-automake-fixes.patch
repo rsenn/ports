@@ -1,0 +1,42 @@
+args: -r -u -- libpng-1.4.0beta20_orig libpng-1.4.0beta20
+diff -r -u -- libpng-1.4.0beta20_orig/Makefile libpng-1.4.0beta20/Makefile
+diff -r -u -- libpng-1.4.0beta20_orig/Makefile.am libpng-1.4.0beta20/Makefile.am
+--- libpng-1.4.0beta20_orig/Makefile.am	2008-07-12 13:57:15.000000000 +0200
++++ libpng-1.4.0beta20/Makefile.am	2008-07-12 13:59:45.000000000 +0200
+@@ -69,21 +69,19 @@
+ 
+ #extra source distribution files.
+ EXTRA_DIST= \
+-	ANNOUNCE CHANGES INSTALL KNOWNBUG LICENSE README TODO Y2KINFO \
++	ANNOUNCE CHANGES INSTALL KNOWNBUG LICENSE README TODO \
+ 	pngtest.png pngbar.png pngnow.png pngbar.jpg autogen.sh \
+ 	${srcdir}/projects/cbuilder5/* \
+ 	${srcdir}/projects/beos/* \
+ 	${srcdir}/projects/visualc6/* \
+ 	${srcdir}/projects/visualc71/* \
+-	${srcdir}/projects/wince.txt \
+-	${srcdir}/projects/netware.txt \
+ 	${srcdir}/scripts/* \
+ 	${srcdir}/contrib/gregbook/* \
+ 	${srcdir}/contrib/pngminus/* \
+ 	${srcdir}/contrib/pngsuite/* \
+ 	${srcdir}/contrib/visupng/* \
+ 	$(TESTS) \
+-	example.c libpng.txt pngvcrd.c 
++	example.c pngvcrd.c 
+ 
+ CLEANFILES= pngout.png libpng@PNGLIB_MAJOR@@PNGLIB_MINOR@.pc libpng@PNGLIB_MAJOR@@PNGLIB_MINOR@-config libpng.vers libpng.sym
+ 
+@@ -114,9 +112,9 @@
+ 
+ libpng.vers: libpng.sym
+ 	rm -f $@ $@.new
+-	$(ECHO) PNG@PNGLIB_MAJOR@_0 '{global:' > $@.new
++	echo PNG@PNGLIB_MAJOR@_0 '{global:' > $@.new
+ 	$(SED) s/$$/\;/ libpng.sym >> $@.new
+-	$(ECHO) 'local: *; };' >> $@.new
++	echo 'local: *; };' >> $@.new
+ 	mv $@.new $@
+ 
+ # install the .../include headers as links to the new ones
+diff -r -u -- libpng-1.4.0beta20_orig/config.log libpng-1.4.0beta20/config.log

@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A media management solution for digital photographers.
+#  The Photomaniac Media Library is a media management solution for digital
+#  photographers who have to manage large amounts of digital media. Its
+#  strength is its native support for RAW images, version control, team
+#  functionality, speed, cross-platform compatibility, and cost efficiency.
+# URL: http://sourceforge.net/projects/pm-medialibrary/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=pm-medialibrary
+version=0.2.4
+release=1
+source=($mirror_sf/pm-medialibrary/pm-medialibrary-$version.tar.bz2
+        pm-medialibrary-0.2.4-fixes.patch)
+
+build()
+{
+  cd pm-medialibrary-$version
+
+  patch -p1 -i $SRC/pm-medialibrary-0.2.4-fixes.patch
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

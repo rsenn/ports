@@ -1,0 +1,31 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:48 roman Exp $
+#
+# Description: Tool to tag and rename MP3 and Ogg Vorbis files
+#  Audio Tag Tool is a program to manage the information fields in MP3 and
+#  Ogg Vorbis files (commonly called tags). Tag Tool can be used to edit
+#  tags one by one, but the most useful features are mass tag and mass
+#  rename. These are designed to tag or rename hundreds of files at once,
+#  in any desired format.
+# URL: http://pwp.netcabo.pt/paol/tagtool
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=tagtool
+version=0.12.3
+release=1
+source=($mirror_sf/tagtool/tagtool-$version.tar.bz2)
+
+build()
+{
+  cd tagtool-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --${shared:=enable}-shared \
+       --${static:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+}

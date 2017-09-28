@@ -1,0 +1,30 @@
+diff -ru net-tools-1.60_orig/Makefile net-tools-1.60/Makefile
+--- net-tools-1.60_orig/Makefile	2006-02-21 13:47:42.000000000 +0100
++++ net-tools-1.60/Makefile	2006-02-21 13:48:22.000000000 +0100
+@@ -76,7 +76,7 @@
+ NET_LIB_PATH = lib
+ NET_LIB_NAME = net-tools
+ 
+-PROGS	:= ifconfig hostname arp netstat route rarp slattach plipconfig nameif
++PROGS	:= ifconfig ifconfig.static hostname arp netstat route rarp slattach plipconfig nameif
+ 
+ -include config.make
+ ifeq ($(HAVE_IP_TOOLS),1)
+@@ -187,6 +187,9 @@
+ ifconfig:	$(NET_LIB) ifconfig.o
+ 		$(CC) $(LDFLAGS) -o ifconfig ifconfig.o $(NLIB) $(RESLIB)
+ 		
++ifconfig.static:	$(NET_LIB) ifconfig.o
++		$(CC) -static $(LDFLAGS) -o ifconfig.static ifconfig.o $(NLIB) $(RESLIB)
++		
+ nameif:	nameif.o
+ 		$(CC) $(LDFLAGS) -o nameif nameif.o 
+ 
+@@ -226,6 +229,7 @@
+ 	install -m 0755 arp        ${BASEDIR}/sbin
+ 	install -m 0755 hostname   ${BASEDIR}/bin
+ 	install -m 0755 ifconfig   ${BASEDIR}/sbin
++	install -m 0755 ifconfig.static ${BASEDIR}/sbin
+ 	install -m 0755 nameif     ${BASEDIR}/sbin
+ 	install -m 0755 netstat    ${BASEDIR}/bin
+ 	install -m 0755 plipconfig $(BASEDIR)/sbin

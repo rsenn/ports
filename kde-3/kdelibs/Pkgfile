@@ -1,0 +1,38 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:50 roman Exp $
+#
+# Description: core libraries from the official KDE release
+#  KDE (the K Desktop Environment) is a powerful Open Source graphical
+#  desktop environment for Unix workstations. It combines ease of use,
+#  contemporary functionality, and outstanding graphical design with the
+#  technological superiority of the Unix operating system.
+#  This metapackage includes the core KDE libraries, binaries, and data,
+#  needed by virtually all KDE applications. It does not include development
+#  files.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=kdelibs
+version=3.5.10
+release=1
+source=(http://mirrors.dotsrc.org/kde/stable/$version/src/kdelibs-$version.tar.bz2)
+
+build()
+{
+  cd kdelibs-$version
+
+  (echo "#!/bin/sh" && echo '${CC-cc} -dumpmachine') >admin/config.guess
+  (echo "#!/bin/sh" && echo 'echo "$@"') >admin/config.sub
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix" \
+       --${shared:=enable}-shared \
+       --${static:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+}
+

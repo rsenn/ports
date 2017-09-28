@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A fetchmail replacement with qmail-like Maildir and external MDA delivery.
+#  getmail is intended as a simple, secure, and reliable replacement for
+#  fetchmail. It retrieves email (either all messages, or only unread
+#  messages) from one or more POP3, SPDS, or IMAP4 servers (with or
+#  without SSL) for one or more email accounts, and reliably delivers into
+#  qmail-style Maildirs, mboxrd files, or through external MDAs (command
+#  deliveries) specified on a per-account basis. getmail also has excellent
+#  support for domain (multidrop) mailboxes, including delivering messages to
+#  different users or destinations based on the envelope recipient address.
+#  .
+# URL: http://pyropus.ca/software/getmail/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=getmail
+version=4.8.4
+release=1
+source=(http://pyropus.ca/software/getmail/old-versions/getmail-$version.tar.gz)
+
+build()
+{
+  cd getmail-$version
+
+  sed -i "s,'\(getmail\)-%s' % .*,'\1'," setup.py
+
+  python setup.py install --prefix="$ROOT"
+}
+
+# EOF

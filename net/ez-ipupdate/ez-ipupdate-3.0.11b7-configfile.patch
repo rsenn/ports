@@ -1,0 +1,120 @@
+args: -r -u -N -- ez-ipupdate-3.0.11b7_orig ez-ipupdate-3.0.11b7
+diff -r -u -N -- ez-ipupdate-3.0.11b7_orig/.deps/getpass.Po ez-ipupdate-3.0.11b7/.deps/getpass.Po
+diff -r -u -N -- ez-ipupdate-3.0.11b7_orig/Makefile ez-ipupdate-3.0.11b7/Makefile
+diff -r -u -N -- ez-ipupdate-3.0.11b7_orig/Makefile.am ez-ipupdate-3.0.11b7/Makefile.am
+--- ez-ipupdate-3.0.11b7_orig/Makefile.am	2008-11-14 22:14:50.000000000 +0100
++++ ez-ipupdate-3.0.11b7/Makefile.am	2008-11-14 22:22:04.000000000 +0100
+@@ -1,7 +1,14 @@
++AM_CPPFLAGS = -DCONFIG_FILE=\"$(sysconfdir)/ez-ipupdate.conf\"
+ 
+ bin_PROGRAMS = ez-ipupdate
+-ez_ipupdate_SOURCES = ez-ipupdate.c conf_file.c conf_file.h md5.c md5.h cache_file.c cache_file.h error.h pid_file.c pid_file.h dprintf.h 
+-ez_ipupdate_LDADD = @EXTRAOBJ@
++
++if COMPAT_GETPASS
++EXTRA_SOURCES = getpass.c
++EXTRA_OBJECTS = getpass.o
++endif
++
++ez_ipupdate_SOURCES = ez-ipupdate.c conf_file.c conf_file.h md5.c md5.h cache_file.c cache_file.h error.h pid_file.c pid_file.h dprintf.h $(EXTRA_SOURCES)
++ez_ipupdate_LDADD = $(EXTRA_OBJECTS)
+ 
+ EXTRA_DIST = getpass.c ez-ipupdate.lsm example.conf example-pgpow.conf example-dhs.conf example-dyndns.conf example-ods.conf example-tzo.conf example-gnudip.conf example-easydns.conf example-justlinux.conf example-dyns.conf CHANGELOG mkbinary example-heipv6tb.conf
+ 
+diff -r -u -N -- ez-ipupdate-3.0.11b7_orig/Makefile.in ez-ipupdate-3.0.11b7/Makefile.in
+diff -r -u -N -- ez-ipupdate-3.0.11b7_orig/autom4te.cache/output.0 ez-ipupdate-3.0.11b7/autom4te.cache/output.0
+diff -r -u -N -- ez-ipupdate-3.0.11b7_orig/autom4te.cache/output.1 ez-ipupdate-3.0.11b7/autom4te.cache/output.1
+diff -r -u -N -- ez-ipupdate-3.0.11b7_orig/autom4te.cache/traces.0 ez-ipupdate-3.0.11b7/autom4te.cache/traces.0
+diff -r -u -N -- ez-ipupdate-3.0.11b7_orig/autom4te.cache/traces.1 ez-ipupdate-3.0.11b7/autom4te.cache/traces.1
+diff -r -u -N -- ez-ipupdate-3.0.11b7_orig/config.h ez-ipupdate-3.0.11b7/config.h
+diff -r -u -N -- ez-ipupdate-3.0.11b7_orig/config.h.in ez-ipupdate-3.0.11b7/config.h.in
+diff -r -u -N -- ez-ipupdate-3.0.11b7_orig/config.h.in~ ez-ipupdate-3.0.11b7/config.h.in~
+diff -r -u -N -- ez-ipupdate-3.0.11b7_orig/config.log ez-ipupdate-3.0.11b7/config.log
+diff -r -u -N -- ez-ipupdate-3.0.11b7_orig/config.status ez-ipupdate-3.0.11b7/config.status
+diff -r -u -N -- ez-ipupdate-3.0.11b7_orig/configure ez-ipupdate-3.0.11b7/configure
+diff -r -u -N -- ez-ipupdate-3.0.11b7_orig/configure.in ez-ipupdate-3.0.11b7/configure.in
+--- ez-ipupdate-3.0.11b7_orig/configure.in	2008-11-14 22:14:50.000000000 +0100
++++ ez-ipupdate-3.0.11b7/configure.in	2008-11-14 22:18:44.000000000 +0100
+@@ -1,8 +1,8 @@
+ 
+ dnl Process this file with autoconf to produce a configure script.
+-AC_INIT(ez-ipupdate.c)
+-AM_CONFIG_HEADER(config.h)
+-AM_INIT_AUTOMAKE(ez-ipupdate,3.0.11b7)
++AC_INIT([ez-ipupdate.c])
++AM_CONFIG_HEADER([config.h])
++AM_INIT_AUTOMAKE([ez-ipupdate],[3.0.11b7])
+ 
+ 
+ dnl Checks for programs.
+@@ -86,9 +86,13 @@
+   AC_MSG_ERROR(getopt is needed for this program to work)
+ fi
+ 
+-AC_CHECK_FUNC(getpass, AC_DEFINE_UNQUOTED([HAVE_GETPASS], [1], [Have getpass function]),
+-    [EXTRASRC="$EXTRASRC \$(srcdir)/getpass.c"]
+-    [EXTRAOBJ="$EXTRAOBJ \$(srcdir)/getpass.o"] )
++AC_CHECK_FUNC([getpass], [AC_DEFINE_UNQUOTED([HAVE_GETPASS], [1], [Define this if you have the getpass() function])
++ac_cv_have_getpass=yes],
++[EXTRASRC="$EXTRASRC \$(srcdir)/getpass.c"
++EXTRAOBJ="$EXTRAOBJ \$(srcdir)/getpass.o"
++ac_cv_have_getpass=no])
++
++AM_CONDITIONAL([COMPAT_GETPASS], [test "$ac_cv_have_getpass" = no])
+ 
+ dnl Get system canonical name
+ AC_CANONICAL_HOST
+diff -r -u -N -- ez-ipupdate-3.0.11b7_orig/configure.in.orig ez-ipupdate-3.0.11b7/configure.in.orig
+diff -r -u -N -- ez-ipupdate-3.0.11b7_orig/configure.in.rej ez-ipupdate-3.0.11b7/configure.in.rej
+diff -r -u -N -- ez-ipupdate-3.0.11b7_orig/ez-ipupdate.c ez-ipupdate-3.0.11b7/ez-ipupdate.c
+--- ez-ipupdate-3.0.11b7_orig/ez-ipupdate.c	2008-11-14 22:14:50.000000000 +0100
++++ ez-ipupdate-3.0.11b7/ez-ipupdate.c	2008-11-14 22:17:37.000000000 +0100
+@@ -1172,6 +1172,17 @@
+ #  define xgetopt( x1, x2, x3, x4, x5 ) getopt( x1, x2, x3 )
+ #endif
+ 
++void parse_conf(char *file)
++{
++  dprintf((stderr, "config_file: %s\n", file));
++ 
++  if(parse_conf_file(file, conf_commands) != 0)
++  {
++    fprintf(stderr, "error parsing config file \"%s\"\n", file);
++    exit(1);
++  }
++}
++
+ void parse_args( int argc, char **argv )
+ {
+ #ifdef HAVE_GETOPT_LONG
+@@ -1232,15 +1243,7 @@
+       case 'c':
+         if(config_file) { free(config_file); }
+         config_file = strdup(optarg);
+-        dprintf((stderr, "config_file: %s\n", config_file));
+-        if(config_file)
+-        {
+-          if(parse_conf_file(config_file, conf_commands) != 0)
+-          {
+-            fprintf(stderr, "error parsing config file \"%s\"\n", config_file);
+-            exit(1);
+-          }
+-        }
++        parse_conf(config_file);
+         break;
+ 
+       case 'd':
+@@ -1387,6 +1390,13 @@
+         break;
+     }
+   }
++
++  if(!config_file && access(CONFIG_FILE, R_OK) == 0)
++  {
++    
++    config_file = strdup(CONFIG_FILE);
++    parse_conf(config_file);
++  }
+ }
+ 
+ /*

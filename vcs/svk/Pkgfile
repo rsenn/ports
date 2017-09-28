@@ -1,0 +1,27 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A decentralized version control system based on Subversion.
+#  svk is a distributed version control system designed from the ground
+#  up to integrate cleanly with Subversion, the emerging standard in
+#  enterprise version control. With SVK, advanced branching and merging
+#  and even offline commits are easy.
+# URL: http://svk.bestpractical.com/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=svk
+version=1.07
+release=1
+source=(http://rt.openfoundry.org/Foundry/Project/Download/Attachment/53609/37668/SVK-$version.tar.gz)
+
+build()
+{
+  cd SVK-$version
+
+  perl Makefile.PL || true
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

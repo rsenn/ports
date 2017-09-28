@@ -1,0 +1,64 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: Loaders for ionCube Encoded Files.
+# URL: http://www.ioncube.com/loaders.php
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+# source infos from php
+#source ../php/Pkgfile
+
+name=ioncube_loaders
+version=1.0
+release=2
+source=(http://downloads2.ioncube.com/loader_downloads/ioncube_loaders_all_platforms.tar.bz2)
+
+build()
+{
+  cd ioncube
+
+  install -d $ROOT/lib/php
+
+  case $host in
+    *freebsd*)
+      cd fre_x86
+      loader_name="ioncube_loader_fre_"
+      ;;
+    *linux*)
+      cd lin_x86
+      loader_name="ioncube_loader_lin_"
+      ;;
+  esac
+
+  for module in *.so
+  do
+    echo "$module"
+
+    loader_version=${module#$loader_name}
+    loader_version=${loader_version%_ts.so}
+    loader_version=${loader_version%.so}
+
+    major_version=${loader_version%.*}
+
+    if [ "$major_version" = 4 ]; then
+      phplibdir="$prefix/lib/php"
+    else
+      phplibdir="$prefix/lib/php$major_version"
+    fi
+
+    install -d "$PKG/$phplibdir"
+    install -m 755 "$module" "$PKG/$phplibdir"
+  done
+
+  copy_license "../LICENSE.txt"
+}
+
+postmerge()
+{
+  loader=$(cd $prefix/lib/php && echo ioncube_loader_*_$version.so)
+
+  text_insert_after \
+    "zend_extension = $loader" \
+    "zend extensions" \
+    $libdir/php.ini
+}

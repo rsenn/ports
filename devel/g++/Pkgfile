@@ -1,0 +1,115 @@
+# $Id: Pkgfile,v 1.6 2007/05/09 21:02:41 roman Exp $
+#
+# Description: gcc
+# URL: http://gcc.gnu.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=g++
+version=4.1.2
+release=1
+source=($mirror_gnu/gcc/gcc-$version/gcc-core-$version.tar.bz2
+        $mirror_gnu/gcc/gcc-$version/gcc-g++-$version.tar.bz2
+        $mirror_gnu/gcc/gcc-$version/gcc-fortran-$version.tar.bz2
+        gcc-4.1.0-nofixincludes.patch
+        gcc-4.1.0-path.patch
+        gcc-4.1.0-rpath.patch
+        gcc-4.1.0-cxxincludes.patch
+        gcc-4.1.1-libgcj-iconv.patch
+        gcc-4.1.1-rpathspec.patch
+        gcc-4.1.2-ssize-max.patch
+        complete-gcc-4.1.2.patch)
+
+build()
+{
+  cd gcc-${version}
+
+  patch -N -p1 -i $SRC/gcc-4.1.0-nofixincludes.patch
+#  patch -N -p1 -i $SRC/gcc-4.1.0-path.patch
+#  patch -N -p1 -i $SRC/gcc-4.1.0-rpath.patch
+#  patch -N -p1 -i $SRC/gcc-4.1.0-cxxincludes.patch
+#  patch -N -p1 -i $SRC/gcc-4.1.1-rpathspec.patch
+#  patch -N -p1 -i $SRC/gcc-4.1.2-ssize-max.patch
+  patch -N -p1 -i $SRC/complete-gcc-4.1.2.patch
+
+  # change runtime linker
+  case $target in
+    *linux*)
+      sed -i -e "s,/lib/ld-linux.so.2,$prefix/lib/ld-linux.so.2," gcc/config/i386/linux.h
+      ;;
+    *freebsd*)
+      sed -i -e '/FBSD_DYNAMIC_LINKER/ s,".*","'$prefix/lib/ld-elf.so.1'",' \
+        gcc/config/freebsd-spec.h
+      ;;
+  esac
+
+  cd ..
+
+  # now configure in a separate build tree
+  mkdir gcc-build && cd gcc-build
+#  export LDFLAGS="-Wl,-rpath,$prefix/lib"
+
+  ../gcc-$version/configure \
+      --prefix="$prefix" \
+      --with-local-prefix="$prefix" \
+      --disable-nls \
+      --without-included-gettext \
+      --enable-threads="posix" \
+      --with-tls \
+      --disable-rpath \
+      --${shared:=enable}-shared \
+      --${static:=enable}-shared \
+      --enable-languages="c,c++,fortran" \
+      --with-ld="$prefix/$target/bin/ld" \
+      --with-as="$prefix/$target/bin/as" \
+      --with-system-zlib \
+      --with-slibdir="$prefix/lib" \
+      --with-cpp-install-dir="$prefix/lib" \
+      --build="$build" \
+      --host="$host" \
+      --target="$target"
+
+#      --with-gxx-include-dir="$prefix/include/c++/$version"
+
+  make LDFLAGS="$LDFLAGS" BUILD_LDFLAGS="$LDFLAGS" DESTDIR=$PKG VERSION=$version all install
+
+  # remove duplicate binaries
+  rm $ROOT/bin/{c,g}++
+  rm $ROOT/bin/gcc
+  rm $ROOT/bin/$target-c++
+  rm $ROOT/bin/$target-gcc-$version
+
+  # make symlinks instead
+  ln -s $target-g++ $ROOT/bin/$target-c++
+  ln -s $target-g++ $ROOT/bin/g++
+  ln -s $target-g++ $ROOT/bin/c++
+  ln -s $target-gcc $ROOT/bin/gcc
+  ln -s $target-gcc $ROOT/bin/cc
+
+  cd ../gcc-${version}
+  copy_license "COPYING" "COPYING.LIB"
+
+  rm -f $ROOT/lib/*.so*
+  rm $ROOT/lib/libiberty.a
+
+  chmod 644 $ROOT/lib/*.la
+
+  rm -f $ROOT/info/dir
+
+  rm -f $ROOT/man/man1/{cpp,gcc,gcov}.1
+  rm -f $ROOT/man/man7/{fsf-funding,gfdl,gpl}.7
+  rm -rf $ROOT/info
+  rm -f $ROOT/include/mf-runtime.h
+  rm -f $ROOT/libexec/gcc/$target/$version/{cc1,collect2}
+  rm -rf $ROOT/lib{,exec}/gcc/$target/$version/{include,install-tools,*.o,lib{gcc,gcov}.a}
+  rm -f $ROOT/$target/lib/{libgcc.a,libgcc_eh.a,libgcov.a,crtbegin.o,crtbeginS.o,crtend.o,crtendS.o}
+  rm -f $ROOT/bin/{$target-gcc,gcov,gccbug,gcc,cpp,cc}
+  rm -f $ROOT/lib/lib{mudflap,ssp}*
+  rm -rf $ROOT/lib/gcc/$target/$version/include/ssp
+
+  # fortran stuff
+  rm -f $ROOT/lib/libgfortran{,begin}.{,l}a
+  rm -f $ROOT/bin/*gfortran
+  rm -f $ROOT/libexec/gcc/$target/$version/f951
+  rm -f $ROOT/man/man1/gfortran.1*
+}

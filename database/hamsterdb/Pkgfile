@@ -1,0 +1,47 @@
+# $Id: Pkgfile,v 1.9 2007/04/23 17:39:08 roman Exp $
+#
+# Description: A fast and portable database engine written in ANSI-C.
+#  hamsterdb is an embedded database engine written in ANSI-C. It includes
+#  B+Trees with variable length keys and records. It supports in-memory
+#  databases and endian-independent files, database cursors, multiple
+#  databases in one file, &quot;record number&quot; databases, and duplicate
+#  keys. hamsterdb is very fast and highly configurable. It compiles and
+#  runs on Unix platforms, Linux, Microsoft Windows, and Windows CE.
+# URL: http://hamsterdb.com/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=hamsterdb
+version=0.4.4
+release=1
+source=(http://www.hamsterdb.com/dl/hamsterdb-$version.tar.gz)
+
+build()
+{
+  cd hamsterdb-$version
+
+  libtoolize --force
+  aclocal --force
+  autoconf --force
+  automake --force --add-missing --foreign
+
+  ./configure \
+        --build="$build" \
+        --host="$host" \
+        --prefix="$prefix" \
+        --${shared:=enable}-shared \
+        --${static:=enable}-shared
+
+  make libhamsterdb_la_LDFLAGS="-version-number ${version//./:}" all doc
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/$name-$version
+  cp -rf documentation/{html,latex,tutorial.odt} $ROOT/share/doc/$name-$version
+  install -m 644 CHANGELOG COPYING README TODO $ROOT/share/doc/$name-$version
+
+  make -C samples clean
+  cp -rf samples $ROOT/share/doc/$name-$version
+  rm -f $ROOT/share/doc/$name-$version/samples/Makefile.*
+
+  chown -R 0.0 $ROOT
+}

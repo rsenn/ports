@@ -1,0 +1,49 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A modular authentication library toolkit.
+#  The Courier Authentication Library is an API toolkit for implementing
+#  password validation and account metadata lookups. Authentication can be
+#  configured using either the traditional system password file lookups,
+#  or using MySQL, PostgreSQL, LDAP, or DB/GDBM databases.
+#  .
+# URL: http://www.courier-mta.org/authlib/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=courier-authlib
+version=0.62.4
+release=1
+source=($mirror_sf/courier/courier-authlib-$version.tar.bz2
+        http://free.acrconsulting.co.uk/sw/courcpw/couriercheckpassword-0.10.tar.gz)
+
+build()
+{
+  cd courier-authlib-$version
+
+#  cp -rf ../couriercheckpassword-0.10/* .
+
+#  patch -N -p0 -i Makefile.in.patch
+
+  case "$prefix" in
+    "/usr") sysconfdir="/etc" localstatedir="/var" ;;
+  esac
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix" \
+     --libexecdir="$prefix/lib/courier" \
+     ${sysconfdir+--sysconfdir="$sysconfdir"} \
+     ${localstatedir+--localstatedir="$localstatedir"} \
+     --with-locking-method="lockf"
+
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/courier-authlib
+  install -m 644 AUTHORS COPYING COPYING.GPL ChangeLog INSTALL NEWS README pgpkeys.txt $ROOT/share/doc/courier-authlib
+}
+
+# EOF

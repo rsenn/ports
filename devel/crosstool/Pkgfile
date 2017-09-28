@@ -1,0 +1,40 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:44 roman Exp $
+#
+# Description: scons
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=crosstool
+version=0.43
+release=1
+source=(http://www.kegel.com/crosstool/crosstool-$version.tar.gz)
+
+build()
+{
+  cd crosstool-$version
+
+  install -d $ROOT/{bin,sbin,share/$name-$version}
+
+  set -x
+
+  for sh in *.sh
+  do
+    bin=${sh%.sh}
+
+    case $bin in
+      build* | cross* | demo-* | init* | mk* | install-* | update-* | get*)
+        install -m 755 $sh $ROOT/bin/$bin
+        ;;
+
+      regtest-* | test* | demo-*)
+        install -m 644 $sh $ROOT/share/$name-$version
+        ;;
+
+      *)
+        install -m 644 $sh $ROOT/bin/$name-$bin
+        ;;
+    esac
+  done
+
+}

@@ -1,0 +1,24 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: zlcatalog is a C library that can be used to organize
+#              information in a non-hierarchical way.
+# URL:         http://www.zenlunatics.com/zlcatalog/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libzlcatalog
+version=0.2
+release=1
+source=(http://www.zenlunatics.com/zlcatalog/libzlcatalog-$version-src.tar.gz)
+
+build()
+{
+  cd libzlcatalog-$version
+
+  make CC="${CC-cc}" CFLAGS="$CFLAGS" PREFIX="$prefix"
+
+  install -d $ROOT/lib
+  install -d $ROOT/include
+
+  make PREFIX="$ROOT" install
+}

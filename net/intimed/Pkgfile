@@ -1,0 +1,25 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A time server for synchronizing networked machines' clocks.
+#  intimed is an implementation of the server for the TIMEP protocol, as
+#  described in RFC 868. This protocol can be used to ask servers like this
+#  one for their current time-and-day. This is a cleaned up and rewritten
+#  version of the original intimed 1.10 (12/12/93) that is included in
+#  RedHat Linux. This version adds TIMEP over UDP support in compliance
+#  with the RFC.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=intimed
+version=2.00.tar.gz
+release=1
+source=(http://goliat.eik.bme.hu/~balaton/inet/intimed-$version)
+
+build()
+{
+  ${CC-cc} $CFLAGS -o timed timed.c
+
+  install -d $ROOT/sbin
+  install -m 755 timed $ROOT/sbin
+}

@@ -1,0 +1,43 @@
+# $Id: Pkgfile,v 1.14 2007/05/09 21:02:42 roman Exp $
+#
+# Description: GNU Gdb
+#  GDB lets you to see what is going on `inside' another program while it
+#  executes--or what another program was doing at the moment it crashed.
+#  GDB lets you start your program, specify anything that might affect
+#  its behavior, make it stop on specified conditions, examine what has
+#  happened when your program has stopped, and change things in it, so you
+#  can experiment with correcting the effects of one bug and go on to learn
+#  about another.
+# URL: http://www.gnu.org/software/gdb/gdb.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=gdb
+version=6.8
+release=1
+source=($mirror_gnu/gdb/gdb-$version.tar.bz2
+        gdb-6.6-quiet.patch
+        gdb-6.6-paths.patch
+        gdb-6.4-rpath.patch)
+
+build()
+{
+  cd gdb-$version
+
+  patch -N -p1 -i $SRC/gdb-6.6-quiet.patch
+#  patch -N -p1 -i $SRC/gdb-6.6-paths.patch
+
+  ./configure \
+       --host="$host" \
+       --build="$build" \
+       ${target+--target="$target"} \
+       --prefix="$prefix" \
+       --${shared:=enable}-shared \
+       --${static:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/gdb
+  install -m 644 [A-Z]*[A-Z]* $ROOT/share/doc/gdb
+}

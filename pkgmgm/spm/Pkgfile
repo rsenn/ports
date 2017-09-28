@@ -1,0 +1,26 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Spm is a package manager that work for source packages. It currently only works for autotools and makefile packages.
+# URL: http://srcpack.sourceforge.net
+# Maintainer: 
+# Depends on: 
+
+name=spm
+version=0.8.2
+release=1
+source=($mirror_sf/srcpack/spm-$version.tar.bz2)
+
+build() 
+{
+  cd spm-$version
+  
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+  
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

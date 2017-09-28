@@ -1,0 +1,44 @@
+# $Id: Pkgfile,v 1.2 2007/05/09 21:02:48 roman Exp $
+#
+# Description: generic client/server library for SASL authentication
+#  The Cyrus SASL library is a generic library for easy integration of secure
+#  network authentication to any client or server application. It supports
+#  authentication via standard plaintext methods as well as CRAM-MD5 and
+#  DIGEST-MD5 shared secret methods and KERBEROS_V4 and GSSAPI Kerberos
+#  methods. The SASL protocol framework is used by SMTP, IMAP, ACAP, LDAP,
+#  and other standard protocols.
+#  .
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=cyrus-sasl
+version=2.1.23
+release=1
+source=(ftp://ftp.andrew.cmu.edu/pub/cyrus-mail/cyrus-sasl-$version.tar.gz
+        cyrus-sasl-2.1.22-libtool-fix.patch)
+
+build()
+{
+  cd cyrus-sasl-$version
+
+  patch -N -p1 -i $SRC/cyrus-sasl-2.1.22-libtool-fix.patch
+
+  sh autogen.sh
+
+  case $prefix in
+    "/usr") sysconfdir="/etc" localstatedir="/var" ;;
+  esac
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --sysconfdir="${sysconfdir=$prefix/etc}" \
+       --localstatedir="${localstatedir=$prefix/var}" \
+       --${shared:=enable}-shared \
+       --${static:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+}

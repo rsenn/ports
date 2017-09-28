@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A PHP library designed with python's csv module in mind
+# An object-oriented interface to fgetcsv for reading / parsing csv files as
+# well as a way to write csv files. This library makes use of the standard
+# php library (SPL) in its reader.
+#
+# URL: http://code.google.com/p/php-csv-utils/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: php-pear
+# Recommends: php-simpletest
+# Suggests: php5-cli
+
+name=php-csv-utils
+version=0.2
+release=1
+source=(http://php-csv-utils.googlecode.com/files/php-csv-utils-$version.tar)
+
+build()
+{
+  cd php-csv-utils
+
+  install -d $ROOT/share/doc/php-csv-utils
+  cp -rf docs/* $ROOT/share/doc/php-csv-utils
+  cp -rf tests $ROOT/share/doc/php-csv-utils
+
+  sed -i -e 's,\.\./\.\./,,g' \
+      $ROOT/share/doc/php-csv-utils/examples/*.php
+
+  install -d $ROOT/share/php
+  cp -rf Csv $ROOT/share/php
+}

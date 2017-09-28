@@ -1,0 +1,29 @@
+diff -ru jed-0.99-18_orig/src/userinfo.c jed-0.99-18/src/userinfo.c
+--- jed-0.99-18_orig/src/userinfo.c	2008-07-30 01:31:06.000000000 +0200
++++ jed-0.99-18/src/userinfo.c	2008-07-30 01:33:34.000000000 +0200
+@@ -47,6 +47,9 @@
+ #include "userinfo.h"
+ #include "misc.h"
+ 
++#undef HAS_TCPIP_CODE
++#define HAS_TCPIP_CODE 0
++
+ /*}}}*/
+ 
+ typedef struct
+@@ -212,11 +215,11 @@
+ 
+    b = buf;
+ 
+-   if ((-1 == gethostname (buf, sizeof (buf)))
+-       || (*buf == 0))
++   if(b == NULL || *b == 0)
++   if ((b = getenv ("HOSTNAME")) == NULL || *b == 0)
+      {
+-	b = getenv ("HOSTNAME");
+-	if ((b == NULL) || (*b == 0))
++	if ((-1 == gethostname (buf, sizeof (buf)))
++       || (*buf == 0))
+ 	  return NULL;
+      }
+ 

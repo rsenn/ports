@@ -1,0 +1,38 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:50 roman Exp $
+#
+# Description: Decoder of several sound file formats for SDL
+#  This library is meant to make the programmer's sound playback tasks
+#  simpler. The programmer gives SDL_sound a filename, or feeds it data
+#  directly from one of many sources, and then reads the decoded waveform
+#  data back at her leisure.
+#  If resource constraints are a concern, SDL_sound can process sound data
+#  in programmer-specified blocks. Alternately, SDL_sound can decode a whole
+#  sound file and hand back a single pointer to the whole waveform. SDL_sound
+#  can also handle sample rate, audio format, and channel conversion
+#  on-the-fly and behind-the-scenes, if the programmer desires.
+# URL: http://icculus.org/SDL_sound/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=sdl-sound
+version=1.0.3
+release=1
+source=($mirror_gentoo/SDL_sound-$version.tar.gz)
+
+build()
+{
+  cd SDL_sound-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --${shared:=enable}-shared \
+       --${static:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/sdl-sound
+  install -m 644 README COPYING INSTALL TODO CREDITS CHANGELOG Doxyfile $ROOT/share/doc/sdl-sound
+}

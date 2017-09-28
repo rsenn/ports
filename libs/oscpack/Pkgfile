@@ -1,0 +1,89 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:50 roman Exp $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=oscpack
+version=1.0.2
+release=1
+source=(http://www.audiomulch.com/~rossb/code/oscpack/oscpack_${version//./_}.zip
+        oscpack-1.0.2-c++0x.patch
+        oscpack-1.0.2-libtool.patch
+        oscpack-1.0.2-full.patch)
+
+build()
+{
+  cd oscpack
+
+  patch -N -p1 -i $SRC/oscpack-1.0.2-c++0x.patch
+#  patch -N -p1 -i $SRC/oscpack-1.0.2-libtool.patch
+#  patch -N -p1 -i $SRC/oscpack-1.0.2-full.patch
+
+#  sed -i -e 's,/posix/,/$(OS)/,g' \
+#         -e 's,-lc,$(LIBS),' \
+#         -e '/ldconfig/ s,^,#,' Makefile
+
+  install -d $ROOT/{bin,include,lib}
+
+  case $host in
+    *-mingw32)
+      OS="win32"
+      LIBS="-lws2_32 -lwinmm -Wl,--out-implib=liboscpack.dll.a"
+      ;;
+    *)
+      OS="posix"
+      ;;
+  esac
+  case $host in
+    *-cygwin)
+      LIBNAME="liboscpack"
+      LIBSONAME="cygoscpack.dll"
+      LIBFILENAME="cygoscpack-${version%%.*}.dll"
+      ;;
+    *-mingw32)
+      LIBNAME="liboscpack"
+      LIBSONAME="oscpack.dll"
+      LIBFILENAME="oscpack.dll"
+      ;;
+    *)
+      LIBNAME="liboscpack"
+      LIBSONAME="liboscpack.so"
+      LIBFILENAME="liboscpack.so.$version"
+      ;;
+  esac
+
+  make -i \
+       CXX="${LIBTOOL-libtool} --mode=compile ${CXX-g++}" \
+       LIBNAME="$LIBNAME" \
+       LIBSONAME="$LIBSONAME" \
+       LIBFILENAME="$LIBFILENAME" \
+       OS="$OS" \
+       PREFIX="$ROOT" \
+       LIBS="$LIBS" \
+     all install
+
+  find $PKG -type l | xargs rm -f --
+
+  case $host in
+    *-mingw32)
+      mv $ROOT/lib/oscpack.dll $ROOT/bin
+      install -m 644 liboscpack.dll.a $ROOT/lib/
+      ;;
+    *-cygwin)
+#      mv $ROOT/lib/liboscpack.so.${version} $ROOT/bin/cygoscpack-${version%%.*}.dll
+#      impgen $ROOT/bin/cygoscpack-${version%%.*}.dll >$ROOT/lib/oscpack.def
+#      $host-dlltool --dllname cygoscpack-${version%%.*}.dll --input-def $ROOT/lib/oscpack.def --output-lib $ROOT/lib/liboscpack.dll.a
+#      ar src $ROOT/lib/liboscpack.a ip/IpEndpointName.o ip/posix/NetworkingUtils.o ip/posix/UdpSocket.o osc/OscOutboundPacketStream.o osc/OscPrintReceivedElements.o osc/OscReceivedElements.o osc/OscTypes.o
+      ;;
+    *)
+
+  (cd $ROOT/lib
+   ln -s liboscpack.so.${version} liboscpack.so.${version%.*}
+   ln -s liboscpack.so.${version} liboscpack.so.${version%%.*}
+   ln -s liboscpack.so.${version} liboscpack.so)
+   ;;
+   esac
+}
+

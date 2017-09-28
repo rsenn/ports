@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A C++ parser generator library.
+#  Common Text Transformation Library is a library of C++ classes and
+#  functions to parse and modify STL strings. CTTL substring classes may
+#  be compared, inserted, replaced, and parsed with EBNF grammars. The
+#  compiled program implements a fast, thread-safe, re-entrant recursive
+#  descent parser.
+#  .
+# URL: http://cttl.sourceforge.net/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=cttl
+version=208
+release=1
+source=($mirror_sf/cttl/cttl208.zip
+        $mirror_sf/cttl/cttl208docs.zip
+        cttl208-cmake.patch)
+
+build()
+{
+  cd cttl20
+
+  patch -N -p1 -i $SRC/cttl208-cmake.patch
+
+  cmake -D CMAKE_INSTALL_PREFIX="$prefix" .
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A program that changes the system time just for selected programs.
+#  FTPL (FakeTime Preload Library, aka libfaketime) intercepts various
+#  system library calls and tricks programs of your choice into seeing a
+#  faked system time without having to change the time system-wide. This can
+#  be used for running legacy software with Y2K bugs, testing software for
+#  year-2038 compliance, debugging time-related issues such as expired SSL
+#  certificates, and using software that ceases to run outside a certain time
+#  frame. The faked time can be specified either absolutely or relative to
+#  the real current time, and optionally also affects file timestamps. The
+#  faked clock continues to run, but can optionally be frozen, slowed
+#  down, or made faster. A wrapper script "faketime" simplifies the usage,
+#  similar to tools such as fakechroot.
+#  .
+# URL: http://www.code-wizards.com/projects/libfaketime/index.html
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=libfaketime
+version=0.8
+release=1
+source=(http://www.code-wizards.com/projects/libfaketime/libfaketime-0.8.tar.gz)
+
+build()
+{
+  cd libfaketime-0.8
+make
+make PREFIX="$ROOT" install
+}
+
+# EOF

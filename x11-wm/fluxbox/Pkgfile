@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Section: universe/x11
+# Description: A lightweight and highly-configurable window manager with pwm-like tabs.
+#  Fluxbox is a lightweight and highly configurable window manager with
+#  pwm-like tabs.
+#  .
+# URL: http://www.fluxbox.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libgcc1, libice6, libsm6, libstdc++6, libx11-6, libxext6
+
+name=fluxbox
+version=1.1.1
+release=1
+source=($mirror_sf/fluxbox/fluxbox-$version.tar.bz2)
+
+build()
+{
+  cd fluxbox-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

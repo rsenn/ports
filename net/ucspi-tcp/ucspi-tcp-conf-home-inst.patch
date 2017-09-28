@@ -1,0 +1,29 @@
+diff -ur ucspi-tcp-0.88.orig/Makefile ucspi-tcp-0.88/Makefile
+--- ucspi-tcp-0.88.orig/Makefile	Sat Mar 18 15:18:42 2000
++++ ucspi-tcp-0.88/Makefile	Sat Jun  7 10:32:15 2003
+@@ -44,6 +44,14 @@
+ compile auto_home.c
+ 	./compile auto_home.c
+ 
++auto_home_inst.c: \
++auto-str conf-home-inst
++	./auto-str auto_home `head -1 conf-home-inst` > auto_home_inst.c
++
++auto_home_inst.o: \
++compile auto_home_inst.c
++	./compile auto_home_inst.c
++
+ buffer.o: \
+ compile buffer.c buffer.h
+ 	./compile buffer.c
+@@ -347,8 +355,8 @@
+ 	chmod 755 http@
+ 
+ install: \
+-load install.o hier.o auto_home.o unix.a byte.a
+-	./load install hier.o auto_home.o unix.a byte.a 
++load install.o hier.o auto_home_inst.o unix.a byte.a
++	./load install hier.o auto_home_inst.o unix.a byte.a 
+ 
+ install.o: \
+ compile install.c buffer.h strerr.h error.h open.h readwrite.h exit.h

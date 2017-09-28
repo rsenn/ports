@@ -1,0 +1,25 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:50 roman Exp $
+#
+# Description: libraries for the Qt Cryptographic Architecture
+#  The Qt Cryptographic Architecture provides a straightforward and cross-
+#  platform API for a range of cryptographic features, including SSL/TLS,
+#  X.509 certificates, SASL, OpenPGP, S/MIME CMS, and smart cards.
+# URL: http://delta.affinix.com/qca/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=qca
+version=2.0.0
+release=1
+source=(http://delta.affinix.com/download/qca/${version%.*}/qca-$version.tar.bz2)
+
+build()
+{
+  cd qca-$version
+
+  cmake $SRC/qca-$version \
+       -DCMAKE_INSTALL_PREFIX="$prefix"
+
+  make DESTDIR="$PKG" all install
+
+}

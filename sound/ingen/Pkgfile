@@ -1,0 +1,30 @@
+# $Id: Pkgfile 424 2008-08-10 01:52:57Z enki $
+#
+# Description: Realtime modular synthesizer and/or effects processor
+# URL: http://wiki.drobilla.net/Ingen
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=ingen
+version=svn20080614
+release=1
+source=(ingen-${version#*svn}.tar.gz
+        ingen-20080614-slv2.patch)
+
+build()
+{
+  cd ingen-${version#*svn}
+
+  patch -N -p1 -i $SRC/ingen-20080614-slv2.patch
+
+  ./autogen.sh
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

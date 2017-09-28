@@ -1,0 +1,35 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A KDE based apt-get frontend.
+# Actualiza is a semi-automatic update program for apt-based systems. With a
+# simple GUI, this apt front-end lets you manage the programs / components
+# on your computer, and helps you to keep it updated by showing the
+# available updates by means of an applet. It features a powerful
+# progressive search engine, and a repository manager that allows you to
+# add or remove repositories easily.
+#
+# URL: http://www.tuxum.org/wiki/Actualiza
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: kdelibs4c2a, libc6, libgcc1, libqt3-mt, libstdc++6
+
+name=actualiza
+version=0.8.0
+release=1
+source=(http://www.tuxum.org/chrome/site/actualiza_$version-1.tar.gz
+        actualiza-0.8.0-fixes.patch)
+
+build()
+{
+  cd actualiza
+
+  patch -N -p1 -i $SRC/actualiza-0.8.0-fixes.patch
+
+  ./configure \
+       --prefix="$prefix"
+
+  make
+
+  install -d $ROOT/bin
+
+  make prefix="$ROOT" install
+}

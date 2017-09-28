@@ -1,0 +1,36 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: Apache module for flash video streaming.
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=mod_flvx
+version=1.0
+release=3
+source=(mod_flvx.c)
+
+build()
+{
+  APXS=`ls $prefix/*bin/apxs*`
+
+  for apxs in $APXS; do
+   (rm -rf ${builddir=mod_flvx/build-`$apxs -q progname`}
+    mkdir -p $builddir
+    cd $builddir
+
+    $apxs -c -o mod_flvx.so ../../mod_flvx.c
+
+    libexecdir=`$apxs -q libexecdir`
+
+    install -d $PKG${libexecdir}
+    install -m 755 .libs/mod_flvx.so $PKG${libexecdir}
+
+    sysconfdir=`$apxs -q sysconfdir`
+
+    install -d $PKG${sysconfdir}/mods-available
+
+    echo "LoadModule flvx_module $libexecdir/mod_flvx.so" >$PKG${sysconfdir}/mods-available/flvx.load
+    echo "AddHandler flv-stream .flv" >$PKG${sysconfdir}/mods-available/flvx.conf
+    )
+  done
+}

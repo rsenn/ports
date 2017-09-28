@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An IP subnet calculator.
+#  ipcalc takes an IP address and netmask and calculates the resulting 
+#  broadcast, network, Cisco wildcard mask, and host range.
+#  By giving a second netmask, you can design sub- and supernetworks. It
+#  is also intended to be a teaching tool and presents the results as
+#  easy-to-understand binary values.'
+#  .
+# URL: http://jodies.de/ipcalc
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=ipcalc
+version=0.41
+release=1
+source=(http://jodies.de/ipcalc-archive/ipcalc-$version.tar.gz)
+
+build() 
+{
+  cd ipcalc-$version
+
+  install -d $ROOT/bin
+  install -m 755 ipcalc $ROOT/bin
+
+  install -d $ROOT/share/doc/ipcalc
+  install -m 644 changelog contributors ipcalc.gif ipcalculator.png license $ROOT/share/doc/ipcalc
+}
+
+# EOF

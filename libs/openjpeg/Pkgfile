@@ -1,0 +1,37 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Open-source JPEG 2000 codec written in C language
+# URL: http://www.openjpeg.org/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=openjpeg
+version=1.3
+release=1
+source=(http://www.openjpeg.org/openjpeg_v1_3.tar.gz)
+
+build()
+{
+  cd OpenJPEG_v1_3
+
+  make
+  make PREFIX="$ROOT" install
+
+  cmake \
+      -DCMAKE_INSTALL_PREFIX="$prefix" \
+      -DCMAKE_VERBOSE_MAKEFILE=TRUE \
+    .
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/openjpeg
+  install -m 644 ChangeLog README.* license.txt $ROOT/share/doc/openjpeg
+
+  cd $ROOT/lib
+  ln -sf libopenjpeg.so.* libopenjpeg.so
+
+  rm -rf $PKG/openjpeg
+}
+
+# EOF

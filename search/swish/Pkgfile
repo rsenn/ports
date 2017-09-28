@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: File indexing and searching engine (typically used for web servers).
+# SWISH++ is a Unix-based file indexing and searching engine (typically
+# used to index and search files on web sites). It was based on SWISH-E
+# although SWISH++ is a complete rewrite. SWISH++ is at least 10 times
+# faster and can handle much larger numbers of files. Additionally, it
+# has unique features such as selective non-indexing, on-the-fly filters,
+# user-selectable stemming, and more.
+#
+# URL: http://swishplusplus.sourceforge.net/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=swish
+category=search
+version=6.1.4
+release=1
+source=($mirror_sf/swishplusplus/swish++-$version.tar.gz
+$mirror_sf/swishplusplus/swishplusplus-$version.tar.gz)
+
+build()
+{
+  cd swish++-$version
+
+  make
+  make PREFIX="$ROOT" install
+}

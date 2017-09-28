@@ -1,0 +1,24 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: ttmkfdir is a tool to create valid and complete fonts.dir files from TrueType
+# fonts. It is very useful when you plan to use a TrueType enabled font server that is based
+# on the X11R6 sample implementation (xfsft for instance). Great care has been taken to correctly
+# identify the encodings that a given TrueType font supports.
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=ttmkfdir
+version=1.0
+release=1
+source=(http://www.joerg-pommnitz.de/TrueType/ttmkfdir.tar.gz)
+
+build()
+{
+  make -f Makefile \
+    FREETYPE_BASE="$prefix" \
+    FREETYPE_INCL="$prefix/include/freetype"
+
+  install -d $ROOT/bin
+  install -m 755 ttmkfdir $ROOT/bin/
+}

@@ -1,0 +1,41 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: simple interprocess messaging system
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+
+name=dbus
+version=1.2.16
+release=1
+source=(http://dbus.freedesktop.org/releases/dbus/dbus-$version.tar.gz)
+
+build()
+{
+  cd dbus-$version
+
+  case $prefix in
+    /usr) sysconfdir="/etc" localstatedir="/var" ;;
+  esac
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --sysconfdir="${sysconfdir=$prefix/etc}" \
+       --localstatedir="${localstatedir=$prefix/var}" \
+       --libexecdir="$prefix/share" \
+       --${shared:=enable}-shared \
+       --${static:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/dbus
+  install -m 644 README AUTHORS INSTALL NEWS COPYING HACKING ChangeLog $ROOT/share/doc/dbus
+  install -m 644 doc/system-activation.txt doc/TODO doc/dcop-howto.txt $ROOT/share/doc/dbus
+}
+
+postinst()
+{
+  ${bindir}/dbus-uuidgen --ensure
+}

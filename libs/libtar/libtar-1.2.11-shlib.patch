@@ -1,0 +1,237 @@
+diff -ru libtar-1.2.11_orig/configure libtar-1.2.11/configure
+--- libtar-1.2.11_orig/configure	2006-01-27 18:59:58.000000000 +0100
++++ libtar-1.2.11/configure	2006-01-27 18:59:53.000000000 +0100
+@@ -2603,7 +2603,7 @@
+ _ACEOF
+ 
+ else
+-  LIBOBJS="$LIBOBJS strlcpy.$ac_objext"
++ : LIBOBJS="$LIBOBJS strlcpy.$ac_objext"
+ 
+ fi
+ 
+diff -ru libtar-1.2.11_orig/lib/Makefile.in libtar-1.2.11/lib/Makefile.in
+--- libtar-1.2.11_orig/lib/Makefile.in	2006-01-27 18:59:58.000000000 +0100
++++ libtar-1.2.11/lib/Makefile.in	2006-01-27 19:01:32.000000000 +0100
+@@ -15,9 +15,12 @@
+ @ENCAP_DEFS@
+ 
+ ### Installation programs and flags
+-INSTALL		= @INSTALL@
++INSTALL		= libtool --mode=install @INSTALL@
+ INSTALL_PROGRAM	= @INSTALL_PROGRAM@ -s
+ INSTALL_DATA	= @INSTALL_DATA@
++LIBTOOL         = libtool
++COMPILE         = $(LIBTOOL) --mode=compile --tag=CC $(CC)
++LINK            = $(LIBTOOL) --mode=link --tag=CC $(CC) -no-undefined
+ LN_S		= @LN_S@
+ MKDIR		= @MKDIR@
+ 
+@@ -25,14 +27,15 @@
+ CC		= @CC@
+ CPPFLAGS	= -I. \
+ 		  -I.. \
+-		  -I${srcdir} \
+-		  -I${top_srcdir}/compat \
++		  -I$(srcdir) \
++		  -I$(top_srcdir)/compat \
+ 		  -I../listhash \
+ 		  @CPPFLAGS@
+ CFLAGS		= @CFLAGS@
+-LDFLAGS		= @LDFLAGS@
++LDFLAGS		= @LDFLAGS@ -shared -version-info 1:2:0 -rpath $(prefix)/lib
+ LIBS		= @LIBS@
+ LIBOBJS		= @LIBOBJS@
++LTLIBOBJS	= @LTLIBOBJS@
+ RANLIB		= @RANLIB@
+ @SET_MAKE@
+ VPATH		= @srcdir@:@top_srcdir@/compat:../listhash
+@@ -40,53 +43,53 @@
+ 
+ ### Makefile rules - no user-servicable parts below
+ 
+-LIBTAR_OBJS	= append.o \
+-		  block.o \
+-		  decode.o \
+-		  encode.o \
+-		  extract.o \
+-		  handle.o \
+-		  libtar_hash.o \
+-		  libtar_list.o \
+-		  output.o \
+-		  util.o \
+-		  wrapper.o
++LIBTAR_OBJS	= append.lo \
++		  block.lo \
++		  decode.lo \
++		  encode.lo \
++		  extract.lo \
++		  handle.lo \
++		  libtar_hash.lo \
++		  libtar_list.lo \
++		  output.lo \
++		  util.lo \
++		  wrapper.lo
+ LIBTAR_HDRS	= ../config.h \
+-		  ${top_srcdir}/compat/compat.h \
+-		  ${srcdir}/libtar.h \
+-		  ${srcdir}/internal.h \
++		  $(top_srcdir)/compat/compat.h \
++		  $(srcdir)/libtar.h \
++		  $(srcdir)/internal.h \
+ 		  ../listhash/libtar_listhash.h
+-LIBTAR_LIBS	= ./libtar.a
+-ALL		= libtar.a
++LIBTAR_LIBS	= ./libtar.la
++ALL		= libtar.la
+ 
+ DISTCLEANFILES	= ../listhash/libtar_listhash.h \
+ 		  ../listhash/libtar_list.c \
+ 		  ../listhash/libtar_hash.c
+ 
+ 
+-all: ${ALL}
++all: $(ALL)
+ 
+ .PHONY: clean distclean install
++.SUFFIXES: .c .lo .la
+ 
+-libtar.a: ${LIBTAR_OBJS} ${LIBOBJS}
+-	${AR} rc libtar.a ${LIBTAR_OBJS} ${LIBOBJS}
+-	${RANLIB} libtar.a
++libtar.la: $(LIBTAR_OBJS) $(LTLIBOBJS)
++	$(LINK) $(LDFLAGS) -o libtar.la $(LIBTAR_OBJS) $(LTLIBOBJS)
+ 
+-${LIBTAR_OBJS}: ${LIBTAR_HDRS}
++$(LIBTAR_OBJS): $(LIBTAR_HDRS)
+ 
+-.c.o:
+-	${CC} ${CFLAGS} ${CPPFLAGS} -c -o $@ $<
++.c.lo:
++	$(COMPILE) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
+ 
+ clean:
+-	rm -f *~ *.o ${ALL} core
++	rm -f *~ *.lo $(ALL) core
+ 
+ distclean: clean
+-	rm -f Makefile ${DISTCLEANFILES}
++	rm -f Makefile $(DISTCLEANFILES)
+ 
+-install: ${ALL}
+-	${MKDIR} ${DESTDIR}${libdir}
+-	${INSTALL_DATA} libtar.a ${DESTDIR}${libdir}
+-	${MKDIR} ${DESTDIR}${includedir}
+-	${INSTALL_DATA} ${srcdir}/libtar.h ${DESTDIR}${includedir}
+-	${INSTALL_DATA} ../listhash/libtar_listhash.h ${DESTDIR}${includedir}
++install: $(ALL)
++	$(MKDIR) $(DESTDIR)$(libdir)
++	$(INSTALL_DATA) libtar.la $(DESTDIR)$(libdir)
++	$(MKDIR) $(DESTDIR)$(includedir)
++	$(INSTALL_DATA) $(srcdir)/libtar.h $(DESTDIR)$(includedir)
++	$(INSTALL_DATA) ../listhash/libtar_listhash.h $(DESTDIR)$(includedir)
+ 
+diff -ru libtar-1.2.11_orig/libtar/Makefile.in libtar-1.2.11/libtar/Makefile.in
+--- libtar-1.2.11_orig/libtar/Makefile.in	2006-01-27 18:59:58.000000000 +0100
++++ libtar-1.2.11/libtar/Makefile.in	2006-01-27 19:01:53.000000000 +0100
+@@ -15,9 +15,12 @@
+ @ENCAP_DEFS@
+ 
+ ### Installation programs and flags
+-INSTALL		= @INSTALL@
++INSTALL		= libtool --mode=install @INSTALL@
+ INSTALL_PROGRAM	= @INSTALL_PROGRAM@ -s
+ INSTALL_DATA	= @INSTALL_DATA@
++LIBTOOL         = libtool
++COMPILE         = $(LIBTOOL) --mode=compile --tag=CC $(CC)
++LINK            = $(LIBTOOL) --mode=link --tag=CC $(CC) -no-undefined
+ LN_S		= @LN_S@
+ MKDIR		= @MKDIR@
+ 
+@@ -26,13 +28,14 @@
+ CPPFLAGS	= -I.. \
+ 		  -I../lib \
+ 		  -I../listhash \
+-		  -I${top_srcdir}/lib \
+-		  -I${top_srcdir}/compat \
++		  -I$(top_srcdir)/lib \
++		  -I$(top_srcdir)/compat \
+ 		  @CPPFLAGS@
+ CFLAGS		= @CFLAGS@
+ LDFLAGS		= @LDFLAGS@
+ LIBS		= @LIBS@
+ LIBOBJS		= @LIBOBJS@
++LTLIBOBJS	= @LTLIBOBJS@
+ RANLIB		= @RANLIB@
+ @SET_MAKE@
+ VPATH		= @srcdir@
+@@ -40,34 +43,35 @@
+ 
+ ### Makefile rules - no user-servicable parts below
+ 
+-LIBTAR_OBJS	= libtar.o
++LIBTAR_OBJS	= libtar.lo
+ LIBTAR_HDRS	= ../config.h \
+-		  ${top_srcdir}/compat/compat.h \
+-		  ${top_srcdir}/lib/libtar.h \
++		  $(top_srcdir)/compat/compat.h \
++		  $(top_srcdir)/lib/libtar.h \
+ 		  ../listhash/libtar_listhash.h
+-LIBTAR_LIBS	= ../lib/libtar.a
++LIBTAR_LIBS	= ../lib/libtar.la
+ ALL		= libtar
+ 
+ 
+-all: ${ALL}
++all: $(ALL)
+ 
+ .PHONY: clean distclean install
++.SUFFIXES: .c .lo .la
+ 
+-libtar: ${LIBTAR_OBJS} ${LIBTAR_LIBS} ${LIBTAR_HDRS}
+-	${CC} ${CFLAGS} ${LDFLAGS} -o libtar libtar.o ${LIBTAR_LIBS} ${LIBS}
++libtar: $(LIBTAR_OBJS) $(LIBTAR_LIBS) $(LIBTAR_HDRS)
++	$(LINK) $(CFLAGS) $(LDFLAGS) -o libtar libtar.lo $(LIBTAR_LIBS) $(LIBS)
+ 
+-${LIBTAR_OBJS}: ${LIBTAR_HDRS}
++$(LIBTAR_OBJS): $(LIBTAR_HDRS)
+ 
+-.c.o:
+-	${CC} ${CFLAGS} ${CPPFLAGS} -c -o $@ $<
++.c.lo:
++	$(COMPILE) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
+ 
+ clean:
+-	rm -f *~ *.o ${ALL} core
++	rm -f *~ *.lo $(ALL) core
+ 
+ distclean: clean
+ 	rm -f Makefile
+ 
+-install: ${ALL}
+-	${MKDIR} ${DESTDIR}${bindir}
+-	${INSTALL_PROGRAM} libtar ${DESTDIR}${bindir}
++install: $(ALL)
++	$(MKDIR) $(DESTDIR)$(bindir)
++	$(INSTALL_PROGRAM) libtar $(DESTDIR)$(bindir)
+ 
+Only in libtar-1.2.11/lib/.libs: libtar.lai
+Only in libtar-1.2.11/lib/.libs: tar.dll
+diff -ru libtar-1.2.11_orig/lib/Makefile.in libtar-1.2.11/lib/Makefile.in
+--- libtar-1.2.11_orig/lib/Makefile.in	2007-05-31 19:33:31.000000000 +0200
++++ libtar-1.2.11/lib/Makefile.in	2007-05-31 19:34:31.000000000 +0200
+@@ -74,7 +74,7 @@
+ .SUFFIXES: .c .lo .la
+ 
+ libtar.la: $(LIBTAR_OBJS) $(LTLIBOBJS)
+-	$(LINK) $(LDFLAGS) -o libtar.la $(LIBTAR_OBJS) $(LTLIBOBJS)
++	$(LINK) $(LDFLAGS) -o libtar.la $(LIBTAR_OBJS) $(sort $(LTLIBOBJS))
+ 
+ $(LIBTAR_OBJS): $(LIBTAR_HDRS)
+ 
+Only in libtar-1.2.11/lib: libtar.la
+Only in libtar-1.2.11/libtar: .libs
+Only in libtar-1.2.11/libtar: libtar
+Only in libtar-1.2.11/libtar: libtar.exe
+Only in libtar-1.2.11/libtar: libtar.lo
+Only in libtar-1.2.11/libtar: libtar.o

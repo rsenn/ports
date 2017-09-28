@@ -1,0 +1,249 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An email virus scanner, vulnerability protector, and spam handler.
+# MailScanner is an email virus scanner, vulnerability protector, and
+# spam tagger. It supports the Postfix, Sendmail, Exim, Qmail, and ZMailer
+# MTAs, and the Sophos, McAfee, F-Prot, F-Secure, CommandAV, InoculateIT,
+# Inoculan, eTrust, Kaspersky, Nod32, AntiVir, BitDefender, RAV, Panda,
+# DrWeb, ClamAV, and other anti-virus scanners. It uses SpamAssassin for
+# highly successful spam identification, and is designed to handle denial
+# of service attacks. It will detect password-protected zip files and apply
+# filename checking to their contents. It is very easy to install, requires
+# no changes at all to your sendmail.cf file, is designed to be lightweight,
+# and won't grind your mail system to a halt with its load. It can be
+# integrated into any email system, regardless of the software in use.
+#
+# URL: http://www.mailscanner.info/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=mailscanner
+version=4.70.7
+release=1
+source=(http://www.mailscanner.info/files/4/tar/MailScanner-install-$version-1.tar.gz)
+
+build()
+{
+  cd MailScanner-install-4.70.7
+
+  perl -pi - bin/MailScanner/ConfigDefs.pl etc/MailScanner.conf etc/virus.scanners.conf bin/mailscanner bin/Sophos.install bin/update_virus_scanners <<EOF
+  s+/opt/MailScanner/etc/mailscanner.conf+/etc/MailScanner/MailScanner.conf+;
+  s+/opt/MailScanner/etc/virus.scanners.conf+/etc/MailScanner/virus.scanners.conf+;
+  s./opt/MailScanner/var./var/run.;
+  s./opt/MailScanner/bin/tnef./usr/bin/tnef.;
+  s./opt/MailScanner/etc/reports./etc/MailScanner/reports.;
+  s./opt/MailScanner/etc/rules./etc/MailScanner/rules.;
+  s./opt/MailScanner/etc./etc/MailScanner.;
+  s./opt/MailScanner/lib./usr/lib/MailScanner.;
+  s./opt/MailScanner/bin./usr/lib/MailScanner.;
+  s./usr/lib/sendmail./usr/sbin/sendmail.;
+EOF
+  perl -pi - check_MailScanner <<EOF
+  s+/opt/MailScanner/etc/mailscanner.conf+/etc/MailScanner/MailScanner.conf+;
+  s./opt/MailScanner/var./var/run.;
+  s./opt/MailScanner/bin/tnef./usr/bin/tnef.;
+  s./opt/MailScanner/etc/reports./etc/MailScanner/reports.;
+  s./opt/MailScanner/etc/rules./etc/MailScanner/rules.;
+  s./opt/MailScanner/etc/mcp./etc/MailScanner/mcp.;
+  s./opt/MailScanner/etc./etc/MailScanner.;
+  s./opt/MailScanner/lib./usr/lib/MailScanner.;
+  s./opt/MailScanner/bin./usr/sbin.;
+  s./usr/lib/sendmail./usr/sbin/sendmail.;
+EOF
+  #gzip doc/MailScanner.8
+  gzip doc/MailScanner.8 doc/MailScanner.conf.5
+
+  mkdir -p $PKG
+  mkdir -p ${PKG}%{_sysconfdir}/rc.d/init.d
+  mkdir -p ${PKG}/usr/sbin/
+  mkdir -p ${PKG}/usr/share/man/man8
+  mkdir -p ${PKG}/usr/share/man/man5
+  #mkdir -p ${PKG}/usr/share/man/man1
+  mkdir -p ${PKG}/etc/MailScanner/
+  mkdir -p ${PKG}/etc/MailScanner/reports
+  mkdir -p ${PKG}/etc/MailScanner/reports/cy+en
+  mkdir -p ${PKG}/etc/MailScanner/reports/de
+  mkdir -p ${PKG}/etc/MailScanner/reports/en
+  mkdir -p ${PKG}/etc/MailScanner/reports/fr
+  mkdir -p ${PKG}/etc/MailScanner/reports/es
+  mkdir -p ${PKG}/etc/MailScanner/reports/nl
+  mkdir -p ${PKG}/etc/MailScanner/reports/pt_br
+  mkdir -p ${PKG}/etc/MailScanner/reports/dk
+  mkdir -p ${PKG}/etc/MailScanner/reports/sk
+  mkdir -p ${PKG}/etc/MailScanner/reports/it
+  mkdir -p ${PKG}/etc/MailScanner/reports/ro
+  mkdir -p ${PKG}/etc/MailScanner/reports/se
+  mkdir -p ${PKG}/etc/MailScanner/reports/cz
+  mkdir -p ${PKG}/etc/MailScanner/reports/hu
+  mkdir -p ${PKG}/etc/MailScanner/rules
+  mkdir -p ${PKG}/etc/MailScanner/mcp
+  mkdir -p ${PKG}/usr/lib/MailScanner/
+  mkdir -p ${PKG}/usr/lib/MailScanner/MailScanner
+  mkdir -p ${PKG}/usr/share/MailScanner/
+  mkdir -p ${PKG}/etc/cron.hourly
+  mkdir -p ${PKG}/etc/cron.daily
+  mkdir -p ${PKG}/etc/sysconfig
+  mkdir -p ${PKG}/var/spool/mqueue.in
+  #mkdir -p ${PKG}/var/spool/MailScanner/incoming
+  #mkdir -p ${PKG}/var/spool/MailScanner/quarantine
+  mkdir -p ${PKG}/var/run
+
+  install bin/df2mbox            ${PKG}/usr/sbin/df2mbox
+  install bin/mailscanner        ${PKG}/usr/sbin/MailScanner
+  install check_MailScanner      ${PKG}/usr/sbin/check_MailScanner
+  ln -s   check_MailScanner      ${PKG}/usr/sbin/check_mailscanner
+  install bin/Sophos.install     ${PKG}/usr/sbin/Sophos.install
+  install bin/update_virus_scanners ${PKG}/usr/sbin/update_virus_scanners
+  install bin/upgrade_MailScanner_conf ${PKG}/usr/sbin/upgrade_MailScanner_conf
+  install MailScanner.opts.rh    ${PKG}/etc/sysconfig/MailScanner
+  install MailScanner.init.rh    ${PKG}%{_sysconfdir}/rc.d/init.d/MailScanner
+  install check_MailScanner.cron ${PKG}/etc/cron.hourly/check_MailScanner
+  install update_virus_scanners.cron ${PKG}/etc/cron.hourly/update_virus_scanners
+  install clean.quarantine.cron  ${PKG}/etc/cron.daily/clean.quarantine
+  install doc/MailScanner.8.gz   ${PKG}/usr/share/man/man8/
+  install doc/MailScanner.conf.5.gz ${PKG}/usr/share/man/man5/
+
+  while read f
+  do
+    install etc/$f ${PKG}/etc/MailScanner/
+  done << EOF
+  filename.rules.conf
+  filetype.rules.conf
+  MailScanner.conf
+  spam.assassin.prefs.conf
+  spam.lists.conf
+  virus.scanners.conf
+EOF
+
+  while read f
+  do
+    install etc/mcp/$f ${PKG}/etc/MailScanner/mcp/
+  done << EOF2
+  10_example.cf
+  mcp.spam.assassin.prefs.conf
+EOF2
+
+
+  for lang in en cy+en de fr es nl pt_br sk dk it ro se cz hu
+  do
+    while read f
+    do
+      install etc/reports/$lang/$f ${PKG}/etc/MailScanner/reports/$lang
+    done << EOF
+  deleted.content.message.txt
+  deleted.filename.message.txt
+  deleted.virus.message.txt
+  disinfected.report.txt
+  inline.sig.html
+  inline.sig.txt
+  inline.spam.warning.txt
+  inline.warning.html
+  inline.warning.txt
+  languages.conf
+  recipient.spam.report.txt
+  recipient.mcp.report.txt
+  sender.content.report.txt
+  sender.error.report.txt
+  sender.filename.report.txt
+  sender.spam.rbl.report.txt
+  sender.spam.report.txt
+  sender.spam.sa.report.txt
+  sender.mcp.report.txt
+  sender.virus.report.txt
+  stored.content.message.txt
+  stored.filename.message.txt
+  stored.virus.message.txt
+EOF
+  done
+
+  install etc/reports/de/README.1ST ${PKG}/etc/MailScanner/reports/de
+  install etc/reports/se/README     ${PKG}/etc/MailScanner/reports/se
+
+  while read f
+  do
+    install etc/rules/$f ${PKG}/etc/MailScanner/rules
+  done << EOF
+  EXAMPLES
+  README
+  spam.whitelist.rules
+EOF
+
+  while read f
+  do
+    install lib/$f ${PKG}/usr/lib/MailScanner
+  done << EOF
+  antivir-autoupdate
+  antivir-wrapper
+  bitdefender-wrapper
+  bitdefender-autoupdate
+  clamav-autoupdate
+  clamav-wrapper
+  command-wrapper
+  drweb-wrapper
+  f-prot-autoupdate
+  f-prot-wrapper
+  f-secure-wrapper
+  f-secure-autoupdate
+  etrust-autoupdate
+  etrust-wrapper
+  inoculan-autoupdate
+  inoculan-wrapper
+  inoculate-wrapper
+  kaspersky.prf
+  kaspersky-autoupdate
+  kaspersky-wrapper
+  kavdaemonclient-wrapper
+  mcafee-autoupdate
+  mcafee-autoupdate.old
+  mcafee-wrapper
+  nod32-wrapper
+  nod32-autoupdate
+  norman-wrapper
+  norman-autoupdate
+  panda-wrapper
+  rav-autoupdate
+  rav-wrapper
+  sophos-autoupdate
+  sophos-wrapper
+  trend-autoupdate
+  trend-wrapper
+EOF
+
+  install bin/MailScanner.pm ${PKG}/usr/lib/MailScanner/
+
+  while read f
+  do
+    install bin/MailScanner/$f ${PKG}/usr/lib/MailScanner/MailScanner/
+  done << EOF
+  ConfigDefs.pl
+  Config.pm
+  CustomConfig.pm
+  Exim.pm
+  EximDiskStore.pm
+  Lock.pm
+  Log.pm
+  Mail.pm
+  MessageBatch.pm
+  Message.pm
+  PFDiskStore.pm
+  Postfix.pm
+  Quarantine.pm
+  Queue.pm
+  RBLs.pm
+  SA.pm
+  Sendmail.pm
+  SMDiskStore.pm
+  SweepContent.pm
+  SweepOther.pm
+  SweepViruses.pm
+  SystemDefs.pm
+  MCP.pm
+  MCPMessage.pm
+  TNEF.pm
+  WorkArea.pm
+  ZMailer.pm
+  ZMDiskStore.pm
+EOF
+
+  install var/run/MailScanner.pid ${PKG}/var/run/
+}

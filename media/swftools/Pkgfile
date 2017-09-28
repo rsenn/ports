@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: SWFTools is a collection of code for handling Flash .SWF-files
+# This includes a merging tool (swfcombine), an extracting tool
+# (swfextract), PDF/JPEG/PNG/AVI/TTF/WAV to SWF converters (pdf2swf,
+# jpeg2swf, png2swf, avi2swf, font2swf, and wav2swf), a text parsing tool
+# (swfstrings), an SWF parser (swfdump), and a library for writing and
+# reading SWFs (rfxswflib).
+#
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=swftools
+version=0.8.1
+release=1
+source=(http://www.swftools.org/swftools-$version.tar.gz)
+
+build()
+{
+  cd swftools-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make prefix="$ROOT" install
+}

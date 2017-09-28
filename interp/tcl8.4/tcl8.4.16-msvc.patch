@@ -1,0 +1,87 @@
+diff -ru tcl8.4.16_orig/generic/tclExecute.c tcl8.4.16/generic/tclExecute.c
+--- tcl8.4.16_orig/generic/tclExecute.c	2007-12-06 04:21:29.000000000 +0100
++++ tcl8.4.16/generic/tclExecute.c	2007-12-06 05:09:00.000000000 +0100
+@@ -412,6 +412,9 @@
+ 
+ BuiltinFunc tclBuiltinFuncTable[] = {
+ #ifndef TCL_NO_MATH
++#ifdef floor
++#undef floor
++#endif /* floor */
+     {"acos", 1, {TCL_DOUBLE}, ExprUnaryFunc, (ClientData) acos},
+     {"asin", 1, {TCL_DOUBLE}, ExprUnaryFunc, (ClientData) asin},
+     {"atan", 1, {TCL_DOUBLE}, ExprUnaryFunc, (ClientData) atan},
+@@ -420,7 +423,9 @@
+     {"cos", 1, {TCL_DOUBLE}, ExprUnaryFunc, (ClientData) cos},
+     {"cosh", 1, {TCL_DOUBLE}, ExprUnaryFunc, (ClientData) cosh},
+     {"exp", 1, {TCL_DOUBLE}, ExprUnaryFunc, (ClientData) exp},
++#if defined(CRTAPI) && (_MSC_VER >= 1400)
+     {"floor", 1, {TCL_DOUBLE}, ExprUnaryFunc, (ClientData) floor},
++#endif
+     {"fmod", 2, {TCL_DOUBLE, TCL_DOUBLE}, ExprBinaryFunc, (ClientData) fmod},
+     {"hypot", 2, {TCL_DOUBLE, TCL_DOUBLE}, ExprBinaryFunc, (ClientData) hypot},
+     {"log", 1, {TCL_DOUBLE}, ExprUnaryFunc, (ClientData) log},
+diff -ru tcl8.4.16_orig/win/configure tcl8.4.16/win/configure
+--- tcl8.4.16_orig/win/configure	2007-12-06 04:21:29.000000000 +0100
++++ tcl8.4.16/win/configure	2007-12-06 05:33:03.000000000 +0100
+@@ -514,7 +514,7 @@
+ ac_link='${CC-cc} -o conftest${ac_exeext} $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS 1>&5'
+ cross_compiling=$ac_cv_prog_cc_cross
+ 
+-ac_exeext=
++ac_exeext=.exe
+ ac_objext=o
+ if (echo "testing\c"; echo 1,2,3) | grep c >/dev/null; then
+   # Stardent Vistra SVR4 grep lacks -e, says ghazi@caip.rutgers.edu.
+@@ -995,8 +995,10 @@
+ 
+ int main(int argc, char** argv) {
+     int a, b = 0;
++    char *c = 0;
+     __try {
+         a = 666 / b;
++        *c = '\377';
+     }
+     __except (EXCEPTION_EXECUTE_HANDLER) {
+         return 0;
+diff -ru tcl8.4.16_orig/win/tclWinInit.c tcl8.4.16/win/tclWinInit.c
+--- tcl8.4.16_orig/win/tclWinInit.c	2007-12-06 04:21:29.000000000 +0100
++++ tcl8.4.16/win/tclWinInit.c	2007-12-06 05:32:39.000000000 +0100
+@@ -11,7 +11,7 @@
+  */
+ 
+ #include "tclWinInt.h"
+-#include <winnt.h>
++#include <windows.h>
+ #include <winbase.h>
+ #include <lmcons.h>
+ 
+diff -ru tcl8.4.16_orig/win/tclWinPort.h tcl8.4.16/win/tclWinPort.h
+--- tcl8.4.16_orig/win/tclWinPort.h	2007-12-06 04:21:29.000000000 +0100
++++ tcl8.4.16/win/tclWinPort.h	2007-12-06 05:31:53.000000000 +0100
+@@ -16,6 +16,12 @@
+ #ifndef _TCLWINPORT
+ #define _TCLWINPORT
+ 
++/*
++ * Ask for the winsock function typedefs, also.
++ */
++#define INCL_WINSOCK_API_TYPEDEFS   1
++#include <winsock2.h>
++
+ #ifndef _TCLINT
+ #   include "tclInt.h"
+ #endif
+@@ -69,12 +75,6 @@
+ #include <windows.h>
+ #undef WIN32_LEAN_AND_MEAN
+ 
+-/*
+- * Ask for the winsock function typedefs, also.
+- */
+-#define INCL_WINSOCK_API_TYPEDEFS   1
+-#include <winsock2.h>
+-
+ #ifdef BUILD_tcl
+ #   undef TCL_STORAGE_CLASS
+ #   define TCL_STORAGE_CLASS DLLEXPORT

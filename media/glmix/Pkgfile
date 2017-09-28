@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: GL Mixer offers a 3D visualisation of stereo mixing
+#  GL Mixer offers a 3D visualisation of stereo mixing. The spatial interface
+#  isn't very space compact, but it looks cool and can sometimes be a
+#  more intuitive way to mix audio. Because GL Mixer is a JACK client it
+#  allows you to do all your mixing in one place, prior to final processor
+#  effects and output, rather than using separate pan & level controls in
+#  other applications.
+#  Future versions of GL Mixer will probably include things like MIDI
+#  integration and automation, which should make it more generally
+#  useful. More eye candy will be introduced at the discretion of the author.
+#  People who saw the Be Operating System demonstrated in the 1990s may find
+#  GL Mixer very familiar. Of course GL Mixer shares no code with that demo
+#  and hopefully as a JACK app it's rather more useful.
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=glmix
+version=0.3
+release=1
+source=(http://devel.tlrmx.org/audio/source/glmix-$version.tar.gz)
+
+build()
+{
+  cd glmix-$version
+
+  make CC="${CC-gcc}" CFLAGS="${CFLAGS--g -O2}"
+
+  install -d $ROOT/bin
+  install -m 755 glmix $ROOT/bin/
+}

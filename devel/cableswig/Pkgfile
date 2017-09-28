@@ -1,0 +1,29 @@
+# $Id: Pkgfile,v 1.4 2007/05/10 16:59:30 roman Exp $
+#
+# Description: cvs
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=cableswig
+version=2.2.0
+release=1
+source=($mirror_sf/itk/CableSwig-$version.tar.gz
+        CableSwig-2.2.0-cxx0x.patch)
+
+build()
+{
+  cd CableSwig
+
+  patch -N -p1 -i $SRC/CableSwig-2.2.0-cxx0x.patch
+
+  cmake \
+      -D CMAKE_INSTALL_PREFIX="$prefix" \
+      -D CMAKE_BUILD_TYPE="RelWithDebInfo" \
+      -D CMAKE_SKIP_RPATH="ON" \
+    .
+
+#  find -type f -name Makefile | xargs sed -i "s,\($prefix/bin/cmake\) \(-P cmake_install.cmake\),\1 -DCMAKE_INSTALL_PREFIX=\"\$(INSTALL_PREFIX)\" \2,"
+  make
+  make DESTDIR="$PKG" install
+}

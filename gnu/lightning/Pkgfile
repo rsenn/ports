@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A library that generates assembly code at run time.
+#  GNU Lightning is a library that generates assembly language code at
+#  run time. It is very fast, making it ideal for Just-In-Time compilers,
+#  and it abstracts over the target CPU, as it exposes to the clients a
+#  standardized RISC instruction set (inspired by the MIPS and SPARC chips).
+# URL: http://www.gnu.org/software/lightning/lightning.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=lightning
+version=1.2c
+release=1
+source=(ftp://alpha.gnu.org/gnu/lightning/lightning-$version.tar.gz)
+
+build()
+{
+  cd lightning-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

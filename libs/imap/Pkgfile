@@ -1,0 +1,79 @@
+# $Id: Pkgfile,v 1.9 2007/05/12 01:09:23 roman Exp $
+#
+# Description: IMAP module for php5
+#  This package provides a module for IMAP functions in PHP scripts.
+#  PHP5 is an HTML-embedded scripting language. Much of its syntax is
+#  borrowed from C, Java and Perl with a couple of unique PHP-specific
+#  features thrown in. The goal of the language is to allow web developers
+#  to write dynamically generated pages quickly.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=imap
+version=2004g
+release=1
+source=(ftp://ftp.cac.washington.edu/imap/imap-$version.tar.Z
+        imap-2004g-gss.patch)
+
+build() {
+  tar -xvzf imap*.tar.Z
+
+  cd imap-*/
+  patch -N -p1 -i $SRC/imap-2004g-gss.patch
+
+  case $target in
+    *freebsd*)
+      os=bsf
+      ;;
+    *linux*)
+      os=slx
+      ;;
+  esac
+
+  SSLDIR="$prefix/share/ssl" \
+  make $os \
+      CC="gcc" \
+      SSLTYPE="unix.nopwd" \
+      SSLDIR="$prefix/share/ssl" \
+      SSLLIB="$prefix/lib" \
+      SSLINCLUDE="$prefix/include" \
+      EXTRACFLAGS="-DSSLEAY_MACROS=1 -DOPENSSL_NO_ECDH=1 -fPIC -DPIC" \
+      EXTRALDFLAGS="-L$prefix/lib -Wl,-rpath,$prefix/lib" \
+      EXTRAAUTHENTICATORS="gss"
+
+  install -d "$ROOT/bin"
+  install "ipopd/ipop2d" "$ROOT/bin"
+  install "ipopd/ipop3d" "$ROOT/bin"
+  install "imapd/imapd" "$ROOT/bin"
+
+  install -d "$ROOT/include/imap"
+  install "c-client/rfc822.h" "$ROOT/include/imap"
+  install "c-client/linkage.h" "$ROOT/include/imap"
+  install "c-client/mail.h" "$ROOT/include/imap"
+  install "c-client/imap4r1.h" "$ROOT/include/imap"
+  install "c-client/c-client.h" "$ROOT/include/imap"
+  install "c-client/osdep.h" "$ROOT/include/imap"
+  install "c-client/smtp.h" "$ROOT/include/imap"
+  install "c-client/nntp.h" "$ROOT/include/imap"
+  install "c-client/misc.h" "$ROOT/include/imap"
+  install "c-client/env_unix.h" "$ROOT/include/imap"
+  install "c-client/fs.h" "$ROOT/include/imap"
+  install "c-client/ftl.h" "$ROOT/include/imap"
+  install "c-client/nl.h" "$ROOT/include/imap"
+  install "c-client/tcp.h" "$ROOT/include/imap"
+  install "c-client/env.h" "$ROOT/include/imap"
+
+  # now link a shared lib
+  ar x "c-client/c-client.a"
+  gcc -shared -Wl,-rpath,"$prefix/lib" -Wl,-soname,"libc-client.so.2" -o "c-client/libc-client.so.2" *.o "mailutil/mailutil.o" -lssl -lcrypto -lgssapi
+
+  # install the lib
+  install -d "$ROOT/lib"
+  install "c-client/libc-client.so.2" "$ROOT/lib"
+  ln -s "libc-client.so.2" $ROOT/lib/"libc-client.so"
+
+  copy_license "CPYRIGHT"
+
+  chmod 644 $ROOT/include/imap/*.h
+}

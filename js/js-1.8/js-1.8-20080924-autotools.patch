@@ -1,0 +1,563 @@
+diff -r -u -N -- js-1.8-20080924_orig/Makefile.am js-1.8-20080924/Makefile.am
+--- js-1.8-20080924_orig/Makefile.am	1970-01-01 01:00:00.000000000 +0100
++++ js-1.8-20080924/Makefile.am	2008-11-09 17:53:41.000000000 +0100
+@@ -0,0 +1,7 @@
++SUBDIRS = src
++
++EXTRA_DIST = js.pc.in
++
++pkgconfigdir = $(libdir)/pkgconfig
++pkgconfig_DATA = js.pc
++
+diff -r -u -N -- js-1.8-20080924_orig/autogen.sh js-1.8-20080924/autogen.sh
+--- js-1.8-20080924_orig/autogen.sh	1970-01-01 01:00:00.000000000 +0100
++++ js-1.8-20080924/autogen.sh	2008-11-09 17:51:06.000000000 +0100
+@@ -0,0 +1,11 @@
++#!/bin/sh
++#
++# 20081021
++
++
++libtoolize --force --copy --automake
++aclocal --force
++autoheader --force
++automake --force --copy --foreign --add-missing --foreign
++aclocal --force
++autoconf --force
+diff -r -u -N -- js-1.8-20080924_orig/configure.in js-1.8-20080924/configure.in
+--- js-1.8-20080924_orig/configure.in	1970-01-01 01:00:00.000000000 +0100
++++ js-1.8-20080924/configure.in	2008-11-09 18:21:19.000000000 +0100
+@@ -0,0 +1,169 @@
++dnl Initialize
++dnl -------------------------------------------------------------------------
++AC_INIT([js], [1.8-20080924])
++AC_CONFIG_SRCDIR([src/jsapi.c])
++AC_CONFIG_HEADER([config.h])
++
++AM_INIT_AUTOMAKE
++
++dnl Find programs
++dnl -------------------------------------------------------------------------
++AC_PROG_CC
++AC_PROG_LIBTOOL
++
++dnl Check for the math library
++dnl -------------------------------------------------------------------------
++ac_cv_check_lib_LIBS="$LIBS"
++AC_CHECK_LIB([m], [sqrt], [MATH_LIBS="-lm"])
++LIBS="$ac_cv_check_lib_LIBS"
++AC_SUBST([MATH_LIBS])
++
++dnl Check for the NSPR4 library and header
++dnl -------------------------------------------------------------------------
++NSPR_LIBS=
++NSPR_CFLAGS=
++NSPR=no
++
++AM_PATH_NSPR([4.0.0], 
++[ac_cv_check_lib_LIBS="$LIBS"
++LIBS="$NSPR_LIBS $LIBS"
++AC_CHECK_LIB([nspr4], [PR_Init], [], [NSPR_LIBS=])
++LIBS="$ac_cv_check_lib_LIBS"
++
++ac_cv_check_header_CFLAGS="$CFLAGS"
++CFLAGS="$CFLAGS $NSPR_CFLAGS"
++AC_CHECK_HEADER([nspr/nspr.h], [], [NSPR_CFLAGS=])
++CFLAGS="$ac_cv_check_header_CFLAGS"
++
++if test "$NSPR_LIBS"; then
++  NSPR_PC="nspr"
++fi],
++
++[ac_cv_check_lib_LIBS="$LIBS"
++AC_CHECK_LIB([nspr4], [PR_Init], [NSPR_LIBS="-lnspr4"])
++LIBS="$ac_cv_check_lib_LIBS"
++AC_CHECK_HEADER([nspr/nspr.h], [NSPR_CFLAGS="-I\$(includedir)/nspr"])])
++
++if test -n "$NSPR_LIBS" -a -n "$NSPR_CFLAGS"; then
++  AC_DEFINE_UNQUOTED([NSPR], [1], [Use the mozilla nspr runtime?])
++  NSPR="yes"
++  JS_REQUIRES="nspr"
++fi
++
++AC_SUBST([NSPR_LIBS])
++AC_SUBST([NSPR_CFLAGS])
++
++AM_CONDITIONAL([NSPR], [test "$NSPR" = yes])
++
++
++
++dnl Check for the readline library and header
++dnl -------------------------------------------------------------------------
++ac_cv_check_lib_LIBS="$LIBS"
++AC_CHECK_LIB([readline], [readline], [READLINE_LIBS="-lreadline"])
++LIBS="$ac_cv_check_lib_LIBS"
++AC_SUBST([READLINE_LIBS])
++
++AC_CHECK_HEADER([readline/readline.h], [READLINE_CFLAGS="-I\$(includedir)/readline"])
++AC_SUBST([READLINE_CFLAGS])
++
++if test -n "$READLINE_LIBS" -a -n "$READLINE_CFLAGS"; then
++  AC_DEFINE_UNQUOTED([EDITLINE], [1], [Support command-line editing?])
++fi
++
++dnl Set up build-time conditionals
++dnl -------------------------------------------------------------------------
++NATIVE="no"
++FDLIBM=""
++
++dnl Detect OS
++dnl -------------------------------------------------------------------------
++AC_CANONICAL_HOST
++dnl AC_ISC_POSIX
++
++case "$host" in
++  *) 
++dnl    AC_DEFINE_UNQUOTED([XP_UNIX], [1], [UNIX alike operating system]) 
++dnl    FDLIBM="_POSIX_"
++    JS_CFLAGS="-DXP_UNIX"
++  ;;
++esac
++
++if test "$host" = "$build"; then
++  NATIVE="yes"
++else
++  AC_MSG_ERROR([No cross-compilation supported yet: build=$build host=$host])
++fi
++
++dnl case "$FDLIBM" in
++dnl  _POSIX) AC_DEFINE_UNQUOTED([_POSIX_LIBM], [1], [POSIX fdlibm mode]) ;;
++dnl  *) AC_DEFINE_UNQUOTED([_IEEE_LIBM], [1], [IEEE fdlibm mode]) ;;
++dnl esac
++
++if test -n "$FDLIBM"; then
++  AC_DEFINE_UNQUOTED([_LIB_VERSION], [$FDLIBM], [fdlibm build type])
++  AC_DEFINE_UNQUOTED([JS_USE_FDLIBM_MATH], [1], [Use shipped fdlibm library])
++dnl JS_CFLAGS="$JS_CFLAGS -DJS_USE_FDLIBM_MATH"
++fi
++
++dnl Set warning flags
++dnl -------------------------------------------------------------------------
++AC_ARG_ENABLE([warnings], AC_HELP_STRING([--enable-warnings@<:@=all@:>@], 
++[Enables compiler warnings]), 
++[if test "$enableval" = yes; then
++  enableval=all
++fi
++if test "$enableval" = no; then
++  WARN_CFLAGS=
++else
++  as_save_IFS=$IFS
++  IFS=","
++  for warning in $enableval; do
++    WARN_CFLAGS="$WARN_CFLAGS -W${warning}"
++  done
++  IFS=$as_save_IFS
++fi])
++
++AC_SUBST([WARN_CFLAGS])
++
++dnl Check if threading is supported
++dnl -------------------------------------------------------------------------
++ac_cv_check_lib_LIBS="$LIBS"
++AC_CHECK_LIB([nspr4], [PR_CreateThread], [NSPR_THREADS=yes])
++LIBS="$ac_cv_check_lib_LIBS"
++
++if test "$NSPR_THREADS" = yes; then
++  JS_CFLAGS="$JS_CFLAGS -DJS_THREADSAFE"
++fi
++
++AM_CONDITIONAL([JS_THREADSAFE], [test "$NSPR_THREADS" = yes])
++
++dnl Set compiler flags for building libjs
++dnl -------------------------------------------------------------------------
++JS_CFLAGS="$JS_CFLAGS -DJS_HAS_FILE_OBJECT"
++#JS_CFLAGS="$JS_CFLAGS -DJS_USE_ONLY_NSPR_LOCKS"
++#JS_CFLAGS="$JS_CFLAGS -DJS_USE_SAFE_ARENA"
++
++if test "$NSPR" = yes; then
++  JS_REQUIRES="$NSPR_PC"
++fi
++
++AC_SUBST([JS_CFLAGS])
++AC_SUBST([JS_REQUIRES])
++
++dnl Evaluate build time conditionals
++dnl -------------------------------------------------------------------------
++AM_CONDITIONAL([NATIVE], [test "$NATIVE" = yes])
++AM_CONDITIONAL([CROSS], [test "$NATIVE" != yes])
++AM_CONDITIONAL([FDLIBM], [test -n "$FDLIBM"])
++
++AM_CONDITIONAL([JSD_STANDALONE], [true])
++AM_CONDITIONAL([MOZ_ENABLE_LIBXUL], [false])
++
++dnl -------------------------------------------------------------------------
++AC_CONFIG_FILES([Makefile
++js.pc
++src/Makefile
++src/fdlibm/Makefile
++jsd/Makefile])
++AC_OUTPUT
+diff -r -u -N -- js-1.8-20080924_orig/js.pc.in js-1.8-20080924/js.pc.in
+--- js-1.8-20080924_orig/js.pc.in	1970-01-01 01:00:00.000000000 +0100
++++ js-1.8-20080924/js.pc.in	2008-11-09 17:52:26.000000000 +0100
+@@ -0,0 +1,11 @@
++prefix=@prefix@
++exec_prefix=@exec_prefix@
++libdir=@libdir@
++includedir=@includedir@
++
++Name: js
++Description: Mozilla SpiderMonkey (JavaScript) engine
++Version: @PACKAGE_VERSION@
++Requires: @JS_REQUIRES@
++Cflags: -I${includedir}/js @JS_CFLAGS@
++Libs: -L${libdir} -ljs
+diff -r -u -N -- js-1.8-20080924_orig/jsd/Makefile.am js-1.8-20080924/jsd/Makefile.am
+--- js-1.8-20080924_orig/jsd/Makefile.am	1970-01-01 01:00:00.000000000 +0100
++++ js-1.8-20080924/jsd/Makefile.am	2008-11-09 18:27:37.000000000 +0100
+@@ -0,0 +1,36 @@
++lib_LTLIBRARIES = libjsd.la
++
++AM_CPPFLAGS = -DEXPORT_JSD_API
++AM_CFLAGS = @WARN_CFLAGS@ @JS_CFLAGS@ @NSPR_CFLAGS@
++
++INCLUDES = -I$(top_srcdir)/src
++
++libjsd_la_SOURCES = \
++  jsdebug.c \
++  jsd_atom.c \
++  jsd_high.c \
++  jsd_hook.c \
++  jsd_lock.c \
++  jsd_obj.c \
++  jsd_scpt.c \
++  jsd_stak.c \
++  jsd_step.c \
++  jsd_text.c \
++  jsd_val.c \
++  $(NULL)
++
++#if JSD_STANDALONE
++#DIRS = jsdb
++#else
++#DIRS = idl
++#CPPSRCS = jsd_xpc.cpp
++#IS_COMPONENT = 1
++#LIBXUL_LIBRARY = 1
++#
++#if MOZ_ENABLE_LIBXUL
++#FORCE_SHARED_LIB=
++#MODULE_NAME = JavaScript_Debugger
++#EXPORT_LIBRARY = 1
++#endif
++#endif
++
+diff -r -u -N -- js-1.8-20080924_orig/jsd/jsd.h js-1.8-20080924/jsd/jsd.h
+--- js-1.8-20080924_orig/jsd/jsd.h	2008-11-09 17:32:49.000000000 +0100
++++ js-1.8-20080924/jsd/jsd.h	2008-11-09 18:23:15.000000000 +0100
+@@ -372,10 +372,11 @@
+                      JSD_ErrorReporter* reporter,
+                      void**             callerdata);
+ 
++/*
+ JS_STATIC_DLL_CALLBACK(JSBool)
+ jsd_DebugErrorHook(JSContext *cx, const char *message,
+                    JSErrorReport *report, void *closure);
+-
++*/
+ /***************************************************************************/
+ /* Script functions */
+ 
+diff -r -u -N -- js-1.8-20080924_orig/jsd/jsd_high.c js-1.8-20080924/jsd/jsd_high.c
+--- js-1.8-20080924_orig/jsd/jsd_high.c	2008-11-09 17:32:49.000000000 +0100
++++ js-1.8-20080924/jsd/jsd_high.c	2008-11-09 18:24:06.000000000 +0100
+@@ -41,6 +41,10 @@
+ 
+ #include "jsd.h"
+ 
++JS_STATIC_DLL_CALLBACK(JSBool)
++jsd_DebugErrorHook(JSContext *cx, const char *message,
++                   JSErrorReport *report, void *closure);
++
+ /***************************************************************************/
+ 
+ /* XXX not 'static' because of old Mac CodeWarrior bug */ 
+diff -r -u -N -- js-1.8-20080924_orig/src/Makefile.am js-1.8-20080924/src/Makefile.am
+--- js-1.8-20080924_orig/src/Makefile.am	1970-01-01 01:00:00.000000000 +0100
++++ js-1.8-20080924/src/Makefile.am	2008-11-09 18:29:33.000000000 +0100
+@@ -0,0 +1,185 @@
++SUBDIRS = fdlibm
++bin_PROGRAMS = js
++lib_LTLIBRARIES = libjs.la
++
++INCLUDES = -I. -I$(srcdir) 
++CFLAGS = @CFLAGS@ @WARN_CFLAGS@ @JS_CFLAGS@ @NSPR_CFLAGS@
++
++CONFIG_CLEAN_FILES = \
++  jsautokw.h \
++  jsautocfg.h
++
++if NATIVE
++noinst_PROGRAMS = jscpucfg jskwgen
++
++jscpucfg_SOURCES = jscpucfg.c jscpucfg.h
++jsautocfg.h: jscpucfg
++	./jscpucfg >jsautocfg.h
++jsapi.lo: jsapi.c jsautocfg.h
++
++jskwgen_SOURCES = jskwgen.c
++jsautokw.h: jskwgen
++	./jskwgen >jsautokw.h
++jsscan.lo: jsscan.c jsautokw.h
++endif
++
++js_LDADD = libjs.la $(READLINE_LIBS)
++js_SOURCES = \
++  js.c
++
++EXTRA_DIST = \
++  jsautocfg.h \
++	jsautokw.h \
++	jsdtracef.h \
++	jsdtracef.c \
++	jsreops.tbl
++
++if FDLIBM
++libjs_la_LIBADD = fdlibm/libfdm.a $(NSPR_LIBS)
++else
++libjs_la_LIBADD = $(MATH_LIBS) $(NSPR_LIBS)
++endif
++libjs_la_LDFLAGS = -rpath $(libdir) -version-number 1:8:0
++libjs_la_SOURCES = \
++	jsapi.c \
++	jsapi.h \
++	jsarena.c \
++	jsarena.h \
++	jsarray.c \
++	jsarray.h \
++	jsatom.c \
++	jsatom.h \
++	jsbit.h \
++	jsbool.c \
++	jsbool.h \
++	jsclist.h \
++	jscntxt.c \
++	jscntxt.h \
++	jscompat.h \
++	jsconfig.h \
++	jsdate.c \
++	jsdate.h \
++	jsdbgapi.c \
++	jsdbgapi.h \
++	jsdhash.c \
++	jsdhash.h \
++	jsdtoa.c \
++	jsdtoa.h \
++	jsemit.c \
++	jsemit.h \
++	jsexn.c \
++	jsexn.h \
++	jsfile.c \
++	jsfile.h \
++	jsfun.c \
++	jsfun.h \
++	jsgc.c \
++	jsgc.h \
++	jshash.c \
++	jshash.h \
++	jsinterp.c \
++	jsinterp.h \
++	jsinvoke.c \
++	jsiter.c \
++	jsiter.h \
++	jslibmath.h \
++	jslock.c \
++	jslock.h \
++	jslog2.c \
++	jslong.c \
++	jslong.h \
++	jsmath.c \
++	jsmath.h \
++	jsnum.c \
++	jsnum.h \
++	jsobj.c \
++	jsobj.h \
++	jsopcode.c \
++	jsopcode.h \
++	jsotypes.h \
++	jsparse.c \
++	jsparse.h \
++	jsprf.c \
++	jsprf.h \
++	jsprvtd.h \
++	jspubtd.h \
++	jsregexp.c \
++	jsregexp.h \
++	jsscan.c \
++	jsscan.h \
++	jsscope.c \
++	jsscope.h \
++	jsscript.c \
++	jsscript.h \
++	jsstddef.h \
++	jsstr.c \
++	jsstr.h \
++	jstypes.h \
++	jsutil.c \
++	jsutil.h \
++	jsxdrapi.c \
++	jsxdrapi.h \
++	jsxml.c \
++	jsxml.h \
++	prmjtime.c \
++	prmjtime.h \
++	resource.h
++
++pkgincludedir = $(includedir)/js
++pkginclude_HEADERS = \
++	js.msg \
++	jsapi.h \
++	jsarena.h \
++	jsarray.h \
++	jsatom.h \
++	jsautocfg.h \
++	jsautokw.h \
++	jsbit.h \
++	jsbool.h \
++	jsclist.h \
++	jscntxt.h \
++	jscompat.h \
++	jsconfig.h \
++	jscpucfg.h \
++	jsdate.h \
++	jsdbgapi.h \
++	jsdhash.h \
++	jsdtoa.h \
++	jsemit.h \
++	jsexn.h \
++	jsfile.h \
++	jsfile.msg \
++	jsfun.h \
++	jsgc.h \
++	jshash.h \
++	jsinterp.h \
++	jsiter.h \
++	jskeyword.tbl \
++	jslibmath.h \
++	jslock.h \
++	jslong.h \
++	jsmath.h \
++	jsnum.h \
++	jsobj.h \
++	jsopcode.h \
++	jsopcode.tbl \
++	jsotypes.h \
++	jsparse.h \
++	jsprf.h \
++	jsproto.tbl \
++	jsprvtd.h \
++	jspubtd.h \
++	jsregexp.h \
++	jsscan.h \
++	jsscope.h \
++	jsscript.h \
++	jsshell.msg \
++	jsstddef.h \
++	jsstr.h \
++	jstypes.h \
++	jsutil.h \
++	jsxdrapi.h \
++	jsxml.h
++
++htmldocdir = $(docdir)/html
++htmldoc_DATA = README.html
+diff -r -u -N -- js-1.8-20080924_orig/src/fdlibm/Makefile.am js-1.8-20080924/src/fdlibm/Makefile.am
+--- js-1.8-20080924_orig/src/fdlibm/Makefile.am	1970-01-01 01:00:00.000000000 +0100
++++ js-1.8-20080924/src/fdlibm/Makefile.am	2008-11-09 17:33:10.000000000 +0100
+@@ -0,0 +1,86 @@
++if FDLIBM
++lib_LTLIBRARIES = libfdm.la
++
++libfdm_la_SOURCES = \
++	e_acos.c \
++	e_acosh.c \
++	e_asin.c \
++	e_atan2.c \
++	e_atanh.c \
++	e_cosh.c \
++	e_exp.c \
++	e_fmod.c \
++	e_gamma.c \
++	e_gamma_r.c \
++	e_hypot.c \
++	e_j0.c \
++	e_j1.c \
++	e_jn.c \
++	e_lgamma.c \
++	e_lgamma_r.c \
++	e_log.c \
++	e_log10.c \
++	e_pow.c \
++	e_rem_pio2.c \
++	e_remainder.c \
++	e_scalb.c \
++	e_sinh.c \
++	e_sqrt.c \
++	fdlibm.h \
++	k_cos.c \
++	k_rem_pio2.c \
++	k_sin.c \
++	k_standard.c \
++	k_tan.c \
++	s_asinh.c \
++	s_atan.c \
++	s_cbrt.c \
++	s_ceil.c \
++	s_copysign.c \
++	s_cos.c \
++	s_erf.c \
++	s_expm1.c \
++	s_fabs.c \
++	s_finite.c \
++	s_floor.c \
++	s_frexp.c \
++	s_ilogb.c \
++	s_isnan.c \
++	s_ldexp.c \
++	s_lib_version.c \
++	s_log1p.c \
++	s_logb.c \
++	s_matherr.c \
++	s_modf.c \
++	s_nextafter.c \
++	s_rint.c \
++	s_scalbn.c \
++	s_signgam.c \
++	s_significand.c \
++	s_sin.c \
++	s_tan.c \
++	s_tanh.c \
++	w_acos.c \
++	w_acosh.c \
++	w_asin.c \
++	w_atan2.c \
++	w_atanh.c \
++	w_cosh.c \
++	w_exp.c \
++	w_fmod.c \
++	w_gamma.c \
++	w_gamma_r.c \
++	w_hypot.c \
++	w_j0.c \
++	w_j1.c \
++	w_jn.c \
++	w_lgamma.c \
++	w_lgamma_r.c \
++	w_log.c \
++	w_log10.c \
++	w_pow.c \
++	w_remainder.c \
++	w_scalb.c \
++	w_sinh.c \
++	w_sqrt.c
++endif

@@ -1,0 +1,50 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Package: ruby-1.9
+# Description: An interpreter of object-oriented scripting language Ruby
+#  Ruby is the interpreted scripting language for quick and easy
+#  object-oriented programming. It has many features to process text
+#  files and to do system management tasks (as in perl). It is simple,
+#  straight-forward, and extensible.
+#  .
+# URL: http://www.ruby-lang.org/en/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=ruby-1.9
+version=1.9.1-p243
+release=1
+source=(ftp://ftp.ruby-lang.org/pub/ruby/ruby-$version.tar.bz2)
+
+build()
+{
+  cd ruby-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  cd $ROOT/bin
+
+  for BIN in *; do
+    mv -f "$BIN" "$BIN-1.9"
+  done
+
+  cd $ROOT/lib
+
+  for LIB in *.a; do
+    mv -f "$LIB" "${LIB%.a}-1.9.a"
+  done
+
+  cd $ROOT/share/man/man1
+
+  for MAN in *.1; do
+    mv -f "$MAN" "${MAN%.1}-1.9.1"
+  done
+}
+
+# EOF

@@ -1,0 +1,42 @@
+diff -ru libsvm-2.88_orig/GNUmakefile libsvm-2.88/GNUmakefile
+--- libsvm-2.88_orig/GNUmakefile	2009-02-19 18:48:10.000000000 +0100
++++ libsvm-2.88/GNUmakefile	2009-02-19 18:49:40.000000000 +0100
+@@ -0,0 +1,38 @@
++prefix ?= /usr
++libdir = ${prefix}/lib
++includedir = ${prefix}/include
++
++CXX ?= g++
++LIBTOOL ?= libtool
++CFLAGS = -Wall -Wconversion -O3
++SHVER = 1
++LIBS = -lm
++LDFLAGS = -rpath $(libdir)
++
++all: svm-train svm-predict svm-scale
++install:
++	mkdir -p $(DESTDIR)$(includedir)
++	cp svm.h $(DESTDIR)$(includedir) 
++	mkdir -p $(DESTDIR)$(libdir)
++	$(LIBTOOL) --mode=install cp libsvm.la $(DESTDIR)$(libdir)
++
++libsvm.la: svm.lo
++	$(LIBTOOL) --mode=link $(CXX) $(LDFLAGS) $(CFLAGS) -version-number $(SHVER) -o $@ $^
++
++%.lo: %.c
++	$(LIBTOOL) --mode=compile $(CXX) $(CFLAGS) -c -o $@ $<
++
++%.lo: %.cpp
++	$(LIBTOOL) --mode=compile $(CXX) $(CFLAGS) -c -o $@ $<
++
++svm-predict: svm-predict.lo svm.lo libsvm.la
++	$(LIBTOOL) --mode=link $(CXX) $(LDFLAGS) $(CFLAGS) -o $@ $^ $(LIBS)
++svm-train: svm-train.lo svm.lo libsvm.la
++	$(LIBTOOL) --mode=link $(CXX) $(LDFLAGS) $(CFLAGS) -o $@ $^ $(LIBS)
++svm-scale: svm-scale.lo libsvm.la
++	$(LIBTOOL) --mode=link $(CXX) $(LDFLAGS) $(CFLAGS) -o $@ $^ 
++
++svm.lo: svm.cpp svm.h
++
++clean:
++	rm -f *~ svm.lo svm-train svm-predict svm-scale

@@ -1,0 +1,31 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:52 roman Exp $
+#
+# Description: A cross platform C++ application framework.
+#  The Visual Component Framework is a cross platform C++ application
+#  framework that offers a modern, clean architecture. It is divided into
+#  three major libraries. The FoundationKit provides services such as
+#  file access, streams, threads, synchronization primitives, and advanced
+#  RTTI features. The GraphicsKit includes classes for working with both
+#  image and vector graphics, and has built in support for the Anti-Grain
+#  Graphics library. The ApplicationKit provides GUI controls, use of the
+#  Model-View-Control pattern, property and component editors, undo/redo
+#  support, drag-and-drop, clipboard services, application resources,
+#  and UI metrics and policy managers.
+# URL: http://vcf-online.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=vcf
+version=0.0.5
+release=1
+source=(http://www.suse.de/~mana/vcf-$version.tar.bz2)
+
+build()
+{
+  cd vcf-$version
+
+  make CC="${CC-cc}"
+
+  install -d $ROOT/lib/ladspa
+  install -m 755 vcf.so $ROOT/lib/ladspa
+}

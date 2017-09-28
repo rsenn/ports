@@ -1,0 +1,39 @@
+# $Id: Pkgfile,v 1.2 2007/05/09 21:02:48 roman Exp $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=wosclib
+version=00.06
+release=1
+source=($mirror_sf/wosclib/WOscLib-$version.zip
+        wosclib-00.05-fixes.patch)
+
+build()
+{
+  cd WOscLib
+
+  patch -N -p1 -i $SRC/wosclib-00.05-fixes.patch
+  find -name CVS | xargs rm -rf
+
+  cd build/linux
+  make -f makefile-linux-a.mk all
+
+  install -d $ROOT/{include/WOscLib,lib}
+
+  install -m 644 libwosclib.a $ROOT/lib
+  install -m 644 ../../*.h $ROOT/include/WOscLib
+
+  cp woscclient ../../examples/client
+  cp woscserver ../../examples/server
+
+  cd ../..
+
+  install -d $ROOT/share/doc/wosclib
+  doxygen build/doxygen/wosclib.doxyfile
+
+  cp -rf html latex $ROOT/share/doc/wosclib
+  cp -rf examples $ROOT/share/doc/wosclib
+}

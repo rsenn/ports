@@ -1,0 +1,31 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: gdbm
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=db
+version=12
+host=i386-apple-darwin8
+
+release=1
+source=(http://www.opensource.apple.com/darwinsource/tarballs/other/BerkeleyDB-$version.tar.gz)
+
+build()
+{
+  cd BerkeleyDB-$version/db/dist
+
+  mkdir ../build
+  cd ../build
+
+  ../dist/configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+#  copy_license "COPYING"
+}

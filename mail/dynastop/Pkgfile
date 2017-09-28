@@ -1,0 +1,43 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A utility for dynamic IP address antispam filtering.
+#  DynaStop is a utility to examine IPv4 based addresses for Exim and
+#  procmail for the purpose of filtering based upon patterns defined by
+#  the administrator. This can be a pivotal factor in email filtering and
+#  server load management, since dynamic IP addresses are typically used
+#  for dial-up, DHCP, and DSL accounts. All of which have a designated mail
+#  exchange server through which all outbound mail flows as defined with
+#  many, if not most, large Internet service providers.
+#  .
+# URL: http://tanaya.net/DynaStop/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=dynastop
+version=1
+release=1
+source=(http://tanaya.net/DynaStop/DynaStop.tgz)
+
+build()
+{
+  sed -i "/clear/ s,^,#," COMPILE
+  sh -x COMPILE
+
+  case $prefix in
+    "/usr") sysconfdir="/etc" ;;
+  esac
+
+  install -d $PKG/${sysconfdir="$prefix/etc" }
+  install -m 644 DynaStop.conf $PKG/${sysconfdir}
+
+  install -d $ROOT/share/dynastop
+  install -m 644 DynaStop.*.conf $ROOT/share/dynastop
+
+  install -d $ROOT/bin
+  install -m 755 DynaCheck DynaStop DynaSubject DynaTest $ROOT/bin
+
+  install -d $ROOT/share/doc/dynastop
+  install -m 644 COPYING README $ROOT/share/doc/dynastop
+}
+
+# EOF

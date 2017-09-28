@@ -1,0 +1,119 @@
+diff -ru cmd5-0.1_orig/Makefile cmd5-0.1/Makefile
+--- cmd5-0.1_orig/Makefile	2009-02-07 07:52:22.000000000 +0100
++++ cmd5-0.1/Makefile	2009-02-07 07:53:08.000000000 +0100
+@@ -2,10 +2,13 @@
+ dirname		= cmd5-$(version)
+ tarname		= $(dirname).tar.gz
+ 
++CFLAGS = -g -O2 -Wall
++LDFLAGS = -s
++
+ all:		cmd5
+ 
+ cmd5:		cmd5.o hmac_md5.o md5c.o base64.o
+-		gcc -o cmd5 cmd5.o hmac_md5.o md5c.o base64.o
++		$(CC) $(LDFLAGS) $(CFLAGS) -o cmd5 cmd5.o hmac_md5.o md5c.o base64.o
+ 
+ cmd5.o:		cmd5.c
+ 
+diff -ru cmd5-0.1_orig/base64.c cmd5-0.1/base64.c
+--- cmd5-0.1_orig/base64.c	2009-02-07 07:52:22.000000000 +0100
++++ cmd5-0.1/base64.c	2009-02-07 07:56:30.000000000 +0100
+@@ -1,4 +1,5 @@
+ #include <stdlib.h>
++#include <string.h>
+ 
+ static unsigned char b64e[] = {
+   'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', /*  0- 7 */
+@@ -62,13 +63,13 @@
+ 
+ int b64encode_len(unsigned char *in)
+ {
+-  int l = strlen(in);
++  int l = strlen((char *)in);
+   return 4*((l+2)/3);
+ }
+ 
+ int b64decode_len(unsigned char *in)
+ {
+-  int l = strlen(in);
++  int l = strlen((char *)in);
+   return 3*((l+3)/4);
+ }
+ 
+@@ -87,7 +88,7 @@
+ 
+ void b64encode(unsigned char *in, unsigned char *out)
+ {
+-  int inlen = strlen(in);
++  int inlen = strlen((char *)in);
+   while (inlen > 0) {
+     b64enc(in, inlen, out);
+     inlen -= 3;
+@@ -109,7 +110,7 @@
+ }
+ 
+ void b64decode(unsigned char *in, unsigned char *out) {
+-  int inlen = strlen(in);
++  int inlen = strlen((char *)in);
+   while (inlen > 0) {
+     b64dec(in, inlen, out);
+     inlen -= 4;
+Binary files cmd5-0.1_orig/base64.o and cmd5-0.1/base64.o differ
+Binary files cmd5-0.1_orig/cmd5 and cmd5-0.1/cmd5 differ
+diff -ru cmd5-0.1_orig/cmd5.c cmd5-0.1/cmd5.c
+--- cmd5-0.1_orig/cmd5.c	2009-02-07 07:52:22.000000000 +0100
++++ cmd5-0.1/cmd5.c	2009-02-07 07:55:49.000000000 +0100
+@@ -4,20 +4,23 @@
+  */
+ 
+ #include <stdio.h>
++#include <stdlib.h>
++#include <unistd.h>
++#include <string.h>
+ #include "hmac_md5.h"
+ #include "base64.h"
+ 
+ int main(int argc, char *argv[]) {
+-  unsigned char *username;
+-  unsigned char *password;
+-  unsigned char *challenge;
+-  unsigned char digest[16];
+-  unsigned char digasc[33];
++  char *username;
++  char *password;
++  char *challenge;
++  char digest[16];
++  char digasc[33];
+   int i;
+   static char hextab[] = "0123456789abcdef";
+-  unsigned char *decoded;
+-  unsigned char *encoded;
+-  unsigned char *greeting;
++  char *decoded;
++  char *encoded;
++  char *greeting;
+ 
+   if (argc != 4) {
+     fprintf(stderr, "Usage: %s username password auth-greeting\n",
+@@ -36,7 +39,7 @@
+   printf("password: %s\n", password);
+   printf("challenge: %s\n", challenge);
+ 
+-  hmac_md5(challenge, strlen(challenge), password, strlen(password), digest);
++  hmac_md5((unsigned char *)challenge, strlen(challenge), (unsigned char *)password, strlen(password), (unsigned char *)digest);
+ 
+   digasc[32] = 0;
+   for (i = 0; i < 16; i++) {
+@@ -46,7 +49,7 @@
+ 
+   printf("digest: %s\n", digasc);
+ 
+-  decoded = (unsigned char *) malloc(strlen(username)+strlen(digasc)+2);
++  decoded = (char *) malloc(strlen(username)+strlen(digasc)+2);
+ 
+   strcpy(decoded, username);
+   decoded[strlen(username)] = ' ';
+Binary files cmd5-0.1_orig/cmd5.o and cmd5-0.1/cmd5.o differ
+Binary files cmd5-0.1_orig/hmac_md5.o and cmd5-0.1/hmac_md5.o differ
+Binary files cmd5-0.1_orig/md5c.o and cmd5-0.1/md5c.o differ

@@ -1,0 +1,37 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A console-based BitTorrent client.
+#  rTorrent is a console-based BitTorrent client. It aims to be a
+#  fully-featured and efficient client with the ability to run in the
+#  background using screen. It supports fast-resume and session management.
+# URL: http://libtorrent.rakshasa.no
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=rtorrent
+version=0.8.4
+release=1
+source=(http://libtorrent.rakshasa.no/downloads/rtorrent-$version.tar.gz
+        rtorrent-0.8.2-c++0x.patch)
+
+build() 
+{
+  cd rtorrent-$version
+
+#  patch -p1 -i $SRC/rtorrent-0.8.2-c++0x.patch
+  
+  #./autogen.sh
+  
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+  
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/rtorrent
+  install -m 644 AUTHORS COPYING INSTALL README TODO $ROOT/share/doc/rtorrent
+}
+
+# EOF

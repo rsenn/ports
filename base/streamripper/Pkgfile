@@ -1,0 +1,30 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: Records MP3, Ogg, AAC, and NSV streams into files for each track.
+#  Streamripper records MP3, Ogg, AAC, and NSV audio and video files from
+#  Shoutcast and Icecast compatible streams. The streams can be recorded as a
+#  whole or in individual tracks. Streamripper also features a relay stream,
+#  which lets you listen or watch live from multiple clients while recording.
+# URL: http://streamripper.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=streamripper
+version=1.62.0
+release=1
+source=($mirror_sf/streamripper/streamripper-$version.tar.gz)
+
+build()
+{
+  cd streamripper-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --${shared:=enable}-shared \
+       --${static:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+}

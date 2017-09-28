@@ -1,0 +1,41 @@
+diff -ru mod_ftp-0.9.2_orig/configure.apxs mod_ftp-0.9.2/configure.apxs
+--- mod_ftp-0.9.2_orig/configure.apxs	2008-11-20 18:24:55.000000000 +0000
++++ mod_ftp-0.9.2/configure.apxs	2008-11-20 18:37:20.000000000 +0000
+@@ -27,6 +27,8 @@
+ top_installbuilddir=`cd $exp_installbuilddir/..; pwd`
+ top_installbuilddir=`echo $exp_installbuilddir | sed -e "s#/[^/]*\\\$##;"`
+ 
++exp_includedir=`$APXS -q exp_includedir`
++
+ builddir=`pwd`
+ srcdir=$builddir
+ ftp_builddir=$builddir
+@@ -58,6 +60,7 @@
+         -e "s#^\(rel_logfiledir\)=.*#\1=$rel_logfiledir#;" \
+         -e "s#^\(httpd_conffile\)=.*#\1=$httpd_conffile#;" \
+         -e "s#^\(exp_ftpdocsdir\)=.*#\1=$exp_ftpdocsdir#;" \
++        -e "s#^\(exp_includedir\)=.*#\1=$exp_includedir#;" \
+         -e "s#^\(FTPPORT\)=.*#\1=$FTPPORT#;" \
+         < $i.apxs > $i
+ done
+diff -ru mod_ftp-0.9.2_orig/modules/ftp/Makefile mod_ftp-0.9.2/modules/ftp/Makefile
+diff -ru mod_ftp-0.9.2_orig/modules/ftp/Makefile.apxs mod_ftp-0.9.2/modules/ftp/Makefile.apxs
+--- mod_ftp-0.9.2_orig/modules/ftp/Makefile.apxs	2008-11-20 18:24:55.000000000 +0000
++++ mod_ftp-0.9.2/modules/ftp/Makefile.apxs	2008-11-20 18:36:36.000000000 +0000
+@@ -8,6 +8,7 @@
+ # scripts expect it them be the parent of the build directory,
+ # and fail to trust the installbuilddir.
+ exp_installbuilddir=$(shell $(APXS) -q exp_installbuilddir)
++exp_includedir=$(shell $(APXS) -q exp_includedir)
+ top_srcdir=$(installbuilddir)/..
+ top_builddir=$(installbuilddir)/..
+ 
+@@ -23,7 +24,7 @@
+ 
+ #   additional defines, includes and libraries
+ DEFS=-DFTP_APXS_BUILD
+-INCLUDES=-I$(builddir) -I$(srcdir) -I$(ftp_srcdir)/include
++INCLUDES=-I$(builddir) -I$(srcdir) -I$(ftp_srcdir)/include -I$(exp_includedir)
+ #LIBS=-Lmy/lib/dir -lmylib
+ 
+ #

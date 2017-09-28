@@ -1,0 +1,137 @@
+# $Id: Pkgfile,v 1.9 2007/05/09 21:02:52 roman Exp $
+#
+# Description: GNU Ncurses
+#  The ncurses (new curses) library is a free software emulation of curses
+#  in System V Release 4.0 and more. It uses terminfo format, supports pads
+#  and color and multiple highlights and forms charcters and function-key
+#  mapping, and has all the other SYSV-curses enhancements over BSD
+#  curses. It should port easily to any ANSI/POSIX-conforming UNIX-like
+#  system. On systems supporting libiconv, the library can be built to
+#  support wide- and multibyte-character applications, e.g., UTF-8.
+#  The distribution includes the library and support utilities, including
+#  a terminfo compiler tic, a decompiler infocmp, clear, tput, tset, and
+#  a termcap conversion tool captoinfo.
+# URL: http://dickey.his.com/ncurses/ncurses.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=ncurses
+version=5.7
+release=2
+source=($mirror_gnu/ncurses/ncurses-$version.tar.gz
+        ftp://invisible-island.net/ncurses/$version/ncurses-$version-20090829.patch.gz
+        ncurses.h
+        ncurses-5.5-terminfo.patch
+        ncurses-5.6-coverity_fixes-1.patch
+        ncurses-5.6-diet.patch
+        ncurses-5.7-no-collision-msg.patch
+        ncurses-5.7-no-match-list.patch)
+
+build()
+{
+  cd ncurses-$version
+
+  zcat $SRC/ncurses-$version-20090829.patch.gz | patch -N -p1 -f
+  patch -N -p1 -i $SRC/ncurses-5.5-terminfo.patch
+  #patch -N -p1 -i $SRC/ncurses-5.6-coverity_fixes-1.patch
+  patch -N -p1 -i $SRC/ncurses-5.6-diet.patch
+  patch -N -p1 -i $SRC/ncurses-5.7-no-collision-msg.patch
+  patch -N -p1 -i $SRC/ncurses-5.7-no-match-list.patch
+
+  sed -e "s,/usr/include,$prefix/include,g" \
+      -e "s,/usr,$prefix,g" \
+      -e "s,-version-info,-version-number,g" \
+      -i configure */Makefile.in
+
+  case $prefix in
+    /usr) libdir="/lib" sysconfdir="/etc" ;;
+       *) libdir="$prefix/lib" sysconfdir="$prefix/etc" ;;
+  esac
+
+  (echo "#!/bin/sh" && echo 'echo "$@"') >config.sub
+
+  set --
+
+  if ${CC-cc} -dumpmachine && ! $CXX -dumpmachine; then
+    set -- "$@" \
+       --without-cxx \
+       --without-cxx-binding
+  fi
+
+  case $CFLAGS in
+    *-g[0-9a-z])
+      set -- "$@" \
+        --with-debug
+    ;;
+  esac
+
+  export CFLAGS
+
+  for widec in enable disable; do
+
+    [ -e Makefile ] && make distclean
+
+    ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       ${libdir:+--libdir="$libdir"} \
+       ${sysconfdir:+--sysconfdir="$sysconfdir"} \
+       --mandir="$prefix/share/man" \
+       --with-libtool \
+       --with-shared \
+       --with-termlib \
+       --without-debug \
+       --enable-sigwinch \
+       --enable-tcap-names \
+       --disable-ext-colors \
+       --enable-wgetch-events \
+       --enable-termcap \
+       --disable-colorfgbg \
+       --without-gpm \
+       --$widec-widec \
+       --without-ada
+
+    make
+
+    rm -f lib/lib*curses*.so*
+    rm -f lib/lib*curses*.la
+
+    make -C ncurses SHLIB_LIST="\$(SHLIB_DIRS) -ldl -L. -L../lib -lterminfo"
+
+    make DESTDIR="$PKG" install
+  done
+
+  set -- $ROOT/lib/lib*.so.*.*
+
+  if [ -e "$1" ]; then
+    chmod 755 "$@" || true
+  fi
+
+  install -d $ROOT/lib
+
+  set -- $PKG/$libdir/*.a
+
+  if [ -e "$1" ]; then
+    mv "$@" $ROOT/lib/ || true
+  fi
+
+  if [ "$libdir" != "$prefix/lib" ]; then
+    librel="$libdir/"
+
+    cd $ROOT/lib &&
+    for so in $PKG$librel*.so; do
+      ln -sf "${so#$PKG}.${version%%.*}" "$ROOT/lib/${so##*/}"
+      rm -f "$so"
+    done
+  else
+    librel=""
+  fi
+
+  ln -s libterminfo.a $ROOT/lib/libtinfo.a
+  ln -s ${librel}libterminfo.so.5 $ROOT/lib/libtinfo.so
+
+  install -m 644 $SRC/ncurses.h $ROOT/include
+  install -m 644 $SRC/ncurses.h $ROOT/include/curses.h
+}
+

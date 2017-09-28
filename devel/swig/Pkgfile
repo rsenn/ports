@@ -1,0 +1,54 @@
+# $Id: Pkgfile,v 1.4 2007/05/10 16:59:30 roman Exp $
+#
+# Description: A C/C++ code wrapper and interface generator for other programming languages.
+#  SWIG is a software development tool that connects programs written in
+#  C and C++ with a variety of high-level programming languages. SWIG is
+#  primarily used with common scripting languages such as Perl, PHP, Python,
+#  Tcl/Tk, and Ruby, however the list of supported languages also includes
+#  non-scripting languages such as C#, Common Lisp (CLISP, Allegro CL,
+#  UFFI), Java, Modula-3, OCAML, Octave, and R. Also several interpreted
+#  and compiled Scheme implementations (Guile, MzScheme, Chicken) are
+#  supported. SWIG is most commonly used to create high-level interpreted
+#  or compiled programming environments, user interfaces, and as a tool for
+#  testing and prototyping C/C++ software. SWIG can also export its parse
+#  tree in the form of XML and Lisp s-expressions.
+# URL: http://www.swig.org
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=swig
+version=1.3.38
+release=1
+source=($mirror_sf/swig/swig-$version.tar.gz)
+
+build()
+{
+  cd swig-$version
+
+  libtoolize --force --copy --automake
+  aclocal --force -I Tools/config
+  automake -a --foreign --force --copy
+  autoconf --force
+  autoheader --force
+
+  sed -i \
+      -e "s,/usr/local,$prefix,g" \
+      -e "s,/usr,$prefix,g" \
+    configure
+
+  ./configure \
+      --host="$host" \
+      --build="$build" \
+      --prefix="$prefix" \
+      --${nls:=enable}-nls \
+      --${static:=enable}-shared \
+      --${shared:=enable}-shared \
+      --with-php4="$prefix/bin/php" \
+      --with-python="$prefix/bin/python"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc
+  mv -f Doc $ROOT/share/doc/swig
+}

@@ -1,0 +1,58 @@
+diff -r -u mustajuuri-29-11-2005_orig/src/divaio/di_audio_file_handler.C mustajuuri-29-11-2005/src/divaio/di_audio_file_handler.C
+--- mustajuuri-29-11-2005_orig/src/divaio/di_audio_file_handler.C	2007-07-30 22:36:28.000000000 +0200
++++ mustajuuri-29-11-2005/src/divaio/di_audio_file_handler.C	2007-07-30 23:25:02.000000000 +0200
+@@ -26,6 +26,7 @@
+ 
+ #include <sched.h>
+ #include <strings.h>
++#include <string.h>
+ 
+ #include <assert.h>
+ 
+diff -r -u mustajuuri-29-11-2005_orig/src/mj/mj_pixmap_loader.C mustajuuri-29-11-2005/src/mj/mj_pixmap_loader.C
+--- mustajuuri-29-11-2005_orig/src/mj/mj_pixmap_loader.C	2007-07-30 22:36:29.000000000 +0200
++++ mustajuuri-29-11-2005/src/mj/mj_pixmap_loader.C	2007-07-30 23:30:26.000000000 +0200
+@@ -26,6 +26,7 @@
+ #include <qimage.h>
+ 
+ #include <map>
++#include <stdlib.h>
+ 
+ static std::map<QString, QPixmap> MJ_pixmaps;
+ static std::map<QString, QIconSet> MJ_iconSets;
+diff -x config.log -x *.Po -x *.Plo -x *.Tpo -r -u mustajuuri-29-11-2005_orig/src/mjeditor/main.C mustajuuri-29-11-2005/src/mjeditor/main.C
+--- mustajuuri-29-11-2005_orig/src/mjeditor/main.C	2007-08-01 11:56:38.000000000 +0200
++++ mustajuuri-29-11-2005/src/mjeditor/main.C	2007-08-01 12:14:34.000000000 +0200
+@@ -23,6 +23,7 @@
+ #include <mj_kernel.h>
+ #include <mj_wave_editor.h>
+ #include <mj_prefs.h>
++#include <mj_global.h>
+ #include <mj_root_powers.h>
+ #include <mj_watch_dog.h>
+ 
+diff -x config.log -x *.Po -x *.Plo -x *.Tpo -r -u mustajuuri-29-11-2005_orig/src/plugins/synth/mj_stk_shakers.C mustajuuri-29-11-2005/src/plugins/synth/mj_stk_shakers.C
+--- mustajuuri-29-11-2005_orig/src/plugins/synth/mj_stk_shakers.C	2007-08-01 11:56:40.000000000 +0200
++++ mustajuuri-29-11-2005/src/plugins/synth/mj_stk_shakers.C	2007-08-01 12:18:33.000000000 +0200
+@@ -22,6 +22,7 @@
+ #include <mj_message.h>
+ #include <mj_random.h>
+ #include <mj_strs.h>
++#include <cstring>
+ 
+ static MJ_Random __MJ_shakeRandom;
+ 
+diff -x config.log -x *.Po -x *.Plo -x *.Tpo -r -u mustajuuri-29-11-2005_orig/src/scripts/qtlocate.sh mustajuuri-29-11-2005/src/scripts/qtlocate.sh
+--- mustajuuri-29-11-2005_orig/src/scripts/qtlocate.sh	2007-08-01 11:56:37.000000000 +0200
++++ mustajuuri-29-11-2005/src/scripts/qtlocate.sh	2007-08-01 12:19:36.000000000 +0200
+@@ -4,7 +4,9 @@
+ 
+ RES=/unknown
+ 
+-if test -e /usr/include/qt3  ; then  
++if test -e /usr/local/include/qt-3.3  ; then
++  export RES=/usr/local/include/qt-3.3
++elif test -e /usr/include/qt3  ; then  
+   export RES=/usr/include/qt3
+ elif test -e /usr/qt/3  ; then
+   export RES=/usr/qt/3/include

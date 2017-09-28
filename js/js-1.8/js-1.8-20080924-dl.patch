@@ -1,0 +1,165 @@
+diff -ru js-1.8-20080924_orig/src/Makefile.am js-1.8-20080924/src/Makefile.am
+--- js-1.8-20080924_orig/src/Makefile.am	2008-11-14 11:01:34.000000000 +0100
++++ js-1.8-20080924/src/Makefile.am	2008-11-14 13:04:51.000000000 +0100
+@@ -4,6 +4,7 @@
+ 
+ INCLUDES = -I. -I$(srcdir) 
+ CFLAGS = @CFLAGS@ @WARN_CFLAGS@ @JS_CFLAGS@ @NSPR_CFLAGS@
++DEFS = @DEFS@ -DMODULEDIR=\"$(libdir)/js\"
+ 
+ CONFIG_CLEAN_FILES = \
+   jsautokw.h \
+diff -ru js-1.8-20080924_orig/src/js.c js-1.8-20080924/src/js.c
+--- js-1.8-20080924_orig/src/js.c	2008-11-14 11:01:34.000000000 +0100
++++ js-1.8-20080924/src/js.c	2008-11-14 13:10:32.000000000 +0100
+@@ -90,6 +90,10 @@
+ #include <io.h>     /* for isatty() */
+ #endif
+ 
++#include <libgen.h>
++#include <limits.h>
++#include <dlfcn.h>
++
+ typedef enum JSShellExitCode {
+     EXITCODE_RUNTIME_ERROR      = 3,
+     EXITCODE_FILE_NOT_FOUND     = 4,
+@@ -113,6 +117,103 @@
+ FILE *gErrFile = NULL;
+ FILE *gOutFile = NULL;
+ 
++struct module
++{
++  struct module *next;
++  void *handle;
++  void (*initFunc)(JSContext *, JSObject *);
++  void (*destroyFunc)(JSContext *, JSObject *);
++  char name[64];
++};
++
++struct module *modules = NULL;
++
++int LoadModule(JSContext *cx, JSObject *obj, const char *module)
++{
++  char buffer[PATH_MAX + 1];
++  char name[64];
++    
++  if(strchr(module, '/'))
++    strncpy(buffer, module, sizeof(buffer));
++  else
++  {
++    strncpy(buffer, MODULEDIR, sizeof(buffer));
++    strncat(buffer, "/", sizeof(buffer));
++    strncat(buffer, module, sizeof(buffer));
++  }
++
++  size_t len = strlen(buffer);
++    
++  if(len > 2)
++  {
++    char *ext = strrchr(buffer, '.');
++
++    if(ext && !strcmp(ext, ".so"))
++      *ext = '\0';
++  }
++
++  strncpy(name, basename(buffer), sizeof(name));
++  name[63] = '\0';
++
++  strncat(buffer, ".so", sizeof(buffer));
++  buffer[PATH_MAX] = '\0';
++
++  void *handle = dlopen(buffer, RTLD_NOW);
++
++  if(!handle)
++  {
++    fprintf(stderr, "ERROR: loading module %s: %s\n", module, dlerror());
++    return JS_FALSE;
++  }
++
++  struct module *mod = malloc(sizeof(struct module));
++
++  if(!mod)
++  {
++    fprintf(stderr, "ERROR: cannot allocate module struct: %s\n",
++            strerror(errno));
++
++    return JS_FALSE;
++  }
++
++  mod->next = modules;
++  mod->handle = handle;
++
++  strncpy(mod->name, name, sizeof(mod->name));
++  mod->name[sizeof(mod->name) - 1] = '\0';
++
++  snprintf(buffer, sizeof(buffer), "JS_Destroy%sClasses", name);
++  mod->destroyFunc = dlsym(handle, buffer);
++
++  snprintf(buffer, sizeof(buffer), "JS_Init%sClasses", name);
++  mod->initFunc = dlsym(handle, buffer);
++
++  snprintf(buffer, sizeof(buffer), "ModuleInit", name);
++  mod->initFunc = dlsym(handle, buffer);
++
++  if(mod->initFunc)
++    mod->initFunc(cx, obj);
++  else
++    fprintf(stderr, "WARNING: Did not find module initialization function: %s\n",
++            buffer);
++
++  modules = mod;                                                                                                    
++  return JS_TRUE;                                                                                                               
++}
++
++void UnloadModules(JSContext *cx, JSObject *obj)
++{
++  while(modules)
++  {
++    if(modules->destroyFunc)
++      modules->destroyFunc(cx, obj);
++
++    dlclose(modules->handle);
++
++    modules = modules->next;
++  }
++}
++
+ static JSBool reportWarnings = JS_TRUE;
+ static JSBool compileOnly = JS_FALSE;
+ 
+@@ -659,6 +760,19 @@
+     return JS_TRUE;
+ }
+ 
++static JSBool
++Dl(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval *rval)
++{
++  JSString *str = JS_ValueToString(cx, argv[0]);
++  
++  if(!str)
++    return JS_FALSE;
++  
++  *rval = BOOLEAN_TO_JSVAL(LoadModule(cx, obj, JS_GetStringBytes(str)));
++  
++  return JS_TRUE;
++}
++
+ /*
+  * function readline()
+  * Provides a hook for scripts to read a line from stdin.
+@@ -2786,6 +2900,7 @@
+     JS_FS("stringsAreUTF8", StringsAreUTF8, 0,0,0),
+     JS_FS("testUTF8",       TestUTF8,       1,0,0),
+     JS_FS("throwError",     ThrowError,     0,0,0),
++    JS_FS("dl",             Dl,             1,0,0),
+ #ifdef DEBUG
+     JS_FS("dis",            Disassemble,    1,0,0),
+     JS_FS("dissrc",         DisassWithSrc,  1,0,0),
+@@ -2857,6 +2972,7 @@
+ "stringsAreUTF8()         Check if strings are UTF-8 encoded",
+ "testUTF8(mode)           Perform UTF-8 tests (modes are 1 to 4)",
+ "throwError()             Throw an error from JS_ReportError",
++"dl(module)               Dynamically load a module",
+ #ifdef DEBUG
+ "dis([fun])               Disassemble functions into bytecodes",
+ "dissrc([fun])            Disassemble functions with source lines",

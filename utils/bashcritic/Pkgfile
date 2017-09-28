@@ -1,0 +1,26 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: a tool to check shell scripts for common pitfalls
+# URL: https://trac.id.ethz.ch/projects/bashcritic/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=bashcritic
+version=0.3.3
+release=1
+source=(https://trac.id.ethz.ch/projects/bashcritic/downloads/13?bashcritic-$version.tar.bz2)
+
+build()
+{
+  cd bashcritic-$version
+
+  perl Makefile.PL
+
+  make
+  make \
+      DESTDIR="$PKG" \
+      SITEPREFIX='$(PREFIX)' \
+      INSTALLSITEMAN1DIR='$(SITEPREFIX)/share/man/man1' \
+      INSTALLSITEMAN3DIR='$(SITEPREFIX)/share/man/man3' \
+    install
+}

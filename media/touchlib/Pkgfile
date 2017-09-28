@@ -1,0 +1,54 @@
+# $Id: Pkgfile,v 1.10 2007/05/10 16:59:30 roman Exp $
+#
+# Description: A software library for creating multitouch FTIR displays
+#  This library provides all the software you need to set up your own FTIR
+#  blob detection and tracking and calibration. It provides a very simple
+#  pressed down, finger moved, and finger released. For more information see
+#  http://www.whitenoiseaudio.com/blog/ and http://www.whitenoiseaudio.com/blog/
+#  .
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=touchlib
+version=20080923
+release=1
+source=(http://touchlib.googlecode.com/files/touchlib-src-20071106.tbz2
+        http://touchlib.googlecode.com/files/touchlib-src-win32-20071106.zip
+        touchlib-20071106-20080923.diff.bz2)
+
+build()
+{
+#  svn checkout http://touchlib.googlecode.com/svn/trunk/ touchlib
+
+  cd touchlib
+
+  bzcat $SRC/touchlib-20071106-20080923.diff | patch -N -p1
+
+  cmake \
+      -DCMAKE_INSTALL_PREFIX="$prefix" \
+      -DCMAKE_VERBOSE_MAKEFILE="TRUE" \
+      -DOPENGL_INCLUDE_DIR="$prefix/include/GL" \
+    .
+
+  make
+#  make DESTDIR="$PKG" install
+
+  install -d $ROOT/{lib,include/touchlib,share/touchlib}
+#
+  cp -rvf */*.a $ROOT/lib
+  cp -rvf include/* $ROOT/include/touchlib
+
+  install -d $ROOT/share/doc/touchlib
+  install -m 644 LICENSE README $ROOT/share/doc/touchlib
+  install -m 644 doc/* tests/* $ROOT/share/doc/touchlib
+
+#  mv $(find -name "*.lib") bin/
+
+#  rm -rf bin
+ # mv -vf bin $ROOT/share/touchlib/win32
+#  cp -rf * $ROOT/share/touchlib
+
+#  chmod 755 $ROOT/share/touchlib-$version/win32/*.dll
+}
+

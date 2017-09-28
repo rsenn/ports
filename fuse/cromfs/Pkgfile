@@ -1,0 +1,38 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A compressed read-only filesystem for Linux.
+# It uses the LZMA compression algorithm from 7-zip, and a powerful block
+# merging mechanism, that is especially efficient with gigabytes of large
+# files having lots of redundancy.
+# The primary design goal of cromfs is compression power. It is much slower
+# than its peers, and uses more RAM. If all you care about is 'powerful
+# compression' and 'random file access', then you will be happy with cromfs.
+# URL: http://bisqwit.iki.fi/source/cromfs.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libfuse2, libgcc1, libgomp1, libstdc++6
+
+name=cromfs
+version=1.5.4
+release=1
+source=(http://bisqwit.iki.fi/src/arch/cromfs-$version.tar.bz2)
+
+build()
+{
+  cd cromfs-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make \
+      PROGS="cromfs-driver util/mkcromfs util/unmkcromfs util/cvcromfs" \
+      DESTDIR="$PKG" \
+    install
+
+  install -d $ROOT/share/doc
+  cp -rvf install/docs $ROOT/share/doc/cromfs
+
+  install -d $ROOT/bin
+  install install/progs/* $ROOT/bin
+}

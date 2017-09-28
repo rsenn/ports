@@ -1,0 +1,36 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A tool for deleting old mail on an IMAP server.
+#  Deletemail is a non-interactive tool for removing mail from one or more
+#  IMAP4 mailboxes. It removes mail older than a configurable number of
+#  days, and by default does not remove mail that is not marked as seen on
+#  the server.
+#  .
+# URL: http://www.jhweiss.de/software/deletemail.html
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=deletemail
+version=0.5
+release=1
+source=(ftp://ftp.in-berlin.de/pub/users/weiss/deletemail/deletemail-$version.tar.bz2)
+
+build()
+{
+  cd deletemail-$version
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix" \
+     --mandir="$prefix/share/man"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/deletemail
+  install -m 644 AUTHORS COPYING ChangeLog INSTALL NEWS README TODO $ROOT/share/doc/deletemail
+}
+
+# EOF

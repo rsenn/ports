@@ -1,0 +1,41 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:52 roman Exp $
+#
+# Description: An experiment to introduce some artificial intelligence in crowd behavior scenarios.
+# This is an experimental project, a framework for research in this domain.
+# URL: http://freshmeat.net/redir/crogai/57743/url_homepage/index.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libc6-dev, libgcc1, libstdc++6
+
+name=crogai
+version=0.2
+release=1
+source=(http://download.gna.org/crogai/crogai-$version.tar.bz2)
+
+build()
+{
+  cd crogai-$version
+
+  libtoolize --force --copy
+  aclocal --force
+  autoconf --force
+
+#  case $host in
+#    *-linux*)
+#      export LIBS="-lXdmcp -lXau -lXext -ldl"
+#      ;;
+#    *-mingw32*)
+#      patch -N -p1 -i $SRC/ode-0.8-mingw32.patch
+#      ;;
+#  esac
+
+  automake --force --copy --foreign --add-missing
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+

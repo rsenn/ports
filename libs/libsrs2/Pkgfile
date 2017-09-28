@@ -1,0 +1,49 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Libsrs2 is the next generation SRS library from the original designer of SRS
+# It implements the Sender Rewriting Scheme, a part of the SPF/SRS protocol
+# pair. Libsrs2 has been written from an entirely clean codebase with
+# compliance, speed and versatility in mind. It is platform independent
+# and has no external dependencies. It is thread-safe and heap-safe, and
+# is suitable for large scale applications and embedded systems and can
+# operate without many standard system facilities.
+#
+# URL: http://www.libsrs2.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libsrs2-0
+
+name=libsrs2
+version=1.0.18
+release=1
+source=(http://www.libsrs2.org/srs/libsrs2-$version.tar.gz)
+
+build()
+{
+  cd libsrs2-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/libsrs2
+  install -m 644 [A-Z]*[A-Z]* $ROOT/share/doc/libsrs2
+
+  cd $SRC/libsrs2-$version/perl
+
+  perl Makefile.PL
+
+  make \
+      DESTDIR="$PKG" \
+      INSTALLDIRS="vendor" \
+      PREFIX="$prefix" \
+    install
+
+  cd $SRC/libsrs2-$version/python
+
+  python setup.py install --prefix="$ROOT"
+}

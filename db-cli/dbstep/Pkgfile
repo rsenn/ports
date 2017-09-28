@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Lightweight C++ library for database abstraction and
+# object/relational mapping. It is targeted at C++ developers who need
+# to access databases, and consists of a set of interface classes and
+# some drivers for common data sources.
+# Currently available drivers are for mysql, postgresql, sqlite, firebird
+# and ODBC.
+# URL: http://dbstep.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=dbstep
+version=0.3.1
+release=1
+source=($mirror_sf/dbstep/dbstep-$version.tar.gz)
+
+build()
+{
+  cd dbstep-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix" \
+       --with-mysql="$prefix" \
+       --with-pgsql="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

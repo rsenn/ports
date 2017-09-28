@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Compiles state machines from regular languages.
+#  Ragel compiles finite state machines from regular languages into C, C++,
+#  actions at any point in a regular language, and to control non-determinism
+#  star, subtraction, intersection, epsilon transitions, and various other
+#  building of state machines using state charts. It can be used to create
+#  very fast recognizers and parsers that are also robust.
+#  .
+# URL: http://www.complang.org/ragel/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=ragel
+version=6.5
+release=1
+source=(http://www.cs.queensu.ca/~thurston/ragel/ragel-$version.tar.gz)
+
+build()
+{
+  cd ragel-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make prefix="$ROOT" install
+
+  install -d $ROOT/share/doc/ragel
+  install -m 644 COPYING TODO README CREDITS ChangeLog doc/RELEASE_NOTES* $ROOT/share/doc/ragel
+}

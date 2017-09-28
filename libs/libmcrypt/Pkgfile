@@ -1,0 +1,44 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A library to access various encryption algorithms
+#  Libmcrypt is a library which provides a uniform interface to several
+#  symmetric encryption algorithms. It is intended to have a simple interface
+#  to access encryption algorithms in ofb, cbc, cfb, and ecb modes. The
+#  algorithms it supports are DES, 3DES, RIJNDAEL, Twofish, IDEA, GOST,
+#  CAST-256, ARCFOUR, SERPENT, SAFER+, and more. The algorithms and modes
+#  are also modular so you can add and remove them on the fly without
+#  recompiling the library.
+# URL: http://mcrypt.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6
+
+name=libmcrypt
+version=2.5.8
+release=2adfinis1
+source=($mirror_sf/mcrypt/libmcrypt-$version.tar.bz2)
+
+build()
+{
+  cd libmcrypt-$version
+
+  libtoolize --force --copy --automake
+  aclocal --force
+  autoheader --force
+  automake --force --copy --add-missing --foreign
+  aclocal --force
+  autoconf --force
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --${shared:=enable}-shared \
+      --${static:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/libmcrypt
+  install -m 644 [A-Z]*[A-Z]* $ROOT/share/doc/libmcrypt
+  install -m 644 doc/{README.*,*.c} $ROOT/share/doc/libmcrypt
+}

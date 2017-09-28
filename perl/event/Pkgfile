@@ -1,0 +1,27 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Package: libevent-perl
+# Section: perl
+# Description: Event loop processing
+# URL: http://search.cpan.org/~jprit/Event-1.11/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=event
+version=1.11
+release=1
+source=(http://search.cpan.org/CPAN/authors/id/J/JP/JPRIT/Event-$version.tar.gz)
+
+build()
+{
+  cd Event-$version
+
+  perl Makefile.PL
+  make \
+    DESTDIR="$PKG" \
+    INSTALLDIRS="vendor" \
+    PREFIX="$prefix" \
+    install
+}
+
+# EOF

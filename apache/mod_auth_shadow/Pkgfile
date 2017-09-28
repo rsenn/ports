@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An Apache module for authenticating against a (root :root 0700) /etc/shadow file
+#  mod_auth_shadow is an Apache module for authenticating against an
+#  /etc/shadow file which is mode 0700 and owned by the user root and the
+#  group root, while the Webserver daemons run as a non-priviledged user.
+#  .
+# URL: http://mod-auth-shadow.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=mod_auth_shadow
+version=2.2
+release=1
+source=($mirror_sf/mod-auth-shadow/mod_auth_shadow-$version.tar.gz)
+
+build() 
+{
+  cd mod_auth_shadow-$version
+
+  install -d $ROOT/sbin
+
+  APXS=`ls $prefix/*bin/apxs*`
+
+  for apxs in $APXS; do
+    make APXS="$apxs"
+    make APXS="$apxs" INSTBINDIR="$ROOT/sbin" install
+  done
+}
+
+# EOF

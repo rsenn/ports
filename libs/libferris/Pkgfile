@@ -1,0 +1,33 @@
+# $Id: Pkgfile,v 1.16 2007/04/23 17:39:08 roman Exp $
+#
+# Description: libferris
+# URL: http://www.gnu.org/software/libferris/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libferris
+version=1.1.107
+release=1
+source=($mirror_sf/witme/libferris-$version.tar.bz2)
+
+build()
+{
+  cd libferris-$version
+
+  rm -f m4/libtool.m4 &&
+  touch m4/libtool.m4 &&
+  libtoolize --force &&
+  aclocal --force -I m4 &&
+  autoconf --force
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --mandir="$prefix/man" \
+       --${static:=enable}-shared \
+       --${shared:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+}

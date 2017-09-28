@@ -1,0 +1,52 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A small, simple and fast CSV library written in pure ANSI C89
+# It provides a straight-forward interface using callback
+# functions to handle parsed fields and rows and can parse
+# improperly formatted CSV files.
+# URL: http://sourceforge.net/projects/libcsv/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libcsv
+version=2.0.1
+release=2
+source=($mirror_sf/libcsv/libcsv-$version.tar.gz)
+
+build()
+{
+  cd libcsv-$version
+
+  install -d $ROOT/lib
+  install -d $ROOT/share/man/man3
+  install -d $ROOT/share/doc/libcsv
+
+  if test -e $prefix/bin/libtool
+  then
+    libtool  --mode="compile" --tag="CC" \
+      ${CC-cc} $CFLAGS -c libcsv.c
+
+    libtool --mode="link" --tag="CC" \
+      ${CC-cc} $LDFLAGS -rpath "$prefix/lib" -no-undefined \
+      -version-number "${version//./:}" \
+      -o libcsv.la libcsv.lo
+  fi
+
+  make \
+      ${CC:+CC="${CC-cc}"} \
+      ${AR:+AR="$AR"} \
+      BINDIR="$prefix/bin" \
+      LIBDIR="$prefix/lib" \
+      INCDIR="$prefix/include" \
+      MANDIR="$prefix/share/man/man3" \
+      DESTDIR="$PKG" \
+    install_headers \
+    install_man
+
+  libtool --mode="install" --tag="CC" install libcsv.la $ROOT/lib
+  libtool --mode="finish" --tag="CC" $ROOT/lib
+
+  cp -rf \
+    Changelog FAQ INSTALL LICENSE README csv.pdf examples test_csv.c tests \
+    $ROOT/share/doc/libcsv
+}

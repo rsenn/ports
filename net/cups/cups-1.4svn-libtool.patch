@@ -1,0 +1,1081 @@
+diff -ru cups-1.4svn-r8055_orig/Makedefs.in cups-1.4svn-r8055/Makedefs.in
+--- cups-1.4svn-r8055_orig/Makedefs.in	2009-02-26 14:02:13.000000000 +0100
++++ cups-1.4svn-r8055/Makedefs.in	2009-02-26 14:56:10.000000000 +0100
+@@ -19,8 +19,8 @@
+ 
+ AR		=	@AR@
+ AWK		=	@AWK@
+-CC		=	@LIBTOOL@ @CC@
+-CXX		=	@LIBTOOL@ @CXX@
++CC		=	@CC@
++CXX		=	@CXX@
+ DSO		=	@DSO@
+ DSOXX		=	@DSOXX@
+ HTMLDOC		=	@HTMLDOC@
+@@ -41,11 +41,11 @@
+ # Installation programs...
+ #
+ 
+-INSTALL_BIN	=	$(LIBTOOL) $(INSTALL) -m 755 @INSTALL_STRIP@
++INSTALL_BIN	=	$(LIBTOOL) --tag=CC --mode=install $(INSTALL) -m 755 @INSTALL_STRIP@
+ INSTALL_CONFIG	=	$(INSTALL) -m @CUPS_CONFIG_FILE_PERM@
+ INSTALL_DATA	=	$(INSTALL) -m 644
+ INSTALL_DIR	=	$(INSTALL) -d
+-INSTALL_LIB	=	$(LIBTOOL) $(INSTALL) -m 755 @INSTALL_STRIP@
++INSTALL_LIB	=	$(LIBTOOL) --tag=CC --mode=install $(INSTALL) -m 755 @INSTALL_STRIP@
+ INSTALL_MAN	=	$(INSTALL) -m 644
+ INSTALL_SCRIPT	=	$(INSTALL) -m 755
+ 
+@@ -256,24 +256,24 @@
+ # Rules...
+ #
+ 
+-.SILENT:
++#.SILENT:
+ .SUFFIXES:	.1 .1.gz .1m .1m.gz .3 .3.gz .5 .5.gz .7 .7.gz .8 .8.gz .a .c .cxx .h .man .o .32.o .64.o .gz
+ 
+ .c.o:
+ 	echo Compiling $<...
+-	$(CC) $(ARCHFLAGS) $(OPTIM) $(ALL_CFLAGS) -c $<
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(ARCHFLAGS) $(OPTIM) $(ALL_CFLAGS) -c $<
+ 
+ .c.32.o:
+ 	echo Compiling 32-bit $<...
+-	$(CC) $(ARCH32FLAGS) $(OPTIM) $(ALL_CFLAGS) -c -o $@ $<
++	 $(LIBTOOL) --tag=CC --mode=compile $(CC) $(ARCH32FLAGS) $(OPTIM) $(ALL_CFLAGS) -c -o $@ $<
+ 
+ .c.64.o:
+ 	echo Compiling 64-bit $<...
+-	$(CC) $(ARCH64FLAGS) $(OPTIM) $(ALL_CFLAGS) -c -o $@ $<
++	 $(LIBTOOL) --tag=CC --mode=compile $(CC) $(ARCH64FLAGS) $(OPTIM) $(ALL_CFLAGS) -c -o $@ $<
+ 
+ .cxx.o:
+ 	echo Compiling $<...
+-	$(CXX) $(ARCHFLAGS) $(OPTIM) $(ALL_CXXFLAGS) -c $<
++	 $(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(ARCHFLAGS) $(OPTIM) $(ALL_CXXFLAGS) -c $<
+ 
+ .man.1 .man.1m .man.3 .man.5 .man.7 .man.8:
+ 	echo Linking $<...
+diff -ru cups-1.4svn-r8055_orig/autogen.sh cups-1.4svn-r8055/autogen.sh
+--- cups-1.4svn-r8055_orig/autogen.sh	2009-02-26 14:59:21.000000000 +0100
++++ cups-1.4svn-r8055/autogen.sh	2009-02-26 14:29:07.000000000 +0100
+@@ -0,0 +1,8 @@
++#!/bin/sh
++#
++# 20090226
++
++libtoolize --force --copy --install
++aclocal --force -I config-scripts
++autoheader --force
++autoconf --force
+diff -ru cups-1.4svn-r8055_orig/backend/Makefile cups-1.4svn-r8055/backend/Makefile
+--- cups-1.4svn-r8055_orig/backend/Makefile	2009-02-26 14:02:13.000000000 +0100
++++ cups-1.4svn-r8055/backend/Makefile	2009-02-26 14:58:54.000000000 +0100
+@@ -17,6 +17,8 @@
+ 
+ include ../Makedefs
+ 
++top_builddir = ..
++
+ RBACKENDS =	ipp lpd $(DNSSD_BACKEND)
+ UBACKENDS =	$(PAP) $(LEGACY_BACKENDS) serial snmp socket usb
+ TARGETS	=	test1284 testbackend testsupplies \
+@@ -84,7 +86,7 @@
+ install-exec:
+ 	$(INSTALL_DIR) -m 755 $(SERVERBIN)/backend
+ 	for file in $(RBACKENDS); do \
+-		$(LIBTOOL) $(INSTALL_BIN) -m 700 $$file $(SERVERBIN)/backend; \
++		$(INSTALL_BIN) -m 700 $$file $(SERVERBIN)/backend; \
+ 	done
+ 	for file in $(UBACKENDS); do \
+ 		$(INSTALL_BIN) $$file $(SERVERBIN)/backend; \
+@@ -137,7 +139,7 @@
+ test1284:	test1284.o ../cups/libcups.a
+ 	echo Linking $@...
+ 	$(CC) $(LDFLAGS) -o test1284 test1284.o ../cups/libcups.a \
+-		$(LIBGSSAPI) $(SSLLIBS) $(COMMONLIBS) $(LIBZ)
++		$(LIBGSSAPI) $(SSLLIBS) $(DNSSDLIBS) $(COMMONLIBS) $(LIBZ)
+ 
+ 
+ #
+@@ -157,7 +159,7 @@
+ testsupplies:	testsupplies.o libbackend.a ../cups/libcups.a
+ 	echo Linking $@...
+ 	$(CC) $(LDFLAGS) -o testsupplies testsupplies.o libbackend.a \
+-		../cups/libcups.a $(LIBGSSAPI) $(SSLLIBS) $(COMMONLIBS) $(LIBZ)
++		../cups/libcups.a $(LIBGSSAPI) $(SSLLIBS) $(DNSSDLIBS) $(COMMONLIBS) $(LIBZ)
+ 
+ 
+ #
+@@ -188,7 +190,7 @@
+ 
+ ipp:	ipp.o ../cups/$(LIBCUPS) libbackend.a
+ 	echo Linking $@...
+-	$(CC) $(LDFLAGS) -o ipp ipp.o libbackend.a $(LIBS)
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(LDFLAGS) -o ipp ipp.o libbackend.a $(LIBS)
+ 	$(RM) http
+ 	$(LN) ipp http
+ 
+@@ -199,7 +201,7 @@
+ 
+ lpd:	lpd.o ../cups/$(LIBCUPS) libbackend.a
+ 	echo Linking $@...
+-	$(CC) $(LDFLAGS) -o lpd lpd.o libbackend.a $(LIBS)
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(LDFLAGS) -o lpd lpd.o libbackend.a $(LIBS)
+ 
+ 
+ #
+@@ -208,7 +210,7 @@
+ 
+ pap:	pap.o ../cups/$(LIBCUPS)
+ 	echo Linking $@...
+-	$(CC) $(LDFLAGS) -o pap pap.o $(BACKLIBS) $(LIBS) -framework AppleTalk
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(LDFLAGS) -o pap pap.o $(BACKLIBS) $(LIBS) -framework AppleTalk
+ 
+ 
+ #
+@@ -217,7 +219,7 @@
+ 
+ parallel:	parallel.o ../cups/$(LIBCUPS) libbackend.a
+ 	echo Linking $@...
+-	$(CC) $(LDFLAGS) -o parallel parallel.o libbackend.a $(LIBS)
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(LDFLAGS) -o parallel parallel.o libbackend.a $(LIBS)
+ 
+ 
+ #
+@@ -226,7 +228,7 @@
+ 
+ scsi:	scsi.o ../cups/$(LIBCUPS)
+ 	echo Linking $@...
+-	$(CC) $(LDFLAGS) -o scsi scsi.o $(LIBS)
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(LDFLAGS) -o scsi scsi.o $(LIBS)
+ 
+ scsi.o:	scsi.c scsi-irix.c scsi-linux.c
+ 
+@@ -237,7 +239,7 @@
+ 
+ serial:	serial.o ../cups/$(LIBCUPS) libbackend.a
+ 	echo Linking $@...
+-	$(CC) $(LDFLAGS) -o serial serial.o libbackend.a $(BACKLIBS) $(LIBS)
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(LDFLAGS) -o serial serial.o libbackend.a $(BACKLIBS) $(LIBS)
+ 
+ 
+ #
+@@ -246,7 +248,7 @@
+ 
+ snmp:	snmp.o ../cups/$(LIBCUPS) libbackend.a
+ 	echo Linking $@...
+-	$(CC) $(LDFLAGS) -o snmp snmp.o libbackend.a $(LIBS)
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(LDFLAGS) -o snmp snmp.o libbackend.a $(LIBS)
+ 
+ 
+ #
+@@ -255,7 +257,7 @@
+ 
+ socket:	socket.o ../cups/$(LIBCUPS) libbackend.a
+ 	echo Linking $@...
+-	$(CC) $(LDFLAGS) -o socket socket.o libbackend.a $(LIBS)
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(LDFLAGS) -o socket socket.o libbackend.a $(LIBS)
+ 
+ 
+ #
+@@ -264,7 +266,7 @@
+ 
+ usb:	usb.o ../cups/$(LIBCUPS) libbackend.a
+ 	echo Linking $@...
+-	$(CC) $(LDFLAGS) -o usb usb.o libbackend.a $(LIBUSB) \
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(LDFLAGS) -o usb usb.o libbackend.a $(LIBUSB) \
+ 		$(BACKLIBS) $(LIBS)
+ usb.o:	usb.c usb-darwin.c usb-libusb.c usb-unix.c
+ 
+diff -ru cups-1.4svn-r8055_orig/berkeley/Makefile cups-1.4svn-r8055/berkeley/Makefile
+--- cups-1.4svn-r8055_orig/berkeley/Makefile	2009-02-26 14:02:13.000000000 +0100
++++ cups-1.4svn-r8055/berkeley/Makefile	2009-02-26 14:36:45.000000000 +0100
+@@ -15,6 +15,7 @@
+ 
+ include ../Makedefs
+ 
++top_builddir = ..
+ 
+ TARGETS	=	lpc lpq lpr lprm
+ OBJS	=	lpc.o lpq.o lpr.o lprm.o
+@@ -123,7 +124,7 @@
+ 
+ lpc:	lpc.o ../cups/$(LIBCUPS)
+ 	echo Linking $@...
+-	$(CC) $(LDFLAGS) -o lpc lpc.o $(LIBS)
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(LDFLAGS) -o lpc lpc.o $(LIBS)
+ 
+ 
+ #
+@@ -132,7 +133,7 @@
+ 
+ lpq:	lpq.o ../cups/$(LIBCUPS)
+ 	echo Linking $@...
+-	$(CC) $(LDFLAGS) -o lpq lpq.o $(LIBS)
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(LDFLAGS) -o lpq lpq.o $(LIBS)
+ 
+ 
+ #
+@@ -141,7 +142,7 @@
+ 
+ lpr:	lpr.o ../cups/$(LIBCUPS)
+ 	echo Linking $@...
+-	$(CC) $(LDFLAGS) -o lpr lpr.o $(LIBS)
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(LDFLAGS) -o lpr lpr.o $(LIBS)
+ 
+ 
+ #
+@@ -150,7 +151,7 @@
+ 
+ lprm:	lprm.o ../cups/$(LIBCUPS)
+ 	echo Linking $@...
+-	$(CC) $(LDFLAGS) -o lprm lprm.o $(LIBS)
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(LDFLAGS) -o lprm lprm.o $(LIBS)
+ 
+ 
+ #
+diff -ru cups-1.4svn-r8055_orig/cgi-bin/Makefile cups-1.4svn-r8055/cgi-bin/Makefile
+--- cups-1.4svn-r8055_orig/cgi-bin/Makefile	2009-02-26 14:02:13.000000000 +0100
++++ cups-1.4svn-r8055/cgi-bin/Makefile	2009-02-26 14:37:24.000000000 +0100
+@@ -15,6 +15,8 @@
+ 
+ include ../Makedefs
+ 
++top_builddir = ..
++
+ LIBOBJS	=	\
+ 		help-index.o \
+ 		html.o \
+@@ -307,7 +309,7 @@
+ 
+ libcupscgi.la:    $(LIBOBJS)
+ 	echo Linking $@...
+-	$(CC) $(ARCHFLAGS) $(DSOFLAGS) -o $@ $(LIBOBJS:.o=.lo) -rpath $(LIBDIR) \
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(ARCHFLAGS) $(DSOFLAGS) -o $@ $(LIBOBJS:.o=.lo) -rpath $(LIBDIR) \
+ 		-version-info 1:0 $(LIBS)
+ 
+ 
+@@ -328,7 +330,7 @@
+ 
+ admin.cgi:	admin.o ../Makedefs ../cups/$(LIBCUPS) $(LIBCUPSCGI)
+ 	echo Linking $@...
+-	$(CC) $(LDFLAGS) -o $@ admin.o -lcupscgi $(LIBS)
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(LDFLAGS) -o $@ admin.o -lcupscgi $(LIBS)
+ 
+ 
+ #
+@@ -337,7 +339,7 @@
+ 
+ classes.cgi:	classes.o ../Makedefs ../cups/$(LIBCUPS) $(LIBCUPSCGI)
+ 	echo Linking $@...
+-	$(CC) $(LDFLAGS) -o $@ classes.o -lcupscgi $(LIBS)
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(LDFLAGS) -o $@ classes.o -lcupscgi $(LIBS)
+ 
+ 
+ #
+@@ -346,7 +348,7 @@
+ 
+ help.cgi:	help.o ../Makedefs ../cups/$(LIBCUPS) $(LIBCUPSCGI)
+ 	echo Linking $@...
+-	$(CC) $(LDFLAGS) -o $@ help.o -lcupscgi $(LIBS)
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(LDFLAGS) -o $@ help.o -lcupscgi $(LIBS)
+ 
+ 
+ #
+@@ -355,7 +357,7 @@
+ 
+ jobs.cgi:	jobs.o ../Makedefs ../cups/$(LIBCUPS) $(LIBCUPSCGI)
+ 	echo Linking $@...
+-	$(CC) $(LDFLAGS) -o $@ jobs.o -lcupscgi $(LIBS)
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(LDFLAGS) -o $@ jobs.o -lcupscgi $(LIBS)
+ 
+ 
+ #
+@@ -364,7 +366,7 @@
+ 
+ printers.cgi:	printers.o ../Makedefs ../cups/$(LIBCUPS) $(LIBCUPSCGI)
+ 	echo Linking $@...
+-	$(CC) $(LDFLAGS) -o $@ printers.o -L. -lcupscgi $(LIBS)
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(LDFLAGS) -o $@ printers.o -L. -lcupscgi $(LIBS)
+ 
+ 
+ #
+@@ -373,7 +375,7 @@
+ 
+ testcgi:	testcgi.o ../Makedefs libcupscgi.a ../cups/libcups.a
+ 	echo Linking $@...
+-	$(CC) $(ARCHFLAGS) $(LDFLAGS) -o $@ testcgi.o libcupscgi.a \
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(ARCHFLAGS) $(LDFLAGS) -o $@ testcgi.o libcupscgi.a \
+ 		../cups/libcups.a $(COMMONLIBS) $(SSLLIBS) $(LIBZ) $(LIBGSSAPI)
+ 	echo Testing CGI API...
+ 	./testcgi
+@@ -408,7 +410,7 @@
+ websearch:	websearch.o ../Makedefs libcupscgi.a ../cups/libcups.a
+ 	echo Linking $@...
+ 	$(CC) $(ARCHFLAGS) $(LDFLAGS) -o $@ websearch.o libcupscgi.a \
+-		../cups/libcups.a $(COMMONLIBS) $(SSLLIBS) $(LIBZ) $(LIBGSSAPI)
++		../cups/libcups.a $(COMMONLIBS) $(SSLLIBS) $(DNSSDLIBS) $(LIBZ) $(LIBGSSAPI)
+ 
+ 
+ #
+diff -ru cups-1.4svn-r8055_orig/config-scripts/cups-libtool.m4 cups-1.4svn-r8055/config-scripts/cups-libtool.m4
+--- cups-1.4svn-r8055_orig/config-scripts/cups-libtool.m4	2009-02-26 14:02:13.000000000 +0100
++++ cups-1.4svn-r8055/config-scripts/cups-libtool.m4	2009-02-26 14:30:20.000000000 +0100
+@@ -25,10 +25,15 @@
+ 		LIBTOOL=""
+ 	fi])
+ 
++if test x$LIBTOOL = xyes; then
++  AC_PROG_LIBTOOL
++fi
++
+ AC_SUBST(LIBTOOL)
+ 
+ if test x$LIBTOOL != x; then
+ 	LIBCUPS="libcups.la"
++  LIBCUPSCGI="libcupscgi.la"
+ 	LIBCUPSIMAGE="libcupsimage.la"
+ 	LINKCUPS="../cups/\$(LIBCUPS)"
+ 	LINKCUPSIMAGE="../filter/\$(LIBCUPSIMAGE)"
+diff -ru cups-1.4svn-r8055_orig/config-scripts/cups-sharedlibs.m4 cups-1.4svn-r8055/config-scripts/cups-sharedlibs.m4
+--- cups-1.4svn-r8055_orig/config-scripts/cups-sharedlibs.m4	2009-02-26 14:02:13.000000000 +0100
++++ cups-1.4svn-r8055/config-scripts/cups-sharedlibs.m4	2009-02-26 14:23:37.000000000 +0100
+@@ -116,7 +116,7 @@
+ 			echo "Warning: shared libraries may not be supported.  Trying -shared"
+ 			echo "         option with compiler."
+ 			LIBCUPS="libcups.so.2"
+-			LIBCUPSCGI="libcupscgi.so.1"
++			LIBCUPSCGI="libcupscgi.la"
+ 			LIBCUPSDRIVER="libcupsdriver.so.1"
+ 			LIBCUPSIMAGE="libcupsimage.so.2"
+ 			LIBCUPSMIME="libcupsmime.so.1"
+diff -ru cups-1.4svn-r8055_orig/cups/Makefile cups-1.4svn-r8055/cups/Makefile
+--- cups-1.4svn-r8055_orig/cups/Makefile	2009-02-26 14:02:13.000000000 +0100
++++ cups-1.4svn-r8055/cups/Makefile	2009-02-26 14:33:02.000000000 +0100
+@@ -17,6 +17,8 @@
+ 
+ include ../Makedefs
+ 
++top_builddir = ..
++
+ #
+ # Object files...
+ #
+@@ -351,8 +353,8 @@
+ 
+ libcups.la:    $(LIBOBJS)
+ 	echo Linking $@...
+-	$(CC) $(ARCHFLAGS) $(DSOFLAGS) -o $@ $(LIBOBJS:.o=.lo) -rpath $(LIBDIR) \
+-		-version-info 2:8 $(LIBGSSAPI) $(SSLLIBS) $(COMMONLIBS) $(LIBZ)
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(ARCHFLAGS) $(DSOFLAGS) -o $@ $(LIBOBJS:.o=.lo) -rpath $(LIBDIR) \
++		-version-info 2:8 $(LIBGSSAPI) $(SSLLIBS) $(DNSSDLIBS) $(COMMONLIBS) $(LIBZ)
+ 
+ 
+ #
+@@ -384,7 +386,7 @@
+ 
+ php_cups_wrap.o:	php_cups_wrap.c
+ 	echo Compiling $<...
+-	$(CC) $(CFLAGS) `php-config --includes` -c $<
++	$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) `php-config --includes` -c $<
+ php_cups_wrap.c:	cups.h
+ 	echo Creating $< using SWIG...
+ 	swig -php -o $@ -module cups cups.h
+@@ -396,7 +398,7 @@
+ 
+ testadmin:	testadmin.o libcups.a
+ 	echo Linking $@...
+-	$(CC) $(LDFLAGS) -o $@ testadmin.o libcups.a \
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(LDFLAGS) -o $@ testadmin.o libcups.a \
+ 		$(LIBGSSAPI) $(SSLLIBS) $(COMMONLIBS) $(LIBZ)
+ 
+ 
+diff -ru cups-1.4svn-r8055_orig/driver/Makefile cups-1.4svn-r8055/driver/Makefile
+--- cups-1.4svn-r8055_orig/driver/Makefile	2009-02-26 14:02:13.000000000 +0100
++++ cups-1.4svn-r8055/driver/Makefile	2009-02-26 14:39:16.000000000 +0100
+@@ -19,6 +19,7 @@
+ 
+ include ../Makedefs
+ 
++top_builddir = ..
+ 
+ #
+ # Object files...
+@@ -251,7 +252,7 @@
+ 
+ commandtopclx:		commandtopclx.o $(LIBCUPSDRIVER) ../cups/$(LIBCUPS)
+ 	echo Linking $@...
+-	$(CC) $(LDFLAGS) -o $@ commandtopclx.o -L. -lcupsdriver $(LIBS)
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(LDFLAGS) -o $@ commandtopclx.o -L. -lcupsdriver $(LIBS)
+ 
+ 
+ #
+@@ -260,7 +261,7 @@
+ 
+ commandtoescpx:		commandtoescpx.o $(LIBCUPSDRIVER) ../cups/$(LIBCUPS)
+ 	echo Linking $@...
+-	$(CC) $(LDFLAGS) -o $@ commandtoescpx.o -L. -lcupsdriver $(LIBS)
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(LDFLAGS) -o $@ commandtoescpx.o -L. -lcupsdriver $(LIBS)
+ 
+ 
+ #
+@@ -269,7 +270,7 @@
+ 
+ rastertoescpx:		rastertoescpx.o $(LIBCUPSDRIVER) ../cups/$(LIBCUPS)
+ 	echo Linking $@...
+-	$(CC) $(LDFLAGS) -o $@ rastertoescpx.o -L. -lcupsdriver \
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(LDFLAGS) -o $@ rastertoescpx.o -L. -lcupsdriver \
+ 		$(LINKCUPSIMAGE) $(LIBS)
+ 
+ 
+@@ -280,7 +281,7 @@
+ rastertopclx:		rastertopclx.o pcl-common.o $(LIBCUPSDRIVER) \
+ 			../cups/$(LIBCUPS)
+ 	echo Linking $@...
+-	$(CC) $(LDFLAGS) -o $@ rastertopclx.o pcl-common.o -L. -lcupsdriver \
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(LDFLAGS) -o $@ rastertopclx.o pcl-common.o -L. -lcupsdriver \
+ 		$(LINKCUPSIMAGE) $(LIBS)
+ 
+ 
+@@ -406,7 +407,7 @@
+ 
+ libcupsdriver.la:    $(LIBOBJS)
+ 	echo Linking $@...
+-	$(CC) $(ARCHFLAGS) $(DSOFLAGS) -o $@ $(LIBOBJS:.o=.lo) -rpath $(LIBDIR) \
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(ARCHFLAGS) $(DSOFLAGS) -o $@ $(LIBOBJS:.o=.lo) -rpath $(LIBDIR) \
+ 		-version-info 1:0 $(LIBS)
+ 
+ 
+diff -ru cups-1.4svn-r8055_orig/filter/Makefile cups-1.4svn-r8055/filter/Makefile
+--- cups-1.4svn-r8055_orig/filter/Makefile	2009-02-26 14:02:14.000000000 +0100
++++ cups-1.4svn-r8055/filter/Makefile	2009-02-26 14:35:22.000000000 +0100
+@@ -17,6 +17,7 @@
+ 
+ include ../Makedefs
+ 
++top_builddir = ..
+ 
+ FILTERS	=	\
+ 		bannertops \
+@@ -239,7 +240,7 @@
+ 
+ bannertops:	bannertops.o pstext.o common.o ../cups/$(LIBCUPS) $(LIBCUPSIMAGE)
+ 	echo Linking $@...
+-	$(CC) $(LDFLAGS) -o $@ bannertops.o pstext.o common.o $(LINKCUPSIMAGE) \
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(LDFLAGS) -o $@ bannertops.o pstext.o common.o $(LINKCUPSIMAGE) \
+ 		$(IMGLIBS) $(LIBS)
+ 
+ 
+@@ -249,7 +250,7 @@
+ 
+ commandtops:	commandtops.o ../cups/$(LIBCUPS)
+ 	echo Linking $@...
+-	$(CC) $(LDFLAGS) -o $@ commandtops.o $(LIBS)
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(LDFLAGS) -o $@ commandtops.o $(LIBS)
+ 
+ 
+ #
+@@ -258,7 +259,7 @@
+ 
+ formtops:	$(FORMOBJS) common.o ../cups/$(LIBCUPS)
+ 	echo Linking $@...
+-	$(CC) $(LDFLAGS) -o $@ $(FORMOBJS) common.o $(LIBS) -lm
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(LDFLAGS) -o $@ $(FORMOBJS) common.o $(LIBS) -lm
+ 
+ 
+ #
+@@ -267,7 +268,7 @@
+ 
+ gziptoany:	gziptoany.o ../Makedefs ../cups/$(LIBCUPS)
+ 	echo Linking $@...
+-	$(CC) $(LDFLAGS) -o $@ gziptoany.o $(LIBZ) $(LIBS)
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(LDFLAGS) -o $@ gziptoany.o $(LIBZ) $(LIBS)
+ 
+ 
+ #
+@@ -276,7 +277,7 @@
+ 
+ hpgltops:	$(HPGLOBJS) common.o ../cups/$(LIBCUPS)
+ 	echo Linking $@...
+-	$(CC) $(LDFLAGS) -o $@ $(HPGLOBJS) common.o $(LIBS) -lm
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(LDFLAGS) -o $@ $(HPGLOBJS) common.o $(LIBS) -lm
+ 
+ 
+ #
+@@ -347,7 +348,7 @@
+ 
+ libcupsimage.la:       $(IMAGEOBJS)
+ 	echo Linking $@...
+-	$(DSO) $(ARCHFLAGS) $(DSOFLAGS) -o $@ $(IMAGEOBJS:.o=.lo) $(DSOLIBS) \
++	$(LIBTOOL) --tag=CC --mode=link $(DSO) $(ARCHFLAGS) $(DSOFLAGS) -o $@ $(IMAGEOBJS:.o=.lo) $(DSOLIBS) \
+ 		-L../cups $(LINKCUPS) \
+ 		-rpath $(LIBDIR) -version-info 2:3
+ 
+@@ -380,7 +381,7 @@
+ imagetops:	imagetops.o common.o $(LIBCUPSIMAGE) \
+ 		../cups/$(LIBCUPS)
+ 	echo Linking $@...
+-	$(CC) $(LDFLAGS) -o $@ imagetops.o common.o $(LINKCUPSIMAGE) \
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(LDFLAGS) -o $@ imagetops.o common.o $(LINKCUPSIMAGE) \
+ 		$(IMGLIBS) $(LIBS)
+ 
+ 
+@@ -391,7 +392,7 @@
+ imagetoraster:	imagetoraster.o common.o $(LIBCUPSIMAGE) \
+ 		../cups/$(LIBCUPS)
+ 	echo Linking $@...
+-	$(CC) $(LDFLAGS) -o $@ imagetoraster.o common.o $(LINKCUPSIMAGE) \
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(LDFLAGS) -o $@ imagetoraster.o common.o $(LINKCUPSIMAGE) \
+ 		$(IMGLIBS) $(LIBS)
+ 
+ 
+@@ -401,7 +402,7 @@
+ 
+ pstops:	pstops.o common.o ../cups/$(LIBCUPS)
+ 	echo Linking $@...
+-	$(CC) $(LDFLAGS) -o $@ pstops.o common.o $(LIBS) -lm
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(LDFLAGS) -o $@ pstops.o common.o $(LIBS) -lm
+ 
+ 
+ #
+@@ -410,7 +411,7 @@
+ 
+ pdftops:	pdftops.o common.o ../cups/$(LIBCUPS)
+ 	echo Linking $@...
+-	$(CC) $(LDFLAGS) -o $@ pdftops.o common.o $(LIBS)
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(LDFLAGS) -o $@ pdftops.o common.o $(LIBS)
+ 
+ 
+ #
+@@ -419,7 +420,7 @@
+ 
+ rastertolabel:	rastertolabel.o ../cups/$(LIBCUPS) $(LIBCUPSIMAGE)
+ 	echo Linking $@...
+-	$(CC) $(LDFLAGS) -o $@ rastertolabel.o $(LINKCUPSIMAGE) $(IMGLIBS) $(LIBS)
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(LDFLAGS) -o $@ rastertolabel.o $(LINKCUPSIMAGE) $(IMGLIBS) $(LIBS)
+ 
+ 
+ #
+@@ -428,7 +429,7 @@
+ 
+ rastertoepson:	rastertoepson.o ../cups/$(LIBCUPS) $(LIBCUPSIMAGE)
+ 	echo Linking $@...
+-	$(CC) $(LDFLAGS) -o $@ rastertoepson.o $(LINKCUPSIMAGE) $(IMGLIBS) $(LIBS)
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(LDFLAGS) -o $@ rastertoepson.o $(LINKCUPSIMAGE) $(IMGLIBS) $(LIBS)
+ 
+ 
+ #
+@@ -437,7 +438,7 @@
+ 
+ rastertohp:	rastertohp.o ../cups/$(LIBCUPS) $(LIBCUPSIMAGE)
+ 	echo Linking $@...
+-	$(CC) $(LDFLAGS) -o $@ rastertohp.o $(LINKCUPSIMAGE) $(IMGLIBS) $(LIBS)
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(LDFLAGS) -o $@ rastertohp.o $(LINKCUPSIMAGE) $(IMGLIBS) $(LIBS)
+ 
+ 
+ #
+@@ -446,7 +447,7 @@
+ 
+ testraster:	testraster.o ../cups/libcups.a libcupsimage.a
+ 	echo Linking $@...
+-	$(CC) $(ARCHFLAGS) $(LDFLAGS) -o $@ testraster.o libcupsimage.a \
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(ARCHFLAGS) $(LDFLAGS) -o $@ testraster.o libcupsimage.a \
+ 		../cups/libcups.a $(IMGLIBS) $(DSOLIBS) $(COMMONLIBS) \
+ 		$(SSLLIBS) $(LIBGSSAPI)
+ 	echo Running raster API tests...
+@@ -459,7 +460,7 @@
+ 
+ rasterbench:	rasterbench.o libcupsimage.a
+ 	echo Linking $@...
+-	$(CC) $(LDFLAGS) -o $@ rasterbench.o libcupsimage.a $(LIBS)
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(LDFLAGS) -o $@ rasterbench.o libcupsimage.a $(LIBS)
+ 
+ 
+ #
+@@ -469,7 +470,7 @@
+ texttops:	texttops.o textcommon.o common.o \
+ 		../cups/$(LIBCUPS)
+ 	echo Linking $@...
+-	$(CC) $(LDFLAGS) -o $@ texttops.o textcommon.o common.o $(LIBS)
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(LDFLAGS) -o $@ texttops.o textcommon.o common.o $(LIBS)
+ 
+ 
+ #
+diff -ru cups-1.4svn-r8055_orig/locale/Makefile cups-1.4svn-r8055/locale/Makefile
+--- cups-1.4svn-r8055_orig/locale/Makefile	2009-02-26 14:02:13.000000000 +0100
++++ cups-1.4svn-r8055/locale/Makefile	2009-02-26 14:40:05.000000000 +0100
+@@ -15,6 +15,7 @@
+ 
+ include ../Makedefs
+ 
++top_builddir = ..
+ 
+ OBJS	=	checkpo.o po2strings.o strings2po.o translate.o
+ TARGETS	=	checkpo po2strings strings2po translate
+@@ -146,7 +147,7 @@
+ 
+ checkpo:	checkpo.o ../cups/$(LIBCUPS)
+ 	echo Linking $<...
+-	$(CC) $(LDFLAGS) -o checkpo checkpo.o $(LIBS)
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(LDFLAGS) -o checkpo checkpo.o $(LIBS)
+ 
+ 
+ #
+@@ -158,7 +159,7 @@
+ 
+ po2strings:	po2strings.o ../cups/$(LIBCUPS)
+ 	echo Linking $<...
+-	$(CC) $(LDFLAGS) -o po2strings po2strings.o $(LIBS)
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(LDFLAGS) -o po2strings po2strings.o $(LIBS)
+ 
+ 
+ #
+@@ -170,7 +171,7 @@
+ 
+ strings2po:	strings2po.o
+ 	echo Linking $<...
+-	$(CC) $(LDFLAGS) -o strings2po strings2po.o
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(LDFLAGS) -o strings2po strings2po.o
+ 
+ 
+ #
+@@ -182,7 +183,7 @@
+ 
+ translate:	translate.o ../cups/$(LIBCUPS)
+ 	echo Linking $<...
+-	$(CC) $(LDFLAGS) -o translate translate.o $(LIBS)
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(LDFLAGS) -o translate translate.o $(LIBS)
+ 
+ 
+ #
+diff -ru cups-1.4svn-r8055_orig/man/Makefile cups-1.4svn-r8055/man/Makefile
+--- cups-1.4svn-r8055_orig/man/Makefile	2009-02-26 14:02:14.000000000 +0100
++++ cups-1.4svn-r8055/man/Makefile	2009-02-26 14:40:33.000000000 +0100
+@@ -15,6 +15,7 @@
+ 
+ include ../Makedefs
+ 
++top_builddir = ..
+ 
+ #
+ # Man pages...
+diff -ru cups-1.4svn-r8055_orig/monitor/Makefile cups-1.4svn-r8055/monitor/Makefile
+--- cups-1.4svn-r8055_orig/monitor/Makefile	2009-02-26 14:02:13.000000000 +0100
++++ cups-1.4svn-r8055/monitor/Makefile	2009-02-26 14:41:01.000000000 +0100
+@@ -17,6 +17,8 @@
+ 
+ include ../Makedefs
+ 
++top_builddir = ..
++
+ TARGETS	=	bcp tbcp
+ 
+ OBJS	=	bcp.o tbcp.o
+@@ -122,7 +124,7 @@
+ 
+ bcp:	bcp.o ../cups/$(LIBCUPS)
+ 	echo Linking $@...
+-	$(CC) $(LDFLAGS) -o $@ bcp.o $(LIBS)
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(LDFLAGS) -o $@ bcp.o $(LIBS)
+ 
+ 
+ #
+@@ -131,7 +133,7 @@
+ 
+ tbcp:	tbcp.o ../cups/$(LIBCUPS)
+ 	echo Linking $@...
+-	$(CC) $(LDFLAGS) -o $@ tbcp.o $(LIBS)
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(LDFLAGS) -o $@ tbcp.o $(LIBS)
+ 
+ 
+ #
+diff -ru cups-1.4svn-r8055_orig/notifier/Makefile cups-1.4svn-r8055/notifier/Makefile
+--- cups-1.4svn-r8055_orig/notifier/Makefile	2009-02-26 14:02:13.000000000 +0100
++++ cups-1.4svn-r8055/notifier/Makefile	2009-02-26 14:41:54.000000000 +0100
+@@ -15,6 +15,7 @@
+ 
+ include ../Makedefs
+ 
++top_builddir = ..
+ 
+ NOTIFIERS =	$(DBUS_NOTIFIER) mailto rss
+ TARGETS =	$(NOTIFIERS) testnotify
+@@ -123,7 +124,7 @@
+ 
+ dbus:	dbus.o ../cups/$(LIBCUPS)
+ 	echo Linking $@...
+-	$(CC) $(LDFLAGS) -o dbus dbus.o $(DBUS_NOTIFIERLIBS) $(LIBS)
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(LDFLAGS) -o dbus dbus.o $(DBUS_NOTIFIERLIBS) $(LIBS)
+ 
+ 
+ #
+@@ -132,7 +133,7 @@
+ 
+ mailto:	mailto.o ../cups/$(LIBCUPS)
+ 	echo Linking $@...
+-	$(CC) $(LDFLAGS) -o mailto mailto.o $(LIBS)
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(LDFLAGS) -o mailto mailto.o $(LIBS)
+ 
+ 
+ #
+@@ -141,7 +142,7 @@
+ 
+ rss:	rss.o ../cups/$(LIBCUPS)
+ 	echo Linking $@...
+-	$(CC) $(LDFLAGS) -o rss rss.o $(LIBS)
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(LDFLAGS) -o rss rss.o $(LIBS)
+ 
+ 
+ #
+@@ -150,7 +151,7 @@
+ 
+ testnotify:	testnotify.o ../cups/$(LIBCUPS)
+ 	echo Linking $@...
+-	$(CC) $(LDFLAGS) -o testnotify testnotify.o $(LIBS)
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(LDFLAGS) -o testnotify testnotify.o $(LIBS)
+ 
+ 
+ $(OBJS):	../Makedefs
+diff -ru cups-1.4svn-r8055_orig/ppdc/Makefile cups-1.4svn-r8055/ppdc/Makefile
+--- cups-1.4svn-r8055_orig/ppdc/Makefile	2009-02-26 14:02:13.000000000 +0100
++++ cups-1.4svn-r8055/ppdc/Makefile	2009-02-26 14:45:17.000000000 +0100
+@@ -19,6 +19,7 @@
+ 
+ include ../Makedefs
+ 
++top_builddir = ..
+ 
+ #
+ # Object files...
+@@ -237,7 +238,7 @@
+ 	echo Linking $@...
+ 	$(CXX) $(ARCHFLAGS) $(LDFLAGS) -o genstrings genstrings.o \
+ 		libcupsppdc.a ../cups/libcups.a $(LIBGSSAPI) $(SSLLIBS) \
+-		$(COMMONLIBS) $(LIBZ)
++		$(DNSSDLIBS) $(COMMONLIBS) $(LIBZ)
+ 	echo Generating localization strings...
+ 	./genstrings >sample.c
+ 
+@@ -248,13 +249,13 @@
+ 
+ ppdc:			ppdc.o $(LIBCUPSPPDC) ../cups/$(LIBCUPS)
+ 	echo Linking $@...
+-	$(CXX) $(LDFLAGS) -o $@ ppdc.o -L. -lcupsppdc $(LIBS)
++	$(LIBTOOL) --tag=CXX --mode=link $(CXX) $(LDFLAGS) -o $@ ppdc.o -L. -lcupsppdc $(LIBS)
+ 
+ 
+ ppdc-static:		ppdc.o libcupsppdc.a  ../cups/libcups.a foo.drv foo-fr.po
+ 	echo Linking $@...
+ 	$(CXX) $(ARCHFLAGS) $(LDFLAGS) -o ppdc-static ppdc.o libcupsppdc.a \
+-		../cups/libcups.a $(LIBGSSAPI) $(SSLLIBS) $(COMMONLIBS) $(LIBZ)
++		../cups/libcups.a $(LIBGSSAPI) $(SSLLIBS) $(DNSSDLIBS) $(COMMONLIBS) $(LIBZ)
+ 	echo Testing PPD compiler...
+ 	./ppdc-static -l en,fr -I ../data foo.drv
+ 	./ppdc-static -l en,fr -z -I ../data foo.drv
+@@ -266,7 +267,7 @@
+ 
+ ppdhtml:			ppdhtml.o $(LIBCUPSPPDC) ../cups/$(LIBCUPS)
+ 	echo Linking $@...
+-	$(CXX) $(LDFLAGS) -o $@ ppdhtml.o -L. -lcupsppdc $(LIBS)
++	$(LIBTOOL) --tag=CXX --mode=link $(CXX) $(LDFLAGS) -o $@ ppdhtml.o -L. -lcupsppdc $(LIBS)
+ 
+ 
+ #
+@@ -275,7 +276,7 @@
+ 
+ ppdi:			ppdi.o $(LIBCUPSPPDC) ../cups/$(LIBCUPS)
+ 	echo Linking $@...
+-	$(CXX) $(LDFLAGS) -o $@ ppdi.o -L. -lcupsppdc $(LIBS)
++	$(LIBTOOL) --tag=CXX --mode=link $(CXX) $(LDFLAGS) -o $@ ppdi.o -L. -lcupsppdc $(LIBS)
+ 
+ 
+ #
+@@ -284,7 +285,7 @@
+ 
+ ppdmerge:			ppdmerge.o ../cups/$(LIBCUPS)
+ 	echo Linking $@...
+-	$(CXX) $(LDFLAGS) -o $@ ppdmerge.o $(LIBS)
++	$(LIBTOOL) --tag=CXX --mode=link $(CXX) $(LDFLAGS) -o $@ ppdmerge.o $(LIBS)
+ 
+ 
+ #
+@@ -293,7 +294,7 @@
+ 
+ ppdpo:			ppdpo.o $(LIBCUPSPPDC) ../cups/$(LIBCUPS)
+ 	echo Linking $@...
+-	$(CXX) $(LDFLAGS) -o $@ ppdpo.o -L. -lcupsppdc $(LIBS)
++	$(LIBTOOL) --tag=CXX --mode=link $(CXX) $(LDFLAGS) -o $@ ppdpo.o -L. -lcupsppdc $(LIBS)
+ 
+ 
+ #
+@@ -352,7 +353,7 @@
+ 
+ libcupsppdc.la:    $(LIBOBJS)
+ 	echo Linking $@...
+-	$(CC) $(ARCHFLAGS) $(DSOFLAGS) -o $@ $(LIBOBJS:.o=.lo) -rpath $(LIBDIR) \
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(ARCHFLAGS) $(DSOFLAGS) -o $@ $(LIBOBJS:.o=.lo) -rpath $(LIBDIR) \
+ 		-version-info 1:0 $(LIBS)
+ 
+ 
+diff -ru cups-1.4svn-r8055_orig/scheduler/Makefile cups-1.4svn-r8055/scheduler/Makefile
+--- cups-1.4svn-r8055_orig/scheduler/Makefile	2009-02-26 14:02:14.000000000 +0100
++++ cups-1.4svn-r8055/scheduler/Makefile	2009-02-26 14:52:05.000000000 +0100
+@@ -15,6 +15,8 @@
+ 
+ include ../Makedefs
+ 
++top_builddir = ..
++
+ CUPSDOBJS =	\
+ 		auth.o \
+ 		banners.o \
+@@ -359,7 +361,7 @@
+ 
+ cupsfilter:	cupsfilter.o $(LIBCUPSMIME) ../cups/$(LIBCUPS)
+ 	echo Linking $@...
+-	$(CC) $(LDFLAGS) -o cupsfilter cupsfilter.o -L. -lcupsmime $(LIBS)
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(LDFLAGS) -o cupsfilter cupsfilter.o -L. -lcupsmime $(LIBS)
+ 	$(RM) convert
+ 	$(LN) cupsfilter convert
+ 
+@@ -370,7 +372,7 @@
+ 
+ cups-deviced:	cups-deviced.o util.o ../cups/$(LIBCUPS)
+ 	echo Linking $@...
+-	$(CC) $(LDFLAGS) -o cups-deviced cups-deviced.o util.o $(LIBS)
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(LDFLAGS) -o cups-deviced cups-deviced.o util.o $(LIBS)
+ 
+ 
+ #
+@@ -379,7 +381,7 @@
+ 
+ cups-driverd:	cups-driverd.o util.o ../cups/$(LIBCUPS) ../ppdc/$(LIBCUPSPPDC)
+ 	echo Linking $@...
+-	$(CXX) $(LDFLAGS) -o cups-driverd cups-driverd.o util.o \
++	$(LIBTOOL) --tag=CXX --mode=link $(CXX) $(LDFLAGS) -o cups-driverd cups-driverd.o util.o \
+ 		-L../ppdc -lcupsppdc $(LIBS)
+ 
+ 
+@@ -389,7 +391,7 @@
+ 
+ cups-lpd:	cups-lpd.o ../cups/$(LIBCUPS)
+ 	echo Linking $@...
+-	$(CC) $(LDFLAGS) -o cups-lpd cups-lpd.o $(LIBS)
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(LDFLAGS) -o cups-lpd cups-lpd.o $(LIBS)
+ 
+ 
+ #
+@@ -398,7 +400,7 @@
+ 
+ cups-polld:	cups-polld.o ../cups/$(LIBCUPS)
+ 	echo Linking $@...
+-	$(CC) $(LDFLAGS) -o cups-polld cups-polld.o $(LIBS)
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(LDFLAGS) -o cups-polld cups-polld.o $(LIBS)
+ 
+ 
+ #
+@@ -469,7 +471,7 @@
+ 
+ libcupsmime.la:    $(LIBOBJS)
+ 	echo Linking $@...
+-	$(CC) $(ARCHFLAGS) $(DSOFLAGS) -o $@ $(LIBOBJS:.o=.lo) -rpath $(LIBDIR) \
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(ARCHFLAGS) $(DSOFLAGS) -o $@ $(LIBOBJS:.o=.lo) -rpath $(LIBDIR) \
+ 		-version-info 1:0 $(LIBS)
+ 
+ 
+diff -ru cups-1.4svn-r8055_orig/scheduler/dirsvc.c cups-1.4svn-r8055/scheduler/dirsvc.c
+--- cups-1.4svn-r8055_orig/scheduler/dirsvc.c	2009-02-26 14:02:14.000000000 +0100
++++ cups-1.4svn-r8055/scheduler/dirsvc.c	2009-02-26 14:50:31.000000000 +0100
+@@ -1948,7 +1948,7 @@
+ 
+     WebIFRef = DNSSDRef;
+     if ((error = DNSServiceRegister(&WebIFRef,
+-				    kDNSServiceFlagsShareConnection,
++				    kDNSServiceFlagsShared,
+ 				    0, webif, "_http._tcp", NULL,
+ 				    NULL, htons(DNSSDPort), 7,
+ 				    "\006path=/", dnssdRegisterCallback,
+@@ -2622,7 +2622,7 @@
+     do
+     {
+       p->ipp_ref = DNSSDRef;
+-      if ((se = DNSServiceRegister(&p->ipp_ref, kDNSServiceFlagsShareConnection,
++      if ((se = DNSServiceRegister(&p->ipp_ref, kDNSServiceFlagsShared,
+                                    0, name, regtype, domain, NULL,
+ 				   htons(DNSSDPort), ipp_len, ipp_txt,
+ 				   dnssdRegisterCallback,
+@@ -2693,7 +2693,7 @@
+ 
+       p->printer_ref = DNSSDRef;
+       if ((se = DNSServiceRegister(&p->printer_ref,
+-                                   kDNSServiceFlagsShareConnection,
++                                   kDNSServiceFlagsShared,
+ 				   0, name, "_printer._tcp", domain, NULL,
+ 				   htons(515), printer_len, printer_txt,
+ 				   dnssdRegisterCallback,
+diff -ru cups-1.4svn-r8055_orig/scripting/php/Makefile cups-1.4svn-r8055/scripting/php/Makefile
+--- cups-1.4svn-r8055_orig/scripting/php/Makefile	2009-02-26 14:02:13.000000000 +0100
++++ cups-1.4svn-r8055/scripting/php/Makefile	2009-02-26 14:54:08.000000000 +0100
+@@ -15,6 +15,7 @@
+ 
+ include ../../Makedefs
+ 
++top_builddir = ../..
+ 
+ #
+ # Where to install and how to compile the PHP module...
+diff -ru cups-1.4svn-r8055_orig/systemv/Makefile cups-1.4svn-r8055/systemv/Makefile
+--- cups-1.4svn-r8055_orig/systemv/Makefile	2009-02-26 14:02:13.000000000 +0100
++++ cups-1.4svn-r8055/systemv/Makefile	2009-02-26 14:53:18.000000000 +0100
+@@ -15,6 +15,8 @@
+ 
+ include ../Makedefs
+ 
++top_builddir = ..
++
+ TARGETS	=	cancel cupsaccept cupsaddsmb cupsctl cupstestdsc cupstestppd \
+ 		lp lpadmin lpinfo lpmove lpoptions lppasswd lpstat
+ OBJS	=	cancel.o cupsaccept.o cupsaddsmb.o cupsctl.o cupstestdsc.o \
+@@ -158,7 +160,7 @@
+ 
+ cancel:	cancel.o ../cups/$(LIBCUPS)
+ 	echo Linking $@...
+-	$(CC) $(LDFLAGS) -o cancel cancel.o $(LIBS)
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(LDFLAGS) -o cancel cancel.o $(LIBS)
+ 
+ 
+ #
+@@ -167,7 +169,7 @@
+ 
+ cupsaccept:	cupsaccept.o ../cups/$(LIBCUPS)
+ 	echo Linking $@...
+-	$(CC) $(LDFLAGS) -o cupsaccept cupsaccept.o $(LIBS)
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(LDFLAGS) -o cupsaccept cupsaccept.o $(LIBS)
+ 	for file in accept cupsenable cupsdisable cupsreject reject; do \
+ 		$(RM) $$file; \
+ 		$(LN) cupsaccept $$file; \
+@@ -180,7 +182,7 @@
+ 
+ cupsaddsmb:	cupsaddsmb.o ../cups/$(LIBCUPS)
+ 	echo Linking $@...
+-	$(CC) $(LDFLAGS) -o cupsaddsmb cupsaddsmb.o $(LIBS)
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(LDFLAGS) -o cupsaddsmb cupsaddsmb.o $(LIBS)
+ 
+ 
+ #
+@@ -189,7 +191,7 @@
+ 
+ cupsctl:	cupsctl.o ../cups/$(LIBCUPS)
+ 	echo Linking $@...
+-	$(CC) $(LDFLAGS) -o cupsctl cupsctl.o $(LIBS)
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(LDFLAGS) -o cupsctl cupsctl.o $(LIBS)
+ 
+ 
+ #
+@@ -198,7 +200,7 @@
+ 
+ cupstestdsc:	cupstestdsc.o ../cups/$(LIBCUPS)
+ 	echo Linking $@...
+-	$(CC) $(LDFLAGS) -o $@ cupstestdsc.o $(LIBS)
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(LDFLAGS) -o $@ cupstestdsc.o $(LIBS)
+ 
+ 
+ #
+@@ -207,11 +209,11 @@
+ 
+ cupstestppd:	cupstestppd.o ../cups/$(LIBCUPS) ../filter/$(LIBCUPSIMAGE)
+ 	echo Linking $@...
+-	$(CC) $(LDFLAGS) -o $@ cupstestppd.o $(LINKCUPSIMAGE) $(IMGLIBS) $(LIBS)
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(LDFLAGS) -o $@ cupstestppd.o $(LINKCUPSIMAGE) $(IMGLIBS) $(LIBS)
+ 
+ cupstestppd-static:	cupstestppd.o ../cups/libcups.a ../filter/libcupsimage.a
+ 	echo Linking $@...
+-	$(CC) $(LDFLAGS) -o $@ cupstestppd.o ../filter/libcupsimage.a \
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(LDFLAGS) -o $@ cupstestppd.o ../filter/libcupsimage.a \
+ 		../cups/libcups.a $(IMGLIBS) $(LIBGSSAPI) $(LIBS) $(LIBZ)
+ 
+ 
+@@ -221,7 +223,7 @@
+ 
+ lp:	lp.o ../cups/$(LIBCUPS)
+ 	echo Linking $@...
+-	$(CC) $(LDFLAGS) -o lp lp.o $(LIBS)
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(LDFLAGS) -o lp lp.o $(LIBS)
+ 
+ 
+ #
+@@ -230,7 +232,7 @@
+ 
+ lpadmin:	lpadmin.o ../cups/$(LIBCUPS)
+ 	echo Linking $@...
+-	$(CC) $(LDFLAGS) -o lpadmin lpadmin.o $(LIBZ) $(LIBS)
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(LDFLAGS) -o lpadmin lpadmin.o $(LIBZ) $(LIBS)
+ 
+ 
+ #
+@@ -239,7 +241,7 @@
+ 
+ lpinfo:	lpinfo.o ../cups/$(LIBCUPS)
+ 	echo Linking $@...
+-	$(CC) $(LDFLAGS) -o lpinfo lpinfo.o $(LIBS)
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(LDFLAGS) -o lpinfo lpinfo.o $(LIBS)
+ 
+ 
+ #
+@@ -248,7 +250,7 @@
+ 
+ lpmove:	lpmove.o ../cups/$(LIBCUPS)
+ 	echo Linking $@...
+-	$(CC) $(LDFLAGS) -o lpmove lpmove.o $(LIBS)
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(LDFLAGS) -o lpmove lpmove.o $(LIBS)
+ 
+ 
+ #
+@@ -257,7 +259,7 @@
+ 
+ lpoptions:	lpoptions.o ../cups/$(LIBCUPS)
+ 	echo Linking $@...
+-	$(CC) $(LDFLAGS) -o lpoptions lpoptions.o $(LIBZ) $(LIBS)
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(LDFLAGS) -o lpoptions lpoptions.o $(LIBZ) $(LIBS)
+ 
+ 
+ #
+@@ -266,7 +268,7 @@
+ 
+ lppasswd:	lppasswd.o ../cups/$(LIBCUPS)
+ 	echo Linking $@...
+-	$(CC) $(LDFLAGS) -o lppasswd lppasswd.o $(LIBZ) $(LIBS)
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(LDFLAGS) -o lppasswd lppasswd.o $(LIBZ) $(LIBS)
+ 
+ 
+ #
+@@ -275,7 +277,7 @@
+ 
+ lpstat:	lpstat.o ../cups/$(LIBCUPS)
+ 	echo Linking $@...
+-	$(CC) $(LDFLAGS) -o lpstat lpstat.o $(LIBS)
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(LDFLAGS) -o lpstat lpstat.o $(LIBS)
+ 
+ 
+ #
+diff -ru cups-1.4svn-r8055_orig/test/Makefile cups-1.4svn-r8055/test/Makefile
+--- cups-1.4svn-r8055_orig/test/Makefile	2009-02-26 14:02:13.000000000 +0100
++++ cups-1.4svn-r8055/test/Makefile	2009-02-26 14:53:54.000000000 +0100
+@@ -15,6 +15,7 @@
+ 
+ include ../Makedefs
+ 
++top_builddir = ..
+ 
+ #
+ # Make all targets...
+@@ -102,7 +103,7 @@
+ ipptest:	ipptest.o ../cups/libcups.a
+ 	echo Linking $@...
+ 	$(CC) $(LDFLAGS) -o ipptest ipptest.o  ../cups/libcups.a \
+-		$(LIBGSSAPI) $(SSLLIBS) $(COMMONLIBS) $(LIBZ)
++		$(LIBGSSAPI) $(SSLLIBS) $(DNSSDLIBS) $(COMMONLIBS) $(LIBZ)
+ 
+ 
+ #

@@ -1,0 +1,59 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <smoli@paranoya.ch>
+# Depends on:
+
+name=zrm-mysql
+version=1.0.3
+release=1
+source=(http://www.zmanda.com/downloads/community/ZRM-MySQL/$version/Source/MySQL-zrm-$version.tar.gz
+        mysqlbackup.in
+        mysqlbackup.conf.in)
+
+build()
+{
+  cd MySQL-zrm-${version}
+
+  sed -i "s,/usr,$prefix,g
+         s,/etc,$sysconfdir,g
+         s,/var/log,$prefix/logs,g
+         s,/var/lib/mysql\-zrm,$prefix/var/mysql-zrm,g" *
+
+  install -d $ROOT/etc/mysql-zrm
+  install -m 644 *.conf $ROOT/etc/mysql-zrm
+
+  install -d $ROOT/bin
+  install -m 755 mysql-zrm{,-reporter,-scheduler} $ROOT/bin
+
+  install -d $ROOT/man/man{1,5}
+  install -m 644 *.1 $ROOT/man/man1
+  install -m 644 *.5 $ROOT/man/man5
+
+  install -d $ROOT/lib/perl/Data/Report/Plugin
+  install -m 644 Report.pm $ROOT/lib/perl/Data
+  install -m 644 Base.pm $ROOT/lib/perl/Data/Report
+  install -m 644 Text.pm $ROOT/lib/perl/Data/Report/Plugin
+  install -m 644 Html.pm $ROOT/lib/perl/Data/Report/Plugin
+#  install -m 644 *.pm $ROOT/lib/perl/MySQL-zrm
+
+  install -d $ROOT/logs/mysql-zrm
+  install -d $ROOT/var/mysql-zrm
+
+  install -d $ROOT/bin
+  sed "s,@prefix@,$prefix,g" \
+    $SRC/mysqlbackup.in > $ROOT/bin/mysqlbackup
+  chmod 755 $ROOT/bin/mysqlbackup
+
+  install -d $ROOT/etc
+  sed "s,@prefix@,$prefix,g" \
+    $SRC/mysqlbackup.conf.in > $ROOT/etc/mysqlbackup.conf
+
+  install -d $ROOT/local/config
+  sed "s,@prefix@,$prefix,g
+       /^[a-z0-9_]\+=/ s,^,#," \
+    $SRC/mysqlbackup.conf.in > $ROOT/local/config/mysqlbackup.conf
+
+  copy_license "COPYING"
+}

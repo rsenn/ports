@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Collection of additional GTK+ widgets
+# libsexy is a collection of GTK+ widgets that extend the functionality
+# of such standard widgets as GtkEntry and GtkLabel by subclassing them
+# and working around the limitations of the widgets.
+#
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libsexy
+version=0.1.11
+release=1
+source=(http://releases.chipx86.com/libsexy/libsexy/libsexy-$version.tar.bz2)
+
+build()
+{
+  cd libsexy-$version
+
+  ./autogen.sh
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

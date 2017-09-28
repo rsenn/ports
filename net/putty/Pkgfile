@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A Telnet and SSH client.
+#  PuTTY is a free implementation of Telnet and SSH for Win32 and Unix
+#  platforms, along with an xterm terminal emulator.
+# URL: http://www.chiark.greenend.org.uk/~sgtatham/putty/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=putty
+version=20071021
+release=1
+source=(putty-svn-$version.tar.gz
+        putty-svn-20071021-no-manuals.patch)
+
+build()
+{
+  cd putty-trunk
+
+  patch -N -p1 -i $SRC/putty-svn-20071021-no-manuals.patch
+
+  sh mkauto.sh
+  perl mkfiles.pl
+
+  cd unix
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make DESTDIR="$PKG" all install
+}

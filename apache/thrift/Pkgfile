@@ -1,0 +1,37 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Cross-language services development.
+#  Thrift is a software framework for scalable cross-language services
+#  development. It combines a software stack with a code generation engine
+#  to build services that work efficiently and seamlessly between C++, Java,
+#  Python, PHP, Ruby, Erlang, Perl, Haskell, C#, Cocoa, Smalltalk, and OCaml.
+# URL: http://incubator.apache.org/thrift/
+# Maintainer: 
+# Depends on: 
+
+name=thrift
+version=20090820
+release=1
+source=(thrift-$version.tar.gz)
+
+build() 
+{
+  cd thrift-$version
+  
+  #./bootstrap.sh
+  
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+  
+  make
+  make DESTDIR="$PKG" install
+
+  rm -f $ROOT/lib/perl/*/perllocal.pod
+
+  install -d $ROOT/share/doc/thrift
+  install -m 644 README NEWS CONTRIBUTORS LICENSE CHANGES DISCLAIMER NOTICE doc/*.txt $ROOT/share/doc/thrift
+}
+
+# EOF

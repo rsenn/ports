@@ -1,0 +1,35 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A POSIX library for generating ECMA-234 enhanced metafiles.
+#  libEMF is a library for generating ECMA-234 enhanced metafiles on POSIX
+#  systems. The main purpose of this library is to generate vector graphics
+#  for StarOffice/OpenOffice. Drivers are available to generate importable
+#  graphics for SO/OO from various plotting tools.
+# URL: http://libemf.sf.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libEMF
+version=1.0
+release=1
+source=($mirror_sf/libemf/libEMF-$version.tar.gz
+        libEMF-1.0-amd64.patch
+        libEMF-1.0-gcc3.patch
+        libEMF-1.0-climits.patch)
+
+build()
+{
+  cd libEMF-$version
+
+  patch -N -p1 -i $SRC/libEMF-1.0-amd64.patch
+  patch -N -p1 -i $SRC/libEMF-1.0-gcc3.patch
+  patch -N -p1 -i $SRC/libEMF-1.0-climits.patch
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

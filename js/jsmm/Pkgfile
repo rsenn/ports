@@ -1,0 +1,40 @@
+# $Id: Pkgfile,v 1.4 2007/05/09 21:02:48 roman Exp $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=jsmm
+version=0.1
+release=1
+source=($mirror_sf/jsmm/jsmm-$version.tar.bz2
+        jsmm-0.1-jsfile.patch)
+
+build()
+{
+  cd jsmm-$version
+
+  libtoolize --force --copy --install
+  aclocal --force -I m4
+  automake --force --copy --foreign --add-missing
+  aclocal --force -I m4
+  autoconf --force
+
+  ./configure \
+      --prefix="$prefix" \
+      --host="$host" \
+      --build="$build" \
+      ${target+--target="$target"} \
+      --${static:=enable}-shared \
+      --${shared:=enable}-shared \
+      --disable-maintainer-mode \
+      --disable-dependency-tracking \
+      --disable-werror \
+      --disable-debug \
+      --oldincludedir="$prefix/include"
+
+ # make -i -C src libjsmm.la
+ # make -i
+  make -i DESTDIR="$PKG" install
+}

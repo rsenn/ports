@@ -1,0 +1,38 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An ESD FFT realtime audio visualizer.
+#  eXtace is a visual sound display/analysis program. It requires Esound
+#  (esd) for its audio source. It includes various fast fourier transforms
+#  of the audio data in realtime. Its displays include a 3D wireframe flying
+#  landscape, a 3D textured flying landscape, a 16-256 channel graphic EQ,
+#  three types of scopes, a 3D "spike" flying landscape, and two forms of
+#  spectragrams. The 3D traces can be picked up, manipulated, and displayed
+#  at nearly any angle. eXtace also features a 3D direction control widget
+#  for controlling the angle and speed at which the trace runs away and a
+#  gradient/colormap editor for changing the colormap to suit your needs. No
+#  OpenGL is required.
+#  .
+# URL: http://extace.sourceforge.net
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=extace
+version=1.9.9
+release=1
+source=($mirror_sf/extace/extace-$version.tar.gz)
+
+build()
+{
+  cd extace-$version
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

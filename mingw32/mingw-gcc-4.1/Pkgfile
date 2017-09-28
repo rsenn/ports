@@ -1,0 +1,47 @@
+# $Id: Pkgfile,v 1.2 2007/04/22 23:07:53 roman Exp $
+#
+# Description: gcc
+# URL: http://gcc.gnu.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=mingw-gcc-4.1
+version=4.2.1
+release=2
+target=i686-pc-mingw32
+source=($mirror_sf/mingw/gcc-core-$version-sjlj-$release.tar.gz
+        $mirror_sf/mingw/gcc-g++-$version-sjlj-$release.tar.gz
+        $mirror_sf/mingw/gcc-gfortran-$version-sjlj-$release.tar.gz
+        $mirror_sf/mingw/gcc-ada-$version-sjlj-$release.tar.gz
+        $mirror_sf/mingw/gcc-objc-$version-sjlj-$release.tar.gz)
+
+build()
+{
+  cd gcc-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       ${target+--target="$target"} \
+       --prefix="$prefix" \
+       --infodir="$prefix/share/info" \
+       --mandir="$prefix/share/man" \
+       --with-gcc \
+       --enable-libgomp \
+       --program-suffix=-sjlj \
+       --with-arch=i486 \
+       --with-tune=generic \
+       --disable-werror \
+       --enable-threads \
+       --disable-nls \
+       --enable-languages="c,c++,fortran,objc,obj-c++,ada" \
+       --disable-win32-registry \
+       --enable-sjlj-exceptions \
+       --enable-libstdcxx-debug \
+       --enable-cxx-flags='-fno-function-sections -fno-data-sections' \
+       --enable-version-specific-runtime-libs \
+       --disable-bootstrap
+
+  make BOOTCFLAGS="-O2 -D__USE_MINGW_ACCESS" CFLAGS="-O2 -D__USE_MINGW_ACCESS"  CXXFLAGS="-mthreads -O2" LDFLAGS="-s -Wl,--stack=0x2000000"
+  make DESTDIR="$PKG" install
+}

@@ -1,0 +1,54 @@
+# $Id: Pkgfile,v 1.8 2007/04/22 23:07:53 roman Exp $
+#
+# Description: data compression library
+#  LZO is a portable, lossless data compression library. It offers pretty
+#  fast compression and very fast decompression. Decompression requires
+#  no memory. In addition there are slower compression levels achieving a
+#  quite competitive compression ratio while still decompressing at this
+#  very high speed.
+# URL: http://www.oberhumer.com/opensource/lzo/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=lzo2
+version=2.03
+release=1
+source=(http://www.oberhumer.com/opensource/lzo/download/lzo-$version.tar.gz
+        lzo-2.02-ac-srcpaths.patch
+        lzo-2.02-ac-mfx.patch)
+
+build()
+{
+  cd lzo-$version
+
+  patch -N -p1 -i $SRC/lzo-2.02-ac-srcpaths.patch
+  patch -N -p1 -i $SRC/lzo-2.02-ac-mfx.patch
+
+#  rm config.{guess,sub}
+
+  libtoolize --force --copy
+  aclocal --force
+  automake --force --copy --foreign --add-missing
+  aclocal --force
+  autoconf --force
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --infodir="$prefix/info" \
+      --${static:=enable}-shared \
+      --${shared:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+
+  rm -f $ROOT/info/dir
+
+  install -d $ROOT/share/doc/lzo2
+
+  install -m 644 doc/LZO.FAQ $ROOT/share/doc/lzo2/lzo.faq
+  install -m 644 doc/LZO.TXT $ROOT/share/doc/lzo2/lzo.txt
+  install -m 644 doc/LZOAPI.TXT $ROOT/share/doc/lzo2/lzoapi.txt
+  install -m 644 doc/LZOTEST.TXT $ROOT/share/doc/lzo2/lzotest.txt
+}

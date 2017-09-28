@@ -1,0 +1,308 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: The original server implementation of the Jabber protocol, now known as XMPP
+# It is open source, and it is free. This implementation has been formerly
+# known as just jabberd as well.
+# URL: http://jabberd.org/
+# Maintainer: Christian Schläppi <cs@adfinis.com>
+# Depends on: libc6, libexpat1, libidn11, libmysqlclient16, libpq5, libpth20, libssl0.9.8, zlib1g
+
+name=jabberd14
+version=1.4.3.1
+release=7
+source=(http://download.jabberd.org/jabberd14/jabberd-$version.tar.gz
+        jabberd-1.4.3.1-openssl-init.patch
+        jabber-1.4.3.1-configxml.patch
+#        jabberd-1.4.4-configdir.patch
+        jabberd14.init.d
+        jadmin.sh
+        jabber.cfg)
+
+build()
+{
+  cd jabberd-$version
+
+  patch -N -p1 -i $SRC/jabberd-1.4.3.1-openssl-init.patch
+  patch -N -p1 -i $SRC/jabber-1.4.3.1-configxml.patch
+# patch -N -p1 -i $SRC/jabberd-1.4.4-configdir.patch
+
+  find -type f -print0 | xargs -0 touch -r .
+
+  case $prefix in
+    "/usr")
+      sysconfdir="/etc"
+      localstatedir="/var"
+      ;;
+  esac
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix" \
+       --sysconfdir="${sysconfdir=$prefix/etc}/jabberd14" \
+       --localstatedir="${localstatedir=$prefix/var}" \
+       --enable-ssl \
+       --disable-dependency-tracking \
+       --disable-maintainer-mode
+
+  make \
+      JHOME="$prefix/lib/jabberd14" \
+      libjabberd_la_LDFLAGS="-version-number $(IFS=. && set -- $version && IFS=: && echo "$*")"
+
+  test -e libtool && LIBTOOL_INSTALL='./libtool --mode=install'
+
+  install -d $ROOT/sbin
+  $LIBTOOL_INSTALL install -m 755 jabberd/jabberd $ROOT/sbin/jabberd14
+
+  install -d $ROOT/lib
+  ${LIBTOOL_INSTALL-:} install -m 755 jabberd/libjabberd.la $ROOT/lib
+
+  install -m 755 $SRC/jadmin.sh $ROOT/sbin/jabberd14-admin
+
+  install -d $PKG/$sysconfdir/jabberd14
+
+  if test -e jabber.xml; then
+    install jabber.xml $PKG${sysconfdir}/jabberd14/
+  else
+    install jabber.xml.dist $PKG${sysconfdir}/jabberd14/jabber.xml
+  fi
+
+  install $SRC/jabber.cfg $PKG/$sysconfdir/jabberd14/
+
+#  mv -v jabberd/README jabberd/README.jabberd
+
+  install -d $ROOT/share/doc/jabberd14
+#  install -m 644 {,*/}[A-Z]*[A-Z]* $ROOT/share/doc/jabberd
+
+  install -d $PKG${sysconfdir="$prefix/etc"}/init.d
+  install -m 755 $SRC/jabberd14.init.d $PKG${sysconfdir}/init.d/jabberd14
+
+  install -d $PKG${localstatedir}/log/jabberd14
+  install -d $ROOT/lib/jabberd14
+
+  for module in */.libs/*.so */*.so
+  do
+    test -e "$module" || continue
+
+    moduledir=${module%/*}
+    moduledir=${moduledir%/.libs}
+
+    install -d $ROOT/lib/jabberd14/$moduledir
+    install -m 755 $module $ROOT/lib/jabberd14/$moduledir/
+
+    modulename=${module##*/}
+    modulename_short=${modulename#libjabberd}
+
+    if test "$modulename" != "$modulename_short"; then
+      ln -sf $modulename $ROOT/lib/jabberd14/$moduledir/$modulename_short
+    fi
+  done
+}
+
+templates()
+{
+  Template: jabberd14/servname
+  Type: string
+  Default: localhost
+  Description: Canonical hostname of the jabber server.
+   .
+
+  Template: jabberd14/user
+  Type: string
+  Default: jabberd
+  Description: User account under which the daemon is started
+   .
+
+  Template: jabberd14/group
+  Type: string
+  Default: adm
+  Description: Group of which the jabber user is a member
+   .
+
+  Template: jabberd14/spooldir
+  Type: string
+  Default: /usr/lib/jabberd14
+  Description: Jabber server spool directory
+   .
+
+}
+
+config()
+{
+  . /usr/share/debconf/confmodule
+
+  db_version 2.0
+  db_title "Jabber daemon v1.4 configuration"
+
+  db_get jabberd14/servname; test "$RET" = localhost && RET=; servname=${RET:-`hostname -f`}
+
+  if test "$RET" != "$servname"; then
+    db_set jabberd14/servname "$servname"
+  fi
+
+  db_input high jabberd14/servname || true
+  db_input medium jabberd14/user || true
+  db_input medium jabberd14/group || true
+  db_input low jabberd14/spooldir || true
+
+  db_go || true
+}
+
+# summary of how this script can be called:
+#        * <new-preinst> `install'
+#        * <new-preinst> `install' <old-version>
+#        * <new-preinst> `upgrade' <old-version>
+#        * <old-preinst> `abort-upgrade' <new-version>
+#
+# for details, see http://www.debian.org/doc/debian-policy/ or
+# the debian-policy package
+preinst()
+{
+  case "$1" in
+    install | upgrade)
+
+      . /usr/share/debconf/confmodule
+
+      db_version 2.0
+      db_get jabberd14/servname; test "$RET" = localhost && RET=; servname=${RET:-`hostname -f`}
+
+      if test "$RET" != "$servname"; then
+        db_set jabberd14/servname "$servname"
+      fi
+
+      db_go || true
+    ;;
+
+    abort-upgrade)
+    ;;
+
+    *)
+      echo "preinst called with unknown argument \`$1'" >&2
+      exit 1
+    ;;
+  esac
+}
+
+# summary of how this script can be called:
+#        * <postinst> `configure' <most-recently-configured-version>
+#        * <old-postinst> `abort-upgrade' <new version>
+#        * <conflictor's-postinst> `abort-remove' `in-favour' <package>
+#          <new-version>
+#        * <deconfigured's-postinst> `abort-deconfigure' `in-favour'
+#          <failed-install-package> <version> `removing'
+#          <conflicting-package> <version>
+# for details, see http://www.debian.org/doc/debian-policy/ or
+# the debian-policy package
+#
+# quoting from the policy:
+#     Any necessary prompting should almost always be confined to the
+#     post-installation script, and should be protected with a conditional
+#     so that unnecessary prompting doesn't happen if a package's
+#     installation fails and the `postinst' is called with `abort-upgrade',
+#     `abort-remove' or `abort-deconfigure'.
+postinst()
+{
+  case "$1" in
+     configure)
+        . /usr/share/debconf/confmodule
+        db_version 2.0
+
+        db_get jabberd14/user; user=${RET:-jabber}
+        db_get jabberd14/group; group=${RET:-adm}
+        db_get jabberd14/spooldir; spooldir=${RET:-/usr/lib/jabberd14}
+        db_get jabberd14/servname; test "$RET" = localhost && RET=; servname=${RET:-`hostname -f`}
+
+        if test "$RET" != "$servname"; then
+          db_set jabberd14/servname "$servname"
+          db_go || true
+        fi
+
+        # The following only on a new install
+        if test "$2" = ""; then
+          sed -i \
+              -e "/<host><jabberd:cmdline flag=\"h\">/ {
+                    s|\(.*<host><jabberd:cmdline flag=\"h\">\).*\(</jabberd:cmdlin.*\)|\1${servname}\2|
+              }" \
+              -e "/<spool><jabberd:cmdline flag=\"s\">/ {
+                    s|\(.*<spool><jabberd:cmdline flag=\"s\">\).*\(</jabberd:cmdlin.*\)|\1${servname}\2|
+              }" \
+            /etc/jabberd14/jabber.xml
+
+          sed -i \
+              -e "s|^#\?\s*\(JABBER_HOSTNAME\)=.*$|\1=${servname}|" \
+              -e "s|^#\?\s*\(JABBER_SPOOL\)=.*$|\1=${spooldir}|" \
+              -e "s|^#\?\s*\(JABBER_USER\)=.*$|\1=${user}|" \
+              -e "s|^#\?\s*\(JABBER_GROUP\)=.*$|\1=${group}|" \
+            /etc/jabberd14/jabber.cfg
+
+          echo "Set jabberd14 hostname to $servname" 1>&2
+
+          if test ! -d "$spooldir"; then
+            mkdir -p "$spooldir" &&
+            echo "Created jabberd14 spool-directory in $spooldir" 1>&2
+          fi
+        fi
+
+        # create the group if it doesn't exist yet
+        if ! grep -q "^$group:" /etc/group 2>/dev/null; then
+          groupadd "$group" &&
+          echo "Added the group $group (`sed -n -e "s,^${group}:x:\([0-9]\+\):.*,\1,p" /etc/group`)" 1>&2
+        fi
+
+        # create the user if it doesn't exist yet
+        if ! uid=$(id -u "$user" 2>/dev/null) || test -z "$uid"; then
+          useradd -g"$group" -d"$spooldir" -s"/bin/false" --system "$user" &&
+          echo "Added the user $user:$group (`id -u "$user"`)" 1>&2
+        fi
+
+        # correct the permissions
+        chown "$user:$group" /etc/jabberd14/jabber.xml
+        chmod 0640 /etc/jabberd14/jabber.xml
+
+        chown -R "$user:$group" "$spooldir"
+        chmod 0750 "$spooldir"
+
+        chown -R "$user:$group" /var/log/jabberd14
+        chmod 0755 /var/log/jabberd14
+     ;;
+
+     abort-upgrade|abort-remove|abort-deconfigure)
+
+        db_reset jabberd14/servname || true
+        db_reset jabberd14/user || true
+        db_reset jabberd14/group || true
+        db_reset jabberd14/spooldir || true
+
+     ;;
+
+     *)
+        echo "postinst called with unknown argument \`$1'" >&2
+        exit 1
+     ;;
+  esac
+}
+
+postrm()
+{
+  if test "$1" = purge; then
+
+    # remove logs
+    for LOG in `find /var/log/jabberd14/ -type f -name error* 2>/dev/null`; do
+      rm -f "$LOG"
+    done
+
+    for LOG in `find /var/log/jabberd14/ -type f -name record* 2>/dev/null`; do
+      rm -f "$LOG"
+    done
+
+    # remove potentially empty directories if they exist
+    DIRS="/var/log/jabberd14 /etc/jabberd14 /var/run/jabberd14"
+
+    for DIR in $DIRS; do
+      if test -d "$DIR"; then
+        rmdir --ignore-fail-on-non-empty "$DIR"
+      fi
+    done
+  fi
+}

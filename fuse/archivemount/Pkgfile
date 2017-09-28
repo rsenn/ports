@@ -1,0 +1,25 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Section: utils
+# Description: 
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libarchive1, libc6, libfuse2
+
+name=archivemount
+version=0.5.3
+release=1
+source=(http://www.cybernoia.de/software/archivemount/archivemount-$version.tar.gz)
+
+build()
+{
+  cd archivemount-$version
+
+  make CC="${CC-cc}" CFLAGS="${CFLAGS--g -O2} -D_FILE_OFFSET_BITS=64"
+
+  install -d $ROOT/bin
+  install -m 755 archivemount $ROOT/bin
+
+  install -d $ROOT/share/doc/archivemount
+  install -m 644 [A-Z]*[A-Z]* $ROOT/share/doc/archivemount
+}

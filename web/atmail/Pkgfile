@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Webmail client
+#  # AtMail is an open source webmail client written in PHP. We aim to
+#  provide a elegant Ajax webmail client for existing IMAP mailservers, with
+#  less bloat and a focus on an intuitive, simple user interface. # The open
+#  source version of AtMail provides users with a lightweight, yet powerful
+#  webmail client. The software can be installed on a variety of platforms
+#  with ease and without the hassles that most webmail platforms impart.
+#  .
+# URL: http://atmail.org/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=atmail
+version=1.03
+release=1
+source=($mirror_sf/atmailopen/atmailopen${version/./_}.tgz)
+
+build()
+{
+  cd atmailopen
+
+  install -d $ROOT/share/doc/atmail
+  mv -f CHANGELOG LICENSE README $ROOT/share/doc/atmail
+
+  install -d $ROOT/share/atmail
+  cp -rf * $ROOT/share/atmail
+}
+
+# EOF

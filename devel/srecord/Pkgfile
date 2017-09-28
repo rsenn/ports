@@ -1,0 +1,29 @@
+# $Id: Pkgfile,v 1.11 2007/04/22 23:07:53 roman Exp $
+#
+# Description: a collection of powerful tools for manipulating EPROM load files.
+# It understands a number of file formats including Motorola S-Record, Intel
+# hex, Tektronix hex and binary, for both input and output. SRecord filters
+# include cropping, filling, splitting, joining, and more. All filters may be
+# applied to all file formats.
+# URL: http://srecord.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libgcc1, libstdc++6
+
+name=srecord
+version=1.43
+release=1
+source=($mirror_sf/srecord/srecord-$version.tar.gz)
+
+build()
+{
+  cd srecord-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       ${target+--target="$target"} \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

@@ -1,0 +1,40 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Gives easy run time access to your program's data.
+#  RTA (Run Time Access) gives easy runtime access to your program's internal
+#  structures, arrays, and linked-lists as tables in a database. It makes
+#  it easy to separate your UI programs from your daemon programs. This
+#  separation make building and testing both UI and daemon easier. When using
+#  RTA, your UI programs think they are talking to a PostgreSQL database. The
+#  PostgreSQL bindings for C and PHP work, as does the PostgreSQL command
+#  line tool, psql.
+# URL: http://www.linuxappliancedesign.com/projects/rta/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=rta
+version=0.7.5
+release=1
+source=(http://www.runtimeaccess.com/projects/rta/rta-$version.tgz)
+
+build()
+{
+  cd rta-$version/src
+
+  sed -i 's:/usr/local:$(prefix):g' Makefile
+
+  install -d $ROOT/{include,lib}
+
+  make \
+      CC="${CC-cc}" \
+      CFLAGS="$CFLAGS" \
+      prefix="$ROOT" \
+      default \
+      install
+
+  (cd $ROOT/lib
+   for lib in librtadb.so{,.[0-9]}
+   do
+     ln -sf librtadb.so.[0-9].[0-9] $lib
+   done)
+}

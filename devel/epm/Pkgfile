@@ -1,0 +1,25 @@
+# $Id: Pkgfile,v 1.11 2007/04/22 23:07:53 roman Exp $
+# Name: ESP Package Manager (EPM)
+# URL: http://www.easysw.com/epm/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=epm
+version=4.1
+release=1
+source=(ftp://ftp.easysw.com/pub/epm/$version/epm-$version-source.tar.gz)
+
+build()
+{
+  cd epm-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  copy_license "COPYING"
+}

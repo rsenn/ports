@@ -1,0 +1,861 @@
+args: -r -u -N -- glib-2.17.4_orig glib-2.17.4
+diff -r -u -N -- glib-2.17.4_orig/Makefile glib-2.17.4/Makefile
+diff -r -u -N -- glib-2.17.4_orig/Makefile.am glib-2.17.4/Makefile.am
+--- glib-2.17.4_orig/Makefile.am	2008-07-27 22:32:57.000000000 +0200
++++ glib-2.17.4/Makefile.am	2008-07-27 22:18:08.000000000 +0200
+@@ -3,7 +3,7 @@
+ 
+ AUTOMAKE_OPTIONS = 1.7
+ 
+-SUBDIRS = . m4macros glib gmodule gthread gobject gio tests po docs
++SUBDIRS = . build m4macros glib gmodule gthread gobject gio tests po docs
+ DIST_SUBDIRS = $(SUBDIRS) build
+ 
+ bin_SCRIPTS = glib-gettextize
+diff -r -u -N -- glib-2.17.4_orig/Makefile.in glib-2.17.4/Makefile.in
+diff -r -u -N -- glib-2.17.4_orig/autogen.sh glib-2.17.4/autogen.sh
+--- glib-2.17.4_orig/autogen.sh	2008-07-27 22:32:57.000000000 +0200
++++ glib-2.17.4/autogen.sh	2008-07-27 22:03:26.000000000 +0200
+@@ -1,119 +1,10 @@
+ #!/bin/sh
+-# Run this to generate all the initial makefiles, etc.
++#
++# 20080727
+ 
+-srcdir=`dirname $0`
+-test -z "$srcdir" && srcdir=.
+-
+-ORIGDIR=`pwd`
+-cd $srcdir
+-PROJECT=GLib
+-TEST_TYPE=-f
+-FILE=glib/glib.h
+-
+-DIE=0
+-
+-have_libtool=false
+-if libtoolize --version < /dev/null > /dev/null 2>&1 ; then
+-	libtool_version=`libtoolize --version | sed 's/^[^0-9]*\([0-9.][0-9.]*\).*/\1/'`
+-	case $libtool_version in
+-	    1.4*|1.5*)
+-		have_libtool=true
+-		;;
+-	esac
+-fi
+-if $have_libtool ; then : ; else
+-	echo
+-	echo "You must have libtool 1.4 installed to compile $PROJECT."
+-	echo "Install the appropriate package for your distribution,"
+-	echo "or get the source tarball at http://ftp.gnu.org/gnu/libtool/"
+-	DIE=1
+-fi
+-
+-(gtkdocize --version) < /dev/null > /dev/null 2>&1 || {
+-	echo
+-	echo "You must have gtk-doc installed to compile $PROJECT."
+-	echo "Install the appropriate package for your distribution,"
+-	echo "or get the source tarball at ftp://ftp.gnome.org/pub/GNOME/sources/gtk-doc/"
+-	DIE=1
+-}
+-
+-(autoconf --version) < /dev/null > /dev/null 2>&1 || {
+-	echo
+-	echo "You must have autoconf installed to compile $PROJECT."
+-	echo "Install the appropriate package for your distribution,"
+-	echo "or get the source tarball at http://ftp.gnu.org/gnu/autoconf/"
+-	DIE=1
+-}
+-
+-if automake-1.10 --version < /dev/null > /dev/null 2>&1 ; then
+-    AUTOMAKE=automake-1.10
+-    ACLOCAL=aclocal-1.10
+-else if automake-1.9 --version < /dev/null > /dev/null 2>&1 ; then
+-    AUTOMAKE=automake-1.9
+-    ACLOCAL=aclocal-1.9
+-else 
+-	echo
+-	echo "You must have automake 1.9.x or 1.10.x installed to compile $PROJECT."
+-	echo "Install the appropriate package for your distribution,"
+-	echo "or get the source tarball at http://ftp.gnu.org/gnu/automake/"
+-	DIE=1
+-fi
+-fi
+-
+-if test "$DIE" -eq 1; then
+-	exit 1
+-fi
+-
+-test $TEST_TYPE $FILE || {
+-	echo "You must run this script in the top-level $PROJECT directory"
+-	exit 1
+-}
+-
+-if test -z "$AUTOGEN_SUBDIR_MODE"; then
+-        if test -z "$*"; then
+-                echo "I am going to run ./configure with no arguments - if you wish "
+-                echo "to pass any to it, please specify them on the $0 command line."
+-        fi
+-fi
+-
+-rm -rf autom4te.cache
+-
+-# README and INSTALL are required by automake, but may be deleted by clean
+-# up rules. to get automake to work, simply touch these here, they will be
+-# regenerated from their corresponding *.in files by ./configure anyway.
+-touch README INSTALL
+-
+-if [ ! -d build ]; then
+-  if [ -x "`which svn`" ]; then
+-    echo
+-    echo "=============================================================="
+-    echo "  your checkout doesn't contain build/."
+-    echo "      fetching it from http://svn.gnome.org/svn/build/trunk/"
+-    echo "=============================================================="
+-    echo
+-
+-    svn checkout http://svn.gnome.org/svn/build/trunk/ build
+-  else
+-    echo
+-    echo 'warning: build/ directory is missing and no "svn" to fetch it!'
+-    echo
+-  fi
+-fi
+-
+-$ACLOCAL $ACLOCAL_FLAGS || exit $?
+-
+-libtoolize --force || exit $?
+-gtkdocize || exit $?
+-
+-autoheader || exit $?
+-
+-$AUTOMAKE --add-missing || exit $?
+-autoconf || exit $?
+-cd $ORIGDIR || exit $?
+-
+-if test -z "$AUTOGEN_SUBDIR_MODE"; then
+-        $srcdir/configure --enable-maintainer-mode $AUTOGEN_CONFIGURE_ARGS "$@" || exit $?
+-
+-        echo 
+-        echo "Now type 'make' to compile $PROJECT."
+-fi
++libtoolize --force --copy --automake
++aclocal --force
++automake --force --copy --add-missing --foreign
++aclocal --force
++autoheader --force
++autoconf --force
+diff -r -u -N -- glib-2.17.4_orig/autom4te.cache/output.0 glib-2.17.4/autom4te.cache/output.0
+diff -r -u -N -- glib-2.17.4_orig/autom4te.cache/output.1 glib-2.17.4/autom4te.cache/output.1
+diff -r -u -N -- glib-2.17.4_orig/autom4te.cache/output.2 glib-2.17.4/autom4te.cache/output.2
+diff -r -u -N -- glib-2.17.4_orig/autom4te.cache/requests glib-2.17.4/autom4te.cache/requests
+diff -r -u -N -- glib-2.17.4_orig/autom4te.cache/traces.0 glib-2.17.4/autom4te.cache/traces.0
+diff -r -u -N -- glib-2.17.4_orig/autom4te.cache/traces.1 glib-2.17.4/autom4te.cache/traces.1
+diff -r -u -N -- glib-2.17.4_orig/autom4te.cache/traces.2 glib-2.17.4/autom4te.cache/traces.2
+diff -r -u -N -- glib-2.17.4_orig/build/Makefile glib-2.17.4/build/Makefile
+diff -r -u -N -- glib-2.17.4_orig/build/Makefile.am glib-2.17.4/build/Makefile.am
+--- glib-2.17.4_orig/build/Makefile.am	2008-07-27 22:32:57.000000000 +0200
++++ glib-2.17.4/build/Makefile.am	2008-07-27 22:18:01.000000000 +0200
+@@ -1,7 +1 @@
+-SUBDIRS = \
+-	win32
+-
+-EXTRA_DIST = \
+-	README \
+-	ChangeLog
+-
++SUBDIRS = win32
+diff -r -u -N -- glib-2.17.4_orig/build/Makefile.in glib-2.17.4/build/Makefile.in
+diff -r -u -N -- glib-2.17.4_orig/build/win32/Makefile glib-2.17.4/build/win32/Makefile
+diff -r -u -N -- glib-2.17.4_orig/build/win32/Makefile.am glib-2.17.4/build/win32/Makefile.am
+--- glib-2.17.4_orig/build/win32/Makefile.am	2008-07-27 22:32:57.000000000 +0200
++++ glib-2.17.4/build/win32/Makefile.am	2008-07-27 22:26:10.000000000 +0200
+@@ -1,7 +1 @@
+-SUBDIRS = \
+-	dirent \
+-	vs8
+-
+-EXTRA_DIST = \
+-	make.msc \
+-	module.defs
++SUBDIRS = dirent vs8
+diff -r -u -N -- glib-2.17.4_orig/build/win32/Makefile.in glib-2.17.4/build/win32/Makefile.in
+diff -r -u -N -- glib-2.17.4_orig/build/win32/dirent/Makefile glib-2.17.4/build/win32/dirent/Makefile
+diff -r -u -N -- glib-2.17.4_orig/build/win32/dirent/Makefile.am glib-2.17.4/build/win32/dirent/Makefile.am
+--- glib-2.17.4_orig/build/win32/dirent/Makefile.am	2008-07-27 22:32:57.000000000 +0200
++++ glib-2.17.4/build/win32/dirent/Makefile.am	2008-07-27 22:19:28.000000000 +0200
+@@ -1,9 +1 @@
+-EXTRA_DIST = \
+-	README \
+-	dirent.c \
+-	dirent.h \
+-	wdirent.c \
+-	makefile.msc \
+-	dirent-zip
+-
+ 
+diff -r -u -N -- glib-2.17.4_orig/build/win32/dirent/Makefile.in glib-2.17.4/build/win32/dirent/Makefile.in
+diff -r -u -N -- glib-2.17.4_orig/build/win32/vs8/Makefile glib-2.17.4/build/win32/vs8/Makefile
+diff -r -u -N -- glib-2.17.4_orig/build/win32/vs8/Makefile.am glib-2.17.4/build/win32/vs8/Makefile.am
+--- glib-2.17.4_orig/build/win32/vs8/Makefile.am	2008-07-27 22:32:57.000000000 +0200
++++ glib-2.17.4/build/win32/vs8/Makefile.am	2008-07-27 22:27:28.000000000 +0200
+@@ -1,8 +1 @@
+-EXTRA_DIST = \
+-	gio.vcproj \
+-	glib-genmarshal.vcproj \
+-	glib.sln \
+-	glib.vcproj \
+-	gmodule.vcproj \
+-	gobject.vcproj \
+-	gthread.vcproj
++
+diff -r -u -N -- glib-2.17.4_orig/build/win32/vs8/Makefile.in glib-2.17.4/build/win32/vs8/Makefile.in
+diff -r -u -N -- glib-2.17.4_orig/config.h glib-2.17.4/config.h
+diff -r -u -N -- glib-2.17.4_orig/config.h.in glib-2.17.4/config.h.in
+diff -r -u -N -- glib-2.17.4_orig/config.h.in~ glib-2.17.4/config.h.in~
+diff -r -u -N -- glib-2.17.4_orig/config.log glib-2.17.4/config.log
+diff -r -u -N -- glib-2.17.4_orig/config.lt glib-2.17.4/config.lt
+diff -r -u -N -- glib-2.17.4_orig/config.status glib-2.17.4/config.status
+diff -r -u -N -- glib-2.17.4_orig/config.sub glib-2.17.4/config.sub
+diff -r -u -N -- glib-2.17.4_orig/configure glib-2.17.4/configure
+diff -r -u -N -- glib-2.17.4_orig/configure.in glib-2.17.4/configure.in
+--- glib-2.17.4_orig/configure.in	2008-07-27 22:32:57.000000000 +0200
++++ glib-2.17.4/configure.in	2008-07-27 22:09:48.000000000 +0200
+@@ -481,6 +481,8 @@
+ AC_LIBTOOL_WIN32_DLL
+ AM_PROG_LIBTOOL
+ 
++LT_OUTPUT
++
+ if test "x$GCC" = "xyes"; then
+   case " $CFLAGS " in
+   *[[\ \	]]-Wall[[\ \	]]*) ;;
+@@ -2570,6 +2572,7 @@
+ dnl **************************
+ 
+ GTK_DOC_CHECK([1.8])
++AM_CONDITIONAL([ENABLE_GTK_DOC],[test "$enable_gtk_doc" = yes])
+ 
+ AC_ARG_ENABLE(man,
+               [AC_HELP_STRING([--enable-man],
+@@ -3235,6 +3238,8 @@
+ fi
+ ])
+ 
++AM_CONDITIONAL([GTK_DOC_USE_LIBTOOL],[true])
++
+ AC_CONFIG_FILES([
+ glib-2.0.pc
+ glib-2.0-uninstalled.pc
+diff -r -u -N -- glib-2.17.4_orig/docs/Makefile glib-2.17.4/docs/Makefile
+diff -r -u -N -- glib-2.17.4_orig/docs/reference/Makefile glib-2.17.4/docs/reference/Makefile
+diff -r -u -N -- glib-2.17.4_orig/docs/reference/gio/Makefile glib-2.17.4/docs/reference/gio/Makefile
+diff -r -u -N -- glib-2.17.4_orig/docs/reference/glib/Makefile glib-2.17.4/docs/reference/glib/Makefile
+diff -r -u -N -- glib-2.17.4_orig/docs/reference/gobject/Makefile glib-2.17.4/docs/reference/gobject/Makefile
+diff -r -u -N -- glib-2.17.4_orig/gio/.deps/gappinfo.Plo glib-2.17.4/gio/.deps/gappinfo.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/.deps/gasynchelper.Plo glib-2.17.4/gio/.deps/gasynchelper.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/.deps/gasyncresult.Plo glib-2.17.4/gio/.deps/gasyncresult.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/.deps/gbufferedinputstream.Plo glib-2.17.4/gio/.deps/gbufferedinputstream.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/.deps/gbufferedoutputstream.Plo glib-2.17.4/gio/.deps/gbufferedoutputstream.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/.deps/gcancellable.Plo glib-2.17.4/gio/.deps/gcancellable.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/.deps/gcontenttype.Plo glib-2.17.4/gio/.deps/gcontenttype.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/.deps/gdatainputstream.Plo glib-2.17.4/gio/.deps/gdatainputstream.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/.deps/gdataoutputstream.Plo glib-2.17.4/gio/.deps/gdataoutputstream.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/.deps/gdesktopappinfo.Plo glib-2.17.4/gio/.deps/gdesktopappinfo.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/.deps/gdrive.Plo glib-2.17.4/gio/.deps/gdrive.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/.deps/gdummyfile.Plo glib-2.17.4/gio/.deps/gdummyfile.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/.deps/gfile.Plo glib-2.17.4/gio/.deps/gfile.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/.deps/gfileattribute.Plo glib-2.17.4/gio/.deps/gfileattribute.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/.deps/gfileenumerator.Plo glib-2.17.4/gio/.deps/gfileenumerator.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/.deps/gfileicon.Plo glib-2.17.4/gio/.deps/gfileicon.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/.deps/gfileinfo.Plo glib-2.17.4/gio/.deps/gfileinfo.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/.deps/gfileinputstream.Plo glib-2.17.4/gio/.deps/gfileinputstream.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/.deps/gfilemonitor.Plo glib-2.17.4/gio/.deps/gfilemonitor.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/.deps/gfilenamecompleter.Plo glib-2.17.4/gio/.deps/gfilenamecompleter.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/.deps/gfileoutputstream.Plo glib-2.17.4/gio/.deps/gfileoutputstream.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/.deps/gfilterinputstream.Plo glib-2.17.4/gio/.deps/gfilterinputstream.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/.deps/gfilteroutputstream.Plo glib-2.17.4/gio/.deps/gfilteroutputstream.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/.deps/gicon.Plo glib-2.17.4/gio/.deps/gicon.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/.deps/ginputstream.Plo glib-2.17.4/gio/.deps/ginputstream.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/.deps/gio-marshal.Plo glib-2.17.4/gio/.deps/gio-marshal.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/.deps/gioaliasdef.Plo glib-2.17.4/gio/.deps/gioaliasdef.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/.deps/gioenumtypes.Plo glib-2.17.4/gio/.deps/gioenumtypes.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/.deps/gioerror.Plo glib-2.17.4/gio/.deps/gioerror.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/.deps/giomodule.Plo glib-2.17.4/gio/.deps/giomodule.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/.deps/gioscheduler.Plo glib-2.17.4/gio/.deps/gioscheduler.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/.deps/gloadableicon.Plo glib-2.17.4/gio/.deps/gloadableicon.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/.deps/glocaldirectorymonitor.Plo glib-2.17.4/gio/.deps/glocaldirectorymonitor.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/.deps/glocalfile.Plo glib-2.17.4/gio/.deps/glocalfile.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/.deps/glocalfileenumerator.Plo glib-2.17.4/gio/.deps/glocalfileenumerator.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/.deps/glocalfileinfo.Plo glib-2.17.4/gio/.deps/glocalfileinfo.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/.deps/glocalfileinputstream.Plo glib-2.17.4/gio/.deps/glocalfileinputstream.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/.deps/glocalfilemonitor.Plo glib-2.17.4/gio/.deps/glocalfilemonitor.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/.deps/glocalfileoutputstream.Plo glib-2.17.4/gio/.deps/glocalfileoutputstream.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/.deps/glocalvfs.Plo glib-2.17.4/gio/.deps/glocalvfs.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/.deps/gmemoryinputstream.Plo glib-2.17.4/gio/.deps/gmemoryinputstream.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/.deps/gmemoryoutputstream.Plo glib-2.17.4/gio/.deps/gmemoryoutputstream.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/.deps/gmount.Plo glib-2.17.4/gio/.deps/gmount.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/.deps/gmountoperation.Plo glib-2.17.4/gio/.deps/gmountoperation.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/.deps/gnativevolumemonitor.Plo glib-2.17.4/gio/.deps/gnativevolumemonitor.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/.deps/goutputstream.Plo glib-2.17.4/gio/.deps/goutputstream.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/.deps/gpollfilemonitor.Plo glib-2.17.4/gio/.deps/gpollfilemonitor.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/.deps/gseekable.Plo glib-2.17.4/gio/.deps/gseekable.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/.deps/gsimpleasyncresult.Plo glib-2.17.4/gio/.deps/gsimpleasyncresult.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/.deps/gthemedicon.Plo glib-2.17.4/gio/.deps/gthemedicon.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/.deps/gunionvolumemonitor.Plo glib-2.17.4/gio/.deps/gunionvolumemonitor.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/.deps/gunixinputstream.Plo glib-2.17.4/gio/.deps/gunixinputstream.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/.deps/gunixmount.Plo glib-2.17.4/gio/.deps/gunixmount.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/.deps/gunixmounts.Plo glib-2.17.4/gio/.deps/gunixmounts.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/.deps/gunixoutputstream.Plo glib-2.17.4/gio/.deps/gunixoutputstream.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/.deps/gunixvolume.Plo glib-2.17.4/gio/.deps/gunixvolume.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/.deps/gunixvolumemonitor.Plo glib-2.17.4/gio/.deps/gunixvolumemonitor.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/.deps/gvfs.Plo glib-2.17.4/gio/.deps/gvfs.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/.deps/gvolume.Plo glib-2.17.4/gio/.deps/gvolume.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/.deps/gvolumemonitor.Plo glib-2.17.4/gio/.deps/gvolumemonitor.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/.deps/gwin32appinfo.Plo glib-2.17.4/gio/.deps/gwin32appinfo.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/.deps/gwin32mount.Plo glib-2.17.4/gio/.deps/gwin32mount.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/.deps/gwin32volumemonitor.Plo glib-2.17.4/gio/.deps/gwin32volumemonitor.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/.libs/libgio-2.0.exp glib-2.17.4/gio/.libs/libgio-2.0.exp
+diff -r -u -N -- glib-2.17.4_orig/gio/.libs/libgio-2.0.la glib-2.17.4/gio/.libs/libgio-2.0.la
+diff -r -u -N -- glib-2.17.4_orig/gio/.libs/libgio-2.0.lai glib-2.17.4/gio/.libs/libgio-2.0.lai
+diff -r -u -N -- glib-2.17.4_orig/gio/.libs/libgio-2.0.ver glib-2.17.4/gio/.libs/libgio-2.0.ver
+diff -r -u -N -- glib-2.17.4_orig/gio/Makefile glib-2.17.4/gio/Makefile
+diff -r -u -N -- glib-2.17.4_orig/gio/fam/.deps/libgiofam_la-fam-helper.Plo glib-2.17.4/gio/fam/.deps/libgiofam_la-fam-helper.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/fam/.deps/libgiofam_la-fam-module.Plo glib-2.17.4/gio/fam/.deps/libgiofam_la-fam-module.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/fam/.deps/libgiofam_la-gfamdirectorymonitor.Plo glib-2.17.4/gio/fam/.deps/libgiofam_la-gfamdirectorymonitor.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/fam/.deps/libgiofam_la-gfamfilemonitor.Plo glib-2.17.4/gio/fam/.deps/libgiofam_la-gfamfilemonitor.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/fam/Makefile glib-2.17.4/gio/fam/Makefile
+diff -r -u -N -- glib-2.17.4_orig/gio/fen/.deps/libfen_la-fen-data.Plo glib-2.17.4/gio/fen/.deps/libfen_la-fen-data.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/fen/.deps/libfen_la-fen-dump.Plo glib-2.17.4/gio/fen/.deps/libfen_la-fen-dump.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/fen/.deps/libfen_la-fen-helper.Plo glib-2.17.4/gio/fen/.deps/libfen_la-fen-helper.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/fen/.deps/libfen_la-fen-kernel.Plo glib-2.17.4/gio/fen/.deps/libfen_la-fen-kernel.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/fen/.deps/libfen_la-fen-missing.Plo glib-2.17.4/gio/fen/.deps/libfen_la-fen-missing.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/fen/.deps/libfen_la-fen-node.Plo glib-2.17.4/gio/fen/.deps/libfen_la-fen-node.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/fen/.deps/libfen_la-fen-sub.Plo glib-2.17.4/gio/fen/.deps/libfen_la-fen-sub.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/fen/.deps/libfen_la-gfendirectorymonitor.Plo glib-2.17.4/gio/fen/.deps/libfen_la-gfendirectorymonitor.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/fen/.deps/libfen_la-gfenfilemonitor.Plo glib-2.17.4/gio/fen/.deps/libfen_la-gfenfilemonitor.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/fen/Makefile glib-2.17.4/gio/fen/Makefile
+diff -r -u -N -- glib-2.17.4_orig/gio/gappinfo.lo glib-2.17.4/gio/gappinfo.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/gasynchelper.lo glib-2.17.4/gio/gasynchelper.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/gasyncresult.lo glib-2.17.4/gio/gasyncresult.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/gbufferedinputstream.lo glib-2.17.4/gio/gbufferedinputstream.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/gbufferedoutputstream.lo glib-2.17.4/gio/gbufferedoutputstream.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/gcancellable.lo glib-2.17.4/gio/gcancellable.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/gcontenttype.lo glib-2.17.4/gio/gcontenttype.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/gdatainputstream.lo glib-2.17.4/gio/gdatainputstream.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/gdataoutputstream.lo glib-2.17.4/gio/gdataoutputstream.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/gdesktopappinfo.lo glib-2.17.4/gio/gdesktopappinfo.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/gdrive.lo glib-2.17.4/gio/gdrive.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/gdummyfile.lo glib-2.17.4/gio/gdummyfile.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/gfile.lo glib-2.17.4/gio/gfile.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/gfileattribute.lo glib-2.17.4/gio/gfileattribute.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/gfileenumerator.lo glib-2.17.4/gio/gfileenumerator.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/gfileicon.lo glib-2.17.4/gio/gfileicon.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/gfileinfo.lo glib-2.17.4/gio/gfileinfo.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/gfileinputstream.lo glib-2.17.4/gio/gfileinputstream.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/gfilemonitor.lo glib-2.17.4/gio/gfilemonitor.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/gfilenamecompleter.lo glib-2.17.4/gio/gfilenamecompleter.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/gfileoutputstream.lo glib-2.17.4/gio/gfileoutputstream.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/gfilterinputstream.lo glib-2.17.4/gio/gfilterinputstream.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/gfilteroutputstream.lo glib-2.17.4/gio/gfilteroutputstream.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/gicon.lo glib-2.17.4/gio/gicon.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/ginputstream.lo glib-2.17.4/gio/ginputstream.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/gio-marshal.lo glib-2.17.4/gio/gio-marshal.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/gioaliasdef.lo glib-2.17.4/gio/gioaliasdef.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/gioenumtypes.lo glib-2.17.4/gio/gioenumtypes.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/gioerror.lo glib-2.17.4/gio/gioerror.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/giomodule.lo glib-2.17.4/gio/giomodule.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/gioscheduler.lo glib-2.17.4/gio/gioscheduler.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/gloadableicon.lo glib-2.17.4/gio/gloadableicon.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/glocaldirectorymonitor.lo glib-2.17.4/gio/glocaldirectorymonitor.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/glocalfile.lo glib-2.17.4/gio/glocalfile.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/glocalfileenumerator.lo glib-2.17.4/gio/glocalfileenumerator.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/glocalfileinfo.lo glib-2.17.4/gio/glocalfileinfo.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/glocalfileinputstream.lo glib-2.17.4/gio/glocalfileinputstream.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/glocalfilemonitor.lo glib-2.17.4/gio/glocalfilemonitor.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/glocalfileoutputstream.lo glib-2.17.4/gio/glocalfileoutputstream.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/glocalvfs.lo glib-2.17.4/gio/glocalvfs.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/gmemoryinputstream.lo glib-2.17.4/gio/gmemoryinputstream.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/gmemoryoutputstream.lo glib-2.17.4/gio/gmemoryoutputstream.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/gmount.lo glib-2.17.4/gio/gmount.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/gmountoperation.lo glib-2.17.4/gio/gmountoperation.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/gnativevolumemonitor.lo glib-2.17.4/gio/gnativevolumemonitor.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/goutputstream.lo glib-2.17.4/gio/goutputstream.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/gpollfilemonitor.lo glib-2.17.4/gio/gpollfilemonitor.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/gseekable.lo glib-2.17.4/gio/gseekable.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/gsimpleasyncresult.lo glib-2.17.4/gio/gsimpleasyncresult.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/gthemedicon.lo glib-2.17.4/gio/gthemedicon.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/gunionvolumemonitor.lo glib-2.17.4/gio/gunionvolumemonitor.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/gunixinputstream.lo glib-2.17.4/gio/gunixinputstream.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/gunixmount.lo glib-2.17.4/gio/gunixmount.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/gunixmounts.lo glib-2.17.4/gio/gunixmounts.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/gunixoutputstream.lo glib-2.17.4/gio/gunixoutputstream.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/gunixvolume.lo glib-2.17.4/gio/gunixvolume.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/gunixvolumemonitor.lo glib-2.17.4/gio/gunixvolumemonitor.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/gvfs.lo glib-2.17.4/gio/gvfs.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/gvolume.lo glib-2.17.4/gio/gvolume.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/gvolumemonitor.lo glib-2.17.4/gio/gvolumemonitor.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/inotify/.deps/libinotify_la-ginotifydirectorymonitor.Plo glib-2.17.4/gio/inotify/.deps/libinotify_la-ginotifydirectorymonitor.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/inotify/.deps/libinotify_la-ginotifyfilemonitor.Plo glib-2.17.4/gio/inotify/.deps/libinotify_la-ginotifyfilemonitor.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/inotify/.deps/libinotify_la-inotify-diag.Plo glib-2.17.4/gio/inotify/.deps/libinotify_la-inotify-diag.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/inotify/.deps/libinotify_la-inotify-helper.Plo glib-2.17.4/gio/inotify/.deps/libinotify_la-inotify-helper.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/inotify/.deps/libinotify_la-inotify-kernel.Plo glib-2.17.4/gio/inotify/.deps/libinotify_la-inotify-kernel.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/inotify/.deps/libinotify_la-inotify-missing.Plo glib-2.17.4/gio/inotify/.deps/libinotify_la-inotify-missing.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/inotify/.deps/libinotify_la-inotify-path.Plo glib-2.17.4/gio/inotify/.deps/libinotify_la-inotify-path.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/inotify/.deps/libinotify_la-inotify-sub.Plo glib-2.17.4/gio/inotify/.deps/libinotify_la-inotify-sub.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/inotify/.libs/libinotify.la glib-2.17.4/gio/inotify/.libs/libinotify.la
+diff -r -u -N -- glib-2.17.4_orig/gio/inotify/Makefile glib-2.17.4/gio/inotify/Makefile
+diff -r -u -N -- glib-2.17.4_orig/gio/inotify/libinotify.la glib-2.17.4/gio/inotify/libinotify.la
+diff -r -u -N -- glib-2.17.4_orig/gio/inotify/libinotify_la-ginotifydirectorymonitor.lo glib-2.17.4/gio/inotify/libinotify_la-ginotifydirectorymonitor.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/inotify/libinotify_la-ginotifyfilemonitor.lo glib-2.17.4/gio/inotify/libinotify_la-ginotifyfilemonitor.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/inotify/libinotify_la-inotify-diag.lo glib-2.17.4/gio/inotify/libinotify_la-inotify-diag.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/inotify/libinotify_la-inotify-helper.lo glib-2.17.4/gio/inotify/libinotify_la-inotify-helper.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/inotify/libinotify_la-inotify-kernel.lo glib-2.17.4/gio/inotify/libinotify_la-inotify-kernel.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/inotify/libinotify_la-inotify-missing.lo glib-2.17.4/gio/inotify/libinotify_la-inotify-missing.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/inotify/libinotify_la-inotify-path.lo glib-2.17.4/gio/inotify/libinotify_la-inotify-path.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/inotify/libinotify_la-inotify-sub.lo glib-2.17.4/gio/inotify/libinotify_la-inotify-sub.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/libgio-2.0.la glib-2.17.4/gio/libgio-2.0.la
+diff -r -u -N -- glib-2.17.4_orig/gio/tests/.deps/data-input-stream.Po glib-2.17.4/gio/tests/.deps/data-input-stream.Po
+diff -r -u -N -- glib-2.17.4_orig/gio/tests/.deps/data-output-stream.Po glib-2.17.4/gio/tests/.deps/data-output-stream.Po
+diff -r -u -N -- glib-2.17.4_orig/gio/tests/.deps/g-file-info.Po glib-2.17.4/gio/tests/.deps/g-file-info.Po
+diff -r -u -N -- glib-2.17.4_orig/gio/tests/.deps/g-file.Po glib-2.17.4/gio/tests/.deps/g-file.Po
+diff -r -u -N -- glib-2.17.4_orig/gio/tests/.deps/live-g-file.Po glib-2.17.4/gio/tests/.deps/live-g-file.Po
+diff -r -u -N -- glib-2.17.4_orig/gio/tests/.deps/memory-input-stream.Po glib-2.17.4/gio/tests/.deps/memory-input-stream.Po
+diff -r -u -N -- glib-2.17.4_orig/gio/tests/.deps/memory-output-stream.Po glib-2.17.4/gio/tests/.deps/memory-output-stream.Po
+diff -r -u -N -- glib-2.17.4_orig/gio/tests/Makefile glib-2.17.4/gio/tests/Makefile
+diff -r -u -N -- glib-2.17.4_orig/gio/tests/data-input-stream glib-2.17.4/gio/tests/data-input-stream
+diff -r -u -N -- glib-2.17.4_orig/gio/tests/data-output-stream glib-2.17.4/gio/tests/data-output-stream
+diff -r -u -N -- glib-2.17.4_orig/gio/tests/g-file glib-2.17.4/gio/tests/g-file
+diff -r -u -N -- glib-2.17.4_orig/gio/tests/g-file-info glib-2.17.4/gio/tests/g-file-info
+diff -r -u -N -- glib-2.17.4_orig/gio/tests/live-g-file glib-2.17.4/gio/tests/live-g-file
+diff -r -u -N -- glib-2.17.4_orig/gio/tests/memory-input-stream glib-2.17.4/gio/tests/memory-input-stream
+diff -r -u -N -- glib-2.17.4_orig/gio/tests/memory-output-stream glib-2.17.4/gio/tests/memory-output-stream
+diff -r -u -N -- glib-2.17.4_orig/gio/win32/.deps/libgiowin32_la-gwin32directorymonitor.Plo glib-2.17.4/gio/win32/.deps/libgiowin32_la-gwin32directorymonitor.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/win32/Makefile glib-2.17.4/gio/win32/Makefile
+diff -r -u -N -- glib-2.17.4_orig/gio/xdgmime/.deps/test-mime.Po glib-2.17.4/gio/xdgmime/.deps/test-mime.Po
+diff -r -u -N -- glib-2.17.4_orig/gio/xdgmime/.deps/xdgmime.Plo glib-2.17.4/gio/xdgmime/.deps/xdgmime.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/xdgmime/.deps/xdgmimealias.Plo glib-2.17.4/gio/xdgmime/.deps/xdgmimealias.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/xdgmime/.deps/xdgmimecache.Plo glib-2.17.4/gio/xdgmime/.deps/xdgmimecache.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/xdgmime/.deps/xdgmimeglob.Plo glib-2.17.4/gio/xdgmime/.deps/xdgmimeglob.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/xdgmime/.deps/xdgmimeicon.Plo glib-2.17.4/gio/xdgmime/.deps/xdgmimeicon.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/xdgmime/.deps/xdgmimeint.Plo glib-2.17.4/gio/xdgmime/.deps/xdgmimeint.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/xdgmime/.deps/xdgmimemagic.Plo glib-2.17.4/gio/xdgmime/.deps/xdgmimemagic.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/xdgmime/.deps/xdgmimeparent.Plo glib-2.17.4/gio/xdgmime/.deps/xdgmimeparent.Plo
+diff -r -u -N -- glib-2.17.4_orig/gio/xdgmime/.libs/libxdgmime.la glib-2.17.4/gio/xdgmime/.libs/libxdgmime.la
+diff -r -u -N -- glib-2.17.4_orig/gio/xdgmime/Makefile glib-2.17.4/gio/xdgmime/Makefile
+diff -r -u -N -- glib-2.17.4_orig/gio/xdgmime/libxdgmime.la glib-2.17.4/gio/xdgmime/libxdgmime.la
+diff -r -u -N -- glib-2.17.4_orig/gio/xdgmime/xdgmime.lo glib-2.17.4/gio/xdgmime/xdgmime.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/xdgmime/xdgmimealias.lo glib-2.17.4/gio/xdgmime/xdgmimealias.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/xdgmime/xdgmimecache.lo glib-2.17.4/gio/xdgmime/xdgmimecache.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/xdgmime/xdgmimeglob.lo glib-2.17.4/gio/xdgmime/xdgmimeglob.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/xdgmime/xdgmimeicon.lo glib-2.17.4/gio/xdgmime/xdgmimeicon.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/xdgmime/xdgmimeint.lo glib-2.17.4/gio/xdgmime/xdgmimeint.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/xdgmime/xdgmimemagic.lo glib-2.17.4/gio/xdgmime/xdgmimemagic.lo
+diff -r -u -N -- glib-2.17.4_orig/gio/xdgmime/xdgmimeparent.lo glib-2.17.4/gio/xdgmime/xdgmimeparent.lo
+diff -r -u -N -- glib-2.17.4_orig/gio-2.0-uninstalled.pc glib-2.17.4/gio-2.0-uninstalled.pc
+diff -r -u -N -- glib-2.17.4_orig/gio-2.0.pc glib-2.17.4/gio-2.0.pc
+diff -r -u -N -- glib-2.17.4_orig/gio-unix-2.0-uninstalled.pc glib-2.17.4/gio-unix-2.0-uninstalled.pc
+diff -r -u -N -- glib-2.17.4_orig/gio-unix-2.0.pc glib-2.17.4/gio-unix-2.0.pc
+diff -r -u -N -- glib-2.17.4_orig/glib/.deps/garray.Plo glib-2.17.4/glib/.deps/garray.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/.deps/gasyncqueue.Plo glib-2.17.4/glib/.deps/gasyncqueue.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/.deps/gatomic.Plo glib-2.17.4/glib/.deps/gatomic.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/.deps/gbacktrace.Plo glib-2.17.4/glib/.deps/gbacktrace.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/.deps/gbase64.Plo glib-2.17.4/glib/.deps/gbase64.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/.deps/gbookmarkfile.Plo glib-2.17.4/glib/.deps/gbookmarkfile.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/.deps/gcache.Plo glib-2.17.4/glib/.deps/gcache.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/.deps/gchecksum.Plo glib-2.17.4/glib/.deps/gchecksum.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/.deps/gcompletion.Plo glib-2.17.4/glib/.deps/gcompletion.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/.deps/gconvert.Plo glib-2.17.4/glib/.deps/gconvert.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/.deps/gdataset.Plo glib-2.17.4/glib/.deps/gdataset.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/.deps/gdate.Plo glib-2.17.4/glib/.deps/gdate.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/.deps/gdir.Plo glib-2.17.4/glib/.deps/gdir.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/.deps/gerror.Plo glib-2.17.4/glib/.deps/gerror.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/.deps/gfileutils.Plo glib-2.17.4/glib/.deps/gfileutils.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/.deps/ghash.Plo glib-2.17.4/glib/.deps/ghash.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/.deps/ghook.Plo glib-2.17.4/glib/.deps/ghook.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/.deps/giochannel.Plo glib-2.17.4/glib/.deps/giochannel.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/.deps/giounix.Plo glib-2.17.4/glib/.deps/giounix.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/.deps/giowin32.Plo glib-2.17.4/glib/.deps/giowin32.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/.deps/gkeyfile.Plo glib-2.17.4/glib/.deps/gkeyfile.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/.deps/glist.Plo glib-2.17.4/glib/.deps/glist.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/.deps/gmain.Plo glib-2.17.4/glib/.deps/gmain.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/.deps/gmappedfile.Plo glib-2.17.4/glib/.deps/gmappedfile.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/.deps/gmarkup.Plo glib-2.17.4/glib/.deps/gmarkup.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/.deps/gmem.Plo glib-2.17.4/glib/.deps/gmem.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/.deps/gmessages.Plo glib-2.17.4/glib/.deps/gmessages.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/.deps/gnode.Plo glib-2.17.4/glib/.deps/gnode.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/.deps/goption.Plo glib-2.17.4/glib/.deps/goption.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/.deps/gpattern.Plo glib-2.17.4/glib/.deps/gpattern.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/.deps/gprimes.Plo glib-2.17.4/glib/.deps/gprimes.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/.deps/gprintf.Plo glib-2.17.4/glib/.deps/gprintf.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/.deps/gqsort.Plo glib-2.17.4/glib/.deps/gqsort.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/.deps/gqueue.Plo glib-2.17.4/glib/.deps/gqueue.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/.deps/grand.Plo glib-2.17.4/glib/.deps/grand.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/.deps/gregex.Plo glib-2.17.4/glib/.deps/gregex.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/.deps/grel.Plo glib-2.17.4/glib/.deps/grel.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/.deps/gscanner.Plo glib-2.17.4/glib/.deps/gscanner.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/.deps/gsequence.Plo glib-2.17.4/glib/.deps/gsequence.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/.deps/gshell.Plo glib-2.17.4/glib/.deps/gshell.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/.deps/gslice.Plo glib-2.17.4/glib/.deps/gslice.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/.deps/gslist.Plo glib-2.17.4/glib/.deps/gslist.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/.deps/gspawn-win32-helper-console.Po glib-2.17.4/glib/.deps/gspawn-win32-helper-console.Po
+diff -r -u -N -- glib-2.17.4_orig/glib/.deps/gspawn-win32-helper.Po glib-2.17.4/glib/.deps/gspawn-win32-helper.Po
+diff -r -u -N -- glib-2.17.4_orig/glib/.deps/gspawn-win32.Plo glib-2.17.4/glib/.deps/gspawn-win32.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/.deps/gspawn.Plo glib-2.17.4/glib/.deps/gspawn.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/.deps/gstdio.Plo glib-2.17.4/glib/.deps/gstdio.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/.deps/gstrfuncs.Plo glib-2.17.4/glib/.deps/gstrfuncs.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/.deps/gstring.Plo glib-2.17.4/glib/.deps/gstring.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/.deps/gtester.Po glib-2.17.4/glib/.deps/gtester.Po
+diff -r -u -N -- glib-2.17.4_orig/glib/.deps/gtestutils.Plo glib-2.17.4/glib/.deps/gtestutils.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/.deps/gthread.Plo glib-2.17.4/glib/.deps/gthread.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/.deps/gthreadpool.Plo glib-2.17.4/glib/.deps/gthreadpool.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/.deps/gtimer.Plo glib-2.17.4/glib/.deps/gtimer.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/.deps/gtree.Plo glib-2.17.4/glib/.deps/gtree.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/.deps/gunibreak.Plo glib-2.17.4/glib/.deps/gunibreak.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/.deps/gunicollate.Plo glib-2.17.4/glib/.deps/gunicollate.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/.deps/gunidecomp.Plo glib-2.17.4/glib/.deps/gunidecomp.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/.deps/guniprop.Plo glib-2.17.4/glib/.deps/guniprop.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/.deps/gurifuncs.Plo glib-2.17.4/glib/.deps/gurifuncs.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/.deps/gutf8.Plo glib-2.17.4/glib/.deps/gutf8.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/.deps/gutils.Plo glib-2.17.4/glib/.deps/gutils.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/.deps/gwin32.Plo glib-2.17.4/glib/.deps/gwin32.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/.libs/libglib-2.0.exp glib-2.17.4/glib/.libs/libglib-2.0.exp
+diff -r -u -N -- glib-2.17.4_orig/glib/.libs/libglib-2.0.la glib-2.17.4/glib/.libs/libglib-2.0.la
+diff -r -u -N -- glib-2.17.4_orig/glib/.libs/libglib-2.0.lai glib-2.17.4/glib/.libs/libglib-2.0.lai
+diff -r -u -N -- glib-2.17.4_orig/glib/.libs/libglib-2.0.ver glib-2.17.4/glib/.libs/libglib-2.0.ver
+diff -r -u -N -- glib-2.17.4_orig/glib/Makefile glib-2.17.4/glib/Makefile
+diff -r -u -N -- glib-2.17.4_orig/glib/garray.lo glib-2.17.4/glib/garray.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/gasyncqueue.lo glib-2.17.4/glib/gasyncqueue.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/gatomic.lo glib-2.17.4/glib/gatomic.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/gbacktrace.lo glib-2.17.4/glib/gbacktrace.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/gbase64.lo glib-2.17.4/glib/gbase64.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/gbookmarkfile.lo glib-2.17.4/glib/gbookmarkfile.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/gcache.lo glib-2.17.4/glib/gcache.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/gchecksum.lo glib-2.17.4/glib/gchecksum.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/gcompletion.lo glib-2.17.4/glib/gcompletion.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/gconvert.lo glib-2.17.4/glib/gconvert.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/gdataset.lo glib-2.17.4/glib/gdataset.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/gdate.lo glib-2.17.4/glib/gdate.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/gdir.lo glib-2.17.4/glib/gdir.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/gerror.lo glib-2.17.4/glib/gerror.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/gfileutils.lo glib-2.17.4/glib/gfileutils.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/ghash.lo glib-2.17.4/glib/ghash.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/ghook.lo glib-2.17.4/glib/ghook.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/giochannel.lo glib-2.17.4/glib/giochannel.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/giounix.lo glib-2.17.4/glib/giounix.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/gkeyfile.lo glib-2.17.4/glib/gkeyfile.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/glist.lo glib-2.17.4/glib/glist.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/gmain.lo glib-2.17.4/glib/gmain.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/gmappedfile.lo glib-2.17.4/glib/gmappedfile.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/gmarkup.lo glib-2.17.4/glib/gmarkup.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/gmem.lo glib-2.17.4/glib/gmem.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/gmessages.lo glib-2.17.4/glib/gmessages.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/gnode.lo glib-2.17.4/glib/gnode.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/gnulib/.deps/asnprintf.Plo glib-2.17.4/glib/gnulib/.deps/asnprintf.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/gnulib/.deps/printf-args.Plo glib-2.17.4/glib/gnulib/.deps/printf-args.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/gnulib/.deps/printf-parse.Plo glib-2.17.4/glib/gnulib/.deps/printf-parse.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/gnulib/.deps/printf.Plo glib-2.17.4/glib/gnulib/.deps/printf.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/gnulib/.deps/vasnprintf.Plo glib-2.17.4/glib/gnulib/.deps/vasnprintf.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/gnulib/Makefile glib-2.17.4/glib/gnulib/Makefile
+diff -r -u -N -- glib-2.17.4_orig/glib/goption.lo glib-2.17.4/glib/goption.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/gpattern.lo glib-2.17.4/glib/gpattern.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/gprimes.lo glib-2.17.4/glib/gprimes.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/gprintf.lo glib-2.17.4/glib/gprintf.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/gqsort.lo glib-2.17.4/glib/gqsort.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/gqueue.lo glib-2.17.4/glib/gqueue.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/grand.lo glib-2.17.4/glib/grand.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/gregex.lo glib-2.17.4/glib/gregex.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/grel.lo glib-2.17.4/glib/grel.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/gscanner.lo glib-2.17.4/glib/gscanner.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/gsequence.lo glib-2.17.4/glib/gsequence.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/gshell.lo glib-2.17.4/glib/gshell.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/gslice.lo glib-2.17.4/glib/gslice.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/gslist.lo glib-2.17.4/glib/gslist.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/gspawn.lo glib-2.17.4/glib/gspawn.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/gstdio.lo glib-2.17.4/glib/gstdio.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/gstrfuncs.lo glib-2.17.4/glib/gstrfuncs.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/gstring.lo glib-2.17.4/glib/gstring.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/gtester glib-2.17.4/glib/gtester
+diff -r -u -N -- glib-2.17.4_orig/glib/gtestutils.lo glib-2.17.4/glib/gtestutils.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/gthread.lo glib-2.17.4/glib/gthread.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/gthreadpool.lo glib-2.17.4/glib/gthreadpool.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/gtimer.lo glib-2.17.4/glib/gtimer.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/gtree.lo glib-2.17.4/glib/gtree.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/gunibreak.lo glib-2.17.4/glib/gunibreak.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/gunicollate.lo glib-2.17.4/glib/gunicollate.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/gunidecomp.lo glib-2.17.4/glib/gunidecomp.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/guniprop.lo glib-2.17.4/glib/guniprop.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/gurifuncs.lo glib-2.17.4/glib/gurifuncs.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/gutf8.lo glib-2.17.4/glib/gutf8.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/gutils.lo glib-2.17.4/glib/gutils.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/libcharset/.deps/localcharset.Plo glib-2.17.4/glib/libcharset/.deps/localcharset.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/libcharset/.libs/libcharset.la glib-2.17.4/glib/libcharset/.libs/libcharset.la
+diff -r -u -N -- glib-2.17.4_orig/glib/libcharset/Makefile glib-2.17.4/glib/libcharset/Makefile
+diff -r -u -N -- glib-2.17.4_orig/glib/libcharset/charset.alias glib-2.17.4/glib/libcharset/charset.alias
+diff -r -u -N -- glib-2.17.4_orig/glib/libcharset/libcharset.la glib-2.17.4/glib/libcharset/libcharset.la
+diff -r -u -N -- glib-2.17.4_orig/glib/libcharset/localcharset.lo glib-2.17.4/glib/libcharset/localcharset.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/libcharset/ref-add.sed glib-2.17.4/glib/libcharset/ref-add.sed
+diff -r -u -N -- glib-2.17.4_orig/glib/libcharset/ref-del.sed glib-2.17.4/glib/libcharset/ref-del.sed
+diff -r -u -N -- glib-2.17.4_orig/glib/libglib-2.0.la glib-2.17.4/glib/libglib-2.0.la
+diff -r -u -N -- glib-2.17.4_orig/glib/pcre/.deps/pcre_chartables.Plo glib-2.17.4/glib/pcre/.deps/pcre_chartables.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/pcre/.deps/pcre_compile.Plo glib-2.17.4/glib/pcre/.deps/pcre_compile.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/pcre/.deps/pcre_config.Plo glib-2.17.4/glib/pcre/.deps/pcre_config.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/pcre/.deps/pcre_dfa_exec.Plo glib-2.17.4/glib/pcre/.deps/pcre_dfa_exec.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/pcre/.deps/pcre_exec.Plo glib-2.17.4/glib/pcre/.deps/pcre_exec.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/pcre/.deps/pcre_fullinfo.Plo glib-2.17.4/glib/pcre/.deps/pcre_fullinfo.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/pcre/.deps/pcre_get.Plo glib-2.17.4/glib/pcre/.deps/pcre_get.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/pcre/.deps/pcre_globals.Plo glib-2.17.4/glib/pcre/.deps/pcre_globals.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/pcre/.deps/pcre_info.Plo glib-2.17.4/glib/pcre/.deps/pcre_info.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/pcre/.deps/pcre_maketables.Plo glib-2.17.4/glib/pcre/.deps/pcre_maketables.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/pcre/.deps/pcre_newline.Plo glib-2.17.4/glib/pcre/.deps/pcre_newline.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/pcre/.deps/pcre_ord2utf8.Plo glib-2.17.4/glib/pcre/.deps/pcre_ord2utf8.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/pcre/.deps/pcre_refcount.Plo glib-2.17.4/glib/pcre/.deps/pcre_refcount.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/pcre/.deps/pcre_study.Plo glib-2.17.4/glib/pcre/.deps/pcre_study.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/pcre/.deps/pcre_tables.Plo glib-2.17.4/glib/pcre/.deps/pcre_tables.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/pcre/.deps/pcre_try_flipped.Plo glib-2.17.4/glib/pcre/.deps/pcre_try_flipped.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/pcre/.deps/pcre_ucp_searchfuncs.Plo glib-2.17.4/glib/pcre/.deps/pcre_ucp_searchfuncs.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/pcre/.deps/pcre_valid_utf8.Plo glib-2.17.4/glib/pcre/.deps/pcre_valid_utf8.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/pcre/.deps/pcre_version.Plo glib-2.17.4/glib/pcre/.deps/pcre_version.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/pcre/.deps/pcre_xclass.Plo glib-2.17.4/glib/pcre/.deps/pcre_xclass.Plo
+diff -r -u -N -- glib-2.17.4_orig/glib/pcre/.libs/libpcre.la glib-2.17.4/glib/pcre/.libs/libpcre.la
+diff -r -u -N -- glib-2.17.4_orig/glib/pcre/Makefile glib-2.17.4/glib/pcre/Makefile
+diff -r -u -N -- glib-2.17.4_orig/glib/pcre/libpcre.la glib-2.17.4/glib/pcre/libpcre.la
+diff -r -u -N -- glib-2.17.4_orig/glib/pcre/pcre_chartables.lo glib-2.17.4/glib/pcre/pcre_chartables.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/pcre/pcre_compile.lo glib-2.17.4/glib/pcre/pcre_compile.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/pcre/pcre_config.lo glib-2.17.4/glib/pcre/pcre_config.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/pcre/pcre_dfa_exec.lo glib-2.17.4/glib/pcre/pcre_dfa_exec.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/pcre/pcre_exec.lo glib-2.17.4/glib/pcre/pcre_exec.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/pcre/pcre_fullinfo.lo glib-2.17.4/glib/pcre/pcre_fullinfo.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/pcre/pcre_get.lo glib-2.17.4/glib/pcre/pcre_get.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/pcre/pcre_globals.lo glib-2.17.4/glib/pcre/pcre_globals.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/pcre/pcre_info.lo glib-2.17.4/glib/pcre/pcre_info.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/pcre/pcre_maketables.lo glib-2.17.4/glib/pcre/pcre_maketables.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/pcre/pcre_newline.lo glib-2.17.4/glib/pcre/pcre_newline.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/pcre/pcre_ord2utf8.lo glib-2.17.4/glib/pcre/pcre_ord2utf8.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/pcre/pcre_refcount.lo glib-2.17.4/glib/pcre/pcre_refcount.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/pcre/pcre_study.lo glib-2.17.4/glib/pcre/pcre_study.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/pcre/pcre_tables.lo glib-2.17.4/glib/pcre/pcre_tables.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/pcre/pcre_try_flipped.lo glib-2.17.4/glib/pcre/pcre_try_flipped.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/pcre/pcre_ucp_searchfuncs.lo glib-2.17.4/glib/pcre/pcre_ucp_searchfuncs.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/pcre/pcre_valid_utf8.lo glib-2.17.4/glib/pcre/pcre_valid_utf8.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/pcre/pcre_version.lo glib-2.17.4/glib/pcre/pcre_version.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/pcre/pcre_xclass.lo glib-2.17.4/glib/pcre/pcre_xclass.lo
+diff -r -u -N -- glib-2.17.4_orig/glib/tests/.deps/array-test.Po glib-2.17.4/glib/tests/.deps/array-test.Po
+diff -r -u -N -- glib-2.17.4_orig/glib/tests/.deps/fileutils.Po glib-2.17.4/glib/tests/.deps/fileutils.Po
+diff -r -u -N -- glib-2.17.4_orig/glib/tests/.deps/keyfile.Po glib-2.17.4/glib/tests/.deps/keyfile.Po
+diff -r -u -N -- glib-2.17.4_orig/glib/tests/.deps/markup-subparser.Po glib-2.17.4/glib/tests/.deps/markup-subparser.Po
+diff -r -u -N -- glib-2.17.4_orig/glib/tests/.deps/option-context.Po glib-2.17.4/glib/tests/.deps/option-context.Po
+diff -r -u -N -- glib-2.17.4_orig/glib/tests/.deps/strfuncs.Po glib-2.17.4/glib/tests/.deps/strfuncs.Po
+diff -r -u -N -- glib-2.17.4_orig/glib/tests/.deps/testing.Po glib-2.17.4/glib/tests/.deps/testing.Po
+diff -r -u -N -- glib-2.17.4_orig/glib/tests/Makefile glib-2.17.4/glib/tests/Makefile
+diff -r -u -N -- glib-2.17.4_orig/glib/tests/array-test glib-2.17.4/glib/tests/array-test
+diff -r -u -N -- glib-2.17.4_orig/glib/tests/fileutils glib-2.17.4/glib/tests/fileutils
+diff -r -u -N -- glib-2.17.4_orig/glib/tests/keyfile glib-2.17.4/glib/tests/keyfile
+diff -r -u -N -- glib-2.17.4_orig/glib/tests/markup-subparser glib-2.17.4/glib/tests/markup-subparser
+diff -r -u -N -- glib-2.17.4_orig/glib/tests/option-context glib-2.17.4/glib/tests/option-context
+diff -r -u -N -- glib-2.17.4_orig/glib/tests/strfuncs glib-2.17.4/glib/tests/strfuncs
+diff -r -u -N -- glib-2.17.4_orig/glib/tests/testing glib-2.17.4/glib/tests/testing
+diff -r -u -N -- glib-2.17.4_orig/glib/update-pcre/Makefile glib-2.17.4/glib/update-pcre/Makefile
+diff -r -u -N -- glib-2.17.4_orig/glib-2.0-uninstalled.pc glib-2.17.4/glib-2.0-uninstalled.pc
+diff -r -u -N -- glib-2.17.4_orig/glib-2.0.pc glib-2.17.4/glib-2.0.pc
+diff -r -u -N -- glib-2.17.4_orig/glib-gettextize glib-2.17.4/glib-gettextize
+diff -r -u -N -- glib-2.17.4_orig/glib-zip glib-2.17.4/glib-zip
+diff -r -u -N -- glib-2.17.4_orig/glibconfig.h glib-2.17.4/glibconfig.h
+diff -r -u -N -- glib-2.17.4_orig/gmodule/.deps/gmodule.Plo glib-2.17.4/gmodule/.deps/gmodule.Plo
+diff -r -u -N -- glib-2.17.4_orig/gmodule/.libs/libgmodule-2.0.la glib-2.17.4/gmodule/.libs/libgmodule-2.0.la
+diff -r -u -N -- glib-2.17.4_orig/gmodule/.libs/libgmodule-2.0.lai glib-2.17.4/gmodule/.libs/libgmodule-2.0.lai
+diff -r -u -N -- glib-2.17.4_orig/gmodule/Makefile glib-2.17.4/gmodule/Makefile
+diff -r -u -N -- glib-2.17.4_orig/gmodule/gmodule.lo glib-2.17.4/gmodule/gmodule.lo
+diff -r -u -N -- glib-2.17.4_orig/gmodule/gmoduleconf.h glib-2.17.4/gmodule/gmoduleconf.h
+diff -r -u -N -- glib-2.17.4_orig/gmodule/libgmodule-2.0.la glib-2.17.4/gmodule/libgmodule-2.0.la
+diff -r -u -N -- glib-2.17.4_orig/gmodule-2.0-uninstalled.pc glib-2.17.4/gmodule-2.0-uninstalled.pc
+diff -r -u -N -- glib-2.17.4_orig/gmodule-2.0.pc glib-2.17.4/gmodule-2.0.pc
+diff -r -u -N -- glib-2.17.4_orig/gmodule-export-2.0.pc glib-2.17.4/gmodule-export-2.0.pc
+diff -r -u -N -- glib-2.17.4_orig/gmodule-no-export-2.0-uninstalled.pc glib-2.17.4/gmodule-no-export-2.0-uninstalled.pc
+diff -r -u -N -- glib-2.17.4_orig/gmodule-no-export-2.0.pc glib-2.17.4/gmodule-no-export-2.0.pc
+diff -r -u -N -- glib-2.17.4_orig/gobject/.deps/gboxed.Plo glib-2.17.4/gobject/.deps/gboxed.Plo
+diff -r -u -N -- glib-2.17.4_orig/gobject/.deps/gclosure.Plo glib-2.17.4/gobject/.deps/gclosure.Plo
+diff -r -u -N -- glib-2.17.4_orig/gobject/.deps/genums.Plo glib-2.17.4/gobject/.deps/genums.Plo
+diff -r -u -N -- glib-2.17.4_orig/gobject/.deps/glib-genmarshal.Po glib-2.17.4/gobject/.deps/glib-genmarshal.Po
+diff -r -u -N -- glib-2.17.4_orig/gobject/.deps/gobject-query.Po glib-2.17.4/gobject/.deps/gobject-query.Po
+diff -r -u -N -- glib-2.17.4_orig/gobject/.deps/gobject.Plo glib-2.17.4/gobject/.deps/gobject.Plo
+diff -r -u -N -- glib-2.17.4_orig/gobject/.deps/gparam.Plo glib-2.17.4/gobject/.deps/gparam.Plo
+diff -r -u -N -- glib-2.17.4_orig/gobject/.deps/gparamspecs.Plo glib-2.17.4/gobject/.deps/gparamspecs.Plo
+diff -r -u -N -- glib-2.17.4_orig/gobject/.deps/gsignal.Plo glib-2.17.4/gobject/.deps/gsignal.Plo
+diff -r -u -N -- glib-2.17.4_orig/gobject/.deps/gsourceclosure.Plo glib-2.17.4/gobject/.deps/gsourceclosure.Plo
+diff -r -u -N -- glib-2.17.4_orig/gobject/.deps/gtype.Plo glib-2.17.4/gobject/.deps/gtype.Plo
+diff -r -u -N -- glib-2.17.4_orig/gobject/.deps/gtypemodule.Plo glib-2.17.4/gobject/.deps/gtypemodule.Plo
+diff -r -u -N -- glib-2.17.4_orig/gobject/.deps/gtypeplugin.Plo glib-2.17.4/gobject/.deps/gtypeplugin.Plo
+diff -r -u -N -- glib-2.17.4_orig/gobject/.deps/gvalue.Plo glib-2.17.4/gobject/.deps/gvalue.Plo
+diff -r -u -N -- glib-2.17.4_orig/gobject/.deps/gvaluearray.Plo glib-2.17.4/gobject/.deps/gvaluearray.Plo
+diff -r -u -N -- glib-2.17.4_orig/gobject/.deps/gvaluetransform.Plo glib-2.17.4/gobject/.deps/gvaluetransform.Plo
+diff -r -u -N -- glib-2.17.4_orig/gobject/.deps/gvaluetypes.Plo glib-2.17.4/gobject/.deps/gvaluetypes.Plo
+diff -r -u -N -- glib-2.17.4_orig/gobject/.deps/testgobject.Po glib-2.17.4/gobject/.deps/testgobject.Po
+diff -r -u -N -- glib-2.17.4_orig/gobject/.libs/libgobject-2.0.exp glib-2.17.4/gobject/.libs/libgobject-2.0.exp
+diff -r -u -N -- glib-2.17.4_orig/gobject/.libs/libgobject-2.0.la glib-2.17.4/gobject/.libs/libgobject-2.0.la
+diff -r -u -N -- glib-2.17.4_orig/gobject/.libs/libgobject-2.0.lai glib-2.17.4/gobject/.libs/libgobject-2.0.lai
+diff -r -u -N -- glib-2.17.4_orig/gobject/.libs/libgobject-2.0.ver glib-2.17.4/gobject/.libs/libgobject-2.0.ver
+diff -r -u -N -- glib-2.17.4_orig/gobject/Makefile glib-2.17.4/gobject/Makefile
+diff -r -u -N -- glib-2.17.4_orig/gobject/gboxed.lo glib-2.17.4/gobject/gboxed.lo
+diff -r -u -N -- glib-2.17.4_orig/gobject/gclosure.lo glib-2.17.4/gobject/gclosure.lo
+diff -r -u -N -- glib-2.17.4_orig/gobject/genums.lo glib-2.17.4/gobject/genums.lo
+diff -r -u -N -- glib-2.17.4_orig/gobject/glib-genmarshal glib-2.17.4/gobject/glib-genmarshal
+diff -r -u -N -- glib-2.17.4_orig/gobject/glib-mkenums glib-2.17.4/gobject/glib-mkenums
+diff -r -u -N -- glib-2.17.4_orig/gobject/gobject-query glib-2.17.4/gobject/gobject-query
+diff -r -u -N -- glib-2.17.4_orig/gobject/gobject.lo glib-2.17.4/gobject/gobject.lo
+diff -r -u -N -- glib-2.17.4_orig/gobject/gparam.lo glib-2.17.4/gobject/gparam.lo
+diff -r -u -N -- glib-2.17.4_orig/gobject/gparamspecs.lo glib-2.17.4/gobject/gparamspecs.lo
+diff -r -u -N -- glib-2.17.4_orig/gobject/gsignal.lo glib-2.17.4/gobject/gsignal.lo
+diff -r -u -N -- glib-2.17.4_orig/gobject/gsourceclosure.lo glib-2.17.4/gobject/gsourceclosure.lo
+diff -r -u -N -- glib-2.17.4_orig/gobject/gtype.lo glib-2.17.4/gobject/gtype.lo
+diff -r -u -N -- glib-2.17.4_orig/gobject/gtypemodule.lo glib-2.17.4/gobject/gtypemodule.lo
+diff -r -u -N -- glib-2.17.4_orig/gobject/gtypeplugin.lo glib-2.17.4/gobject/gtypeplugin.lo
+diff -r -u -N -- glib-2.17.4_orig/gobject/gvalue.lo glib-2.17.4/gobject/gvalue.lo
+diff -r -u -N -- glib-2.17.4_orig/gobject/gvaluearray.lo glib-2.17.4/gobject/gvaluearray.lo
+diff -r -u -N -- glib-2.17.4_orig/gobject/gvaluetransform.lo glib-2.17.4/gobject/gvaluetransform.lo
+diff -r -u -N -- glib-2.17.4_orig/gobject/gvaluetypes.lo glib-2.17.4/gobject/gvaluetypes.lo
+diff -r -u -N -- glib-2.17.4_orig/gobject/libgobject-2.0.la glib-2.17.4/gobject/libgobject-2.0.la
+diff -r -u -N -- glib-2.17.4_orig/gobject/testgobject glib-2.17.4/gobject/testgobject
+diff -r -u -N -- glib-2.17.4_orig/gobject/tests/.deps/threadtests.Po glib-2.17.4/gobject/tests/.deps/threadtests.Po
+diff -r -u -N -- glib-2.17.4_orig/gobject/tests/Makefile glib-2.17.4/gobject/tests/Makefile
+diff -r -u -N -- glib-2.17.4_orig/gobject/tests/threadtests glib-2.17.4/gobject/tests/threadtests
+diff -r -u -N -- glib-2.17.4_orig/gobject-2.0-uninstalled.pc glib-2.17.4/gobject-2.0-uninstalled.pc
+diff -r -u -N -- glib-2.17.4_orig/gobject-2.0.pc glib-2.17.4/gobject-2.0.pc
+diff -r -u -N -- glib-2.17.4_orig/gthread/.deps/gthread-impl.Plo glib-2.17.4/gthread/.deps/gthread-impl.Plo
+diff -r -u -N -- glib-2.17.4_orig/gthread/.libs/libgthread-2.0.la glib-2.17.4/gthread/.libs/libgthread-2.0.la
+diff -r -u -N -- glib-2.17.4_orig/gthread/.libs/libgthread-2.0.lai glib-2.17.4/gthread/.libs/libgthread-2.0.lai
+diff -r -u -N -- glib-2.17.4_orig/gthread/Makefile glib-2.17.4/gthread/Makefile
+diff -r -u -N -- glib-2.17.4_orig/gthread/gthread-impl.lo glib-2.17.4/gthread/gthread-impl.lo
+diff -r -u -N -- glib-2.17.4_orig/gthread/libgthread-2.0.la glib-2.17.4/gthread/libgthread-2.0.la
+diff -r -u -N -- glib-2.17.4_orig/gthread-2.0-uninstalled.pc glib-2.17.4/gthread-2.0-uninstalled.pc
+diff -r -u -N -- glib-2.17.4_orig/gthread-2.0.pc glib-2.17.4/gthread-2.0.pc
+diff -r -u -N -- glib-2.17.4_orig/libtool glib-2.17.4/libtool
+diff -r -u -N -- glib-2.17.4_orig/m4macros/Makefile glib-2.17.4/m4macros/Makefile
+diff -r -u -N -- glib-2.17.4_orig/po/Makefile glib-2.17.4/po/Makefile
+diff -r -u -N -- glib-2.17.4_orig/po/Makefile.in glib-2.17.4/po/Makefile.in
+diff -r -u -N -- glib-2.17.4_orig/po/POTFILES glib-2.17.4/po/POTFILES
+diff -r -u -N -- glib-2.17.4_orig/stamp-gc-h glib-2.17.4/stamp-gc-h
+diff -r -u -N -- glib-2.17.4_orig/stamp-h1 glib-2.17.4/stamp-h1
+diff -r -u -N -- glib-2.17.4_orig/tests/.deps/asyncqueue-test.Po glib-2.17.4/tests/.deps/asyncqueue-test.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/.deps/atomic-test.Po glib-2.17.4/tests/.deps/atomic-test.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/.deps/base64-test.Po glib-2.17.4/tests/.deps/base64-test.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/.deps/bit-test.Po glib-2.17.4/tests/.deps/bit-test.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/.deps/bookmarkfile-test.Po glib-2.17.4/tests/.deps/bookmarkfile-test.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/.deps/checksum-test.Po glib-2.17.4/tests/.deps/checksum-test.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/.deps/child-test.Po glib-2.17.4/tests/.deps/child-test.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/.deps/completion-test.Po glib-2.17.4/tests/.deps/completion-test.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/.deps/convert-test.Po glib-2.17.4/tests/.deps/convert-test.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/.deps/cxx-test.Po glib-2.17.4/tests/.deps/cxx-test.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/.deps/date-test.Po glib-2.17.4/tests/.deps/date-test.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/.deps/dirname-test.Po glib-2.17.4/tests/.deps/dirname-test.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/.deps/env-test.Po glib-2.17.4/tests/.deps/env-test.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/.deps/errorcheck-mutex-test.Po glib-2.17.4/tests/.deps/errorcheck-mutex-test.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/.deps/file-test.Po glib-2.17.4/tests/.deps/file-test.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/.deps/gio-test.Po glib-2.17.4/tests/.deps/gio-test.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/.deps/hash-test.Po glib-2.17.4/tests/.deps/hash-test.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/.deps/iochannel-test.Po glib-2.17.4/tests/.deps/iochannel-test.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/.deps/libmoduletestplugin_a.Plo glib-2.17.4/tests/.deps/libmoduletestplugin_a.Plo
+diff -r -u -N -- glib-2.17.4_orig/tests/.deps/libmoduletestplugin_b.Plo glib-2.17.4/tests/.deps/libmoduletestplugin_b.Plo
+diff -r -u -N -- glib-2.17.4_orig/tests/.deps/list-test.Po glib-2.17.4/tests/.deps/list-test.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/.deps/mainloop-test.Po glib-2.17.4/tests/.deps/mainloop-test.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/.deps/mapping-test.Po glib-2.17.4/tests/.deps/mapping-test.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/.deps/markup-collect.Po glib-2.17.4/tests/.deps/markup-collect.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/.deps/markup-escape-test.Po glib-2.17.4/tests/.deps/markup-escape-test.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/.deps/markup-test.Po glib-2.17.4/tests/.deps/markup-test.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/.deps/memchunks.Po glib-2.17.4/tests/.deps/memchunks.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/.deps/module-test.Po glib-2.17.4/tests/.deps/module-test.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/.deps/node-test.Po glib-2.17.4/tests/.deps/node-test.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/.deps/onceinit.Po glib-2.17.4/tests/.deps/onceinit.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/.deps/patterntest.Po glib-2.17.4/tests/.deps/patterntest.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/.deps/printf-test.Po glib-2.17.4/tests/.deps/printf-test.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/.deps/qsort-test.Po glib-2.17.4/tests/.deps/qsort-test.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/.deps/queue-test.Po glib-2.17.4/tests/.deps/queue-test.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/.deps/rand-test.Po glib-2.17.4/tests/.deps/rand-test.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/.deps/regex-test.Po glib-2.17.4/tests/.deps/regex-test.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/.deps/relation-test.Po glib-2.17.4/tests/.deps/relation-test.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/.deps/scannerapi.Po glib-2.17.4/tests/.deps/scannerapi.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/.deps/sequence-test.Po glib-2.17.4/tests/.deps/sequence-test.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/.deps/shell-test.Po glib-2.17.4/tests/.deps/shell-test.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/.deps/slice-color.Po glib-2.17.4/tests/.deps/slice-color.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/.deps/slice-concurrent.Po glib-2.17.4/tests/.deps/slice-concurrent.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/.deps/slice-test.Po glib-2.17.4/tests/.deps/slice-test.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/.deps/slice-threadinit.Po glib-2.17.4/tests/.deps/slice-threadinit.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/.deps/slist-test.Po glib-2.17.4/tests/.deps/slist-test.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/.deps/spawn-test-win32-gui.Po glib-2.17.4/tests/.deps/spawn-test-win32-gui.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/.deps/spawn-test.Po glib-2.17.4/tests/.deps/spawn-test.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/.deps/string-test.Po glib-2.17.4/tests/.deps/string-test.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/.deps/testgdate.Po glib-2.17.4/tests/.deps/testgdate.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/.deps/testgdateparser.Po glib-2.17.4/tests/.deps/testgdateparser.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/.deps/testglib.Po glib-2.17.4/tests/.deps/testglib.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/.deps/testingbase64.Po glib-2.17.4/tests/.deps/testingbase64.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/.deps/thread-test.Po glib-2.17.4/tests/.deps/thread-test.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/.deps/threadpool-test.Po glib-2.17.4/tests/.deps/threadpool-test.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/.deps/timeloop-closure.Po glib-2.17.4/tests/.deps/timeloop-closure.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/.deps/timeloop.Po glib-2.17.4/tests/.deps/timeloop.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/.deps/tree-test.Po glib-2.17.4/tests/.deps/tree-test.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/.deps/type-test.Po glib-2.17.4/tests/.deps/type-test.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/.deps/unicode-caseconv.Po glib-2.17.4/tests/.deps/unicode-caseconv.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/.deps/unicode-collate.Po glib-2.17.4/tests/.deps/unicode-collate.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/.deps/unicode-encoding.Po glib-2.17.4/tests/.deps/unicode-encoding.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/.deps/unicode-normalize.Po glib-2.17.4/tests/.deps/unicode-normalize.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/.deps/uri-test.Po glib-2.17.4/tests/.deps/uri-test.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/.deps/utf8-pointer.Po glib-2.17.4/tests/.deps/utf8-pointer.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/.deps/utf8-validate.Po glib-2.17.4/tests/.deps/utf8-validate.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/.libs/libmoduletestplugin_a.la glib-2.17.4/tests/.libs/libmoduletestplugin_a.la
+diff -r -u -N -- glib-2.17.4_orig/tests/.libs/libmoduletestplugin_a.lai glib-2.17.4/tests/.libs/libmoduletestplugin_a.lai
+diff -r -u -N -- glib-2.17.4_orig/tests/.libs/libmoduletestplugin_b.la glib-2.17.4/tests/.libs/libmoduletestplugin_b.la
+diff -r -u -N -- glib-2.17.4_orig/tests/.libs/libmoduletestplugin_b.lai glib-2.17.4/tests/.libs/libmoduletestplugin_b.lai
+diff -r -u -N -- glib-2.17.4_orig/tests/Makefile glib-2.17.4/tests/Makefile
+diff -r -u -N -- glib-2.17.4_orig/tests/Makefile.am glib-2.17.4/tests/Makefile.am
+diff -r -u -N -- glib-2.17.4_orig/tests/Makefile.in glib-2.17.4/tests/Makefile.in
+diff -r -u -N -- glib-2.17.4_orig/tests/errorcheck-mutex-test glib-2.17.4/tests/errorcheck-mutex-test
+diff -r -u -N -- glib-2.17.4_orig/tests/gobject/.deps/accumulator.Po glib-2.17.4/tests/gobject/.deps/accumulator.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/gobject/.deps/defaultiface.Po glib-2.17.4/tests/gobject/.deps/defaultiface.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/gobject/.deps/deftype.Po glib-2.17.4/tests/gobject/.deps/deftype.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/gobject/.deps/dynamictype.Po glib-2.17.4/tests/gobject/.deps/dynamictype.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/gobject/.deps/gvalue-test.Po glib-2.17.4/tests/gobject/.deps/gvalue-test.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/gobject/.deps/ifacecheck.Po glib-2.17.4/tests/gobject/.deps/ifacecheck.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/gobject/.deps/ifaceinherit.Po glib-2.17.4/tests/gobject/.deps/ifaceinherit.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/gobject/.deps/ifaceinit.Po glib-2.17.4/tests/gobject/.deps/ifaceinit.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/gobject/.deps/ifaceproperties.Po glib-2.17.4/tests/gobject/.deps/ifaceproperties.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/gobject/.deps/override.Po glib-2.17.4/tests/gobject/.deps/override.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/gobject/.deps/paramspec-test.Po glib-2.17.4/tests/gobject/.deps/paramspec-test.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/gobject/.deps/references.Po glib-2.17.4/tests/gobject/.deps/references.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/gobject/.deps/singleton.Po glib-2.17.4/tests/gobject/.deps/singleton.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/gobject/.deps/testmarshal.Plo glib-2.17.4/tests/gobject/.deps/testmarshal.Plo
+diff -r -u -N -- glib-2.17.4_orig/tests/gobject/.deps/testmodule.Plo glib-2.17.4/tests/gobject/.deps/testmodule.Plo
+diff -r -u -N -- glib-2.17.4_orig/tests/gobject/.libs/libtestgobject.la glib-2.17.4/tests/gobject/.libs/libtestgobject.la
+diff -r -u -N -- glib-2.17.4_orig/tests/gobject/Makefile glib-2.17.4/tests/gobject/Makefile
+diff -r -u -N -- glib-2.17.4_orig/tests/gobject/libtestgobject.la glib-2.17.4/tests/gobject/libtestgobject.la
+diff -r -u -N -- glib-2.17.4_orig/tests/gobject/stamp-testmarshal.h glib-2.17.4/tests/gobject/stamp-testmarshal.h
+diff -r -u -N -- glib-2.17.4_orig/tests/gobject/testmarshal.lo glib-2.17.4/tests/gobject/testmarshal.lo
+diff -r -u -N -- glib-2.17.4_orig/tests/gobject/testmodule.lo glib-2.17.4/tests/gobject/testmodule.lo
+diff -r -u -N -- glib-2.17.4_orig/tests/libmoduletestplugin_a.la glib-2.17.4/tests/libmoduletestplugin_a.la
+diff -r -u -N -- glib-2.17.4_orig/tests/libmoduletestplugin_a.lo glib-2.17.4/tests/libmoduletestplugin_a.lo
+diff -r -u -N -- glib-2.17.4_orig/tests/libmoduletestplugin_b.la glib-2.17.4/tests/libmoduletestplugin_b.la
+diff -r -u -N -- glib-2.17.4_orig/tests/libmoduletestplugin_b.lo glib-2.17.4/tests/libmoduletestplugin_b.lo
+diff -r -u -N -- glib-2.17.4_orig/tests/refcount/.deps/closures.Po glib-2.17.4/tests/refcount/.deps/closures.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/refcount/.deps/objects.Po glib-2.17.4/tests/refcount/.deps/objects.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/refcount/.deps/objects2.Po glib-2.17.4/tests/refcount/.deps/objects2.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/refcount/.deps/properties.Po glib-2.17.4/tests/refcount/.deps/properties.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/refcount/.deps/properties2.Po glib-2.17.4/tests/refcount/.deps/properties2.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/refcount/.deps/signal1-signals.Po glib-2.17.4/tests/refcount/.deps/signal1-signals.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/refcount/.deps/signal2-signals.Po glib-2.17.4/tests/refcount/.deps/signal2-signals.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/refcount/.deps/signal3-signals.Po glib-2.17.4/tests/refcount/.deps/signal3-signals.Po
+diff -r -u -N -- glib-2.17.4_orig/tests/refcount/Makefile glib-2.17.4/tests/refcount/Makefile
+diff -r -u -N -- glib-2.17.4_orig/tests/refcount/closures glib-2.17.4/tests/refcount/closures
+diff -r -u -N -- glib-2.17.4_orig/tests/refcount/objects glib-2.17.4/tests/refcount/objects
+diff -r -u -N -- glib-2.17.4_orig/tests/refcount/objects2 glib-2.17.4/tests/refcount/objects2
+diff -r -u -N -- glib-2.17.4_orig/tests/refcount/properties glib-2.17.4/tests/refcount/properties
+diff -r -u -N -- glib-2.17.4_orig/tests/refcount/properties2 glib-2.17.4/tests/refcount/properties2
+diff -r -u -N -- glib-2.17.4_orig/tests/refcount/signal1 glib-2.17.4/tests/refcount/signal1
+diff -r -u -N -- glib-2.17.4_orig/tests/refcount/signal2 glib-2.17.4/tests/refcount/signal2
+diff -r -u -N -- glib-2.17.4_orig/tests/refcount/signal3 glib-2.17.4/tests/refcount/signal3
+diff -r -u -N -- glib-2.17.4_orig/tests/scannerapi glib-2.17.4/tests/scannerapi
+diff -r -u -N -- glib-2.17.4_orig/tests/testgdate glib-2.17.4/tests/testgdate
+diff -r -u -N -- glib-2.17.4_orig/tests/testgdateparser glib-2.17.4/tests/testgdateparser
+diff -r -u -N -- glib-2.17.4_orig/tests/testglib glib-2.17.4/tests/testglib
+diff -r -u -N -- glib-2.17.4_orig/tests/testingbase64 glib-2.17.4/tests/testingbase64
+diff -r -u -N -- glib-2.17.4_orig/tests/timeloop glib-2.17.4/tests/timeloop
+diff -r -u -N -- glib-2.17.4_orig/tests/timeloop-closure glib-2.17.4/tests/timeloop-closure
+diff -r -u -N -- glib-2.17.4_orig/tests/unicode-collate glib-2.17.4/tests/unicode-collate
+diff -r -u -N -- glib-2.17.4_orig/tests/unicode-normalize glib-2.17.4/tests/unicode-normalize

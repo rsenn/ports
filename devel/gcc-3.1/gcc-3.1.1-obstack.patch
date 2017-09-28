@@ -1,0 +1,13 @@
+diff -ru gcc-3.1.1_orig/include/obstack.h gcc-3.1.1/include/obstack.h
+--- gcc-3.1.1_orig/include/obstack.h	2008-03-11 15:07:40.000000000 +0100
++++ gcc-3.1.1/include/obstack.h	2008-03-11 15:12:51.000000000 +0100
+@@ -423,7 +423,8 @@
+ ({ struct obstack *__o = (OBSTACK);					\
+    if (__o->next_free + sizeof (void *) > __o->chunk_limit)		\
+      _obstack_newchunk (__o, sizeof (void *));				\
+-   *((void **)__o->next_free)++ = ((void *)datum);			\
++   *((void **)__o->next_free) = ((void *)datum);			\
++   __o->next_free = ((void **)__o->next_free) + 1;			\
+    (void) 0; })
+ 
+ # define obstack_int_grow(OBSTACK,datum)				\

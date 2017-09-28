@@ -1,0 +1,783 @@
+diff -r -u -- make_orig/arch.c make/arch.c
+--- make_orig/arch.c	2005-05-24 17:58:34.000000000 +0200
++++ make/arch.c	2007-05-12 01:22:31.000000000 +0200
+@@ -39,7 +39,10 @@
+  */
+ 
+ #include <sys/cdefs.h>
++
++#ifdef __FBSDID
+ __FBSDID("$FreeBSD: src/usr.bin/make/arch.c,v 1.66 2005/05/24 15:58:34 harti Exp $");
++#endif
+ 
+ /*-
+  * arch.c --
+Only in make: bsdmake
+diff -r -u -- make_orig/buf.c make/buf.c
+--- make_orig/buf.c	2005-05-13 10:53:00.000000000 +0200
++++ make/buf.c	2007-05-12 01:29:31.000000000 +0200
+@@ -41,7 +41,9 @@
+  */
+ 
+ #include <sys/cdefs.h>
++#ifdef __FBSDID
+ __FBSDID("$FreeBSD: src/usr.bin/make/buf.c,v 1.36 2005/05/13 08:53:00 harti Exp $");
++#endif
+ 
+ /*
+  * buf.c
+diff -r -u -- make_orig/cond.c make/cond.c
+--- make_orig/cond.c	2005-05-25 18:06:14.000000000 +0200
++++ make/cond.c	2007-05-12 01:30:37.000000000 +0200
+@@ -40,7 +40,9 @@
+  */
+ 
+ #include <sys/cdefs.h>
++#ifdef __FBSDID
+ __FBSDID("$FreeBSD: src/usr.bin/make/cond.c,v 1.54 2005/05/25 16:06:14 harti Exp $");
++#endif
+ 
+ /*
+  * Functions to handle conditionals in a makefile.
+@@ -1114,6 +1116,9 @@
+  * Cond_Else
+  *	Handle .else statement.
+  */
++#ifndef __unused
++#define __unused
++#endif
+ void
+ Cond_Else(char *line __unused, int code __unused, int lineno __unused)
+ {
+diff -r -u -- make_orig/dir.c make/dir.c
+--- make_orig/dir.c	2005-03-23 13:56:15.000000000 +0100
++++ make/dir.c	2007-05-12 01:30:47.000000000 +0200
+@@ -40,7 +40,9 @@
+  */
+ 
+ #include <sys/cdefs.h>
++#ifdef __FBSDID
+ __FBSDID("$FreeBSD: src/usr.bin/make/dir.c,v 1.52 2005/03/23 12:56:15 harti Exp $");
++#endif
+ 
+ /*-
+  * dir.c --
+diff -r -u -- make_orig/for.c make/for.c
+--- make_orig/for.c	2005-05-10 14:02:15.000000000 +0200
++++ make/for.c	2007-05-12 01:31:06.000000000 +0200
+@@ -33,7 +33,9 @@
+  */
+ 
+ #include <sys/cdefs.h>
++#ifdef __FBSDID
+ __FBSDID("$FreeBSD: src/usr.bin/make/for.c,v 1.43 2005/05/10 12:02:15 harti Exp $");
++#endif
+ 
+ /*-
+  * for.c --
+diff -r -u -- make_orig/hash.c make/hash.c
+--- make_orig/hash.c	2005-05-13 10:53:00.000000000 +0200
++++ make/hash.c	2007-05-12 01:31:24.000000000 +0200
+@@ -40,7 +40,9 @@
+  */
+ 
+ #include <sys/cdefs.h>
++#ifdef __FBSDID
+ __FBSDID("$FreeBSD: src/usr.bin/make/hash.c,v 1.25 2005/05/13 08:53:00 harti Exp $");
++#endif
+ 
+ /* hash.c --
+  *
+diff -r -u -- make_orig/job.c make/job.c
+--- make_orig/job.c	2005-07-20 21:05:23.000000000 +0200
++++ make/job.c	2007-05-12 01:36:01.000000000 +0200
+@@ -40,7 +40,9 @@
+  */
+ 
+ #include <sys/cdefs.h>
++#ifdef __FBSDID
+ __FBSDID("$FreeBSD: src/usr.bin/make/job.c,v 1.122.2.1 2005/07/20 19:05:23 harti Exp $");
++#endif
+ 
+ #ifndef OLD_JOKE
+ #define	OLD_JOKE 0
+@@ -415,7 +417,7 @@
+ 	 * them with random characters until there are no more 'X'.
+ 	 */
+ 	while (ptr >= template && *ptr == 'X') {
+-		uint32_t rand_num = arc4random() % (sizeof(padchar) - 1);
++		uint32_t rand_num = random() % (sizeof(padchar) - 1);
+ 		*ptr-- = padchar[rand_num];
+ 	}
+ 	start = ptr + 1;
+@@ -476,6 +478,10 @@
+ 	/*NOTREACHED*/
+ }
+ 
++#ifndef __unused
++# define __unused
++#endif
++
+ static void
+ catch_child(int sig __unused)
+ {
+diff -r -u -- make_orig/main.c make/main.c
+--- make_orig/main.c	2005-05-24 18:05:51.000000000 +0200
++++ make/main.c	2007-05-12 01:37:04.000000000 +0200
+@@ -46,7 +46,9 @@
+ #endif
+ #endif /* not lint */
+ #include <sys/cdefs.h>
++#ifdef __FBSDID
+ __FBSDID("$FreeBSD: src/usr.bin/make/main.c,v 1.155 2005/05/24 16:05:51 harti Exp $");
++#endif
+ 
+ /*
+  * main.c
+@@ -334,7 +336,7 @@
+ 
+ rearg:
+ 	optind = 1;	/* since we're called more than once */
+-	optreset = 1;
++//	optreset = 1;
+ #define OPTFLAGS "ABC:D:E:I:PSV:Xd:ef:ij:km:nqrstvx:"
+ 	for (;;) {
+ 		if ((optind < argc) && strcmp(argv[optind], "--") == 0) {
+@@ -621,7 +623,7 @@
+ static void
+ check_make_level(void)
+ {
+-#ifdef WANT_ENV_MKLVL
++#if defined(WANT_ENV_MKLVL) && defined(__freebsd__)
+ 	char	*value = getenv(MKLVL_ENVVAR);
+ 	int	level = (value == NULL) ? 0 : atoi(value);
+ 
+@@ -723,6 +725,7 @@
+ 	 * __FreeBSD_version was defined as 300003. So, this check can
+ 	 * safely be done with any kernel with version > 300003.
+ 	 */
++#ifdef __freebsd__
+ 	if ((machine = getenv("MACHINE")) == NULL) {
+ 		int	ispc98;
+ 		size_t	len;
+@@ -733,6 +736,7 @@
+ 				machine = "pc98";
+ 		}
+ 	}
++#endif
+ 
+ 	/*
+ 	 * Get the name of this type of MACHINE from utsname
+diff -r -u -- make_orig/make.c make/make.c
+--- make_orig/make.c	2005-05-24 18:05:51.000000000 +0200
++++ make/make.c	2007-05-12 01:32:23.000000000 +0200
+@@ -39,7 +39,9 @@
+  */
+ 
+ #include <sys/cdefs.h>
++#ifdef __FBSDID
+ __FBSDID("$FreeBSD: src/usr.bin/make/make.c,v 1.38 2005/05/24 16:05:51 harti Exp $");
++#endif
+ 
+ /*
+  * make.c
+Only in make_orig/: make_orig
+diff -r -u -- make_orig/parse.c make/parse.c
+--- make_orig/parse.c	2005-11-16 09:25:19.000000000 +0100
++++ make/parse.c	2007-05-12 01:33:27.000000000 +0200
+@@ -39,7 +39,9 @@
+  */
+ 
+ #include <sys/cdefs.h>
++#ifdef __FBSDID
+ __FBSDID("$FreeBSD: src/usr.bin/make/parse.c,v 1.108.2.1 2005/11/16 08:25:19 ru Exp $");
++#endif
+ 
+ /*-
+  * parse.c --
+@@ -2064,6 +2066,9 @@
+  *	The latter in . and the directories specified by -I command line
+  *	options
+  */
++#ifndef __unused
++#define __unused
++#endif
+ static void
+ parse_include(char *file, int code __unused, int lineno __unused)
+ {
+@@ -2202,6 +2207,9 @@
+  *	variables, print the message and exit(1) (for .error) or just print
+  *	a warning if the directive is malformed.
+  */
++#ifndef __unused
++#define __unused
++#endif
+ static void
+ parse_message(char *line, int iserror, int lineno __unused)
+ {
+diff -r -u -- make_orig/pathnames.h make/pathnames.h
+--- make_orig/pathnames.h	2005-03-11 14:02:38.000000000 +0100
++++ make/pathnames.h	2007-05-12 01:37:56.000000000 +0200
+@@ -38,11 +38,11 @@
+ #endif /* ! PATH_OBJDIR */
+ 
+ #ifndef PATH_OBJDIRPREFIX
+-#define	PATH_OBJDIRPREFIX	"/usr/obj"
++#define	PATH_OBJDIRPREFIX	"/usr/local/obj"
+ #endif /* ! PATH_OBJDIRPREFIX */
+ 
+ #ifndef PATH_DEFSHELLDIR
+-#define	PATH_DEFSHELLDIR	"/bin"
++#define	PATH_DEFSHELLDIR	"/usr/local/bin"
+ #endif /* ! PATH_DEFSHELLDIR */
+ 
+ #ifndef PATH_DEFSYSMK
+@@ -50,7 +50,7 @@
+ #endif /* ! PATH_DEFSYSMK */
+ 
+ #ifndef PATH_DEFSYSPATH
+-#define	PATH_DEFSYSPATH	"/usr/share/mk"
++#define	PATH_DEFSYSPATH	"/usr/local/share/mk"
+ #endif /* ! PATH_DEFSYSPATH */
+ 
+ #endif /* pathnames_h_235b888a */
+diff -r -u -- make_orig/proc.c make/proc.c
+--- make_orig/proc.c	2005-05-24 17:41:34.000000000 +0200
++++ make/proc.c	2007-05-12 01:33:58.000000000 +0200
+@@ -25,7 +25,9 @@
+  */
+ 
+ #include <sys/cdefs.h>
++#ifdef __FBSDID
+ __FBSDID("$FreeBSD: src/usr.bin/make/proc.c,v 1.1 2005/05/24 15:41:34 harti Exp $");
++#endif
+ 
+ #include <unistd.h>
+ #include <errno.h>
+diff -r -u -- make_orig/proc.h make/proc.h
+--- make_orig/proc.h	2005-05-24 17:41:34.000000000 +0200
++++ make/proc.h	2007-05-12 01:34:28.000000000 +0200
+@@ -48,6 +48,9 @@
+ 	pid_t	child_pid;
+ } ProcStuff;
+ 
++#ifndef __dead2
++#define __dead2
++#endif
+ void Proc_Exec(const ProcStuff *) __dead2;
+ 
+ #endif /* proc_h_458845848 */
+diff -r -u -- make_orig/shell.c make/shell.c
+--- make_orig/shell.c	2007-05-12 01:39:13.000000000 +0200
++++ make/shell.c	2007-05-12 01:34:39.000000000 +0200
+@@ -38,7 +38,9 @@
+  */
+ 
+ #include <sys/cdefs.h>
++#ifdef __FBSDID
+ __FBSDID("$FreeBSD: src/usr.bin/make/shell.c,v 1.1 2005/05/24 15:30:03 harti Exp $");
++#endif
+ 
+ #include <sys/queue.h>
+ #include <stdio.h>
+diff -r -u -- make_orig/str.c make/str.c
+--- make_orig/str.c	2005-05-23 15:27:52.000000000 +0200
++++ make/str.c	2007-05-12 01:35:00.000000000 +0200
+@@ -39,7 +39,9 @@
+  */
+ 
+ #include <sys/cdefs.h>
++#ifdef __FBSDID
+ __FBSDID("$FreeBSD: src/usr.bin/make/str.c,v 1.45 2005/05/23 13:27:52 harti Exp $");
++#endif
+ 
+ #include <ctype.h>
+ #include <stdlib.h>
+diff -r -u -- make_orig/suff.c make/suff.c
+--- make_orig/suff.c	2005-05-24 17:58:35.000000000 +0200
++++ make/suff.c	2007-05-12 01:35:08.000000000 +0200
+@@ -39,7 +39,9 @@
+  */
+ 
+ #include <sys/cdefs.h>
++#ifdef __FBSDID
+ __FBSDID("$FreeBSD: src/usr.bin/make/suff.c,v 1.64 2005/05/24 15:58:35 harti Exp $");
++#endif
+ 
+ /*-
+  * suff.c --
+diff -r -u -- make_orig/targ.c make/targ.c
+--- make_orig/targ.c	2005-05-13 15:47:41.000000000 +0200
++++ make/targ.c	2007-05-12 01:35:16.000000000 +0200
+@@ -39,7 +39,9 @@
+  */
+ 
+ #include <sys/cdefs.h>
++#ifdef __FBSDID
+ __FBSDID("$FreeBSD: src/usr.bin/make/targ.c,v 1.41 2005/05/13 13:47:41 harti Exp $");
++#endif
+ 
+ /*
+  * Functions for maintaining the Lst allTargets. Target nodes are
+diff -r -u -- make_orig/util.c make/util.c
+--- make_orig/util.c	2005-05-13 15:47:41.000000000 +0200
++++ make/util.c	2007-05-12 01:35:25.000000000 +0200
+@@ -40,7 +40,9 @@
+  */
+ 
+ #include <sys/cdefs.h>
++#ifdef __FBSDID
+ __FBSDID("$FreeBSD: src/usr.bin/make/util.c,v 1.19 2005/05/13 13:47:41 harti Exp $");
++#endif
+ 
+ /*-
+  * util.c --
+diff -r -u -- make_orig/util.h make/util.h
+--- make_orig/util.h	2005-05-18 08:50:39.000000000 +0200
++++ make/util.h	2007-05-12 01:34:50.000000000 +0200
+@@ -100,6 +100,10 @@
+ #define	MAX(a, b)  ((a) > (b) ? (a) : (b))
+ #endif
+ 
++#ifndef __dead2
++#define __dead2
++#endif
++
+ void Debug(const char *, ...);
+ void DebugM(const char *, ...);
+ void Error(const char *, ...);
+@@ -113,4 +117,327 @@
+ int eunlink(const char *);
+ void print_flags(FILE *, const struct flag2str *, u_int, int);
+ 
++#ifndef __freebsd__
++
++#include <sys/queue.h>
++
++#define STAILQ_HEAD_INITIALIZER(head)                                   \
++        { NULL, &(head).stqh_first }
++
++#define STAILQ_ENTRY(type)                                              \
++struct {                                                                \
++        struct type *stqe_next; /* next element */                      \
++}
++
++/*
++ * Singly-linked Tail queue functions.
++ */
++#define STAILQ_CONCAT(head1, head2) do {                                \
++        if (!STAILQ_EMPTY((head2))) {                                   \
++                *(head1)->stqh_last = (head2)->stqh_first;              \
++                (head1)->stqh_last = (head2)->stqh_last;                \
++                STAILQ_INIT((head2));                                   \
++        }                                                               \
++} while (0)
++
++#define STAILQ_EMPTY(head)      ((head)->stqh_first == NULL)
++
++#define STAILQ_FIRST(head)      ((head)->stqh_first)
++
++#define STAILQ_FOREACH(var, head, field)                                \
++        for((var) = STAILQ_FIRST((head));                               \
++           (var);                                                       \
++           (var) = STAILQ_NEXT((var), field))
++
++
++#define STAILQ_FOREACH_SAFE(var, head, field, tvar)                     \
++        for ((var) = STAILQ_FIRST((head));                              \
++            (var) && ((tvar) = STAILQ_NEXT((var), field), 1);           \
++            (var) = (tvar))
++
++#define STAILQ_INIT(head) do {                                          \
++        STAILQ_FIRST((head)) = NULL;                                    \
++        (head)->stqh_last = &STAILQ_FIRST((head));                      \
++} while (0)
++
++#define STAILQ_INSERT_AFTER(head, tqelm, elm, field) do {               \
++        if ((STAILQ_NEXT((elm), field) = STAILQ_NEXT((tqelm), field)) == NULL)\
++                (head)->stqh_last = &STAILQ_NEXT((elm), field);         \
++        STAILQ_NEXT((tqelm), field) = (elm);                            \
++} while (0)
++
++#define STAILQ_INSERT_HEAD(head, elm, field) do {                       \
++        if ((STAILQ_NEXT((elm), field) = STAILQ_FIRST((head))) == NULL) \
++                (head)->stqh_last = &STAILQ_NEXT((elm), field);         \
++        STAILQ_FIRST((head)) = (elm);                                   \
++} while (0)
++
++#define STAILQ_INSERT_TAIL(head, elm, field) do {                       \
++        STAILQ_NEXT((elm), field) = NULL;                               \
++        *(head)->stqh_last = (elm);                                     \
++        (head)->stqh_last = &STAILQ_NEXT((elm), field);                 \
++} while (0)
++
++#define STAILQ_LAST(head, type, field)                                  \
++        (STAILQ_EMPTY((head)) ?                                         \
++                NULL :                                                  \
++                ((struct type *)                                        \
++                ((char *)((head)->stqh_last) - __offsetof(struct type, field))))
++
++#define STAILQ_NEXT(elm, field) ((elm)->field.stqe_next)
++
++#define STAILQ_REMOVE(head, elm, type, field) do {                      \
++        if (STAILQ_FIRST((head)) == (elm)) {                            \
++                STAILQ_REMOVE_HEAD((head), field);                      \
++        }                                                               \
++        else {                                                          \
++                struct type *curelm = STAILQ_FIRST((head));             \
++                while (STAILQ_NEXT(curelm, field) != (elm))             \
++                        curelm = STAILQ_NEXT(curelm, field);            \
++                if ((STAILQ_NEXT(curelm, field) =                       \
++                     STAILQ_NEXT(STAILQ_NEXT(curelm, field), field)) == NULL)\
++                        (head)->stqh_last = &STAILQ_NEXT((curelm), field);\
++        }                                                               \
++} while (0)
++
++#define STAILQ_REMOVE_HEAD(head, field) do {                            \
++        if ((STAILQ_FIRST((head)) =                                     \
++             STAILQ_NEXT(STAILQ_FIRST((head)), field)) == NULL)         \
++                (head)->stqh_last = &STAILQ_FIRST((head));              \
++} while (0)
++
++#define STAILQ_REMOVE_HEAD_UNTIL(head, elm, field) do {                 \
++        if ((STAILQ_FIRST((head)) = STAILQ_NEXT((elm), field)) == NULL) \
++                (head)->stqh_last = &STAILQ_FIRST((head));              \
++} while (0)
++
++/*
++ * List declarations.
++ */
++#define LIST_HEAD(name, type)                                           \
++struct name {                                                           \
++        struct type *lh_first;  /* first element */                     \
++}
++
++#define LIST_HEAD_INITIALIZER(head)                                     \
++        { NULL }
++
++#define LIST_ENTRY(type)                                                \
++struct {                                                                \
++        struct type *le_next;   /* next element */                      \
++        struct type **le_prev;  /* address of previous next element */  \
++}
++
++/*
++ * List functions.
++ */
++
++#define LIST_EMPTY(head)        ((head)->lh_first == NULL)
++
++#define LIST_FIRST(head)        ((head)->lh_first)
++
++#define LIST_FOREACH(var, head, field)                                  \
++        for ((var) = LIST_FIRST((head));                                \
++            (var);                                                      \
++            (var) = LIST_NEXT((var), field))
++
++#define LIST_FOREACH_SAFE(var, head, field, tvar)                       \
++        for ((var) = LIST_FIRST((head));                                \
++            (var) && ((tvar) = LIST_NEXT((var), field), 1);             \
++            (var) = (tvar))
++
++#ifndef LIST_INIT
++#define LIST_INIT(head) do {                                            \
++        LIST_FIRST((head)) = NULL;                                      \
++} while (0)
++#endif
++
++#ifndef LIST_INSERT_AFTER
++#define LIST_INSERT_AFTER(listelm, elm, field) do {                     \
++        if ((LIST_NEXT((elm), field) = LIST_NEXT((listelm), field)) != NULL)\
++                LIST_NEXT((listelm), field)->field.le_prev =            \
++                    &LIST_NEXT((elm), field);                           \
++        LIST_NEXT((listelm), field) = (elm);                            \
++        (elm)->field.le_prev = &LIST_NEXT((listelm), field);            \
++} while (0)
++#endif 
++
++#define LIST_INSERT_BEFORE(listelm, elm, field) do {                    \
++        (elm)->field.le_prev = (listelm)->field.le_prev;                \
++        LIST_NEXT((elm), field) = (listelm);                            \
++        *(listelm)->field.le_prev = (elm);                              \
++        (listelm)->field.le_prev = &LIST_NEXT((elm), field);            \
++} while (0)
++
++#ifndef LIST_INSERT_HEAD
++#define LIST_INSERT_HEAD(head, elm, field) do {                         \
++        if ((LIST_NEXT((elm), field) = LIST_FIRST((head))) != NULL)     \
++                LIST_FIRST((head))->field.le_prev = &LIST_NEXT((elm), field);\
++        LIST_FIRST((head)) = (elm);                                     \
++        (elm)->field.le_prev = &LIST_FIRST((head));                     \
++} while (0)
++#endif
++
++#define LIST_NEXT(elm, field)   ((elm)->field.le_next)
++
++#ifndef LIST_REMOVE
++#define LIST_REMOVE(elm, field) do {                                    \
++        if (LIST_NEXT((elm), field) != NULL)                            \
++                LIST_NEXT((elm), field)->field.le_prev =                \
++                    (elm)->field.le_prev;                               \
++        *(elm)->field.le_prev = LIST_NEXT((elm), field);                \
++} while (0)
++#endif
++
++
++/*
++ * Tail queue declarations.
++ */
++#ifndef TAILQ_HEAD
++#define TAILQ_HEAD(name, type)                                          \
++struct name {                                                           \
++        struct type *tqh_first; /* first element */                     \
++        struct type **tqh_last; /* addr of last next element */         \
++        TRACEBUF                                                        \
++}
++#endif
++
++#define TAILQ_HEAD_INITIALIZER(head)                                    \
++        { NULL, &(head).tqh_first }
++
++#ifndef TAILQ_ENTRY
++#define TAILQ_ENTRY(type)                                               \
++struct {                                                                \
++        struct type *tqe_next;  /* next element */                      \
++        struct type **tqe_prev; /* address of previous next element */  \
++        TRACEBUF                                                        \
++}
++#endif
++
++/*
++ * Tail queue functions.
++ */
++#define TAILQ_CONCAT(head1, head2, field) do {                          \
++        if (!TAILQ_EMPTY(head2)) {                                      \
++                *(head1)->tqh_last = (head2)->tqh_first;                \
++                (head2)->tqh_first->field.tqe_prev = (head1)->tqh_last; \
++                (head1)->tqh_last = (head2)->tqh_last;                  \
++                TAILQ_INIT((head2));                                    \
++                QMD_TRACE_HEAD(head1);                                  \
++                QMD_TRACE_HEAD(head2);                                  \
++        }                                                               \
++} while (0)
++
++#define TAILQ_EMPTY(head)       ((head)->tqh_first == NULL)
++
++#define TAILQ_FIRST(head)       ((head)->tqh_first)
++
++#define TAILQ_FOREACH(var, head, field)                                 \
++        for ((var) = TAILQ_FIRST((head));                               \
++            (var);                                                      \
++            (var) = TAILQ_NEXT((var), field))
++
++#define TAILQ_FOREACH_SAFE(var, head, field, tvar)                      \
++        for ((var) = TAILQ_FIRST((head));                               \
++            (var) && ((tvar) = TAILQ_NEXT((var), field), 1);            \
++            (var) = (tvar))
++
++#define TAILQ_FOREACH_REVERSE(var, head, headname, field)               \
++        for ((var) = TAILQ_LAST((head), headname);                      \
++            (var);                                                      \
++            (var) = TAILQ_PREV((var), headname, field))
++
++#define TAILQ_FOREACH_REVERSE_SAFE(var, head, headname, field, tvar)    \
++        for ((var) = TAILQ_LAST((head), headname);                      \
++            (var) && ((tvar) = TAILQ_PREV((var), headname, field), 1);  \
++            (var) = (tvar))
++
++#ifndef TAILQ_INIT
++#define TAILQ_INIT(head) do {                                           \
++        TAILQ_FIRST((head)) = NULL;                                     \
++        (head)->tqh_last = &TAILQ_FIRST((head));                        \
++        QMD_TRACE_HEAD(head);                                           \
++} while (0)
++#endif
++
++#ifndef TAILQ_INSERT_AFTER
++#define TAILQ_INSERT_AFTER(head, listelm, elm, field) do {              \
++        if ((TAILQ_NEXT((elm), field) = TAILQ_NEXT((listelm), field)) != NULL)\
++                TAILQ_NEXT((elm), field)->field.tqe_prev =              \
++                    &TAILQ_NEXT((elm), field);                          \
++        else {                                                          \
++                (head)->tqh_last = &TAILQ_NEXT((elm), field);           \
++                QMD_TRACE_HEAD(head);                                   \
++        }                                                               \
++        TAILQ_NEXT((listelm), field) = (elm);                           \
++        (elm)->field.tqe_prev = &TAILQ_NEXT((listelm), field);          \
++        QMD_TRACE_ELEM(&(elm)->field);                                  \
++        QMD_TRACE_ELEM(&listelm->field);                                \
++} while (0)
++#endif // TAILQ_INSERT_AFTER
++
++#define TAILQ_INSERT_BEFORE(listelm, elm, field) do {                   \
++        (elm)->field.tqe_prev = (listelm)->field.tqe_prev;              \
++        TAILQ_NEXT((elm), field) = (listelm);                           \
++        *(listelm)->field.tqe_prev = (elm);                             \
++        (listelm)->field.tqe_prev = &TAILQ_NEXT((elm), field);          \
++        QMD_TRACE_ELEM(&(elm)->field);                                  \
++        QMD_TRACE_ELEM(&listelm->field);                                \
++} while (0)
++
++#ifndef TAILQ_INSERT_HEAD
++#define TAILQ_INSERT_HEAD(head, elm, field) do {                        \
++        if ((TAILQ_NEXT((elm), field) = TAILQ_FIRST((head))) != NULL)   \
++                TAILQ_FIRST((head))->field.tqe_prev =                   \
++                    &TAILQ_NEXT((elm), field);                          \
++        else                                                            \
++                (head)->tqh_last = &TAILQ_NEXT((elm), field);           \
++        TAILQ_FIRST((head)) = (elm);                                    \
++        (elm)->field.tqe_prev = &TAILQ_FIRST((head));                   \
++        QMD_TRACE_HEAD(head);                                           \
++        QMD_TRACE_ELEM(&(elm)->field);                                  \
++} while (0)
++#endif // TAILQ_INSERT_HEAD
++
++#ifndef TAILQ_INSERT_TAIL
++#define TAILQ_INSERT_TAIL(head, elm, field) do {                        \
++        TAILQ_NEXT((elm), field) = NULL;                                \
++        (elm)->field.tqe_prev = (head)->tqh_last;                       \
++        *(head)->tqh_last = (elm);                                      \
++        (head)->tqh_last = &TAILQ_NEXT((elm), field);                   \
++        QMD_TRACE_HEAD(head);                                           \
++        QMD_TRACE_ELEM(&(elm)->field);                                  \
++} while (0)
++#endif // TAILQ_INSERT_TAIL
++
++#define TAILQ_LAST(head, headname)                                      \
++        (*(((struct headname *)((head)->tqh_last))->tqh_last))
++
++#define TAILQ_NEXT(elm, field) ((elm)->field.tqe_next)
++
++#define TAILQ_PREV(elm, headname, field)                                \
++        (*(((struct headname *)((elm)->field.tqe_prev))->tqh_last))
++
++#ifndef TAILQ_REMOVE
++#define TAILQ_REMOVE(head, elm, field) do {                             \
++        if ((TAILQ_NEXT((elm), field)) != NULL)                         \
++                TAILQ_NEXT((elm), field)->field.tqe_prev =              \
++                    (elm)->field.tqe_prev;                              \
++        else {                                                          \
++                (head)->tqh_last = (elm)->field.tqe_prev;               \
++                QMD_TRACE_HEAD(head);                                   \
++        }                                                               \
++        *(elm)->field.tqe_prev = TAILQ_NEXT((elm), field);              \
++        TRASHIT((elm)->field.tqe_next);                                 \
++        TRASHIT((elm)->field.tqe_prev);                                 \
++        QMD_TRACE_ELEM(&(elm)->field);                                  \
++} while (0)
++#endif
++
++#endif
++
++#ifndef __unused
++#define __unused
++#endif
++
+ #endif /* util_h_b7020fdb */
+diff -r -u -- make_orig/var.c make/var.c
+--- make_orig/var.c	2005-05-24 18:05:51.000000000 +0200
++++ make/var.c	2007-05-12 01:35:35.000000000 +0200
+@@ -40,7 +40,9 @@
+  */
+ 
+ #include <sys/cdefs.h>
++#ifdef __FBSDID
+ __FBSDID("$FreeBSD: src/usr.bin/make/var.c,v 1.159 2005/05/24 16:05:51 harti Exp $");
++#endif
+ 
+ /**
+  * var.c --
+diff -r -u -- make_orig/Makefile make/Makefile
+--- make_orig/Makefile	2007-05-12 01:41:50.000000000 +0200
++++ make/Makefile	2007-05-12 01:48:21.000000000 +0200
+@@ -9,7 +9,9 @@
+ SRCS=	arch.c buf.c cond.c dir.c for.c hash.c hash_tables.c job.c	\
+ 	lst.c main.c make.c parse.c proc.c shell.c str.c suff.c targ.c	\
+ 	util.c var.c
+-OBJS= $(SRCS:%.c=%.o)
++OBJS= arch.o buf.o cond.o dir.o for.o hash.o hash_tables.o job.o	\
++	lst.o main.o make.o parse.o proc.o shell.o str.o suff.o targ.o	\
++	util.o var.o
+ 
+ NO_WERROR=
+ WARNS?=	6
+Binary files make_orig/bsdmake and make/bsdmake differ
+diff -r -u -- make_orig/main.c make/main.c
+--- make_orig/main.c	2007-05-12 01:41:50.000000000 +0200
++++ make/main.c	2007-05-12 01:47:00.000000000 +0200
+@@ -143,13 +143,13 @@
+  * Exit with usage message.
+  */
+ static void
+-usage(void)
++usage(const char *argv[])
+ {
+ 	fprintf(stderr,
+-	    "usage: make [-BPSXeiknqrstv] [-C directory] [-D variable]\n"
++	    "usage: %s [-BPSXeiknqrstv] [-C directory] [-D variable]\n"
+ 	    "\t[-d flags] [-E variable] [-f makefile] [-I directory]\n"
+ 	    "\t[-j max_jobs] [-m directory] [-V variable]\n"
+-	    "\t[variable=value] [target ...]\n");
++	    "\t[variable=value] [target ...]\n", argv[0]);
+ 	exit(2);
+ }
+ 
+@@ -239,7 +239,7 @@
+ ReadMakefile(const char p[])
+ {
+ 	char *fname;			/* makefile to read */
+-	FILE *stream;
++	FILE *stream = 0;
+ 	char *name, path[MAXPATHLEN];
+ 	char *MAKEFILE;
+ 	int setMAKEFILE;
+@@ -312,7 +312,8 @@
+ 		if (setMAKEFILE)
+ 			Var_SetGlobal("MAKEFILE", MAKEFILE);
+ 		Parse_File(fname, stream);
+-		fclose(stream);
++//    if(stream)
++//		fclose(stream);
+ 	}
+ 	return (TRUE);
+ }
+@@ -434,7 +435,7 @@
+ 				default:
+ 					warnx("illegal argument to d option "
+ 					    "-- %c", *modules);
+-					usage();
++					usage(argv[0]);
+ 				}
+ 			MFLAGS_append("-d", optarg);
+ 			break;
+@@ -462,7 +463,7 @@
+ 			if (jobLimit <= 0 || *endptr != '\0') {
+ 				warnx("illegal number, -j argument -- %s",
+ 				    optarg);
+-				usage();
++				usage(argv[0]);
+ 			}
+ 			MFLAGS_append("-j", optarg);
+ 			break;
+@@ -507,7 +508,7 @@
+ 				
+ 		default:
+ 		case '?':
+-			usage();
++			usage(argv[0]);
+ 		}
+ 	}
+ 	argv += optind;
+diff -r -u -- make_orig/main.c make/main.c
+--- make_orig/main.c	2007-05-27 03:39:28.058993600 +0200
++++ make/main.c	2007-05-27 03:39:59.754569600 +0200
+@@ -68,7 +68,9 @@
+ #endif
+ #include <sys/param.h>
+ #include <sys/stat.h>
++#if !defined(WIN32) && !defined(__CYGWIN__)
+ #include <sys/sysctl.h>
++#endif
+ #include <sys/time.h>
+ #include <sys/queue.h>
+ #include <sys/resource.h>

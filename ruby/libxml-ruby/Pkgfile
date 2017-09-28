@@ -1,0 +1,38 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Provides libxml2 bindings for Ruby.
+# URL: http://libxml.rubyforge.org/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=libxml-ruby
+version=0.9.5
+release=1
+source=(http://rubyforge.org/frs/download.php/47598/libxml-ruby-$version.tgz)
+
+build()
+{
+  cd libxml-ruby-$version
+
+  set -- `ruby --version`
+
+  rubyver=${2%.*}
+  RUBYLIBDIR=$prefix/lib/ruby
+
+  ruby setup.rb config \
+    --installdirs=std \
+    --prefix="$prefix" \
+    --datadir="$prefix/share" \
+    --mandir="$prefix/share/man" \
+    --siteruby="$RUBYLIBDIR" \
+    --siterubyver="$RUBYLIBDIR/$rubyver"
+
+  ruby setup.rb setup
+  ruby setup.rb install \
+    --prefix="$PKG"
+
+  install -d $ROOT/share/doc/libxml-ruby
+  install -m 644 CHANGES LICENSE README $ROOT/share/doc/libxml-ruby
+}
+
+# EOF

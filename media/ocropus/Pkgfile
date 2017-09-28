@@ -1,0 +1,26 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: The OCRopus(tm) open source document analysis and OCR system
+# URL: 
+# Maintainer: 
+# Depends on: 
+
+name=ocropus
+version=0.3.1
+release=1
+source=(http://ocropus.googlecode.com/files/ocropus-0.3.1.tar.gz)
+
+build() 
+{
+  cd ocropus-0.3
+  
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+  
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

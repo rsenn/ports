@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: disk dump and restore to and from tape or file; copy and/or reblock
+#  sdd is a replacement for a program called 'dd'. sdd is much faster than
+#  dd in cases where input block size (ibs) is not equal to the output
+#  block size (obs). Statistics are more easily understoon than those from
+#  'dd'. Timing available, -time option will print transfer speed Timing &
+#  Statistics available at any time with SIGQUIT (^\) Can seek on input
+#  and output Fast null input Fast null output. Support for the RMT (Remote
+#  Tape Server) protocol makes remote I/O fast and easy.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=sdd
+version=1.52
+release=1
+source=(ftp://ftp.berlios.de/pub/sdd/sdd-$version.tar.gz)
+
+build()
+{
+  cd sdd-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

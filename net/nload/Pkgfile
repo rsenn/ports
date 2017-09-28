@@ -1,0 +1,38 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Displays current network usage.
+#  nload is a console application which monitors network traffic and
+#  bandwidth usage in real time. It visualizes the in- and outgoing traffic
+#  using two graphs. It also provides additional information, such as the
+#  total amount of transfered data and the min/max network usage.
+# URL: http://www.roland-riegel.de/nload/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=nload
+version=0.7.2
+release=1
+source=(http://www.roland-riegel.de/nload/nload-$version.tar.gz)
+
+build() 
+{
+  cd nload-$version
+
+  case $prefix in
+    "/usr") sysconfdir="/etc" ;;
+  esac
+  
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --sysconfdir="${sysconfdir=$prefix/etc}"
+  
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/nload
+  install -m 644 NEWS ChangeLog AUTHORS INSTALL COPYING README $ROOT/share/doc/nload
+}
+
+# EOF

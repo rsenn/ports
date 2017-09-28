@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+# Package: libwww-mechanize-ruby
+# Description: Automating interaction with websites
+# Mechanize automatically stores and sends cookies, follows redirects, can
+# follow links, and submit forms. Form fields can be populated and submitted.
+# Mechanize also keeps track of the sites that you have visited as a history.
+# URL: http://mechanize.rubyforge.org/mechanize/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: ruby1.8
+
+name=ruby-mechanize
+version=0.7.6
+release=1
+source=(http://files.rubyforge.mmmultiworks.com/mechanize/mechanize-$version.tgz)
+
+build()
+{
+  cd mechanize-$version
+
+  set -- $(ruby --version)
+
+  RUBYVERSION="$2"
+  RUBYDIR="$prefix/lib/ruby/${RUBYVERSION%.*}"
+
+  install -d $PKG/$RUBYDIR/mechanize
+  mv -vf lib/* $PKG/$RUBYDIR
+  mv -vf test $PKG/$RUBYDIR/www/mechanize
+  mv -vf eg $PKG/$RUBYDIR/mechanize/examples
+
+  install -d $PKG/$RUBYDIR/www/mechanize/doc
+  mv -vf *.txt $PKG/$RUBYDIR/www/mechanize/doc
+}

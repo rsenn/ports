@@ -1,0 +1,25 @@
+# $Id: Pkgfile 424 2008-08-10 01:52:57Z enki $
+#
+# Description: The MusicKit  SndKit is an object-oriented software system for building music, sound, signal processing  MIDI applications. The distribution is a comprehensive package that includes on-line documentation, code examples, utilities, applications  scores
+# URL: http://musickit.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=musickit
+version=5.5.2
+release=1
+source=($mirror_sf/musickit/MK-$version.s.tar.gz)
+
+build()
+{
+  cd MusicKit-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make GNUSTEP_MAKEFILES="/usr/share/GNUstep/Makefiles"
+  make DESTDIR="$PKG" install
+}

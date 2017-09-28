@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A portable C implementation of the JBIG1 standard.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=jbigkit
+version=2.0
+release=1
+source=(http://www.cl.cam.ac.uk/~mgk25/download/jbigkit-$version.tar.gz)
+
+build() 
+{
+  cd jbigkit
+  
+  make CC="${CC-gcc}" CFLAGS="${CFLAGS--g -O2} -I../libjbig"
+
+  install -d $ROOT/share/doc/jbigkit
+  install -m 644 ANNOUNCE CHANGES COPYING INSTALL TODO $ROOT/share/doc/jbigkit
+
+  install -d $ROOT/lib
+  install -m 644 libjbig/libjbig{,85}.a $ROOT/lib
+
+  install -d $ROOT/bin
+  install -m 644 libjbig/tstcodec{,85} pbmtools/jbgtopbm{,85} pbmtools/pbmtojbg{,85} $ROOT/bin
+
+  install -d $ROOT/share/man/man1
+  install -m 644 */*.1 $ROOT/share/man/man1
+}
+
+# EOF

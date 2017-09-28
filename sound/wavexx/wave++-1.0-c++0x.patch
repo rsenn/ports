@@ -1,0 +1,440 @@
+diff -ru wave++_orig/source/ArrayTree.cc wave++/source/ArrayTree.cc
+--- wave++_orig/source/ArrayTree.cc	2009-04-09 13:06:41.000000000 +0200
++++ wave++/source/ArrayTree.cc	2009-04-09 13:11:40.000000000 +0200
+@@ -4,7 +4,7 @@
+ //*****************************************************************************
+ 
+ #include <assert.h>
+-#include <fstream.h>
++#include <fstream>
+ #include "ArrayTree.h"
+ 
+ /*******************************  ArrayTreePer *******************************/
+Only in wave++/source: ArrayTree.o
+diff -ru wave++_orig/source/BinTree.h wave++/source/BinTree.h
+--- wave++_orig/source/BinTree.h	2009-04-09 13:06:41.000000000 +0200
++++ wave++/source/BinTree.h	2009-04-09 13:15:39.000000000 +0200
+@@ -50,7 +50,7 @@
+ class BinTreeComplete : public BinTree<CONTENTYPE>
+ {
+  public:
+-  BinTreeComplete() : maxlevel(0) { BinTree<CONTENTYPE>::BinTree(); }
++  BinTreeComplete() : maxlevel(0) {}
+ 
+   BinTreeComplete(integer MAXLEVEL, const CONTENTYPE &c);        
+        // set maxlevel=MAXLEVEL and construct tree with contents of all
+@@ -147,7 +147,7 @@
+   maxlevel(MAXLEVEL)
+ {
+   assert(maxlevel>0);
+-  SetConst(&root, maxlevel, c);
++  SetConst(&BinTree<CONTENTYPE>::root, maxlevel, c);
+ }
+ 
+ ///////////////////////////////////////////////////////////////////////////////
+@@ -155,7 +155,7 @@
+ BinTreeComplete<CONTENTYPE>::BinTreeComplete(
+ 				  const BinTreeComplete<CONTENTYPE> &Rhs)
+ {
+-  BinTree<CONTENTYPE>::CopyTree(Rhs.root, root);
++  BinTree<CONTENTYPE>::CopyTree(Rhs.root, BinTree<CONTENTYPE>::root);
+ }
+ 
+ ///////////////////////////////////////////////////////////////////////////////
+@@ -173,7 +173,7 @@
+ 						    const integer &B)
+ {
+   assert( 0<=L && L<=maxlevel && 0<=B && B<=(1<<L) );
+-  return blockHelp(root, L, B);
++  return blockHelp(BinTree<CONTENTYPE>::root, L, B);
+ }
+ 
+ ///////////////////////////////////////////////////////////////////////////////
+diff -ru wave++_orig/source/ConvDec.cc wave++/source/ConvDec.cc
+--- wave++_orig/source/ConvDec.cc	2009-04-09 13:06:41.000000000 +0200
++++ wave++/source/ConvDec.cc	2009-04-09 13:11:40.000000000 +0200
+@@ -4,7 +4,7 @@
+ 
+ #include "ConvDec.h"
+ #include "common.h"
+-#include <iostream.h>
++#include <iostream>
+ #include <assert.h>
+ 
+ void ConvDecPer( const real *In, real *Out, integer q, const PQMF &F )
+Only in wave++/source: ConvDec.o
+diff -ru wave++_orig/source/FFTGaborMP.cc wave++/source/FFTGaborMP.cc
+--- wave++_orig/source/FFTGaborMP.cc	2009-04-09 13:06:41.000000000 +0200
++++ wave++/source/FFTGaborMP.cc	2009-04-09 15:59:01.000000000 +0200
+@@ -1,8 +1,11 @@
+ #include "FFTGaborMP.h"
+ #include <math.h>
+ #include <stdlib.h>
++#include <cassert>
+ #include "fft.h"
+ 
++using namespace std;
++
+ // declare bunch of global variables. They get updated as you run
+ // RunFFTGaborMP
+ static real coef, product, a, b, a1, b1, v, phase, Pnorm2, Qnorm2, PprodQ;
+diff -ru wave++_orig/source/FFTGaborMP.h wave++/source/FFTGaborMP.h
+--- wave++_orig/source/FFTGaborMP.h	2009-04-09 13:06:41.000000000 +0200
++++ wave++/source/FFTGaborMP.h	2009-04-09 14:02:20.000000000 +0200
+@@ -2,7 +2,7 @@
+ #define FFTGABORMP_H
+ 
+ #include "Gabor.h"
+-#include <vector.h>
++#include <vector>
+ 
+ // Functions which runs MP algorithm until epsilon precision is achieved
+ // i.e. |Rf|<epsilon, or maximal number of iterations is performed. 
+@@ -19,9 +19,9 @@
+ 		     // f_approx is a linear combination of Gabors
+ 		     Interval &Rf, // final residual: Rf = f - f_approx
+ 		     // error which is returned equals | Rf |
+-		     vector <RealGabor> &G, // vector of Gabors chosen for
++		     std::vector <RealGabor> &G, // vector of Gabors chosen for
+ 		     // f_approx
+-		     vector <real> & Gcoef // coeficinets in the linear
++		     std::vector <real> & Gcoef // coeficinets in the linear
+ 		     // combination, corresponding to Gabors in G
+ 		     // f_approx = sum( Gcoef[i] * G[i] ), where number of i's
+ 		     // depends on epsilon and max_iter
+Only in wave++/source: FFTGaborMP.o
+diff -ru wave++_orig/source/Gabor.cc wave++/source/Gabor.cc
+--- wave++_orig/source/Gabor.cc	2009-04-09 13:06:41.000000000 +0200
++++ wave++/source/Gabor.cc	2009-04-09 13:58:05.000000000 +0200
+@@ -4,7 +4,10 @@
+ #include "Gabor.h"
+ #include <assert.h>
+ #include <math.h>
+-  
++#include <limits>
++
++using namespace std;
++
+ RealGabor::RealGabor(const real &S, const real &U, const real &V, 
+ 		     const real &W) : s(S), u(U),v(V), w(W)  
+ {  
+@@ -50,16 +53,16 @@
+       Sptr++;  Iptr++;
+     }
+   norm = sqrt(norm);
+-  if( norm > FLT_EPSILON )
++  if( norm > numeric_limits<float>::epsilon() )
+     {
+       Sptr = Sample.origin + Sample.beg;
+       for(j=0; j<I.length; j++)  { *Sptr /= norm;   Sptr++; }
+     }
+   else
+     {
+-      cout << "You are evaluating Gabor function which is almost O
+-on the given interval. Sample is therefore not normalized. Be careful 
+-with calcualtions involving this Gabor." << endl;
++      cout << "You are evaluating Gabor function which is almost O" << endl <<
++"on the given interval. Sample is therefore not normalized. Be careful" << endl <<
++"with calcualtions involving this Gabor." << endl;
+     }
+ }
+ // end of RealGabor
+Only in wave++/source: Gabor.o
+diff -ru wave++_orig/source/Hedge.cc wave++/source/Hedge.cc
+--- wave++_orig/source/Hedge.cc	2009-04-09 13:06:41.000000000 +0200
++++ wave++/source/Hedge.cc	2009-04-09 13:13:15.000000000 +0200
+@@ -3,11 +3,14 @@
+ //                                                      HedgePer and HedgeAper
+ //****************************************************************************
+ 
+-#include <iostream.h>
+-#include <fstream.h>
++#include <iostream>
++#include <fstream>
++#include <cstdlib>
+ #include <assert.h>
+ #include "Hedge.h"
+ 
++using namespace std;
++
+ /********************** Hedge Periodic **************************************/
+ 
+ HedgePer::HedgePer(const integer &DIM, const integer &n, 
+Only in wave++/source: Hedge.o
+diff -ru wave++_orig/source/InOutUtil.cc wave++/source/InOutUtil.cc
+--- wave++_orig/source/InOutUtil.cc	2009-04-09 13:06:41.000000000 +0200
++++ wave++/source/InOutUtil.cc	2009-04-09 13:17:09.000000000 +0200
+@@ -3,8 +3,11 @@
+ //****************************************************************************
+ 
+ #include "InOutUtil.h"
+-#include <iostream.h>
+-#include <fstream.h>
++#include <iostream>
++#include <fstream>
++#include <cstdlib>
++
++using namespace std;
+ 
+ ostream &operator<<(ostream &output, const Interval &I)
+ {
+diff -ru wave++_orig/source/InOutUtil.h wave++/source/InOutUtil.h
+--- wave++_orig/source/InOutUtil.h	2009-04-09 13:06:41.000000000 +0200
++++ wave++/source/InOutUtil.h	2009-04-09 13:16:32.000000000 +0200
+@@ -11,10 +11,10 @@
+ 
+ /************************** Interval *****************************************/
+ 
+-ostream &operator<<(ostream &, const Interval &);
++std::ostream &operator<<(std::ostream &, const Interval &);
+      // output interval as a column
+ 
+-istream &operator>>(istream &, Interval &);
++std::istream &operator>>(std::istream &, Interval &);
+      // read into I from a stream
+ 
+ void PrintToFile(const Interval &I, const char *filename);
+@@ -26,10 +26,10 @@
+                      
+ /***************************** HedgePer *************************************/
+ 
+-ostream &operator<<(ostream &output, const HedgePer &H);
++std::ostream &operator<<(std::ostream &output, const HedgePer &H);
+      // output hedge's data as one long column
+ 
+-istream &operator>>(istream &input, HedgePer &H);
++std::istream &operator>>(std::istream &input, HedgePer &H);
+      // read into H from input stream
+      // assumptions: Hedge completely allocated 
+ 
+@@ -48,10 +48,10 @@
+ 
+ /***************************** HedgeAper *************************************/
+ 
+-ostream &operator<<(ostream &output, const HedgeAper &H);
++std::ostream &operator<<(std::ostream &output, const HedgeAper &H);
+         // output hedge's data as one long column
+ 
+-istream &operator>>(istream &input, HedgeAper &H);
++std::istream &operator>>(std::istream &input, HedgeAper &H);
+      // read into H from input stream
+      // assumptions: H completely allocated 
+ 
+@@ -70,10 +70,10 @@
+ 
+ /***************************** ArrayTreePer **********************************/
+ 
+-ostream &operator<<(ostream &output, const ArrayTreePer &A);
++std::ostream &operator<<(std::ostream &output, const ArrayTreePer &A);
+      // output A as one long column, level after level
+ 
+-istream &operator>>(istream &input, ArrayTreePer &A);
++std::istream &operator>>(std::istream &input, ArrayTreePer &A);
+      // read into A from input stream, level after level
+      // assumption: A completely allocated 
+ 
+@@ -86,10 +86,10 @@
+ 
+ /***************************** ArrayTreeAper *********************************/
+ 
+-ostream &operator<<(ostream &output, const ArrayTreeAper &A);
++std::ostream &operator<<(std::ostream &output, const ArrayTreeAper &A);
+      // output A as one long column, level after level
+ 
+-istream &operator>>(istream &input, ArrayTreeAper &A);
++std::istream &operator>>(std::istream &input, ArrayTreeAper &A);
+      // read into A from input stream, level after level
+      // assumptions: A completely allocated 
+ 
+Only in wave++/source: InOutUtil.o
+diff -ru wave++_orig/source/Interval.cc wave++/source/Interval.cc
+--- wave++_orig/source/Interval.cc	2009-04-09 13:06:41.000000000 +0200
++++ wave++/source/Interval.cc	2009-04-09 13:11:40.000000000 +0200
+@@ -4,11 +4,13 @@
+ 
+ #include <assert.h>
+ #include <math.h>
+-#include <iostream.h>
+-#include <fstream.h>
+-#include <new.h>
++#include <iostream>
++#include <fstream>
++#include <new>
+ #include "Interval.h"
+ 
++using namespace std;
++
+ Interval::Interval(const integer &alpha, const integer &omega, const real *data) : origin(0)
+ {
+   if(data == 0) Set( alpha, omega );
+diff -ru wave++_orig/source/Interval.h wave++/source/Interval.h
+--- wave++_orig/source/Interval.h	2009-04-09 13:06:41.000000000 +0200
++++ wave++/source/Interval.h	2009-04-09 13:11:37.000000000 +0200
+@@ -6,7 +6,7 @@
+ #define INTERVAL_H
+ 
+ #include "common.h"
+-#include <iostream.h>
++#include <iostream>
+ 
+ class Interval {
+ public: 
+Only in wave++/source: Interval.o
+Only in wave++/source: Partition.o
+diff -ru wave++_orig/source/QMF.cc wave++/source/QMF.cc
+--- wave++_orig/source/QMF.cc	2009-04-09 13:06:41.000000000 +0200
++++ wave++/source/QMF.cc	2009-04-09 13:17:32.000000000 +0200
+@@ -4,10 +4,12 @@
+ 
+ #include "QMF.h"
+ #include "common.h"
+-#include <iostream.h>
++#include <iostream>
+ #include <assert.h>
+ #include <stdlib.h>
+ 
++using namespace std;
++
+ //************************************ Q M F **********************************
+ 
+ QMF::QMF() : beg(0), end(-1), center(0), dev(0), coef(0) { }
+Only in wave++/source: QMF.o
+diff -ru wave++_orig/source/ShiftGaborMP.cc wave++/source/ShiftGaborMP.cc
+--- wave++_orig/source/ShiftGaborMP.cc	2009-04-09 13:06:41.000000000 +0200
++++ wave++/source/ShiftGaborMP.cc	2009-04-09 14:01:47.000000000 +0200
+@@ -1,6 +1,7 @@
+ 
+ #include "ShiftGaborMP.h"
+ #include <math.h>
++#include <cassert>
+ 
+ real RunShiftGaborMP(int max_iter, // maximal number of iterations 
+ 		     real epsilon, // desired precision | Rf | < epsilon
+@@ -13,9 +14,9 @@
+ 		     // f_approx is a linear combination of Gabors
+ 		     Interval &Rf, // final residual: Rf = f - f_approx
+ 		     // error which is returned equals | Rf |
+-		     vector <RealGabor> &G, // vector of Gabors chosen for
++		     std::vector <RealGabor> &G, // vector of Gabors chosen for
+ 		     // f_approx
+-		     vector <real> & Gcoef // coeficinets in the linear
++		     std::vector <real> & Gcoef // coeficinets in the linear
+ 		     // combination, corresponding to Gabors in G
+ 		     // f_approx = sum( Gcoef[i] * G[i] ), where number of i's
+ 		     // depends on epsilon and max_iter
+diff -ru wave++_orig/source/ShiftGaborMP.h wave++/source/ShiftGaborMP.h
+--- wave++_orig/source/ShiftGaborMP.h	2009-04-09 13:06:41.000000000 +0200
++++ wave++/source/ShiftGaborMP.h	2009-04-09 13:59:17.000000000 +0200
+@@ -5,7 +5,7 @@
+ 
+ #include "Gabor.h"
+ #include "Partition.h"
+-#include <vector.h>
++#include <vector>
+ 
+ // Functions which runs MP algorithm until epsilon precision is achieved
+ // i.e. |Rf|<epsilon, or maximal number of iterations is performed. 
+@@ -22,9 +22,9 @@
+ 		     // f_approx is a linear combination of Gabors
+ 		     Interval &Rf, // final residual: Rf = f - f_approx
+ 		     // error which is returned equals | Rf |
+-		     vector <RealGabor> &G, // vector of Gabors chosen for
++		     std::vector <RealGabor> &G, // vector of Gabors chosen for
+ 		     // f_approx
+-		     vector <real> & Gcoef // coeficinets in the linear
++		     std::vector <real> & Gcoef // coeficinets in the linear
+ 		     // combination, corresponding to Gabors in G
+ 		     // f_approx = sum( Gcoef[i] * G[i] ), where number of i's
+ 		     // depends on epsilon and max_iter
+Only in wave++/source: ShiftGaborMP.o
+diff -ru wave++_orig/source/Utility.cc wave++/source/Utility.cc
+--- wave++_orig/source/Utility.cc	2009-04-09 13:06:41.000000000 +0200
++++ wave++/source/Utility.cc	2009-04-09 13:11:40.000000000 +0200
+@@ -2,8 +2,8 @@
+ // Utility.cc                              Implementations of utility functions
+ //*****************************************************************************
+ 
+-#include <iostream.h>
+-#include <fstream.h>
++#include <iostream>
++#include <fstream>
+ #include <stdlib.h>
+ #include <assert.h>
+ #include "Utility.h"
+Only in wave++/source: Utility.o
+diff -ru wave++_orig/source/WavePacket.cc wave++/source/WavePacket.cc
+--- wave++_orig/source/WavePacket.cc	2009-04-09 13:06:41.000000000 +0200
++++ wave++/source/WavePacket.cc	2009-04-09 13:11:40.000000000 +0200
+@@ -2,7 +2,7 @@
+ // WavePacket.cc                      Implementations of analysis and synthesis
+ //*****************************************************************************
+ 
+-#include <iostream.h>
++#include <iostream>
+ #include <assert.h>
+ #include "WavePacket.h"
+ 
+Only in wave++/source: WavePacket.o
+diff -ru wave++_orig/source/WaveTrans.cc wave++/source/WaveTrans.cc
+--- wave++_orig/source/WaveTrans.cc	2009-04-09 13:06:41.000000000 +0200
++++ wave++/source/WaveTrans.cc	2009-04-09 13:11:40.000000000 +0200
+@@ -9,7 +9,7 @@
+ #include "common.h"
+ #include <stdlib.h>
+ #include <assert.h>
+-#include <iostream.h>
++#include <iostream>
+ 
+ /*******************  Periodic case pow of 2 ********************************/
+ 
+Only in wave++/source: WaveTrans.o
+diff -ru wave++_orig/source/common.cc wave++/source/common.cc
+--- wave++_orig/source/common.cc	2009-04-09 13:06:41.000000000 +0200
++++ wave++/source/common.cc	2009-04-09 13:11:40.000000000 +0200
+@@ -1,7 +1,11 @@
+ #include "common.h"
+-#include <fstream.h>
++#include <fstream>
++#include <iostream>
++#include <cstdlib>
+ #include <assert.h>
+ 
++using namespace std;
++
+ integer Log2(integer r)
+ {
+   integer temp=0;
+Only in wave++/source: common.o
+diff -ru wave++_orig/source/fft.c wave++/source/fft.c
+--- wave++_orig/source/fft.c	2009-04-09 13:06:41.000000000 +0200
++++ wave++/source/fft.c	2009-04-09 13:42:56.000000000 +0200
+@@ -1,6 +1,7 @@
+ #include <assert.h>
+ #include <math.h>
+ #include <stdlib.h>
++#include <cstring>
+ #include "fft.h"
+ 
+ #define fftbitrev(out,in,q)  bitrevd(out,in,q,sizeof(complex))
+@@ -43,7 +44,7 @@
+   for(n=0; n<(1<<q); n++)
+     {
+       u = br(n,q);
+-      memcpy( out+n*size, in+u*size, size );
++      memcpy( static_cast<char *>(out)+n*size, static_cast<const char *>(in)+u*size, size );
+     }
+   return;
+ }
+@@ -67,8 +68,8 @@
+       u = br(n,q);
+       if( u > n )
+ 	{
+-	  xu  = x+u*size;
+-	  xn =  x+n*size;
++	  xu  = static_cast<char *>(x)+u*size;
++	  xn =  static_cast<char *>(x)+n*size;
+ 	  memcpy( temp, xu, size );
+ 	  memcpy( xu, xn, size );
+ 	  memcpy( xn, temp, size );
+Only in wave++/source: fft.o
+Only in wave++/source: libw.a

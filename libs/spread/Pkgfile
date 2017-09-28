@@ -1,0 +1,48 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: The Spread Toolkit
+# URL: 
+# Maintainer: 
+# Depends on: 
+
+name=spread
+version=4.0.0
+release=1
+source=(http://clusteredserver.googlecode.com/files/spread-src-$version.tar.gz)
+
+build() 
+{
+  cd spread-src-$version
+ 
+  : || for DIR in stdutil .; do
+   (cd "$DIR"
+    rm -f buildtools/config.sub
+    autoreconf --force --verbose --install -I buildtools)
+  done
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --mandir="$prefix/share/man"
+  
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/spread
+  install -m 644 license.txt release_announcement_4.0.txt Readme.txt $ROOT/share/doc/spread
+
+  install -d $ROOT/share/doc/spread/daemon
+  install -m 644 daemon/Changelog $ROOT/share/doc/spread/daemon
+
+  install -d $ROOT/share/doc/spread
+  install -m 644 docs/Short_Buffer_Handling.txt docs/MultithreadedClients.txt docs/PORTING docs/DynamicConfiguration.txt docs/TODO docs/Flush_or_SpreadAPI.txt $ROOT/share/doc/spread
+
+  install -d $ROOT/share/doc/spread/java
+  install -m 644 java/readme.txt $ROOT/share/doc/spread/java
+
+  install -d $ROOT/share/doc/spread/stdutil
+  install -m 644 stdutil/STDUTIL_LICENSE stdutil/README $ROOT/share/doc/spread/stdutil
+}
+
+# EOF

@@ -1,0 +1,86 @@
+# $Id: Pkgfile,v 1.22 2007/05/09 21:02:55 roman Exp $
+#
+# Description: GNU Bash
+#  Bash is an sh-compatible shell that incorporates useful features from
+#  the Korn shell (ksh) and C shell (csh). It is intended to conform to
+#  the IEEE POSIX P1003.2/ISO 9945.2 Shell and Tools standard.
+#  It offers functional improvements over sh for both programming and
+#  interactive use; these include command line editing, unlimited size
+#  command history, job control, shell functions and aliases, indexed
+#  arrays of unlimited size, and integer arithmetic in any base from two
+#  to sixty-four. Bash can run most sh scripts without modification.
+# URL: http://www.gnu.org/software/bash/bash.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=bash-minimal
+version=3.2
+release=5
+source=($mirror_gnu/bash/bash-{doc-,}$version.tar.gz
+        $mirror_gnu/bash/bash-$version-patches/bash32-0{01,02,03,04,05,06,07,08,09,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39})
+
+build()
+{
+  cd ${srcdir=$SRC/bash-$version}
+
+  mv aclocal.m4 bash.m4
+
+  # bash - die gesammelten werke - jetzt neu, auf DVD
+  for p in bash32-0{01,02,03,04,05,06,07,08,09,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39}; do
+    patch -N -p0 -i $SRC/$p || return 1
+  done
+
+  aclocal --force -I .
+  autoconf --force
+
+  if set -- $prefix/lib/libterminfo.* && [ -e "$1" ]; then
+    TERMCAP_LIB="-lterminfo"
+  elif set -- $prefix/lib/libtinfo.* && [ -e "$1" ]; then
+    TERMCAP_LIB="-ltinfo"
+  else
+    TERMCAP_LIB="-lncurses"
+  fi
+
+  if set -- $prefix/lib/libiconv.* && [ -e "$1" ]; then
+    export LIBICONV="-liconv"
+  fi
+
+  if set -- $prefix/lib/libintl.* && [ -e "$1" ]; then
+    export INTLLIBS="-lintl"
+  fi
+
+#  if test -f $prefix/lib/libunwind.so
+#  then
+#    LOCAL_LIBS="-lunwind"
+#  fi
+
+ (echo "#!/bin/sh" && echo 'echo "$@"') >support/config.sub
+
+  case $prefix in
+    "/usr") bindir="/bin" sysconfdir="/etc" localstatedir="/var" ;;
+  esac
+
+  LIBS="$TERMCAP_LIB" \
+  ./configure \
+       --build="$target" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --bindir="${bindir=$prefix/bin}" \
+       --sysconfdir="${sysconfdir=$prefix/etc}" \
+       --localstatedir="${localstatedir=$prefix/var}" \
+       --mandir="$prefix/share/man" \
+       --infodir="$prefix/share/info" \
+       --enable-minimal-config \
+       --disable-nls
+
+  make \
+       ${TERMCAP_LIB:+TERMCAP_LIB="$TERMCAP_LIB"} \
+       ${LOCAL_LIBS:+LOCAL_LIBS="$LOCAL_LIBS"} \
+       DESTDIR="$PKG" \
+    all \
+    install
+
+  cd $PKG/$bindir && for FILE in *; do
+    mv -f "$FILE" "$FILE-minimal"
+  done
+}

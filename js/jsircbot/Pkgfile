@@ -1,0 +1,40 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An IRC robot written in JavaScript.
+#  jsircbot is an Internet Relay Chat robot (IRC bot) written in JavaScript
+#  (though no browser is needed). It aims to be very flexible and
+#  multi-purpose. It is completely module-based for implementing features
+#  such as channels, CTCP, and DCC. It has an event listener system to
+#  monitor channels and servers for activity and events.
+#  .
+# URL: http://code.google.com/p/jsircbot/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=jsircbot
+version=0.1
+release=2
+source=(http://jsircbot.googlecode.com/files/jsircbot$version.zip
+        jsircbot.sh
+        jsircbot-0.1-jsio.patch)
+
+build()
+{
+  cd jsircbot$version
+
+  patch -N -p1 -i $SRC/jsircbot-0.1-jsio.patch
+
+  install -d $ROOT/share/jsircbot
+  install -m 644 *.js $ROOT/share/jsircbot
+
+  install -d $ROOT/share/doc/jsircbot
+  install -m 644 *.txt $ROOT/share/doc/jsircbot
+
+  sed "s|@prefix@|$prefix|g" $SRC/jsircbot.sh \
+    >jsircbot
+
+  install -d $ROOT/bin
+  install -m 755 jsircbot $ROOT/bin
+}
+
+# EOF

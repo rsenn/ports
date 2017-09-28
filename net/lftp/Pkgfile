@@ -1,0 +1,50 @@
+# $Id: Pkgfile,v 1.13 2007/05/09 21:02:55 roman Exp $
+#
+# Description:sophisticated ftp/http file transfer program
+#  LFTP is sophisticated ftp/http client, file transfer program supporting
+#  a number of network protocols. Like BASH, it has job control and uses
+#  readline library for input. It has bookmarks, built-in mirror, can transfer
+#  several files in parallel. It was designed with reliability in mind.
+#  .
+#  LFTP is free software, distributed under GNU GPL license.
+#  .
+# URL: http://lftp.yar.ru/get.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=lftp
+version=3.7.15
+release=1
+source=(http://ftp.yars.free.net/pub/source/lftp/lftp-$version.tar.bz2
+        http://michael.stapelberg.de/lftp_vi/lftp-vi.1.1.tar.gz
+        lftp-3.7.15-vimode.patch
+        #lftp-3.5.9-shlib.patch
+        #lftp-3.7.5-waitpid.patch
+        )
+
+build()
+{
+  cd lftp-$version
+
+  #cp -f $SRC/cmd-edit.cc src
+  #install -d $ROOT/share/doc/lftp
+  #install -m 644 $SRC/README $ROOT/share/doc/lftp/README.lftp-vi
+  patch -N -p1 -i $SRC/lftp-3.7.15-vimode.patch
+
+  libtoolize --force --copy --automake
+  aclocal --force -I m4
+  autoconf --force
+  automake --force --copy --foreign --add-missing
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --without-included-readline \
+       --with-ssl \
+       --${shared:=enable}-shared \
+       --${static:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+}

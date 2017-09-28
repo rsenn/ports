@@ -1,0 +1,35 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Textpow is a library to parse and process Textmate bundles.
+# Although created created for their use in a word processor, these bundles
+# have many other uses. For example, we have used them to create a syntax
+# highligting utility and also the markup rendering engine used to render this
+# documentation.
+# URL: http://textpow.rubyforge.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=textpow
+version=0.10.1
+release=1
+source=(http://rubyforge.org/frs/download.php/32680/textpow-$version.tgz)
+
+build()
+{
+  cd textpow-$version
+
+  set -- $(ruby --version)
+
+  RUBYVERSION="$2"
+  RUBYLIBDIR="$prefix/lib/ruby/${RUBYVERSION%.*}"
+
+  install -d $PKG/$RUBYLIBDIR
+  mv -vf lib/* $PKG/$RUBYLIBDIR
+  mv -vf test $PKG/$RUBYLIBDIR/$name
+
+  install -d $ROOT/share/doc/$name
+  mv *.txt mm/* $ROOT/share/doc/$name
+
+  mv -vf bin $ROOT
+#  rake "test"
+}

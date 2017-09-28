@@ -1,0 +1,25 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: OpenAL software implementation.
+# URL: http://kcat.strangesoft.net/openal.html
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=openal-soft
+version=1.6.372
+release=1
+source=(http://connect.creativelabs.com/openal/Downloads/openal-soft-$version.tar.bz2)
+
+build()
+{
+  cd openal-soft-$version
+
+  cmake \
+    -D CMAKE_INSTALL_PREFIX="$prefix" \
+    -D CMAKE_BUILD_TYPE="RelWithDebug" \
+  .
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

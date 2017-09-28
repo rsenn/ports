@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Replacement for the CSV standard library.
+#  FasterCSV is intended as a complete replacement to the CSV standard
+#  library. It is significantly faster and smaller while still being pure
+#  Ruby code. It also strives for a better interface.
+# URL: http://fastercsv.rubyforge.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=fastercsv
+version=1.2.3
+release=1
+source=($mirror_rubyforge/fastercsv/fastercsv-$version.tgz)
+
+build()
+{
+  cd fastercsv-$version
+
+  set -- `ruby --version`
+
+  RUBYVERSION="$2"
+  RUBYLIBDIR="$prefix/lib/ruby/${RUBYVERSION%.*}"
+
+  mkdir -p $PKG/$RUBYLIBDIR
+  cp -rf lib/* $PKG/$RUBYLIBDIR
+
+  install -d $ROOT/share/doc/fastercsv
+  install -m 644 AUTHORS CHANGELOG COPYING INSTALL LICENSE README TODO $ROOT/share/doc/fastercsv
+}

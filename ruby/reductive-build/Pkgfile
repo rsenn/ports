@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Reductive Labs Build repository
+# URL: http://github.com/lak/reductive-build/tree/master/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=reductive-build
+version=20090219
+release=1
+source=(reductive-build-$version.tar.bz2)
+
+build()
+{
+  cd reductive-build
+
+  set -- `ruby --version`
+
+  RUBYVERSION="$2"
+  RUBYLIBDIR="$prefix/lib/ruby/${RUBYVERSION%.*}"
+
+  install -d $PKG${RUBYLIBDIR}
+
+  cp -rf lib/rake $PKG${RUBYLIBDIR}
+
+  #sitelibdir="$RUBYLIBDIR" \
+  #rake
+}
+
+# EOF

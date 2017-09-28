@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Indentation and reformatting filters for C, C++, Java
+#  Artistic Style is a fast and small open-source indenter and reformatter
+#  of C, C++ and Java source codes.
+# URL: http://astyle.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=astyle
+version=1.15.3
+release=1
+source=(astyle-$version.tar.gz
+        astyle-1.15.3-fix.patch)
+
+build()
+{
+  cd astyle-$version
+
+  patch -N -p1 -i $SRC/astyle-1.15.3-fix.patch
+
+  make
+
+  install -d $ROOT/bin
+  install -m 755 astyle $ROOT/bin/
+
+  install -d $ROOT/share/doc/$name-$version
+  install -m 644 *.html $ROOT/share/doc/$name-$version/
+
+#  sed -e "s:/bin/sh:$prefix/bin/sh:" \
+#       $SRC/style.sh >$ROOT/bin/style
+}

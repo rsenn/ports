@@ -1,0 +1,39 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:03:01 roman Exp $
+#
+# Description: An advanced package management tool for Ruby libraries.
+#  RubyGems is an advanced package management tool for Ruby libraries. It
+#  supports remote searching, downloading, and installation while handling
+#  library dependencies and supporting coexisting versions.
+# URL: http://rubygems.rubyforge.org
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=rubygems
+version=1.3.4
+release=1
+source=(http://de.mirror.rubyforge.org/rubygems/rubygems-$version.tgz
+        0.8.11-install.rb.extract_files.patch
+        no-manage_gems.patch
+        no-system-rubygems.patch
+        no_post_install.patch
+        rubygems-0.9.1-no_post_install.patch
+        rubygems-0.9.1-no_rdoc_install.patch
+        rubygems-0.9.4-shebang-env-fix.patch
+        rubygems-0.9.5-setup.patch)
+
+build()
+{
+  cd rubygems-$version
+
+#  patch -N -p0 -i $SRC/rubygems-0.9.5-setup.patch
+#  patch -N -p0 -i $SRC/0.8.11-install.rb.extract_files.patch
+#  patch -N -p1 -i $SRC/no-manage_gems.patch
+#  patch -N -p1 -i $SRC/no-system-rubygems.patch
+#  patch -N -p1 -i $SRC/no_post_install.patch
+
+#  patch -N -p0 -i $SRC/rubygems-0.9.4-shebang-env-fix.patch
+ # patch -N -p1 -i $SRC/rubygems-0.9.1-no_rdoc_install.patch
+ # patch -N -p1 -i $SRC/rubygems-0.9.1-no_post_install.patch
+
+  ruby setup.rb --prefix="$ROOT"
+}

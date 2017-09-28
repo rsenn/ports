@@ -1,0 +1,25 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Nwcc is a C compiler for Unix systems targeting *BSD/Linux/Solaris on x86 (nasm/gas), FreeBSD/Linux on AMD64 (yasm/gas), Solaris on SPARC, AIX on PPC/PPC64 and IRIX on MIPS64
+# Cross-compilation is supported. There are still too many bugs for
+# everyday use
+#
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=nwcc
+version=0.7.5
+release=1
+source=($mirror_sf/nwcc/nwcc_${version}.tar.gz)
+
+build()
+{
+  cd nwcc_${version}
+
+  ./configure \
+       --installprefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

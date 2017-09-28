@@ -1,0 +1,40 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Section: multiverse/utils
+# Description: Password-checking tool
+#  checkpassword provides a simple, uniform password-checking interface to
+#  all root applications. It is suitable for use by applications such as
+#  login, ftpd, and pop3d. There are checkpassword-compatible tools that
+#  support alternate password databases, secret login names, long passwords,
+#  subaccounts, one-time passwords, detailed accounting, and many other
+#  features. Applications that use the checkpassword interface will work
+#  with all of these tools. Several tools have been specifically designed
+#  to support POP toasters.
+#  .
+# URL: http://cr.yp.to/checkpwd.html
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=checkpassword
+version=0.90
+release=1
+source=(http://cr.yp.to/checkpwd/checkpassword-$version.tar.gz)
+
+build()
+{
+  cd checkpassword-$version
+
+  echo "${CC-cc} ${CFLAGS--g -O2} -include errno.h" >conf-cc
+  echo "${CC-cc} $LDFLAGS" >conf-ld
+
+  make
+  make PREFIX="$ROOT" install
+
+  install -d $ROOT/bin
+  install -m 4711 checkpassword $ROOT/bin
+
+  install -d $ROOT/share/doc/checkpassword
+  install -m 644 CHANGES README TODO $ROOT/share/doc/checkpassword
+}
+
+# EOF

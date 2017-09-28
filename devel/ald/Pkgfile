@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An assembly language debugger.
+#  ALD is an assembly language debugger, created as an alternative to gdb. It
+#  supports breakpoints, memory/register manipulation, x86 disassembly,
+#  and ELF/a.out file formats.
+# URL: http://ald.sourceforge.net
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=ald
+version=0.1.7
+release=1
+source=($mirror_sf/ald/ald-$version.tar.gz)
+
+build() 
+{
+  cd ald-$version
+  
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --mandir="$prefix/share/man"
+  
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

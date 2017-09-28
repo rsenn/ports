@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A control applet for the LASH audio session handler.
+#  GLASHCtl is a simple applet for controlling the LASH Audio Session
+#  Handler. When you run it, it will appear as a small LASH icon in your
+#  "notification area" or "system tray" (if your desktop manager is
+#  compatible with freedesktop.org's "System tray" standard). This is
+#  typically somewhere in the panel in KDE or GNOME.
+#  .
+# URL: http://dino.nongnu.org/glashctl/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=glashctl
+version=0.4.1
+release=1
+source=(http://download.savannah.nongnu.org/releases/dino/glashctl-$version.tar.bz2)
+
+build()
+{
+  cd glashctl-$version
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+
+  make prefix="$prefix"
+  make prefix="$ROOT" install
+}
+
+# EOF

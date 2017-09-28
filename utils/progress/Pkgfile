@@ -1,0 +1,23 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A console application to report progress of data through a pipe.
+#  progress is a utility used in a pipe to report the progress of data
+#  transfer to standard error. Command-line arguments specify how frequently
+#  to report, what character to use to report, and how much buffering to do.
+# URL: http://graflex.org/klotz/software/progress/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on: libc6
+
+name=progress
+version=1.0
+release=1
+source=(http://graflex.org/klotz/software/progress/progress-$version.tar.gz)
+
+build()
+{
+  cd progress-$version
+
+  make CC="${CC-cc} ${CFLAGS--g -O2}"
+
+  make PREFIX="$ROOT" MANDIR="$ROOT/share/man/man1" install
+}

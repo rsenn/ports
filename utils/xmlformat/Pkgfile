@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: xmlformat is a configurable formatter (or "pretty-printer") for XML documents.
+# It gives the user control over indentation, line-breaking, and text wrapping. These properties can be defined on a per-element basis.
+# URL: http://www.kitebird.com/software/xmlformat/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=xmlformat
+version=1.04
+release=1
+source=(http://www.kitebird.com/software/xmlformat/xmlformat-$version.tar.gz)
+
+build()
+{
+  cd xmlformat-$version
+
+  make test
+
+  sed -i "1 s:/usr/bin:$prefix/bin:" \
+      xmlformat.rb
+
+  install -d $ROOT/bin
+  install -m 755 xmlformat.rb $ROOT/bin/xmlformat
+
+  install -d $ROOT/share/doc
+  mv docs $ROOT/share/doc/xmlformat-$version
+}

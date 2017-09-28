@@ -1,0 +1,53 @@
+# $Id: Pkgfile,v 1.22 2007/05/09 21:02:55 roman Exp $
+#
+# Description: Advanced front-end for dpkg
+#  This is Debian's next generation front-end for the dpkg package
+#  manager. It provides the apt-get utility and APT dselect method that
+#  provides a simpler, safer way to install and upgrade packages.
+#  APT features complete installation ordering, multiple source capability
+#  and several other unique features, see the Users Guide in apt-doc.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=apt
+version=0.7.14
+release=1
+source=(http://ftp.debian.org/debian/pool/main/a/apt/apt_$version.tar.gz
+        sources.list)
+
+build()
+{
+  cd apt-$version
+
+  { echo "#!/bin/sh" && echo 'echo "$@"'; } >config.sub
+
+  sysconfdir=${prefix%/usr}/etc
+
+  if set -- $prefix/lib/libiconv.* && test -e "$1"; then
+    INTLLIBS="-liconv"
+  fi
+
+  LIBS="$LIBS $INTLLIBS" \
+  ./configure \
+        --build="$build" \
+        --host="$host" \
+        ${target+--target="$target"} \
+        --prefix="$prefix" \
+        --sysconfdir="$sysconfdir"
+
+  make INTLLIBS="$INTLLIBS" LIBEXT="" #MAJOR=
+
+  install -d $ROOT/{bin,lib/apt/methods}
+
+  mv bin/*.so* $ROOT/lib/
+  mv bin/apt-* $ROOT/bin/
+  mv bin/methods/* $ROOT/lib/apt/methods/
+
+  pkgsysconfdir=$PKG/$sysconfdir/apt
+
+  install -d $pkgsysconfdir/{apt.conf,sources.list}.d
+
+  install -m 644 $SRC/sources.list $pkgsysconfdir
+  install -m 644 docs/examples/apt.conf $pkgsysconfdir
+}

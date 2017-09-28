@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: LibRCPS aims to be a versatile, powerful and fast open source library for resource constrained project scheduling
+# If you do not know much about the resource constrained project scheduling
+# problem and how we define it, you should read our short introduction to
+# RCPS. LibRCPS uses genetic algorithms to find solutions for your problems,
+# a quite sophisticated method to deal with complex optimization problems.
+#
+# URL: http://www.librcps.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6
+
+name=librcps
+version=0.2
+release=1
+source=(http://www.librcps.org/librcps-$version.tar.gz)
+
+build()
+{
+  cd librcps-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

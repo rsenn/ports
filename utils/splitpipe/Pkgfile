@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A tool to distribute piped data over several volumes, like DVDs or CDs.
+#  Splitpipe accepts the streamed output of a program such as tar on
+#  standard input and distributes it over multiple output volumes. These
+#  volumes contain labels that guarantee integrity, verify that the entire
+#  volume is read, and that they are read in the proper order. Combined
+#  with the built-in ring buffer, this allows for the high speed backup of
+#  full filesystems to DVD or CD.
+# URL: http://ds9a.nl/splitpipe/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=splitpipe
+version=0.4
+release=1
+source=(http://ds9a.nl/splitpipe/splitpipe-$version.tar.gz
+        splitpipe-0.4-c++0x.patch)
+
+build() 
+{
+  cd splitpipe-$version
+
+  patch -p1 -i $SRC/splitpipe-0.4-c++0x.patch
+  
+  make
+  make DESTDIR="$PKG" PREFIX="$prefix" install
+
+  install -d $ROOT/share/doc/splitpipe
+  install -m 644 PLAN CHANGELOG COPYING TODO README HACKING THANKS doc/joinpipe.1.txt doc/splitpipe.1.txt doc/splitpipe.5.txt $ROOT/share/doc/splitpipe
+}
+
+# EOF

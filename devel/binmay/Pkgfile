@@ -1,0 +1,29 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:40 roman Exp $
+#
+# Description: A command line binary search and replace with bit masks.
+#  Binmay is a command line binary search and replace program. It allows
+#  one to specify a binary string (in hex) to search for and, optionally,
+#  a binary string to replace it with. One can mask both search and replace
+#  strings as one can mask an IP. It is handy for changing broken user
+#  SID/RIDs in ntuser.dat files after you move a profile from somewhere to
+#  somewhere else.
+# URL: http://lilith.tec-man.com/binmay/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=binmay
+version=0.3
+release=1
+source=(http://lilith.tec-man.com/binmay/files/binmay-$version.tar.gz)
+
+build()
+{
+  cd binmay-$version
+
+  make
+
+  install -d $ROOT/bin
+  install -m 755 binmay $ROOT/bin
+
+  copy_license "COPYING"
+}

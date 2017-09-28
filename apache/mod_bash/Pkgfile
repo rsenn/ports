@@ -1,0 +1,76 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Apache/Bash Integration
+# URL: http://www.autistici.org/bakunin/mod_bash/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=mod_bash
+version=0.1.1
+release=1
+source=(http://www.autistici.org/bakunin/mod_bash/src/mod_bash-$version.tar.gz
+        mod_bash-0.1.1-aprfix.patch)
+
+build()
+{
+  cd mod_bash-$version
+
+  case "$prefix" in
+    "/usr") sysconfdir="/etc" ;;
+  esac
+
+  patch -N -p1 -i $SRC/mod_bash-0.1.1-aprfix.patch
+
+  sh autogen.sh
+
+  APXS=`echo $prefix/*bin/apxs*`
+
+  for apxs in $APXS; do
+
+   (rm -rf ${builddir=build-`$apxs -q progname`}
+    mkdir -p $builddir
+    cd $builddir
+
+    apxs2="$apxs" \
+    ../configure \
+         --build="$build" \
+         --host="$host" \
+         --target="$target" \
+         --prefix="$prefix" \
+         --with-apxs="$apxs"
+
+    make
+    make DESTDIR="$PKG" install
+
+    libexecdir=`$apxs -q libexecdir`
+
+    rm -f $PKG${libexecdir}/*.la
+    rm -f $PKG${libexecdir}/*.a
+
+    sysconfdir=`$apxs -q sysconfdir`
+
+  install -d $PKG${sysconfdir}/mods-available
+  echo "LoadModule bash_module $libexecdir/mod_bash.so" >$PKG${sysconfdir}/mods-available/bash.load
+  cat <<EOF >$PKG${sysconfdir}/mods-available/bash.conf
+BashEnable on
+
+# If you want:
+#BashChroot /tmp/chroot
+
+# Default is "bash", but you can change arguments and command.
+# If you want use csh, right: BashCommand "csh"
+BashCommand "bash --norc"
+EOF
+
+   )
+  done
+
+  install -d $ROOT/share/doc/mod_bash
+  install -m 644 AUTHORS COPYING ChangeLog README INSTALL NEWS $ROOT/share/doc/mod_bash
+
+  install -d $ROOT/share/doc/mod_bash/examples
+  install -m 644 examples/*.bash $ROOT/share/doc/mod_bash/examples
+
+}
+
+# EOF

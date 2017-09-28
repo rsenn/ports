@@ -1,0 +1,37 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: Qt 4 test module
+#  Qt is a cross-platform C++ application framework. Qt's primary feature
+#  is its rich set of widgets that provide standard GUI functionality.
+#  The QtTest module provides classes for unit testing Qt applications
+#  and libraries. Qt 4 test module Qt is a cross-platform C++ application
+#  framework. Qt's primary feature is its rich set of widgets that provide
+#  standard GUI functionality.
+#  The QtTest module provides classes for unit testing Qt applications
+#  and libraries.
+# URL: http://www.trolltech.com
+#  http://www.trolltech.com
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=test
+version=6.2
+release=1
+source=(bin-test-freebsd6.2.tar.gz
+        test-portable.patch)
+
+build()
+{
+  cd bin/test
+  patch -N -p1 -i $SRC/test-portable.patch
+
+  pmake OPTFLAGS="$CFLAGS"
+
+  install -d $ROOT/bin
+  install -m 755 test $ROOT/bin
+
+  (cd $ROOT/bin; ln -s test [)
+
+  install -d $ROOT/man/man1
+  install -m 644 test.1 $ROOT/man/man1/test.1
+}

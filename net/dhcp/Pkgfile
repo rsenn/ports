@@ -1,0 +1,37 @@
+# $Id: Pkgfile,v 1.27 2007/05/09 21:02:54 roman Exp $
+#
+# Description: 
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=dhcp
+version=4.0.0
+release=1
+source=($mirror_gentoo/dhcp-$version.tar.gz
+        dhcpd.conf)
+
+build()
+{
+  cd dhcp-$version
+
+  case ${prefix=/usr} in
+    /usr) sysconfdir="/etc" localstatedir="/var" ;;
+  esac
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --sysconfdir="${sysconfdir=$prefix/etc}/dhcp4" \
+       --localstatedir="${localstatedir=$prefix/var}" \
+       --program-suffix="4"
+
+  make
+  make DESTDIR="$PKG" install
+
+#  rm -f $PKG/$sysconfdir/dhcpd.conf
+#
+#  insta
+#  cp $SRC/dhcpd.conf $PKG/$sysconfdir/dhcpd.conf
+}

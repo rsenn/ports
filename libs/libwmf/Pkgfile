@@ -1,0 +1,51 @@
+# $Id: Pkgfile,v 1.10 2007/05/09 21:02:51 roman Exp $
+#
+# Description: A library to convert microsoft's wmf file format to something useful
+#  libwmf is a library to convert Microsoft's WMF (Windows Metafile)
+#  format to something useful. Bindings exist to convert them to onscreen
+#  X graphics, to the png format, and to fig and eps.
+# URL: http://wvware.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+# get ghostscript version first
+#source ../../base/ghostscript/Pkgfile
+ghostscript_version="$version"
+
+name=libwmf
+version=0.2.8.4
+release=1
+source=($mirror_sf/wvware/libwmf-$version.tar.gz
+        libwmf-$version-release.patch)
+
+build()
+{
+  cd libwmf-$version
+
+  patch -N -p1 -i  $SRC/libwmf-$version-release.patch
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --${shared:=enable}-shared \
+      --${static:=enable}-shared \
+      --without-x \
+      --with-libxml2="$prefix" \
+      --with-freetype="$prefix" \
+      --with-zlib="$prefix" \
+      --with-png="$prefix" \
+      --with-jpeg="$prefix" \
+      --with-sys-gd="$prefix" \
+      --with-sysfontmap="$prefix/share/fonts" \
+      --with-gsfontmap="$prefix/share/ghostscript/$ghostscript_version/lib/Fontmap.GS" \
+      --with-gsfontdir="$prefix/share/fonts/default/Type1"
+  make
+  make DESTDIR="$PKG" install
+
+  copy_license "COPYING"
+
+  sed -i 's,libwmf_buildstyle=heavy,libwmf_buildstyle=light,' $ROOT/bin/libwmf-config
+
+  chmod 644 $ROOT/lib/*.la $ROOT/lib/gtk-*/*/loaders/io-wmf.la
+}

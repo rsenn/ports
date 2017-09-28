@@ -1,0 +1,38 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:52 roman Exp $
+#
+# Description: Character set conversion utility
+#  Free `recode' converts files between character sets and usages. When
+#  exact transliterations are not possible, it may get rid of the offending
+#  characters or fall back on approximations. This program recognizes or
+#  produces nearly 300 different character sets and is able to transliterate
+#  files between almost any pair. Most RFC 1345 character sets, and all
+#  `libiconv' character sets, are supported.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=recode
+version=3.6
+release=1
+source=(ftp://ftp.gnu.org/pub/gnu/recode/recode-$version.tar.gz
+        recode-3.6-bool.patch)
+
+build()
+{
+  cd recode-$version
+
+  patch -p1 -i $SRC/recode-3.6-bool.patch
+
+ # rm -f config.sub ltmain.sh ltconfig
+ # libtoolize --force --copy
+ # autoreconf --force --verbose --install
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+

@@ -1,0 +1,21 @@
+diff -r -u js-0.2.5_orig/src/iostream.c js-0.2.5/src/iostream.c
+--- js-0.2.5_orig/src/iostream.c	2007-09-28 16:38:48.000000000 +0200
++++ js-0.2.5/src/iostream.c	2007-09-28 16:39:38.000000000 +0200
+@@ -233,7 +233,7 @@
+ 
+ 	  stream->bufpos += got;
+ 	  size -= got;
+-	  (unsigned char *) ptr += got;
++	  ptr = ((unsigned char *)ptr + got);
+ 	  total += got;
+ 	}
+       else
+@@ -290,7 +290,7 @@
+       stream->data_in_buf += space;
+       total += space;
+       size -= space;
+-      (unsigned char *) ptr += space;
++      ptr = ((unsigned char *)ptr + space);
+ 
+       /* Now the buffer contains buffered write data. */
+       stream->writep = 1;

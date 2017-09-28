@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: MDF2ISO is a very simple utility to convert an Alcohol 120% bin image to the standard ISO-9660 format.
+# URL: 
+# Maintainer: 
+# Depends on: 
+
+name=mdf2iso
+version=0.3.0
+release=1
+source=(http://download.berlios.de/mdf2iso/mdf2iso-$version-src.tar.bz2)
+
+build() 
+{
+  cd mdf2iso
+  
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+  
+  make
+  make DESTDIR="$PKG" install
+  
+ 
+  install -d $ROOT/share/doc/mdf2iso
+  install -m 644 gpl.txt ChangeLog $ROOT/share/doc/mdf2iso
+}
+
+# EOF

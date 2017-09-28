@@ -1,0 +1,37 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A free, full-featured, robust, well-documented remote-mail retrieval utility.
+#  Fetchmail is a free, full-featured, robust, well-documented remote-mail
+#  retrieval and forwarding utility intended to be used over on-demand
+#  TCP/IP links (such as SLIP or PPP connections). It supports every
+#  remote-mail protocol now in use on the Internet: POP2, POP3, RPOP, APOP,
+#  KPOP, all flavors of IMAP, and ESMTP ETRN, ODMR, SMTP, LMTP, and local
+#  delivery agents.
+#  .
+# URL: http://www.fetchmail.info/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=fetchmail
+version=6.3.9
+release=1
+source=(http://download.berlios.de/fetchmail/fetchmail-$version.tar.bz2)
+
+build()
+{
+  cd fetchmail-$version
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --prefix="$prefix" \
+     --with-ssl="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/fetchmail
+  install -m 644 NEWS fetchmail-SA-2008-01.txt OLDNEWS fetchmail-SA-2006-03.txt fetchmail-SA-2007-01.txt fetchmail-SA-2005-02.txt README fetchmail-SA-2007-02.txt FAQ README.SSL fetchmail-SA-2006-01.txt INSTALL COPYING fetchmail-SA-2006-02.txt fetchmail-SA-2005-01.txt fetchmail-SA-2005-03.txt ABOUT-NLS README.NTLM FEATURES TODO NOTES $ROOT/share/doc/fetchmail
+}
+
+# EOF

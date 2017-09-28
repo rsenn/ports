@@ -1,0 +1,30 @@
+# $Id: Pkgfile,v 1.7 2007/04/22 23:07:53 roman Exp $
+#
+# Description: pixel-manipulation library for X and cairo
+#  A library for manipulating pixel regions -- a set of Y-X banded
+#  rectangles, image compositing using the Porter/Duff model
+#  and implicit mask generation for geometric primitives including
+#  trapezoids, triangles, and rectangles.
+#  .
+# URL: http://cairographics.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libpixman
+version=0.1.6
+release=1
+source=(http://cairographics.org/snapshots/libpixman-$version.tar.gz)
+
+build()
+{
+  cd libpixman-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --${shared:=enable}-shared \
+       --${static:=enable}-shared
+
+  make DESTDIR="$PKG" install
+}

@@ -1,0 +1,33 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: De-archiver for .zip files
+#  InfoZIP's unzip program. With the exception of multi-volume archives (ie,
+#  .ZIP files that are split across several disks using PKZIP's /& option),
+#  this can handle any file produced either by PKZIP, or the corresponding
+#  InfoZIP zip program.
+#  This version supports encryption.
+# URL: 
+# Maintainer: Roman Senn <smoli@paranoya.ch>
+# Depends on:
+
+name=unzip
+version=5.52
+release=1
+source=(ftp://sunsite.cnlab-switch.ch/mirror/infozip/src/unzip$(echo $version | sed 's,\.,,').tar.gz
+  unzip-$version-shlib.patch)
+
+build() {
+  cd unzip-${version}
+  patch -N -p1 -i "../unzip-$version-shlib.patch"
+  make -f unix/Makefile prefix="$prefix" CC="gcc" linux_shlib
+  make -f unix/Makefile prefix=$ROOT INSTALL="install" install
+
+  install -d $ROOT/lib
+  mv libunzip.so* $ROOT/lib
+
+  copy_license "LICENSE"
+}
+
+cleanup() {
+  rm -r $ROOT/man
+}

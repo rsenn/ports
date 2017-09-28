@@ -1,0 +1,149 @@
+diff -ru rvector-0.1_orig/Makefile.conf rvector-0.1/Makefile.conf
+--- rvector-0.1_orig/Makefile.conf	2008-07-14 16:59:53.000000000 +0200
++++ rvector-0.1/Makefile.conf	2008-07-14 17:03:55.000000000 +0200
+@@ -9,22 +9,22 @@
+ 
+ ### SOME MORE VARIABLES (PROGRAMS)
+ 
+-A:=$(warning "finding pod2html")
+-cfg_pod2html:=$(shell spod2html --version 2>>config/log)
+-ifeq ("$(cfg_pod2html)","")
+-	cfg_pod2html:=$(shell pod2html --help 2>>config/log)
+-	ifeq ("$(cfg_pod2html)","")
+-		A:=$(warning "NO POD2HTML or SPOD2HTML found, cannot generate documentation")
+-		cfg_pod2html:=echo NO POD2HTML 
+-		cfg_pod2htmlout:=
+-	else
++#A:=$(warning "finding pod2html")
++#cfg_pod2html:=$(shell spod2html --version 2>>config/log)
++#ifeq ("$(cfg_pod2html)","")
++#	cfg_pod2html:=$(shell pod2html --help 2>>config/log && echo pod2html)
++#	ifeq ("$(cfg_pod2html)","")
++#		A:=$(warning "NO POD2HTML or SPOD2HTML found, cannot generate documentation")
++#		cfg_pod2html:=echo NO POD2HTML
++#		cfg_pod2htmlout:=
++#	else
+ 		cfg_pod2html:=pod2html
+ 		cfg_pod2htmlout:=--outfile
+-	endif
+-else
+-	cfg_pod2html:=spod2html --pod
+-	cfg_pod2htmlout:=
+-endif
++#	endif
++#else
++#	cfg_pod2html:=spod2html --pod
++#	cfg_pod2htmlout:=
++#endif
+ 
+ 
+ ### DEFAULT VALUES
+diff -ru rvector-0.1_orig/hstack.h rvector-0.1/hstack.h
+--- rvector-0.1_orig/hstack.h	2008-07-14 16:59:53.000000000 +0200
++++ rvector-0.1/hstack.h	2008-07-14 17:19:55.000000000 +0200
+@@ -138,26 +138,27 @@
+ template <class T, class _Sequence = std::deque<T> >
+ class hstack : public std::stack<T, _Sequence>
+ {
+-	
++	typedef std::stack<T, _Sequence> base_type;
++  
+ 	public:
+ 		hstack() : std::stack<T,_Sequence>()									{}
+ 	    hstack(const std::stack<T,_Sequence> & S) : std::stack<T,_Sequence>(S) 	{}
+ 	   ~hstack()																{} 
+ 	   
+ 	public:
+-		void clear(void)	{ while(!empty()) { std::stack<T,_Sequence>::pop(); } }
+-		void pop(T & e) 	{ if (empty()) {
++		void clear(void)	{ while(!base_type::empty()) { std::stack<T,_Sequence>::pop(); } }
++		void pop(T & e) 	{ if (base_type::empty()) {
+ 								HSTACK_THROW(std::string("Cannot pop an element of an empty hstack"));
+ 						  	  }
+ 						  	  else {
+-								e=top();std::stack<T,_Sequence>::pop(); 
++								e=base_type::top();base_type::pop();
+ 							  }
+ 						    }
+-		void peek(T & e)	{ if (empty()) {
++		void peek(T & e)	{ if (base_type::empty()) {
+ 								HSTACK_THROW(std::string("Cannot peek an element of an empty hstack"));
+ 						      }
+ 						      else {
+-								e=top(); 
++                    e=base_type::top(); 
+ 							  }
+ 						    }
+ 
+@@ -202,7 +203,7 @@
+ #endif
+ 		
+ 	public:
+-		int len(void) { return size(); }
++    int len(void) { return base_type::size(); }
+ };
+ 
+ #endif
+diff -ru rvector-0.1_orig/rvector.h rvector-0.1/rvector.h
+--- rvector-0.1_orig/rvector.h	2008-07-14 16:59:53.000000000 +0200
++++ rvector-0.1/rvector.h	2008-07-14 17:14:31.000000000 +0200
+@@ -206,12 +206,13 @@
+ class rvector : public std::vector<T, _Alloc>
+ {
+ 	typedef size_t	size_type;
++  typedef std::vector<T, _Alloc> base_type;
+ 	
+ 	private:
+ 		void inline check(size_type i) {
+-			if (i<0 || i>=size()) {
++			if (i<0 || i>=base_type::size()) {
+ 				char msg[256];
+-				sprintf(msg,"std::rvector: The index '%u' exceeds the rvector range 0..%u",i,size()-1);
++				sprintf(msg,"std::rvector: The index '%u' exceeds the rvector range 0..%u",i,base_type::size()-1);
+ 				std::string s=msg;
+ 				HARRAY_THROW(s);
+ 			}
+@@ -227,24 +228,24 @@
+ 	   ~rvector()																{ }
+ 	
+   	public:
+-	    void swap(size_type i,size_type j)		{ check(i);check(j);std::swap(begin()[i],begin()[j]); }
++	    void swap(size_type i,size_type j)		{ check(i);check(j);std::swap(base_type::begin()[i],base_type::begin()[j]); }
+ 	    
+ 	public:
+-	    size_type len(void) 					{ return size(); }
+-	    size_type length(void)    				{ return size(); }
++	    size_type len(void) 					{ return base_type::size(); }
++	    size_type length(void)    				{ return base_type::size(); }
+ 	
+   	public:
+-		void remove(size_type i)	  			{ check(i);erase(begin()+i); }
+-		void insert(size_type i,T & e)			{ check(i);std::vector<T,_Alloc>::insert(begin()+i,e); }
++		void remove(size_type i)	  			{ check(i);erase(base_type::begin()+i); }
++		void insert(size_type i,T & e)			{ check(i);std::vector<T,_Alloc>::insert(base_type::begin()+i,e); }
+ 	
+   	public:
+-	    T & operator [](size_type i)			{ if (i>=size()) { resize(i+1); } check(i);return begin()[i]; }
+-		void set(size_type i, T & e)			{ if (i>=size()) { resize(i+1); } check(i);begin()[i]=e; }
+-		void setv(size_type i, T e)				{ if (i>=size()) { resize(i+1); } check(i);begin()[i]=e; }
++	    T & operator [](size_type i)			{ if (i>=base_type::size()) { base_type::resize(i+1); } check(i);return base_type::begin()[i]; }
++		void set(size_type i, T & e)			{ if (i>=base_type::size()) { base_type::resize(i+1); } check(i);base_type::begin()[i]=e; }
++		void setv(size_type i, T e)				{ if (i>=base_type::size()) { base_type::resize(i+1); } check(i);base_type::begin()[i]=e; }
+ 
+ 	public:
+-	    void initialize(void)					{ clear(); }
+-	    void reinitialize(void) 				{ clear(); }
++	    void initialize(void)					{ base_type::clear(); }
++	    void reinitialize(void) 				{ base_type::clear(); }
+ 	
+ 
+ #ifdef __HAS__CONTAINER__HOD__		
+@@ -253,7 +254,7 @@
+ 		{
+ 			int i,n;
+ 			char *type;
+-				clear();
++				base_type::clear();
+ 				type << c;
+ 				if (strcmp(type,"harray")==0) {
+ 					n << c;

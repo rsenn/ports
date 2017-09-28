@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A tool for generating C++ and Java classes from SQL.
+#  DAME (Database Access Made Easy) is a tool that generates C++ and Java
+#  code from SQL statements. When used with Java, it supports any database
+#  that can be accessed through JDBC. C++ libraries for Oracle, PostgreSQL,
+#  and MySQL are also included.
+# URL: http://dame.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=dame
+version=1.2.2
+release=1
+source=($mirror_sf/dame/dame-$version.tar.gz)
+
+build()
+{
+  cd dame-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

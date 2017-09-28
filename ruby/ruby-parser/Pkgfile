@@ -1,0 +1,35 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Ruby parser
+# URL: http://rubyforge.org/projects/parsetree/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=ruby-parser
+version=2.0.2
+release=1
+source=(http://files.rubyforge.mmmultiworks.com/parsetree/ruby_parser-$version.tgz)
+
+build() 
+{
+  cd ruby_parser-$version
+
+  IFS="$IFS[]"
+  set -- `ruby --version`
+
+  RUBYVERSION="$2"
+  eval RUBYARCH="\${$#}"
+
+  RUBYLIBDIR="$prefix/lib/ruby/${RUBYVERSION%.*}"
+
+  install -d $PKG/$RUBYLIBDIR
+  cp -r lib/* $PKG/$RUBYLIBDIR
+
+  install -d $ROOT/bin
+  install -m 755 bin/* $ROOT/bin
+
+  install -d $ROOT/share/doc/ruby-parser
+  install -m 644 History.txt Manifest.txt README.txt $ROOT/share/doc/ruby-parser
+}
+
+# EOF

@@ -1,0 +1,30 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:50 roman Exp $
+#
+# Description: A todo-list manager.
+#  QTodo is a todo-list manager that was designed to help the user to
+#  actually get things done. You can add todo items to different lists,
+#  set priorities, the status of an item, deadlines, and more. Items can
+#  be sorted, filtered, copied, cut, and pasted. The lists can be printed
+#  to paper. It also features deadline management with alerts that you can
+#  fine-tune or just disable with a tray icon.
+# URL: http://qtodo.berlios.de
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=qtodo
+version=0.1.2
+release=1
+source=(http://download.berlios.de/qtodo/qtodo-$version.tar.gz)
+
+build()
+{
+  cd qtodo
+
+  export QTDIR="$prefix"
+
+  qmake-3.3
+
+  make all
+  make INSTALL_ROOT="$PKG" install
+}
+

@@ -1,0 +1,104 @@
+--- mod_ap2_snmp.c.orig	2007-01-18 15:44:43.000000000 +0100
++++ mod_ap2_snmp.c	2007-01-18 15:49:56.000000000 +0100
+@@ -38,8 +38,8 @@
+ #endif
+ 
+ //#define MOD_SNMP_DEBUG(message) ap_log_error(APLOG_MARK, APLOG_DEBUG, APR_SUCCESS, NULL, message);
+-#define MOD_SNMP_DEBUG(message) ap_log_error(APLOG_MARK, APLOG_DEBUG, APR_SUCCESS, NULL, message);
+-#define MOD_SNMP_ERROR(message) ap_log_error(APLOG_MARK, APLOG_ERR, APR_SUCCESS, NULL, message);
++#define MOD_SNMP_DEBUG(message...) ap_log_error(APLOG_MARK, APLOG_DEBUG, APR_SUCCESS, NULL, message);
++#define MOD_SNMP_ERROR(message...) ap_log_error(APLOG_MARK, APLOG_ERR, APR_SUCCESS, NULL, message);
+ 
+ module AP_MODULE_DECLARE_DATA ap2_snmp_module;
+ 
+@@ -143,8 +143,7 @@
+ 
+     /* ERROR */
+     if (!ss) {
+-          MOD_SNMP_ERROR("AP2_SNMP: cannot connect with SNMP agent");
+-          MOD_SNMP_ERROR(agent_address);
++          MOD_SNMP_ERROR("AP2_SNMP: cannot connect with SNMP agent %s", agent_address);
+         return 1;
+     }
+ 
+@@ -178,8 +177,7 @@
+     /* if value assign fail */
+     if (status != STAT_SUCCESS)
+     {
+-        MOD_SNMP_ERROR("AP2_SNMP: Can't set MIB value.");
+-	MOD_SNMP_ERROR(object);
++        MOD_SNMP_ERROR("AP2_SNMP: Can't set MIB value %s", object);
+     	return 1; // with errors
+     }
+ /* END SNMP set  function*/
+@@ -196,8 +194,7 @@
+ 	if (strlen(arg)<=LEN_BUFFER)
+ 		strcpy(agent_address,arg);
+ 	else
+-	{	MOD_SNMP_ERROR("AP2_SNMP: Invalid snmp_agent_address");
+-		MOD_SNMP_ERROR(arg);
++	{	MOD_SNMP_ERROR("AP2_SNMP: Invalid snmp_agent_address %s", arg);
+ 	}
+ 	return NULL;
+ }
+@@ -211,8 +208,7 @@
+ 	if (strlen(arg)<=LEN_BUFFER)
+ 		strcpy(ap_snmp_community,arg);
+ 	else
+-	{	MOD_SNMP_ERROR("AP2_SNMP: Invalid snmp_community");
+-		MOD_SNMP_ERROR(arg);
++	{	MOD_SNMP_ERROR("AP2_SNMP: Invalid snmp_community %s", arg);
+ 	}
+ 	return NULL;
+ }
+@@ -232,8 +228,7 @@
+ 		//snmp_set("APACHE2-MIB::serverTmpDir.0",'s',tmp_dir);
+ 	}
+ 	else
+-	{	MOD_SNMP_ERROR("AP2_SNMP: tmp_dir exceeds buffer size");
+-		MOD_SNMP_ERROR(arg);
++	{	MOD_SNMP_ERROR("AP2_SNMP: tmp_dir exceeds buffer size %s", arg);
+ 	}
+ 	return NULL;
+ }
+@@ -295,8 +290,7 @@
+ 		strcat(agentHttpAddress,":");
+ 		strcat(agentHttpAddress,port);
+ 
+-		MOD_SNMP_ERROR("AP2_SNMP: agentHttpAddress set to:");
+-		MOD_SNMP_ERROR(agentHttpAddress);
++		MOD_SNMP_ERROR("AP2_SNMP: agentHttpAddress set to %s", agentHttpAddress);
+ 
+ 		// 12/12/2004 - it was moved to *ap2_snmp_pre_mpm* function
+ 		/*snmp_set("APACHE2-MIB::agentHttpAddress.0",'s',tmp_buffer);*/
+@@ -345,8 +339,7 @@
+ 	}
+ 
+ 	/* remove old tmp file */
+-	MOD_SNMP_DEBUG("AP2_SNMP: deleting old ap2_snmp"); //for debugging
+-	MOD_SNMP_DEBUG(tmp_dir);
++	MOD_SNMP_DEBUG("AP2_SNMP: deleting old ap2_snmp %s", tmp_dir); //for debugging
+ 	unlink(tmp_dir);
+ 
+ 	/* sets configuration MIB values*/
+@@ -376,9 +369,7 @@
+ 		sprintf(oid_to_set,"APACHE2-MIB::serverPortNumber.%d",port_count);
+ 		sprintf(tmp_buffer,"%d",lr->bind_addr->port); // port --> tmp_buffer
+ 		snmp_set(oid_to_set,'i',tmp_buffer);
+-	    	MOD_SNMP_DEBUG("AP2_SNMP: oid to set serverPortNumber");
+-		MOD_SNMP_DEBUG(oid_to_set);
+-	    	MOD_SNMP_DEBUG(tmp_buffer);
++	    	MOD_SNMP_DEBUG("AP2_SNMP: oid to set serverPortNumber %s %s", oid_to_set, tmp_buffer);
+ 	    }
+ 	flag_init = 1; 	// Apache started
+ return 0;
+@@ -596,8 +587,7 @@
+ 
+  if ((fp = fopen(file_temp,"w")) == NULL)
+ 	{
+-		MOD_SNMP_ERROR("AP2_SNMP: hook - ap2_handler: Can´t create temporary interchange file.");
+-		MOD_SNMP_ERROR(file_temp);
++		MOD_SNMP_ERROR("AP2_SNMP: hook - ap2_handler: Can´t create temporary interchange file %s", file_temp);
+ 	}
+  else
+  	{

@@ -1,0 +1,80 @@
+diff -r -u -N -- bzip2-1.0.5_orig/Makefile.am bzip2-1.0.5/Makefile.am
+--- bzip2-1.0.5_orig/Makefile.am	1970-01-01 01:00:00.000000000 +0100
++++ bzip2-1.0.5/Makefile.am	2008-07-27 21:14:37.000000000 +0200
+@@ -0,0 +1,41 @@
++lib_LTLIBRARIES = libbz2.la
++
++bin_PROGRAMS = bzip2
++bin_SCRIPTS = bzdiff bzgrep bzmore
++
++bzip2_LDADD = libbz2.la
++
++include_HEADERS = bzlib.h
++
++INCLUDES = \
++  -I$(top_srcdir) \
++  -I$(top_builddir)
++
++libbz2_la_LDFLAGS = -rpath $(libdir) -no-undefined -version-number 1:0:5
++libbz2_la_SOURCES = \
++	blocksort.c \
++	huffman.c \
++	crctable.c \
++	randtable.c \
++	compress.c \
++	decompress.c \
++	bzlib.c \
++  bzlib_private.h
++
++man1_MANS = \
++	bzdiff.1 \
++	bzgrep.1 \
++	bzip2.1 \
++	bzmore.1
++
++install-data-hook:
++	cd $(DESTDIR)$(man1dir) && ln bzmore.1 bzless.1
++	cd $(DESTDIR)$(man1dir) && ln bzgrep.1 bzegrep.1
++	cd $(DESTDIR)$(man1dir) && ln bzgrep.1 bzfgrep.1
++	cd $(DESTDIR)$(man1dir) && ln bzdiff.1 bzcmp.1
++
++install-exec-hook:
++	cd $(DESTDIR)$(bindir) && $(LN_S) bzmore bzless	
++	cd $(DESTDIR)$(bindir) && $(LN_S) bzgrep bzegrep
++	cd $(DESTDIR)$(bindir) && $(LN_S) bzgrep bzfgrep
++	cd $(DESTDIR)$(bindir) && $(LN_S) bzdiff bzcmp
+diff -r -u -N -- bzip2-1.0.5_orig/autogen.sh bzip2-1.0.5/autogen.sh
+--- bzip2-1.0.5_orig/autogen.sh	1970-01-01 01:00:00.000000000 +0100
++++ bzip2-1.0.5/autogen.sh	2008-07-27 20:31:19.000000000 +0200
+@@ -0,0 +1,10 @@
++#!/bin/sh
++#
++# 20080727
++
++libtoolize --force --copy --automake
++aclocal --force -I m4
++autoheader --force
++automake --force --copy --foreign --add-missing
++aclocal --force -I m4
++autoconf --force
+diff -r -u -N -- bzip2-1.0.5_orig/configure.in bzip2-1.0.5/configure.in
+--- bzip2-1.0.5_orig/configure.in	1970-01-01 01:00:00.000000000 +0100
++++ bzip2-1.0.5/configure.in	2008-07-27 20:30:50.000000000 +0200
+@@ -0,0 +1,17 @@
++AC_INIT([bzip2],[1.0.5])
++AC_CONFIG_SRCDIR([bzlib.c])
++AC_CONFIG_AUX_DIR([config])
++AC_CONFIG_MACRO_DIR([m4])
++AC_CONFIG_HEADER([config.h])
++
++AC_CANONICAL_HOST
++
++AM_INIT_AUTOMAKE
++
++AC_PROG_CC
++AC_PROG_LIBTOOL
++AC_PROG_LN_S
++
++
++AC_CONFIG_FILES([Makefile])
++AC_OUTPUT

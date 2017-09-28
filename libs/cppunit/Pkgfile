@@ -1,0 +1,27 @@
+# $Id: Pkgfile,v 1.4 2007/05/12 00:21:52 roman Exp $
+#
+# Description: A C++ port of JUnit.
+#  CppUnit is the C++ port of the famous JUnit framework for unit
+#  testing. Test output is in XML for automatic testing and GUI-based for
+#  supervised tests.
+# URL: http://sourceforge.net/projects/cppunit/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=cppunit
+version=1.12.0
+release=1
+source=($mirror_gentoo/cppunit-$version.tar.gz)
+
+build()
+{
+  cd cppunit-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

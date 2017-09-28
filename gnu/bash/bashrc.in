@@ -1,0 +1,70 @@
+# bashrc: bash init script
+#
+# Executed upon bash start.
+# System wide functions and aliases. Environment stuff goes in /etc/profile
+
+# Are we an interactive shell?
+if test "$PS1"
+then
+  case $TERM in
+    xterm*)
+		  if test -e @sysconfdir@/sysconfig/bash-prompt-xterm
+      then
+        PROMPT_COMMAND=@sysconfdir@/sysconfig/bash-prompt-xterm
+      else
+        PROMPT_COMMAND='echo -ne "\033]0;${USER}@${HOSTNAME%%.*}:${PWD/#$HOME/~}"; echo -ne "\007"'
+      fi
+      ;;
+    screen)
+		  if test -e @sysconfdir@/sysconfig/bash-prompt-screen
+      then
+ 			  PROMPT_COMMAND=@sysconfdir@/sysconfig/bash-prompt-screen
+      else
+        PROMPT_COMMAND='echo -ne "\033_${USER}@${HOSTNAME%%.*}:${PWD/#$HOME/~}"; echo -ne "\033\\"'
+      fi
+      ;;
+    *)
+      if test -e @sysconfdir@/sysconfig/bash-prompt-default
+      then
+        PROMPT_COMMAND=@sysconfdir@/sysconfig/bash-prompt-default
+      fi
+      ;;
+  esac
+
+  # Turn on checkwinsize
+  shopt -s checkwinsize
+
+  if test "$PS1" = "\\s-\\v\\\$ "
+  then
+    PS1="[\u@\h \W]\\$ "
+  fi
+fi
+
+# We're not a login shell?
+if ! shopt -q login_shell
+then
+	# Need to redefine pathmunge, it get's undefined at the end of the profile.
+  pathmunge()
+  {
+	  if ! echo $PATH | /bin/egrep -q "(^|:)$1($|:)"
+    then
+			if test "$2" = "after"
+      then
+				PATH="$PATH:$1"
+			else
+				PATH="$1:$PATH"
+			fi
+		fi
+	}
+
+	for i in @sysconfdir@/profile.d/*.sh
+  do
+		if test -r "$i"
+    then
+			. $i
+	  fi
+	done
+
+	unset -v i
+  unset -f pathmunge
+fi

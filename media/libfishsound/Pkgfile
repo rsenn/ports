@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: simple API that wraps Xiph.Org audio codecs
+#  libfishsound is a wrapper around the existing codec libraries and provides
+#  a consistent, higher-level programming interface. It has been designed
+#  for use in a wide variety of applications; it has no direct dependencies
+#  on Annodex or Ogg encapsulation, though it is most commonly used in
+#  conjunction with liboggz to decode or encode Ogg encapsulated Vorbis or
+#  Speex files.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libfishsound
+version=0.7.0
+release=1
+source=(http://downloads.xiph.org/releases/libfishsound/libfishsound-$version.tar.gz)
+
+build()
+{
+  cd libfishsound-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

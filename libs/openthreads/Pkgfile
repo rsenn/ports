@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: OpenThreads library
+#  This library is intended to provide a minimal & complete Object-Oriented
+#  (OO) thread interface for C++ programmers. It is loosely modeled on the
+#  Java thread API, and the POSIX Threads standards.
+# URL: http://openthreads.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=openthreads
+version=20090228
+release=1
+source=(OpenThreads-$version.tar.bz2)
+
+build() 
+{
+  cd OpenThreads-$version
+ 
+  cmake \
+      -D CMAKE_INSTALL_PREFIX="$prefix" \
+      -D CMAKE_BUILD_TYPE="RelWithDebug" \
+    .
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

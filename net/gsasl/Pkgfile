@@ -1,0 +1,27 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: GNU SASL is an implementation of the Simple Authentication and Security Layer framework and a few common SASL mechanisms. SASL is used by network servers (e.g., IMAP, SMTP) to request authentication from clients, and in clients to authenticate against servers.
+# URL: http://www.gnu.org/software/gsasl/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=gsasl
+version=0.2.29
+release=1
+source=(ftp://alpha.gnu.org/pub/gnu/gsasl/gsasl-$version.tar.gz)
+
+build()
+{
+  cd gsasl-$version
+
+  rm -f build-aux/config.sub && autoreconf --verbose --force --install
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

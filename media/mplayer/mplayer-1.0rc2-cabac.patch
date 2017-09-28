@@ -1,0 +1,96 @@
+diff -ru mplayer-export-2007-10-24_orig/libavcodec/cabac.h mplayer-export-2007-10-24/libavcodec/cabac.h
+--- mplayer-export-2007-10-24_orig/libavcodec/cabac.h	2007-10-25 03:43:24.000000000 +0200
++++ mplayer-export-2007-10-24/libavcodec/cabac.h	2007-10-25 03:59:40.000000000 +0200
+@@ -37,8 +37,8 @@
+ 
+ #define CABAC_BITS 16
+ #define CABAC_MASK ((1<<CABAC_BITS)-1)
+-#define BRANCHLESS_CABAC_DECODER 1
+-//#define ARCH_X86_DISABLED 1
++//#define BRANCHLESS_CABAC_DECODER 1
++#define ARCH_X86_DISABLED 1
+ 
+ typedef struct CABACContext{
+     int low;
+@@ -383,7 +383,7 @@
+ #define BYTE        "16"
+ #define BYTEEND     "20"
+ #endif
+-#if defined(ARCH_X86) && defined(HAVE_7REGS) && defined(HAVE_EBX_AVAILABLE) && !defined(BROKEN_RELOCATIONS)
++#if defined(ARCH_X86) && defined(HAVE_7REGS) && defined(HAVE_EBX_AVAILABLE) && !defined(BROKEN_RELOCATIONS) && !ARCH_X86_DISABLED
+     int bit;
+ 
+ #ifndef BRANCHLESS_CABAC_DECODER
+@@ -687,7 +687,7 @@
+ 
+ //FIXME the x86 code from this file should be moved into i386/h264 or cabac something.c/h (note ill kill you if you move my code away from under my fingers before iam finished with it!)
+ //FIXME use some macros to avoid duplicatin get_cabac (cannot be done yet as that would make optimization work hard)
+-#if defined(ARCH_X86) && defined(HAVE_7REGS) && defined(HAVE_EBX_AVAILABLE) && !defined(BROKEN_RELOCATIONS)
++#if defined(ARCH_X86) && defined(HAVE_7REGS) && defined(HAVE_EBX_AVAILABLE) && !defined(BROKEN_RELOCATIONS) && !ARCH_X86_DISABLED
+ static int decode_significance_x86(CABACContext *c, int max_coeff, uint8_t *significant_coeff_ctx_base, int *index){
+     void *end= significant_coeff_ctx_base + max_coeff - 1;
+     int minusstart= -(int)significant_coeff_ctx_base;
+Only in mplayer-export-2007-10-24/libavcodec: cabac.o
+Only in mplayer-export-2007-10-24/libavcodec: dpcm.o
+Only in mplayer-export-2007-10-24/libavcodec: elbg.o
+Only in mplayer-export-2007-10-24/libavcodec: h264.o
+Only in mplayer-export-2007-10-24/libavcodec: h264idct.o
+Only in mplayer-export-2007-10-24/libavcodec: h264pred.o
+Only in mplayer-export-2007-10-24/libavcodec: idcinvideo.o
+Only in mplayer-export-2007-10-24/libavcodec: imc.o
+Only in mplayer-export-2007-10-24/libavcodec: indeo2.o
+Only in mplayer-export-2007-10-24/libavcodec: indeo3.o
+Only in mplayer-export-2007-10-24/libavcodec: interplayvideo.o
+Only in mplayer-export-2007-10-24/libavcodec: jpegls.o
+Only in mplayer-export-2007-10-24/libavcodec: jpeglsdec.o
+Only in mplayer-export-2007-10-24/libavcodec: jpeglsenc.o
+Only in mplayer-export-2007-10-24/libavcodec: kmvc.o
+Only in mplayer-export-2007-10-24/libavcodec: lcldec.o
+Only in mplayer-export-2007-10-24/libavcodec: ljpegenc.o
+Only in mplayer-export-2007-10-24/libavcodec: loco.o
+Only in mplayer-export-2007-10-24/libavcodec: mace.o
+Only in mplayer-export-2007-10-24/libavcodec: mjpegbdec.o
+Only in mplayer-export-2007-10-24/libavcodec: mjpegenc.o
+Only in mplayer-export-2007-10-24/libavcodec: mmvideo.o
+Only in mplayer-export-2007-10-24/libavcodec: mpc.o
+Only in mplayer-export-2007-10-24/libavcodec: mpeg12enc.o
+Only in mplayer-export-2007-10-24/libavcodec: mpegaudio.o
+Only in mplayer-export-2007-10-24/libavcodec: mpegaudiodata.o
+Only in mplayer-export-2007-10-24/libavcodec: mpegaudiodec.o
+Only in mplayer-export-2007-10-24/libavcodec: mpegaudiodecheader.o
+Only in mplayer-export-2007-10-24/libavcodec: mpegaudioenc.o
+Only in mplayer-export-2007-10-24/libavcodec: msmpeg4.o
+Only in mplayer-export-2007-10-24/libavcodec: msmpeg4data.o
+Only in mplayer-export-2007-10-24/libavcodec: msrle.o
+Only in mplayer-export-2007-10-24/libavcodec: msvideo1.o
+Only in mplayer-export-2007-10-24/libavcodec: nellymoserdec.o
+Only in mplayer-export-2007-10-24/libavcodec: nuv.o
+Only in mplayer-export-2007-10-24/libavcodec: png.o
+Only in mplayer-export-2007-10-24/libavcodec: pngdec.o
+Only in mplayer-export-2007-10-24/libavcodec: pngenc.o
+Only in mplayer-export-2007-10-24/libavcodec: pnm.o
+Only in mplayer-export-2007-10-24/libavcodec: pnmenc.o
+Only in mplayer-export-2007-10-24/libavcodec: ptx.o
+Only in mplayer-export-2007-10-24/libavcodec: qdm2.o
+Only in mplayer-export-2007-10-24/libavcodec: qdrw.o
+Only in mplayer-export-2007-10-24/libavcodec: qpeg.o
+Only in mplayer-export-2007-10-24/libavcodec: qtrle.o
+Only in mplayer-export-2007-10-24/libavcodec: qtrleenc.o
+Only in mplayer-export-2007-10-24/libavcodec: ra144.o
+Only in mplayer-export-2007-10-24/libavcodec: ra288.o
+Only in mplayer-export-2007-10-24/libavcodec: rawdec.o
+Only in mplayer-export-2007-10-24/libavcodec: rawenc.o
+Only in mplayer-export-2007-10-24/libavcodec: rle.o
+Only in mplayer-export-2007-10-24/libavcodec: roqaudioenc.o
+Only in mplayer-export-2007-10-24/libavcodec: roqvideo.o
+Only in mplayer-export-2007-10-24/libavcodec: roqvideodec.o
+Only in mplayer-export-2007-10-24/libavcodec: roqvideoenc.o
+Only in mplayer-export-2007-10-24/libavcodec: rpza.o
+Only in mplayer-export-2007-10-24/libavcodec: rtjpeg.o
+Only in mplayer-export-2007-10-24/libavcodec: rv10.o
+Only in mplayer-export-2007-10-24/libavcodec: sgidec.o
+Only in mplayer-export-2007-10-24/libavcodec: sgienc.o
+Only in mplayer-export-2007-10-24/libavcodec: shorten.o
+Only in mplayer-export-2007-10-24/libavcodec: smacker.o
+Only in mplayer-export-2007-10-24/libavcodec: smc.o
+Only in mplayer-export-2007-10-24/libavcodec: snow.o

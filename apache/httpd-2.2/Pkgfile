@@ -1,0 +1,204 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: apache
+# URL: http://www.apache.org
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=httpd-2.2
+version=2.2.11
+release=1
+source=(http://mirror.switch.ch/mirror/apache/dist/httpd/httpd-$version.tar.bz2
+        httpd-2.2.2-nosetsid.patch
+        httpd-2.2.4-itk-mpm.patch
+        httpd2-mkcrt.sh
+        httpd-2.2.3-nexbyte.patch
+        httpd-2.2.4-ap-config.patch
+        httpd-2.2.4-setpgid.patch
+        httpd-2.2.4-accept-filter.patch
+        httpd-2.2.10-config-file.patch)
+
+build()
+{
+  cd httpd-$version
+
+  patch -N -p1 -i $SRC/httpd-2.2.2-nosetsid.patch
+  patch -N -p1 -i $SRC/httpd-2.2.3-nexbyte.patch
+  patch -N -p1 -i $SRC/httpd-2.2.4-itk-mpm.patch
+#  patch -N -p1 -i $SRC/httpd-2.2.4-ap-config.patch
+  patch -N -p1 -i $SRC/httpd-2.2.4-setpgid.patch
+  patch -N -p1 -i $SRC/httpd-2.2.4-accept-filter.patch
+  patch -N -p1 -i $SRC/httpd-2.2.10-config-file.patch
+
+  case $host in
+    *freebsd*) mpm="itk" ;;
+            *) mpm="prefork" ;;
+  esac
+
+  case $prefix in
+    "/usr")
+      sysconfdir="/etc"
+      localstatedir="/var"
+    ;;
+  esac
+
+  LTFLAGS="--silent --tag=CC" \
+  CPPFLAGS="-DPATH_MAX=4096 -DNO_DETACH -DFOREGROUND -DBIG_SECURITY_HOLE" \
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --libexecdir="$prefix/lib/httpd-2.2" \
+      --sysconfdir="${sysconfdir=$prefix/etc}/httpd-2.2" \
+      --localstatedir="${localstatedir=$prefix/var}" \
+      --includedir="$prefix/include/httpd-2.2" \
+      --datadir="$prefix/share/httpd-2.2" \
+      --mandir="$prefix/share/man" \
+      --sbindir="$prefix/sbin" \
+      --libexecdir="$prefix/lib/httpd-2.2/modules" \
+      --enable-v4-mapped \
+      --enable-exception-hook \
+      --enable-modules="all" \
+      --enable-mods-shared="most" \
+      --enable-authn-dbm \
+      --enable-authn-anon \
+      --disable-authn-dbd \
+      --enable-authn-alias \
+      --enable-authz-dbm \
+      --enable-authz-owner \
+      --enable-auth-digest \
+      --enable-auth-digest \
+      --enable-isapi \
+      --enable-file-cache \
+      --enable-cache \
+      --enable-disk-cache \
+      --enable-mem-cache \
+      --disable-dbd \
+      --enable-bucketeer \
+      --enable-dumpio \
+      --enable-echo \
+      --enable-ext-filter \
+      --enable-charset-lite \
+      --enable-deflate \
+      --enable-log-forensic \
+      --enable-logio \
+      --enable-mime-magic \
+      --enable-cern-meta \
+      --enable-expires \
+      --enable-headers \
+      --enable-ident \
+      --enable-usertrack \
+      --enable-unique-id \
+      --enable-version \
+      --enable-proxy \
+      --enable-proxy-connect \
+      --enable-proxy-ftp \
+      --enable-proxy-http \
+      --enable-proxy-ajp \
+      --enable-proxy-balancer \
+      --enable-ssl \
+      --enable-http \
+      --enable-dav \
+      --enable-info \
+      --enable-cgi \
+      --enable-cgid \
+      --enable-dav-fs \
+      --enable-dav-lock \
+      --enable-vhost-alias \
+      --enable-imagemap \
+      --enable-speling \
+      --enable-rewrite \
+      --enable-so \
+      --enable-suexec \
+      --with-suexec-bin="$prefix/lib/httpd-2.2/suexec" \
+      --with-suexec-safepath="${localstatedir=$prefix/var}/empty" \
+      --with-apr="$prefix" \
+      --with-apr-config="$prefix/bin/apr-1-config" \
+      --with-apr-util="$prefix" \
+      --with-pcre="$prefix" \
+      --with-z="$prefix" \
+      --with-ssl="$prefix" \
+      --with-mpm="$mpm" \
+      --with-program-name="httpd-2.2"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/httpd-2.2
+  install -m 644 ROADMAP VERSIONING CHANGES NOTICE LICENSE INSTALL ABOUT_APACHE README LAYOUT $ROOT/share/doc/httpd-2.2
+
+  install -d $ROOT/sbin
+
+  cd $ROOT
+
+  for file in *bin/*; do
+    if [ -e "$file" ]; then
+      set -- share/man/man[0-9]/${file##*/}.[0-9]
+      if [ -e "$1" ]; then
+        n=${1##*.}
+        s=${1%.$n}
+        mv -f "$1" "${s}22.$n"
+      fi
+      case $file in
+        bin/ab | bin/checkgid | bin/logresolve | bin/rotatelogs | bin/htcacheclean | \
+        bin/check_forensic | bin/split-logfile)
+          mv -f $file s${file}-2.2
+        ;;
+        *-2.2)
+        ;;
+        *)
+          mv -f $file ${file}-2.2
+        ;;
+      esac
+    fi
+  done
+
+  mv -f $ROOT/*bin/suexec* $ROOT/lib/httpd-2.2/
+
+  sed -i "/LIBTOOL =/ s,=.*,= `apr-1-config --apr-libtool`," $ROOT/*/httpd-2.2/build/config_vars.mk
+
+  sed -i 's,"/envvars","/envvars-2.2",' $ROOT/sbin/apxs-2.2
+  chmod +x $ROOT/sbin/envvars-2.2
+
+  pkgsysconfdir="$PKG${sysconfdir=$prefix/etc}/httpd-2.2"
+
+  install -d $pkgsysconfdir/conf.d
+
+  for cfg in $pkgsysconfdir/extra/*.conf; do
+    name=${cfg##*/}
+    sed -e "s,/extra/httpd-,/conf.d/,g" \
+      $cfg \
+      >$pkgsysconfdir/conf.d/${name#httpd-}
+  done
+
+  install -d $pkgsysconfdir/conf.d/ssl.{crl,crt,csr,key,prm}
+  install -d $pkgsysconfdir/{mods,sites}-{enabled,available}
+
+  # install default index page
+  install -d $PKG${localstatedir="$prefix/var"}/www/htdocs
+  #install -m 644 $SRC/index.php $PKG${localstatedir}/www/htdocs
+
+  # install documentation
+  install -d $ROOT/share/doc/httpd-2.2/
+
+  if [ -e $PKG${localstatedir}/www/manual ]; then
+    mv -f $PKG${localstatedir}/www/manual $ROOT/share/doc/httpd-2.2/
+  fi
+
+  if [ -e $ROOT/share/httpd-2.2/manual ]; then
+    mv -f $ROOT/share/httpd-2.2/manual $ROOT/share/doc/httpd-2.2/
+  fi
+
+  # certificate script
+  sed -i "s,@prefix@,$prefix,g" $SRC/httpd2-mkcrt.sh
+
+  install -d $ROOT/sbin
+  install -m 755 $SRC/httpd2-mkcrt.sh $ROOT/sbin/httpd-2.2-mkcrt
+
+  # remove 'original' config dir and some others
+  rm -rf ${pkgsysconfdir}/original
+  rm -rf ${pkgsysconfdir}/extra
+  rm -rf $PKG${localstatedir}/logs
+
+  chown -R 0.0 $PKG
+}

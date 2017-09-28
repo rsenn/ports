@@ -1,0 +1,25 @@
+# $Id: Pkgfile,v 1.2 2007/04/22 23:07:53 roman Exp $
+#
+# Description: Yet Another Compiler-Compiler
+# URL: http://dinosaur.compilertools.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=yacc
+version=20080826
+release=1
+source=(ftp://invisible-island.net/byacc/byacc.tar.gz)
+
+build()
+{
+  cd byacc-20080826
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --mandir="$prefix/share/man"
+
+  make
+  make DESTDIR="$PKG" install
+}

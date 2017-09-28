@@ -1,0 +1,90 @@
+# $Id: Pkgfile,v 1.8 2007/04/22 23:07:58 roman Exp $
+#
+# Description: VT102 terminal emulator for the X Window System
+#  Rxvt is an 8-bit clean, color xterm replacement that uses significantly
+#  toolkit configurability or Tek graphics, but also since features can
+#  The distribution also includes rclock, the smaller/better xclock
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=rxvt
+version=2.7.10
+release=1
+source=($mirror_sf/rxvt/rxvt-$version.tar.gz
+        rxvt-2.7.10-customization.patch
+        rxvt-2.7.10-customization-2.patch
+      	rxvt-2.7.10-no-prog-cp.patch)
+
+build()
+{
+  cd rxvt-$version
+
+  #patch -N -p1 -i $SRC/rxvt-2.7.10-customization.patch
+  patch -N -p1 -i $SRC/rxvt-2.7.10-customization-2.patch
+  patch -N -p1 -i $SRC/rxvt-2.7.10-no-prog-cp.patch
+
+  ln -sf autoconf/configure.in .
+  rm -f autoconf/libtool.m4
+
+  libtoolize --force --copy --install 
+  aclocal --force -I autoconf
+  autoheader --force
+  autoconf --force
+
+  #cp $prefix/share/libtool/config/config.{guess,sub} autoconf
+
+  [ -e "${terminfo=$prefix/share/terminfo}" ] && terminfo="$prefix/share/terminfo"
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --mandir="$prefix/share/man" \
+       --enable-{static,shared} \
+       --enable-languages \
+       --enable-{utmp,wtmp,lastlog} \
+       --disable-xpm-background \
+       --enable-transparency \
+       --disable-menubar \
+       --enable-graphics \
+       --disable-{rxvt,next}-scroll \
+       --enable-half-shadow \
+       --enable-xim \
+       --disable-greek \
+       --enable-ttygid \
+       --enable-{backspace,delete}-key \
+       --enable-resources \
+       --disable-xgetdefault \
+       --disable-strings \
+       --disable-swapscreen \
+       --disable-frills \
+       --disable-linespace \
+       --enable-24bit \
+       --enable-keepscrolling \
+       --enable-mousewheel \
+       --enable-slipwheeling \
+       --disable-old-selection \
+       --enable-new-selection \
+       --disable-{dmalloc,dlmalloc} \
+       --enable-smart-resize \
+       --enable-256-color \
+       --with-encoding="sjis" \
+       --with-term="rxvt" \
+       --with-terminfo="$terminfo" \
+       --with-x \
+       --without-xpm \
+       --disable-reverse-video \
+       --enable-xterm-scroll
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/man/man1
+  mv -f */*.1 $ROOT/share/man/man1
+
+  install -d $ROOT/share/doc
+
+  rm -f doc/Makefile*
+  cp -rf doc $ROOT/share/doc/rxvt
+}

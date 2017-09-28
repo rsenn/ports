@@ -1,0 +1,24 @@
+diff -ru webvz/app/controllers/login_controller.rb webvz_patched/app/controllers/login_controller.rb
+--- webvz/app/controllers/login_controller.rb	2008-05-06 11:39:35.000000000 +0200
++++ webvz_patched/app/controllers/login_controller.rb	2008-05-06 13:39:29.000000000 +0200
+@@ -11,7 +11,7 @@
+   def sign_in
+     session[:user_id] = nil
+     if request.post?
+-      user = User.authunticate(params[:username], params[:password])
++      user = User.authenticate(params[:username], params[:password])
+       if user
+         session[:user_id] = user.id
+         session[:user_name] = user.username
+diff -ru webvz/public/stylesheets/webvz.css webvz_patched/public/stylesheets/webvz.css
+--- webvz/public/stylesheets/webvz.css	2008-05-06 11:39:35.000000000 +0200
++++ webvz_patched/public/stylesheets/webvz.css	2008-05-06 13:19:34.000000000 +0200
+@@ -3,7 +3,7 @@
+ body {
+         margin:0;
+         padding:0;
+-	background-color: #C7F78F;
++/*	background-color: #C7F78F;*/
+ }
+ 
+ #links 

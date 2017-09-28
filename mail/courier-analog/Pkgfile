@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Courier log analyzer
+# URL: 
+# Maintainer: 
+# Depends on: 
+
+name=courier-analog
+version=0.15
+release=1
+source=(http://switch.dl.sourceforge.net/sourceforge/courier/courier-analog-0.15.tar.bz2)
+
+build() 
+{
+  cd courier-analog-$version
+  
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+  
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/courier-analog
+  install -m 644 README AUTHORS COPYING ChangeLog INSTALL NEWS COPYING.GPL $ROOT/share/doc/courier-analog
+}
+
+# EOF

@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A library to explain errno values returned by libc functions.
+#  The libexplain project provides a library that may be used to explain
+#  Unix and Linux system call errors. This will make your application's
+#  error messages much more informative to your users. The library is not
+#  quite a drop-in replacement for strerror, but it comes close, each system
+#  call has a dedicated libexplain function.
+#  .
+# URL: http://libexplain.sourceforge.net/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=libexplain
+version=0.1
+release=1
+source=(http://libexplain.sourceforge.net/libexplain-0.1.tar.gz)
+
+build()
+{
+  cd libexplain-0.1
+./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+make
+make DESTDIR="$PKG" install
+}
+
+# EOF

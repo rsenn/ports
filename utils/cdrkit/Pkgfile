@@ -1,0 +1,26 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A collection of applications for CD creation.
+# URL: 
+# Maintainer: 
+# Depends on: 
+
+name=cdrkit
+version=1.1.9
+release=1
+source=(http://cdrkit.org/releases/cdrkit-1.1.9.tar.gz)
+
+build() 
+{
+  cd cdrkit-$version
+  
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+  
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

@@ -1,0 +1,33 @@
+diff -ru sndpeek-1.3_orig/src/marsyas/LPC.cpp sndpeek-1.3/src/marsyas/LPC.cpp
+--- sndpeek-1.3_orig/src/marsyas/LPC.cpp	2008-11-22 00:41:25.000000000 +0100
++++ sndpeek-1.3/src/marsyas/LPC.cpp	2008-11-22 00:58:56.000000000 +0100
+@@ -28,6 +28,8 @@
+ 
+ #include "LPC.h"
+ 
++#include <cmath>
++
+ LPC::LPC( unsigned int inSize )
+ {
+   inSize_ = inSize;
+@@ -117,7 +119,7 @@
+   for (i=1; i<order_; i++)
+     for (j=1; j<order_; j++)
+       {
+-		rmat_(i-1,j-1) = corr_(abs((int)(i-j)));
++		rmat_(i-1,j-1) = corr_(abs((float)(int)(i-j)));
+       }
+ 
+   rmat_.invert(temp_);
+diff -ru sndpeek-1.3_orig/src/sndpeek/RtAudio.cpp sndpeek-1.3/src/sndpeek/RtAudio.cpp
+--- sndpeek-1.3_orig/src/sndpeek/RtAudio.cpp	2008-11-22 00:41:25.000000000 +0100
++++ sndpeek-1.3/src/sndpeek/RtAudio.cpp	2008-11-22 00:56:30.000000000 +0100
+@@ -41,6 +41,8 @@
+ 
+ #include "RtAudio.h"
+ #include <iostream>
++#include <cstdlib>
++#include <cstring>
+ 
+ // Static variable definitions.
+ const unsigned int RtApi::MAX_SAMPLE_RATES = 14;

@@ -1,0 +1,24 @@
+diff -ru libtool-2.2.4_orig/libltdl/config/config.guess libtool-2.2.4/libltdl/config/config.guess
+--- libtool-2.2.4_orig/libltdl/config/config.guess	2008-12-18 21:35:15.000000000 +0100
++++ libtool-2.2.4/libltdl/config/config.guess	2008-12-18 21:54:00.000000000 +0100
+@@ -996,6 +996,11 @@
+ 	esac
+ 	# Determine whether the default compiler is a.out or elf
+ 	eval $set_cc_for_build
++	build=`$CC_FOR_BUILD -dumpmachine 2>/dev/null`
++  if test x"$build" != x; then
++    echo "$build"
++    exit 0
++  fi
+ 	sed 's/^	//' << EOF >$dummy.c
+ 	#include <features.h>
+ 	#ifdef __ELF__
+@@ -1019,7 +1024,7 @@
+ 	LIBC=diet
+ 	#endif
+ EOF
+-	eval "`$CC_FOR_BUILD -E $dummy.c 2>/dev/null | sed -n '
++  eval "`$CC_FOR_BUILD -E $dummy.c 2>/dev/null | sed -n '
+ 	    /^LIBC/{
+ 		s: ::g
+ 		p

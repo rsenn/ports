@@ -1,0 +1,64 @@
+# $Id: Pkgfile,v 1.42 2007/05/09 21:02:56 roman Exp $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=mingw-sw-utils
+version=0.9
+release=1
+target=i686-pc-mingw32
+source=(sw-utils.comp net_hwaddr.in sw-utils-20070930.tar.gz)
+
+# ---------------------------------------------------------------------------
+build()
+{
+  echo $PATH
+
+#  svn co file:///mnt/repository/epiphyte/trunk/sw-utils
+  cd sw-utils*
+
+  test -f autogen.sh && sh autogen.sh
+
+  case $prefix in
+    /usr)
+      sysconfdir="/etc"
+      localstatedir="/var"
+      ;;
+  esac
+
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      ${target+--target="$target"} \
+      --prefix="$prefix" \
+      --sysconfdir="$sysconfdir" \
+      --localstatedir="$localstatedir" \
+      --mandir="$prefix/man" \
+      --without-zlib \
+      --with-bzlib="$prefix" \
+      --with-libtar="$prefix" \
+      --disable-debug
+
+  make
+  make DESTDIR="$PKG" install
+
+  sed -i '/^#test $shlib/ s,^#,,
+         /^#shlib_.*=1/ s,^#,,' $ROOT/lib/sh/*
+
+  ln -sf svcmon $ROOT/bin/esvc
+
+  mkdir -p $ROOT/var/lib/{dep,pkg,rel,tpl}
+
+  install -d $ROOT/src/distfiles
+
+  install -d $ROOT/share/bash
+  install -m 644 $SRC/sw-utils.comp $ROOT/share/bash/sw-utils
+
+  sed "s,@prefix@,$prefix,g" $SRC/net_hwaddr.in > $ROOT/bin/net_hwaddr
+  chmod 755 $ROOT/bin/net_hwaddr
+
+  copy_license "COPYING"
+}

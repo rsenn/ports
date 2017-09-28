@@ -1,0 +1,40 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=tcp_wrappers
+version=7.6
+release=1
+source=(ftp://ftp.porcupine.org/pub/security/tcp_wrappers_$version.tar.gz
+        tcp-wrappers-7.6-errlist.patch
+        tcp-wrappers-7.6-malloc.patch)
+
+build()
+{
+  cd tcp_wrappers_$version
+
+  patch -N -p1 -i $SRC/tcp-wrappers-7.6-errlist.patch
+  patch -N -p1 -i $SRC/tcp-wrappers-7.6-malloc.patch
+
+  sed -i '/CFLAGS/ s:-O :$(OPTFLAGS) :' Makefile
+
+  case $host in
+    *-linux*) OSTYPE=linux ;;
+    *) OSTYPE=generic ;;
+  esac
+
+  make CC="${CC-cc}" \
+        OPTFLAGS="$CFLAGS" \
+        REAL_DAEMON_DIR="$prefix" \
+        STYLE="-DPROCESS_OPTIONS" \
+     $OSTYPE
+
+  install -d $ROOT/lib
+  install -m 644 libwrap.a $ROOT/lib/
+
+  install -d $ROOT/include
+  install -m 644 *.h $ROOT/include/
+}

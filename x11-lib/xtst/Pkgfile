@@ -1,0 +1,32 @@
+# $Id: Pkgfile,v 1.8 2007/04/22 23:07:58 roman Exp $
+#
+# Description: 11 Testing -- Resource extension library
+#   libXtst provides an X Window System client interface to the Record
+#   extension to the X protocol.
+#  .
+#  The Record extension allows X clients to synthesise input events, which
+#  is useful for automated testing.
+#  .
+# URL: http://xorg.freedesktop.org
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=xtst
+version=1.0.3
+release=1
+source=(ftp://ftp.x.org/pub/individual/lib/libXtst-$version.tar.bz2)
+
+build()
+{
+  cd libXtst-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --${shared:=enable}-shared \
+       --${static:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+}

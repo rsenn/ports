@@ -1,0 +1,25 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An ncurses-based clone of the game snake.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=pslange
+version=0.1
+release=1
+source=(http://www.pancho.dk/pslange/pslange_${version//./-}.tar.gz)
+
+build() 
+{
+  cd pslange
+  
+  python setup.py install --prefix="$ROOT"
+
+  #mv -f $ROOT/bin/snake.py $ROOT/bin/snake
+  #
+  install -d $ROOT/share/doc/pslange
+  install -m 644 README COPYING $ROOT/share/doc/pslange
+}
+
+# EOF

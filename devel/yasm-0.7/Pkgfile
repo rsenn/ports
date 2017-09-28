@@ -1,0 +1,38 @@
+# $Id: Pkgfile, v1.18 2007/04/22 23:07:53 roman Exp $
+#
+# Description: A complete rewrite of NASM.
+#  Yasm is a complete rewrite of the NASM assembler. 
+#  It currently supports the x86 and AMD64 instruction sets, 
+#  accepts NASM and GAS assembler syntaxes, outputs binary, 
+#  ELF32, ELF64, COFF, Mach-O (32 and 64), RDOFF2, Win32, and 
+#  Win64 object formats, and generates source debugging 
+#  information in STABS, DWARF 2, and CodeView 8 formats.
+#  .
+# URL: http://www.tortall.net/projects/yasm/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=yasm
+version=0.7.2
+release=1
+source=(http://www.tortall.net/projects/yasm/releases/yasm-$version.tar.gz)
+
+build()
+{
+  cd yasm-$version
+
+  #sh autogen.sh
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --prefix="$prefix" \
+     --${shared:=enable}-shared \
+     --${static:=enable}-shared
+
+  make 
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/yasm
+  install -m 644 ABOUT-NLS AUTHORS COPYING INSTALL Artistic.txt BSD.txt $ROOT/share/doc/yasm
+}

@@ -1,0 +1,86 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Package: cmake-2.7
+# Provides: cmake
+# Replaces: cmake
+# Section: devel
+# Description: CMake is a cross-platform build system
+#  CMake is a cross-platform, open-source build system. It is used to
+#  choice. CMake is quite sophisticated: it is possible to support complex
+# URL: http://www.cmake.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=cmake-2.7
+version=2.7.20081108
+release=1
+source=(ftp://www.cmake.org/pub/cmake/vCVS/cmake-$version.zip)
+
+build()
+{
+  cd cmake-$version
+
+  find * -type f -print0 | xargs -0 dos2unix
+  find * -type f -name "*.cmake" -or -name "*.txt" -or -name "*.cxx" -print0 | \
+  xargs -0 sed -i \
+      -e "s,/usr/local,$prefix,g" \
+      -e "s,/usr/bin,$prefix/bin,g" \
+      -e "s,/usr/sbin,$prefix/sbin,g" \
+      -e "s,/usr/lib,$prefix/lib,g" \
+      -e "s,/usr/include,$prefix/include,g"
+
+  chmod 755 configure bootstrap
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  mkdir -p $ROOT/share
+  mv -f $ROOT/man $ROOT/share
+
+  mkdir -p $ROOT/share/doc/cmake-2.7
+  mv -f $ROOT/doc $ROOT/share/doc/cmake-2.7/html
+
+  for FILE in $ROOT/bin/* $ROOT/share/man/*/*; do
+    STEM=${FILE%.[0-9]*}
+    SECT=${FILE#$STEM.}
+
+    if [ -e "$STEM.$SECT" ]; then
+      mv -f "$STEM.$SECT" "$STEM"`IFS='.-'; set $name; echo $2$3`.$SECT
+    elif [ -e "$STEM" ]; then
+      mv -vf "$STEM" "$STEM-${name##*-}"
+    fi
+  done
+}
+
+postinst()
+{
+  case "$1" in
+    configure)
+      update-alternatives --quiet --install /usr/bin/cmake cmake \
+        /usr/bin/cmake-2.7 25 \
+        --slave /usr/share/men/man1/cmake27.1.gz cmake.1.gz /usr/share/man/man1/cmake.1.gz \
+        --slave /usr/share/men/man1/ccmake27.1.gz ccmake.1.gz /usr/share/man/man1/ccmake.1.gz \
+        --slave /usr/share/men/man1/ctest27.1.gz ctest.1.gz /usr/share/man/man1/ctest.1.gz
+
+      # Purge the debconf database we no longer need.
+      if [ -e /usr/share/debconf/confmodule ]; then
+        . /usr/share/debconf/confmodule
+        db_version 2.0
+        db_purge
+      fi
+    ;;
+
+    abort-upgrade|abort-remove|abort-deconfigure)
+    ;;
+
+    *)
+      echo "postinst called with unknown argument \`$1'" >&2
+      exit 0
+    ;;
+  esac
+}

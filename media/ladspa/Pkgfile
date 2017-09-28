@@ -1,0 +1,41 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:52 roman Exp $
+#
+# Description: Linux Audio Developer's Simple Plugin API (LADSPA).
+#  LADSPA is a free standard specification for audio effect plugins.
+#  Contains sample plugins, and analyseplugin, listplugin, applyplugin
+#  programs, and the ladspa.h, the LADSPA specification.
+#  Please build-depend on this package if you need ladspa.h
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=ladspa
+version=1.13
+release=1
+source=(http://www.ladspa.org/download/ladspa_sdk_$version.tgz
+        ladspa-sdk-1.12-gcc4.patch)
+
+build()
+{
+  cd ladspa_sdk
+
+  patch -N -p1 -i $SRC/ladspa-sdk-1.12-gcc4.patch
+
+  make -C src \
+      CC="${CC-gcc}" \
+      CPP="${CXX-g++}" \
+      CFLAGS="-I. ${CFLAGS--g -O2}" \
+      INSTALL_PLUGINS_DIR="$ROOT/lib/ladspa/" \
+      INSTALL_INCLUDE_DIR="$ROOT/include/" \
+      INSTALL_BINARY_DIR="$ROOT/bin/" \
+    targets \
+    install
+
+  install -d $ROOT/share/doc/ladspa
+  install -m 644 README doc/COPYING doc/ladspa.h.txt $ROOT/share/doc/ladspa
+
+  install -d $ROOT/share/doc/ladspa/html
+  install -m 644 doc/*.html $ROOT/share/doc/ladspa/html
+}
+
+

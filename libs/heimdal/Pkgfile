@@ -1,0 +1,48 @@
+# $Id: Pkgfile,v 1.16 2007/05/09 21:02:48 roman Exp $
+#
+# Description: Heimdal is an implementation of Kerberos 5 (and some more stuff)
+#              largely written in Sweden (which was important when we started
+#              writing it, less so now). It is freely available under a three
+#              clause BSD style license.
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=heimdal
+version=1.2.1
+release=1
+source=(http://www.h5l.org/dist/src/heimdal-$version.tar.gz)
+
+build()
+{
+  cd heimdal-$version
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --${shared:=enable}-shared \
+      --${static:=enable}-shared \
+      --without-openldap \
+      --with-krb4="$prefix" \
+      --with-krb-lib="$prefix/lib" \
+      --with-krb-include="$prefix/include" \
+      --with-krb-config="$prefix/bin/krb5-config" \
+      --with-openssl="$prefix" \
+      --with-openssl-lib="$prefix/lib" \
+      --with-openssl-include="$prefix/include" \
+      --with-readline="$prefix" \
+      --with-readline-lib="$prefix/lib" \
+      --with-readline-include="$prefix/include/readline" \
+      --without-hesiod \
+      --without-x
+
+  make DESTDIR="$PKG" install
+  make -C lib/com_err DESTDIR="$PKG" install
+
+  # these conflict with glibc headers
+  rm -f $ROOT/include/{glob,fnmatch}.h
+
+  rm -f $ROOT/bin/su
+  rm -f $ROOT/info/dir
+}

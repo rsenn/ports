@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=ltxml
+version=1.2.7
+release=1
+source=(ftp://ftp.cogsci.ed.ac.uk/pub/LTXML/ltxml-$version.tar.gz)
+
+build()
+{
+  cd ltxml-$version/XML
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --mandir="\${prefix}/share/man" \
+      --${shared:=enable}-shared \
+      --${static:=enable}-shared
+
+  for dir in . src/appl; do
+    make -iC "$dir" all || break
+  done
+
+  make prefix="$ROOT" install
+
+  install -d $ROOT/share/doc
+  mv doc $ROOT/share/doc/ltxml-$version
+}

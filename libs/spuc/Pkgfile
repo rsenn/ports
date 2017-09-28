@@ -1,0 +1,52 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:52 roman Exp $
+# Package: libspuc
+# Description: Source code library for DSP.
+#  Signal Processing using C++ (SPUC) is a C++ source code library of DSP and
+#  digital communication classes and functions useful for system modeling,
+#  software prototyping, and simulation.
+# URL: http://spuc.sourceforge.net/
+# Maintainer: Roman Senn <r.senn@nexbyte.com>
+# Depends on:
+
+name=spuc
+version=2.3.1
+release=1
+source=($mirror_sf/spuc/spuc$version.tar.gz
+        $mirror_sf/spuc/spuc_manual.pdf
+        GNUmakefile
+        spuc-2.3-mingw32.patch)
+
+build()
+{
+#  export HOME=$(pwd)
+#  echo "/1 :pserver:anonymous@spuc.cvs.sourceforge.net:2401/cvsroot/spuc A" >> .cvspass
+
+#  cvs -z9 -d:pserver:anonymous@spuc.cvs.sourceforge.net:/cvsroot/spuc co spuc
+
+  cd spuc
+  patch -N -p1 -i $SRC/spuc-2.3-mingw32.patch
+
+  if test "$host" != "$build"
+  then
+    export LIBTOOL="$host-libtool"
+  fi
+
+  cp $SRC/GNUmakefile .
+
+  make -i CXX="$CXX" ${LIBTOOL:+LIBTOOL="$LIBTOOL"}
+  make -i CXX="$CXX" prefix="$prefix" DESTDIR="$PKG" install
+
+  install -d $ROOT/lib
+  install -m 644 .libs/libspuc.a $ROOT/lib
+
+  find -name "*.h" >headers.list
+  tar -cvf headers.tar --files-from headers.list
+  install -d $ROOT/include/spuc
+  tar -C $ROOT/include/spuc -xvf headers.tar
+
+  install -d $ROOT/share/doc/spuc
+  install -m 644 $SRC/*.pdf $ROOT/share/doc/spuc
+  cp -rf examples $ROOT/share/doc/spuc
+  find $ROOT/share/doc/spuc -name CVS | xargs rm -rf
+}
+

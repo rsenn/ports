@@ -1,0 +1,40 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Adds bookmarks and browsing to the shell command `cd'.
+# cdargs adds a bookmark feature and a simple filebrowser to the builtin
+# shell command `cd'. This lets you jump to various places throughout
+# the filesystem with just a few keystrokes. It is intended for heavy
+# shell users.
+#
+# URL: http://www.skamphausen.de/cgi-bin/ska/CDargs
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libgcc1, libncurses5, libstdc++6
+
+name=cdargs
+version=1.35
+release=4adfinis1
+source=(http://www.skamphausen.de/downloads/cdargs/cdargs-$version.tar.gz
+        cdargs.sh)
+
+build()
+{
+  cd cdargs-$version
+
+  ./autogen.sh
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/cdargs
+  install -m 644 [A-Z]*[A-Z]* $ROOT/share/doc/cdargs
+
+  install -d $PKG/etc/sysprofile.d
+  install -m 644 $SRC/cdargs.sh $PKG/etc/sysprofile.d
+  ln -sf cdargs.sh $PKG/etc/sysprofile.d/cdargs.bash
+}

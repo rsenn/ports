@@ -1,0 +1,33 @@
+# $Id: Pkgfile,v 1.3 2007/05/09 21:02:53 roman Exp $
+#
+# Description: Imlib2 extensions for PHP4.
+#  php_imlib is an extension for PHP4 that makes the Imlib2 image
+#  manipulation library available from within PHP scripts. The extension will
+#  build as a self-contained shared object, or as a module built into PHP.
+# URL: http://mmcc.cx/php_imlib/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=php_imlib
+version=0.3
+release=1
+source=(http://mmcc.cx/php_imlib/php_imlib-$version.tar.gz
+        php_imlib-0.3-update.patch)
+
+build()
+{
+  cd imlib
+  patch -N -p1 -i $SRC/php_imlib-0.3-update.patch
+
+  # this will build the configure script
+  phpize
+
+  ./configure --prefix=$prefix \
+       --with-libdir=$prefix/lib \
+       --with-php-config=$prefix/bin/php-config
+
+  make CFLAGS="$CFLAGS -Wall -DNDEBUG"
+  make EXTENSION_DIR=$ROOT/lib/php/extensions install
+
+  copy_license "LICENSE"
+}

@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: a library to manipulate RDF files describing LADSPA plugins
+#  Liblrdf can read RDF/XML and N3 files and export N3 files. It also has
+#  a light taxonomic inference capablility.
+#  It can also be used for general RDF manipulation.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=liblrdf
+version=0.4.0
+release=1
+source=($mirror_sf/lrdf/liblrdf-$version.tar.gz)
+
+build()
+{
+  cd liblrdf-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

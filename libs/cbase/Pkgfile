@@ -1,0 +1,34 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A C library for UNIX systems software development.
+#  cbase is a C library that simplifies systems software development
+#  on UNIX. The library includes functions for memory management, string
+#  parsing, sub-process execution, filesystem traversal, I/O, interfaces to
+#  IPC mechanisms including pseudo-terminals, shared memory, semaphores,
+#  and other facilities. It also has implementations of common dynamic
+#  data structures like linked lists, queues, stacks, and hash tables,
+#  a real-time scheduler similar in functionality to the cron daemon, and
+#  high-level APIs to Berkeley sockets and other networking functions. Full
+#  API documentation is included.
+# URL: http://www.hyperrealm.com/main.php?s=cbase
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=cbase
+version=1.3.4
+release=1
+source=(http://www.hyperrealm.com/cbase/cbase-$version.tar.gz)
+
+build()
+{
+  cd cbase-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

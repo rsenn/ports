@@ -1,0 +1,40 @@
+# $Id: Pkgfile,v 1.7 2007/05/09 21:02:40 roman Exp $
+#
+# Description: MinGW runtime binaries
+# URL: http://www.mingw.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=mingw-runtime-bin
+version=3.14
+release=1
+source=($mirror_sf/mingw/mingw-runtime-$version.tar.gz
+        ldd.sh
+        pedump.c
+        disasm.h)
+
+build()
+{
+  HOST=i686-pc-mingw32
+
+  DIR="${ROOT%/}/$HOST"
+
+  install -d "$DIR"
+  install -d "$DIR/bin"
+  install -d "$DIR/share"
+
+  for LIB in lib/*.a; do 
+    $HOST-ranlib "$LIB"
+  done
+
+  cp -rf include lib "$DIR/"
+  cp -rf doc man "$DIR/share/"
+  
+  install -d $ROOT/bin
+  install -m 755 $SRC/ldd.sh $ROOT/bin/$HOST-ldd
+
+  ln -sf ../../bin/$HOST-ldd $DIR/bin/ldd
+
+  ${CC-cc} ${CFLAGS--g -O2} -o $ROOT/bin/pedump $SRC/pedump.c
+}
+

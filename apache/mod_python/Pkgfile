@@ -1,0 +1,48 @@
+# $Id: Pkgfile 424 2008-08-10 01:52:57Z enki $
+#
+# Description: Python-embedding module for Apache 2
+#  The mod_python module supports web applications written in Python. Because
+#  the parser is embedded in the server as an Apache module, it will run
+#  much faster than traditional CGI.
+#  This package is built for the current Python version.
+# URL: http://www.modpython.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=mod_python
+version=3.3.1
+release=1
+source=(http://mirror.switch.ch/mirror/apache/dist/httpd/modpython/mod_python-$version.tgz
+        mod_python-3.3.1-builddir.patch)
+
+build()
+{
+  cd mod_python-$version
+
+  patch -N -p1 -i $SRC/mod_python-3.3.1-builddir.patch
+
+  APXS=`echo $prefix/*bin/apxs*`
+
+  for apxs in $APXS; do
+   (rm -rf ${builddir=build-`$apxs -q progname`}
+    mkdir -p $builddir
+    cd $builddir
+
+    ../configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix" \
+       --with-apxs="$apxs"
+
+    make
+    make DESTDIR="$PKG" install
+
+    libexecdir=`$apxs -q libexecdir`
+
+    install -d $PKG${libexecdir}
+    install -m 755 src/.libs/mod_python.so $PKG${libexecdir}/
+    )
+  done
+
+}

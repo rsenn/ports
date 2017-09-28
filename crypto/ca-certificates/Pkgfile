@@ -1,0 +1,46 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Common CA certificates
+#  This package includes PEM files of CA certificates to allow SSL-based
+#  applications to check for the authenticity of SSL connections. . It
+#  includes, among others, certificate authorities used by the Debian
+#  infrastructure and those shipped with Mozilla's browsers. . Please
+#  note that certificate authorities whose certificates are included in
+#  this package are not in any way audited for trustworthiness and RFC
+#  3647 compliance, and that full responsibility to assess them belongs
+#  to the local system administrator. Common CA certificates This package
+#  includes PEM files of CA certificates to allow SSL-based applications
+#  to check for the authenticity of SSL connections. . It includes, among
+#  others, certificate authorities used by the Debian infrastructure and
+#  those shipped with Mozilla's browsers. . Please note that certificate
+#  authorities whose certificates are included in this package are not in
+#  any way audited for trustworthiness and RFC 3647 compliance, and that
+#  full responsibility to
+#  .
+#  assess them belongs to the local system administrator.
+#  .
+# URL:
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=ca-certificates
+version=20080809
+release=1
+source=(ca-certificates-$version.tar.bz2)
+
+build()
+{
+  cd ca-certificates
+
+  case $prefix in
+    "/usr") sysconfdir="/etc" ;;
+  esac
+
+ install -d $PKG/${sysconfdir="/etc"}
+ install -d $ROOT/share/ca-certificates
+
+ cp -rf etc/* $PKG/${sysconfdir="/etc"}/
+ cp -rf usr/share/ca-certificates/* $ROOT/share/ca-certificates
+}
+
+# EOF

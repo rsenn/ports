@@ -1,0 +1,39 @@
+diff -ru -ru httpd-2.2.3_orig/server/mpm/prefork/prefork.c httpd-2.2.3/server/mpm/prefork/prefork.c
+--- httpd-2.2.3_orig/server/mpm/prefork/prefork.c	2006-10-05 09:55:14.000000000 +0200
++++ httpd-2.2.3/server/mpm/prefork/prefork.c	2006-10-05 10:05:51.000000000 +0200
+@@ -1301,6 +1301,9 @@
+         parent_pid = ap_my_pid = getpid();
+     }
+ 
++    int pid = getpid();
++    setpgid(pid, pid);
++  
+     unixd_pre_config(ptemp);
+     ap_listen_pre_config();
+     ap_daemons_to_start = DEFAULT_START_DAEMON;
+diff -ru -ru httpd-2.2.3_orig/server/mpm/worker/worker.c httpd-2.2.3/server/mpm/worker/worker.c
+--- httpd-2.2.3_orig/server/mpm/worker/worker.c	2006-10-05 09:55:13.000000000 +0200
++++ httpd-2.2.3/server/mpm/worker/worker.c	2006-10-05 10:16:21.000000000 +0200
+@@ -1977,6 +1977,9 @@
+         parent_pid = ap_my_pid = getpid();
+     }
+ 
++    int pid = getpid();
++    setpgid(pid, pid);
++    
+     unixd_pre_config(ptemp);
+     ap_listen_pre_config();
+     ap_daemons_to_start = DEFAULT_START_DAEMON;
+diff -r -u httpd-2.2.4_orig/server/mpm/itk/itk.c httpd-2.2.4/server/mpm/itk/itk.c
+--- httpd-2.2.4_orig/server/mpm/itk/itk.c	2007-05-25 15:24:20.000000000 +0200
++++ httpd-2.2.4/server/mpm/itk/itk.c	2007-05-25 15:25:18.000000000 +0200
+@@ -1371,6 +1371,9 @@
+         parent_pid = ap_my_pid = getpid();
+     }
+ 
++    int pid = getpid();
++    setpgid(pid, pid);
++
+     unixd_pre_config(ptemp);
+     ap_listen_pre_config();
+     ap_daemons_to_start = DEFAULT_START_DAEMON;

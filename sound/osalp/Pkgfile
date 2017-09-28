@@ -1,0 +1,26 @@
+# $Id: Pkgfile 424 2008-08-10 01:52:57Z enki $
+#
+# Description: Open Source Audio Library
+# Bruce Forsberg's project for C++ classes to handle audio functions.
+# URL: http://osalp.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=osalp
+version=0.7.5
+release=1
+source=($mirror_sf/osalp/osalp-$version.tar.gz)
+
+build()
+{
+  cd osalp-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

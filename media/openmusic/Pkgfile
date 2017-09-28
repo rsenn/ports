@@ -1,0 +1,25 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: OpenMusic (OM) is a full visual programming language based on CommonLisp / CLOS. OM is icon oriented, uses extensively drag and drop, and has built-in visual control structures that interface with Lisp ones, such as loop.
+# URL: http://freesoftware.ircam.fr/rubrique.php3?id_rubrique=15
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=openmusic
+version=4.7.2.beta
+release=1
+source=(ftp://freesoftware.ircam.fr/pub/openmusic/releases/latest/openmusic-4.7.2.beta.tar.gz)
+
+build()
+{
+  cd openmusic-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

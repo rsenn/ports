@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: 
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=fdupes
+version=1.40
+release=1
+source=(http://netdial.caribe.net/~adrian2/programs/fdupes-$version.tar.gz)
+
+build() 
+{
+  cd fdupes-$version
+  
+  make
+
+  install -d $ROOT/bin
+  install -m 755 fdupes $ROOT/bin
+
+  install -d $ROOT/share/man/man1
+  install -m 644 fdupes.1 $ROOT/share/man/man1
+  
+  install -d $ROOT/share/doc/fdupes
+  install -m 644 TODO README INSTALL CONTRIBUTORS CHANGES $ROOT/share/doc/fdupes
+}
+
+# EOF

@@ -1,0 +1,41 @@
+#!/usr/local/bin/sh
+
+prefix="${prefix:-@prefix@}"
+libdir="${libdir:-@libdir@}"
+sysconfdir="${sysconfdir:-@sysconfdir@}"
+
+shelldir="$libdir/shlib"
+distccdir="$sysconfdir/distcc"
+
+source $shelldir/util
+source $shelldir/string
+source $shelldir/inet
+source $shelldir/list
+
+IFS="$newline"
+
+distcc_oldhosts=$(cat "$distccdir/hosts" 2>/dev/null)
+distcc_newhosts=$(inet_scan_tcp 3632 $(inet_networks))
+
+distcc_hosts="$distcc_oldhosts"
+
+for newhost in $distcc_newhosts; do
+  if ! list_isin 'distcc_oldhosts' $newhost; then
+    msg "new host '$newhost'."
+    list_append 'distcc_hosts' "$newhost"
+  fi
+done
+
+for oldhost in $distcc_oldhosts; do
+  if ! list_isin 'distcc_newhosts' $oldhost; then
+    msg "host '$oldhost' is gone."
+    list_remove 'distcc_hosts' "$oldhost"
+    list_append 'distcc_hosts' "$oldhost"
+  fi
+done
+
+echo "$distcc_hosts" >"$distccdir/hosts"
+
+DISTCC_HOSTS=$(echo $distcc_hosts)
+
+echo -n 'export '; var_dump 'DISTCC_HOSTS'

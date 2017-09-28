@@ -1,0 +1,30 @@
+# $Id: Pkgfile,v 1.11 2007/04/22 23:07:53 roman Exp $
+#
+# Description: File system forensic tools for NTFS, FAT, EXTxFS, and FFS.
+#  The Sleuth Kit is a collection of open source file system forensics tools
+#  that allow one to view allocated and deleted data from NTFS, FAT, FFS,
+#  and EXT2FS images. The Autopsy Forensic Browser provides a graphical
+#  interface to The Sleuth Kit.
+# URL: http://www.sleuthkit.org
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=sleuthkit
+version=2.09
+release=1
+source=($mirror_sf/sleuthkit/sleuthkit-$version.tar.gz
+        sleuthkit-2.09-ar.patch)
+
+build()
+{
+  cd sleuthkit-$version
+
+  patch -N -p2 -i $SRC/sleuthkit-2.09-ar.patch
+
+  make AR="$AR" ARFLAGS="src" CC="${CC-cc} -DLINUX2 $CFLAGS" #CFLAGS="$CFLAGS"
+
+  install -d $ROOT
+  cp -rf bin man $ROOT
+
+#  make DESTDIR="$PKG" install
+}

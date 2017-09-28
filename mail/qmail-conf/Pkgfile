@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Tools for setting up various qmail services
+# URL: http://www.din.or.jp/~ushijima/qmail-conf.html
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=qmail-conf
+version=0.60
+release=1
+source=(http://www.din.or.jp/~ushijima/qmail-conf/qmail-conf-$version.tar.gz
+        http://cr.yp.to/djbdns/djbdns-1.05.tar.gz)
+
+build()
+{
+  cd qmail-conf-$version
+
+  ln -sf $SRC/djbdns-1.05 .
+
+  echo ${CC-cc} ${CFLAGS-"-O2"} -include errno.h >conf-cc
+
+  make -f Makefile.ini
+  make
+
+  install -d $ROOT/bin
+  install -m 755 qmail-*-conf $ROOT/bin
+
+  install -d $ROOT/share/doc/qmail-conf
+  install -m 644 CHANGES README $ROOT/share/doc/qmail-conf
+}
+
+# EOF

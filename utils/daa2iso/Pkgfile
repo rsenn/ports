@@ -1,0 +1,26 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: DAA (Direct Access Archive) to ISO image converter.
+#  Program for converting the DAA files (Direct Access Archive, used by
+#  PowerISO) to ISO, supports multipart files too.
+# URL: http://aluigi.org/mytoolz.htm#daa2iso
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=daa2iso
+version=0.1.7b
+release=1
+source=(http://aluigi.org/mytoolz/daa2iso.zip)
+
+build()
+{
+  cd src
+
+  make
+
+  install -d $ROOT/bin
+  install -m 755 daa2iso $ROOT/bin
+
+  install -d $ROOT/share/doc/daa2iso
+  install -m 755 ../daa2iso.txt $ROOT/share/doc/daa2iso
+}

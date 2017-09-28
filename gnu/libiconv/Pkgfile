@@ -1,0 +1,51 @@
+# $Id: Pkgfile,v 1.16 2007/04/23 17:39:08 roman Exp $
+#
+# Description: GNU Libiconv
+#  libiconv converts from one character encoding to another through Unicode
+#  conversion (see Web page for full list of supported encodings).
+#  It has also limited support for transliteration, i.e. when a character
+#  cannot be represented in the target character set, it is approximated
+#  through one or several similar looking characters. It is useful if your
+#  application needs to support multiple character encodings, but that
+#  support lacks from your system.
+# URL: http://www.gnu.org/software/libiconv/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libiconv
+version=1.13
+release=1
+source=($mirror_gnu/libiconv/libiconv-$version.tar.gz
+        libiconv-1.12-output.patch
+        libiconv-1.12-macnl.patch
+        libiconv-1.11-msvc.patch
+        libiconv-1.12-autotools.patch)
+
+build()
+{
+  cd ${srcdir=$SRC/libiconv-$version}
+
+  patch -N -p1 -i $SRC/libiconv-1.12-macnl.patch
+  #patch -N -p1 -i $SRC/libiconv-1.12-autotools.patch
+  patch -N -p1 -i $SRC/libiconv-1.12-output.patch
+#  patch -N -p1 -i $SRC/libiconv-1.11-msvc.patch
+
+  #rm -f build-aux/config.sub
+  ##sed "1 i\\ACLOCAL_AMFLAGS = -I m4\\" srclib/Makefile.am
+  #autoreconf --verbose --install -I m4
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --docdir="$prefix/share/doc/libiconv" \
+       --${shared:=enable}-shared \
+       --${static:=enable}-static
+
+  make
+  make DESTDIR="$PKG" install
+
+  cd $ROOT/include
+
+  mv -vf iconv.h libiconv.h
+}

@@ -1,0 +1,41 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: psmisc
+#  Miscellaneous proc FS tools: fuser, killall, and pstree. Fuser identifies
+#  what processes are using files; killall kills a process by its name,
+#  similar to a pkill found in some other Unices; pstree shows currently
+#  running processes in a tree format.
+# URL: http://psmisc.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=psmisc
+version=22.1
+release=1
+source=($mirror_sf/psmisc/psmisc-$version.tar.gz
+        psmisc-bsd.patch
+        psmisc-linux-compat.patch)
+
+build()
+{
+  cd psmisc-$version
+
+  case $host in
+    *freebsd*)
+       patch -N -p1 -i $SRC/psmisc-bsd.patch
+       ;;
+  esac
+#  patch -N -p1 -i $SRC/psmisc-linux-compat.patch
+
+  CPPFLAGS="-I$prefix/include/ncurses" \
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --disable-nls
+
+  make
+  make DESTDIR="$PKG" install
+
+  copy_license "COPYING"
+}

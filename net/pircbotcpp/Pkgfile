@@ -1,0 +1,49 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: IRC C++ software development kit
+#  A C++ port of pircbot. pircbotcpp is an Object Oriented client
+#  framework which lets you write quick and easy C++ IRC bots. It includes
+#  comprehensive documentation and samples.
+# URL: http://pircbotcpp.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libboost-date-time1.35.0, libboost-regex1.35.0, libboost-system1.35.0, libboost-thread1.35.0, libc6, libgcc1, libstdc++6
+
+name=pircbotcpp
+version=1.4.4.1
+release=2
+source=($mirror_sf/pircbotcpp/pircbotcpp-src-$version.tar.gz
+        pircbotcpp-1.4.4.1-build-fixes.patch
+        pircbotcpp-1.4.4.1-asio-fixes.patch)
+
+build()
+{
+  cd pircbotcpp-src-$version
+
+  find -name "*.h" -or -name "*.cpp" -exec dos2unix '{}' ';'
+
+  patch -N -p1 -i $SRC/pircbotcpp-1.4.4.1-build-fixes.patch
+  patch -N -p1 -lf -i $SRC/pircbotcpp-1.4.4.1-asio-fixes.patch
+
+  cd build_files/autoconf
+
+  ./bootstrap.sh -r
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  cd ../..
+
+  install -d $ROOT/share/doc/pircbotcpp
+  install -m 644 [A-Z]*[A-Z]* $ROOT/share/doc/pircbotcpp
+  install -m 644 *.txt $ROOT/share/doc/pircbotcpp
+
+  rm doc/README.txt
+
+  cp -rf doc/* $ROOT/share/doc/pircbotcpp
+}

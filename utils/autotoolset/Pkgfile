@@ -1,0 +1,38 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Tools for use with GNU autotools.
+#  Autotoolset is both a colection of small tools (scripts,
+#  emacs macros, etc.) to simplify project development with
+#  autoconf/automake/libtool/texinfo/emacs and a good documentation on how
+#  to get started on these tools and the whole GNU software model.
+#  .
+# URL: http://autotoolset.sourceforge.net/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=autotoolset
+version=0.11.4
+release=3
+source=($mirror_sf/autotoolset/autotoolset-$version.tar.bz2
+        autotoolset-0.11.4-acdefun.patch)
+
+build()
+{
+  cd autotoolset-$version
+
+  patch -N -p1 -i $SRC/autotoolset-0.11.4-acdefun.patch
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --prefix="$prefix" \
+     --infodir="$prefix/share/info"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/autotoolset
+  install -m 644 README AUTHORS COPYING ChangeLog INSTALL NEWS THANKS TODO debian/README.Debian $ROOT/share/doc/autotoolset
+}
+
+# EOF

@@ -1,0 +1,41 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An audio file editor.
+#  Ecawave is a simple graphical audio file editor. The user-interface is
+#  based on Qt libraries, while almost all audio functionality is taken
+#  directly from ecasound libraries. As Ecawave is designed for editing
+#  large audio files, all processing is done direct-to-disk. Simple waveform
+#  caching is used to speed up file operations. Ecawave supports all audio
+#  file formats and effect algorithms provided by ecasound libraries. This
+#  includes OSS, ALSA, aRts, over 20 file formats, over 30 effect types,
+#  LADSPA plugins, and multi-operator effect presets.
+#  .
+# URL: http://www.eca.cx/ecawave/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=ecawave
+version=0.6.1
+release=1
+source=(http://ecasound.seul.org/download/ecawave-0.6.1.tar.gz)
+
+build()
+{
+  cd ecawave-0.6.1
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --prefix="$prefix" \
+     --mandir="$prefix/share/man" \
+     --with-qt-includes="$prefix/include/qt3" \
+     --with-qt-libraries="$prefix/lib"
+
+  make MOC="moc-qt3"
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/ecawave
+  install -m 644 BUGS NEWS TODO README INSTALL COPYING $ROOT/share/doc/ecawave
+}
+
+# EOF

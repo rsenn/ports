@@ -1,0 +1,51 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Elfutils is a set of application that helps in the compilation of systemtap.
+# URL:
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on: 
+
+name=elfutils
+version=0.131
+release=1
+source=($mirror_gentoo/elfutils-$version.tar.gz
+        $mirror_gentoo/elfutils-0.131-patches-1.0.tar.bz2
+        elfutils-0.131-nowarn.patch
+        elfutils-0.131-autogen.patch
+       )
+
+build()
+{
+  cd elfutils-$version
+
+  # Apply the gentoo patchset
+  #patch -N -p0 -i $SRC/patch/elfutils-0.118-PaX-support.patch
+  ##patch -N -p1 -i $SRC/patch/elfutils-0.118-libelf-link.patch
+  #patch -N -p1 -i $SRC/patch/elfutils-portability.patch
+  #patch -N -p1 -i $SRC/patch/elfutils-robustify.patch
+  #patch -N -p1 -i $SRC/patch/elfutils-strip-copy-symtab.patch
+
+  patch -N -p1 -i $SRC/elfutils-0.131-nowarn.patch
+  patch -N -p1 -i $SRC/elfutils-0.131-autogen.patch
+
+  sh autogen.sh
+
+  #find . -name Makefile.in -print0 | xargs -0 sed -i -e 's:-W\(error\|extra\)::g'
+
+  #sed -i 's:\<off64_t\>:__off64_t:g' libelf/libelf.h
+
+  # this will make more files +x than need be, but who cares really
+  #chmod a+rx config/*
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --target="$target" \
+      --prefix="$prefix" \
+      --program-prefix="eu-" \
+      --disable-shared \
+      --${shared:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+}

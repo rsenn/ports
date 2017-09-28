@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A simple documentation markup language for HTML/LaTeX/etc.
+#  AFT (Almost Free Text) is a document preparation system. It is mostly free
+#  form, meaning that there is little intrusive markup; AFT source documents
+#  look a lot like plain old ASCII text. It has a few rules for structuring
+#  your document, more to do with formatting your text than embedding lots
+#  of commands, and it produces all types of output (HTML, XHTML, LaTeX,
+#  roll-your-own XML, etc.). All that needs to be done is to edit a rule
+#  file. You can even customize your own rule files for specialized output.
+# URL: http://www.maplefish.com/todd/aft.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=aft
+version=5.096
+release=1
+source=(http://www.maplefish.com/todd/aft-$version.tar.gz)
+
+build()
+{
+  cd aft-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

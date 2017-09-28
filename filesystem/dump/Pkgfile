@@ -1,0 +1,42 @@
+# $Id: Pkgfile,v 1.15 2007/05/09 21:02:55 roman Exp $
+#
+# Description: 4.4bsd dump and restore for ext2 filesystems
+#  Dump examines files on a filesystem and determines which files need to
+#  be backed up. These files are copied to the given disk, tape or other
+#  storage medium for safe keeping.
+#  The restore command performs the inverse function of dump. A full
+#  backup of a file system may be restored and subsequent incremental
+#  backups layered on top of it. Single files and directory subtrees may
+#  be restored from full or partial backups.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=dump
+version=0.4b41
+release=1
+source=($mirror_sf/dump/dump-$version.tar.gz)
+
+build()
+{
+  cd dump-$version
+
+  LIBS="-lterminfo" \
+  LDFLAGS="-static" \
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  sed -i 's,-lncurses,& -lterminfo,g' config.status
+  ./config.status
+
+  make
+  make \
+       MANDIR="$ROOT/man/man8" \
+       BINDIR="$ROOT/bin" \
+       LIBDIR="$ROOT/lib" \
+       SBINDIR="$ROOT/sbin" \
+       INSTALLMAN="install -m 644" \
+       install
+}

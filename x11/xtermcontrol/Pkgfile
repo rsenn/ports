@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A tool for dynamically changing the properties of a running XFree86 xterm.
+# xtermcontrol enables dynamic control of XFree86 xterm properties. It
+# makes it easy to change colors, titles, fonts, and the geometry of
+# a running xterm, as well as to report the current settings of the
+# properties. Window manipulations such as (de)iconify, raise and lower,
+# maximize and restore, and reset are also supported. It also lets advanced
+# users issue any xterm control sequence.
+#
+# URL:
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=xtermcontrol
+version=2.9
+release=1
+source=(http://www.thrysoee.dk/xtermcontrol/xtermcontrol-$version.tar.gz)
+
+build()
+{
+  cd xtermcontrol-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

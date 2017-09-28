@@ -1,0 +1,37 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Lets you automate telnet, ftp, passwd, fsck, rlogin, tip, etc.
+#  Expect is a tool for automating interactive applications such as telnet,
+#  ftp, passwd, fsck, rlogin, tip, etc. Expect really makes this stuff
+#  trivial. Expect is also useful for testing these same applications. And by
+#  adding Tk, you can also wrap interactive applications in X11 GUIs. Expect
+#  can make easy all sorts of tasks that are prohibitively difficult with
+#  anything else. You will find that Expect is an absolutely invaluable
+#  tool - using it, you will be able to automate tasks that you've never
+#  even thought of before - and you'll be able to do this automation quickly
+#  and easily.
+# URL: http://expect.nist.gov/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=expect
+version=5.44.1
+release=1
+source=(http://distfiles.gentoo.org/distfiles/expect-$version.tar.gz)
+
+build() 
+{
+  cd expect-$version
+  
+  ./configure \
+       --host="$host" \
+       --prefix="$prefix" \
+       --mandir="$prefix/share/man" \
+       --with-tcl="$prefix/lib/tcl8.4" \
+       --with-tclinclude="$prefix/include/tcl8.4/private"
+  
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

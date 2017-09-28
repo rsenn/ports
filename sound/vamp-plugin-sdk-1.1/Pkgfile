@@ -1,0 +1,37 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: audio analysis and feature extraction plugins (SDK)
+#  Vamp is an audio processing plugin system for plugins that extract
+#  descriptive information from audio data - typically referred to as audio
+#  analysis plugins or audio feature extraction plugins.
+#  Just like an audio effects plugin (such as a VST), a Vamp plugin is a
+#  binary module that can be loaded up by a host application and fed audio
+#  data. However, unlike an effects plugin, a Vamp plugin outputs not
+#  processed audio but some sort of symbolic information. Typical things
+#  that a Vamp plugin might calculate include the locations of moments
+#  such as note onset times, visual representations of the audio such as
+#  histograms, or curve data such as power or fundamental frequency.
+#  Hosts using Vamp plugins include Audacity and Sonic Visualiser.
+#  This package contains C and C++ header files for developing Vamp plugins
+#  and hosts, API documentation, and source code of example plugins and a
+#  simple host.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Split: -
+# Depends on:
+
+name=vamp-plugin-sdk
+version=1.1b
+release=1
+source=($mirror_sf/vamp/vamp-plugin-sdk-$version.tar.gz
+        vamp-plugin-sdk-v1.1b-c++0x.patch)
+
+build()
+{
+  cd vamp-plugin-sdk-v$version
+
+  patch -p1 -i $SRC/vamp-plugin-sdk-v1.1b-c++0x.patch
+
+  make INSTALL_PREFIX="$prefix" CXX="${CXX-g++}" CXXFLAGS="${CXXFLAGS--g -O2} -I."
+  make INSTALL_PREFIX="$ROOT" install
+}

@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A filter that transforms C source into a tabular format.
+#  cflat transforms C source code into a tabular format where each line is
+#  prefixed with its scope (usually the function declaration). The output
+#  can easily be processed with traditional Unix tools to do things like
+#  count functions or filter out certain scopes. Additionally, cflat can
+#  strip or extract comments and string literals. cflat also works for
+#  languages with similar syntax, like C++ or Java.
+# URL: http://www.lith.at/cflat/index.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=cflat
+version=0.1.0
+release=1
+source=(http://www.lith.at/cflat/cflat-$version.tar.gz)
+
+build()
+{
+  cd cflat-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix" \
+       --mandir="$prefix/share/man"
+
+  make
+  make DESTDIR="$PKG" install
+}

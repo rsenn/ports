@@ -1,0 +1,18 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: AudioLab is a python package to import data from audio files into numpy arrays. The goal is to have an equivalent of matlab's audio IO related function like pyaudio logo wavread, wavwrite, soundsc and so in the scipy environment. It is just a wrapper around the excellent sndfile library from Erik Castro de Lopo, which gives access to many audio formats, including wav, aiff, htk, ircam and even flac, an open source lossless compressed format. For now, only audio file IO is implemented.
+# URL: http://www.ar.media.kyoto-u.ac.jp/members/david/softwares/audiolab/index.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=audiolab
+version=svn20080608
+release=1
+source=(python-audiolab-$version.tar.bz2)
+
+build()
+{
+  cd audiolab-${version#svn}
+
+  python setup.py install --root="$PKG" --prefix="$prefix"
+}

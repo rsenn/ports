@@ -1,0 +1,103 @@
+diff --git a/Makefile b/Makefile
+index 2ebf22d..a9fc060 100644
+--- a/Makefile
++++ b/Makefile
+@@ -5,6 +5,7 @@ MKDIRHIER?=mkdirhier
+ 
+ all: 
+ 	$(MAKE) -C src
++	$(MAKE) -C tools
+ 
+ include $(wildcard src/Makefile.config)
+ 
+@@ -16,6 +17,7 @@ PATTERNDIR=$(SHAREDIR)/patterns
+ 
+ install: 
+ 	$(MAKE) -C src install
++	$(MAKE) -C tools install
+ 	$(INSTALL) -d $(DESTDIR)$(SHAREDIR) $(DESTDIR)$(PATTERNDIR)
+ 	$(INSTALL) -d $(DESTDIR)$(DOCDIR)
+ 	$(INSTALL) $(wildcard share/patterns/*) $(DESTDIR)$(PATTERNDIR) 
+@@ -25,5 +27,6 @@ install:
+ clean:
+ 	-rm -f src/Makefile.config
+ 	$(MAKE) -C src clean
++	$(MAKE) -C tools clean
+ 
+ distclean: clean
+diff --git a/tools/Makefile b/tools/Makefile
+new file mode 100644
+index 0000000..c818f97
+--- /dev/null
++++ b/tools/Makefile
+@@ -0,0 +1,48 @@
++CXXFLAGS+=-Wall
++INSTALL?=install
++MKDIRHIER?=mkdirhier
++
++NAME:=hyphenate
++OBJECTS:=Hyphenator.o Language.o HyphenationTree.o HyphenationRule.o hyphenate.o
++LIBS:=-L../src -lhyphenate
++
++INSTALL_HEADERS:=Hyphenator.h Language.h HyphenationRule.h hyphenate.h
++
++PREFIX?=/usr
++
++all : $(NAME) src-all
++
++.PHONY : src-all src-install
++
++#include $(wildcard Makefile.config)
++
++BINDIR?=$(PREFIX)/bin
++
++ifdef $(prefix)
++   PREFIX:=$(prefix)
++endif
++
++#CXXFLAGS+=`pkg-config --cflags glib-2.0` -g
++#LIBS+=`pkg-config --libs glib-2.0` 
++#CXXFLAGS+=-D LIBHYPHENATE_DEFAULT_PATH='"$(SHAREDIR)/patterns"'
++
++.SECONDARY : $(OBJECTS:.o=.lo)
++
++%.lo : %.c
++	libtool --mode=compile --tag=CXX $(CXX) $(CPPFLAGS) -c $<
++
++%.lo : %.cpp
++	libtool --mode=compile --tag=CXX $(CXX) $(CXXFLAGS) -c $<
++
++clean : ; -rm -rf hyphenate *.o *.lo 
++
++hyphenate: hyphenate.lo
++	libtool --mode=link --tag=CXX $(CXX) -o $@ $^ $(LIBS)
++
++hyphenate-install : hyphenate
++	$(INSTALL) -d $(DESTDIR)$(BINDIR)
++	libtool --mode=install $(INSTALL) -m 755 hyphenate $(DESTDIR)$(BINDIR)
++
++install : all src-install
++	$(INSTALL) -d $(DESTDIR)$(BINDIR)
++	libtool --mode=install $(INSTALL) -m 755 hyphenate $(DESTDIR)$(BINDIR)
+diff --git a/tools/hyphenate.cpp b/tools/hyphenate.cpp
+new file mode 100644
+index 0000000..0242fb1
+--- /dev/null
++++ b/tools/hyphenate.cpp
+@@ -0,0 +1,16 @@
++#include <libhyphenate/Hyphenator.h>
++#include <iostream>
++#include <libgen.h>
++
++using namespace Hyphenate;
++using namespace std;
++
++int main(int argc, char *argv[]) 
++{
++  if(argc > 1)
++    cout << Hyphenator(RFC_3066::Language("en")).hyphenate(argv[1]) << endl;
++  else
++    cerr << "Usage: " << basename(argv[0]) << " <word>" << endl;
++
++  return 0;
++}

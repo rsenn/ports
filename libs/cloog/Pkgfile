@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A loop generator for scanning Z-polyhedra
+# URL: http://www.prism.uvsq.fr/~cedb/bastools/cloog.html
+# Maintainer: 
+# Depends on: 
+
+name=cloog
+version=0.14.1
+release=1
+source=(http://www.bastoul.net/cloog/pages/download/cloog-$version.tar.gz)
+
+build() 
+{
+  cd cloog-$version
+  
+  AUTOMAKE="automake --foreign" \
+  autoreconf --force --verbose --install
+  
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+  
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/cloog
+  install -m 644 README LICENSE doc/TODO $ROOT/share/doc/cloog
+}
+
+# EOF

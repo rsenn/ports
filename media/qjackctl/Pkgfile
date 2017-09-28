@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A simple Qt application to control the JACK sound server daemon.
+#  QjackCtl is a simple Qt application to control the JACK sound server
+#  daemon, specifically for the Linux Audio Desktop infrastructure. It is
+#  written in C++ around the Qt4 toolkit for X11, most exclusively using
+#  Qt Designer. It provides a simple GUI dialog for setting several JACK
+#  daemon parameters, which are properly saved between sessions, and a
+#  way to control of the status of the audio server daemon. With time,
+#  this primordial interface has become richer by including an enhanced
+#  patchbay and connection control features.
+# URL: http://qjackctl.sourceforge.net
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=qjackctl
+version=0.3.1a
+release=1
+source=($mirror_sf/qjackctl/qjackctl-$version.tar.gz)
+
+build()
+{
+  cd qjackctl-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

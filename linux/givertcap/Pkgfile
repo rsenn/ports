@@ -1,0 +1,37 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Give realtime capabilities to an application.
+#  GIVERTCAP is a small Linux application that is used to give other
+#  application real-time capabilities. With the aid of givertcap you
+#  can run real-time applications (audio and video -processing apps for
+#  example) with high priority without running the application as root. Your
+#  application does get a collection capabilities that allow it to run at
+#  very high priority.
+#  Givertcap was created to overcome the lack of capability support in Linux
+#  file systems. Once the Linux file systems start to have the necessary
+#  functions themselves, this apps becomes unnecessary.
+#  To use this app you need to compile it and make it setuid-root. After
+#  this other applications can use this mini-app to gain capabilities that
+#  are necessary for real-time operation.
+# URL: http://www.tml.tkk.fi/~tilmonen/givertcap/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=givertcap
+version=1.0
+release=1
+source=(http://www.tml.tkk.fi/~tilmonen/givertcap/givertcap.C
+        http://www.tml.tkk.fi/~tilmonen/givertcap/GPL.txt)
+
+build() 
+{
+  ${CXX-g++} ${CXXFLAGS--g -O2} -o givertcap givertcap.C -lcap
+
+  install -d $ROOT/sbin
+  install -m 4750 givertcap $ROOT/sbin
+
+  install -d $ROOT/share/doc/givertcap
+  install -m 644 GPL.txt $ROOT/share/doc/givertcap
+}
+
+# EOF

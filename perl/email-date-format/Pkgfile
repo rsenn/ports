@@ -1,0 +1,24 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Produce RFC 2822 date strings
+# URL: http://search.cpan.org/dist/Email-Date-Format/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=email-date-format
+version=1.002
+release=1
+source=(http://search.cpan.org/CPAN/authors/id/R/RJ/RJBS/Email-Date-Format-$version.tar.gz)
+
+build()
+{
+  cd Email-Date-Format-$version
+
+  perl Makefile.PL
+
+  make \
+       DESTDIR="$PKG" \
+       INSTALLDIRS="vendor" \
+       PREFIX="$prefix" \
+       install
+}

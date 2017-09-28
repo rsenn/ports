@@ -1,0 +1,50 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Type once and do the same work in many windows.
+#  xlax is an X11 input multiplexer: it sends your keyboard input from the
+#  xlax window to a group of windows simultaneously. The tool is designed for
+#  system administrators who typically have to do the same thing on several
+#  machines (or in several different directories). Windows can be added or
+#  deleted interactively, or temporarily disconnected and reconnected. xlax
+#  allows you to assign a custom string to each window (e.g. a hostname)
+#  that can be sent with a button click. An included script handles starting
+#  up and arranging windows, and allows you to set up commonly used window
+#  groupings in a config file.
+#  .
+# URL: http://hea-www.harvard.edu/~fine/Tech/xlax.html
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=xlax
+version=2.4
+release=1
+source=(http://hea-www.harvard.edu/~fine/Tech/xlax${version}.tar.gz
+        xlax2.4-fixes.patch)
+
+build()
+{
+  cd xlax$version
+
+  case $prefix in
+    "/usr") sysconfdir="/etc" ;;
+  esac
+
+  patch -N -p1 -i $SRC/xlax2.4-fixes.patch
+
+  ${CC-cc} -o xlax ${CFLAGS-"-g -O2"} xlax.c -lXt -lXmu -lXaw
+
+  install -d $ROOT/bin
+  install -m 755 mkxlax xlax $ROOT/bin
+
+  install -d $PKG${sysconfdir="$prefix/etc"}
+  install -m 644 dot-mkxlax $PKG${sysconfdir}/
+
+  install -d $ROOT/share/man/man1
+  install -m 644 mkxlax.man $ROOT/share/man/man1/mkxlax.1
+  install -m 644 xlax.man $ROOT/share/man/man1/xlax.1
+
+  install -d $ROOT/share/doc/xlax
+  install -m 644 LICENSE README TODO $ROOT/share/doc/xlax
+}
+
+# EOF

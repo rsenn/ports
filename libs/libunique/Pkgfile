@@ -1,0 +1,37 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Library for writing single instance application
+#  Unique is a library for writing single instance application. If you launch
+#  a single instance application twice, the second instance will either
+#  just quit or will send a message to the running instance. Unique makes
+#  it easy to write this kind of applications, by providing a base class,
+#  taking care of all the IPC machinery needed to send messages to a running
+#  instance, and also handling the startup notification side. Unique aims
+#  to replace the BaconMessageConnection code that has been copied by many
+#  projects and the code using Bonobo and D-Bus. As of GNOME 2.26, Unique
+#  is a GNOME blessed external dependency.
+#  .
+# URL: http://live.gnome.org/LibUnique
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=libunique
+version=1.0.6
+release=1
+source=(http://www.gnome.org/~ebassi/source/unique-$version.tar.gz)
+
+build()
+{
+  cd unique-$version
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

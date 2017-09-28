@@ -1,0 +1,25 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Turns other processes into daemons.
+#  daemon turns other processes into daemons. There are many tedious tasks
+#  that need to be performed to correctly set up a daemon process; daemon
+#  performs these tasks for other processes. This is useful for writing
+#  daemons in languages other than C, C++, or Perl (e.g. sh, Java). If you
+#  want to write daemons in languages that can link against C functions
+#  (e.g. C, C++), see libslack, which contains the core functionality
+#  of daemon.
+# URL: http://libslack.org/daemon/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=daemon
+version=0.6.3
+release=1
+source=(http://libslack.org/daemon/download/daemon-$version.tar.gz)
+
+build()
+{
+  cd daemon-$version
+
+  make PREFIX="$prefix" DESTDIR="$PKG" all install
+}

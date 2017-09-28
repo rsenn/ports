@@ -1,0 +1,24 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: csv2latex converts a well formed csv file (as done by OOo Calc,
+# gnumeric or Excel) to a LaTeX document. it is written in C and flush the
+# document to the standard output. The number of columns is automatically
+# detected.
+# URL: http://brouits.free.fr/csv2latex/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=csv2latex
+version=0.9
+release=1
+source=(http://brouits.free.fr/csv2latex/csv2latex_$version-3.tar.gz)
+
+build()
+{
+  cd csv2latex-$version
+
+  make CC="${CC-cc}" CFLAGS="$CFLAGS"
+
+  install -d $ROOT/bin
+  install -m 755 csv2latex $ROOT/bin
+}

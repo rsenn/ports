@@ -1,0 +1,31 @@
+# $Id: Pkgfile,v 1.4 2007/04/22 23:07:52 roman Exp $
+#
+# Description: A filtering tool for a bridging firewall.
+#  ebtables program is a filtering tool for a bridging firewall. The
+#  filtering is focused on the Link Layer Ethernet frame fields. Apart from
+#  filtering, it also gives the ability to alter Ethernet MAC addresses
+#  and implement a brouter.
+# URL: http://ebtables.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=ebtables
+version=2.0.8
+release=1
+source=($mirror_sf/ebtables/ebtables-v$version-1.tar.gz)
+
+build()
+{
+  cd ebtables-v$version-1
+
+  install -d $ROOT/{lib,share/man,sbin,etc/sysconfig}
+
+  make DESTDIR="$PKG" \
+       LIBDIR="$prefix/lib" \
+       MANDIR="$prefix/share/man" \
+       BINDIR="$prefix/sbin" \
+       ETCDIR="$prefix/etc" \
+       INITDIR="$prefix/etc" \
+       SYSCONFIGDIR="$prefix/etc/sysconfig" \
+       all install
+}

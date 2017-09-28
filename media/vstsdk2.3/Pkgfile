@@ -1,0 +1,84 @@
+# $Id: Pkgfile,v 1.10 2007/05/10 16:59:30 roman Exp $
+#
+# Description: Steinberg VST plugin infrastructure SDK
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=vstsdk
+version=2.3
+release=2
+source=(http://ygrabit.steinberg.de/~ygrabit/public_html/vstsdk/Download/VST%20Plug-Ins%20SDK%202.3/vstsdk2.3.zip)
+
+build()
+{
+  unzip -o -a vstsdk$version.zip
+
+  cd vstsdk$version
+
+  rm -vf source/common/vst{gui,controls}.cpp
+
+  ${CXX-c++} ${CXXFLAGS--g -O2} -Isource/common -c source/common/*.cpp
+
+  rm -vf source/common/vst{gui,controls}.h
+
+  ${AR-ar} src libvstsdk$version.a *.o
+
+  install -d $ROOT/lib
+  install -m 644 libvstsdk$version.a $ROOT/lib
+
+  #ln -sf libvstsdk$version.a $ROOT/lib/libvstsdk.a
+
+  install -d $ROOT/include/vstsdk$version
+
+  for file in source/common/*.{h,c}{,pp}; do
+    if [ -f "$file" ]; then
+      install -d $ROOT/include/vstsdk$version/${file%/*}
+      install -m 644 $file $ROOT/include/vstsdk$version/$file
+    fi
+  done
+
+
+  cd $ROOT/include/vstsdk2.3
+
+  ln -sf source/common/audioeffectx.h audioeffectx.h
+  ln -sf source/common/AEffEditor.hpp AEffEditor.hpp
+  ln -sf source/common/AudioEffect.hpp AudioEffect.hpp
+  ln -sf source/common/aeffectx.h aeffectx.h
+  ln -sf source/common/AEffect.h AEffect.h
+
+  ln -sf source/common/vstfxstore.h vstfxstore.h
+
+  ln -sf AudioEffect.hpp audioeffect.h
+
+  ln -sf source/common/audioeffectx.cpp audioeffectx.cpp
+  ln -sf source/common/AudioEffect.cpp AudioEffect.cpp
+
+
+  mkdir -p $ROOT/lib/pkgconfig
+  sed >>$ROOT/lib/pkgconfig/vstsdk2.3.pc \
+      -e "s,@prefix@,$prefix,g" \
+<<EOF
+prefix=@prefix@
+exec_prefix=@prefix@
+libdir=@prefix@/lib
+includedir=@prefix@/include
+
+Name: vstsdk2.3
+Description: Steinberg VST plugin architecture SDK v2.3
+Version: 2.3
+Libs: -L\${libdir} -lvstsdk2.3
+Cflags: -I\${includedir}/vstsdk2.3
+EOF
+
+
+  #ln -sf vstsdk$version $ROOT/include/vstsdk
+
+ # install -d $ROOT/include/source/common
+
+# (cd $ROOT/include/source/common && ln -sf ../../vstsdk$version/* .)
+
+
+# (cd $ROOT/include && ln -sf vstsdk$version/*.{h,hpp} .)
+
+}
+

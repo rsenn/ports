@@ -1,0 +1,35 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=qtarot
+version=0.25
+release=1
+source=(http://www.dreamsmith.org/qtarot/qtarot-source.tar.gz
+        http://www.dreamsmith.org/qtarot/tarot.tar.gz
+        qtarot-0.25-fixes.patch)
+
+build()
+{
+  cd qtarot-$version
+
+  patch -N -p1 -i $SRC/qtarot-0.25-fixes.patch
+
+  MOC=$(which 'moc-3.3' 2>/dev/null || which 'moc' 2>/dev/null)
+
+  QTVER=$($MOC --version) && QTVER=${QTVER##*version } && QTVER=${QTVER%% *}
+  QTDIR=${MOC%/bin/*}
+
+  case $QTDIR in
+    */qt* | */kde*) QTINCDIR="$QTDIR/include" ;;
+    *) QTINCDIR="$QTDIR/include/Qt" ;;
+  esac
+
+  make CXXFLAGS="$CXXFLAGS -I$QTINCDIR" LDLIBS="-lqt-mt" MOC="$MOC"
+
+  install -d $ROOT/bin
+  install -m 755 qtarot $ROOT/bin/
+}

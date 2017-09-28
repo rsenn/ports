@@ -1,0 +1,24 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:48 roman Exp $
+#
+# Description: Support for getting/setting POSIX.1e capabilities.
+#  This library implements the user-space interfaces to the POSIX 1003.1e
+#  capabilities available in Linux kernels. These capabilities are a
+#  partitioning of the all powerful root privilege into a set of distinct
+#  privileges. Note that it will not provide any functionality with kernels
+#  below 2.2
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libcap
+version=1.97
+release=1
+source=(http://www.kernel.org/pub/linux/libs/security/linux-privs/kernel-2.6/libcap-$version.tar.gz)
+
+build()
+{
+  cd libcap-$version
+
+  make CC="${CC-cc}" CFLAGS="$CFLAGS"
+  make prefix="$ROOT" install
+}

@@ -1,0 +1,41 @@
+# $Id: Pkgfile,v 1.4 2007/04/22 23:07:53 roman Exp $
+#
+# Description: The GLib library of C routines
+#  GLib is a library containing many useful C routines for things such as
+#  trees, hashes, and lists. GLib was previously distributed with the GTK+
+#  toolkit, but has been split off as of version 1.1.0.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=glib-1
+version=1.2.10
+release=1
+source=($mirror_gnome/sources/glib/1.2/glib-$version.tar.gz
+        glib-1.2.10-configure-LANG.patch
+        glib-1.2.10-gcc34-fix.patch
+        glib-1.2.10-m4.patch)
+
+build()
+{
+  cd glib-$version
+
+  patch -N -p0 -i $SRC/glib-1.2.10-configure-LANG.patch
+  patch -N -p1 -i $SRC/glib-1.2.10-gcc34-fix.patch
+  patch -N -p1 -i $SRC/glib-1.2.10-m4.patch
+
+  LIBS="-lpthread" \
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --infodir="$prefix/share/info" \
+       --mandir="$prefix/share/man" \
+       --${shared:=enable}-shared \
+       --${static:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+
+  copy_license "COPYING"
+}

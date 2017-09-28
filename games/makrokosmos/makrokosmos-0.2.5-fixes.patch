@@ -1,0 +1,81 @@
+Only in makrokosmos-0.2.5/obj: charts.o
+Only in makrokosmos-0.2.5/obj: chronos.o
+Only in makrokosmos-0.2.5/obj: comm.o
+Only in makrokosmos-0.2.5/obj: factions.o
+Only in makrokosmos-0.2.5/obj: fleets.o
+Only in makrokosmos-0.2.5/obj: makrokosmos
+Only in makrokosmos-0.2.5/obj: makrokosmos.o
+Only in makrokosmos-0.2.5/obj: populii.o
+Only in makrokosmos-0.2.5/obj: sectors.o
+Only in makrokosmos-0.2.5/obj: ui_curses.o
+Only in makrokosmos-0.2.5/obj: util.o
+Only in makrokosmos-0.2.5/obj: vectors.o
+diff -ru makrokosmos-0.2.5_orig/src/fleets.c makrokosmos-0.2.5/src/fleets.c
+--- makrokosmos-0.2.5_orig/src/fleets.c	2001-11-15 20:31:26.000000000 +0100
++++ makrokosmos-0.2.5/src/fleets.c	2009-02-27 16:40:15.000000000 +0100
+@@ -298,6 +298,7 @@
+           }
+         }
+       default:
++        break;
+       }
+       y++;
+     }
+diff -ru makrokosmos-0.2.5_orig/src/makrokosmos.c makrokosmos-0.2.5/src/makrokosmos.c
+--- makrokosmos-0.2.5_orig/src/makrokosmos.c	2002-03-15 02:10:25.000000000 +0100
++++ makrokosmos-0.2.5/src/makrokosmos.c	2009-02-27 16:39:43.000000000 +0100
+@@ -48,7 +48,7 @@
+ #include "charts.h"
+ 
+ GString *g_PlayerName=NULL;
+-struct player_t g_Player=(struct player_t) {theme: null_theme};
++struct player_t g_Player; //=(struct player_t); // {theme: null_theme};
+ struct config_t g_Config;
+ int g_Config_Horizon=0;
+ int g_Config_MaxSystems=0;
+@@ -2489,6 +2489,7 @@
+       specie_pane_up(&pane);
+       break;
+     default:
++      break;
+     }
+   }
+   for (x=0; x<p->numpops; x++) {
+@@ -4690,6 +4691,7 @@
+ 
+ int main(int argc, char **argv)
+ {
++  g_Player.theme = null_theme;
+   // Init interface.
+   initialize();
+   main_loop();  
+diff -ru makrokosmos-0.2.5_orig/src/populii.c makrokosmos-0.2.5/src/populii.c
+--- makrokosmos-0.2.5_orig/src/populii.c	2001-11-15 19:41:52.000000000 +0100
++++ makrokosmos-0.2.5/src/populii.c	2009-02-27 16:40:08.000000000 +0100
+@@ -3,6 +3,7 @@
+ #include <stdlib.h>
+ #include <time.h>
+ #include <math.h>
++#include <string.h>
+ #include "microcosm.h"
+ #include "util.h"
+ #include "sectors.h"
+@@ -1327,6 +1328,7 @@
+       chempos=x+1;
+       break;
+     default:
++      break;
+     }
+     x++;
+   }
+diff -ru makrokosmos-0.2.5_orig/src/ui_curses.c makrokosmos-0.2.5/src/ui_curses.c
+--- makrokosmos-0.2.5_orig/src/ui_curses.c	2002-03-15 02:10:05.000000000 +0100
++++ makrokosmos-0.2.5/src/ui_curses.c	2009-02-27 16:40:25.000000000 +0100
+@@ -47,6 +47,7 @@
+ /*      player->theme.custom=1; */
+       return;
+     default:
++      break;
+     }
+   } 
+ }

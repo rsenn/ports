@@ -1,0 +1,40 @@
+# $Id: Pkgfile,v 1.8 2007/05/09 21:02:43 roman Exp $
+#
+# Description: Console based browser
+# URL: http://www.gnu.org/software/texinfo
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libbz2-1.0, libc6, libncurses5, libssl0.9.8, zlib1g
+
+name=lynx
+version=2.8.7
+release=1
+source=(ftp://lynx.isc.org/current/lynx${version}rel.$release.tar.bz2
+        dlynx.sh)
+
+build()
+{
+  cd lynx${version//./-}
+
+  case $prefix in
+    "/usr") sysconfdir="/etc" ;;
+  esac
+
+  export CFLAGS
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --sysconfdir="${sysconfdir=$prefix/etc}" \
+       --mandir="$prefix/share/man" \
+       --with-screen="ncurses" \
+       --with-ssl="$prefix" \
+       --enable-ipv6 \
+       --with-bzlib \
+       --with-zlib
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -m 755 $SRC/dlynx.sh $ROOT/bin/dlynx
+}

@@ -1,0 +1,144 @@
+--- sdf-bundle-2.5.1_orig/sdf2-bundle.pc.in	2008-08-18 03:42:40.000000000 +0200
++++ sdf-bundle-2.5.1/sdf2-bundle.pc.in	2008-08-18 03:17:42.000000000 +0200
+@@ -0,0 +1,6 @@
++prefix=@prefix@
++
++Name: SDF2 syntax definition formalism
++Description: SDF2 syntax definition formalism
++Version: @PACKAGE_VERSION@
++Requires: aterm
+--- sdf-bundle-2.5.1_orig/configure.ac	2008-08-18 02:56:13.000000000 +0200
++++ sdf-bundle-2.5.1/configure.ac	2008-08-18 03:41:02.000000000 +0200
+@@ -13,6 +13,7 @@
+ 
+ AC_CONFIG_FILES([
+    Makefile
++   sdf2-bundle.pc
+    pre-checks/Makefile
+ ])
+ AC_OUTPUT
+--- sdf-bundle-2.5.1_orig/Makefile.am	2008-08-18 02:56:03.000000000 +0200
++++ sdf-bundle-2.5.1/Makefile.am	2008-08-18 03:18:15.000000000 +0200
+@@ -34,6 +34,10 @@
+ 
+ # Location where to install README and Copyright files
+ docdir = $(datadir)/doc
++pkgconfigdir = $(libdir)/pkgconfig
++pkgconfig_SCRIPTS = sdf2-bundle.pc
++
++EXTRA_DIST = sdf2-bundle.pc.in
+ 
+ # Always install the file SOFTWARE in $(docdir)
+ doc_DATA = SOFTWARE
+args: -r -u -- sdf-bundle-2.5.1_orig sdf-bundle-2.5.1
+diff -r -u -- sdf-bundle-2.5.1_orig/Makefile sdf-bundle-2.5.1/Makefile
+diff -r -u -- sdf-bundle-2.5.1_orig/aterm/Makefile sdf-bundle-2.5.1/aterm/Makefile
+diff -r -u -- sdf-bundle-2.5.1_orig/aterm/aterm/Makefile sdf-bundle-2.5.1/aterm/aterm/Makefile
+diff -r -u -- sdf-bundle-2.5.1_orig/aterm/config.log sdf-bundle-2.5.1/aterm/config.log
+diff -r -u -- sdf-bundle-2.5.1_orig/aterm/config.status sdf-bundle-2.5.1/aterm/config.status
+diff -r -u -- sdf-bundle-2.5.1_orig/aterm/libtool sdf-bundle-2.5.1/aterm/libtool
+diff -r -u -- sdf-bundle-2.5.1_orig/aterm/test/Makefile sdf-bundle-2.5.1/aterm/test/Makefile
+diff -r -u -- sdf-bundle-2.5.1_orig/aterm/utils/Makefile sdf-bundle-2.5.1/aterm/utils/Makefile
+diff -r -u -- sdf-bundle-2.5.1_orig/aterm-2.6/Makefile sdf-bundle-2.5.1/aterm-2.6/Makefile
+diff -r -u -- sdf-bundle-2.5.1_orig/aterm-2.6/aterm/Makefile sdf-bundle-2.5.1/aterm-2.6/aterm/Makefile
+diff -r -u -- sdf-bundle-2.5.1_orig/aterm-2.6/config.log sdf-bundle-2.5.1/aterm-2.6/config.log
+diff -r -u -- sdf-bundle-2.5.1_orig/aterm-2.6/config.status sdf-bundle-2.5.1/aterm-2.6/config.status
+diff -r -u -- sdf-bundle-2.5.1_orig/aterm-2.6/libtool sdf-bundle-2.5.1/aterm-2.6/libtool
+diff -r -u -- sdf-bundle-2.5.1_orig/aterm-2.6/test/Makefile sdf-bundle-2.5.1/aterm-2.6/test/Makefile
+diff -r -u -- sdf-bundle-2.5.1_orig/aterm-2.6/utils/Makefile sdf-bundle-2.5.1/aterm-2.6/utils/Makefile
+diff -r -u -- sdf-bundle-2.5.1_orig/autom4te.cache/output.0 sdf-bundle-2.5.1/autom4te.cache/output.0
+diff -r -u -- sdf-bundle-2.5.1_orig/autom4te.cache/requests sdf-bundle-2.5.1/autom4te.cache/requests
+diff -r -u -- sdf-bundle-2.5.1_orig/autom4te.cache/traces.0 sdf-bundle-2.5.1/autom4te.cache/traces.0
+diff -r -u -- sdf-bundle-2.5.1_orig/config.cache sdf-bundle-2.5.1/config.cache
+diff -r -u -- sdf-bundle-2.5.1_orig/config.log sdf-bundle-2.5.1/config.log
+diff -r -u -- sdf-bundle-2.5.1_orig/config.status sdf-bundle-2.5.1/config.status
+diff -r -u -- sdf-bundle-2.5.1_orig/configure sdf-bundle-2.5.1/configure
+diff -r -u -- sdf-bundle-2.5.1_orig/pre-checks/Makefile sdf-bundle-2.5.1/pre-checks/Makefile
+diff -r -u -- sdf-bundle-2.5.1_orig/toolbuslib/config.log sdf-bundle-2.5.1/toolbuslib/config.log
+diff -r -u -- sdf-bundle-2.5.1_orig/toolbuslib-0.9.1/config.log sdf-bundle-2.5.1/toolbuslib-0.9.1/config.log
+args: -w -r -u -- sdf-bundle-2.5.1_orig/Makefile.in sdf-bundle-2.5.1/Makefile.in
+--- sdf-bundle-2.5.1_orig/Makefile.in	2008-08-18 04:20:25.000000000 +0200
++++ sdf-bundle-2.5.1/Makefile.in	2008-08-18 04:35:39.000000000 +0200
+@@ -130,6 +130,9 @@
+ # Always install the file SOFTWARE in $(docdir)
+ doc_DATA = SOFTWARE
+ 
++pkgconfigdir = ${libdir}/pkgconfig
++pkgconfig_DATA = sdf2-bundle.pc
++
+ PKG_DOCFILES = README COPYING COPYRIGHT LICENSE
+ subdir = .
+ ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
+@@ -169,7 +172,7 @@
+ 	cd $(srcdir) && $(ACLOCAL) $(ACLOCAL_AMFLAGS)
+ uninstall-info-am:
+ docDATA_INSTALL = $(INSTALL_DATA)
+-install-docDATA: $(doc_DATA)
++install-pkgconfigDATA: $(doc_DATA)
+ 	@$(NORMAL_INSTALL)
+ 	$(mkinstalldirs) $(DESTDIR)$(docdir)
+ 	@list='$(doc_DATA)'; for p in $$list; do \
+@@ -187,6 +190,25 @@
+ 	  rm -f $(DESTDIR)$(docdir)/$$f; \
+ 	done
+ 
++pkgconfigDATA_INSTALL = $(INSTALL_DATA)
++install-pkgconfigDATA: $(pkgconfig_DATA)
++	@$(NORMAL_INSTALL)
++	$(mkinstalldirs) $(DESTDIR)$(pkgconfigdir)
++	@list='$(pkgconfig_DATA)'; for p in $$list; do \
++	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
++	  f="`echo $$p | sed -e 's|^.*/||'`"; \
++	  echo " $(pkgconfigDATA_INSTALL) $$d$$p $(DESTDIR)$(pkgconfigdir)/$$f"; \
++	  $(pkgconfigDATA_INSTALL) $$d$$p $(DESTDIR)$(pkgconfigdir)/$$f; \
++	done
++
++uninstall-pkgconfigDATA:
++	@$(NORMAL_UNINSTALL)
++	@list='$(pkgconfig_DATA)'; for p in $$list; do \
++	  f="`echo $$p | sed -e 's|^.*/||'`"; \
++	  echo " rm -f $(DESTDIR)$(pkgconfigdir)/$$f"; \
++	  rm -f $(DESTDIR)$(pkgconfigdir)/$$f; \
++	done
++
+ # This directory's subdirectories are mostly independent; you can cd
+ # into them and run `make' without going through this Makefile.
+ # To change the values of `make' variables: instead of editing Makefiles,
+@@ -483,7 +505,7 @@
+ 
+ info-am:
+ 
+-install-data-am: install-data-local install-docDATA
++install-data-am: install-data-local install-docDATA install-pkgconfigDATA
+ 
+ install-exec-am:
+ 	@$(NORMAL_INSTALL)
+@@ -513,7 +535,7 @@
+ 
+ ps-am:
+ 
+-uninstall-am: uninstall-docDATA uninstall-info-am uninstall-local
++uninstall-am: uninstall-docDATA uninstall-pkgconfigDATA uninstall-info-am uninstall-local
+ 	@$(NORMAL_INSTALL)
+ 	$(MAKE) $(AM_MAKEFLAGS) uninstall-hook
+ 
+args: -w -r -u -- sdf-bundle-2.5.1_orig/configure sdf-bundle-2.5.1/configure
+--- sdf-bundle-2.5.1_orig/configure	2008-08-18 04:20:33.000000000 +0200
++++ sdf-bundle-2.5.1/configure	2007-09-25 16:24:35.000000000 +0200
+@@ -1704,7 +1704,7 @@
+ PKGS="toolbuslib error-support c-library tide-support pt-support ptable-support asf-support sdf-support config-support relation-stores sglr asc-support pgen sdf"
+ 
+ 
+-                    ac_config_files="$ac_config_files Makefile pre-checks/Makefile"
++                    ac_config_files="$ac_config_files Makefile sdf2-bundle.pc pre-checks/Makefile"
+ 
+ cat >confcache <<\_ACEOF
+ # This file is a shell script that caches the results of configure
+@@ -2258,6 +2258,7 @@
+   case "$ac_config_target" in
+   # Handling of arguments.
+   "Makefile" ) CONFIG_FILES="$CONFIG_FILES Makefile" ;;
++  "sdf2-bundle.pc" ) CONFIG_FILES="$CONFIG_FILES sdf2-bundle.pc" ;;
+   "pre-checks/Makefile" ) CONFIG_FILES="$CONFIG_FILES pre-checks/Makefile" ;;
+   *) { { echo "$as_me:$LINENO: error: invalid argument: $ac_config_target" >&5
+ echo "$as_me: error: invalid argument: $ac_config_target" >&2;}

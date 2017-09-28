@@ -1,0 +1,29 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: NIS (YP) clients
+#  yp-tools is an implementation of the NIS client tools for Linux and should
+#  work with every Linux C Library. This implementation only provides NIS
+#  client tools. You must already have a ypbind daemon running on the same
+#  host, and a NIS server running somewhere in the net.
+# URL: http://www.linux-nis.org/nis/yp-tools/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=yp-tools
+version=2.10
+release=1
+source=(ftp://ftp.kernel.org/pub/linux/utils/net/NIS/yp-tools-$version.tar.bz2)
+
+build()
+{
+  cd yp-tools-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

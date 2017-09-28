@@ -1,0 +1,25 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Net::Amazon::S3 is a simple, easy to use, pure Ruby implementation of the Amazon S3 REST API. It aims to provide a more Rubyish interface to the S3 API than other libraries and has no non-Ruby dependencies, so it.s completely platform-independent.
+# URL: http://wiki.wonko.com/software/net-amazon-s3
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=net-amazon-s3
+version=0.1.0
+release=1
+source=(http://wonko.com/files/net-amazon-s3-$version.tar.gz)
+
+build()
+{
+  cd net-amazon-s3-$version
+
+  set -- $(ruby --version)
+
+  RUBYVERSION="$2"
+  RUBYLIBDIR="$prefix/lib/ruby/${RUBYVERSION%.*}"
+
+  install -d $PKG$RUBYLIBDIR
+
+  cp -rf lib/* $PKG$RUBYLIBDIR
+}

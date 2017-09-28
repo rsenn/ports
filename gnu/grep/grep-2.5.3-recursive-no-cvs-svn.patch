@@ -1,0 +1,39 @@
+Exclude VCS and build-tool control directories from recursive search
+
+  Implemented are:
+
+   - GNU autotools
+   - CVS
+   - subversion
+   - git
+   - mercurial (.hg)
+
+diff -r -u grep-2.5.3_orig/src/grep.c grep-2.5.3/src/grep.c
+--- grep-2.5.3_orig/src/grep.c	2007-09-20 02:40:35.000000000 +0200
++++ grep-2.5.3/src/grep.c	2007-09-20 02:48:53.000000000 +0200
+@@ -330,7 +330,7 @@
+   {"only-matching", no_argument, NULL, 'o'},
+   {"quiet", no_argument, NULL, 'q'},
+   {"recursive", no_argument, NULL, 'r'},
+-  {"recursive", no_argument, NULL, 'R'},
++  {"nohidden-recursive", no_argument, NULL, 'R'},
+   {"regexp", required_argument, NULL, 'e'},
+   {"invert-match", no_argument, NULL, 'v'},
+   {"silent", no_argument, NULL, 'q'},
+@@ -2039,6 +2039,16 @@
+ 	break;
+ 
+       case 'R':
++  if (!excluded_directory_patterns)
++    excluded_directory_patterns = new_exclude ();
++  add_exclude (excluded_directory_patterns, "autom4te.cache");
++  add_exclude (excluded_directory_patterns, "CVS");
++  add_exclude (excluded_directory_patterns, ".svn");
++  add_exclude (excluded_directory_patterns, ".git");
++  add_exclude (excluded_directory_patterns, ".hg");
++  add_exclude (excluded_directory_patterns, "CMakeFiles");
++  add_exclude (excluded_directory_patterns, ".libs");
++  add_exclude (excluded_directory_patterns, ".deps");
+       case 'r':
+ 	directories = RECURSE_DIRECTORIES;
+ 	break;

@@ -1,0 +1,44 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Frontend to aircrack-ng.
+#  Airoscript is a shell script designed to ease the use of
+#  aircrack-ng. It allows you to: scan, select and attack any detected
+#  access point. This is done by detecting encryption type and proposing
+#  attacks accordingly. Various attacks are available, such as: chopchop,
+#  fragmentation attack, fakeauth, deauth, dictionnary attacks and WPA
+#  cracking.
+#  .
+# URL: http://airoscript.googlepages.com/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=airoscript
+version=2.1.0
+release=1
+source=(http://airoscript.googlecode.com/files/airoscript-$version.tar.gz)
+
+build()
+{
+  cd airoscript
+
+  make PREF="$prefix" DESTDIR="$PKG" install
+
+  sed -i \
+    -e "/PREFIX=/ s,\"[^\"]\\+\",\"$prefix\"," \
+    -e "/export reson/ s,#,," \
+    -e "/WIFI=/ s,\"[^\"]*\",\"wlan0\"," \
+    $PKG/etc/airoscript.conf
+
+:  cat >>$PKG/etc/airoscript.conf <<\EOF
+# Set screen resolution
+resonset=: reson=4
+
+INTERFACES=`iwconfig|grep --regexp=^[^:blank:].[:alnum:]|awk '{print $1}'`
+WIFI=`set $INTERFACES && [ "$1" ] && echo "$1"`
+TYPE=`$AIRMON start $WIFI | grep monitor | awk '{print $2 $3}'`
+DRIVER=`$AIRMON start $WIFI | grep monitor | awk '{print $4}'`
+EOF
+
+}
+
+# EOF

@@ -1,0 +1,223 @@
+# $Id: Pkgfile,v 1.15 2007/05/09 21:02:54 roman Exp $
+#
+# Description: apache
+# URL: http://www.apache.org
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+# package variables
+# --------------------------------------------------------------------------------
+
+# package info
+name=apache-shared
+
+# version information
+modsnmp_version=1.3.14.13
+modsnmp_release=${modsnmp_version##${apache_version%.*}*.}
+
+apache_version=1.3.36
+apachessl_version=1.57
+version=$apache_version #-ssl$apachessl_version-snmp${modsnmp_release}
+# internal release and package dependencies
+release=1
+# these modules are built as shared
+apache_shared=actions,alias,asis,auth,auth_anon,auth_db,auth_digest,autoindex,\
+cern_meta,cgi,digest,dir,env,example,expires,headers,imap,include,info,log_agent,\
+log_forensic,log_referer,mime_magic,mmap_static,negotiation,proxy,rewrite,setenvif,\
+speling,status,unique_id,userdir,usertrack,vhost_alias,\
+access,log_config,mime
+
+# these modules are statically linked in the apache binaries
+apache_static=so
+
+# these modules are loaded by default (AddModule)
+apache_load=$apache_static
+
+# these headers are installed as shared headers
+ap_headers=ap,ap_{alloc,compat,config,ctype,ebcdic,md5,mmn,sha1}
+http_headers=http_{conf_globals,config,core,log,main,protocol,request,vhost}
+util_headers=util_{date,md5,script,uri}
+xml_headers=asciitab,hashtable,iasciitab,latin1tab,nametab,utf8tab,xml{def,parse,role,tok,tok_impl}
+other_headers=buff,compat,conf,explain,fnmatch,hsregex,multithread,rfc1413,scoreboard
+config_headers=config_auto,httpd,os
+
+headers={$ap_headers,$http_headers,$util_headers,$xml_headers,$other_headers}.h
+
+# apache-ssl specific variables
+apachessl_files={CHANGES.SSL,EXTRAS.SSL,FixPatch,LICENCE.SSL,README.SSL,SECURITY,\
+SSLconf,SSLpatch,ben.pgp.key.asc,md5sums,md5sums.asc,openssl-0.9.5a-egd.diff,src}
+
+# mod_snmp specific variables
+modsnmp_files={conf,config.snmp,htdocs,README.SNMP,src}
+modsnmp_patchver=$apache_version.${modsnmp_version##${apache_version%.*}*.}
+
+# sourcecode archives and additional files
+source=(http://mirror.switch.ch/mirror/apache/dist/httpd/apache_$apache_version.tar.gz
+#         ftp://ftp.ox.ac.uk/pub/crypto/SSL/Apache-SSL/apache_$apache_version+ssl_$apachessl_version.tar.gz
+#         http://www.mod-snmp.com/distr/mod_snmp_$modsnmp_version.tar.gz
+        dso.conf
+        products.conf
+        config.layout
+        apache-modules.sh
+        apache-$apache_version-multilog.patch
+        apache-$apache_version-nosetsid.patch
+        apache-$apache_version-bsd-nosetsid.patch
+        mod_snmp-$modsnmp_patchver-headers.patch
+        mod_snmp-$modsnmp_patchver-sources.patch
+        apache-ssl-$apache_version-$apachessl_version-headers.patch
+        apache-ssl-$apache_version-$apachessl_version-sources.patch)
+
+# apache needs a wwwroot variable
+wwwroot=$prefix/var/www
+
+# configuration values
+case $target in
+  *freebsd*)
+    CFLAGS="$CFLAGS -Wall -Wno-pointer-sign -DNO_SERVER_HEADER -DNO_SETSID -DSNMP -DUSE_DB -DAPACHE_SSL -DBIG_SECURITY_HOLE"
+    ;;
+  *linux*)
+    CFLAGS="$CFLAGS -Wall -Wno-pointer-sign -DHAVE_SET_DUMPABLE -DNO_SERVER_HEADER -DNO_SETSID -DSNMP -DUSE_DB -DAPACHE_SSL -DBIG_SECURITY_HOLE"
+    ;;
+esac
+INCLUDES="-I$prefix/include/apache"
+LIBS="-lgdbm -lssl -lcrypto"
+OPTIM="-O2"
+TARGET='$service'
+EXPAT="yes"
+DEV_RANDOM="/dev/urandom"
+WANTHSREGEX="no"
+
+# package build script
+# --------------------------------------------------------------------------------
+build()
+{
+  # set the prefix and wwwroot in all config files
+  sed -i -e "s,@prefix@,$prefix,g;;s,@wwwroot@,$wwwroot,g" config.layout
+
+  # use the appropriate db header
+#  sed -i 's,db\.h,db_185.h,g' src/modules/snmp_agt/mod_snmp.h
+
+  # enter source directory and apply patches
+  cd apache_$apache_version
+
+  # add some customizing patches for daemontools
+  patch -N -p1 -i $SRC/apache-$apache_version-multilog.patch
+
+  case $target in
+    *freebsd*)
+      patch -N -p1 -i $SRC/apache-$apache_version-bsd-nosetsid.patch
+      ;;
+
+    *linux*)
+      patch -N -p1 -i $SRC/apache-$apache_version-nosetsid.patch
+      ;;
+  esac
+
+  #                                                     #
+  # add mod_snmp to the source tree and apply the patch #
+  #                                                     #
+
+  # original patches
+#  cp -rvf $(eval echo ../$modsnmp_files) .
+#  patch -N -p0 -i src/modules/snmp_agt/mod_snmp.patch
+#  CFLAGS="$CFLAGS -DSNMP -DUSE_DB -Wno-pointer-sign"
+
+#cp -rf ../apache_$apache_version ../apache_${apache_version}_orig
+#return 1
+
+  # nexbyte patches
+  patch -N -p1 -i $SRC/mod_snmp-$modsnmp_patchver-headers.patch
+  patch -N -p1 -i $SRC/mod_snmp-$modsnmp_patchver-sources.patch
+
+  chmod 755 src/modules/snmp_agt/{remake_status,group_select}
+
+  #                                                       #
+  # add apache-ssl to the source tree and apply the patch #
+  #                                                       #
+
+  # original patches
+#  cp -rf $(eval echo ../$apachessl_files) .
+#  yes | ./FixPatch "$prefix"
+
+  # nexbyte patches
+  patch -N -p1 -i $SRC/apache-ssl-$apache_version-$apachessl_version-headers.patch
+  patch -N -p1 -i $SRC/apache-ssl-$apache_version-$apachessl_version-sources.patch
+
+  # apply directory layout
+  cp $SRC/config.layout .
+
+  for varname in CC EXTRA_CFLAGS EXTRA_INCLUDES EXTRA_LIBS OPTIM TARGET EXPAT DEV_RANDOM WANTHSREGEX LINUX
+  do
+    eval entry="$varname=\"\$${varname#EXTRA_}\""
+
+    # this monster sed-script changes values which are already present in the template
+    # (it also removes comments if they're commented). if a value doesn't exist, it is
+    # inserted before the module configuration section.
+    sed -i "/^\#\? \?[A-Za-z]*[ \t]\?$varname=.*/ {
+       s,\#\?,,
+       s,=.*,=${entry#*=},
+       : lp; n; b lp
+     }
+     /^$/ {
+       N; /\n\#\+\$/ {
+   N; /\n\# Module configuration/ { i\
+     $entry; : lp; n; b lp;
+   }; P; D
+       }; P; D
+     }
+     \$ { s,$,\n$entry,; }" src/Configuration.tmpl
+  done 2>/dev/null
+
+#  sed -i 's,^AddModule,# AddModule,' src/Configuration.tmpl
+#  unset CFLAGS
+  ./configure --prefix=$prefix \
+             --with-layoutbyte \
+             --with-perl=$prefix/bin/perl \
+             --without-execstrip \
+             $( (eval echo --enable-module='{'$apache_static','$apache_shared'}') 2>/dev/null ) \
+             $( (eval echo --${shared:=enable}-shared='{'$apache_shared'}') 2>/dev/null ) \
+             --activate-module=src/modules/snmp_agt/libsnmp_agt.a \
+             --enable-module=snmp_agt
+
+   make TARGET="$name"
+
+#  install -d $ROOT/include/apache/xml
+#  install -d $ROOT/lib/apache
+#  install -d $ROOT/sbin
+#  install -d $ROOT/man/man{1,8}
+#  install -d $ROOT/var/www
+
+  make install \
+       root=$PKG \
+       includedir=$prefix/include/apache
+
+  sed -i '/APACHE_SSL/   { s,ifdef.*APACHE_SSL,if 1, }
+   /define.*SNMP$/ { d; n; }
+  ' $ROOT/include/apache/*.h
+
+  install -d $ROOT/share/apache
+  install -m 644 src/Makefile.config $ROOT/share/apache
+  install -m 644 src/Configuration.tmpl $ROOT/share/apache
+  install -m 644 src/apaci $ROOT/share/apache
+
+  install -d $ROOT/local/config
+
+#  prefix=$ROOT \
+    sh $SRC/apache-modules.sh > $ROOT/local/config/dso.conf
+
+    sed -i '/rewrite_module/ s,^[ \t]*#[ \t]*,,' $ROOT/local/config/dso.conf
+
+#  install -m 644 $SRC/dso.conf $ROOT/local/config
+  install -m 644 $SRC/products.conf $ROOT/local/config
+
+  sed -i 's,apache-shared,httpsd,g' $ROOT/sbin/apxs
+
+  rm -f $ROOT/man/man8/{apachectl,httpd}.*
+  rm $ROOT/sbin/httpsdctl
+  rm -f $ROOT/etc/httpsd.conf
+
+  rm -f $ROOT/etc/*.default
+
+  # fix the permissions
+  chown -R 0.0 ${pkg}
+}

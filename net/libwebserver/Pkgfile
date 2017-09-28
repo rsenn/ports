@@ -1,0 +1,38 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: libwebserver is a library for adding Web-based remote interfaces to your programs.
+#              It is independent of other Web servers, easy to use, and supports HTTPS with OpenSSL.
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6
+
+name=libwebserver
+version=0.5.3
+release=1
+source=(http://libwebserver.sourceforge.net/libwebserver-$version.tar.gz
+        libwebserver-0.5.3-autotools.patch
+        libwebserver-0.5.3-proper-install.patch)
+
+build()
+{
+  cd libwebserver-$version
+
+  patch -N -p1 -i $SRC/libwebserver-0.5.3-autotools.patch
+  patch -N -p1 -i $SRC/libwebserver-0.5.3-proper-install.patch
+
+  libtoolize --force --copy --automake
+  aclocal --force
+  automake --force --copy --foreign --add-missing --foreign
+  aclocal --force
+  autoheader --force
+  autoconf --force
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

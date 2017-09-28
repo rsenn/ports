@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A C++ module to create and send MIME messages.
+#  Writemime is a simple C++ package that makes it easy to create and
+#  send MIME (Multipurpose Internet Mail Extension) messages in a C++
+#  program. It also includes a driver program which allows access to most
+#  of the functionality from the Unix command line. Creating a message is
+#  trivially easy and it will handle all encoding issues internally.
+#  .
+# URL: http://www.lesbonscomptes.com/writemime/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=writemime
+version=1.1
+release=1
+source=(http://www.lesbonscomptes.com/writemime/writemime-$version.tar.gz)
+
+build()
+{
+  cd writemime-$version
+
+  make
+
+  install -d $ROOT/bin
+  install -m 755 writemime $ROOT/bin
+
+  install -d $ROOT/share/doc/writemime
+  install -m 644 CHANGES ChangeLog LICENSE README VERSION $ROOT/share/doc/writemime
+}
+
+# EOF

@@ -1,0 +1,73 @@
+diff -x */stamp-h* -x */.libs/* -x *.Plo -x *.status -x *.log -x */Makefile -x *.[Pl]o -x */.svn* -r -u -- annie_orig/examples/gren/create.cpp annie/examples/gren/create.cpp
+--- annie_orig/examples/gren/create.cpp	2008-06-23 23:36:59.000000000 +0200
++++ annie/examples/gren/create.cpp	2008-06-24 00:01:34.000000000 +0200
+@@ -17,6 +17,9 @@
+ #include "annie/examples.h"
+ #include "annie/listeners.h"
+ #include "annie/MultiLayerNetwork.h"
++
++#include <cmath>
++
+ using namespace annie;
+ using namespace std;
+ 
+@@ -55,7 +58,7 @@
+ 	Vector diff = v1 - v2;
+ 	real sum=0;
+ 	for(uint i=0; i<diff.size(); i++)
+-		sum += abs(diff[i]);
++		sum += abs((long long int)diff[i]);
+ 	return sum;
+ }
+ 
+diff -x */stamp-h* -x */.libs/* -x *.Plo -x *.status -x *.log -x */Makefile -x *.[Pl]o -x */.svn* -r -u -- annie_orig/include/annie/EucledianTopology.h annie/include/annie/EucledianTopology.h
+--- annie_orig/include/annie/EucledianTopology.h	2008-06-23 23:36:59.000000000 +0200
++++ annie/include/annie/EucledianTopology.h	2008-06-23 23:59:46.000000000 +0200
+@@ -3,6 +3,8 @@
+ 
+ #include "Kohonen.h"
+ 
++#include <cmath>
++
+ namespace annie {
+ 
+ /**
+diff -x */stamp-h* -x */.libs/* -x *.Plo -x *.status -x *.log -x */Makefile -x *.[Pl]o -x */.svn* -r -u -- annie_orig/include/annie/HopfieldNetwork.h annie/include/annie/HopfieldNetwork.h
+--- annie_orig/include/annie/HopfieldNetwork.h	2008-06-23 23:36:59.000000000 +0200
++++ annie/include/annie/HopfieldNetwork.h	2008-06-23 23:37:17.000000000 +0200
+@@ -201,7 +201,7 @@
+ 	virtual bool propagate(const std::vector<int> &pattern, uint timeout);
+ 
+ 	///the save as discrete version, but may have problems w/ convergence (real values must stand still, not only the ints
+-	virtual bool HopfieldBase::propagate(const Vector &pattern, uint timeout);
++	virtual bool propagate(const Vector &pattern, uint timeout);
+ };
+ 
+ /**
+diff -x */stamp-h* -x */.libs/* -x *.Plo -x *.status -x *.log -x */Makefile -x *.[Pl]o -x */.svn* -r -u -- annie_orig/include/annie/MultiLayerNetwork.h annie/include/annie/MultiLayerNetwork.h
+--- annie_orig/include/annie/MultiLayerNetwork.h	2008-06-23 23:36:59.000000000 +0200
++++ annie/include/annie/MultiLayerNetwork.h	2008-06-23 23:56:40.000000000 +0200
+@@ -141,7 +141,10 @@
+ 	/// compute error for the given traning set. The "epoch error" and "normalized epoch error" are then stored in the _control
+ 	void getErrorGREN(TrainingSet &ts);
+ 
+-	struct Error;	
++	protected: 
++  struct Error;
++
++  public:
+ 	/// real error for one example
+ 	Error getErrorGREN(const Vector &input, const Vector &desired);
+ 
+diff -x */stamp-h* -x */.libs/* -x *.Plo -x *.status -x *.log -x */Makefile -x *.[Pl]o -x */.svn* -r -u -- annie_orig/src/MultiLayerNetwork.cpp annie/src/MultiLayerNetwork.cpp
+--- annie_orig/src/MultiLayerNetwork.cpp	2008-06-23 23:36:59.000000000 +0200
++++ annie/src/MultiLayerNetwork.cpp	2008-06-23 23:57:58.000000000 +0200
+@@ -15,7 +15,7 @@
+ const Creal MultiLayerNetwork::CDEFAULT_LEARNINGRATE(defaultControl.init("defaultLearningRate", MultiLayerNetwork::DEFAULT_LEARNINGRATE));
+ const Creal MultiLayerNetwork::CDEFAULT_MOMENTUM(defaultControl.init("defaultMomentum", MultiLayerNetwork::DEFAULT_MOMENTUM));
+ 
+-MultiLayerNetwork::Error::Error(real delta) :_val(2) { _val[0] = delta * delta; _val[1] = abs(delta ); }
++MultiLayerNetwork::Error::Error(real delta) :_val(2) { _val[0] = delta * delta; _val[1] = abs((long long int)delta); }
+ 
+ MultiLayerNetwork::Error::Error(const Vector &diff) :_val(2) {
+ 	zero();

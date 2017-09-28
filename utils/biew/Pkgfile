@@ -1,0 +1,56 @@
+# $Id: Pkgfile,v 1.11 2007/04/22 23:07:53 roman Exp $
+#
+# Description: A binary/hex/assembly viewer/editor.
+#  BIEW (Binary vIEW) is a portable advanced file viewer with a built-in
+#  editor for binary, hexadecimal, and disassembler modes. It contains
+#  a highlighting Java/AVR/i86-AMD64/ARM-XScale/PPC64 disassembler, full
+#  preview of MZ, NE, PE, LE, LX, DOS.SYS, NLM, ELF, a.out, arch, coff32,
+#  PharLap, and rdoff executable formats, a code guider, and many other
+#  features.
+# URL: http://biew.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=biew
+version=5.7.3.1
+release=1
+source=($mirror_sf/biew/biew-${version//./}.tar.bz2
+        biew-5.7.3.1-curses-unix.patch
+        biew-5.7.3.1-slang-unix.patch)
+
+build()
+{
+  cd biew-${version//./}
+
+  #patch -p1 -i $SRC/biew-5.7.3.1-curses-unix.patch
+  patch -p1 -i $SRC/biew-5.7.3.1-slang-unix.patch
+
+  : ${console="slang"}
+
+  case $host in
+    mingw*|cygwin|msvc*|vc[0-9][0-9]) 
+      target_system=win32 
+    ;;
+  esac
+
+  case ${console} in
+    slang) slang=enable curses=disable ;;
+    *curses) slang=disable curses=enable ;;
+  esac
+
+  
+  ./configure \
+       --prefix="$prefix" \
+       --target-system="${target_system-unix}" \
+       ${slang+--${slang:-disable}-slang} \
+       ${curses+--${curses:-disable}-curses} \
+       ${iconv+--${iconv:-disable}-iconv} \
+       --enable-debug=3
+
+  make
+  make -i \
+       PREFIX="$ROOT" \
+       DATADIR="$ROOT/share/biew" \
+       LIBDIR="$ROOT/lib/biew" \
+    install || true
+}

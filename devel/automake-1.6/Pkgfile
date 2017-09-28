@@ -1,0 +1,40 @@
+# $Id: Pkgfile,v 1.13 2007/04/23 17:39:07 roman Exp $
+#
+# Description: automake
+# URL: http://www.gnu.org/software/automake
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=automake-1.6
+version=1.6.3
+release=1
+source=($mirror_gnu/automake/automake-$version.tar.bz2)
+
+build()
+{
+  cd automake-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --infodir="$prefix/info"
+
+  make
+  make DESTDIR="$PKG" pkgdatadir="$prefix/share/automake" install
+
+  # link different
+  rm -f $ROOT/bin/{aclocal,automake}
+
+  sed -i "s,/[^ ]*\(bin/perl\),$prefix/\1,g" $ROOT/bin/*
+
+  rm -f $ROOT/info/dir
+}
+
+postmerge()
+{
+  for bin in automake aclocal
+  do
+    test -f $bindir/$bin || ln -s $bin-$version $bindir/$bin
+  done
+}

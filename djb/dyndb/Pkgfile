@@ -1,0 +1,34 @@
+# $Id: $
+#
+# Description: is a database library allowing for multiple readers and a single writer at any time. The functions are quite fast for up to about 70000 records. Performance is likely to degrade after that point. See
+
+name=dyndb
+version=0.5.2
+release=1
+source=(http://www.ohse.de/uwe/dyndb/dyndb-$version.tar.gz
+        dyndb-0.5.2-libowfat-3.patch)
+
+build()
+{
+  cd data/dyndb-$version
+
+  patch -N -p1 -i $SRC/dyndb-0.5.2-libowfat-3.patch
+
+  make
+
+  rm -f src/{buffer,byte,case,fmt,open,scan,str,stralloc,uint32}.h
+  rm -f compile/libbyte.a
+
+  install -d $ROOT/include/dyndb
+  find -type f -name "*.h" | xargs cp -vt $ROOT/include/dyndb
+
+  install -d $ROOT/lib
+  find -type f -name "*.a" | xargs cp -vt $ROOT/lib
+
+  install -d $ROOT/bin
+  cp -L command/* $ROOT/bin/
+
+  install -d $ROOT/share/man/man1
+  cp -L doc/*.1 $ROOT/share/man/man1
+  cp -L doc/*.3 $ROOT/share/man/man3
+}

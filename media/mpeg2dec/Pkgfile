@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: MPEG1 and MPEG2 video decoder library
+#  libmpeg2 is a library which can decode MPEG1 and MPEG2 video streams.
+#  .
+# URL: http://libmpeg2.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=mpeg2dec
+version=0.4.1
+release=1
+source=($mirror_freebsd/ports/distfiles/mpeg2dec-$version.tar.gz)
+
+build()
+{
+  cd mpeg2dec-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --mandir="$prefix/share/man"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/mpeg2dec
+  install -m 644 README AUTHORS COPYING ChangeLog INSTALL NEWS TODO CodingStyle doc/libmpeg2.txt $ROOT/share/doc/mpeg2dec
+}

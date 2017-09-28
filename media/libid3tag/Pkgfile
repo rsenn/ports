@@ -1,0 +1,30 @@
+# $Id: Pkgfile,v 1.3 2007/05/09 21:02:50 roman Exp $
+#
+# Description: Library for reading and writing ID3v1 and ID3v2 tags.
+#  A library for reading and (eventually) writing ID3 tags, 
+#  both ID3v1 and the various versions of ID3v2.
+#  .
+# URL: http://www.underbit.com/products/mad/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libid3tag
+version=0.15.1b
+release=1
+source=($mirror_sf/mad/libid3tag-$version.tar.gz)
+
+build()
+{
+  cd libid3tag-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/libid3tag
+  install -m 644 README COPYING INSTALL TODO CHANGES COPYRIGHT CREDITS VERSION $ROOT/share/doc/libid3tag
+}

@@ -1,0 +1,37 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Parsifal XML Parser is a validating XML 1.0 parser written in ANSI C.
+# It implements a SAX2 API with full XML namespace support.
+# URL: http://www.saunalahti.fi/~samiuus/toni/xmlproc
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libparsifal
+version=1.0.0
+release=1
+source=(http://www.saunalahti.fi/~samiuus/toni/xmlproc/libparsifal-$version.tar.gz)
+
+build()
+{
+  cd libparsifal-$version
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --${shared:=enable}-shared \
+      --${static:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $PKG/${docdir=$prefix/share/doc/libparsifal-$version}
+
+  for doc in [A-Z]*[A-Z]* samples
+  do
+    if test -s "$doc" -o -d "$doc"
+    then
+      cp -rf $doc $PKG/$docdir
+    fi
+  done
+}

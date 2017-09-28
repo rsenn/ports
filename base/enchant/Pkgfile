@@ -1,0 +1,32 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: A cross-platform abstract layer for spell-checking.
+#  Enchant is a cross-platform abstract layer for spell-checking. It is a
+#  meta spell-checking framework. It recognizes that different languages
+#  often require radically different tools and alogrithms to spell-check and
+#  correct. It also takes into account that systems often have a radical
+#  host of spell- checking software installed. It provides a standard C
+#  API/ABI for all of its backends, while allowing multiple backends to be
+#  loaded and used at once.
+# URL: http://www.abisource.com/enchant/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=enchant
+version=1.3.0
+release=1
+source=(http://www.abisource.com/downloads/enchant/$version/enchant-$version.tar.gz)
+
+build()
+{
+  cd enchant-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

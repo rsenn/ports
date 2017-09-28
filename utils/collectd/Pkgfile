@@ -1,0 +1,34 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A system statistics collection daemon.
+#  collectd is a small and modular daemon which collects system information
+#  periodically and provides means to store the values. Included in the
+#  distribution are numerous plug-ins for collecting CPU, disk, and memory
+#  usage, network interface and DNS traffic, network latency, database
+#  statistics, and much more. Custom statistics can easily be added in a
+#  number of ways, including execution of arbitrary programs and plug-ins
+#  written in Perl. Advanced features include a powerful network code
+#  to collect statistics for entire setups and SNMP integration to query
+#  network equipment.
+# URL: http://collectd.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=collectd
+version=4.3.2
+release=1
+source=(http://collectd.org/files/collectd-$version.tar.bz2)
+
+build()
+{
+  cd collectd-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

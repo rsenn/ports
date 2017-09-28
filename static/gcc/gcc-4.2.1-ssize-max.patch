@@ -1,0 +1,13 @@
+--- gcc-4.2.1_orig/gcc/config/host-linux.c	2007-10-08 19:39:03.000000000 +0200
++++ gcc-4.2.1/gcc/config/host-linux.c	2007-10-11 01:38:20.000000000 +0200
+@@ -201,6 +201,10 @@
+   if (lseek (fd, offset, SEEK_SET) == (off_t)-1)
+     return -1;
+ 
++#ifndef SSIZE_MAX
++#define SSIZE_MAX 2147483647
++#endif
++  
+   while (size)
+     {
+       ssize_t nbytes;

@@ -1,0 +1,37 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A delivery confirmation process for a mail address or mailing list.
+#  qconfirm is an implementation of a delivery confirmation process for a
+#  mail address or ezmlm mailing list. It is invoked by qmail-local through
+#  a .qmail file, and can reduce the amount of junk mail hitting a mailbox
+#  or the mailboxes of mailing list subscribers.
+#  .
+# URL: http://smarden.org/qconfirm/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=qconfirm
+version=0.14.3
+release=1
+source=(http://smarden.org/qconfirm/qconfirm-$version.tar.gz)
+
+build()
+{
+  cd mail/qconfirm-$version
+
+  echo ${CC-cc} ${CFLAGS-"-O2"} -include errno.h >src/conf-cc
+
+  make -C src
+
+  install -d $ROOT/bin
+  install -m 755 src/chkshsgr src/qconfirm src/qconfirm-accept src/qconfirm-cdb-check src/qconfirm-cdb-update src/qconfirm-check src/qconfirm-check-mid src/qconfirm-conf src/qconfirm-control src/qconfirm-inject src/qconfirm-notice src/qconfirm-return $ROOT/bin
+
+  install -d $ROOT/share/man/man1
+  install -m 644 man/*.1 $ROOT/share/man/man1
+
+  install -d $ROOT/share/doc/qconfirm
+  install -m 644 package/CHANGES package/COPYING package/README src/TODO $ROOT/share/doc/qconfirm
+  cp -rf doc $ROOT/share/doc/qconfirm/html
+}
+
+# EOF

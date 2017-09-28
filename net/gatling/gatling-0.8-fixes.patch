@@ -1,0 +1,191 @@
+diff -r -u gatling-0.8_orig/dl.c gatling-0.8/dl.c
+--- gatling-0.8_orig/dl.c	2007-07-30 04:46:33.000000000 +0200
++++ gatling-0.8/dl.c	2007-07-30 04:51:12.000000000 +0200
+@@ -66,14 +66,14 @@
+   char buf[8192];
+   int i,j,body=-1,r;
+   int64 d;
+-  unsigned long httpcode;
++  size_t httpcode;
+   unsigned long long rest;
+   i=0; d=-1; httpcode=0;
+   while ((r=read(s,buf+i,sizeof(buf)-i)) > 0) {
+     i+=r;
+     for (j=0; j+3<i; ++j) {
+       if (buf[j]=='\r' && buf[j+1]=='\n' && buf[j+2]=='\r' && buf[j+3]=='\n') {
+-	unsigned long code;
++	size_t code;
+ 	body=j+4;
+ 	if (scan_ulong(buf+9,&code)) httpcode=code;
+ 	if ((resumeofs && code==206 && io_appendfile(&d,filename)==0) ||
+@@ -188,9 +188,9 @@
+   return (c!='"' && c>=' ' && c!='+');
+ }
+ 
+-unsigned long fmt_urlencoded(char* dest,const char* src,unsigned long len) {
++size_t fmt_urlencoded(char* dest,const char* src,size_t len) {
+   register const unsigned char* s=(const unsigned char*) src;
+-  unsigned long written=0,i;
++  size_t written=0,i;
+   for (i=0; i<len; ++i) {
+     if (!issafe(s[i])) {
+       if (dest) {
+@@ -540,7 +540,7 @@
+ 	/* Passive Mode OK (127,0,0,1,204,228) */
+ 	for (i=0; i<ftpresponse.len-1; ++i) {
+ 	  if (ftpresponse.s[i]==',' && ftpresponse.s[i+1]>='0' && ftpresponse.s[i+1]<='9') {
+-	    unsigned long j;
++	    size_t j;
+ 	    if (scan_ulong(ftpresponse.s+i+1,&j) && j<256)
+ 	      port=port*256+j;
+ 	  }
+@@ -556,7 +556,7 @@
+ 	/* Passive Mode OK (|||52470|) */
+ 	for (i=0; i<ftpresponse.len-1; ++i) {
+ 	  if (ftpresponse.s[i]>='0' && ftpresponse.s[i]<='9') {
+-	    unsigned long j;
++	    size_t j;
+ 	    if (scan_ulong(ftpresponse.s+i,&j) && j<65536) {
+ 	      port=j;
+ 	      break;
+diff -r -u gatling-0.8_orig/gatling.c gatling-0.8/gatling.c
+--- gatling-0.8_orig/gatling.c	2007-07-30 04:46:33.000000000 +0200
++++ gatling-0.8/gatling.c	2007-07-30 04:47:56.000000000 +0200
+@@ -865,9 +865,9 @@
+   return (c!='"' && c!='%' && c>=' ' && c!='+');
+ }
+ 
+-unsigned long fmt_urlencoded(char* dest,const char* src,unsigned long len) {
++size_t fmt_urlencoded(char* dest,const char* src,size_t len) {
+   register const unsigned char* s=(const unsigned char*) src;
+-  unsigned long written=0,i;
++  size_t written=0,i;
+   for (i=0; i<len; ++i) {
+     if (!issafe(s[i])) {
+       if (dest) {
+@@ -1011,7 +1011,7 @@
+  * authentication was OK or -1 if authentication is needed (the HTTP
+  * response was then already written to the iob). */
+ int http_dohtaccess(struct http_data* h) {
+-  unsigned long filesize;
++  size_t filesize;
+   char* map;
+   char* s;
+   char* auth;
+@@ -1031,7 +1031,7 @@
+       char* username,* password;
+       char* decoded;
+       int i;
+-      unsigned long l,dl,ul;
++      size_t l,dl,ul;
+       auth+=6;
+       while (*auth==' ' || *auth=='\t') ++auth;
+       i=str_chr(auth,'\n');
+@@ -1103,7 +1103,7 @@
+   char* dir=0;
+   char* s;
+   char* args;
+-  unsigned long i;
++  size_t i;
+   int64 fd;
+   int doesgzip,doesbzip2;
+ 
+@@ -1297,7 +1297,7 @@
+ }
+ 
+ int buffer_putlogstr(buffer* b,const char* s) {
+-  unsigned long l=str_len(s);
++  size_t l=str_len(s);
+   char* x;
+   for (l=0; s[l] && s[l]!='\r' && s[l]!='\n'; ++l) ;
+   if (!l) return 0;
+@@ -1903,7 +1903,7 @@
+   char* pathprefix="";
+   char* match=0;
+ 
+-  unsigned long o,n;
++  size_t o,n;
+   int (*sortfun)(de*,de*);
+   array a,b,c;
+   de* ab;
+@@ -2295,7 +2295,7 @@
+       if (c[i=scan_ushort(c,&port)]!=sep || !i) goto syntaxerror;
+     } else {
+       /* 10,0,0,1,4,1 -> 10.0.0.1:1025 */
+-      unsigned long l;
++      size_t l;
+       int r,i;
+       for (i=0; i<4; ++i) {
+ 	if (c[r=scan_ulong(c,&l)]!=',' || l>255) {
+@@ -2466,7 +2466,7 @@
+       unsigned char reserved;
+       unsigned short error;
+     } doserror;
+-    unsigned long status;
++    size_t status;
+   } status;
+   unsigned char flags;
+   unsigned short flags2;
+@@ -2491,7 +2491,7 @@
+    */
+ };
+ 
+-int smb_handle_SessionSetupAndX(char* pkt,unsigned long len,struct http_data* h) {
++int smb_handle_SessionSetupAndX(char* pkt,size_t len,struct http_data* h) {
+   struct smbheader* p=(struct pktheader*)pkt;
+   char* s=pkt+sizeof(smbheader);
+   char* andx;
+@@ -2659,7 +2659,7 @@
+ 	{
+ 	  struct timeval t;
+ 	  struct timezone tz;
+-	  unsigned long long ntdate;
++	  size_t long ntdate;
+ 	  gettimeofday(&t,&tz);
+ 	  ntdate=10000000ll * ( t.tv_sec + 11644473600ll ) + t.tv_usec * 10ll;
+ 	  uint32_pack(c+0x3c,ntdate&0xffffffff);
+@@ -2703,7 +2703,7 @@
+     uid_t u=0;
+     gid_t g=0;
+     if (new_uid[0]>='0' && new_uid[0]<='9') {
+-      unsigned long l;
++      size_t l;
+       const char *c=new_uid+scan_ulong(new_uid,&l);
+       if (*c && *c!=':' && *c!='.') return -1;
+       if ((u=l)!=l) return -1; /* catch overflow */
+@@ -2948,7 +2948,7 @@
+ 		j=str_chr(x,'\n'); if (j && x[j-1]=='\r') { --j; }
+ 		k=str_chr(x,' ');
+ 		if (k<j) {
+-		  unsigned long dl;
++		  size_t dl;
+ 		  remoteuser=alloca(20+k-j);
+ 		  i=fmt_str(remoteuser,"REMOTE_USER=");
+ 		  scan_base64(x+k+1,remoteuser+i,&dl);
+@@ -3516,7 +3516,7 @@
+ #endif
+ #endif
+ 
+-static void accept_server_connection(int64 i,struct http_data* H,unsigned long ftptimeout_secs,tai6464 nextftp) {
++static void accept_server_connection(int64 i,struct http_data* H,size_t ftptimeout_secs,tai6464 nextftp) {
+   /* This is an FTP or HTTP(S) or SMB server connection.
+     * This read event means that someone connected to us.
+     * accept() the connection, establish connection type from
+@@ -3706,7 +3706,7 @@
+ }
+ #endif
+ 
+-static void handle_read_misc(int64 i,struct http_data* H,unsigned long ftptimeout_secs,tai6464 nextftp) {
++static void handle_read_misc(int64 i,struct http_data* H,size_t ftptimeout_secs,tai6464 nextftp) {
+   /* This is a TCP client connection waiting for input, i.e.
+     *   - an HTTP connection waiting for a HTTP request, or
+     *   - an FTP connection waiting for a command, or
+@@ -4021,7 +4021,7 @@
+   uint16 httpsport;
+ #endif
+   tai6464 now,last,tick,nextftp;
+-  unsigned long ftptimeout_secs=600;
++  size_t ftptimeout_secs=600;
+   char* new_uid=0;
+   char* chroot_to=0;
+   uint64 prefetchquantum=0;

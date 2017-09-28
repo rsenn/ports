@@ -1,0 +1,33 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: Time-series data storage and graphing software.
+#  RRDtool (Round Robin Database Tool) is time-series data storage and
+#  graphing utility created by the author of MRTG. Using RRDtool, you can
+#  write your own MRTG-like tools in a matter minutes with only a few lines
+#  of Perl or shell code.
+# URL: http://oss.oetiker.ch/rrdtool/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=rrdtool
+version=1.2.20
+release=1
+source=(http://oss.oetiker.ch/rrdtool/pub/rrdtool-$version.tar.gz)
+
+build()
+{
+  cd rrdtool-$version
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --mandir="$prefix/man" \
+       --disable-pthread \
+       --disable-static \
+       --disable-tcl
+  make
+  make DESTDIR=$PKG install
+
+  mv $ROOT/share/man/man3 $ROOT/man || true
+  rm -rf $ROOT/share/man
+}

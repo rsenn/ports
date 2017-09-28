@@ -1,0 +1,36 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Maatkit makes MySQL easier and safer to manage. It provides
+# simple, predictable ways to do things you cannot otherwise do. It would be
+# nice if these features were included with MySQL, but they are not. That's
+# why Maatkit is now shipping by default with many GNU/Linux distributions
+# such as Debian and CentOS.
+# You can use Maatkit to prove replication is working correctly, fix corrupted
+# data, automate repetitive tasks, speed up your servers, and much, much more.
+# URL: http://www.maatkit.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=maatkit
+version=1877
+release=1
+source=($mirror_sf/maatkit/maatkit-1877.tar.gz)
+
+build()
+{
+  cd maatkit-$version
+
+  perl Makefile.PL
+
+  make \
+      PREFIX="$prefix" \
+      SITEPREFIX="$prefix" \
+      DESTDIR="$PKG" \
+      INSTALLSITEMAN1DIR="$prefix/share/man/man1" \
+      INSTALLSITEMAN3DIR="$prefix/share/man/man3" \
+      install
+
+  mkdir -p $ROOT/share/doc/maatkit-$version
+
+  install -m 644 [A-Z][A-Zh]* $ROOT/share/doc/maatkit-$version
+}

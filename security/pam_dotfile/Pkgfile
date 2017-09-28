@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2$version-09-24 23:30:12Z root $
+#
+# Description: A PAM module which allows users to have more than one password for each service.
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=pam_dotfile
+version=0.7
+release=1
+source=(http://0pointer.de/lennart/projects/pam_dotfile/pam_dotfile-$version.tar.gz)
+
+build()
+{
+  cd pam_dotfile-$version
+
+  ./bootstrap.sh
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

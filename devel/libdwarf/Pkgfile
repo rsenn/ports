@@ -1,0 +1,53 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Libdwarf is a library of functions to provide creation of DWARF
+# debugging information records, DWARF line number information, DWARF
+# address range and pubnames information, weak names information, and
+# DWARF frame description information.
+#
+# URL: http://reality.sgiweb.org/davea/dwarf.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libelfg0, libc6, libelfg0
+
+name=libdwarf
+version=20080615
+release=1
+source=(http://reality.sgiweb.org/davea/libdwarf-$version.tar.gz
+        libdwarf-20080615-libtool.patch)
+
+build()
+{
+  cd dwarf-$version
+
+  patch -N -p1 -i $SRC/libdwarf-20080615-libtool.patch
+
+  rm */Makefile.in */install.sh
+
+  for dir in . libdwarf
+  do
+   (cd $dir
+    libtoolize --force --copy --automake
+    aclocal --force -I $SRC/dwarf-$version/m4
+    automake --force --copy --foreign --add-missing
+    aclocal --force -I $SRC/dwarf-$version/m4
+    autoconf --force)
+  done
+
+  case $prefix in
+    "/usr") sysconfdir="/etc" ;;
+  esac
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --sysconfdir="${sysconfdir=$prefix/etc}" \
+      --includedir="$prefix/include/libdwarf" \
+      --enable-shared \
+      --enable-static
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -m 644 libdwarf/dwarf.h $ROOT/include/libdwarf
+}

@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: filesystem client based on the SMB file transfer protocol
+# fusesmb is a filesystem client based on the SMB file transfer protocol. This
+# gives the ability to transparently exchange files with Microsoft Windows
+# servers and Unix servers running Samba.
+# .
+# It is based on FUSE (userspace filesystem framework for Linux), thus you will
+# have to prepare fuse kernel module to be able to use it.
+#
+# URL: http://www.ricardis.tudelft.nl/~vincent/fusesmb/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libfuse2, libsmbclient
+
+name=fusesmb
+version=0.8.7
+release=1
+source=(http://www.ricardis.tudelft.nl/~vincent/fusesmb/download/fusesmb-$version.tar.gz)
+
+build()
+{
+  cd fusesmb-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

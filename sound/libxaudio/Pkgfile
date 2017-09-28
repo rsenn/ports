@@ -1,0 +1,30 @@
+# $Id: Pkgfile 424 2008-08-10 01:52:57Z enki $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=libxaudio
+version=0.39
+release=1
+source=($mirror_sf/mylene/libxaudio-$version.tar.gz)
+
+build()
+{
+  cd libxaudio-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix" \
+       --enable-shared \
+       --enable-static
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/libxaudio
+  install -m 644 COPYING INSTALL $ROOT/share/doc/libxaudio
+}

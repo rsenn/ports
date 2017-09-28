@@ -1,0 +1,39 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A set of small useful utilities for Linux networking
+# URL:
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=iputils
+version=20071127
+release=1
+source=(http://www.skbuff.net/iputils/iputils-s$version.tar.bz2
+        iputils-s20071127-open-max.patch)
+
+build()
+{
+  cd iputils-s$version
+
+  patch -N -p1 -i $SRC/iputils-s20071127-open-max.patch
+
+  case $prefix in
+    "/usr") bindir="/bin" ;;
+  esac
+
+  make
+
+  install -d $PKG/${bindir="$prefix/bin"}
+  install -m 4755 ping ping6 $PKG/$bindir
+
+  install -d $ROOT/bin
+  install -m 755 arping clockdiff rdisc tracepath tracepath6 traceroute6 $ROOT/bin
+
+  install -d $ROOT/sbin
+  install -m 755 rarpd tftpd $ROOT/sbin
+
+  install -d $ROOT/share/doc/iputils
+  install -m 644 INSTALL RELNOTES $ROOT/share/doc/iputils
+}
+
+# EOF

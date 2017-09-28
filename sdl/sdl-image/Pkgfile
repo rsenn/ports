@@ -1,0 +1,29 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:50 roman Exp $
+#
+# Description: SDL image loading library
+#  SDL_image is a simple library to load images of various formats as SDL
+#  surfaces. It supports BMP, PPM, XPM, PCX, GIF, JPEG, PNG, and TGA formats.
+# URL: http://www.libsdl.org/projects/SDL_image/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=sdl-image
+version=1.2.6
+release=1
+source=(http://www.libsdl.org/projects/SDL_image/release/SDL_image-$version.tar.gz)
+
+build()
+{
+  cd SDL_image-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --${shared:=enable}-shared \
+       --${static:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+}
+

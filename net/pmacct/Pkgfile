@@ -1,0 +1,34 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A libpcap, NetFlow, and sFlow IPv4/IPv6 accounting package.
+# pmacct is a small set of passive network monitoring tools to measure,
+# account, classify, aggregate, and export IPv4 and IPv6 traffic. A
+# pluggable and flexible architecture allows collected network data to be
+# stored into memory tables or SQL (MySQL, SQLite, PostgreSQL) databases and
+# exported through NetFlow or sFlow protocols to remote collectors. pmacct
+# supports fully customizable historical data breakdown, flow sampling,
+# filtering and tagging, recovery actions, and triggers. Libpcap, sFlow
+# v2/v4/v5 and NetFlow v1/v5/v7/v8/v9 are supported.
+#
+# URL: http://www.pmacct.net/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=pmacct
+version=
+release=1
+source=()
+
+build()
+{
+  cd pmacct-0.11.5
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

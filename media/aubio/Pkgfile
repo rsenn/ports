@@ -1,0 +1,33 @@
+# $Id: Pkgfile,v 1.10 2007/05/10 16:59:30 roman Exp $
+#
+# Package: libaubio2
+# Description: A library for audio labelling.
+#  aubio is a library for audio labelling. Features include onset detection,
+#  silence detection, beat tracking, and pitch detection. The goal of
+#  this project is to provide automatic labelling features to other audio
+#  software projects. Functions can be used offline in sound editors and
+#  software samplers, or online in audio effects and virtual instruments.
+# URL: http://aubio.piem.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=aubio
+version=0.3.2
+release=1
+source=(http://aubio.piem.org/pub/aubio-$version.tar.gz)
+
+build()
+{
+  cd aubio-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/aubio
+  install -m 644 README AUTHORS COPYING ChangeLog INSTALL THANKS TODO VERSION $ROOT/share/doc/aubio
+}

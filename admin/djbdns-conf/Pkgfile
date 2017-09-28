@@ -1,0 +1,38 @@
+# $Id: Pkgfile 424 2008-08-10 01:52:57Z enki $
+#
+# Description: Djbdns-conf is a configuration tool for djbdns
+# It makes/deletes/enables/disables tinydns, axfrdns (synchronously with
+# tinydns), walldns, and dnscache. It also maintains their respective files
+# in /etc and has a pull-style method with ssh/axfr-get to make secondary
+# name service.
+#
+# URL: http://js.hu/package/djbdns-conf.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=djbdns-conf
+version=0.34
+release=1
+source=(http://js.hu/package/djbdns-conf/djbdns-conf-$version.tar.gz
+        djbdns-addusers.sh)
+
+build()
+{
+  cd admin/djbdns-conf-$version
+
+  package/compile
+
+  sed -i "/^SHARED=/ s,=.*,=$prefix/share/djbdns-conf," command/*
+
+  install -d $ROOT/bin
+  install -m 755 command/* $ROOT/bin
+
+  install -d $ROOT/share/djbdns-conf
+  install -m 755 etc/* $ROOT/share/djbdns-conf
+
+  install -d $ROOT/share/doc/djbdns-conf/html
+  cp -rf doc/* $ROOT/share/doc/djbdns-conf/html
+
+  install -d $ROOT/sbin
+  install -m 755 $SRC/djbdns-addusers.sh $ROOT/sbin/djbdns-addusers
+}

@@ -1,0 +1,34 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: X11 DRI2 extension wire protocol
+#  This package provides development headers describing the wire protocol
+#  for the DRI2 extension, used to organise direct rendering support for
+#  3D clients, and replace the XFree86-DRI extension.
+#  This package is built from the X.org dri2proto proto module.
+# URL: http://www.X.org
+#  http://xorg.freedesktop.org
+#  http://lists.freedesktop.org/mailman/listinfo/xorg
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=dri2proto
+version=2.1
+release=1
+source=(ftp://ftp.x.org/pub/individual/proto/dri2proto-$version.tar.bz2)
+
+build()
+{
+  cd dri2proto-$version
+
+  rm config.sub &&
+  autoreconf --force --verbose --install
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

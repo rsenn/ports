@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: SQLite library
+#  SQLite is a C library that implements an SQL database engine.
+#  Programs that link with the SQLite library can have SQL database
+#  access without running a separate RDBMS process.
+#  .
+# URL: http://sqlite.org/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=sqlite
+version=2.8.17
+release=1
+source=(http://sqlite.org/sqlite-$version.tar.gz)
+
+build()
+{
+  cd sqlite-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Command-line tools for searching, modifying, and formating XML data
+# URL: http://robur.slu.se/jensl/xmlclitools
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libglib2.0-0, libpcre3, libxml2, zlib1g
+
+name=xmlclitools
+version=1.61
+release=1
+source=(http://robur.slu.se/jensl/xmlclitools/xmlclitools.tar.gz)
+
+build()
+{
+  cd xmlclitools-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix" \
+       --mandir="$prefix/share/man"
+
+  make
+  make \
+      PREFIX="$ROOT" \
+      MANDIR="$ROOT/share/man" install
+
+  install -d $ROOT/share/doc/xmlclitools
+  install -m 644 [A-Z]*[A-Z]* $ROOT/share/doc/xmlclitools
+}

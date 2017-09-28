@@ -1,0 +1,61 @@
+diff -wru libimpr-0.1_orig/Makefile libimpr-0.1/Makefile
+--- libimpr-0.1_orig/Makefile	2008-11-10 13:38:07.000000000 +0100
++++ libimpr-0.1/Makefile	2008-11-10 13:42:14.000000000 +0100
+@@ -1,36 +1,41 @@
++LIBTOOL = libtool --tag=CC --silent
+ CC=gcc
+-EXTRA=-pg -O2
++EXTRA=-O2
+ CFLAGS= $(EXTRA) -std=c99 -Wall -g
+-LDLIBS= $(EXTRA) -g -fPIC -shared
+-DESTDIR=.
++LDLIBS= $(EXTRA) -g -rpath $(PREFIX)/lib
+ 
+-OBJS = chan.o colorspace.o distance.o filter.o flood.o imbw.o scaling.o
+-OBJS+= segmentize.o subimage.o
+-OBJS+= filter_crap.o misc_crap.o
+-
+-TARGET=libimpr.so
+-INSINC=$(DESTDIR)/include/
+-INSLIB=$(DESTDIR)/lib/
++PREFIX=/usr
++DESTDIR=
++
++OBJS = chan.lo colorspace.lo distance.lo filter.lo flood.lo imbw.lo scaling.lo
++OBJS+= segmentize.lo subimage.lo
++OBJS+= filter_crap.lo misc_crap.lo
++
++TARGET=libimpr.la
++INSINC=$(DESTDIR)$(PREFIX)/include/
++INSLIB=$(DESTDIR)$(PREFIX)/lib/
+ INSHEADERS=impr.h colorspace.h segmentize.h filter.h imbw.h
+ 
+ default: $(TARGET)
+ 
+-%.o:%.c *.h
+-	$(CC) $(CFLAGS) -c -o $@ $<
++%.lo: %.c
++	$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) -c -o $@ $<
+ 
+ $(TARGET): $(OBJS)
+-	$(CC) $(LDLIBS) -o $@ $(OBJS)
++	$(LIBTOOL) --mode=link $(CC) $(LDLIBS) -o $@ $(OBJS)
+ 
+ clean:
+-	rm -f $(OBJS) $(TARGET)
++	rm -f $(OBJS)
++	$(LIBTOOL) --mode=clean rm -f $(TARGET)
+ 
+ # should use install(1) here!
+ install: $(TARGET)
+ 	mkdir -p $(INSINC) $(INSLIB)
+-	cp $(TARGET) $(INSLIB)
++	$(LIBTOOL) --mode=install cp $(TARGET) $(INSLIB)
++	mkdir -p $(INSINC)
+ 	cp $(INSHEADERS) $(INSINC)
+ 
+ uninstall:
+-	rm -f $(INSLIB)/$(TARGET)
++	$(LIBTOOL) --mode=uninstall rm -f $(INSLIB)/$(TARGET)
+ 	rm -f $(INSHEADERS:%=$(INSINC)/%)
+ 	rmdir $(INSINC) $(INSLIB)

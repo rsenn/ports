@@ -1,0 +1,49 @@
+diff -r -u -- CSL_orig/CSL/Kernel/CGestalt.cpp CSL/CSL/Kernel/CGestalt.cpp
+--- CSL_orig/CSL/Kernel/CGestalt.cpp	2007-06-15 15:57:50.000000000 +0000
++++ CSL/CSL/Kernel/CGestalt.cpp	2007-06-15 15:58:52.000000000 +0000
+@@ -95,7 +95,7 @@
+ 	va_end(args);
+ }
+ 
+-#endif UNDEFINED
++#endif //def UNDEFINED_IN_CRAM
+ 
+ // A couple of useful functions that didn't fit in anywhere else...
+ 
+diff -r -u -- CSL_orig/CSL/Kernel/CSL_Core.h CSL/CSL/Kernel/CSL_Core.h
+--- CSL_orig/CSL/Kernel/CSL_Core.h	2007-06-15 15:57:50.000000000 +0000
++++ CSL/CSL/Kernel/CSL_Core.h	2007-06-15 15:58:24.000000000 +0000
+@@ -249,7 +249,7 @@
+ 	void checkBuffer() throw (LogicError);	///< check the port's buffer and allocate it if needed
+ 	inline float nextValue();			///< answer the next value (dynamic or constant)
+ 	inline void nextFrame(sample * where);
+-	inline bool Port :: isReady();
++	inline bool isReady();
+ 	void resetPtr();					///< reset the buffer pointer without re-pulling the input (see SumOfSines)
+ 	virtual bool isActive();			///< answer whether I'm active
+ 	void dump();						///< pretty-print the receiver
+@@ -539,7 +539,7 @@
+ 
+ #ifndef CSL_WINDOWS
+ #define DO_TIMING				// Do the timing statistics
+-#endif CSL_WINDOWS
++#endif //ndef CSL_WINDOWS
+ 
+ #ifdef CSL_WINDOWS
+ 
+@@ -612,4 +612,4 @@
+ 
+ }	// end of namespace
+ 
+-#endif CSL_CORE_H
++#endif //ndef CSL_CORE_H
+diff -r -u -- CSL_orig/CSL/Processors/BinaryOp.h CSL/CSL/Processors/BinaryOp.h
+--- CSL_orig/CSL/Processors/BinaryOp.h	2007-06-15 15:57:50.000000000 +0000
++++ CSL/CSL/Processors/BinaryOp.h	2007-06-15 15:59:19.000000000 +0000
+@@ -111,5 +111,5 @@
+ 
+ }
+ 
+-#endif CSL_BINARYOP_H
++#endif //ndef CSL_BINARYOP_H
+ 

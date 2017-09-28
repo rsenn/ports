@@ -1,0 +1,40 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Run a single command on many hosts.
+#  dsh (the distributed shell) is a program which executes a single command
+#  on multiple remote machines. It can execute this command in parallel 
+#  (i.e., on any number of machines at a time) or in serial (by specifying 
+#  parallel execution of the command on 1 node at a time). 
+#  It was originally designed to work with rsh, but has full support for ssh
+#  and with a little tweaking of the top part of the dsh executable, should 
+#  work with any program that allows remote execution of a command without 
+#  an interactive login.
+# URL:
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=dsh
+category=utils
+version=2.0.1
+release=1
+source=(http://heanet.dl.sourceforge.net/sourceforge/dsh/dsh-$version.tar.gz)
+
+build()
+{
+  cd dsh-$version
+
+  ./configure \
+       --prefix="$ROOT" \
+       --man-prefix="$ROOT/share" \
+       --use-ssh \
+       --beowulf-root="$PKG/var/lib/dsh" \
+       --dont-create-node-groups-dir
+
+  install -d $ROOT/bin
+  install -d $ROOT/share/man
+
+  yes | ./install
+
+  install -d $ROOT/share/doc/dsh
+  install -m 644 CHANGELOG COPYING CREDITS INSTALL README README_AIX README_SOLARIS TODO $ROOT/share/doc/dsh
+}

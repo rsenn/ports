@@ -1,0 +1,39 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: The Bourne shell, as found on traditional Unix systems.
+# The Heirloom Bourne Shell is a portable variant of the traditional Unix
+# shell. It is especially suitable for testing the portability of shell
+# scripts and for processing legacy scripts. The Bourne shell does not
+# provide as many features as newer Unix shells, but it does provide a
+# stable shell language. With this in mind, it is also suitable for general
+# script processing and interactive use. This variant of the Bourne shell
+# has been derived from OpenSolaris code and thus provides the SVR4/SVID3
+# level of the shell.
+#
+# URL: http://heirloom.sourceforge.net/sh.html
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=bournesh
+version=050706
+release=2
+source=($mirror_sf/heirloom/heirloom-sh-$version.tar.bz2)
+
+build()
+{
+  cd heirloom-sh-$version
+
+  make CC="${CC-cc}" CFLAGS="$CFLAGS" CPPFLAGS="-D_GNU_SOURCE"
+
+  make \
+      UCBINST="install" \
+      PREFIX="$ROOT" \
+      SV3BIN="$ROOT/bin" \
+      MANDIR="$ROOT/share/man" \
+    install
+
+  find $ROOT -type l -exec rm '{}' ';'
+
+  mv -vf $ROOT/bin/sh $ROOT/bin/bournesh
+  mv -vf $ROOT/share/man/man1/sh.1 $ROOT/share/man/man1/bournesh.1
+}

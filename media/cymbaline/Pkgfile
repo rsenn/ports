@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A learning MP3 player.
+#  Cymbaline is a learning music player. It sets a score for each track
+#  based on your listening habits, and you can set thresholds to create
+#  playlists with your favorite tracks automatically. In random mode, it
+#  will play your favorite tracks more often. It also allows album-based
+#  navigation: you can start playing the next album, skip 2 albums ahead,
+#  go to a specific album, etc. It has a random queue mode where you see
+#  a list of randomly chosen tracks that play consecutively. The queue is
+#  also built based on song scores.
+#  .
+# URL: http://silmarill.org/index.html?Cymbaline
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=cymbaline
+version=1.3e
+release=1
+source=(http://silmarill.org/files/cymbaline-$version.tar.gz)
+
+build()
+{
+  cd cymbaline-$version
+
+  python setup.py install --prefix="$ROOT"
+
+  install -d $ROOT/share/doc/cymbaline
+  install -m 644 README $ROOT/share/doc/cymbaline
+}
+
+# EOF

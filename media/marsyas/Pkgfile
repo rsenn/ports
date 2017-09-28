@@ -1,0 +1,49 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Marsyas (Music Analysis, Retrieval and Synthesis for
+# Audio Signals) is a framework for developing systems for audio processing.
+# It provides an general architecture for connecting audio, soundfiles,
+# signal processing blocks and machine learning.
+# URL: http://marsyas.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=marsyas
+version=0.2.15
+release=1
+source=($mirror_sf/marsyas/marsyas-$version.tar.gz)
+
+build()
+{
+  cd marsyas-$version
+
+  libtoolize --force --copy
+  aclocal --force
+  automake --force --copy --foreign --add-missing
+  aclocal --force
+  autoconf --force
+
+  case $host in
+    *-linux*)
+      export CPPFLAGS="${CPPFLAGS:+$CPPFLAGS }-DMARSYAS_LINUX"
+  esac
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --program-prefix="" \
+       --prefix="$prefix" \
+       --${shared:-enable}-shared \
+       --${static:-disable}-static \
+       --enable-audio \
+       --enable-midi \
+       --${marsyasqt:-disable}-marsyasqt \
+       --with-mad \
+       --with-vorbis \
+       --with-readline \
+       --${matlab:-without}-matlab
+
+  make
+  make DESTDIR="$PKG" install
+}

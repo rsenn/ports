@@ -1,0 +1,14 @@
+diff -r -u ccbuild-1.5.6/src/Misc/Preprocessor/Foreach.hh ccbuild-1.5.6-boost-typeof/src/Misc/Preprocessor/Foreach.hh
+--- ccbuild-1.5.6/src/Misc/Preprocessor/Foreach.hh	2006-07-21 15:18:53.000000000 +0200
++++ ccbuild-1.5.6-boost-typeof/src/Misc/Preprocessor/Foreach.hh	2007-12-17 02:37:04.000000000 +0100
+@@ -49,7 +49,9 @@
+ #error _foreach already defined! This macro may have gone wild!
+ #endif
+ 
+-#define _foreach( iter, cont) for( __typeof__((cont).begin()) iter = (cont).begin(); iter != (cont).end(); ++iter)
++#include <boost/typeof/typeof.hpp>
++
++#define _foreach( iter, cont) for( BOOST_TYPEOF((cont).begin()) iter = (cont).begin(); iter != (cont).end(); ++iter)
+ 
+ //_INCLUDED
+ #endif

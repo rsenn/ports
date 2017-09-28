@@ -1,0 +1,4 @@
+#define SSH_VERSION     "EPiPhYtE"
+
+#define SSH_PORTABLE    ""
+#define SSH_RELEASE     SSH_VERSION SSH_PORTABLE

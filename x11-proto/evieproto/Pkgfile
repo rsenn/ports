@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: X11 Event Interception extension wire protocol
+#  This package provides development headers describing the wire protocol
+#  for the EvIE extension, used to let arbitrary clients receive, filter,
+#  and potentially modify all events.
+#  .
+# URL: http://www.X.org/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=evieproto
+version=
+release=1
+source=(ftp://ftp.x.org/pub/individual/proto/evieext-1.0.2.tar.bz2)
+
+build()
+{
+  cd evieext-1.0.2
+./autogen.sh
+./configure \
+     --build="$build" \
+     --host="$host" \
+     --prefix="$prefix"
+make
+make DESTDIR="$PKG" install
+}
+
+# EOF

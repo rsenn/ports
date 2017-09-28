@@ -1,0 +1,81 @@
+diff -r -u -N -- libircclient-1.2_orig/configure.in libircclient-1.2/configure.in
+--- libircclient-1.2_orig/configure.in	2008-07-04 23:16:24.000000000 +0200
++++ libircclient-1.2/configure.in	2008-07-04 23:19:14.000000000 +0200
+@@ -6,6 +6,8 @@
+ AC_CONFIG_SRCDIR([include/libircclient.h])
+ AC_CONFIG_HEADER([include/config.h])
+ 
++AM_INIT_AUTOMAKE
++
+ # Check for command-line
+ AC_ARG_ENABLE(enable_debug,
+ 	[  --enable-debug         compile with debug information (no)])
+@@ -16,8 +18,8 @@
+ # Checks for programs.
+ AC_PROG_CXX
+ AC_PROG_CC
+-AC_CHECK_TOOL(AR, ar, :)
+-AC_PROG_RANLIB
++dnl AC_CHECK_TOOL(AR, ar, :)
++AC_PROG_LIBTOOL
+ 
+ # Checks for header files.
+ AC_HEADER_STDC
+diff -r -u -N -- libircclient-1.2_orig/Makefile.am libircclient-1.2/Makefile.am
+--- libircclient-1.2_orig/Makefile.am	1970-01-01 01:00:00.000000000 +0100
++++ libircclient-1.2/Makefile.am	2008-07-04 23:21:29.000000000 +0200
+@@ -0,0 +1,1 @@
++SUBDIRS = src examples
+diff -r -u -N -- libircclient-1.2_orig/src/Makefile.am libircclient-1.2/src/Makefile.am
+--- libircclient-1.2_orig/src/Makefile.am	1970-01-01 01:00:00.000000000 +0100
++++ libircclient-1.2/src/Makefile.am	2008-07-04 23:21:29.000000000 +0200
+@@ -0,0 +1,4 @@
++lib_LTLIBRARIES = libircclient.la
++
++libircclient_la_SOURCES = libircclient.c
++libircclient_la_LDFLAGS = -rpath $(libdir) -version-number 1:2
+diff -ruN libircclient-1.2_orig/configure.in libircclient-1.2/configure.in
+--- libircclient-1.2_orig/configure.in	2008-07-05 01:45:41.000000000 +0200
++++ libircclient-1.2/configure.in	2008-07-05 01:45:56.000000000 +0200
+@@ -52,5 +52,7 @@
+ AC_SUBST(CFLAGS)
+ AC_SUBST(LIBS)
+ AC_SUBST(PREFIX)
+-AC_CONFIG_FILES([examples/Makefile src/Makefile])
++AC_CONFIG_FILES([Makefile
++                 examples/Makefile
++                 src/Makefile])
+ AC_OUTPUT
+diff -ruN libircclient-1.2_orig/configure.in libircclient-1.2/configure.in
+--- libircclient-1.2_orig/configure.in	2008-07-05 01:54:25.000000000 +0200
++++ libircclient-1.2/configure.in	2008-07-05 02:19:47.000000000 +0200
+@@ -39,6 +39,9 @@
+ AC_CHECK_LIB(socket, socket, AC_DEFINE(HAVE_SOCKET) LIBS="$LIBS -lsocket")
+ AC_CHECK_LIB(nsl, inet_ntoa, AC_DEFINE(HAVE_INET_NTOA) LIBS="$LIBS -lnsl")
+ 
++AC_CHECK_LIB([pthread], [pthread_create], [PTHREAD_LIB="-lpthread"])
++AC_SUBST([PTHREAD_LIB])
++
+ if test "$enable_debug" = "yes"; then
+ 	CFLAGS="-g -DENABLE_DEBUG"
+ else
+--- libircclient-1.2_orig/examples/Makefile.am	1970-01-01 01:00:00.000000000 +0100
++++ libircclient-1.2/examples/Makefile.am	2008-07-05 02:50:10.000000000 +0200
+@@ -0,0 +1,17 @@
++noinst_PROGRAMS = censor colors ircftp irctest spammer
++
++censor_SOURCES = censor.cpp
++censor_LDADD = ../src/libircclient.la
++
++colors_SOURCES = colors.cpp
++colors_LDADD = ../src/libircclient.la
++
++ircftp_SOURCES = ircftp.cpp
++ircftp_LDADD = ../src/libircclient.la
++
++irctest_SOURCES = irctest.c
++irctest_LDADD = ../src/libircclient.la
++
++spammer_SOURCES = spammer.c
++spammer_LDADD = ../src/libircclient.la $(PTHREAD_LIB)
++

@@ -1,0 +1,90 @@
+# $Id: Pkgfile,v 1.11 2007/05/09 21:02:40 roman Exp $
+#
+# Description: gcc
+# URL: http://gcc.gnu.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=mingw-gcc
+version=3.4.6
+release=1
+target=i686-pc-mingw32
+
+source=($mirror_gnu/gcc/gcc-$version/gcc-core-$version.tar.bz2
+        $mirror_gnu/gcc/gcc-$version/gcc-g++-$version.tar.bz2
+        gcc-3.4.6-mingw32.patch
+        gcc-$version-linktest.patch
+        gcc-$version-ssize_max.patch
+        gcc-3.4.6-gentoo.patch)
+
+build()
+{
+  pushd gcc-$version
+  patch -N -p1 -i $SRC/gcc-3.4.6-mingw32.patch
+#  patch -N -p1 -i $SRC/gcc-$version-linktest.patch
+#  patch -N -p1 -i $SRC/gcc-$version-ssize_max.patch
+  patch -N -p1 -i $SRC/gcc-3.4.6-gentoo.patch
+  popd
+
+  # configure in a separate build tree
+  builddir="gcc-build-$version"
+
+  rm -rf "$builddir"
+  mkdir -p "$builddir"
+  cd "$builddir"
+
+  $SRC/gcc-$version/configure \
+      --build="$build" \
+      --host="$host" \
+      ${target+--target="$target"} \
+      --prefix="$prefix" \
+      --with-local-prefix="$prefix" \
+      --mandir="$prefix/share/man" \
+      --infodir="$prefix/share/info" \
+      --disable-nls \
+      --without-included-gettext \
+      --enable-threads="win32" \
+      --with-tls \
+      --disable-rpath \
+      --disable-shared \
+      --${static:=enable}-shared \
+      --enable-languages="c,c++" \
+      --with-ld="$prefix/bin/$target-ld" \
+      --with-as="$prefix/bin/$target-as" \
+      --with-system-zlib \
+      --with-gxx-include-dir="$prefix/$target/include/c++" \
+      --with-cpp-install-dir="$prefix/$target/lib" \
+      --disable-concept-checks
+
+#      --with-headers="$prefix/$target/include" \
+#      --with-libs="$prefix/$target/lib" \
+
+  make
+  make DESTDIR="$PKG" install
+
+  rm -f $ROOT/lib/libiberty.a
+  rm -rf $ROOT/share/{info,man}
+
+  return 0
+
+  chmod 644 $ROOT/$target/lib/*.la
+
+  mkdir -p $ROOT/lib/gcc/$target/$version
+  mv $ROOT/$mingw32_target/lib/lib{std,sup}c++* \
+     $ROOT/lib/gcc/$target/$version
+
+
+#  cd ../gcc-$version
+#  copy_license "COPYING" "COPYING.LIB"
+
+  rm -f $ROOT/info/dir
+
+  cd $ROOT/bin
+  for bin in *
+  do
+    case $bin in
+      *-$version) ;;
+      *) mv "$bin" "$bin-$version" ;;
+    esac
+  done
+}

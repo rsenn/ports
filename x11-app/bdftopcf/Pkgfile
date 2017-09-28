@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Convert X font from Bitmap Distribution Format to Portable Compiled Format
+# URL: http://www.xfree86.org/current/bdftopcf.1.html
+# Maintainer: 
+# Depends on: 
+
+name=bdftopcf
+version=1.0.1
+release=1
+source=(ftp://ftp.x.org/pub/individual/app/bdftopcf-$version.tar.bz2)
+
+build() 
+{
+  cd bdftopcf-$version
+  
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+  
+  make
+  make DESTDIR="$PKG" install
+  
+  install -d $ROOT/share/doc/bdftopcf
+  install -m 644 README AUTHORS COPYING ChangeLog INSTALL NEWS $ROOT/share/doc/bdftopcf
+}
+
+# EOF

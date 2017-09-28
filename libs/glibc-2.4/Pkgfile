@@ -1,0 +1,119 @@
+# $Id: Pkgfile,v 1.19 2007/05/09 21:02:47 roman Exp $
+#
+# Description: glibc
+# URL: http://glibc.gnu.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=glibc-2.4
+version=2.4
+release=1
+source=($mirror_gnu/glibc/glibc-$version.tar.bz2
+        $mirror_gnu/glibc/glibc-libidn-$version.tar.bz2
+        $mirror_gnu/glibc/glibc-ports-$version.tar.bz2
+        glibc-2.3.6-inotify-1.patch)
+
+build()
+{
+  mv glibc-libidn-$version glibc-$version/libidn
+  mv glibc-ports-$version glibc-$version/ports
+
+
+      #linuxthreads linuxthreads_db
+
+#      cd glibc-$version
+
+#      cd ..
+
+  # build in separate directory
+  mkdir -p $name-build && cd glibc-2.4-build
+
+  unset LD_LIBRARY_PATH LDFLAGS CFLAGS
+
+  $SRC/glibc-$version/configure \
+      --build="$build" \
+      --host="$host" \
+      ${target+--target="$target"} \
+      --prefix="$prefix" \
+      --sysconfdir="$prefix/etc" \
+      --${shared:=enable}-shared \
+      --${static:=enable}-shared \
+      --disable-profile \
+      --enable-add-ons="nptl,ports,libidn" \
+      --enable-kernel="2.6.0" \
+      --without-gd \
+      --with-binutils="$prefix/$host/bin" \
+      --with-elf \
+      --without-selinux \
+      --without-cvs \
+      --with-headers="$prefix/include" \
+      --disable-dev-erandom \
+      --with-tls \
+      --with-__thread \
+      --disable-sanity-checks \
+      --enable-versioning
+
+  make
+
+  # create an initial ld.so.conf
+  install -d "$ROOT/etc"
+
+  echo "$prefix/lib" >$ROOT/etc/ld.so.conf
+
+  # install the package into the pkg root
+  make install_root="$PKG" install
+
+  cd ../glibc-$version
+
+  ln -sf $prefix/share/zoneinfo/CET $prefix/etc/localtime
+
+  return 0
+
+  # move libs
+  (cd $ROOT/lib
+   movelib "ld-$version.so" ld-linux.so.*
+   movelib "libBrokenLocale-$version.so" libBrokenLocale.so.*
+   movelib "libc-$version.so" libc.so.*
+   movelib "libanl-$version.so" libanl.so.*
+   movelib "libcidn-$version.so" libcidn.so.*
+   movelib "libcrypt-$version.so" libcrypt.so.*
+   movelib "libdl-$version.so" libdl.so.*
+   movelib "libm-$version.so" libm.so.*
+   movelib "libnsl-$version.so" libnsl.so.*
+   movelib "libnss_compat-$version.so" libnss_compat.so.*
+   movelib "libnss_dns-$version.so" libnss_dns.so.*
+   movelib "libnss_files-$version.so" libnss_files.so.*
+   movelib "libnss_hesiod-$version.so" libnss_hesiod.so.*
+   movelib "libnss_nis-$version.so" libnss_nis.so.*
+   movelib "libnss_nisplus-$version.so" libnss_nisplus.so.*
+   movelib "libpthread-$version.so" libpthread.so.*
+   movelib "libresolv-$version.so" libresolv.so.*
+   movelib "librt-$version.so" librt.so.*
+   movelib "libutil-$version.so" libutil.so.*)
+
+
+  # replace paths
+  sed -i -e \
+       "s,SBINDIR[ \t]*\",\"$prefix/sbin,
+        s,\"SBINDIR,$prefix/sbin\",
+        s,BINDIR[ \t]*\",\"$prefix/bin,
+        s,DEVDIR[ \t]*\",\"$prefix/dev,
+        s,LOCALSTATEDIR[ \t]*\",\"$prefix/var,
+        s,MANDIR[ \t]*\",\"$prefix/man,
+        s,PROCDIR[ \t]*\",\"$prefix/proc,
+        s,SYSCONFDIR[ \t]*\",\"$prefix/etc,
+        s,TMPDIR[ \t]*\",\"$prefix/tmp," \
+        "$ROOT"/include/{paths,stdio}.h \
+        "$ROOT"/include/sys/{mtio,syslog}.h
+
+  rm -f $ROOT/info/dir
+  rm -f $ROOT/bin/iconv
+  rm -f $ROOT/include/iconv.h
+}
+
+movelib()
+{
+  rm "$2"
+  mv "$1" "$2"
+}
+

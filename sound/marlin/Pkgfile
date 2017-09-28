@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A sample editor.
+#  Marlin is a sample editor using GStreamer for audio IO and GNOME for its
+#  interface. It has basic editing features such as Cut/Copy/Paste, Paste
+#  as New, Paste mix, delete selection, crop selection, Insert Silence,
+#  and Swap Channels.
+#  .
+# URL: http://marlin.sf.net/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=marlin
+version=0.9
+release=1
+source=($mirror_sf/marlin/marlin-$version.tar.gz)
+
+build()
+{
+  cd marlin-$version
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

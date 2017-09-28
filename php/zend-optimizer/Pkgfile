@@ -1,0 +1,60 @@
+# $Id: Pkgfile,v 1.6 2007/05/09 21:02:54 roman Exp $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=zend-optimizer
+version=3.2.6
+release=1
+source=(ZendOptimizer-$version-linux-glibc21-i386.tar.gz
+        ZendOptimizer-$version-freebsd6.0-i386.tar.gz)
+
+build()
+{
+  case $target in
+    *linux*)
+       platform=linux-glibc21-i386
+       ;;
+    *bsd*)
+       platform=freebsd6.0-i386
+       ;;
+  esac
+
+  cd ZendOptimizer-$version-${platform}
+
+  install -d $ROOT/lib/php
+  install data/4_4_x_comp/ZendOptimizer.so $ROOT/lib/php
+
+  install -d $ROOT/lib/php5
+  install data/5_2_x_comp/ZendOptimizer.so $ROOT/lib/php5
+
+  install -d $ROOT/share/doc/${name}
+  install -m 644 data/doc/Zend_Optimizer_User_Guide.pdf $ROOT/share/doc/${name}
+
+  copy_license "LICENSE"
+}
+
+postmerge()
+{
+  text_insert_after \
+    "zend_extension = ZendOptimizer.so" \
+    "zend extensions" \
+    $libdir/php.ini
+
+  text_insert_after \
+    "zend_extension = ZendOptimizer.so" \
+    "zend extensions" \
+    $prefix/local/config/php.ini
+
+  libm="libm.so.4"
+
+  if test -f $libdir/libm.so.4; then
+    echo "The required $libm exists"
+  else
+    (cd $libdir
+     echo "Missing $libm, creating symlink to" libm.so.[0-9]
+     ln -s libm.so.[0-9] libm.so.4)
+  fi
+}

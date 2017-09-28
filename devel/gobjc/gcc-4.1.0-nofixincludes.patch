@@ -1,0 +1,25 @@
+diff -ru gcc-4.1.0_orig/gcc/Makefile.in gcc-4.1.0/gcc/Makefile.in
+--- gcc-4.1.0_orig/gcc/Makefile.in	2006-03-16 10:54:10.000000000 +0100
++++ gcc-4.1.0/gcc/Makefile.in	2006-03-16 10:57:08.000000000 +0100
+@@ -3133,10 +3133,6 @@
+ 	cp xlimits.h include/limits.h
+ 	cp $(UNWIND_H) include/unwind.h
+ 	chmod a+r include/limits.h
+-# Install the README
+-	rm -f include/README
+-	cp $(srcdir)/../fixincludes/README-fixinc include/README
+-	chmod a+r include/README
+ 	$(STAMP) $@
+ 
+ .PHONY: install-gcc-tooldir
+@@ -3181,9 +3177,7 @@
+ 	(TARGET_MACHINE='$(target)'; srcdir=`cd $(srcdir); ${PWD_COMMAND}`; \
+ 	  SHELL='$(SHELL)'; MACRO_LIST=`${PWD_COMMAND}`/macro_list ; \
+ 	  export TARGET_MACHINE srcdir SHELL MACRO_LIST && \
+-	  cd $(build_objdir)/fixincludes && \
+-	  $(SHELL) ./fixinc.sh ../../gcc/include \
+-	    $(SYSTEM_HEADER_DIR) $(OTHER_FIXINCLUDES_DIRS) )
++	  cd $(build_objdir)/fixincludes)
+ 	rm -f include/syslimits.h
+ 	if [ -f include/limits.h ]; then \
+ 	  mv include/limits.h include/syslimits.h; \

@@ -1,0 +1,31 @@
+# $Id: Pkgfile,v 1.7 2007/04/22 23:07:58 roman Exp $
+#
+# Description: X11 Printing extension (Xprint) wire protocol
+#  This package provides the wire protocol for Xprint, the X11 printing
+#  extension.
+#  This module can be found as the printproto module tarball at
+#  http://xorg.freedesktop.org/releases/individual/proto/
+# URL: http://xorg.freedesktop.org
+#  http://lists.freedesktop.org/mailman/listinfo/xorg
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=printproto
+version=1.0.4
+release=1
+source=(ftp://ftp.x.org/pub/individual/proto/printproto-$version.tar.bz2)
+
+build()
+{
+  cd printproto-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --${static:=enable}-shared \
+       --${shared:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+}

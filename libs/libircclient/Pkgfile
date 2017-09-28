@@ -1,0 +1,53 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: libircclient is a small but powerful library, which implements
+# client-server IRC protocol. It has all features needed to create your own IRC
+# client or bot, including multi-threading support, sync and async interfaces,
+# CTCP/DCC support, colors and so on.
+# URL: http://libircclient.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6
+
+name=libircclient
+version=1.2
+release=1
+source=($mirror_sf/libircclient/libircclient-$version.tar.gz
+        libircclient-1.2-libtool.patch)
+
+build()
+{
+  cd libircclient-$version
+
+  patch -N -p1 -i $SRC/libircclient-1.2-libtool.patch
+
+  find -name Makefile.in -exec sed -i 's:@prefix@:$(prefix):g' '{}' ';'
+
+  libtoolize --force --copy
+  aclocal --force
+  automake --force --copy --foreign --add-missing
+  aclocal --force
+  autoconf --force
+
+ ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --${shared:=enable}-shared \
+      --${shared:=enable}-shared \
+      --disable-dependency-tracking
+
+  make #prefix="$prefix"
+  make DESTDIR="$PKG" install
+
+#  install -d $ROOT/lib
+#  install -m 644 src/*.a $ROOT/lib
+
+  install -d $ROOT/include
+  install -m 644 include/*.h $ROOT/include
+
+  install -d $ROOT/share/doc/libircclient
+  install -m 644 [A-Z]*[A-Z]* $ROOT/share/doc/libircclient
+  cp -rf doc/html $ROOT/share/doc/libircclient
+
+  cp -rf doc/man $ROOT/share
+}

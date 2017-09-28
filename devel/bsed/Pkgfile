@@ -1,0 +1,32 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:40 roman Exp $
+#
+# Description: A binary stream editor.
+#  bsed does simple edits of binary files from the command line or a
+#  shell script.
+# URL: http://www.bell-labs.com/wwexptools/bsed/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=bsed
+version=1.0
+release=1
+source=(#http://www1.bell-labs.com/cgi-user/wwexptools/gensnapshot/source/bsedsrc.tar.gz
+        http://www.sourcefiles.org/Editors/Console/bsedsrc.tar.gz
+        bsed-zeropad-nulterm.patch
+        bsed-inplace.patch)
+
+build()
+{
+  cd bsedsrc
+
+  patch -N -p1 -i $SRC/bsed-zeropad-nulterm.patch
+  patch -N -p1 -i $SRC/bsed-inplace.patch
+
+  gcc $LDFLAGS $CFLAGS -o bsed bsed.c
+
+  install -d $ROOT/bin
+  install -m 755 bsed $ROOT/bin
+
+  install -d $ROOT/share/man/man1
+  install -m 755 bsed.1 $ROOT/share/man/man1
+}

@@ -1,0 +1,61 @@
+# $Id: Pkgfile 424 2008-08-10 01:52:57Z enki $
+#
+# Description: Apache2 module for FastCGI protocol.
+#  A binary compatibility alternative to Apache module mod_fastcgi.
+#  mod_fcgid has a new process management strategy, which concentrates on
+#  reducing the number of fastcgi server, and kick out the corrupt fastcgi
+#  server as soon as possible.
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=mod_fcgid
+version=2.2
+release=1
+source=($mirror_sf/mod-fcgid/mod_fcgid.$version.tgz
+        mod_fcgid-2.2-autotools.patch)
+
+build()
+{
+  cd mod_fcgid.$version
+
+  patch -N -p1 -i $SRC/mod_fcgid-2.2-autotools.patch
+
+  sh autogen.sh
+
+  rm -f .deps
+
+  APXS=`ls $prefix/*bin/apxs*`
+
+  for apxs in $APXS; do
+   (rm -rf ${builddir=build-`$apxs -q progname`}
+    mkdir -p $builddir
+    cd $builddir
+
+    apxs2="$apxs" \
+    ../configure \
+        --build="$build" \
+        --host="$host" \
+        --prefix="$prefix" \
+        --with-apxs
+
+    make
+    make DESTDIR="$PKG" install
+
+    libexecdir=`$apxs -q libexecdir`
+
+    rm -f $PKG${libexecdir}/*.a
+    rm -f $PKG${libexecdir}/*.la
+
+    sysconfdir=`$apxs -q sysconfdir`
+
+    install -d $PKG${sysconfdir}/mods-available
+
+    echo "LoadModule fcgid_module $libexecdir/mod_fcgid.so" >$PKG${sysconfdir}/mods-available/fcgid.load
+    echo "AddHandler fcgid-script .fcgi" >$PKG${sysconfdir}/mods-available/fcgid.conf
+    )
+  done
+
+  install -d $ROOT/share/doc/mod_fcgid
+  install -m 644 AUTHOR COPYING ChangeLog INSTALL.txt $ROOT/share/doc/mod_fcgid
+}

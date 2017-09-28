@@ -1,0 +1,31 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:49 roman Exp $
+#
+# Description: Free Firewire Audio Drivers.
+#  FreeBoB is a a generic Linux driver for BeBoB devices and will support
+#  JACK and ALSA API's.
+#  .
+# URL: http://freebob.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libfreebob
+version=1.0.11
+release=1
+source=($mirror_sf/freebob/libfreebob-$version.tar.gz)
+
+build()
+{
+  cd libfreebob-$version
+
+  libtoolize --force --copy --install
+  aclocal --force
+  autoconf --force
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix"
+
+  make 
+  make DESTDIR="$PKG" install
+}

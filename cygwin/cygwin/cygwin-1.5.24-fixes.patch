@@ -1,0 +1,74 @@
+diff -r -u -- cygwin-1.5.24-2_orig/winsup/cygwin/environ.h cygwin-1.5.24-2/winsup/cygwin/environ.h
+--- cygwin-1.5.24-2_orig/winsup/cygwin/environ.h	2007-05-21 21:50:30.000000000 +0200
++++ cygwin-1.5.24-2/winsup/cygwin/environ.h	2007-05-21 21:51:39.000000000 +0200
+@@ -43,7 +43,7 @@
+   __attribute__ ((regparm (3)));
+ 
+ void __stdcall update_envptrs ();
+-extern char **__cygwin_environ, ***main_environ;
++extern "C" char **__cygwin_environ, ***main_environ;
+ extern "C" char __stdcall **cur_environ ();
+ char ** __stdcall build_env (const char * const *envp, char *&envblock,
+ 			     int &envc, bool need_envblock)
+diff -r -u -- cygwin-1.5.24-2_orig/winsup/cygwin/winsup.h cygwin-1.5.24-2/winsup/cygwin/winsup.h
+--- cygwin-1.5.24-2_orig/winsup/cygwin/winsup.h	2007-05-21 21:50:30.000000000 +0200
++++ cygwin-1.5.24-2/winsup/cygwin/winsup.h	2007-05-21 21:51:52.000000000 +0200
+@@ -153,7 +153,7 @@
+ #define SIGTOMASK(sig)	(1 << ((sig) - signal_shift_subtract))
+ extern unsigned int signal_shift_subtract;
+ 
+-extern int __api_fatal_exit_val;
++extern "C" int __api_fatal_exit_val;
+ #define set_api_fatal_return(n) do {extern int __api_fatal_exit_val; __api_fatal_exit_val = (n);} while (0)
+ #define api_fatal(fmt, args...) __api_fatal (fmt,## args)
+ 
+@@ -273,7 +273,7 @@
+ #define set_winsock_errno() __set_winsock_errno (__FUNCTION__, __LINE__)
+ void __set_winsock_errno (const char *fn, int ln) __attribute__ ((regparm(2)));
+ 
+-extern bool wsock_started;
++extern "C" bool wsock_started;
+ 
+ /* Printf type functions */
+ extern "C" void __api_fatal (const char *, ...) __attribute__ ((noreturn));
+diff -r -u -- cygwin-1.5.24-2_orig/winsup/configure cygwin-1.5.24-2/winsup/configure
+--- cygwin-1.5.24-2_orig/winsup/configure	2007-05-21 22:02:54.000000000 +0200
++++ cygwin-1.5.24-2/winsup/configure	2007-05-21 22:06:40.000000000 +0200
+@@ -275,7 +275,7 @@
+ ac_subdirs_all="$ac_subdirs_all cygwin w32api"
+ ac_subdirs_all="$ac_subdirs_all mingw"
+ ac_subdirs_all="$ac_subdirs_all cygserver"
+-ac_subdirs_all="$ac_subdirs_all utils doc"
++ac_subdirs_all="$ac_subdirs_all utils"
+ ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os CC ac_ct_CC CFLAGS LDFLAGS CPPFLAGS EXEEXT OBJEXT CXX ac_ct_CXX CXXFLAGS subdirs SET_MAKE LIBOBJS LTLIBOBJS'
+ ac_subst_files=''
+ 
+@@ -3034,7 +3034,7 @@
+     fi
+ 
+ 
+-subdirs="$subdirs utils doc"
++subdirs="$subdirs utils"
+ 
+     ;;
+ esac
+diff -r -u -- cygwin-1.5.24-2_orig/winsup/cygwin/syscalls.cc cygwin-1.5.24-2/winsup/cygwin/syscalls.cc
+--- cygwin-1.5.24-2_orig/winsup/cygwin/syscalls.cc	2007-05-21 22:02:54.000000000 +0200
++++ cygwin-1.5.24-2/winsup/cygwin/syscalls.cc	2007-05-21 22:04:53.000000000 +0200
+@@ -3202,6 +3202,7 @@
+       return NULL;	/* avoid a compiler warning */
+     }
+ 
++  fhandler_pipe *fh;
+   FILE *fp = fdopen (fd, in_type);
+   fcntl (fd, F_SETFD, fcntl (fd, F_GETFD, 0) | FD_CLOEXEC);
+ 
+@@ -3229,7 +3230,7 @@
+     goto err;
+   close (other_fd);
+ 
+-  fhandler_pipe *fh = (fhandler_pipe *) cygheap->fdtab[fd];
++  fh = (fhandler_pipe *) cygheap->fdtab[fd];
+   fh->set_popen_pid (pid);
+ 
+   return fp;

@@ -1,0 +1,34 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Universal Netboot Installer.
+#  UNetbootin (Universal Netboot Installer) is a cross-platform utility that
+#  can create Live USB systems and can load a variety of system utilities or
+#  install various Linux distributions and other operating systems without
+#  a CD.
+# URL: http://unetbootin.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=unetbootin
+version=323
+release=1
+source=($mirror_sf/unetbootin/unetbootin-source-$version.tar.gz)
+
+build() 
+{
+  install -d $ROOT/bin
+  install -d $ROOT/share/unetbootin
+
+  ln -sf $PKG debbuild
+
+  mkdir -p $PKG/DEBIAN && touch $PKG/DEBIAN/control
+
+  sh -x build-nostatic
+ 
+  rm -rf $PKG/DEBIAN
+
+  install -d $ROOT/share/doc/unetbootin
+  install -m 644 INSTALL README.TXT $ROOT/share/doc/unetbootin
+}
+
+# EOF

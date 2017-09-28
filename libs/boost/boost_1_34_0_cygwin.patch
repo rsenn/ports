@@ -1,0 +1,14 @@
+diff -r -u -- boost_1_34_0_orig/boost/config/stdlib/libstdcpp3.hpp boost_1_34_0/boost/config/stdlib/libstdcpp3.hpp
+--- boost_1_34_0_orig/boost/config/stdlib/libstdcpp3.hpp	2007-06-21 18:15:52.000000000 +0000
++++ boost_1_34_0/boost/config/stdlib/libstdcpp3.hpp	2007-06-21 18:16:07.000000000 +0000
+@@ -29,7 +29,9 @@
+ #  define _REENTRANT
+ #endif
+ 
+-#ifdef __GLIBCXX__ // gcc 3.4 and greater:
++#if defined(__CYGWIN__)
++# define BOOST_HAS_THREADS
++#elif defined(__GLIBCXX__) // gcc 3.4 and greater:
+ #  if defined(_GLIBCXX_HAVE_GTHR_DEFAULT) \
+         || defined(_GLIBCXX__PTHREADS)
+       //

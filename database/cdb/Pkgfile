@@ -1,0 +1,30 @@
+# $Id: Pkgfile,v 1.3 2007/05/09 21:02:55 roman Exp $
+#
+# Description: shared library for constant databases (cdb)
+#  tinycdb is a small, fast and reliable utility and subroutine library
+#  for creating and reading constant databases. The database structure is
+#  tuned for fast reading.
+#  This package package provides a shared library needed to run programs
+#  using it.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=cdb
+version=0.75
+release=1
+source=(http://cr.yp.to/cdb/cdb-$version.tar.gz)
+
+build()
+{
+  cd cdb-$version
+
+  echo ${CC-cc} $CFLAGS -include errno.h >conf-cc
+  echo $ROOT >conf-home
+
+  make
+
+  install -d $ROOT/bin
+  install -m 755 cdbdump cdbget cdbmake cdbstats cdbtest $ROOT/bin
+
+}

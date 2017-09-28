@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Ruby bindings for GTK+ 2.x
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=ruby-gtk2
+version=0.16.0
+release=1
+source=($mirror_sf/ruby-gnome2/ruby-gtk2-$version.tar.gz
+        ruby-gtk2-0.16.0-fixes.patch)
+
+build()
+{
+  cd ruby-gtk2-$version
+
+  patch -N -p1 -i $SRC/ruby-gtk2-0.16.0-fixes.patch
+
+  ruby extconf.rb
+
+  sed -i 's/,,/,/g' glib/src/glib-enum-types.c
+
+  for x in glib atk pango gdkpixbuf gtk
+  do
+    make -C "$x" DESTDIR="$PKG" install || return 1
+  done
+}

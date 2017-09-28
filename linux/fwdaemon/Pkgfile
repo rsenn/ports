@@ -1,0 +1,23 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A Linux firewall runtime backend.
+# fwdaemon is a Linux firewall runtime backend. Any client application
+# can communicate with the fwdaemon and decide what network network flow
+# can be accepted or which should be dropped.
+#
+# URL: http://it.marton.pl/wegorz/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=fwdaemon
+version=0.1.3-20080804
+release=1
+source=(http://it.marton.pl/wegorz/fwdaemon_${version/-/_}.tar.gz)
+
+build()
+{
+  cd fwdaemon_${version/-/_}
+
+  make
+  make PREFIX="$ROOT" install
+}

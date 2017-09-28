@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A puppet configuration/extension package.
+#  p@rdalys provides the full configuration set for the Kolab Server and
+#  is based on puppet. Besides the configuration data, it provides Ruby
+#  extensions to puppet.
+#  .
+# URL: http://pardalys.sourceforge.net/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=pardalys
+version=0.0.6
+release=1
+source=($mirror_sf/pardalys/pardalys-$version.tar.bz2)
+
+build()
+{
+  cd pardalys
+
+  case "$prefix" in
+    "/usr") sysconfdir="/etc" ;;
+  esac
+
+  make DESTDIR="$PKG" sysconfdir="${sysconfdir=$prefix/etc}" prefix="$prefix" install
+
+  install -d $ROOT/share/doc/pardalys
+  install -m 644 AUTHORS CHANGES COPYING ChangeLog HACKING INSTALL README RELEASE_NOTES TODO $ROOT/share/doc/pardalys
+}
+
+# EOF

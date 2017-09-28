@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=shhlog
+version=0.10
+release=1
+source=(http://shh.thathost.com/pub-unix/files/shhlog-$version.tar.gz)
+
+build()
+{
+  cd shhlog
+
+  make
+
+  install -d $ROOT/share/doc/$name-$version
+
+  install -d $ROOT/lib
+  install -m 644 libshhlog.a $ROOT/lib
+
+  install -d $ROOT/include
+  install -m 644 shhlog.h $ROOT/include
+
+  cp ChangeLog $ROOT/share/doc/$name-$version/
+}

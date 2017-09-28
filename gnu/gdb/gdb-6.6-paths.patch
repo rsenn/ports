@@ -1,0 +1,1235 @@
+diff -r -u -- gdb-6.6_orig/Makefile.in gdb-6.6/Makefile.in
+--- gdb-6.6_orig/Makefile.in	2007-05-08 16:31:17.000000000 +0200
++++ gdb-6.6/Makefile.in	2007-05-08 16:31:38.000000000 +0200
+@@ -54,6 +54,9 @@
+ docdir = @docdir@
+ htmldir = @htmldir@
+ mandir = @mandir@
++procdir = @procdir@
++devdir = @devdir@
++tmpdir = @tmpdir@
+ man1dir = $(mandir)/man1
+ man2dir = $(mandir)/man2
+ man3dir = $(mandir)/man3
+Only in gdb-6.6: Makefile.in~
+diff -r -u -- gdb-6.6_orig/Makefile.tpl gdb-6.6/Makefile.tpl
+--- gdb-6.6_orig/Makefile.tpl	2007-05-08 16:31:17.000000000 +0200
++++ gdb-6.6/Makefile.tpl	2007-05-08 16:31:38.000000000 +0200
+@@ -57,6 +57,9 @@
+ docdir = @docdir@
+ htmldir = @htmldir@
+ mandir = @mandir@
++procdir = @procdir@
++tmpdir = @tmpdir@
++devdir = @devdir@
+ man1dir = $(mandir)/man1
+ man2dir = $(mandir)/man2
+ man3dir = $(mandir)/man3
+Only in gdb-6.6: Makefile.tpl~
+diff -r -u -- gdb-6.6_orig/bfd/configure gdb-6.6/bfd/configure
+--- gdb-6.6_orig/bfd/configure	2007-05-08 16:31:17.000000000 +0200
++++ gdb-6.6/bfd/configure	2007-05-08 16:32:04.000000000 +0200
+@@ -309,7 +309,7 @@
+ # include <unistd.h>
+ #endif"
+ 
+-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE AR ac_ct_AR RANLIB ac_ct_RANLIB LN_S LIBTOOL WARN_CFLAGS NO_WERROR MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT INSTALL_LIBBFD_TRUE INSTALL_LIBBFD_FALSE host_noncanonical target_noncanonical bfdlibdir bfdincludedir USE_NLS LIBINTL LIBINTL_DEP INCINTL XGETTEXT GMSGFMT POSUB CATALOGS DATADIRNAME INSTOBJEXT GENCAT CATOBJEXT MKINSTALLDIRS MSGFMT MSGMERGE HDEFINES CPP EGREP BFD_HOST_64BIT_LONG BFD_HOST_LONG_LONG BFD_HOST_64_BIT_DEFINED BFD_HOST_64_BIT BFD_HOST_U_64_BIT CC_FOR_BUILD EXEEXT_FOR_BUILD COREFILE COREFLAG WIN32LDFLAGS WIN32LIBADD TDEFINES wordsize bfd_libs all_backends bfd_backends bfd_machines bfd_default_target_size bfd_file_ptr bfd_ufile_ptr tdefaults datarootdir docdir htmldir LIBOBJS LTLIBOBJS'
++ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir tmpdir procdir devdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE AR ac_ct_AR RANLIB ac_ct_RANLIB LN_S LIBTOOL WARN_CFLAGS NO_WERROR MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT INSTALL_LIBBFD_TRUE INSTALL_LIBBFD_FALSE host_noncanonical target_noncanonical bfdlibdir bfdincludedir USE_NLS LIBINTL LIBINTL_DEP INCINTL XGETTEXT GMSGFMT POSUB CATALOGS DATADIRNAME INSTOBJEXT GENCAT CATOBJEXT MKINSTALLDIRS MSGFMT MSGMERGE HDEFINES CPP EGREP BFD_HOST_64BIT_LONG BFD_HOST_LONG_LONG BFD_HOST_64_BIT_DEFINED BFD_HOST_64_BIT BFD_HOST_U_64_BIT CC_FOR_BUILD EXEEXT_FOR_BUILD COREFILE COREFLAG WIN32LDFLAGS WIN32LIBADD TDEFINES wordsize bfd_libs all_backends bfd_backends bfd_machines bfd_default_target_size bfd_file_ptr bfd_ufile_ptr tdefaults datarootdir docdir htmldir LIBOBJS LTLIBOBJS'
+ ac_subst_files=''
+ 
+ # Initialize some variables set by options.
+@@ -349,6 +349,9 @@
+ oldincludedir='/usr/include'
+ infodir='${prefix}/info'
+ mandir='${prefix}/man'
++procdir='/proc'
++devdir='/dev'
++tmpdir='/tmp'
+ 
+ ac_prev=
+ for ac_option
+@@ -572,6 +575,21 @@
+   | --syscon=* | --sysco=* | --sysc=* | --sys=* | --sy=*)
+     sysconfdir=$ac_optarg ;;
+ 
++  -tmpdir | --tmpdir | --tmpdi | --tmpd | --tmp)
++    ac_prev=tmpdir ;;
++  -tmpdir=* | --tmpdir=* | --tmpdi=* | --tmpd=* | --tmp=*)
++    tmpdir="$ac_optarg" ;;
++
++  -procdir | --procdir | --procdi | --procd | --proc)
++    ac_prev=procdir ;;
++  -procdir=* | --procdir=* | --procdi=* | --procd=* | --proc=*)
++    procdir="$ac_optarg" ;;
++
++  -devdir | --devdir | --devdi | --devd | --dev)
++    ac_prev=devdir ;;
++  -devdir=* | --devdir=* | --devdi=* | --devd=* | --dev=*)
++    devdir="$ac_optarg" ;;
++
+   -target | --target | --targe | --targ | --tar | --ta | --t)
+     ac_prev=target_alias ;;
+   -target=* | --target=* | --targe=* | --targ=* | --tar=* | --ta=* | --t=*)
+@@ -820,6 +838,9 @@
+   --libexecdir=DIR       program executables [EPREFIX/libexec]
+   --datadir=DIR          read-only architecture-independent data [PREFIX/share]
+   --sysconfdir=DIR       read-only single-machine data [PREFIX/etc]
++  --procdir=DIR          procfs tree [/proc]
++  --tmpdir=DIR           temp dir [/tmp]
++  --devdir=DIR           udev tree [/dev]
+   --sharedstatedir=DIR   modifiable architecture-independent data [PREFIX/com]
+   --localstatedir=DIR    modifiable single-machine data [PREFIX/var]
+   --libdir=DIR           object code libraries [EPREFIX/lib]
+@@ -12921,6 +12942,9 @@
+ s,@libexecdir@,$libexecdir,;t t
+ s,@datadir@,$datadir,;t t
+ s,@sysconfdir@,$sysconfdir,;t t
++s,@procdir@,$procdir,;t t
++s,@devdir@,$devdir,;t t
++s,@tmpdir@,$tmpdir,;t t
+ s,@sharedstatedir@,$sharedstatedir,;t t
+ s,@localstatedir@,$localstatedir,;t t
+ s,@libdir@,$libdir,;t t
+Only in gdb-6.6/bfd: configure~
+diff -r -u -- gdb-6.6_orig/configure gdb-6.6/configure
+--- gdb-6.6_orig/configure	2007-05-08 16:31:17.000000000 +0200
++++ gdb-6.6/configure	2007-05-08 16:31:38.000000000 +0200
+@@ -86,6 +86,9 @@
+ oldincludedir='/usr/include'
+ infodir='${prefix}/info'
+ mandir='${prefix}/man'
++procdir='/proc'
++devdir='/dev'
++tmpdir='/tmp'
+ 
+ # Initialize some other variables.
+ subdirs=
+@@ -195,6 +198,9 @@
+   --datadir=DIR           read-only architecture-independent data in DIR
+                           [PREFIX/share]
+   --sysconfdir=DIR        read-only single-machine data in DIR [PREFIX/etc]
++  --procdir=DIR           procfs tree [/proc]
++  --tmpdir=DIR            temp dir [/tmp]
++  --devdir=DIR            udev tree [/dev]
+   --sharedstatedir=DIR    modifiable architecture-independent data in DIR
+                           [PREFIX/com]
+   --localstatedir=DIR     modifiable single-machine data in DIR [PREFIX/var]
+@@ -365,6 +371,21 @@
+   | --syscon=* | --sysco=* | --sysc=* | --sys=* | --sy=*)
+     sysconfdir="$ac_optarg" ;;
+ 
++  -tmpdir | --tmpdir | --tmpdi | --tmpd | --tmp)
++    ac_prev=tmpdir ;;
++  -tmpdir=* | --tmpdir=* | --tmpdi=* | --tmpd=* | --tmp=*)
++    tmpdir="$ac_optarg" ;;
++
++  -procdir | --procdir | --procdi | --procd | --proc)
++    ac_prev=procdir ;;
++  -procdir=* | --procdir=* | --procdi=* | --procd=* | --proc=*)
++    procdir="$ac_optarg" ;;
++
++  -devdir | --devdir | --devdi | --devd | --dev)
++    ac_prev=devdir ;;
++  -devdir=* | --devdir=* | --devdi=* | --devd=* | --dev=*)
++    devdir="$ac_optarg" ;;
++
+   -target | --target | --targe | --targ | --tar | --ta | --t)
+     ac_prev=target ;;
+   -target=* | --target=* | --targe=* | --targ=* | --tar=* | --ta=* | --t=*)
+@@ -7479,6 +7500,9 @@
+ s%@libexecdir@%$libexecdir%g
+ s%@datadir@%$datadir%g
+ s%@sysconfdir@%$sysconfdir%g
++s%@procdir@%$procdir%g
++s%@devdir@%$devdir%g
++s%@tmpdir@%$tmpdir%g
+ s%@sharedstatedir@%$sharedstatedir%g
+ s%@localstatedir@%$localstatedir%g
+ s%@libdir@%$libdir%g
+Only in gdb-6.6: configure~
+diff -r -u -- gdb-6.6_orig/etc/configure gdb-6.6/etc/configure
+--- gdb-6.6_orig/etc/configure	2007-05-08 16:31:17.000000000 +0200
++++ gdb-6.6/etc/configure	2007-05-08 16:32:48.000000000 +0200
+@@ -312,6 +312,9 @@
+ oldincludedir='/usr/include'
+ infodir='${prefix}/info'
+ mandir='${prefix}/man'
++procdir='/proc'
++devdir='/dev'
++tmpdir='/tmp'
+ 
+ ac_prev=
+ for ac_option
+@@ -535,6 +538,36 @@
+   | --syscon=* | --sysco=* | --sysc=* | --sys=* | --sy=*)
+     sysconfdir=$ac_optarg ;;
+ 
++  -tmpdir | --tmpdir | --tmpdi | --tmpd | --tmp)
++    ac_prev=tmpdir ;;
++  -tmpdir=* | --tmpdir=* | --tmpdi=* | --tmpd=* | --tmp=*)
++    tmpdir="$ac_optarg" ;;
++
++  -procdir | --procdir | --procdi | --procd | --proc)
++    ac_prev=procdir ;;
++  -procdir=* | --procdir=* | --procdi=* | --procd=* | --proc=*)
++    procdir="$ac_optarg" ;;
++
++  -devdir | --devdir | --devdi | --devd | --dev)
++    ac_prev=devdir ;;
++  -devdir=* | --devdir=* | --devdi=* | --devd=* | --dev=*)
++    devdir="$ac_optarg" ;;
++
++  -tmpdir | --tmpdir | --tmpdi | --tmpd | --tmp)
++    ac_prev=tmpdir ;;
++  -tmpdir=* | --tmpdir=* | --tmpdi=* | --tmpd=* | --tmp=*)
++    tmpdir="$ac_optarg" ;;
++
++  -procdir | --procdir | --procdi | --procd | --proc)
++    ac_prev=procdir ;;
++  -procdir=* | --procdir=* | --procdi=* | --procd=* | --proc=*)
++    procdir="$ac_optarg" ;;
++
++  -devdir | --devdir | --devdi | --devd | --dev)
++    ac_prev=devdir ;;
++  -devdir=* | --devdir=* | --devdi=* | --devd=* | --dev=*)
++    devdir="$ac_optarg" ;;
++
+   -target | --target | --targe | --targ | --tar | --ta | --t)
+     ac_prev=target_alias ;;
+   -target=* | --target=* | --targe=* | --targ=* | --tar=* | --ta=* | --t=*)
+@@ -763,6 +796,9 @@
+   --libexecdir=DIR       program executables [EPREFIX/libexec]
+   --datadir=DIR          read-only architecture-independent data [PREFIX/share]
+   --sysconfdir=DIR       read-only single-machine data [PREFIX/etc]
++  --procdir=DIR          procfs tree [/proc]
++  --tmpdir=DIR           temp dir [/tmp]
++  --devdir=DIR           udev tree [/dev]
+   --sharedstatedir=DIR   modifiable architecture-independent data [PREFIX/com]
+   --localstatedir=DIR    modifiable single-machine data [PREFIX/var]
+   --libdir=DIR           object code libraries [EPREFIX/lib]
+Only in gdb-6.6/etc: configure~
+diff -r -u -- gdb-6.6_orig/gdb/Makefile.in gdb-6.6/gdb/Makefile.in
+--- gdb-6.6_orig/gdb/Makefile.in	2007-05-08 16:31:17.000000000 +0200
++++ gdb-6.6/gdb/Makefile.in	2007-05-08 16:31:38.000000000 +0200
+@@ -44,6 +44,9 @@
+ infodir = @infodir@
+ htmldir = $(prefix)/html
+ includedir = @includedir@
++procdir = @procdir@
++tmpdir = @tmpdir@
++devdir = @devdir@
+ 
+ # This can be referenced by `LIBINTL' as computed by
+ # ZW_GNU_GETTEXT_SISTER_DIR.
+@@ -329,7 +332,11 @@
+ # It is also possible that you will need to add -I/usr/include/sys if
+ # your system doesn't have fcntl.h in /usr/include (which is where it
+ # should be according to Posix).
+-DEFS = @DEFS@
++DEFS = @DEFS@ \
++       -DPROCDIR=\"$(procdir)\" \
++       -DTMPDIR=\"$(tmpdir)\" \
++       -DDEVDIR=\"$(devdir)\"
++
+ GDB_CFLAGS = -I. -I$(srcdir) -I$(srcdir)/config -DLOCALEDIR="\"$(localedir)\"" $(DEFS)
+ 
+ # M{H,T}_CFLAGS, if defined, have host- and target-dependent CFLAGS
+Only in gdb-6.6/gdb: Makefile.in~
+diff -r -u -- gdb-6.6_orig/gdb/auxv.c gdb-6.6/gdb/auxv.c
+--- gdb-6.6_orig/gdb/auxv.c	2007-05-08 16:31:17.000000000 +0200
++++ gdb-6.6/gdb/auxv.c	2007-05-08 16:31:38.000000000 +0200
+@@ -57,7 +57,7 @@
+   gdb_assert (object == TARGET_OBJECT_AUXV);
+   gdb_assert (readbuf || writebuf);
+ 
+-  pathname = xstrprintf ("/proc/%d/auxv", PIDGET (inferior_ptid));
++  pathname = xstrprintf (PROCDIR "/%d/auxv", PIDGET (inferior_ptid));
+   fd = open (pathname, writebuf != NULL ? O_WRONLY : O_RDONLY);
+   xfree (pathname);
+   if (fd < 0)
+diff -r -u -- gdb-6.6_orig/gdb/configure gdb-6.6/gdb/configure
+--- gdb-6.6_orig/gdb/configure	2007-05-08 16:31:17.000000000 +0200
++++ gdb-6.6/gdb/configure	2007-05-08 16:34:15.000000000 +0200
+@@ -313,7 +313,7 @@
+ ac_subdirs_all="$ac_subdirs_all gdbtk"
+ ac_subdirs_all="$ac_subdirs_all multi-ice"
+ ac_subdirs_all="$ac_subdirs_all gdbserver"
+-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CPP EGREP build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os USE_NLS LIBINTL LIBINTL_DEP INCINTL XGETTEXT GMSGFMT POSUB CATALOGS DATADIRNAME INSTOBJEXT GENCAT CATOBJEXT localedir PACKAGE subdirs AWK INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA LN_S RANLIB ac_ct_RANLIB YACC AR ac_ct_AR DLLTOOL ac_ct_DLLTOOL WINDRES ac_ct_WINDRES MIG ac_ct_MIG HAVE_LIBEXPAT LIBEXPAT LTLIBEXPAT ALLOCA CONFIG_LDFLAGS TARGET_SYSTEM_ROOT TARGET_SYSTEM_ROOT_DEFINE WARN_CFLAGS WERROR_CFLAGS SER_HARDWIRE WIN32LIBS LIBGUI GUI_CFLAGS_X WIN32LDAPP TCL_VERSION TCL_MAJOR_VERSION TCL_MINOR_VERSION TCL_CC TCL_DEFS TCL_SHLIB_CFLAGS TCL_SHLIB_LD TCL_SHLIB_LD_LIBS TCL_SHLIB_SUFFIX TCL_DL_LIBS TCL_LD_FLAGS TCL_LD_SEARCH_FLAGS TCL_CC_SEARCH_FLAGS TCL_COMPAT_OBJS TCL_RANLIB TCL_BUILD_LIB_SPEC TCL_LIB_SPEC TCL_LIB_VERSIONS_OK TK_VERSION TK_DEFS TK_BUILD_INCLUDES TK_XINCLUDES TK_XLIBSW TK_BUILD_LIB_SPEC TK_LIB_SPEC TCLHDIR TKHDIR ITCLHDIR ITKHDIR ITCL_VERSION ITCL_DEFS ITCL_BUILD_INCLUDES ITCL_BUILD_LIB_SPEC ITCL_LIB_SPEC ITK_VERSION ITK_DEFS ITK_BUILD_INCLUDES ITK_BUILD_LIB_SPEC ITK_LIB_SPEC X_CFLAGS X_LDFLAGS X_LIBS TCL_DEPS TK_DEPS ITCLLIB ITCL_DEPS ITKLIB ITK_DEPS GDBTKLIBS GDBTK_CFLAGS GDBTK_SRC_DIR IGNORE_SIM IGNORE_SIM_OBS ENABLE_CFLAGS PROFILE_CFLAGS CONFIG_OBS CONFIG_DEPS CONFIG_SRCS CONFIG_ALL CONFIG_CLEAN CONFIG_INSTALL CONFIG_UNINSTALL target_subdir frags xm_h tm_h nm_h LIBICONV LIBOBJS LTLIBOBJS'
++ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir procdir devdir tmpdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CPP EGREP build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os USE_NLS LIBINTL LIBINTL_DEP INCINTL XGETTEXT GMSGFMT POSUB CATALOGS DATADIRNAME INSTOBJEXT GENCAT CATOBJEXT localedir PACKAGE subdirs AWK INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA LN_S RANLIB ac_ct_RANLIB YACC AR ac_ct_AR DLLTOOL ac_ct_DLLTOOL WINDRES ac_ct_WINDRES MIG ac_ct_MIG HAVE_LIBEXPAT LIBEXPAT LTLIBEXPAT ALLOCA CONFIG_LDFLAGS TARGET_SYSTEM_ROOT TARGET_SYSTEM_ROOT_DEFINE WARN_CFLAGS WERROR_CFLAGS SER_HARDWIRE WIN32LIBS LIBGUI GUI_CFLAGS_X WIN32LDAPP TCL_VERSION TCL_MAJOR_VERSION TCL_MINOR_VERSION TCL_CC TCL_DEFS TCL_SHLIB_CFLAGS TCL_SHLIB_LD TCL_SHLIB_LD_LIBS TCL_SHLIB_SUFFIX TCL_DL_LIBS TCL_LD_FLAGS TCL_LD_SEARCH_FLAGS TCL_CC_SEARCH_FLAGS TCL_COMPAT_OBJS TCL_RANLIB TCL_BUILD_LIB_SPEC TCL_LIB_SPEC TCL_LIB_VERSIONS_OK TK_VERSION TK_DEFS TK_BUILD_INCLUDES TK_XINCLUDES TK_XLIBSW TK_BUILD_LIB_SPEC TK_LIB_SPEC TCLHDIR TKHDIR ITCLHDIR ITKHDIR ITCL_VERSION ITCL_DEFS ITCL_BUILD_INCLUDES ITCL_BUILD_LIB_SPEC ITCL_LIB_SPEC ITK_VERSION ITK_DEFS ITK_BUILD_INCLUDES ITK_BUILD_LIB_SPEC ITK_LIB_SPEC X_CFLAGS X_LDFLAGS X_LIBS TCL_DEPS TK_DEPS ITCLLIB ITCL_DEPS ITKLIB ITK_DEPS GDBTKLIBS GDBTK_CFLAGS GDBTK_SRC_DIR IGNORE_SIM IGNORE_SIM_OBS ENABLE_CFLAGS PROFILE_CFLAGS CONFIG_OBS CONFIG_DEPS CONFIG_SRCS CONFIG_ALL CONFIG_CLEAN CONFIG_INSTALL CONFIG_UNINSTALL target_subdir frags xm_h tm_h nm_h LIBICONV LIBOBJS LTLIBOBJS'
+ ac_subst_files='host_makefile_frag target_makefile_frag'
+ 
+ # Initialize some variables set by options.
+@@ -353,6 +353,9 @@
+ oldincludedir='/usr/include'
+ infodir='${prefix}/info'
+ mandir='${prefix}/man'
++procdir='/proc'
++devdir='/dev'
++tmpdir='/tmp'
+ 
+ ac_prev=
+ for ac_option
+@@ -576,6 +579,21 @@
+   | --syscon=* | --sysco=* | --sysc=* | --sys=* | --sy=*)
+     sysconfdir=$ac_optarg ;;
+ 
++  -tmpdir | --tmpdir | --tmpdi | --tmpd | --tmp)
++    ac_prev=tmpdir ;;
++  -tmpdir=* | --tmpdir=* | --tmpdi=* | --tmpd=* | --tmp=*)
++    tmpdir="$ac_optarg" ;;
++
++  -procdir | --procdir | --procdi | --procd | --proc)
++    ac_prev=procdir ;;
++  -procdir=* | --procdir=* | --procdi=* | --procd=* | --proc=*)
++    procdir="$ac_optarg" ;;
++
++  -devdir | --devdir | --devdi | --devd | --dev)
++    ac_prev=devdir ;;
++  -devdir=* | --devdir=* | --devdi=* | --devd=* | --dev=*)
++    devdir="$ac_optarg" ;;
++
+   -target | --target | --targe | --targ | --tar | --ta | --t)
+     ac_prev=target_alias ;;
+   -target=* | --target=* | --targe=* | --targ=* | --tar=* | --ta=* | --t=*)
+@@ -824,6 +842,9 @@
+   --libexecdir=DIR       program executables [EPREFIX/libexec]
+   --datadir=DIR          read-only architecture-independent data [PREFIX/share]
+   --sysconfdir=DIR       read-only single-machine data [PREFIX/etc]
++  --procdir=DIR          procfs tree [/proc]
++  --tmpdir=DIR           temp dir [/tmp]
++  --devdir=DIR           udev tree [/dev]
+   --sharedstatedir=DIR   modifiable architecture-independent data [PREFIX/com]
+   --localstatedir=DIR    modifiable single-machine data [PREFIX/var]
+   --libdir=DIR           object code libraries [EPREFIX/lib]
+@@ -23602,6 +23623,9 @@
+ s,@libexecdir@,$libexecdir,;t t
+ s,@datadir@,$datadir,;t t
+ s,@sysconfdir@,$sysconfdir,;t t
++s,@procdir@,$procdir,;t t
++s,@devdir@,$devdir,;t t
++s,@tmpdir@,$tmpdir,;t t
+ s,@sharedstatedir@,$sharedstatedir,;t t
+ s,@localstatedir@,$localstatedir,;t t
+ s,@libdir@,$libdir,;t t
+Only in gdb-6.6/gdb: configure~
+diff -r -u -- gdb-6.6_orig/gdb/doc/configure gdb-6.6/gdb/doc/configure
+--- gdb-6.6_orig/gdb/doc/configure	2007-05-08 16:31:17.000000000 +0200
++++ gdb-6.6/gdb/doc/configure	2007-05-08 16:31:38.000000000 +0200
+@@ -272,7 +272,7 @@
+ PACKAGE_BUGREPORT=
+ 
+ ac_unique_file="refcard.tex"
+-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA LN_S LIBOBJS LTLIBOBJS'
++ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir tmpdir procdir devdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA LN_S LIBOBJS LTLIBOBJS'
+ ac_subst_files=''
+ 
+ # Initialize some variables set by options.
+@@ -312,6 +312,9 @@
+ oldincludedir='/usr/include'
+ infodir='${prefix}/info'
+ mandir='${prefix}/man'
++procdir='/proc'
++devdir='/dev'
++tmpdir='/tmp'
+ 
+ ac_prev=
+ for ac_option
+@@ -535,6 +538,21 @@
+   | --syscon=* | --sysco=* | --sysc=* | --sys=* | --sy=*)
+     sysconfdir=$ac_optarg ;;
+ 
++  -tmpdir | --tmpdir | --tmpdi | --tmpd | --tmp)
++    ac_prev=tmpdir ;;
++  -tmpdir=* | --tmpdir=* | --tmpdi=* | --tmpd=* | --tmp=*)
++    tmpdir="$ac_optarg" ;;
++
++  -procdir | --procdir | --procdi | --procd | --proc)
++    ac_prev=procdir ;;
++  -procdir=* | --procdir=* | --procdi=* | --procd=* | --proc=*)
++    procdir="$ac_optarg" ;;
++
++  -devdir | --devdir | --devdi | --devd | --dev)
++    ac_prev=devdir ;;
++  -devdir=* | --devdir=* | --devdi=* | --devd=* | --dev=*)
++    devdir="$ac_optarg" ;;
++
+   -target | --target | --targe | --targ | --tar | --ta | --t)
+     ac_prev=target_alias ;;
+   -target=* | --target=* | --targe=* | --targ=* | --tar=* | --ta=* | --t=*)
+@@ -763,6 +781,9 @@
+   --libexecdir=DIR       program executables [EPREFIX/libexec]
+   --datadir=DIR          read-only architecture-independent data [PREFIX/share]
+   --sysconfdir=DIR       read-only single-machine data [PREFIX/etc]
++  --procdir=DIR          procfs tree [/proc]
++  --tmpdir=DIR           temp dir [/tmp]
++  --devdir=DIR           udev tree [/dev]
+   --sharedstatedir=DIR   modifiable architecture-independent data [PREFIX/com]
+   --localstatedir=DIR    modifiable single-machine data [PREFIX/var]
+   --libdir=DIR           object code libraries [EPREFIX/lib]
+@@ -1951,6 +1972,9 @@
+ s,@libexecdir@,$libexecdir,;t t
+ s,@datadir@,$datadir,;t t
+ s,@sysconfdir@,$sysconfdir,;t t
++s,@procdir@,$procdir,;t t
++s,@devdir@,$devdir,;t t
++s,@tmpdir@,$tmpdir,;t t
+ s,@sharedstatedir@,$sharedstatedir,;t t
+ s,@localstatedir@,$localstatedir,;t t
+ s,@libdir@,$libdir,;t t
+diff -r -u -- gdb-6.6_orig/gdb/fbsd-nat.c gdb-6.6/gdb/fbsd-nat.c
+--- gdb-6.6_orig/gdb/fbsd-nat.c	2007-05-08 16:31:17.000000000 +0200
++++ gdb-6.6/gdb/fbsd-nat.c	2007-05-08 16:31:38.000000000 +0200
+@@ -55,7 +55,7 @@
+     return buf;
+ #endif
+ 
+-  path = xstrprintf ("/proc/%d/file", pid);
++  path = xstrprintf (PROCDIR "/%d/file", pid);
+   if (readlink (path, buf, MAXPATHLEN) == -1)
+     {
+       xfree (buf);
+@@ -103,7 +103,7 @@
+   char protection[4];
+   int read, write, exec;
+ 
+-  mapfilename = xstrprintf ("/proc/%ld/map", (long) pid);
++  mapfilename = xstrprintf (PROCDIR "/%ld/map", (long) pid);
+   mapfile = fopen (mapfilename, "r");
+   if (mapfile == NULL)
+     error (_("Couldn't open %s."), mapfilename);
+diff -r -u -- gdb-6.6_orig/gdb/gdbserver/configure gdb-6.6/gdb/gdbserver/configure
+--- gdb-6.6_orig/gdb/gdbserver/configure	2007-05-08 16:31:17.000000000 +0200
++++ gdb-6.6/gdb/gdbserver/configure	2007-05-08 16:31:38.000000000 +0200
+@@ -309,7 +309,7 @@
+ # include <unistd.h>
+ #endif"
+ 
+-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CPP EGREP RDYNAMIC GDBSERVER_DEPFILES GDBSERVER_LIBS USE_THREAD_DB LIBOBJS LTLIBOBJS'
++ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir tmpdir procdir devdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CPP EGREP RDYNAMIC GDBSERVER_DEPFILES GDBSERVER_LIBS USE_THREAD_DB LIBOBJS LTLIBOBJS'
+ ac_subst_files=''
+ 
+ # Initialize some variables set by options.
+@@ -349,6 +349,9 @@
+ oldincludedir='/usr/include'
+ infodir='${prefix}/info'
+ mandir='${prefix}/man'
++procdir='/proc'
++devdir='/dev'
++tmpdir='/tmp'
+ 
+ ac_prev=
+ for ac_option
+@@ -572,6 +575,21 @@
+   | --syscon=* | --sysco=* | --sysc=* | --sys=* | --sy=*)
+     sysconfdir=$ac_optarg ;;
+ 
++  -tmpdir | --tmpdir | --tmpdi | --tmpd | --tmp)
++    ac_prev=tmpdir ;;
++  -tmpdir=* | --tmpdir=* | --tmpdi=* | --tmpd=* | --tmp=*)
++    tmpdir="$ac_optarg" ;;
++
++  -procdir | --procdir | --procdi | --procd | --proc)
++    ac_prev=procdir ;;
++  -procdir=* | --procdir=* | --procdi=* | --procd=* | --proc=*)
++    procdir="$ac_optarg" ;;
++
++  -devdir | --devdir | --devdi | --devd | --dev)
++    ac_prev=devdir ;;
++  -devdir=* | --devdir=* | --devdi=* | --devd=* | --dev=*)
++    devdir="$ac_optarg" ;;
++
+   -target | --target | --targe | --targ | --tar | --ta | --t)
+     ac_prev=target_alias ;;
+   -target=* | --target=* | --targe=* | --targ=* | --tar=* | --ta=* | --t=*)
+@@ -820,6 +838,9 @@
+   --libexecdir=DIR       program executables [EPREFIX/libexec]
+   --datadir=DIR          read-only architecture-independent data [PREFIX/share]
+   --sysconfdir=DIR       read-only single-machine data [PREFIX/etc]
++  --procdir=DIR          procfs tree [/proc]
++  --tmpdir=DIR           temp dir [/tmp]
++  --devdir=DIR           udev tree [/dev]
+   --sharedstatedir=DIR   modifiable architecture-independent data [PREFIX/com]
+   --localstatedir=DIR    modifiable single-machine data [PREFIX/var]
+   --libdir=DIR           object code libraries [EPREFIX/lib]
+@@ -4587,6 +4608,9 @@
+ s,@libexecdir@,$libexecdir,;t t
+ s,@datadir@,$datadir,;t t
+ s,@sysconfdir@,$sysconfdir,;t t
++s,@procdir@,$procdir,;t t
++s,@devdir@,$devdir,;t t
++s,@tmpdir@,$tmpdir,;t t
+ s,@sharedstatedir@,$sharedstatedir,;t t
+ s,@localstatedir@,$localstatedir,;t t
+ s,@libdir@,$libdir,;t t
+Only in gdb-6.6/gdb/gdbserver: configure~
+diff -r -u -- gdb-6.6_orig/gdb/inflow.c gdb-6.6/gdb/inflow.c
+--- gdb-6.6_orig/gdb/inflow.c	2007-05-08 16:31:17.000000000 +0200
++++ gdb-6.6/gdb/inflow.c	2007-05-08 16:31:38.000000000 +0200
+@@ -525,7 +525,7 @@
+   /* Disconnect the child process from our controlling terminal.  On some
+      systems (SVR4 for example), this may cause a SIGTTOU, so temporarily
+      ignore SIGTTOU. */
+-  tty = open ("/dev/tty", O_RDWR);
++  tty = open (DEVDIR "/tty", O_RDWR);
+   if (tty > 0)
+     {
+       void (*osigttou) ();
+Only in gdb-6.6/gdb: inflow.c~
+diff -r -u -- gdb-6.6_orig/gdb/inftarg.c gdb-6.6/gdb/inftarg.c
+--- gdb-6.6_orig/gdb/inftarg.c	2007-05-08 16:31:17.000000000 +0200
++++ gdb-6.6/gdb/inftarg.c	2007-05-08 16:31:38.000000000 +0200
+@@ -627,7 +627,7 @@
+   /* If we have an optional /proc filesystem (e.g. under OSF/1),
+      don't add ptrace support if we can access the running GDB via /proc.  */
+ #ifndef PROC_NAME_FMT
+-#define PROC_NAME_FMT "/proc/%05d"
++#define PROC_NAME_FMT PROCDIR "/%05d"
+ #endif
+   sprintf (procname, PROC_NAME_FMT, getpid ());
+   fd = open (procname, O_RDONLY);
+Only in gdb-6.6/gdb: inftarg.c~
+diff -r -u -- gdb-6.6_orig/gdb/linux-nat.c gdb-6.6/gdb/linux-nat.c
+--- gdb-6.6_orig/gdb/linux-nat.c	2007-05-08 16:31:17.000000000 +0200
++++ gdb-6.6/gdb/linux-nat.c	2007-05-08 16:31:38.000000000 +0200
+@@ -2443,7 +2443,7 @@
+   make_cleanup (xfree, name2);
+   memset (name2, 0, MAXPATHLEN);
+ 
+-  sprintf (name1, "/proc/%d/exe", pid);
++  sprintf (name1, PROCDIR "/%d/exe", pid);
+   if (readlink (name1, name2, MAXPATHLEN) > 0)
+     return name2;
+   else
+@@ -2496,7 +2496,7 @@
+   int ret;
+ 
+   /* Compose the filename for the /proc memory map, and open it.  */
+-  sprintf (mapsfilename, "/proc/%lld/maps", pid);
++  sprintf (mapsfilename, PROCDIR "/%lld/maps", pid);
+   if ((mapsfile = fopen (mapsfilename, "r")) == NULL)
+     error (_("Could not open %s."), mapsfilename);
+ 
+@@ -2782,14 +2782,14 @@
+   if (pid == 0)
+     error (_("No current process: you must name one."));
+ 
+-  sprintf (fname1, "/proc/%lld", pid);
++  sprintf (fname1, PROCDIR "/%lld", pid);
+   if (stat (fname1, &dummy) != 0)
+     error (_("No /proc directory: '%s'"), fname1);
+ 
+   printf_filtered (_("process %lld\n"), pid);
+   if (cmdline_f || all)
+     {
+-      sprintf (fname1, "/proc/%lld/cmdline", pid);
++      sprintf (fname1, PROCDIR "/%lld/cmdline", pid);
+       if ((procfile = fopen (fname1, "r")) > 0)
+ 	{
+ 	  fgets (buffer, sizeof (buffer), procfile);
+@@ -2801,7 +2801,7 @@
+     }
+   if (cwd_f || all)
+     {
+-      sprintf (fname1, "/proc/%lld/cwd", pid);
++      sprintf (fname1, PROCDIR "/%lld/cwd", pid);
+       memset (fname2, 0, sizeof (fname2));
+       if (readlink (fname1, fname2, sizeof (fname2)) > 0)
+ 	printf_filtered ("cwd = '%s'\n", fname2);
+@@ -2810,7 +2810,7 @@
+     }
+   if (exe_f || all)
+     {
+-      sprintf (fname1, "/proc/%lld/exe", pid);
++      sprintf (fname1, PROCDIR "/%lld/exe", pid);
+       memset (fname2, 0, sizeof (fname2));
+       if (readlink (fname1, fname2, sizeof (fname2)) > 0)
+ 	printf_filtered ("exe = '%s'\n", fname2);
+@@ -2819,7 +2819,7 @@
+     }
+   if (mappings_f || all)
+     {
+-      sprintf (fname1, "/proc/%lld/maps", pid);
++      sprintf (fname1, PROCDIR "/%lld/maps", pid);
+       if ((procfile = fopen (fname1, "r")) > 0)
+ 	{
+ 	  long long addr, endaddr, size, offset, inode;
+@@ -2879,7 +2879,7 @@
+     }
+   if (status_f || all)
+     {
+-      sprintf (fname1, "/proc/%lld/status", pid);
++      sprintf (fname1, PROCDIR "/%lld/status", pid);
+       if ((procfile = fopen (fname1, "r")) > 0)
+ 	{
+ 	  while (fgets (buffer, sizeof (buffer), procfile) != NULL)
+@@ -2891,7 +2891,7 @@
+     }
+   if (stat_f || all)
+     {
+-      sprintf (fname1, "/proc/%lld/stat", pid);
++      sprintf (fname1, PROCDIR "/%lld/stat", pid);
+       if ((procfile = fopen (fname1, "r")) > 0)
+ 	{
+ 	  int itmp;
+@@ -3010,7 +3010,7 @@
+ 
+   /* We could keep this file open and cache it - possibly one per
+      thread.  That requires some juggling, but is even faster.  */
+-  sprintf (filename, "/proc/%d/mem", PIDGET (inferior_ptid));
++  sprintf (filename, PROCDIR "/%d/mem", PIDGET (inferior_ptid));
+   fd = open (filename, O_RDONLY | O_LARGEFILE);
+   if (fd == -1)
+     return 0;
+@@ -3085,7 +3085,7 @@
+   sigemptyset (pending);
+   sigemptyset (blocked);
+   sigemptyset (ignored);
+-  sprintf (fname, "/proc/%d/status", pid);
++  sprintf (fname, PROCDIR "/%d/status", pid);
+   procfile = fopen (fname, "r");
+   if (procfile == NULL)
+     error (_("Could not open %s"), fname);
+Only in gdb-6.6/gdb: linux-nat.c~
+diff -r -u -- gdb-6.6_orig/gdb/nto-procfs.c gdb-6.6/gdb/nto-procfs.c
+--- gdb-6.6_orig/gdb/nto-procfs.c	2007-05-08 16:31:17.000000000 +0200
++++ gdb-6.6/gdb/nto-procfs.c	2007-05-08 16:31:38.000000000 +0200
+@@ -86,7 +86,7 @@
+    referenced elsewhere.  'nto_procfs_node' is a flag used to say
+    whether we are local, or we should get the current node descriptor
+    for the remote QNX node.  */
+-static char nto_procfs_path[PATH_MAX] = { "/proc" };
++static char nto_procfs_path[PATH_MAX] = { PROCDIR "" };
+ static unsigned nto_procfs_node = ND_LOCAL_NODE;
+ 
+ /* Return the current QNX Node, or error out.  This is a simple
+@@ -159,7 +159,7 @@
+ 	}
+     }
+   snprintf (nto_procfs_path, PATH_MAX - 1, "%s%s", nodestr ? nodestr : "",
+-	    "/proc");
++	    PROCDIR "");
+   if (nodestr)
+     xfree (nodestr);
+ 
+Only in gdb-6.6/gdb: nto-procfs.c~
+diff -r -u -- gdb-6.6_orig/gdb/procfs.c gdb-6.6/gdb/procfs.c
+--- gdb-6.6_orig/gdb/procfs.c	2007-05-08 16:31:17.000000000 +0200
++++ gdb-6.6/gdb/procfs.c	2007-05-08 16:31:38.000000000 +0200
+@@ -319,12 +319,12 @@
+ #ifdef NEW_PROC_API
+ /* format strings for /proc paths */
+ # ifndef CTL_PROC_NAME_FMT
+-#  define MAIN_PROC_NAME_FMT   "/proc/%d"
+-#  define CTL_PROC_NAME_FMT    "/proc/%d/ctl"
+-#  define AS_PROC_NAME_FMT     "/proc/%d/as"
+-#  define MAP_PROC_NAME_FMT    "/proc/%d/map"
+-#  define STATUS_PROC_NAME_FMT "/proc/%d/status"
+-#  define MAX_PROC_NAME_SIZE sizeof("/proc/99999/lwp/8096/lstatus")
++#  define MAIN_PROC_NAME_FMT   PROCDIR "/%d"
++#  define CTL_PROC_NAME_FMT    PROCDIR "/%d/ctl"
++#  define AS_PROC_NAME_FMT     PROCDIR "/%d/as"
++#  define MAP_PROC_NAME_FMT    PROCDIR "/%d/map"
++#  define STATUS_PROC_NAME_FMT PROCDIR "/%d/status"
++#  define MAX_PROC_NAME_SIZE sizeof(PROCDIR "/99999/lwp/8096/lstatus")
+ # endif
+ /* the name of the proc status struct depends on the implementation */
+ typedef pstatus_t   gdb_prstatus_t;
+@@ -332,12 +332,12 @@
+ #else /* ! NEW_PROC_API */
+ /* format strings for /proc paths */
+ # ifndef CTL_PROC_NAME_FMT
+-#  define MAIN_PROC_NAME_FMT   "/proc/%05d"
+-#  define CTL_PROC_NAME_FMT    "/proc/%05d"
+-#  define AS_PROC_NAME_FMT     "/proc/%05d"
+-#  define MAP_PROC_NAME_FMT    "/proc/%05d"
+-#  define STATUS_PROC_NAME_FMT "/proc/%05d"
+-#  define MAX_PROC_NAME_SIZE sizeof("/proc/ttttppppp")
++#  define MAIN_PROC_NAME_FMT   PROCDIR "/%05d"
++#  define CTL_PROC_NAME_FMT    PROCDIR "/%05d"
++#  define AS_PROC_NAME_FMT     PROCDIR "/%05d"
++#  define MAP_PROC_NAME_FMT    PROCDIR "/%05d"
++#  define STATUS_PROC_NAME_FMT PROCDIR "/%05d"
++#  define MAX_PROC_NAME_SIZE sizeof(PROCDIR "/ttttppppp")
+ # endif
+ /* the name of the proc status struct depends on the implementation */
+ typedef prstatus_t gdb_prstatus_t;
+@@ -716,7 +716,7 @@
+   else
+     {
+ #ifdef NEW_PROC_API
+-      sprintf (pi->pathname, "/proc/%05d/lwp/%d", pid, tid);
++      sprintf (pi->pathname, PROCDIR "/%05d/lwp/%d", pid, tid);
+ #else
+       sprintf (pi->pathname, MAIN_PROC_NAME_FMT, pid);
+ #endif
+@@ -899,7 +899,7 @@
+   pi->syscall_names = 0;
+ 
+   /* Open the file descriptor for the sysent file */
+-  sprintf (pathname, "/proc/%d/sysent", pi->pid);
++  sprintf (pathname, PROCDIR "/%d/sysent", pi->pid);
+   sysent_fd = open_with_retry (pathname, O_RDONLY);
+   if (sysent_fd < 0)
+     {
+@@ -2928,7 +2928,7 @@
+     ldt_entry = (struct ssd *) xmalloc (sizeof (struct ssd));
+ 
+   /* Open the file descriptor for the LDT table.  */
+-  sprintf (pathname, "/proc/%d/ldt", pi->pid);
++  sprintf (pathname, PROCDIR "/%d/ldt", pi->pid);
+   if ((fd = open_with_retry (pathname, O_RDONLY)) < 0)
+     {
+       proc_warn (pi, "proc_get_LDT_entry (open)", __LINE__);
+@@ -5399,7 +5399,7 @@
+      and read the mappings into prmaps.  */
+ #ifdef NEW_PROC_API
+   /* Open map fd. */
+-  sprintf (pathname, "/proc/%d/map", pi->pid);
++  sprintf (pathname, PROCDIR "/%d/map", pi->pid);
+   if ((map_fd = open (pathname, O_RDONLY)) < 0)
+     proc_error (pi, "iterate_over_mappings (open)", __LINE__);
+ 
+@@ -5466,7 +5466,7 @@
+     }
+   else
+     {
+-      sprintf (name, "/proc/%d/object/%s", pi->pid, map->pr_mapname);
++      sprintf (name, PROCDIR "/%d/object/%s", pi->pid, map->pr_mapname);
+       /* Note: caller's responsibility to close this fd!  */
+       fd = open_with_retry (name, O_RDONLY);
+       /* Note: we don't test the above call for failure;
+Only in gdb-6.6/gdb: procfs.c~
+diff -r -u -- gdb-6.6_orig/gdb/ser-go32.c gdb-6.6/gdb/ser-go32.c
+--- gdb-6.6_orig/gdb/ser-go32.c	2007-05-08 16:31:17.000000000 +0200
++++ gdb-6.6/gdb/ser-go32.c	2007-05-08 16:31:38.000000000 +0200
+@@ -458,7 +458,7 @@
+   struct dos_ttystate *port;
+   int fd, i;
+ 
+-  if (strncasecmp (name, "/dev/", 5) == 0)
++  if (strncasecmp (name, DEVDIR "/", 5) == 0)
+     name += 5;
+   else if (strncasecmp (name, "\\dev\\", 5) == 0)
+     name += 5;
+diff -r -u -- gdb-6.6_orig/gdb/solib-aix5.c gdb-6.6/gdb/solib-aix5.c
+--- gdb-6.6_orig/gdb/solib-aix5.c	2007-05-08 16:31:17.000000000 +0200
++++ gdb-6.6/gdb/solib-aix5.c	2007-05-08 16:31:38.000000000 +0200
+@@ -193,7 +193,7 @@
+ 
+     /* Open the map file */
+ 
+-    map_pathname = xstrprintf ("/proc/%d/map", pid);
++    map_pathname = xstrprintf (PROCDIR "/%d/map", pid);
+     map_fd = open (map_pathname, O_RDONLY);
+     xfree (map_pathname);
+     if (map_fd < 0)
+diff -r -u -- gdb-6.6_orig/gdb/symmisc.c gdb-6.6/gdb/symmisc.c
+--- gdb-6.6_orig/gdb/symmisc.c	2007-05-08 16:31:17.000000000 +0200
++++ gdb-6.6/gdb/symmisc.c	2007-05-08 16:31:38.000000000 +0200
+@@ -42,7 +42,7 @@
+ #include "readline/readline.h"
+ 
+ #ifndef DEV_TTY
+-#define DEV_TTY "/dev/tty"
++#define DEV_TTY DEVDIR "/tty"
+ #endif
+ 
+ /* Unfortunately for debugging, stderr is usually a macro.  This is painful
+diff -r -u -- gdb-6.6_orig/gdb/testsuite/configure gdb-6.6/gdb/testsuite/configure
+--- gdb-6.6_orig/gdb/testsuite/configure	2007-05-08 16:31:17.000000000 +0200
++++ gdb-6.6/gdb/testsuite/configure	2007-05-08 16:34:28.000000000 +0200
+@@ -312,7 +312,7 @@
+ # include <unistd.h>
+ #endif"
+ 
+-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os target_noncanonical subdirs RPATH_ENVVAR CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CPP EGREP LIBOBJS LTLIBOBJS'
++ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir procdir devdir tmpdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os target_noncanonical subdirs RPATH_ENVVAR CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CPP EGREP LIBOBJS LTLIBOBJS'
+ ac_subst_files=''
+ 
+ # Initialize some variables set by options.
+@@ -352,6 +352,9 @@
+ oldincludedir='/usr/include'
+ infodir='${prefix}/info'
+ mandir='${prefix}/man'
++procdir='/proc'
++devdir='/dev'
++tmpdir='/tmp'
+ 
+ ac_prev=
+ for ac_option
+@@ -575,6 +578,21 @@
+   | --syscon=* | --sysco=* | --sysc=* | --sys=* | --sy=*)
+     sysconfdir=$ac_optarg ;;
+ 
++  -tmpdir | --tmpdir | --tmpdi | --tmpd | --tmp)
++    ac_prev=tmpdir ;;
++  -tmpdir=* | --tmpdir=* | --tmpdi=* | --tmpd=* | --tmp=*)
++    tmpdir="$ac_optarg" ;;
++
++  -procdir | --procdir | --procdi | --procd | --proc)
++    ac_prev=procdir ;;
++  -procdir=* | --procdir=* | --procdi=* | --procd=* | --proc=*)
++    procdir="$ac_optarg" ;;
++
++  -devdir | --devdir | --devdi | --devd | --dev)
++    ac_prev=devdir ;;
++  -devdir=* | --devdir=* | --devdi=* | --devd=* | --dev=*)
++    devdir="$ac_optarg" ;;
++
+   -target | --target | --targe | --targ | --tar | --ta | --t)
+     ac_prev=target_alias ;;
+   -target=* | --target=* | --targe=* | --targ=* | --tar=* | --ta=* | --t=*)
+@@ -823,6 +841,9 @@
+   --libexecdir=DIR       program executables [EPREFIX/libexec]
+   --datadir=DIR          read-only architecture-independent data [PREFIX/share]
+   --sysconfdir=DIR       read-only single-machine data [PREFIX/etc]
++  --procdir=DIR          procfs tree [/proc]
++  --tmpdir=DIR           temp dir [/tmp]
++  --devdir=DIR           udev tree [/dev]
+   --sharedstatedir=DIR   modifiable architecture-independent data [PREFIX/com]
+   --localstatedir=DIR    modifiable single-machine data [PREFIX/var]
+   --libdir=DIR           object code libraries [EPREFIX/lib]
+@@ -3736,6 +3757,9 @@
+ s,@libexecdir@,$libexecdir,;t t
+ s,@datadir@,$datadir,;t t
+ s,@sysconfdir@,$sysconfdir,;t t
++s,@procdir@,$procdir,;t t
++s,@devdir@,$devdir,;t t
++s,@tmpdir@,$tmpdir,;t t
+ s,@sharedstatedir@,$sharedstatedir,;t t
+ s,@localstatedir@,$localstatedir,;t t
+ s,@libdir@,$libdir,;t t
+Only in gdb-6.6/gdb/testsuite: configure~
+diff -r -u -- gdb-6.6_orig/gdb/testsuite/gdb.stabs/configure gdb-6.6/gdb/testsuite/gdb.stabs/configure
+--- gdb-6.6_orig/gdb/testsuite/gdb.stabs/configure	2007-05-08 16:31:17.000000000 +0200
++++ gdb-6.6/gdb/testsuite/gdb.stabs/configure	2007-05-08 16:31:38.000000000 +0200
+@@ -272,7 +272,7 @@
+ PACKAGE_BUGREPORT=
+ 
+ ac_unique_file="weird.exp"
+-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS CC build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os LIBOBJS LTLIBOBJS'
++ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir tmpdir procdir devdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS CC build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os LIBOBJS LTLIBOBJS'
+ ac_subst_files=''
+ 
+ # Initialize some variables set by options.
+@@ -312,6 +312,9 @@
+ oldincludedir='/usr/include'
+ infodir='${prefix}/info'
+ mandir='${prefix}/man'
++procdir='/proc'
++devdir='/dev'
++tmpdir='/tmp'
+ 
+ ac_prev=
+ for ac_option
+@@ -535,6 +538,21 @@
+   | --syscon=* | --sysco=* | --sysc=* | --sys=* | --sy=*)
+     sysconfdir=$ac_optarg ;;
+ 
++  -tmpdir | --tmpdir | --tmpdi | --tmpd | --tmp)
++    ac_prev=tmpdir ;;
++  -tmpdir=* | --tmpdir=* | --tmpdi=* | --tmpd=* | --tmp=*)
++    tmpdir="$ac_optarg" ;;
++
++  -procdir | --procdir | --procdi | --procd | --proc)
++    ac_prev=procdir ;;
++  -procdir=* | --procdir=* | --procdi=* | --procd=* | --proc=*)
++    procdir="$ac_optarg" ;;
++
++  -devdir | --devdir | --devdi | --devd | --dev)
++    ac_prev=devdir ;;
++  -devdir=* | --devdir=* | --devdi=* | --devd=* | --dev=*)
++    devdir="$ac_optarg" ;;
++
+   -target | --target | --targe | --targ | --tar | --ta | --t)
+     ac_prev=target_alias ;;
+   -target=* | --target=* | --targe=* | --targ=* | --tar=* | --ta=* | --t=*)
+@@ -763,6 +781,9 @@
+   --libexecdir=DIR       program executables [EPREFIX/libexec]
+   --datadir=DIR          read-only architecture-independent data [PREFIX/share]
+   --sysconfdir=DIR       read-only single-machine data [PREFIX/etc]
++  --procdir=DIR          procfs tree [/proc]
++  --tmpdir=DIR           temp dir [/tmp]
++  --devdir=DIR           udev tree [/dev]
+   --sharedstatedir=DIR   modifiable architecture-independent data [PREFIX/com]
+   --localstatedir=DIR    modifiable single-machine data [PREFIX/var]
+   --libdir=DIR           object code libraries [EPREFIX/lib]
+@@ -1951,6 +1972,9 @@
+ s,@libexecdir@,$libexecdir,;t t
+ s,@datadir@,$datadir,;t t
+ s,@sysconfdir@,$sysconfdir,;t t
++s,@procdir@,$procdir,;t t
++s,@devdir@,$devdir,;t t
++s,@tmpdir@,$tmpdir,;t t
+ s,@sharedstatedir@,$sharedstatedir,;t t
+ s,@localstatedir@,$localstatedir,;t t
+ s,@libdir@,$libdir,;t t
+diff -r -u -- gdb-6.6_orig/gdb/uw-thread.c gdb-6.6/gdb/uw-thread.c
+--- gdb-6.6_orig/gdb/uw-thread.c	2007-05-08 16:31:17.000000000 +0200
++++ gdb-6.6/gdb/uw-thread.c	2007-05-08 16:31:38.000000000 +0200
+@@ -130,7 +130,7 @@
+ 
+ /* Default debugging output file, overridden by envvar UWTHR_DEBUG.  */
+ 
+-#define DEBUG_FILE "/dev/tty"
++#define DEBUG_FILE DEVDIR "/tty"
+ 
+ /* #if DEBUG, write string S to the debugging output channel.  */
+ 
+diff -r -u -- gdb-6.6_orig/libiberty/configure gdb-6.6/libiberty/configure
+--- gdb-6.6_orig/libiberty/configure	2007-05-08 16:31:17.000000000 +0200
++++ gdb-6.6/libiberty/configure	2007-05-08 16:33:21.000000000 +0200
+@@ -309,7 +309,7 @@
+ # include <unistd.h>
+ #endif"
+ 
+-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS libiberty_topdir MAINT NOTMAINT MAKEINFO BUILD_INFO PERL HAVE_PERL build build_cpu build_vendor build_os host host_cpu host_vendor host_os AR ac_ct_AR RANLIB ac_ct_RANLIB CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CPP ac_libiberty_warn_cflags NO_MINUS_C_MINUS_O OUTPUT_OPTION INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA EGREP LIBOBJS CHECK target_header_dir pexecute INSTALL_DEST datarootdir docdir htmldir LTLIBOBJS'
++ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir procdir devdir tmpdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS libiberty_topdir MAINT NOTMAINT MAKEINFO BUILD_INFO PERL HAVE_PERL build build_cpu build_vendor build_os host host_cpu host_vendor host_os AR ac_ct_AR RANLIB ac_ct_RANLIB CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CPP ac_libiberty_warn_cflags NO_MINUS_C_MINUS_O OUTPUT_OPTION INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA EGREP LIBOBJS CHECK target_header_dir pexecute INSTALL_DEST datarootdir docdir htmldir LTLIBOBJS'
+ ac_subst_files='host_makefile_frag'
+ 
+ # Initialize some variables set by options.
+@@ -349,6 +349,9 @@
+ oldincludedir='/usr/include'
+ infodir='${prefix}/info'
+ mandir='${prefix}/man'
++procdir='/proc'
++devdir='/dev'
++tmpdir='/tmp'
+ 
+ ac_prev=
+ for ac_option
+@@ -572,6 +575,21 @@
+   | --syscon=* | --sysco=* | --sysc=* | --sys=* | --sy=*)
+     sysconfdir=$ac_optarg ;;
+ 
++  -tmpdir | --tmpdir | --tmpdi | --tmpd | --tmp)
++    ac_prev=tmpdir ;;
++  -tmpdir=* | --tmpdir=* | --tmpdi=* | --tmpd=* | --tmp=*)
++    tmpdir="$ac_optarg" ;;
++
++  -procdir | --procdir | --procdi | --procd | --proc)
++    ac_prev=procdir ;;
++  -procdir=* | --procdir=* | --procdi=* | --procd=* | --proc=*)
++    procdir="$ac_optarg" ;;
++
++  -devdir | --devdir | --devdi | --devd | --dev)
++    ac_prev=devdir ;;
++  -devdir=* | --devdir=* | --devdi=* | --devd=* | --dev=*)
++    devdir="$ac_optarg" ;;
++
+   -target | --target | --targe | --targ | --tar | --ta | --t)
+     ac_prev=target_alias ;;
+   -target=* | --target=* | --targe=* | --targ=* | --tar=* | --ta=* | --t=*)
+@@ -820,6 +838,9 @@
+   --libexecdir=DIR       program executables [EPREFIX/libexec]
+   --datadir=DIR          read-only architecture-independent data [PREFIX/share]
+   --sysconfdir=DIR       read-only single-machine data [PREFIX/etc]
++  --procdir=DIR          procfs tree [/proc]
++  --tmpdir=DIR           temp dir [/tmp]
++  --devdir=DIR           udev tree [/dev]
+   --sharedstatedir=DIR   modifiable architecture-independent data [PREFIX/com]
+   --localstatedir=DIR    modifiable single-machine data [PREFIX/var]
+   --libdir=DIR           object code libraries [EPREFIX/lib]
+@@ -9506,6 +9527,9 @@
+ s,@libexecdir@,$libexecdir,;t t
+ s,@datadir@,$datadir,;t t
+ s,@sysconfdir@,$sysconfdir,;t t
++s,@procdir@,$procdir,;t t
++s,@devdir@,$devdir,;t t
++s,@tmpdir@,$tmpdir,;t t
+ s,@sharedstatedir@,$sharedstatedir,;t t
+ s,@localstatedir@,$localstatedir,;t t
+ s,@libdir@,$libdir,;t t
+Only in gdb-6.6/libiberty: configure~
+diff -r -u -- gdb-6.6_orig/opcodes/configure gdb-6.6/opcodes/configure
+--- gdb-6.6_orig/opcodes/configure	2007-05-08 16:31:17.000000000 +0200
++++ gdb-6.6/opcodes/configure	2007-05-08 16:34:06.000000000 +0200
+@@ -309,7 +309,7 @@
+ # include <unistd.h>
+ #endif"
+ 
+-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE AR ac_ct_AR RANLIB ac_ct_RANLIB LN_S LIBTOOL WARN_CFLAGS NO_WERROR MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT INSTALL_LIBBFD_TRUE INSTALL_LIBBFD_FALSE host_noncanonical target_noncanonical bfdlibdir bfdincludedir USE_NLS LIBINTL LIBINTL_DEP INCINTL XGETTEXT GMSGFMT POSUB CATALOGS DATADIRNAME INSTOBJEXT GENCAT CATOBJEXT MKINSTALLDIRS MSGFMT MSGMERGE CC_FOR_BUILD EXEEXT_FOR_BUILD HDEFINES CPP EGREP CGEN_MAINT_TRUE CGEN_MAINT_FALSE cgendir WIN32LDFLAGS WIN32LIBADD archdefs BFD_MACHINES LIBOBJS LTLIBOBJS'
++ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir procdir devdir tmpdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE AR ac_ct_AR RANLIB ac_ct_RANLIB LN_S LIBTOOL WARN_CFLAGS NO_WERROR MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT INSTALL_LIBBFD_TRUE INSTALL_LIBBFD_FALSE host_noncanonical target_noncanonical bfdlibdir bfdincludedir USE_NLS LIBINTL LIBINTL_DEP INCINTL XGETTEXT GMSGFMT POSUB CATALOGS DATADIRNAME INSTOBJEXT GENCAT CATOBJEXT MKINSTALLDIRS MSGFMT MSGMERGE CC_FOR_BUILD EXEEXT_FOR_BUILD HDEFINES CPP EGREP CGEN_MAINT_TRUE CGEN_MAINT_FALSE cgendir WIN32LDFLAGS WIN32LIBADD archdefs BFD_MACHINES LIBOBJS LTLIBOBJS'
+ ac_subst_files=''
+ 
+ # Initialize some variables set by options.
+@@ -349,6 +349,9 @@
+ oldincludedir='/usr/include'
+ infodir='${prefix}/info'
+ mandir='${prefix}/man'
++procdir='/proc'
++devdir='/dev'
++tmpdir='/tmp'
+ 
+ ac_prev=
+ for ac_option
+@@ -572,6 +575,21 @@
+   | --syscon=* | --sysco=* | --sysc=* | --sys=* | --sy=*)
+     sysconfdir=$ac_optarg ;;
+ 
++  -tmpdir | --tmpdir | --tmpdi | --tmpd | --tmp)
++    ac_prev=tmpdir ;;
++  -tmpdir=* | --tmpdir=* | --tmpdi=* | --tmpd=* | --tmp=*)
++    tmpdir="$ac_optarg" ;;
++
++  -procdir | --procdir | --procdi | --procd | --proc)
++    ac_prev=procdir ;;
++  -procdir=* | --procdir=* | --procdi=* | --procd=* | --proc=*)
++    procdir="$ac_optarg" ;;
++
++  -devdir | --devdir | --devdi | --devd | --dev)
++    ac_prev=devdir ;;
++  -devdir=* | --devdir=* | --devdi=* | --devd=* | --dev=*)
++    devdir="$ac_optarg" ;;
++
+   -target | --target | --targe | --targ | --tar | --ta | --t)
+     ac_prev=target_alias ;;
+   -target=* | --target=* | --targe=* | --targ=* | --tar=* | --ta=* | --t=*)
+@@ -820,6 +838,9 @@
+   --libexecdir=DIR       program executables [EPREFIX/libexec]
+   --datadir=DIR          read-only architecture-independent data [PREFIX/share]
+   --sysconfdir=DIR       read-only single-machine data [PREFIX/etc]
++  --procdir=DIR          procfs tree [/proc]
++  --tmpdir=DIR           temp dir [/tmp]
++  --devdir=DIR           udev tree [/dev]
+   --sharedstatedir=DIR   modifiable architecture-independent data [PREFIX/com]
+   --localstatedir=DIR    modifiable single-machine data [PREFIX/var]
+   --libdir=DIR           object code libraries [EPREFIX/lib]
+@@ -7302,6 +7323,9 @@
+ s,@libexecdir@,$libexecdir,;t t
+ s,@datadir@,$datadir,;t t
+ s,@sysconfdir@,$sysconfdir,;t t
++s,@procdir@,$procdir,;t t
++s,@devdir@,$devdir,;t t
++s,@tmpdir@,$tmpdir,;t t
+ s,@sharedstatedir@,$sharedstatedir,;t t
+ s,@localstatedir@,$localstatedir,;t t
+ s,@libdir@,$libdir,;t t
+Only in gdb-6.6/opcodes: configure~
+diff -r -u -- gdb-6.6_orig/readline/configure gdb-6.6/readline/configure
+--- gdb-6.6_orig/readline/configure	2007-05-08 16:31:17.000000000 +0200
++++ gdb-6.6/readline/configure	2007-05-08 16:33:45.000000000 +0200
+@@ -312,7 +312,7 @@
+ # include <unistd.h>
+ #endif"
+ 
+-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os host host_cpu host_vendor host_os CROSS_COMPILE SET_MAKE CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CPP EGREP CC_FOR_BUILD INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA AR RANLIB ac_ct_RANLIB MAKE_SHELL WCWIDTH_OBJ SHOBJ_CC SHOBJ_CFLAGS SHOBJ_LD SHOBJ_LDFLAGS SHOBJ_XLDFLAGS SHOBJ_LIBS SHOBJ_STATUS SHLIB_STATUS SHLIB_XLDFLAGS SHLIB_DOT SHLIB_LIBPREF SHLIB_LIBSUFF SHLIB_LIBVERSION SHLIB_DLLVERSION SHLIB_LIBS SHLIB_MAJOR SHLIB_MINOR STATIC_TARGET SHARED_TARGET STATIC_INSTALL_TARGET SHARED_INSTALL_TARGET PURIFY BUILD_DIR LOCAL_CFLAGS LOCAL_LDFLAGS LOCAL_DEFS ARFLAGS LIBVERSION TERMCAP_LIB LIBOBJS LTLIBOBJS'
++ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir procdir devdir tmpdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os host host_cpu host_vendor host_os CROSS_COMPILE SET_MAKE CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CPP EGREP CC_FOR_BUILD INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA AR RANLIB ac_ct_RANLIB MAKE_SHELL WCWIDTH_OBJ SHOBJ_CC SHOBJ_CFLAGS SHOBJ_LD SHOBJ_LDFLAGS SHOBJ_XLDFLAGS SHOBJ_LIBS SHOBJ_STATUS SHLIB_STATUS SHLIB_XLDFLAGS SHLIB_DOT SHLIB_LIBPREF SHLIB_LIBSUFF SHLIB_LIBVERSION SHLIB_DLLVERSION SHLIB_LIBS SHLIB_MAJOR SHLIB_MINOR STATIC_TARGET SHARED_TARGET STATIC_INSTALL_TARGET SHARED_INSTALL_TARGET PURIFY BUILD_DIR LOCAL_CFLAGS LOCAL_LDFLAGS LOCAL_DEFS ARFLAGS LIBVERSION TERMCAP_LIB LIBOBJS LTLIBOBJS'
+ ac_subst_files=''
+ 
+ # Initialize some variables set by options.
+@@ -352,6 +352,9 @@
+ oldincludedir='/usr/include'
+ infodir='${prefix}/info'
+ mandir='${prefix}/man'
++procdir='/proc'
++devdir='/dev'
++tmpdir='/tmp'
+ 
+ ac_prev=
+ for ac_option
+@@ -575,6 +578,36 @@
+   | --syscon=* | --sysco=* | --sysc=* | --sys=* | --sy=*)
+     sysconfdir=$ac_optarg ;;
+ 
++  -tmpdir | --tmpdir | --tmpdi | --tmpd | --tmp)
++    ac_prev=tmpdir ;;
++  -tmpdir=* | --tmpdir=* | --tmpdi=* | --tmpd=* | --tmp=*)
++    tmpdir="$ac_optarg" ;;
++
++  -procdir | --procdir | --procdi | --procd | --proc)
++    ac_prev=procdir ;;
++  -procdir=* | --procdir=* | --procdi=* | --procd=* | --proc=*)
++    procdir="$ac_optarg" ;;
++
++  -devdir | --devdir | --devdi | --devd | --dev)
++    ac_prev=devdir ;;
++  -devdir=* | --devdir=* | --devdi=* | --devd=* | --dev=*)
++    devdir="$ac_optarg" ;;
++
++  -tmpdir | --tmpdir | --tmpdi | --tmpd | --tmp)
++    ac_prev=tmpdir ;;
++  -tmpdir=* | --tmpdir=* | --tmpdi=* | --tmpd=* | --tmp=*)
++    tmpdir="$ac_optarg" ;;
++
++  -procdir | --procdir | --procdi | --procd | --proc)
++    ac_prev=procdir ;;
++  -procdir=* | --procdir=* | --procdi=* | --procd=* | --proc=*)
++    procdir="$ac_optarg" ;;
++
++  -devdir | --devdir | --devdi | --devd | --dev)
++    ac_prev=devdir ;;
++  -devdir=* | --devdir=* | --devdi=* | --devd=* | --dev=*)
++    devdir="$ac_optarg" ;;
++
+   -target | --target | --targe | --targ | --tar | --ta | --t)
+     ac_prev=target_alias ;;
+   -target=* | --target=* | --targe=* | --targ=* | --tar=* | --ta=* | --t=*)
+@@ -670,7 +703,7 @@
+ done
+ 
+ # Be sure to have absolute paths.
+-for ac_var in bindir sbindir libexecdir datadir sysconfdir sharedstatedir \
++for ac_var in bindir sbindir libexecdir datadir sysconfdir tmpdir procdir devdir sharedstatedir \
+ 	      localstatedir libdir includedir oldincludedir infodir mandir
+ do
+   eval ac_val=$`echo $ac_var`
+@@ -823,6 +856,9 @@
+   --libexecdir=DIR       program executables [EPREFIX/libexec]
+   --datadir=DIR          read-only architecture-independent data [PREFIX/share]
+   --sysconfdir=DIR       read-only single-machine data [PREFIX/etc]
++  --procdir=DIR          procfs tree [/proc]
++  --tmpdir=DIR           temp dir [/tmp]
++  --devdir=DIR           udev tree [/dev]
+   --sharedstatedir=DIR   modifiable architecture-independent data [PREFIX/com]
+   --localstatedir=DIR    modifiable single-machine data [PREFIX/var]
+   --libdir=DIR           object code libraries [EPREFIX/lib]
+@@ -8700,6 +8736,9 @@
+ s,@libexecdir@,$libexecdir,;t t
+ s,@datadir@,$datadir,;t t
+ s,@sysconfdir@,$sysconfdir,;t t
++s,@procdir@,$procdir,;t t
++s,@devdir@,$devdir,;t t
++s,@tmpdir@,$tmpdir,;t t
+ s,@sharedstatedir@,$sharedstatedir,;t t
+ s,@localstatedir@,$localstatedir,;t t
+ s,@libdir@,$libdir,;t t
+Only in gdb-6.6/readline: configure~
+diff -r -u -- gdb-6.6_orig/sim/configure gdb-6.6/sim/configure
+--- gdb-6.6_orig/sim/configure	2007-05-08 16:31:17.000000000 +0200
++++ gdb-6.6/sim/configure	2007-05-08 16:33:32.000000000 +0200
+@@ -292,7 +292,7 @@
+ ac_subdirs_all="$ac_subdirs_all testsuite"
+ ac_subdirs_all="$ac_subdirs_all common"
+ ac_subdirs_all="$ac_subdirs_all igen"
+-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA AR ac_ct_AR RANLIB ac_ct_RANLIB build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os HDEFINES CC_FOR_BUILD CFLAGS_FOR_BUILD subdirs LIBOBJS LTLIBOBJS'
++ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir procdir devdir tmpdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA AR ac_ct_AR RANLIB ac_ct_RANLIB build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os HDEFINES CC_FOR_BUILD CFLAGS_FOR_BUILD subdirs LIBOBJS LTLIBOBJS'
+ ac_subst_files=''
+ 
+ # Initialize some variables set by options.
+@@ -332,6 +332,9 @@
+ oldincludedir='/usr/include'
+ infodir='${prefix}/info'
+ mandir='${prefix}/man'
++procdir='/proc'
++devdir='/dev'
++tmpdir='/tmp'
+ 
+ ac_prev=
+ for ac_option
+@@ -555,6 +558,21 @@
+   | --syscon=* | --sysco=* | --sysc=* | --sys=* | --sy=*)
+     sysconfdir=$ac_optarg ;;
+ 
++  -tmpdir | --tmpdir | --tmpdi | --tmpd | --tmp)
++    ac_prev=tmpdir ;;
++  -tmpdir=* | --tmpdir=* | --tmpdi=* | --tmpd=* | --tmp=*)
++    tmpdir="$ac_optarg" ;;
++
++  -procdir | --procdir | --procdi | --procd | --proc)
++    ac_prev=procdir ;;
++  -procdir=* | --procdir=* | --procdi=* | --procd=* | --proc=*)
++    procdir="$ac_optarg" ;;
++
++  -devdir | --devdir | --devdi | --devd | --dev)
++    ac_prev=devdir ;;
++  -devdir=* | --devdir=* | --devdi=* | --devd=* | --dev=*)
++    devdir="$ac_optarg" ;;
++
+   -target | --target | --targe | --targ | --tar | --ta | --t)
+     ac_prev=target_alias ;;
+   -target=* | --target=* | --targe=* | --targ=* | --tar=* | --ta=* | --t=*)
+@@ -799,6 +817,9 @@
+   --libexecdir=DIR       program executables [EPREFIX/libexec]
+   --datadir=DIR          read-only architecture-independent data [PREFIX/share]
+   --sysconfdir=DIR       read-only single-machine data [PREFIX/etc]
++  --procdir=DIR          procfs tree [/proc]
++  --tmpdir=DIR           temp dir [/tmp]
++  --devdir=DIR           udev tree [/dev]
+   --sharedstatedir=DIR   modifiable architecture-independent data [PREFIX/com]
+   --localstatedir=DIR    modifiable single-machine data [PREFIX/var]
+   --libdir=DIR           object code libraries [EPREFIX/lib]
+@@ -4191,6 +4212,9 @@
+ s,@libexecdir@,$libexecdir,;t t
+ s,@datadir@,$datadir,;t t
+ s,@sysconfdir@,$sysconfdir,;t t
++s,@procdir@,$procdir,;t t
++s,@devdir@,$devdir,;t t
++s,@tmpdir@,$tmpdir,;t t
+ s,@sharedstatedir@,$sharedstatedir,;t t
+ s,@localstatedir@,$localstatedir,;t t
+ s,@libdir@,$libdir,;t t
+Only in gdb-6.6/sim: configure~
+diff -r -u -- gdb-6.6_orig/intl/configure gdb-6.6/intl/configure
+--- gdb-6.6_orig/intl/configure	2007-05-08 16:35:35.000000000 +0200
++++ gdb-6.6/intl/configure	2007-05-08 16:37:39.000000000 +0200
+@@ -309,7 +309,7 @@
+ # include <unistd.h>
+ #endif"
+ 
+-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS SET_MAKE INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA MKINSTALLDIRS USE_NLS MSGFMT GMSGFMT XGETTEXT MSGMERGE CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT build build_cpu build_vendor build_os host host_cpu host_vendor host_os RANLIB ac_ct_RANLIB CPP EGREP ALLOCA GLIBC21 LIBICONV LTLIBICONV INTLBISON BUILD_INCLUDED_LIBINTL USE_INCLUDED_LIBINTL CATOBJEXT DATADIRNAME INSTOBJEXT GENCAT INTLOBJS INTL_LIBTOOL_SUFFIX_PREFIX INTLLIBS LIBINTL LTLIBINTL POSUB ACLOCAL AUTOCONF AUTOHEADER MAINT LIBINTL_DEP INCINTL LIBOBJS LTLIBOBJS'
++ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir tmpdir procdir devdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS SET_MAKE INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA MKINSTALLDIRS USE_NLS MSGFMT GMSGFMT XGETTEXT MSGMERGE CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT build build_cpu build_vendor build_os host host_cpu host_vendor host_os RANLIB ac_ct_RANLIB CPP EGREP ALLOCA GLIBC21 LIBICONV LTLIBICONV INTLBISON BUILD_INCLUDED_LIBINTL USE_INCLUDED_LIBINTL CATOBJEXT DATADIRNAME INSTOBJEXT GENCAT INTLOBJS INTL_LIBTOOL_SUFFIX_PREFIX INTLLIBS LIBINTL LTLIBINTL POSUB ACLOCAL AUTOCONF AUTOHEADER MAINT LIBINTL_DEP INCINTL LIBOBJS LTLIBOBJS'
+ ac_subst_files=''
+ 
+ # Initialize some variables set by options.
+@@ -349,6 +349,9 @@
+ oldincludedir='/usr/include'
+ infodir='${prefix}/info'
+ mandir='${prefix}/man'
++procdir='/proc'
++devdir='/dev'
++tmpdir='/tmp'
+ 
+ ac_prev=
+ for ac_option
+@@ -572,6 +575,21 @@
+   | --syscon=* | --sysco=* | --sysc=* | --sys=* | --sy=*)
+     sysconfdir=$ac_optarg ;;
+ 
++  -tmpdir | --tmpdir | --tmpdi | --tmpd | --tmp)
++    ac_prev=tmpdir ;;
++  -tmpdir=* | --tmpdir=* | --tmpdi=* | --tmpd=* | --tmp=*)
++    tmpdir="$ac_optarg" ;;
++    
++  -procdir | --procdir | --procdi | --procd | --proc)
++    ac_prev=procdir ;;
++  -procdir=* | --procdir=* | --procdi=* | --procd=* | --proc=*)
++    procdir="$ac_optarg" ;;
++    
++  -devdir | --devdir | --devdi | --devd | --dev)
++    ac_prev=devdir ;;
++  -devdir=* | --devdir=* | --devdi=* | --devd=* | --dev=*)
++    devdir="$ac_optarg" ;;
++    
+   -target | --target | --targe | --targ | --tar | --ta | --t)
+     ac_prev=target_alias ;;
+   -target=* | --target=* | --targe=* | --targ=* | --tar=* | --ta=* | --t=*)
+@@ -668,7 +686,7 @@
+ 
+ # Be sure to have absolute paths.
+ for ac_var in bindir sbindir libexecdir datadir sysconfdir sharedstatedir \
+-	      localstatedir libdir includedir oldincludedir infodir mandir
++	      localstatedir libdir includedir oldincludedir infodir mandir tmpdir procdir devdir
+ do
+   eval ac_val=$`echo $ac_var`
+   case $ac_val in
+@@ -820,6 +838,9 @@
+   --libexecdir=DIR       program executables [EPREFIX/libexec]
+   --datadir=DIR          read-only architecture-independent data [PREFIX/share]
+   --sysconfdir=DIR       read-only single-machine data [PREFIX/etc]
++  --procdir=DIR          procfs tree [/proc]
++  --tmpdir=DIR           temp dir [/tmp]
++  --devdir=DIR           udev tree [/dev]
+   --sharedstatedir=DIR   modifiable architecture-independent data [PREFIX/com]
+   --localstatedir=DIR    modifiable single-machine data [PREFIX/var]
+   --libdir=DIR           object code libraries [EPREFIX/lib]
+@@ -7867,6 +7888,9 @@
+ s,@libexecdir@,$libexecdir,;t t
+ s,@datadir@,$datadir,;t t
+ s,@sysconfdir@,$sysconfdir,;t t
++s,@procdir@,$procdir,;t t
++s,@devdir@,$devdir,;t t
++s,@tmpdir@,$tmpdir,;t t
+ s,@sharedstatedir@,$sharedstatedir,;t t
+ s,@localstatedir@,$localstatedir,;t t
+ s,@libdir@,$libdir,;t t

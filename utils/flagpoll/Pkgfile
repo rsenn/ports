@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A tool used by developers to store/retrieve package meta-data.
+#  Flagpoll is a tool for developers to use meta-data files for storing
+#  information on what is needed to compile their software. Think of it as
+#  the rpm of software development. It provides developers with total control
+#  over which packages, versions, architectures, et cetera that they want
+#  to use meta-data from. Instead of specifying other packages' cflags and
+#  ldflag manually, you can call `flagpoll mylib --cflags --ldflags` and
+#  it will retrieve the flags for its package as well as its dependencies.
+#  .
+# URL: https://realityforge.vrsource.org/view/FlagPoll/WebHome
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=flagpoll
+version=0.8.3
+release=1
+source=(https://realityforge.vrsource.org/twiki/pub/FlagPoll/FlagpollDownloads/flagpoll-$version.tar.gz)
+
+build()
+{
+  cd flagpoll-$version
+
+  python setup.py install --prefix="$ROOT"
+
+  install -d $ROOT/share/doc/flagpoll
+  install -m 644 ChangeLog LICENSE PKG-INFO README TODO $ROOT/share/doc/flagpoll
+}
+
+# EOF

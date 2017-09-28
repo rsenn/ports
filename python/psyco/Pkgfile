@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: The Python specializing compiler.
+#  Psyco shows that it is possible to execute Python code at speeds
+#  approaching that of fully compiled languages, by using a technique called
+#  "specialization". This extension module for the unmodified interpreter
+#  accelerates user programs with little or no change in their sources. It
+#  can increase speed by a factor that can be very interesting, and an
+#  increase of 2 to 10 times is common.
+#  .
+# URL: http://psyco.sourceforge.net/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=psyco
+version=1.6
+release=1
+source=($mirror_sf/psyco/psyco-$version-src.tar.gz)
+
+build()
+{
+  cd psyco-$version
+
+  python setup.py install --prefix="$ROOT"
+
+  install -d $ROOT/share/doc/psyco
+  install -m 644 COPYING.txt INSTALL.txt MANIFEST README.txt $ROOT/share/doc/psyco
+}
+
+# EOF

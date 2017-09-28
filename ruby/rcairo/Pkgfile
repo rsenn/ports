@@ -1,0 +1,26 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Ruby bindings for cairo
+# URL: http://cairographics.org/rcairo/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=rcairo
+version=1.5.1
+release=1
+source=(http://cairographics.org/releases/rcairo-$version.tar.gz)
+
+build()
+{
+  cd rcairo-$version
+
+  set -- `ruby --version`
+
+  RUBYVERSION="$2"
+  RUBYLIBDIR="$prefix/lib/ruby/${RUBYVERSION%.*}"
+
+  ruby extconf.rb
+
+  make 
+  make DESTDIR="$PKG" RUBYLIBDIR="$PKG/$RUBYLIBDIR" sitedir='$(libdir)/ruby' install
+}

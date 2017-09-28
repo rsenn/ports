@@ -1,0 +1,39 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An MPEG-4 AAC encoder and decoder.
+#  The FAAC project includes the AAC encoder FAAC and decoder FAAD2. It
+#  supports several MPEG-4 object types (LC, Main, LTP, HE AAC, PS)
+#  and file formats (ADTS AAC, raw AAC, MP4), multichannel and gapless
+#  en/decoding as well as MP4 metadata tags. The codecs are compatible with
+#  standard-compliant audio applications using one or more of these profiles.
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=faac
+version=1.26
+release=1
+source=($mirror_sf/faac/faac-$version.tar.gz)
+
+build()
+{
+  cd faac
+
+  libtoolize --force --copy --install
+  aclocal --force
+  autoheader --force
+  automake --force --copy --foreign --add-missing
+  aclocal --force
+  autoconf --force
+
+  ./configure \
+      --build="$build" \
+      --target="$target" \
+      --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/faac
+  install -m 644 AUTHORS ChangeLog common/Cfaac/ReadMe.txt COPYING INSTALL NEWS README TODO $ROOT/share/doc/faac
+}

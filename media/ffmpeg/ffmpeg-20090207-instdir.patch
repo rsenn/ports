@@ -1,0 +1,62 @@
+diff -wru ffmpeg-export-2009-02-07_orig/common.mak ffmpeg-export-2009-02-07/common.mak
+--- ffmpeg-export-2009-02-07_orig/common.mak	2009-02-07 22:10:13.000000000 +0100
++++ ffmpeg-export-2009-02-07/common.mak	2009-02-07 22:14:08.000000000 +0100
+@@ -19,7 +19,9 @@
+ ALLFFLIBS = avcodec avdevice avfilter avformat avutil postproc swscale
+ 
+ CFLAGS := -DHAVE_AV_CONFIG_H -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE \
+-          -I$(BUILD_ROOT_REL) -I$(SRC_PATH) $(OPTFLAGS)
++          -I$(BUILD_ROOT_REL) -I$(SRC_PATH) \
++          -I$(SRC_PATH)/libavcodec -I$(SRC_PATH)/libavutil \
++          -I$(SRC_PATH)/libavformat $(OPTFLAGS)
+ 
+ %.o: %.c
+ 	$(CC) $(CFLAGS) $(LIBOBJFLAGS) -c -o $@ $<
+diff -wru ffmpeg-export-2009-02-07_orig/libavcodec/avcodec.h ffmpeg-export-2009-02-07/libavcodec/avcodec.h
+--- ffmpeg-export-2009-02-07_orig/libavcodec/avcodec.h	2009-02-07 22:10:07.000000000 +0100
++++ ffmpeg-export-2009-02-07/libavcodec/avcodec.h	2009-02-07 22:10:49.000000000 +0100
+@@ -27,7 +27,7 @@
+  */
+ 
+ #include <errno.h>
+-#include "libavutil/avutil.h"
++#include "avutil.h"
+ 
+ #define LIBAVCODEC_VERSION_MAJOR 52
+ #define LIBAVCODEC_VERSION_MINOR 14
+diff -wru ffmpeg-export-2009-02-07_orig/libavcodec/opt.h ffmpeg-export-2009-02-07/libavcodec/opt.h
+--- ffmpeg-export-2009-02-07_orig/libavcodec/opt.h	2009-02-07 22:10:07.000000000 +0100
++++ ffmpeg-export-2009-02-07/libavcodec/opt.h	2009-02-07 22:12:11.000000000 +0100
+@@ -27,7 +27,7 @@
+  * AVOptions
+  */
+ 
+-#include "libavutil/rational.h"
++#include "rational.h"
+ #include "avcodec.h"
+ 
+ enum AVOptionType{
+diff -wru ffmpeg-export-2009-02-07_orig/libavformat/avformat.h ffmpeg-export-2009-02-07/libavformat/avformat.h
+--- ffmpeg-export-2009-02-07_orig/libavformat/avformat.h	2009-02-07 22:10:13.000000000 +0100
++++ ffmpeg-export-2009-02-07/libavformat/avformat.h	2009-02-07 22:11:10.000000000 +0100
+@@ -42,7 +42,7 @@
+ 
+ #include <time.h>
+ #include <stdio.h>  /* FILE */
+-#include "libavcodec/avcodec.h"
++#include "avcodec.h"
+ 
+ #include "avio.h"
+ 
+diff -wru ffmpeg-export-2009-02-07_orig/subdir.mak ffmpeg-export-2009-02-07/subdir.mak
+--- ffmpeg-export-2009-02-07_orig/subdir.mak	2009-02-07 22:10:13.000000000 +0100
++++ ffmpeg-export-2009-02-07/subdir.mak	2009-02-07 22:16:30.000000000 +0100
+@@ -16,7 +16,7 @@
+ 	$(RANLIB) $@
+ endif
+ 
+-INCINSTDIR := $(INCDIR)/lib$(NAME)
++INCINSTDIR := $(INCDIR)/ffmpeg
+ 
+ define RULES
+ ifdef BUILD_SHARED

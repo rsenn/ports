@@ -1,0 +1,26 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: xtail is sort of a tail -f for many files. It's a great way
+# to monitor log files.
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=xtail
+version=2.1
+release=1
+source=(http://www.unicom.com/sw/xtail/xtail-$version.tar.gz)
+
+build()
+{
+  cd xtail-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

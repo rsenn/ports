@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A compiler for GMP types (mpq_t, etc.) in infix arithmetic expressions.
+# The GMP compiler simplifies the use of GMP, the GNU multiple precision
+# library. It scans a C source file for specially marked GMPS arithmetic
+# expressions and replaces them with plain C.
+#
+# URL: http://gmpc.sourceforge.net
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=gmpc
+version=1.0.0
+release=1
+source=($mirror_sf/gmpc/gmpc-$version.tar.gz)
+
+build()
+{
+  cd gmpc-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

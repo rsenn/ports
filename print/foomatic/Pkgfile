@@ -1,0 +1,26 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A database for integrating printer drivers with every printer spooler.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=foomatic-db
+version=4.0-20090226
+release=1
+source=(http://www.openprinting.org/download/foomatic/foomatic-db-$version.tar.gz)
+
+build() 
+{
+  cd foomatic-db-${version#*-}
+  
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+  
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

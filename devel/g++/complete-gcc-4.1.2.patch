@@ -1,0 +1,4929 @@
+diff -ru gcc-4.1.2_orig/Makefile.in gcc-4.1.2/Makefile.in
+--- gcc-4.1.2_orig/Makefile.in	1970-01-01 00:00:00.000000000 +0000
++++ gcc-4.1.2/Makefile.in	1970-01-01 00:00:00.000000000 +0000
+@@ -1967,6 +1967,16 @@
+ 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+ 	$(MAKE) $(RECURSE_FLAGS_TO_PASS) installdirs install-host install-target
+ 	@: $(MAKE); $(stage)
++	$(INSTALL) -d $(DESTDIR)$(includedir)/gcc; \
++	files='$(INSTALL_HEADERS)'; \
++	for i in $$files; do \
++		$(INSTALL_DATA) $(srcdir)/$$i $(DESTDIR)$(includedir)/gcc/; \
++	done
++
++INSTALL_HEADERS = \
++	include/libiberty.h \
++	include/obstack.h \
++	include/splay-tree.h
+ 
+ .PHONY: install-host-nogcc
+ install-host-nogcc:  \
+diff -ru gcc-4.1.2_orig/gcc/Makefile.in gcc-4.1.2/gcc/Makefile.in
+--- gcc-4.1.2_orig/gcc/Makefile.in	1970-01-01 00:00:00.000000000 +0000
++++ gcc-4.1.2/gcc/Makefile.in	1970-01-01 00:00:00.000000000 +0000
+@@ -86,11 +86,11 @@
+ host_subdir=@host_subdir@
+ build_subdir=@build_subdir@
+ 
+-ifeq ($(host_subdir),.)
++#ifeq ($(host_subdir),.)
+ build_objdir := ../$(build_subdir)
+-else
+-build_objdir := ../../$(build_subdir)
+-endif
++#else
++#build_objdir := ../../$(build_subdir)
++#endif
+ 
+ # --------
+ # Defined vpaths
+@@ -469,13 +469,13 @@
+ # Directory in which to find other cross-compilation tools and headers.
+ dollar = @dollar@
+ # Used in install-cross.
+-gcc_tooldir = @gcc_tooldir@
++gcc_tooldir = $(prefix)/$(target_noncanonical)
+ # Used to install the shared libgcc.
+ slibdir = @slibdir@
+ # Since gcc_tooldir does not exist at build-time, use -B$(build_tooldir)/bin/
+ build_tooldir = $(exec_prefix)/$(target_noncanonical)
+ # Directory in which the compiler finds target-independent g++ includes.
+-gcc_gxx_include_dir = @gcc_gxx_include_dir@
++gcc_gxx_include_dir = $(gcc_tooldir)/include/c++/$(version)
+ # Directory to search for site-specific includes.
+ local_includedir = $(local_prefix)/include
+ includedir = $(prefix)/include
+@@ -645,7 +645,7 @@
+ 
+ # Native linker and preprocessor flags.  For x-fragment overrides.
+ BUILD_LDFLAGS=$(LDFLAGS)
+-BUILD_CPPFLAGS=$(ALL_CPPFLAGS)
++BUILD_CPPFLAGS=$(filter-out $(CPPFLAGS),$(ALL_CPPFLAGS))
+ 
+ # Actual name to use when installing a native compiler.
+ GCC_INSTALL_NAME := $(shell echo gcc|sed '$(program_transform_name)')
+@@ -3008,7 +3008,6 @@
+   -DGPLUSPLUS_TOOL_INCLUDE_DIR=\"$(gcc_gxx_include_dir)/$(target_noncanonical)\" \
+   -DGPLUSPLUS_BACKWARD_INCLUDE_DIR=\"$(gcc_gxx_include_dir)/backward\" \
+   -DLOCAL_INCLUDE_DIR=\"$(local_includedir)\" \
+-  -DCROSS_INCLUDE_DIR=\"$(CROSS_SYSTEM_HEADER_DIR)\" \
+   -DTOOL_INCLUDE_DIR=\"$(gcc_tooldir)/include\" \
+   @TARGET_SYSTEM_ROOT_DEFINE@
+ 
+@@ -3548,10 +3547,14 @@
+ # Copy the compiler files into directories where they will be run.
+ # Install the driver last so that the window when things are
+ # broken is small.
+-install: install-common $(INSTALL_HEADERS) $(INSTALL_LIBGCC) \
++install: install-common install-backend $(INSTALL_HEADERS) $(INSTALL_LIBGCC) \
+     install-cpp install-man install-info install-@POSUB@ \
+     lang.install-normal install-driver
+ 
++install-backend:
++	$(INSTALL) -d $(DESTDIR)$(libdir)
++	$(INSTALL_DATA) libbackend.a $(DESTDIR)$(libdir)
++
+ # Handle cpp installation.
+ install-cpp: installdirs cpp$(exeext)
+ 	-rm -f $(DESTDIR)$(bindir)/$(CPP_INSTALL_NAME)$(exeext)
+@@ -3727,6 +3730,619 @@
+ 	    fi; \
+ 	  done; \
+ 	fi
++	for d in $(sort $(dir $(COMPILER_HEADERS))); do \
++		$(INSTALL) -d $(DESTDIR)$(includedir)/gcc/$$d; \
++	done ; \
++	$(INSTALL) -d $(DESTDIR)$(includedir)/gcc; \
++	files='$(COMPILER_HEADERS)'; \
++	for i in $$files; do \
++		$(INSTALL_DATA) $(srcdir)/$$i $(DESTDIR)$(includedir)/gcc/$$i; \
++	done; \
++	files='$(COMPILER_CONFIG)'; \
++	for c in $$files; do \
++		$(INSTALL_DATA) $$c $(DESTDIR)$(includedir)/gcc/$$c; \
++	done
++
++COMPILER_CONFIG = \
++  config.h \
++  insn-config.h \
++  insn-modes.h \
++  auto-host.h \
++  gtype-desc.h \
++  tree-check.h
++
++COMPILER_HEADERS = \
++  alias.h \
++  alloc-pool.h \
++  basic-block.h \
++  bitmap.h \
++  builtin-attrs.def \
++  builtin-types.def \
++  builtins.def \
++  c-common.def \
++  c-common.h \
++  c-format.h \
++  c-incpath.h \
++  c-objc-common.h \
++  c-pragma.h \
++  c-pretty-print.h \
++  c-tree.h \
++  cfghooks.h \
++  cfglayout.h \
++  cfgloop.h \
++  cgraph.h \
++  collect2.h \
++  conditions.h \
++  config/alpha/alpha-modes.def \
++  config/alpha/alpha-protos.h \
++  config/alpha/alpha.h \
++  config/alpha/elf.h \
++  config/alpha/freebsd.h \
++  config/alpha/gnu.h \
++  config/alpha/linux-elf.h \
++  config/alpha/linux-unwind.h \
++  config/alpha/linux.h \
++  config/alpha/netbsd.h \
++  config/alpha/openbsd.h \
++  config/alpha/osf.h \
++  config/alpha/osf5.h \
++  config/alpha/unicosmk.h \
++  config/alpha/va_list.h \
++  config/alpha/vms-unwind.h \
++  config/alpha/vms.h \
++  config/alpha/vms64.h \
++  config/alpha/xm-vms.h \
++  config/arc/arc-modes.def \
++  config/arc/arc-protos.h \
++  config/arc/arc.h \
++  config/arm/aof.h \
++  config/arm/aout.h \
++  config/arm/arm-cores.def \
++  config/arm/arm-modes.def \
++  config/arm/arm-protos.h \
++  config/arm/arm.h \
++  config/arm/bpabi.h \
++  config/arm/coff.h \
++  config/arm/ecos-elf.h \
++  config/arm/elf.h \
++  config/arm/freebsd.h \
++  config/arm/kaos-arm.h \
++  config/arm/kaos-strongarm.h \
++  config/arm/linux-eabi.h \
++  config/arm/linux-elf.h \
++  config/arm/linux-gas.h \
++  config/arm/mmintrin.h \
++  config/arm/netbsd-elf.h \
++  config/arm/netbsd.h \
++  config/arm/pe.h \
++  config/arm/rtems-elf.h \
++  config/arm/semi.h \
++  config/arm/semiaof.h \
++  config/arm/strongarm-coff.h \
++  config/arm/strongarm-elf.h \
++  config/arm/strongarm-pe.h \
++  config/arm/symbian.h \
++  config/arm/uclinux-elf.h \
++  config/arm/unknown-elf.h \
++  config/arm/unwind-arm.h \
++  config/arm/vxworks.h \
++  config/arm/wince-pe.h \
++  config/arm/xscale-coff.h \
++  config/arm/xscale-elf.h \
++  config/avr/avr-protos.h \
++  config/avr/avr.h \
++  config/avr/rtems.h \
++  config/bfin/bfin-modes.def \
++  config/bfin/bfin-protos.h \
++  config/bfin/bfin.h \
++  config/bfin/elf.h \
++  config/bfin/uclinux.h \
++  config/c4x/c4x-modes.def \
++  config/c4x/c4x-protos.h \
++  config/c4x/c4x.h \
++  config/c4x/rtems.h \
++  config/chorus.h \
++  config/cris/aout.h \
++  config/cris/cris-protos.h \
++  config/cris/cris.h \
++  config/cris/linux.h \
++  config/crx/crx-protos.h \
++  config/crx/crx.h \
++  config/darwin-protos.h \
++  config/darwin.h \
++  config/dbx.h \
++  config/dbxcoff.h \
++  config/dbxelf.h \
++  config/elfos.h \
++  config/fp-bit.h \
++  config/fr30/fr30-protos.h \
++  config/fr30/fr30.h \
++  config/freebsd-nthr.h \
++  config/freebsd-spec.h \
++  config/freebsd.h \
++  config/frv/frv-abi.h \
++  config/frv/frv-asm.h \
++  config/frv/frv-modes.def \
++  config/frv/frv-protos.h \
++  config/frv/frv.h \
++  config/frv/linux.h \
++  config/gnu.h \
++  config/gofast.h \
++  config/h8300/coff.h \
++  config/h8300/elf.h \
++  config/h8300/h8300-protos.h \
++  config/h8300/h8300.h \
++  config/h8300/rtems.h \
++  config/host-darwin.h \
++  config/i386/att.h \
++  config/i386/beos-elf.h \
++  config/i386/biarch64.h \
++  config/i386/bsd.h \
++  config/i386/crtdll.h \
++  config/i386/cygming.h \
++  config/i386/cygwin.h \
++  config/i386/darwin.h \
++  config/i386/djgpp.h \
++  config/i386/emmintrin.h \
++  config/i386/freebsd.h \
++  config/i386/freebsd64.h \
++  config/i386/gas.h \
++  config/i386/gmm_malloc.h \
++  config/i386/gnu.h \
++  config/i386/gstabs.h \
++  config/i386/i386-aout.h \
++  config/i386/i386-coff.h \
++  config/i386/i386-interix.h \
++  config/i386/i386-interix3.h \
++  config/i386/i386-modes.def \
++  config/i386/i386-protos.h \
++  config/i386/i386.h \
++  config/i386/i386elf.h \
++  config/i386/kaos-i386.h \
++  config/i386/kfreebsd-gnu.h \
++  config/i386/knetbsd-gnu.h \
++  config/i386/linux-unwind.h \
++  config/i386/linux.h \
++  config/i386/linux64.h \
++  config/i386/lynx.h \
++  config/i386/mach.h \
++  config/i386/mingw32.h \
++  config/i386/mm3dnow.h \
++  config/i386/mmintrin.h \
++  config/i386/netbsd-elf.h \
++  config/i386/netbsd.h \
++  config/i386/netbsd64.h \
++  config/i386/netware-libgcc.def \
++  config/i386/netware.h \
++  config/i386/nto.h \
++  config/i386/nwld.h \
++  config/i386/openbsd.h \
++  config/i386/openbsdelf.h \
++  config/i386/pmm_malloc.h \
++  config/i386/pmmintrin.h \
++  config/i386/ptx4-i.h \
++  config/i386/rtemself.h \
++  config/i386/sco5.h \
++  config/i386/sol2-10.h \
++  config/i386/sol2.h \
++  config/i386/sysv4-cpp.h \
++  config/i386/sysv4.h \
++  config/i386/sysv5.h \
++  config/i386/unix.h \
++  config/i386/uwin.h \
++  config/i386/vxworks.h \
++  config/i386/vxworksae.h \
++  config/i386/x86-64.h \
++  config/i386/xm-cygwin.h \
++  config/i386/xm-djgpp.h \
++  config/i386/xm-mingw32.h \
++  config/i386/xmmintrin.h \
++  config/ia64/elf.h \
++  config/ia64/freebsd.h \
++  config/ia64/hpux.h \
++  config/ia64/ia64-modes.def \
++  config/ia64/ia64-protos.h \
++  config/ia64/ia64.h \
++  config/ia64/ia64intrin.h \
++  config/ia64/linux-unwind.h \
++  config/ia64/linux.h \
++  config/ia64/sysv4.h \
++  config/ia64/unwind-ia64.h \
++  config/interix.h \
++  config/interix3.h \
++  config/iq2000/iq2000-protos.h \
++  config/iq2000/iq2000.h \
++  config/kaos.h \
++  config/kfreebsd-gnu.h \
++  config/knetbsd-gnu.h \
++  config/libgloss.h \
++  config/linux.h \
++  config/lynx.h \
++  config/m32c/m32c-modes.def \
++  config/m32c/m32c-protos.h \
++  config/m32c/m32c.h \
++  config/m32r/linux.h \
++  config/m32r/little.h \
++  config/m32r/m32r-protos.h \
++  config/m32r/m32r.h \
++  config/m68hc11/m68hc11-protos.h \
++  config/m68hc11/m68hc11.h \
++  config/m68hc11/m68hc12.h \
++  config/m68k/coff.h \
++  config/m68k/linux.h \
++  config/m68k/m68020-elf.h \
++  config/m68k/m68k-aout.h \
++  config/m68k/m68k-modes.def \
++  config/m68k/m68k-none.h \
++  config/m68k/m68k-protos.h \
++  config/m68k/m68k.h \
++  config/m68k/m68kelf.h \
++  config/m68k/m68kemb.h \
++  config/m68k/math-68881.h \
++  config/m68k/netbsd-elf.h \
++  config/m68k/openbsd.h \
++  config/m68k/rtemself.h \
++  config/m68k/uclinux.h \
++  config/mcore/mcore-elf.h \
++  config/mcore/mcore-pe.h \
++  config/mcore/mcore-protos.h \
++  config/mcore/mcore.h \
++  config/mips/dbxmdebug.h \
++  config/mips/elf.h \
++  config/mips/elforion.h \
++  config/mips/iris.h \
++  config/mips/iris5.h \
++  config/mips/iris6.h \
++  config/mips/linux-unwind.h \
++  config/mips/linux.h \
++  config/mips/linux64.h \
++  config/mips/mips-modes.def \
++  config/mips/mips-protos.h \
++  config/mips/mips.h \
++  config/mips/netbsd.h \
++  config/mips/openbsd.h \
++  config/mips/r3900.h \
++  config/mips/rtems.h \
++  config/mips/sdb.h \
++  config/mips/vr.h \
++  config/mips/vxworks.h \
++  config/mips/windiss.h \
++  config/mmix/mmix-modes.def \
++  config/mmix/mmix-protos.h \
++  config/mmix/mmix.h \
++  config/mn10300/linux.h \
++  config/mn10300/mn10300-protos.h \
++  config/mn10300/mn10300.h \
++  config/mt/mt-protos.h \
++  config/mt/mt.h \
++  config/netbsd-aout.h \
++  config/netbsd-elf.h \
++  config/netbsd.h \
++  config/openbsd-oldgas.h \
++  config/openbsd.h \
++  config/pa/elf.h \
++  config/pa/hpux-unwind.h \
++  config/pa/linux-unwind.h \
++  config/pa/pa-64.h \
++  config/pa/pa-hpux.h \
++  config/pa/pa-hpux10.h \
++  config/pa/pa-hpux1010.h \
++  config/pa/pa-hpux11.h \
++  config/pa/pa-hpux1111.h \
++  config/pa/pa-linux.h \
++  config/pa/pa-modes.def \
++  config/pa/pa-osf.h \
++  config/pa/pa-pro-end.h \
++  config/pa/pa-protos.h \
++  config/pa/pa.h \
++  config/pa/pa32-linux.h \
++  config/pa/pa32-regs.h \
++  config/pa/pa64-hpux.h \
++  config/pa/pa64-linux.h \
++  config/pa/pa64-regs.h \
++  config/pa/pa64-start.h \
++  config/pa/som.h \
++  config/pdp11/2bsd.h \
++  config/pdp11/pdp11-modes.def \
++  config/pdp11/pdp11-protos.h \
++  config/pdp11/pdp11.h \
++  config/ptx4.h \
++  config/rs6000/aix.h \
++  config/rs6000/aix41.h \
++  config/rs6000/aix43.h \
++  config/rs6000/aix51.h \
++  config/rs6000/aix52.h \
++  config/rs6000/altivec.h \
++  config/rs6000/beos.h \
++  config/rs6000/biarch64.h \
++  config/rs6000/darwin-asm.h \
++  config/rs6000/darwin-unwind.h \
++  config/rs6000/darwin.h \
++  config/rs6000/darwin7.h \
++  config/rs6000/darwin8.h \
++  config/rs6000/default64.h \
++  config/rs6000/e500-double.h \
++  config/rs6000/eabi.h \
++  config/rs6000/eabialtivec.h \
++  config/rs6000/eabisim.h \
++  config/rs6000/eabispe.h \
++  config/rs6000/freebsd.h \
++  config/rs6000/gnu.h \
++  config/rs6000/kaos-ppc.h \
++  config/rs6000/linux-unwind.h \
++  config/rs6000/linux.h \
++  config/rs6000/linux64.h \
++  config/rs6000/linuxaltivec.h \
++  config/rs6000/linuxspe.h \
++  config/rs6000/lynx.h \
++  config/rs6000/netbsd.h \
++  config/rs6000/ppc-asm.h \
++  config/rs6000/rs6000-modes.def \
++  config/rs6000/rs6000-protos.h \
++  config/rs6000/rs6000.h \
++  config/rs6000/rtems.h \
++  config/rs6000/secureplt.h \
++  config/rs6000/spe.h \
++  config/rs6000/sysv4.h \
++  config/rs6000/sysv4le.h \
++  config/rs6000/vxworks.h \
++  config/rs6000/vxworksae.h \
++  config/rs6000/windiss.h \
++  config/rs6000/xcoff.h \
++  config/rtems.h \
++  config/s390/fixdfdi.h \
++  config/s390/linux-unwind.h \
++  config/s390/linux.h \
++  config/s390/s390-modes.def \
++  config/s390/s390-protos.h \
++  config/s390/s390.h \
++  config/s390/s390x.h \
++  config/s390/tpf-unwind.h \
++  config/s390/tpf.h \
++  config/sh/coff.h \
++  config/sh/elf.h \
++  config/sh/embed-elf.h \
++  config/sh/kaos-sh.h \
++  config/sh/linux-unwind.h \
++  config/sh/linux.h \
++  config/sh/little.h \
++  config/sh/netbsd-elf.h \
++  config/sh/newlib.h \
++  config/sh/rtems.h \
++  config/sh/rtemself.h \
++  config/sh/sh-modes.def \
++  config/sh/sh-protos.h \
++  config/sh/sh.h \
++  config/sh/sh64.h \
++  config/sh/shmedia.h \
++  config/sh/sshmedia.h \
++  config/sh/superh.h \
++  config/sh/superh64.h \
++  config/sh/symbian-post.h \
++  config/sh/symbian-pre.h \
++  config/sh/ushmedia.h \
++  config/sh/vxworks.h \
++  config/sol2-protos.h \
++  config/sol2.h \
++  config/sol26.h \
++  config/sparc/biarch64.h \
++  config/sparc/freebsd.h \
++  config/sparc/linux-unwind.h \
++  config/sparc/linux.h \
++  config/sparc/linux64.h \
++  config/sparc/netbsd-elf.h \
++  config/sparc/openbsd1-64.h \
++  config/sparc/openbsd64.h \
++  config/sparc/rtemself.h \
++  config/sparc/sol2-64.h \
++  config/sparc/sol2-bi.h \
++  config/sparc/sol2-gas-bi.h \
++  config/sparc/sol2-gas.h \
++  config/sparc/sol2-gld-bi.h \
++  config/sparc/sol2-gld.h \
++  config/sparc/sol2.h \
++  config/sparc/sol26-sld.h \
++  config/sparc/sp-elf.h \
++  config/sparc/sp64-elf.h \
++  config/sparc/sparc-modes.def \
++  config/sparc/sparc-protos.h \
++  config/sparc/sparc.h \
++  config/sparc/sysv4-only.h \
++  config/sparc/sysv4.h \
++  config/stormy16/stormy16-protos.h \
++  config/stormy16/stormy16.h \
++  config/svr3.h \
++  config/svr4.h \
++  config/tm-dwarf2.h \
++  config/usegas.h \
++  config/v850/v850-protos.h \
++  config/v850/v850.h \
++  config/vax/bsd.h \
++  config/vax/elf.h \
++  config/vax/netbsd-elf.h \
++  config/vax/netbsd.h \
++  config/vax/openbsd.h \
++  config/vax/openbsd1.h \
++  config/vax/ultrix.h \
++  config/vax/vax-modes.def \
++  config/vax/vax-protos.h \
++  config/vax/vax.h \
++  config/vax/vaxv.h \
++  config/vx-common.h \
++  config/vxworks.h \
++  config/vxworksae.h \
++  config/windiss.h \
++  config/xtensa/elf.h \
++  config/xtensa/linux.h \
++  config/xtensa/xtensa-protos.h \
++  config/xtensa/xtensa.h \
++  convert.h \
++  coretypes.h \
++  coverage.h \
++  cp/cfns.h \
++  cp/cp-objcp-common.h \
++  cp/cp-tree.def \
++  cp/cp-tree.h \
++  cp/cxx-pretty-print.h \
++  cp/decl.h \
++  cp/lang-specs.h \
++  cp/name-lookup.h \
++  cp/operators.def \
++  cppdefault.h \
++  cselib.h \
++  dbxout.h \
++  ddg.h \
++  debug.h \
++  defaults.h \
++  df.h \
++  diagnostic.def \
++  diagnostic.h \
++  domwalk.h \
++  dwarf.h \
++  dwarf2.h \
++  dwarf2asm.h \
++  dwarf2out.h \
++  emit-rtl.h \
++  errors.h \
++  et-forest.h \
++  except.h \
++  expr.h \
++  flags.h \
++  function.h \
++  gbl-ctors.h \
++  gcc.h \
++  gcov-io.h \
++  genattrtab.h \
++  gengtype-yacc.h \
++  gengtype.h \
++  gensupport.h \
++  ggc.h \
++  ginclude/float.h \
++  ginclude/iso646.h \
++  ginclude/stdarg.h \
++  ginclude/stdbool.h \
++  ginclude/stddef.h \
++  ginclude/varargs.h \
++  glimits.h \
++  graph.h \
++  gstab.h \
++  gsyms.h \
++  gsyslimits.h \
++  gthr-aix.h \
++  gthr-dce.h \
++  gthr-gnat.h \
++  gthr-lynx.h \
++  gthr-nks.h \
++  gthr-posix.h \
++  gthr-posix95.h \
++  gthr-rtems.h \
++  gthr-single.h \
++  gthr-solaris.h \
++  gthr-tpf.h \
++  gthr-vxworks.h \
++  gthr-win32.h \
++  gthr.h \
++  hard-reg-set.h \
++  hooks.h \
++  hosthooks-def.h \
++  hosthooks.h \
++  hwint.h \
++  input.h \
++  insn-addr.h \
++  insn-notes.def \
++  integrate.h \
++  intl.h \
++  ipa-prop.h \
++  ipa-reference.h \
++  ipa-type-escape.h \
++  ipa-utils.h \
++  lambda.h \
++  langhooks-def.h \
++  langhooks.h \
++  libfuncs.h \
++  libgcc2.h \
++  limitx.h \
++  limity.h \
++  longlong.h \
++  machmode.def \
++  machmode.h \
++  mode-classes.def \
++  objcp/lang-specs.h \
++  objcp/objcp-decl.h \
++  optabs.h \
++  opts.h \
++  output.h \
++  params.def \
++  params.h \
++  pointer-set.h \
++  predict.def \
++  predict.h \
++  prefix.h \
++  pretty-print.h \
++  real.h \
++  recog.h \
++  reg-notes.def \
++  regs.h \
++  reload.h \
++  resource.h \
++  rtl.def \
++  rtl.h \
++  rtlhooks-def.h \
++  sbitmap.h \
++  scan.h \
++  sched-int.h \
++  sdbout.h \
++  sreal.h \
++  stab.def \
++  statistics.h \
++  sys-protos.h \
++  sys-types.h \
++  system.h \
++  target-def.h \
++  target.h \
++  targhooks.h \
++  timevar.def \
++  timevar.h \
++  toplev.h \
++  tree-browser.def \
++  tree-chrec.h \
++  tree-data-ref.h \
++  tree-dump.h \
++  tree-flow-inline.h \
++  tree-flow.h \
++  tree-gimple.h \
++  tree-inline.h \
++  tree-iterator.h \
++  tree-mudflap.h \
++  tree-pass.h \
++  tree-scalar-evolution.h \
++  tree-ssa-live.h \
++  tree-ssa-operands.h \
++  tree-ssa-opfinalize.h \
++  tree-ssa-propagate.h \
++  tree-ssa-structalias.h \
++  tree-stdarg.h \
++  tree-vectorizer.h \
++  tree.def \
++  tree.h \
++  treelang/lang-specs.h \
++  treelang/treelang.h \
++  treelang/treetree.h \
++  treestruct.def \
++  tsystem.h \
++  typeclass.h \
++  unwind-compat.h \
++  unwind-dw2-fde.h \
++  unwind-dw2.h \
++  unwind-generic.h \
++  unwind-pe.h \
++  value-prof.h \
++  varray.h \
++  vec.h \
++  version.h \
++  vmsdbg.h \
++  xcoff.h \
++  xcoffout.h
+ 
+ # Create or recreate the gcc private include file directory.
+ install-include-dir: installdirs
+diff -ru gcc-4.1.2_orig/gcc/config/host-linux.c gcc-4.1.2/gcc/config/host-linux.c
+--- gcc-4.1.2_orig/gcc/config/host-linux.c	1970-01-01 00:00:00.000000000 +0000
++++ gcc-4.1.2/gcc/config/host-linux.c	1970-01-01 00:00:00.000000000 +0000
+@@ -65,6 +65,10 @@
+ #undef HOST_HOOKS_GT_PCH_USE_ADDRESS
+ #define HOST_HOOKS_GT_PCH_USE_ADDRESS linux_gt_pch_use_address
+ 
++#ifndef SSIZE_MAX
++#define SSIZE_MAX 2147483647
++#endif //ndef SSIZE_MAX
++
+ /* For various ports, try to guess a fixed spot in the vm space
+    that's probably free.  */
+ #if defined(__alpha)
+diff -ru gcc-4.1.2_orig/gcc/config/i386/mingw32.h gcc-4.1.2/gcc/config/i386/mingw32.h
+--- gcc-4.1.2_orig/gcc/config/i386/mingw32.h	1970-01-01 00:00:00.000000000 +0000
++++ gcc-4.1.2/gcc/config/i386/mingw32.h	1970-01-01 00:00:00.000000000 +0000
+@@ -38,7 +38,7 @@
+ /* Override the standard choice of /usr/include as the default prefix
+    to try when searching for header files.  */
+ #undef STANDARD_INCLUDE_DIR
+-#define STANDARD_INCLUDE_DIR "/mingw/include"
++#define STANDARD_INCLUDE_DIR "/Dev-Cpp/include"
+ #undef STANDARD_INCLUDE_COMPONENT
+ #define STANDARD_INCLUDE_COMPONENT "MINGW"
+ 
+@@ -71,7 +71,7 @@
+ 
+ /* Override startfile prefix defaults.  */
+ #ifndef STANDARD_STARTFILE_PREFIX_1
+-#define STANDARD_STARTFILE_PREFIX_1 "/mingw/lib/"
++#define STANDARD_STARTFILE_PREFIX_1 "/Dev-Cpp/lib/"
+ #endif
+ #ifndef STANDARD_STARTFILE_PREFIX_2
+ #define STANDARD_STARTFILE_PREFIX_2 ""
+diff -ru gcc-4.1.2_orig/gcc/config/i386/t-mingw32 gcc-4.1.2/gcc/config/i386/t-mingw32
+--- gcc-4.1.2_orig/gcc/config/i386/t-mingw32	1970-01-01 00:00:00.000000000 +0000
++++ gcc-4.1.2/gcc/config/i386/t-mingw32	1970-01-01 00:00:00.000000000 +0000
+@@ -2,4 +2,4 @@
+ LIB2FUNCS_EXTRA = $(srcdir)/config/i386/gthr-win32.c
+ 
+ # Match SYSTEM_INCLUDE_DIR
+-NATIVE_SYSTEM_HEADER_DIR = /mingw/include
++NATIVE_SYSTEM_HEADER_DIR = /Dev-Cpp/include
+diff -ru gcc-4.1.2_orig/gcc/cp/Make-lang.in gcc-4.1.2/gcc/cp/Make-lang.in
+--- gcc-4.1.2_orig/gcc/cp/Make-lang.in	1970-01-01 00:00:00.000000000 +0000
++++ gcc-4.1.2/gcc/cp/Make-lang.in	1970-01-01 00:00:00.000000000 +0000
+@@ -48,7 +48,7 @@
+ # Note that it would be nice to move the dependency on g++
+ # into the C++ rule, but that needs a little bit of work
+ # to do the right thing within all.cross.
+-C++ c++: cc1plus$(exeext)
++C++ c++: cc1plus$(exeext) libcc1plus.a
+ 
+ # Tell GNU make to ignore these if they exist.
+ .PHONY: C++ c++
+@@ -88,6 +88,9 @@
+ # Language-specific object files for C++.
+ CXX_OBJS = cp/cp-lang.o stub-objc.o $(CXX_AND_OBJCXX_OBJS)
+ 
++libcc1plus.a: $(CXX_OBJS) $(OBJS-common)
++	$(AR) cr $@ $^
++
+ # Use strict warnings for this front end.
+ cp-warn = $(STRICT_WARN)
+ 
+@@ -176,6 +179,8 @@
+ 	      $(LN) $(CXX_INSTALL_NAME)$(exeext) $(CXX_TARGET_INSTALL_NAME)$(exeext) ); \
+ 	  fi ; \
+ 	fi
++	$(INSTALL) -d $(DESTDIR)$(libdir)
++	$(INSTALL_DATA) libcc1plus.a $(DESTDIR)$(libdir)
+ 
+ # We can't use links because not everyone supports them, and we can't use
+ # .so because Irix 6.5 doesn't support them.  So just copy the manpage.
+diff -ru gcc-4.1.2_orig/gcc/cp/pt.c gcc-4.1.2/gcc/cp/pt.c
+--- gcc-4.1.2_orig/gcc/cp/pt.c	1970-01-01 00:00:00.000000000 +0000
++++ gcc-4.1.2/gcc/cp/pt.c	1970-01-01 00:00:00.000000000 +0000
+@@ -45,6 +45,7 @@
+ #include "rtl.h"
+ #include "timevar.h"
+ #include "tree-iterator.h"
++#include <assert.h>
+ 
+ /* The type of functions taking a tree, and some additional data, and
+    returning an int.  */
+@@ -10758,6 +10759,10 @@
+   int better1 = 0;
+   int better2 = 0;
+   
++  /* If only one is a member function, they are unordered.  */
++  if (DECL_FUNCTION_MEMBER_P (decl1) != DECL_FUNCTION_MEMBER_P (decl2))
++    return 0;
++    
+   /* Remove the this parameter from non-static member functions.  If
+      one is a non-static member function and the other is not a static
+      member function, remove the first parameter from that function
+@@ -10797,6 +10802,13 @@
+ 
+   while (len--)
+     {
++      if(!args1 && !args2)
++      {
++        warning(0, "template parameter shortage in %q#T and %q#T", pat1, pat2);
++        break;
++      }      
++      assert(args1 && args2);
++
+       tree arg1 = TREE_VALUE (args1);
+       tree arg2 = TREE_VALUE (args2);
+       int deduce1, deduce2;
+diff -ru gcc-4.1.2_orig/include/libiberty.h gcc-4.1.2/include/libiberty.h
+--- gcc-4.1.2_orig/include/libiberty.h	1970-01-01 00:00:00.000000000 +0000
++++ gcc-4.1.2/include/libiberty.h	1970-01-01 00:00:00.000000000 +0000
+@@ -181,7 +181,7 @@
+ /* Get the current time.  */
+ /* Prototypes vary from system to system, so we only provide a
+    prototype on systems where we know that we need it.  */
+-#ifdef __MINGW32__
++#if 0
+ /* Forward declaration to avoid #include <sys/time.h>.   */
+ struct timeval;
+ extern int gettimeofday (struct timeval *, void *); 
+diff -ru gcc-4.1.2_orig/libcpp/Makefile.in gcc-4.1.2/libcpp/Makefile.in
+--- gcc-4.1.2_orig/libcpp/Makefile.in	1970-01-01 00:00:00.000000000 +0000
++++ gcc-4.1.2/libcpp/Makefile.in	1970-01-01 00:00:00.000000000 +0000
+@@ -57,6 +57,7 @@
+ datadir = @datadir@
+ exec_prefix = @prefix@
+ libdir = @libdir@
++includedir = @includedir@
+ localedir = $(datadir)/locale
+ prefix = @prefix@
+ 
+@@ -158,8 +159,20 @@
+ 	  dir=$(localedir)/$$lang/LC_MESSAGES; \
+ 	  echo $(INSTALL_DATA) $$cat $(DESTDIR)$$dir/$(PACKAGE).mo; \
+ 	  $(INSTALL_DATA) $$cat $(DESTDIR)$$dir/$(PACKAGE).mo; \
++	done; \
++	$(INSTALL) -d $(DESTDIR)$(libdir); \
++	$(INSTALL_DATA) libcpp.a $(DESTDIR)$(libdir); \
++	$(INSTALL) -d $(DESTDIR)$(includedir)/gcc; \
++	files='$(CPPLIB_HEADERS)'; \
++	for i in $$files; do \
++		$(INSTALL_DATA) $(srcdir)/$$i $(DESTDIR)$(includedir)/gcc/; \
+ 	done
+ 
++CPPLIB_HEADERS = \
++	include/cpplib.h \
++	include/line-map.h \
++	include/symtab.h
++
+ mostlyclean:
+ 	-rm -f *.o
+ 
+diff -ru gcc-4.1.2_orig/libiberty/configure gcc-4.1.2/libiberty/configure
+--- gcc-4.1.2_orig/libiberty/configure	1970-01-01 00:00:00.000000000 +0000
++++ gcc-4.1.2/libiberty/configure	1970-01-01 00:00:00.000000000 +0000
+@@ -4970,7 +4970,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -5828,7 +5828,7 @@
+ else
+   ac_func_search_save_LIBS=$LIBS
+ ac_cv_search_strerror=no
+-if test x$gcc_no_link = xyes; then
++if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -5887,7 +5887,7 @@
+ if test "$ac_cv_search_strerror" = no; then
+   for ac_lib in cposix; do
+     LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
+-    if test x$gcc_no_link = xyes; then
++    if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -5964,7 +5964,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -6102,7 +6102,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -6323,7 +6323,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -6668,7 +6668,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -6779,7 +6779,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -6878,7 +6878,7 @@
+     if eval "test \"\${libiberty_cv_var_$v+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -7009,7 +7009,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -8090,7 +8090,7 @@
+ esac
+ 
+ 
+-if test x$gcc_no_link = xyes; then
++if false; then
+   if test "x${ac_cv_func_mmap_fixed_mapped+set}" != xset; then
+     ac_cv_func_mmap_fixed_mapped=no
+   fi
+@@ -8160,7 +8160,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+diff -ru gcc-4.1.2_orig/libiberty/gettimeofday.c gcc-4.1.2/libiberty/gettimeofday.c
+--- gcc-4.1.2_orig/libiberty/gettimeofday.c	1970-01-01 00:00:00.000000000 +0000
++++ gcc-4.1.2/libiberty/gettimeofday.c	1970-01-01 00:00:00.000000000 +0000
+@@ -17,7 +17,7 @@
+ @end deftypefn
+ 
+ */ 
+-
++#if 0
+ int
+ gettimeofday (struct timeval *tp, void *tz)
+ {
+@@ -28,3 +28,4 @@
+     return -1;
+   return 0;
+ }
++#endif
+diff -ru gcc-4.1.2_orig/libstdc++-v3/configure gcc-4.1.2/libstdc++-v3/configure
+--- gcc-4.1.2_orig/libstdc++-v3/configure	1970-01-01 00:00:00.000000000 +0000
++++ gcc-4.1.2/libstdc++-v3/configure	1970-01-01 00:00:00.000000000 +0000
+@@ -4576,7 +4576,7 @@
+ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ ac_compiler_gnu=$ac_cv_c_compiler_gnu
+ 
+-     if test x$gcc_no_link = xyes; then
++     if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -6163,7 +6163,7 @@
+ else
+   ac_func_search_save_LIBS=$LIBS
+ ac_cv_search_gettext=no
+-if test x$gcc_no_link = xyes; then
++if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -6223,7 +6223,7 @@
+ if test "$ac_cv_search_gettext" = no; then
+   for ac_lib in intl; do
+     LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
+-    if test x$gcc_no_link = xyes; then
++    if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -8394,7 +8394,7 @@
+ else
+   ac_check_lib_save_LIBS=$LIBS
+ LIBS="-lm  $LIBS"
+-if test x$gcc_no_link = xyes; then
++if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -8552,7 +8552,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -8739,7 +8739,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -8932,7 +8932,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -9119,7 +9119,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -9312,7 +9312,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -9499,7 +9499,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -9688,7 +9688,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -9871,7 +9871,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -10060,7 +10060,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -10243,7 +10243,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -10436,7 +10436,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -10623,7 +10623,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -10816,7 +10816,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -11003,7 +11003,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -11192,7 +11192,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -11375,7 +11375,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -11568,7 +11568,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -11754,7 +11754,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -11948,7 +11948,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -12127,7 +12127,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -12322,7 +12322,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -12509,7 +12509,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -12702,7 +12702,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -12889,7 +12889,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -13082,7 +13082,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -13269,7 +13269,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -13458,7 +13458,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -13641,7 +13641,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -13834,7 +13834,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -14021,7 +14021,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -14210,7 +14210,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -14393,7 +14393,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -14582,7 +14582,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -14765,7 +14765,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -14954,7 +14954,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -15137,7 +15137,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -15326,7 +15326,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -15509,7 +15509,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -15702,7 +15702,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -15889,7 +15889,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -16082,7 +16082,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -16269,7 +16269,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -16458,7 +16458,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -16641,7 +16641,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -16830,7 +16830,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -17013,7 +17013,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -17202,7 +17202,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -17385,7 +17385,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -17578,7 +17578,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -17765,7 +17765,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -17954,7 +17954,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -18137,7 +18137,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -18330,7 +18330,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -18517,7 +18517,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -18710,7 +18710,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -18896,7 +18896,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -19090,7 +19090,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -19269,7 +19269,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -19464,7 +19464,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -19651,7 +19651,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -19844,7 +19844,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -20031,7 +20031,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -20220,7 +20220,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -20403,7 +20403,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -20592,7 +20592,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -20775,7 +20775,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -20968,7 +20968,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -21155,7 +21155,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -21348,7 +21348,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -21535,7 +21535,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -21724,7 +21724,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -21907,7 +21907,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -22096,7 +22096,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -22279,7 +22279,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -22468,7 +22468,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -22651,7 +22651,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -22840,7 +22840,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -23023,7 +23023,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -23216,7 +23216,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -23403,7 +23403,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -23596,7 +23596,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -23783,7 +23783,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -23972,7 +23972,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -24155,7 +24155,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -24344,7 +24344,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -24527,7 +24527,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -24720,7 +24720,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -24907,7 +24907,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -25096,7 +25096,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -25279,7 +25279,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -25472,7 +25472,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -25659,7 +25659,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -25849,7 +25849,7 @@
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+ 
+-        if test x$gcc_no_link = xyes; then
++        if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -25998,7 +25998,7 @@
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+ 
+-        if test x$gcc_no_link = xyes; then
++        if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -26147,7 +26147,7 @@
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+ 
+-        if test x$gcc_no_link = xyes; then
++        if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -26296,7 +26296,7 @@
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+ 
+-        if test x$gcc_no_link = xyes; then
++        if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -26445,7 +26445,7 @@
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+ 
+-        if test x$gcc_no_link = xyes; then
++        if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -26595,7 +26595,7 @@
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+ 
+-        if test x$gcc_no_link = xyes; then
++        if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -26744,7 +26744,7 @@
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+ 
+-        if test x$gcc_no_link = xyes; then
++        if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -26893,7 +26893,7 @@
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+ 
+-        if test x$gcc_no_link = xyes; then
++        if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -27043,7 +27043,7 @@
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+ 
+-        if test x$gcc_no_link = xyes; then
++        if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -27192,7 +27192,7 @@
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+ 
+-        if test x$gcc_no_link = xyes; then
++        if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -27341,7 +27341,7 @@
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+ 
+-        if test x$gcc_no_link = xyes; then
++        if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -27491,7 +27491,7 @@
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+ 
+-        if test x$gcc_no_link = xyes; then
++        if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -27640,7 +27640,7 @@
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+ 
+-        if test x$gcc_no_link = xyes; then
++        if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -27789,7 +27789,7 @@
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+ 
+-        if test x$gcc_no_link = xyes; then
++        if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -27867,7 +27867,7 @@
+ else
+   ac_check_lib_save_LIBS=$LIBS
+ LIBS="-lm  $LIBS"
+-if test x$gcc_no_link = xyes; then
++if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -27941,7 +27941,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -28051,7 +28051,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -28161,7 +28161,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -28272,7 +28272,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -28685,7 +28685,7 @@
+ else
+   ac_check_lib_save_LIBS=$LIBS
+ LIBS="-liconv  $LIBS"
+-if test x$gcc_no_link = xyes; then
++if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -28767,7 +28767,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -28975,7 +28975,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -29161,7 +29161,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -29427,7 +29427,7 @@
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+ 
+-    if test x$gcc_no_link = xyes; then
++    if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -29500,7 +29500,7 @@
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+ 
+-    if test x$gcc_no_link = xyes; then
++    if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -29560,7 +29560,7 @@
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+ 
+-    if test x$gcc_no_link = xyes; then
++    if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -29794,7 +29794,7 @@
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+ 
+-    if test x$gcc_no_link = xyes; then
++    if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -29945,7 +29945,7 @@
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+ 
+-    if test x$gcc_no_link = xyes; then
++    if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -30300,7 +30300,7 @@
+ if test "${ac_cv_val_LC_MESSAGES+set}" = set; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -30419,7 +30419,7 @@
+ fi
+ rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
+ 
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   if test "x${ac_cv_func_mmap_fixed_mapped+set}" != xset; then
+     ac_cv_func_mmap_fixed_mapped=no
+   fi
+@@ -30585,7 +30585,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -31299,7 +31299,7 @@
+ else
+   ac_check_lib_save_LIBS=$LIBS
+ LIBS="-lm  $LIBS"
+-if test x$gcc_no_link = xyes; then
++if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -31457,7 +31457,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -31644,7 +31644,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -31837,7 +31837,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -32024,7 +32024,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -32217,7 +32217,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -32404,7 +32404,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -32593,7 +32593,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -32776,7 +32776,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -32965,7 +32965,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -33148,7 +33148,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -33341,7 +33341,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -33528,7 +33528,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -33721,7 +33721,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -33908,7 +33908,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -34097,7 +34097,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -34280,7 +34280,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -34473,7 +34473,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -34659,7 +34659,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -34853,7 +34853,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -35032,7 +35032,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -35227,7 +35227,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -35414,7 +35414,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -35607,7 +35607,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -35794,7 +35794,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -35987,7 +35987,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -36174,7 +36174,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -36363,7 +36363,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -36546,7 +36546,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -36739,7 +36739,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -36926,7 +36926,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -37115,7 +37115,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -37298,7 +37298,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -37487,7 +37487,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -37670,7 +37670,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -37859,7 +37859,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -38042,7 +38042,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -38231,7 +38231,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -38414,7 +38414,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -38607,7 +38607,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -38794,7 +38794,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -38987,7 +38987,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -39174,7 +39174,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -39363,7 +39363,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -39546,7 +39546,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -39735,7 +39735,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -39918,7 +39918,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -40107,7 +40107,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -40290,7 +40290,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -40483,7 +40483,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -40670,7 +40670,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -40859,7 +40859,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -41042,7 +41042,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -41235,7 +41235,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -41422,7 +41422,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -41615,7 +41615,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -41801,7 +41801,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -41995,7 +41995,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -42174,7 +42174,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -42369,7 +42369,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -42556,7 +42556,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -42749,7 +42749,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -42936,7 +42936,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -43125,7 +43125,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -43308,7 +43308,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -43497,7 +43497,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -43680,7 +43680,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -43873,7 +43873,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -44060,7 +44060,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -44253,7 +44253,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -44440,7 +44440,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -44629,7 +44629,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -44812,7 +44812,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -45001,7 +45001,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -45184,7 +45184,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -45373,7 +45373,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -45556,7 +45556,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -45745,7 +45745,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -45928,7 +45928,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -46121,7 +46121,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -46308,7 +46308,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -46501,7 +46501,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -46688,7 +46688,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -46877,7 +46877,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -47060,7 +47060,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -47249,7 +47249,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -47432,7 +47432,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -47625,7 +47625,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -47812,7 +47812,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -48001,7 +48001,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -48184,7 +48184,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -48377,7 +48377,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -48564,7 +48564,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -48754,7 +48754,7 @@
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+ 
+-        if test x$gcc_no_link = xyes; then
++        if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -48903,7 +48903,7 @@
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+ 
+-        if test x$gcc_no_link = xyes; then
++        if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -49052,7 +49052,7 @@
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+ 
+-        if test x$gcc_no_link = xyes; then
++        if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -49201,7 +49201,7 @@
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+ 
+-        if test x$gcc_no_link = xyes; then
++        if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -49350,7 +49350,7 @@
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+ 
+-        if test x$gcc_no_link = xyes; then
++        if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -49500,7 +49500,7 @@
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+ 
+-        if test x$gcc_no_link = xyes; then
++        if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -49649,7 +49649,7 @@
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+ 
+-        if test x$gcc_no_link = xyes; then
++        if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -49798,7 +49798,7 @@
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+ 
+-        if test x$gcc_no_link = xyes; then
++        if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -49948,7 +49948,7 @@
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+ 
+-        if test x$gcc_no_link = xyes; then
++        if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -50097,7 +50097,7 @@
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+ 
+-        if test x$gcc_no_link = xyes; then
++        if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -50246,7 +50246,7 @@
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+ 
+-        if test x$gcc_no_link = xyes; then
++        if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -50396,7 +50396,7 @@
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+ 
+-        if test x$gcc_no_link = xyes; then
++        if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -50545,7 +50545,7 @@
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+ 
+-        if test x$gcc_no_link = xyes; then
++        if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -50694,7 +50694,7 @@
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+ 
+-        if test x$gcc_no_link = xyes; then
++        if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -50772,7 +50772,7 @@
+ else
+   ac_check_lib_save_LIBS=$LIBS
+ LIBS="-lm  $LIBS"
+-if test x$gcc_no_link = xyes; then
++if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -50846,7 +50846,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -50956,7 +50956,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -51066,7 +51066,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -51177,7 +51177,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -51590,7 +51590,7 @@
+ else
+   ac_check_lib_save_LIBS=$LIBS
+ LIBS="-liconv  $LIBS"
+-if test x$gcc_no_link = xyes; then
++if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -51672,7 +51672,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -51880,7 +51880,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -52066,7 +52066,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -52332,7 +52332,7 @@
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+ 
+-    if test x$gcc_no_link = xyes; then
++    if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -52405,7 +52405,7 @@
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+ 
+-    if test x$gcc_no_link = xyes; then
++    if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -52465,7 +52465,7 @@
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+ 
+-    if test x$gcc_no_link = xyes; then
++    if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -52699,7 +52699,7 @@
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+ 
+-    if test x$gcc_no_link = xyes; then
++    if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -53235,7 +53235,7 @@
+ else
+   ac_check_lib_save_LIBS=$LIBS
+ LIBS="-lm  $LIBS"
+-if test x$gcc_no_link = xyes; then
++if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -53393,7 +53393,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -53580,7 +53580,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -53773,7 +53773,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -53960,7 +53960,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -54153,7 +54153,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -54340,7 +54340,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -54529,7 +54529,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -54712,7 +54712,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -54901,7 +54901,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -55084,7 +55084,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -55277,7 +55277,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -55464,7 +55464,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -55657,7 +55657,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -55844,7 +55844,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -56033,7 +56033,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -56216,7 +56216,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -56409,7 +56409,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -56595,7 +56595,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -56789,7 +56789,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -56968,7 +56968,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -57163,7 +57163,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -57350,7 +57350,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -57543,7 +57543,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -57730,7 +57730,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -57923,7 +57923,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -58110,7 +58110,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -58299,7 +58299,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -58482,7 +58482,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -58675,7 +58675,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -58862,7 +58862,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -59051,7 +59051,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -59234,7 +59234,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -59423,7 +59423,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -59606,7 +59606,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -59795,7 +59795,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -59978,7 +59978,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -60167,7 +60167,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -60350,7 +60350,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -60543,7 +60543,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -60730,7 +60730,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -60923,7 +60923,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -61110,7 +61110,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -61299,7 +61299,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -61482,7 +61482,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -61671,7 +61671,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -61854,7 +61854,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -62043,7 +62043,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -62226,7 +62226,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -62419,7 +62419,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -62606,7 +62606,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -62795,7 +62795,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -62978,7 +62978,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -63171,7 +63171,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -63358,7 +63358,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -63551,7 +63551,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -63737,7 +63737,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -63931,7 +63931,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -64110,7 +64110,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -64305,7 +64305,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -64492,7 +64492,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -64685,7 +64685,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -64872,7 +64872,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -65061,7 +65061,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -65244,7 +65244,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -65433,7 +65433,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -65616,7 +65616,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -65809,7 +65809,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -65996,7 +65996,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -66189,7 +66189,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -66376,7 +66376,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -66565,7 +66565,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -66748,7 +66748,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -66937,7 +66937,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -67120,7 +67120,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -67309,7 +67309,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -67492,7 +67492,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -67681,7 +67681,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -67864,7 +67864,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -68057,7 +68057,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -68244,7 +68244,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -68437,7 +68437,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -68624,7 +68624,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -68813,7 +68813,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -68996,7 +68996,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -69185,7 +69185,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -69368,7 +69368,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -69561,7 +69561,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -69748,7 +69748,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -69937,7 +69937,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -70120,7 +70120,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -70313,7 +70313,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -70500,7 +70500,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -70690,7 +70690,7 @@
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+ 
+-        if test x$gcc_no_link = xyes; then
++        if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -70839,7 +70839,7 @@
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+ 
+-        if test x$gcc_no_link = xyes; then
++        if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -70988,7 +70988,7 @@
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+ 
+-        if test x$gcc_no_link = xyes; then
++        if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -71137,7 +71137,7 @@
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+ 
+-        if test x$gcc_no_link = xyes; then
++        if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -71286,7 +71286,7 @@
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+ 
+-        if test x$gcc_no_link = xyes; then
++        if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -71436,7 +71436,7 @@
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+ 
+-        if test x$gcc_no_link = xyes; then
++        if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -71585,7 +71585,7 @@
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+ 
+-        if test x$gcc_no_link = xyes; then
++        if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -71734,7 +71734,7 @@
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+ 
+-        if test x$gcc_no_link = xyes; then
++        if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -71884,7 +71884,7 @@
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+ 
+-        if test x$gcc_no_link = xyes; then
++        if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -72033,7 +72033,7 @@
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+ 
+-        if test x$gcc_no_link = xyes; then
++        if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -72182,7 +72182,7 @@
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+ 
+-        if test x$gcc_no_link = xyes; then
++        if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -72332,7 +72332,7 @@
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+ 
+-        if test x$gcc_no_link = xyes; then
++        if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -72481,7 +72481,7 @@
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+ 
+-        if test x$gcc_no_link = xyes; then
++        if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -72630,7 +72630,7 @@
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+ 
+-        if test x$gcc_no_link = xyes; then
++        if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -72708,7 +72708,7 @@
+ else
+   ac_check_lib_save_LIBS=$LIBS
+ LIBS="-lm  $LIBS"
+-if test x$gcc_no_link = xyes; then
++if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -72782,7 +72782,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -72892,7 +72892,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -73002,7 +73002,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -73113,7 +73113,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -73526,7 +73526,7 @@
+ else
+   ac_check_lib_save_LIBS=$LIBS
+ LIBS="-liconv  $LIBS"
+-if test x$gcc_no_link = xyes; then
++if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -73608,7 +73608,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -73816,7 +73816,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -74002,7 +74002,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -74115,7 +74115,7 @@
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+ 
+-    if test x$gcc_no_link = xyes; then
++    if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -74175,7 +74175,7 @@
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+ 
+-    if test x$gcc_no_link = xyes; then
++    if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -74566,7 +74566,7 @@
+ else
+   ac_check_lib_save_LIBS=$LIBS
+ LIBS="-lm  $LIBS"
+-if test x$gcc_no_link = xyes; then
++if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -74640,7 +74640,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -74750,7 +74750,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -74860,7 +74860,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -74971,7 +74971,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -75384,7 +75384,7 @@
+ else
+   ac_check_lib_save_LIBS=$LIBS
+ LIBS="-liconv  $LIBS"
+-if test x$gcc_no_link = xyes; then
++if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -75466,7 +75466,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -76063,7 +76063,7 @@
+ else
+   ac_check_lib_save_LIBS=$LIBS
+ LIBS="-lm  $LIBS"
+-if test x$gcc_no_link = xyes; then
++if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -76137,7 +76137,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -76247,7 +76247,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -76357,7 +76357,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -76468,7 +76468,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -76881,7 +76881,7 @@
+ else
+   ac_check_lib_save_LIBS=$LIBS
+ LIBS="-liconv  $LIBS"
+-if test x$gcc_no_link = xyes; then
++if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -76963,7 +76963,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -77436,7 +77436,7 @@
+ else
+   ac_check_lib_save_LIBS=$LIBS
+ LIBS="-lm  $LIBS"
+-if test x$gcc_no_link = xyes; then
++if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -77510,7 +77510,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -77620,7 +77620,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -77730,7 +77730,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -77841,7 +77841,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -78254,7 +78254,7 @@
+ else
+   ac_check_lib_save_LIBS=$LIBS
+ LIBS="-liconv  $LIBS"
+-if test x$gcc_no_link = xyes; then
++if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -78336,7 +78336,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -78632,7 +78632,7 @@
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+ 
+-    if test x$gcc_no_link = xyes; then
++    if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -78705,7 +78705,7 @@
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+ 
+-    if test x$gcc_no_link = xyes; then
++    if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -78765,7 +78765,7 @@
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+ 
+-    if test x$gcc_no_link = xyes; then
++    if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -78999,7 +78999,7 @@
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+ 
+-    if test x$gcc_no_link = xyes; then
++    if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -79596,7 +79596,7 @@
+ else
+   ac_check_lib_save_LIBS=$LIBS
+ LIBS="-lm  $LIBS"
+-if test x$gcc_no_link = xyes; then
++if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -79670,7 +79670,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -79780,7 +79780,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -79890,7 +79890,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -80001,7 +80001,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -80415,7 +80415,7 @@
+ else
+   ac_check_lib_save_LIBS=$LIBS
+ LIBS="-lm  $LIBS"
+-if test x$gcc_no_link = xyes; then
++if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -80489,7 +80489,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -80599,7 +80599,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -80709,7 +80709,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -80820,7 +80820,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -81233,7 +81233,7 @@
+ else
+   ac_check_lib_save_LIBS=$LIBS
+ LIBS="-liconv  $LIBS"
+-if test x$gcc_no_link = xyes; then
++if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -81315,7 +81315,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -81790,7 +81790,7 @@
+ else
+   ac_check_lib_save_LIBS=$LIBS
+ LIBS="-lm  $LIBS"
+-if test x$gcc_no_link = xyes; then
++if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -81864,7 +81864,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -81974,7 +81974,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -82084,7 +82084,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -82195,7 +82195,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -82608,7 +82608,7 @@
+ else
+   ac_check_lib_save_LIBS=$LIBS
+ LIBS="-liconv  $LIBS"
+-if test x$gcc_no_link = xyes; then
++if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -82690,7 +82690,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -82982,7 +82982,7 @@
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+ 
+-    if test x$gcc_no_link = xyes; then
++    if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -83055,7 +83055,7 @@
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+ 
+-    if test x$gcc_no_link = xyes; then
++    if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -83115,7 +83115,7 @@
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+ 
+-    if test x$gcc_no_link = xyes; then
++    if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -83349,7 +83349,7 @@
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+ 
+-    if test x$gcc_no_link = xyes; then
++    if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -83557,7 +83557,7 @@
+ else
+   ac_check_lib_save_LIBS=$LIBS
+ LIBS="-lm  $LIBS"
+-if test x$gcc_no_link = xyes; then
++if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -83631,7 +83631,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -83741,7 +83741,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -83851,7 +83851,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -83962,7 +83962,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -84375,7 +84375,7 @@
+ else
+   ac_check_lib_save_LIBS=$LIBS
+ LIBS="-liconv  $LIBS"
+-if test x$gcc_no_link = xyes; then
++if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -84457,7 +84457,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -85124,7 +85124,7 @@
+ else
+   ac_check_lib_save_LIBS=$LIBS
+ LIBS="-liconv  $LIBS"
+-if test x$gcc_no_link = xyes; then
++if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -85206,7 +85206,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -85775,7 +85775,7 @@
+ else
+   ac_check_lib_save_LIBS=$LIBS
+ LIBS="-lm  $LIBS"
+-if test x$gcc_no_link = xyes; then
++if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -85849,7 +85849,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -85959,7 +85959,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -86069,7 +86069,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -86180,7 +86180,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -86593,7 +86593,7 @@
+ else
+   ac_check_lib_save_LIBS=$LIBS
+ LIBS="-liconv  $LIBS"
+-if test x$gcc_no_link = xyes; then
++if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -86675,7 +86675,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -87269,7 +87269,7 @@
+ # Turn a 'yes' into a suitable default.
+ if test x$enable_symvers = xyes ; then
+   if test $enable_shared = no ||
+-     test "x$LD" = x || test x$gcc_no_link = xyes; then
++     test "x$LD" = x || false; then
+     enable_symvers=no
+   elif test $with_gnu_ld = yes ; then
+     enable_symvers=gnu
+@@ -87296,7 +87296,7 @@
+ echo $ECHO_N "checking for shared libgcc... $ECHO_C" >&6
+   ac_save_CFLAGS="$CFLAGS"
+   CFLAGS=' -lgcc_s'
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -87359,7 +87359,7 @@
+     rm -f conftest.c conftest.so
+     if test x${glibcxx_libgcc_s_suffix+set} = xset; then
+       CFLAGS=" -lgcc_s$glibcxx_libgcc_s_suffix"
+-      if test x$gcc_no_link = xyes; then
++      if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -88226,7 +88226,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+diff -r -u -- gcc-4.1.2_orig/Makefile.in gcc-4.1.2/Makefile.in
+--- gcc-4.1.2_orig/Makefile.in	2007-05-18 19:09:14.000000000 +0200
++++ gcc-4.1.2/Makefile.in	2007-05-18 19:10:27.000000000 +0200
+@@ -1976,7 +1976,9 @@
+ INSTALL_HEADERS = \
+ 	include/libiberty.h \
+ 	include/obstack.h \
+-	include/splay-tree.h
++	include/splay-tree.h \
++	include/safe-ctype.h \
++	include/filenames.h
+ 
+ .PHONY: install-host-nogcc
+ install-host-nogcc:  \
+diff -r -u -- gcc-4.1.2_orig/gcc/Makefile.in gcc-4.1.2/gcc/Makefile.in
+--- gcc-4.1.2_orig/gcc/Makefile.in	2007-05-18 19:09:14.000000000 +0200
++++ gcc-4.1.2/gcc/Makefile.in	2007-05-18 19:11:28.000000000 +0200
+@@ -4209,6 +4209,7 @@
+   genattrtab.h \
+   gengtype-yacc.h \
+   gengtype.h \
++  genrtl.h \
+   gensupport.h \
+   ggc.h \
+   ginclude/float.h \
+diff -r -u -N -- gcc-4.1.2_orig/gcc/Makefile.in gcc-4.1.2/gcc/Makefile.in
+--- gcc-4.1.2_orig/gcc/Makefile.in	2007-05-18 19:27:28.000000000 +0200
++++ gcc-4.1.2/gcc/Makefile.in	2007-05-18 19:39:01.000000000 +0200
+@@ -3743,7 +3743,8 @@
+   insn-modes.h \
+   auto-host.h \
+   gtype-desc.h \
+-  tree-check.h
++  tree-check.h \
++  genrtl.h
+ 
+ COMPILER_HEADERS = \
+   alias.h \

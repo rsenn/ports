@@ -1,0 +1,31 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:52 roman Exp $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=xapian-core
+version=1.0.6
+release=1
+source=(http://www.oligarchy.co.uk/xapian/$version/xapian-core-$version.tar.gz)
+
+build()
+{
+  cd xapian-core-$version
+
+  libtoolize --force
+  aclocal --force -I m4
+  autoconf --force
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --${shared:=enable}-shared \
+      --${static:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+}
+

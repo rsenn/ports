@@ -1,0 +1,23 @@
+# $Id: Pkgfile 424 2008-08-10 01:52:57Z enki $
+#
+# Description: Source code for mda audio processing plug-ins in VST format.
+# Available for many years as closed-source freeware from mda-vst.com
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=mda-vst
+version=1.0
+release=1
+source=($mirror_sf/mda-vst/mda-vst-src.zip
+        mda-vst-linux.patch
+        vst_sdk2_4_rev1.zip)
+
+build()
+{
+  cd src
+
+  patch -N -p1 -i $SRC/mda-vst-linux.patch
+
+  make
+}

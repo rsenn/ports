@@ -1,0 +1,74 @@
+diff -ru gcc-4.1.0_orig/gcc/Makefile.in gcc-4.1.0/gcc/Makefile.in
+--- gcc-4.1.0_orig/gcc/Makefile.in	2006-03-16 11:13:19.000000000 +0100
++++ gcc-4.1.0/gcc/Makefile.in	2006-03-16 11:14:07.000000000 +0100
+@@ -644,6 +644,8 @@
+ BUILD_LDFLAGS=$(LDFLAGS)
+ BUILD_CPPFLAGS=$(ALL_CPPFLAGS)
+ 
++RPATH=-Wl,-rpath,$(prefix)/lib
++
+ # Actual name to use when installing a native compiler.
+ GCC_INSTALL_NAME := $(shell echo gcc|sed '$(program_transform_name)')
+ GCC_TARGET_INSTALL_NAME := $(target_noncanonical)-$(shell echo gcc|sed '$(program_transform_name)')
+@@ -1217,7 +1219,7 @@
+ # and CC is `gcc'.  It is renamed to `gcc' when it is installed.
+ xgcc$(exeext): gcc.o gccspec.o version.o intl.o prefix.o \
+    version.o $(LIBDEPS) $(EXTRA_GCC_OBJS)
+-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ gcc.o gccspec.o intl.o \
++	$(CC) $(ALL_CFLAGS) $(LDFLAGS) $(RPATH) -o $@ gcc.o gccspec.o intl.o \
+ 	  prefix.o version.o $(EXTRA_GCC_OBJS) $(LIBS)
+ 
+ # cpp is to cpp0 as gcc is to cc1.
+@@ -1225,7 +1227,7 @@
+ # instead of gccspec.o.
+ cpp$(exeext): gcc.o cppspec.o version.o intl.o prefix.o \
+    version.o $(LIBDEPS) $(EXTRA_GCC_OBJS)
+-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ gcc.o cppspec.o intl.o \
++	$(CC) $(ALL_CFLAGS) $(LDFLAGS) $(RPATH) -o $@ gcc.o cppspec.o intl.o \
+ 	  prefix.o version.o $(EXTRA_GCC_OBJS) $(LIBS)
+ 
+ # Create links to binutils, especially for in-tree builds, to make -B.
+@@ -1303,7 +1305,7 @@
+ cc1-checksum.o : cc1-checksum.c
+ 
+ cc1$(exeext): $(C_OBJS) cc1-checksum.o $(BACKEND) $(LIBDEPS)
+-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(C_OBJS) cc1-checksum.o \
++	$(CC) $(ALL_CFLAGS) $(LDFLAGS) $(RPATH) -o $@ $(C_OBJS) cc1-checksum.o \
+ 	  $(BACKEND) $(LIBS)
+ 
+ # Build the version of limits.h that we will install.
+@@ -1527,7 +1529,7 @@
+ COLLECT2_LIBS = @COLLECT2_LIBS@
+ collect2$(exeext): $(COLLECT2_OBJS) $(LIBDEPS)
+ # Don't try modifying collect2 (aka ld) in place--it might be linking this.
+-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o T$@ \
++	$(CC) $(ALL_CFLAGS) $(LDFLAGS) $(RPATH) -o T$@ \
+ 		$(COLLECT2_OBJS) $(LIBS) $(COLLECT2_LIBS)
+ 	mv -f T$@ $@
+ 
+@@ -3021,10 +3023,10 @@
+ PROTO_OBJS = intl.o version.o cppdefault.o errors.o
+ 
+ protoize$(exeext): protoize.o $(PROTO_OBJS) $(LIBDEPS)
+-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ protoize.o $(PROTO_OBJS) $(LIBS)
++	$(CC) $(ALL_CFLAGS) $(LDFLAGS) $(RPATH) -o $@ protoize.o $(PROTO_OBJS) $(LIBS)
+ 
+ unprotoize$(exeext): unprotoize.o $(PROTO_OBJS) $(LIBDEPS)
+-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ unprotoize.o $(PROTO_OBJS) $(LIBS)
++	$(CC) $(ALL_CFLAGS) $(LDFLAGS) $(RPATH) -o $@ unprotoize.o $(PROTO_OBJS) $(LIBS)
+ 
+ protoize.o: protoize.c $(srcdir)/../include/getopt.h $(CONFIG_H) $(SYSTEM_H) \
+    coretypes.h $(TM_H) Makefile version.h cppdefault.h intl.h
+@@ -3103,10 +3105,10 @@
+ 
+ GCOV_OBJS = gcov.o intl.o version.o errors.o
+ gcov$(exeext): $(GCOV_OBJS) $(LIBDEPS)
+-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) $(GCOV_OBJS) $(LIBS) -o $@
++	$(CC) $(ALL_CFLAGS) $(LDFLAGS) $(RPATH) $(GCOV_OBJS) $(LIBS) -o $@
+ GCOV_DUMP_OBJS = gcov-dump.o version.o errors.o
+ gcov-dump$(exeext): $(GCOV_DUMP_OBJS) $(LIBDEPS)
+-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) $(GCOV_DUMP_OBJS) $(LIBS) -o $@
++	$(CC) $(ALL_CFLAGS) $(LDFLAGS) $(RPATH) $(GCOV_DUMP_OBJS) $(LIBS) -o $@
+ #
+ # Build the include directory.  The stamp files are stmp-* rather than
+ # s-* so that mostlyclean does not force the include directory to

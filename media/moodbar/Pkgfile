@@ -1,0 +1,35 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Analysis program for creating a colorful visual representation of an audio file
+#  The Moodbar is an algorithm for creating a colorful visual representation
+#  of the contents of an audio file, giving an idea of its "mood" (this is
+#  a rather fanciful term for the simple analysis it actually does). The
+#  Moodbar was invented by Gavin Wood and Simon O'Keefe for inclusion in
+#  the Amarok music player.
+#  This package contains a GStreamer plugin with elements that are used in
+#  the moodbar analysis, and an application that actually does the analysis.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=moodbar
+version=0.1.2
+release=1
+source=(http://pwsp.net/~qbob/moodbar-$version.tar.gz
+        moodbar-0.1.2-gthread-init.patch)
+
+build()
+{
+  cd moodbar-$version
+
+  patch -N -p1 -i $SRC/moodbar-0.1.2-gthread-init.patch
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

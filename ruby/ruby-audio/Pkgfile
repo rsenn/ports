@@ -1,0 +1,36 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Library for working with audio data.
+# URL: http://hans.fugal.net/src/ruby-audio/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=ruby-audio
+version=0.1.2
+release=1
+source=(http://hans.fugal.net/src/ruby-audio/ruby-audio-$version.tar.gz)
+
+build()
+{
+  cd ruby-audio-$version
+
+  IFS="$IFS[]"
+  set -- `ruby --version`
+
+  RUBYVERSION="$2"
+  RUBYLIBDIR="$prefix/lib/ruby/${RUBYVERSION%.*}"
+  eval RUBYARCH="\${$#}"
+
+  rake
+
+  make -C ext/sndfile
+
+  ruby setup.rb config --siterubyver="$RUBYLIBDIR" --siterubyverarch="$RUBYLIBDIR/$RUBYARCH"
+  ruby setup.rb setup
+  ruby setup.rb install --prefix="$PKG" 
+
+  mv -vf test $PKG/$RUBYLIBDIR/audio/
+
+  install -d $ROOT/share/doc/ruby-audio
+  mv -vf AUTHORS README LICENSE TODO VERSION $ROOT/share/doc/ruby-audio
+}

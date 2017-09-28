@@ -1,0 +1,42 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: Microsoft Windows Compatibility Layer (Binary Emulator and Library)
+#  Wine is a compatibility layer for running Windows applications on Linux.
+#  does not require Microsoft Windows, however it can use native system dll
+#  files in place of its own if they are available.
+#  .
+# URL: http://www.winehq.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+
+name=wine
+version=1.1.25
+release=1
+source=($mirror_sf/wine/wine-$version.tar.bz2
+        wine-1.1.24-nomsg.patch
+        wine-1.1.18-ole32-nomsg.patch)
+
+build()
+{
+  cd wine-$version
+
+  patch -N -p1 -i $SRC/wine-1.1.24-nomsg.patch
+  patch -N -p1 -i $SRC/wine-1.1.18-ole32-nomsg.patch
+
+  case ${prefix="/usr"} in
+    "/usr") sysconfdir="/etc" localstatedir="/var" ;;
+  esac
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --sysconfdir="${sysconfdir=$prefix/etc}" \
+       --localstatedir="${localstatedir=$prefix/var}" \
+       --${static:=enable}-shared \
+       --${shared:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+
+  rm -rf $ROOT/share/man/[!m]*
+}

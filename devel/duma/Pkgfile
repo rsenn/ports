@@ -1,0 +1,27 @@
+# $Id: Pkgfile,v 1.3 2007/05/09 21:02:41 roman Exp $
+#
+# Description: A malloc() buffer-overrun debugger that uses the VM hardware.
+#  DUMA (Detect Unintended Memory Access) stops your program on the exact
+#  instruction that overruns (or underruns) a malloc() memory buffer. GDB
+#  will then display the source-code line that causes the bug. It works by
+#  using the virtual-memory hardware to create a red-zone at the border of
+#  each buffer: touch that, and your program stops. It can catch formerly
+#  impossible-to-catch overrun bugs. DUMA is a fork of Bruce Perens'
+#  Electric Fence library.
+# URL: http://duma.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=duma
+version=2.4.27
+release=1
+source=($mirror_sf/duma/duma_${version//./_}.tar.gz)
+
+build()
+{
+  cd duma_${version//./_}
+  make
+
+  install -d $ROOT/{bin,lib,include,man/man3}
+  make prefix="$ROOT" install
+}

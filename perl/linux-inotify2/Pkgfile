@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Package: liblinux-inotify2-perl
+# Section: universe/perl
+# Description: scalable directory/file change notification
+#  This module implements an interface to the Linux 2.6.13 and later Inotify
+#  .
+#  - it is portable (Linux::Inotify only works on x86)
+#  - it is better documented
+#  - it has callback-style interface, which is better suited for integration.
+# URL: http://search.cpan.org/~mlehmann/Linux-Inotify2-1.1/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=linux-inotify2
+version=1.1
+release=1
+source=(http://search.cpan.org/CPAN/authors/id/M/ML/MLEHMANN/Linux-Inotify2-$version.tar.gz)
+
+build()
+{
+  cd Linux-Inotify2-$version
+
+  perl Makefile.PL
+  make \
+      DESTDIR="$PKG" \
+      INSTALLDIRS="vendor" \
+      PREFIX="$prefix" \
+    install
+}
+
+# EOF

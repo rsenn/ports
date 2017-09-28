@@ -1,0 +1,42 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An implementation of JavaScript for server-side use.
+#  GromJS is a server-side JavaScript implementation of the Mozilla
+#  SpiderMonkey JavaScript interpreter for Unix-like operating systems. It
+#  provides Web designers/programmers the ability to use JavaScript
+#  object-based code for creating dynamic pages/Web scripts and interacting
+#  with objects on a Web server, i.e. manipulate files and directories,
+#  handle client-sent data, databases, create dynamic content, etc. The
+#  GromJS interpreter includes support for files, MySQL and Sqlite3
+#  databases, session variables, hash arrays, pipes, HTTP file upload,
+#  cookies, and more. It currently supports Linux and FreeBSD.
+# URL: http://www.bauk.ws/gromjs.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=gromjs
+version=1.7.5
+release=1
+source=(http://www.bauk.ws/gromjs-$version.tgz
+        gromjs-1.7.5-gmake.patch
+        gromjs-1.7.5-compile-scripts.patch)
+
+build()
+{
+  cd gromjs-$version
+
+  patch -N -p1 -i $SRC/gromjs-1.7.5-gmake.patch
+
+  sh install.sh --unpack
+
+  patch -N -p1 -i $SRC/gromjs-1.7.5-compile-scripts.patch
+
+  sh install.sh
+
+  install -d $ROOT/bin
+  install -m 755 _gjs_build/bauk $ROOT/bin
+  install -m 755 _gjs_build/gromjs $ROOT/bin
+
+  install -d $ROOT/share/doc/gromjs
+  install -m 644 INSTALL.txt $ROOT/share/doc/gromjs
+}

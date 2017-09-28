@@ -1,0 +1,25 @@
+# $Id: Pkgfile,v 1.22 2007/05/09 21:02:55 roman Exp $
+#
+# Description: Scripts to make the life of a Debian Package maintainer easier.
+# URL: http://packages.debian.org/sid/devscripts
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=devscripts
+version=2.10.10
+release=1
+source=(http://ftp.de.debian.org/debian/pool/main/d/devscripts/devscripts_$version.tar.gz)
+
+build()
+{
+  cd devscripts
+
+  install -d $ROOT/bin $ROOT/lib/devscripts $ROOT/share/devscripts
+
+  make LIBDIR="$prefix/lib/devscripts" \
+       BINDIR="$prefix/bin" \
+       PERLMOD_DIR="$prefix/share/devscripts" \
+       EXAMPLES_DIR="$prefix/share/devscripts" \
+       DESTDIR="$PKG" \
+       all install
+}

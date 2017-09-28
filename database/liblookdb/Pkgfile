@@ -1,0 +1,61 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An object oriented C++ interface to various DBMSs.
+#  liblookdb is a C++ library that provides an interface to several
+#  common Database Management Systems. It enables the programmer to write
+#  application code that can be built and run unchanged on a variety of
+#  platforms and against several DBMSs. It is currently in use in production
+#  code on Win32, GNU/Linux, and Compaq Tru64 UNIX, and against Ingres II
+#  (and older versions), Oracle 8i, PostgreSQL, and ODBC (on Win32 only at
+#  present). An application can choose which DBMS interface layer to load
+#  at runtime.
+# URL: http://liblookdb.sourceforge.net
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=liblookdb
+version=0.2.1
+release=1
+source=($mirror_sf/liblookdb/liblookdb-$version.tar.gz)
+
+build()
+{
+  srcdir=$SRC/liblookdb-$version/liblookdb
+
+  cd $srcdir
+
+  export CPPFLAGS="-I$srcdir/looktypes"
+
+  ./configure GNU
+  make CXX="$CXX $CXXFLAGS $CPPFLAGS"
+
+#  ./configure GNU postgres
+#  make CXX="$CXX $CXXFLAGS $CPPFLAGS" liblookdbmspostgres.so
+
+  install -d $ROOT/lib
+  install -m 644 lib/*.a $ROOT/lib/
+  install -m 755 lib/liblookdb.so $ROOT/lib/liblookdb.so.$version
+
+  ln -s liblookdb.so.$version $ROOT/lib/liblookdb.so.${version%.*.*}
+  ln -s liblookdb.so.${version%.*.*} $ROOT/lib/liblookdb.so
+
+  install -d $ROOT/include/lookdb
+  install -m 644 */*.h $ROOT/include/lookdb/
+
+  cd $srcdir/examples/dbexport
+
+  ./configure GNU
+  make CXX="$CXX $CXXFLAGS $CPPFLAGS"
+
+  cd $srcdir/examples/dbimport
+
+  ./configure GNU
+  make CXX="$CXX $CXXFLAGS $CPPFLAGS"
+
+  cd ..
+  install -d $ROOT/bin
+  install -m 755 dbexport/dbexport dbimport/dbimport $ROOT/bin/
+
+  install -d $ROOT/share/man/man1
+  install -m 644 $SRC/*/*/*.1 $ROOT/share/man/man1/
+}

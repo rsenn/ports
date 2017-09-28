@@ -1,0 +1,27 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Keeps track of the files created and modified by a process.
+#  Installwatch is a simple utility which keeps track of which files are
+#  created and modified during the installation of a new program. It's
+#  fast and easy to use. It doesn't require a &quot;pre-install&quot;
+#  phase because it monitors processes while they run. Installwatch works
+#  with every dynamically linked ELF program, by intercepting system calls
+#  that cause file system alterations.
+# URL: http://asic-linux.com.mx/~izto/checkinstall/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=installwatch
+version=0.6.3
+release=1
+source=(http://asic-linux.com.mx/~izto/checkinstall/files/source/installwatch-$version.tar.gz)
+
+build()
+{
+  cd installwatch-$version
+
+  install -d $ROOT/{bin,lib}
+
+  make
+  make PREFIX="$ROOT" install
+}

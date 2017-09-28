@@ -1,0 +1,51 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A server-side anti-spam agent for UNIX email servers.
+#   DSPAM is a server-side statistical anti-spam agent for Unix email
+#   servers. It masquerades as the email server's local delivery agent and
+#   effectively filters spam using a combination of de-obfuscation techniques,
+#   specialized algorithms, and statistical analysis. The result is an
+#   administratively maintenance-free, self-learning anti-spam tool. DSPAM
+#   has yielded real-world success rates beyond 99.9% accuracy with less
+#   than a 0.01% chance of false positives.
+#   .
+# URL: http://dspam.nuclearelephant.com/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6
+
+name=dspam
+version=3.8.0
+release=2
+source=(http://dspam.nuclearelephant.com/sources/dspam-$version.tar.gz)
+
+build()
+{
+  cd dspam-$version
+
+  ./autogen.sh
+
+  case $prefix in
+    "/usr") sysconfdir="/etc" localstatedir="/var" ;;
+  esac
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix" \
+       --sysconfdir="${sysconfdir=$prefix/etc}" \
+       --localstate="${localstatedir=$prefix/var}" \
+       --enable-homedir \
+       --enable-daemon \
+       --enable-clamav \
+       --enable-syslog \
+       --enable-bnr-debug \
+       --enable-preferences-extension \
+       --enable-virtual-users
+
+
+  make dspam_home="${home=$localstatedir/dspam}" logdir="${logdir=$localstatedir/log}/dspam" DESTDIR="$PKG" all install
+
+  install -d $ROOT/share/doc/dspam
+  install -m 644 CHANGELOG doc/courier.txt doc/exim.txt doc/markov.txt doc/mysql_drv.txt doc/osx.txt doc/pgsql_drv.txt doc/pop3filter.txt doc/postfix.txt doc/qmail.txt doc/relay.txt doc/sendmail.txt doc/sqlite_drv.txt doc/tests.txt LICENSE README RELEASE.NOTES txt/firstrun.txt txt/firstspam.txt txt/quarantinefull.txt UPGRADING $ROOT/share/doc/dspam
+}

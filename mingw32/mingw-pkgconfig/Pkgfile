@@ -1,0 +1,30 @@
+# $Id: Pkgfile,v 1.10 2007/04/22 23:07:53 roman Exp $
+#
+# Description: patch
+# URL: http://www.gnu.org/software/patch
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=mingw-pkgconfig
+version=0.21
+target=i686-pc-mingw32
+
+release=1
+source=(http://pkgconfig.freedesktop.org/releases/pkg-config-$version.tar.gz)
+
+build()
+{
+  cd pkg-config-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix/$target"
+
+  make
+  make prefix="$ROOT/$target" install
+
+  install -d $ROOT/bin
+  mv $ROOT/$target/bin/pkg-config $ROOT/bin/$target-pkg-config
+  ln -sf ../../bin/$target-pkg-config $ROOT/$target/bin/pkg-config
+}

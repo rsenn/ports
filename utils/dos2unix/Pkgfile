@@ -1,0 +1,29 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+# Replaces: tofrodos
+# Description: Converts line-endings in text-files from <CR><LF> to <LF>
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=dos2unix
+version=3.1
+release=1
+source=(http://ftp.math.sk/linux/utils/misc/dos2unix-$version.tar.bz2)
+
+build()
+{
+  cd dos2unix-$version
+
+  rm -f dos2unix
+  make dos2unix
+
+  install -d $ROOT/bin
+  install -m 755 dos2unix $ROOT/bin
+
+  if test -e dos2unix.1.gz; then
+    gunzip dos2unix.1.gz
+  fi
+
+  install -d $ROOT/share/man/man1
+  install -m 644 dos2unix.1 $ROOT/share/man/man1
+}

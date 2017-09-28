@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A theorem prover for first-order logic with equality.
+# Logic Reasoner is a theorem prover for first-order logic with
+# equality. The main objective leading the development of Logic Reasoner has
+# been the creation of a flexible architecture: in particular, the program
+# has been designed as a generic infrastructure for theorem proving, which
+# forms the basis for a collection of specific proving techniques. These
+# techniques can be easily combined or replaced to create configurations
+# with different properties.
+#
+# URL: http://lcastelli.googlepages.com/logicreasoner
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=logicreasoner
+version=0.1
+release=1
+source=(http://lcastelli.googlepages.com/LogicReasoner-$version.zip)
+
+build()
+{
+  cd LogicReasoner-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

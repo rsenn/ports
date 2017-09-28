@@ -1,0 +1,23 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: TorrentInfo is a command line script that parses .torrent files and displays the information contained within them. Currently, it can display a summary of the whole torrent, information on each file within the torrent, and a full hierarchical dump of the torrent file's contents.
+# URL: 
+# Maintainer: 
+# Depends on: 
+
+name=torrentinfo
+version=1.0.2
+release=1
+source=(http://vrai.net/files/software_projects/torrentinfo/torrentinfo-$version.tar.gz)
+
+build() 
+{
+  cd torrentinfo-$version
+  
+  python setup.py install --prefix="$ROOT"
+
+  install -d $ROOT/share/doc/torrentinfo
+  install -m 644 README $ROOT/share/doc/torrentinfo
+}
+
+# EOF

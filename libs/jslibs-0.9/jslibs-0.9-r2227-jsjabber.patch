@@ -1,0 +1,199 @@
+diff -wru jslibs-0.9-r1881_orig/src/jsjabber/Makefile jslibs-0.9-r1881/src/jsjabber/Makefile
+--- jslibs-0.9-r1881_orig/src/jsjabber/Makefile	2009-02-06 07:53:00.000000000 +0100
++++ jslibs-0.9-r1881/src/jsjabber/Makefile	2009-02-06 07:53:24.000000000 +0100
+@@ -1,7 +1,7 @@
+ TARGET     = jsjabber.so
+ SRC        = $(wildcard *.cpp)
+-INCLUDES   =
++INCLUDES   = `pkg-config js gloox --cflags`
+ STATICLIBS =
+-SHAREDLIBS =
++SHAREDLIBS = `pkg-config js gloox --libs`
+ 
+ include ../rules.mk
+diff -wru jslibs-0.9-r1881_orig/src/jsjabber/jabber.cpp jslibs-0.9-r1881/src/jsjabber/jabber.cpp
+--- jslibs-0.9-r1881_orig/src/jsjabber/jabber.cpp	2009-02-06 07:53:00.000000000 +0100
++++ jslibs-0.9-r1881/src/jsjabber/jabber.cpp	2009-02-06 07:56:45.000000000 +0100
+@@ -15,29 +15,34 @@
+ #include "stdafx.h"
+ #include "jabber.h"
+ 
++#ifdef _MSC_VER
+ #pragma warning( push )
+ #pragma warning(disable : 4800) // warning C4800: '???' : forcing value to bool 'true' or 'false' (performance warning)
++#endif // _MSC_VER
+ 
+-#include <connectiontcpclient.h>
+-#include <connectionsocks5proxy.h>
+-#include <connectionhttpproxy.h>
++#include <gloox/connectiontcpclient.h>
++#include <gloox/connectionsocks5proxy.h>
++#include <gloox/connectionhttpproxy.h>
+ 
+-#include <messagehandler.h>
+-//#include <connectionhandler.h>
++#include <gloox/messagehandler.h>
++//#include <gloox/connectionhandler.h>
+ 
+-#include <presencehandler.h>
++#include <gloox/presencehandler.h>
+ 
+-#include <rostermanager.h>
+-#include <rosterlistener.h>
++#include <gloox/rostermanager.h>
++#include <gloox/rosterlistener.h>
+ 
+-#include <connectionlistener.h>
++#include <gloox/connectionlistener.h>
+ 
+-#include <socks5bytestream.h>
+-#include <socks5bytestreamdatahandler.h>
+-#include <siprofilefthandler.h>
++#include <gloox/socks5bytestream.h>
++#include <gloox/socks5bytestreamdatahandler.h>
++#include <gloox/siprofilefthandler.h>
+ 
+-#include <client.h>
++#include <gloox/client.h>
++
++#ifdef _MSC_VER
+ #pragma warning( pop )
++#endif // _MSC_VER
+ 
+ using namespace gloox;
+ 
+@@ -112,7 +117,7 @@
+ 		jsval argv[] = { INT_TO_JSVAL(infoObj) };
+ 		JS_CallFunctionValue(_cx, _obj, fval, COUNTOF(argv), argv, &rval); // errors will be managed later by JS_IsExceptionPending(cx)
+ 
+-		bool res;
++		bool res = false;
+ 		JsvalToBool(_cx, rval, &res);
+ 		return res;
+ 	}
+@@ -188,8 +193,9 @@
+ 			return;
+ 		}
+ 
+-		jsval fromVal, presenceVal, msgVal;
+-		JidToJsval(_cx, &JID(item.jid()), &fromVal);
++    JID jid(item.jid());
++		jsval fromVal, presenceVal, msgVal = JSVAL_VOID;
++		JidToJsval(_cx, &jid, &fromVal);
+ 		IntToJsval(_cx, presence, &presenceVal);
+ 		StringToJsval(_cx, msg.c_str(), &msgVal);
+ 
+@@ -250,11 +256,11 @@
+    $ARG string password
+ **/
+ DEFINE_CONSTRUCTOR() {
+-
++  Private *pv;
+ 	J_S_ASSERT_CONSTRUCTING();
+ 	J_S_ASSERT_THIS_CLASS();
+ 	J_S_ASSERT_ARG_MIN(2);
+-	Private *pv = (Private*)JS_malloc(cx, sizeof(Private));
++	pv = (Private*)JS_malloc(cx, sizeof(Private));
+ 	J_S_ASSERT_ALLOC( pv );
+ 	J_CHK( JS_SetPrivate(cx, obj, pv) );
+ 	const char *jid, *password;
+@@ -281,7 +287,8 @@
+    A connected socket ID that can be used in a Poll() call. Or $UNDEF if no connection is established.
+ **/
+ DEFINE_FUNCTION( Connect ) {
+-
++  int sock;
++  ConnectionTCPClient *connection;
+ 	Private *pv = (Private*)JS_GetPrivate(cx, obj);
+ 	J_S_ASSERT_RESOURCE( pv );
+ 	J_S_ASSERT_ARG_MIN(1);
+@@ -290,7 +297,7 @@
+ 	pv->client->setServer( serverName );
+ 	if ( J_ARG_ISDEF(2) ) {
+ 
+-		int port;
++		int port = 0;
+ 		JsvalToInt(cx, J_ARG(2), &port);
+ 		pv->client->setPort( port);
+ 	}
+@@ -302,11 +309,11 @@
+ 
+ 	//bool usingCompression = pv->client->compression();
+ 
+-	ConnectionTCPClient *connection = dynamic_cast<ConnectionTCPClient*>( pv->client->connectionImpl() );
++	connection = dynamic_cast<ConnectionTCPClient*>( pv->client->connectionImpl() );
+ 	if ( !connection )
+ 		return JS_TRUE;
+ 
+-	int sock = connection->socket(); // return The socket of the active connection, or -1 if no connection is established.
++	sock = connection->socket(); // return The socket of the active connection, or -1 if no connection is established.
+ 	if ( sock == -1 )
+ 		return JS_TRUE;
+ 
+@@ -342,12 +349,12 @@
+   Receive data from the socket and to feed the parser and call the event functions.
+ **/
+ DEFINE_FUNCTION( Process ) {
+-
++  ConnectionError cErr;
+ 	Private *pv = (Private*)JS_GetPrivate(cx, obj);
+ 	J_S_ASSERT_RESOURCE( pv );
+ 
+ 	pv->handlers->_cx = cx;
+-	ConnectionError cErr = pv->client->recv();
++	cErr = pv->client->recv();
+ 	pv->handlers->_cx = NULL;
+ 
+ 	if ( JS_IsExceptionPending(cx) )
+@@ -368,7 +375,7 @@
+    $ARG string body: the body of the message.
+ **/
+ DEFINE_FUNCTION( SendMessage ) {
+-
++  Tag *message;
+ 	Private *pv = (Private*)JS_GetPrivate(cx, obj);
+ 	J_S_ASSERT_RESOURCE( pv );
+ 
+@@ -378,7 +385,7 @@
+ 	J_CHK( JsvalToString(cx, &J_ARG(1), &to) );
+ 	J_CHK( JsvalToString(cx, &J_ARG(2), &body) );
+ 
+-	Tag *message = new Tag( "message" );
++	message = new Tag( "message" );
+ 	message->addAttribute( "type", "chat" );
+ 	new Tag( message, "body", body );
+ 
+@@ -409,16 +416,17 @@
+   The socket ID of the connection or $UNDEF if no connection is established.
+ **/
+ DEFINE_PROPERTY( socket ) {
+-
++  int sock;
++  ConnectionTCPClient *connection;
+ 	Private *pv = (Private*)JS_GetPrivate(cx, obj);
+ 	J_S_ASSERT_RESOURCE( pv );
+-	ConnectionTCPClient *connection = dynamic_cast<ConnectionTCPClient*>( pv->client->connectionImpl() );
++	connection = dynamic_cast<ConnectionTCPClient*>( pv->client->connectionImpl() );
+ 	if ( !connection ) {
+ 
+ 		*vp = JSVAL_VOID;
+ 		return JS_TRUE;
+ 	}
+-	int sock = connection->socket(); // return The socket of the active connection, or -1 if no connection is established.
++	sock = connection->socket(); // return The socket of the active connection, or -1 if no connection is established.
+ 	if ( sock == -1 ) {
+ 
+ 		*vp = JSVAL_VOID;
+@@ -461,10 +469,10 @@
+   Sets/Gets the current presence. either Jabber.PresenceUnknown, Jabber.PresenceAvailable, Jabber.PresenceChat, Jabber.PresenceAway, Jabber.PresenceDnd, Jabber.PresenceXa, Jabber.PresenceUnavailable,
+ **/
+ DEFINE_PROPERTY_GETTER( presence ) {
+-
++  Presence presence;
+ 	Private *pv = (Private*)JS_GetPrivate(cx, obj);
+ 	J_S_ASSERT_RESOURCE( pv );
+-	Presence presence = pv->client->presence();
++	presence = pv->client->presence();
+ 	J_CHK( IntToJsval(cx, presence, vp) );
+ 	return JS_TRUE;
+ 	JL_BAD;

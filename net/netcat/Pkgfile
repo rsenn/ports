@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: TCP/IP swiss army knife.
+# URL: 
+# Maintainer: 
+# Depends on: 
+
+name=netcat
+version=0.7.1
+release=1
+source=($mirror_sf/netcat/netcat-$version.tar.gz)
+
+build() 
+{
+  cd netcat-$version
+  
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --mandir="$prefix/share/man" \
+       --infodir="$prefix/share/info"
+  
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

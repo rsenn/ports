@@ -1,0 +1,580 @@
+diff -r -u httpd-2.2.4_orig/build/config_vars.sh.in httpd-2.2.4/build/config_vars.sh.in
+--- httpd-2.2.4_orig/build/config_vars.sh.in	2007-04-23 14:34:58.000000000 +0200
++++ httpd-2.2.4/build/config_vars.sh.in	2007-04-23 14:36:08.000000000 +0200
+@@ -22,7 +22,7 @@
+ # requires the output of the *installed* ap*-config scripts.
+ 
+ # For a DESTDIR=... installation using the bundled copies of 
+-# apr/apr-util, the installed ap?-config scripts must be found 
++# apr/apr-config scripts must be found 
+ # in the DESTDIR-relocated install tree.  For a DESTDIR=... 
+ # installation when using *external* copies of apr/apr-util,
+ # the absolute path must be used, not DESTDIR-relocated.
+diff -r -u httpd-2.2.4_orig/build/find_apr.m4 httpd-2.2.4/build/find_apr.m4
+--- httpd-2.2.4_orig/build/find_apr.m4	2007-04-23 14:34:58.000000000 +0200
++++ httpd-2.2.4/build/find_apr.m4	2007-04-23 14:36:08.000000000 +0200
+@@ -82,7 +82,7 @@
+       apr_temp_acceptable_apr_config="$apr_temp_acceptable_apr_config apr-config"
+       ;;
+       *)
+-      apr_temp_acceptable_apr_config="$apr_temp_acceptable_apr_config apr-$apr_temp_major-config"
++      apr_temp_acceptable_apr_config="$apr_temp_acceptable_apr_config apr-config"
+       ;;
+     esac
+   done
+@@ -152,7 +152,7 @@
+           apr_temp_apr_config_file="apr-config"
+         ;;
+         *)
+-          apr_temp_apr_config_file="apr-$apr_bundled_major-config"
++          apr_temp_apr_config_file="apr-config"
+         ;;
+       esac
+       if test -n "$2"; then
+diff -r -u httpd-2.2.4_orig/build/find_apu.m4 httpd-2.2.4/build/find_apu.m4
+--- httpd-2.2.4_orig/build/find_apu.m4	2007-04-23 14:34:58.000000000 +0200
++++ httpd-2.2.4/build/find_apu.m4	2007-04-23 14:36:25.000000000 +0200
+@@ -92,7 +92,7 @@
+       apu_temp_acceptable_apu_config="$apu_temp_acceptable_apu_config apu-config"
+       ;;
+       *)
+-      apu_temp_acceptable_apu_config="$apu_temp_acceptable_apu_config apu-$apu_temp_major-config"
++      apu_temp_acceptable_apu_config="$apu_temp_acceptable_apu_config apu-config"
+       ;;
+     esac
+   done
+@@ -126,7 +126,7 @@
+     dnl if --with-apr-util is used, it is a fatal error for its argument
+     dnl to be invalid
+     if test "$apu_found" != "yes"; then
+-      AC_MSG_ERROR([the --with-apr-util parameter is incorrect. It must specify an install prefix, a build directory, or an apu-config file.])
++      AC_MSG_ERROR([the --with-apr-config file.])
+     fi
+   ],[
+     if test -n "$3" && test "$3" = "1"; then
+@@ -161,7 +161,7 @@
+           apu_temp_apu_config_file="apu-config"
+         ;;
+         *)
+-          apu_temp_apu_config_file="apu-$apu_bundled_major-config"
++          apu_temp_apu_config_file="apu-config"
+         ;;
+       esac
+       if test -n "$2"; then
+diff -r -u httpd-2.2.4_orig/build/pkg/buildpkg.sh httpd-2.2.4/build/pkg/buildpkg.sh
+--- httpd-2.2.4_orig/build/pkg/buildpkg.sh	2007-04-23 14:34:58.000000000 +0200
++++ httpd-2.2.4/build/pkg/buildpkg.sh	2007-04-23 14:36:25.000000000 +0200
+@@ -24,8 +24,8 @@
+ TEMPDIR=/var/tmp/$USER/httpd-root
+ rm -rf $TEMPDIR
+ 
+-apr_config=`which apr-1-config`
+-apu_config=`which apu-1-config`
++apr_config=`which apr-config`
++apu_config=`which apu-config`
+ 
+ while test $# -gt 0 
+ do
+@@ -51,13 +51,13 @@
+ done
+ 
+ if [ ! -f "$apr_config" -a ! -f "$apr_config/configure.in" ]; then
+-  echo "The apr source directory / apr-1-config could not be found"
++  echo "The apr source directory / apr-config could not be found"
+   echo "Usage: buildpkg [--with-apr=[dir|file]] [--with-apr-util=[dir|file]]"
+   exit 1
+ fi
+ 
+ if [ ! -f "$apu_config" -a ! -f "$apu_config/configure.in" ]; then
+-  echo "The apu source directory / apu-1-config could not be found"
++  echo "The apu source directory / apu-config could not be found"
+   echo "Usage: buildpkg [--with-apr=[dir|file]] [--with-apr-util=[dir|file]]"
+   exit 1
+ fi
+diff -r -u httpd-2.2.4_orig/build/rpm/httpd.spec.in httpd-2.2.4/build/rpm/httpd.spec.in
+--- httpd-2.2.4_orig/build/rpm/httpd.spec.in	2007-04-23 14:34:58.000000000 +0200
++++ httpd-2.2.4/build/rpm/httpd.spec.in	2007-04-23 14:36:25.000000000 +0200
+@@ -18,7 +18,7 @@
+ Group: System Environment/Daemons
+ BuildRoot: %{_tmppath}/%{name}-root
+ BuildPrereq: apr-devel, apr-util-devel, openldap-devel, db4-devel, expat-devel, findutils, perl, pkgconfig
+-BuildPrereq: /usr/bin/apr-1-config, /usr/bin/apu-1-config
++BuildPrereq: /usr/bin/apr-config, /usr/bin/apu-config
+ Requires: apr >= 1.2.0, apr-util >= 1.2.0, gawk, /usr/share/magic.mime, /usr/bin/find, openldap
+ Prereq: /sbin/chkconfig, /bin/mktemp, /bin/rm, /bin/mv
+ Prereq: sh-utils, textutils, /usr/sbin/useradd
+@@ -111,8 +111,8 @@
+ EOF
+ ../configure -C \
+  	--prefix=%{_sysconfdir}/httpd \
+-        --with-apr=/usr/bin/apr-1-config \
+-        --with-apr-util=/usr/bin/apu-1-config \
++        --with-apr=/usr/bin/apr-config \
++        --with-apr-util=/usr/bin/apu-config \
+         --exec-prefix=%{_prefix} \
+  	--bindir=%{_bindir} \
+  	--sbindir=%{_sbindir} \
+@@ -192,7 +192,7 @@
+ # reference correct libtool from apr; remove references to RPM build root.
+ sed -e "s|%{contentdir}/build|%{_libdir}/httpd/build|g" \
+     -e "/AP_LIBS/d" -e "/abs_srcdir/d" \
+-    -e "/^LIBTOOL/s|/[^ ]*/libtool|`/usr/bin/apr-1-config --apr-libtool`|" \
++    -e "/^LIBTOOL/s|/[^ ]*/libtool|`/usr/bin/apr-config --apr-libtool`|" \
+     -e "/^EXTRA_INCLUDES/s|-I$RPM_BUILD_DIR[^ ]* ||g" \
+   < prefork/build/config_vars.mk \
+   > $RPM_BUILD_ROOT%{_libdir}/httpd/build/config_vars.mk
+diff -r -u httpd-2.2.4_orig/configure httpd-2.2.4/configure
+--- httpd-2.2.4_orig/configure	2007-04-23 14:34:58.000000000 +0200
++++ httpd-2.2.4/configure	2007-04-23 14:36:25.000000000 +0200
+@@ -2591,7 +2591,7 @@
+ 
+ if test "x$with_included_apr" = "xyes"; then
+    apr_found=reconfig
+-   apr_config="$srcdir/srclib/apr/apr-${apr_version}-config"
++   apr_config="$srcdir/srclib/apr/apr-config"
+ else
+ 
+   apr_found="no"
+@@ -2613,7 +2613,7 @@
+       apr_temp_acceptable_apr_config="$apr_temp_acceptable_apr_config apr-config"
+       ;;
+       *)
+-      apr_temp_acceptable_apr_config="$apr_temp_acceptable_apr_config apr-$apr_temp_major-config"
++      apr_temp_acceptable_apr_config="$apr_temp_acceptable_apr_config apr-config"
+       ;;
+     esac
+   done
+@@ -2688,7 +2688,7 @@
+           apr_temp_apr_config_file="apr-config"
+         ;;
+         *)
+-          apr_temp_apr_config_file="apr-$apr_bundled_major-config"
++          apr_temp_apr_config_file="apr-config"
+         ;;
+       esac
+       if test -n ""./srclib/apr""; then
+@@ -2918,7 +2918,7 @@
+ APR_BINDIR=`$apr_config --bindir`
+ APR_INCLUDEDIR=`$apr_config --includedir`
+ APR_VERSION=`$apr_config --version`
+-APR_CONFIG="$APR_BINDIR/apr-`echo ${APR_VERSION} | sed 's,\..*,,'`-config"
++APR_CONFIG="$APR_BINDIR/apr-config"
+ 
+ echo $ac_n "${nl}Configuring Apache Portable Runtime Utility library...${nl}"
+ 
+@@ -2927,7 +2927,7 @@
+ 
+ if test "x$with_included_apr" = "xyes"; then
+    apu_found=reconfig
+-   apu_config="${srcdir}/srclib/apr-util/apu-${apu_version}-config"
++   apu_config="${srcdir}/srclib/apr-util/apu-config"
+ else
+ 
+   apu_found="no"
+@@ -2949,7 +2949,7 @@
+       apu_temp_acceptable_apu_config="$apu_temp_acceptable_apu_config apu-config"
+       ;;
+       *)
+-      apu_temp_acceptable_apu_config="$apu_temp_acceptable_apu_config apu-$apu_temp_major-config"
++      apu_temp_acceptable_apu_config="$apu_temp_acceptable_apu_config apu-config"
+       ;;
+     esac
+   done
+@@ -2985,8 +2985,8 @@
+     fi
+ 
+             if test "$apu_found" != "yes"; then
+-      { { echo "$as_me:$LINENO: error: the --with-apr-util parameter is incorrect. It must specify an install prefix, a build directory, or an apu-config file." >&5
+-echo "$as_me: error: the --with-apr-util parameter is incorrect. It must specify an install prefix, a build directory, or an apu-config file." >&2;}
++      { { echo "$as_me:$LINENO: error: the --with-apr-config file." >&5
++echo "$as_me: error: the --with-apr-config file." >&2;}
+    { (exit 1); exit 1; }; }
+     fi
+ 
+@@ -3024,7 +3024,7 @@
+           apu_temp_apu_config_file="apu-config"
+         ;;
+         *)
+-          apu_temp_apu_config_file="apu-$apu_bundled_major-config"
++          apu_temp_apu_config_file="apu-config"
+         ;;
+       esac
+       if test -n ""./srclib/apr-util""; then
+@@ -3213,7 +3213,7 @@
+ APU_BINDIR=`$apu_config --bindir`
+ APU_INCLUDEDIR=`$apu_config --includedir`
+ APU_VERSION=`$apu_config --version`
+-APU_CONFIG="$APU_BINDIR/apu-`echo ${APU_VERSION} | sed 's,\..*,,'`-config"
++APU_CONFIG="$APU_BINDIR/apu-config"
+ 
+ ac_ext=c
+ ac_cpp='$CPP $CPPFLAGS'
+diff -r -u httpd-2.2.4_orig/configure.in httpd-2.2.4/configure.in
+--- httpd-2.2.4_orig/configure.in	2007-04-23 14:34:52.000000000 +0200
++++ httpd-2.2.4/configure.in	2007-04-23 14:36:25.000000000 +0200
+@@ -69,7 +69,7 @@
+ 
+ if test "x$with_included_apr" = "xyes"; then
+    apr_found=reconfig
+-   apr_config="$srcdir/srclib/apr/apr-${apr_version}-config"
++   apr_config="$srcdir/srclib/apr/apr-config"
+ else 
+    APR_FIND_APR("$srcdir/srclib/apr", "./srclib/apr", 1, ${apr_version})
+ fi
+@@ -96,7 +96,7 @@
+ APR_BINDIR=`$apr_config --bindir`
+ APR_INCLUDEDIR=`$apr_config --includedir`
+ APR_VERSION=`$apr_config --version`
+-APR_CONFIG="$APR_BINDIR/apr-`echo ${APR_VERSION} | sed 's,\..*,,'`-config"
++APR_CONFIG="$APR_BINDIR/apr-config"
+ 
+ echo $ac_n "${nl}Configuring Apache Portable Runtime Utility library...${nl}"
+ 
+@@ -105,7 +105,7 @@
+ 
+ if test "x$with_included_apr" = "xyes"; then
+    apu_found=reconfig
+-   apu_config="${srcdir}/srclib/apr-util/apu-${apu_version}-config"
++   apu_config="${srcdir}/srclib/apr-util/apu-config"
+ else 
+    APR_FIND_APU("$srcdir/srclib/apr-util", "./srclib/apr-util", 1, ${apu_version})
+ fi
+@@ -137,7 +137,7 @@
+ APU_BINDIR=`$apu_config --bindir`
+ APU_INCLUDEDIR=`$apu_config --includedir`
+ APU_VERSION=`$apu_config --version`
+-APU_CONFIG="$APU_BINDIR/apu-`echo ${APU_VERSION} | sed 's,\..*,,'`-config"
++APU_CONFIG="$APU_BINDIR/apu-config"
+ 
+ dnl In case we picked up CC and CPP from APR, get that info into the
+ dnl config cache so that PCRE uses it.  Otherwise, CC and CPP used for
+diff -r -u httpd-2.2.4_orig/httpd.spec httpd-2.2.4/httpd.spec
+--- httpd-2.2.4_orig/httpd.spec	2007-04-23 14:34:58.000000000 +0200
++++ httpd-2.2.4/httpd.spec	2007-04-23 14:36:25.000000000 +0200
+@@ -18,7 +18,7 @@
+ Group: System Environment/Daemons
+ BuildRoot: %{_tmppath}/%{name}-root
+ BuildPrereq: apr-devel, apr-util-devel, openldap-devel, db4-devel, expat-devel, findutils, perl, pkgconfig
+-BuildPrereq: /usr/bin/apr-1-config, /usr/bin/apu-1-config
++BuildPrereq: /usr/bin/apr-config, /usr/bin/apu-config
+ Requires: apr >= 1.2.0, apr-util >= 1.2.0, gawk, /usr/share/magic.mime, /usr/bin/find, openldap
+ Prereq: /sbin/chkconfig, /bin/mktemp, /bin/rm, /bin/mv
+ Prereq: sh-utils, textutils, /usr/sbin/useradd
+@@ -111,8 +111,8 @@
+ EOF
+ ../configure -C \
+  	--prefix=%{_sysconfdir}/httpd \
+-        --with-apr=/usr/bin/apr-1-config \
+-        --with-apr-util=/usr/bin/apu-1-config \
++        --with-apr=/usr/bin/apr-config \
++        --with-apr-util=/usr/bin/apu-config \
+         --exec-prefix=%{_prefix} \
+  	--bindir=%{_bindir} \
+  	--sbindir=%{_sbindir} \
+@@ -192,7 +192,7 @@
+ # reference correct libtool from apr; remove references to RPM build root.
+ sed -e "s|%{contentdir}/build|%{_libdir}/httpd/build|g" \
+     -e "/AP_LIBS/d" -e "/abs_srcdir/d" \
+-    -e "/^LIBTOOL/s|/[^ ]*/libtool|`/usr/bin/apr-1-config --apr-libtool`|" \
++    -e "/^LIBTOOL/s|/[^ ]*/libtool|`/usr/bin/apr-config --apr-libtool`|" \
+     -e "/^EXTRA_INCLUDES/s|-I$RPM_BUILD_DIR[^ ]* ||g" \
+   < prefork/build/config_vars.mk \
+   > $RPM_BUILD_ROOT%{_libdir}/httpd/build/config_vars.mk
+diff -r -u httpd-2.2.4_orig/srclib/apr/CHANGES httpd-2.2.4/srclib/apr/CHANGES
+--- httpd-2.2.4_orig/srclib/apr/CHANGES	2007-04-23 14:34:55.000000000 +0200
++++ httpd-2.2.4/srclib/apr/CHANGES	2007-04-23 14:36:09.000000000 +0200
+@@ -260,7 +260,7 @@
+ 
+ Changes with APR 1.0
+ 
+-  *) Only install apr-$MAJOR-config and add appropriate detection code to
++  *) Only install apr-config and add appropriate detection code to
+      find_apr.m4 (APR_FIND_APR).  [Max Bowsher <maxb ukf.net>]
+ 
+   *) Remove APR_STATUS_IS_SUCCESS() macro.  [Justin Erenkrantz]
+diff -r -u httpd-2.2.4_orig/srclib/apr/Makefile.in httpd-2.2.4/srclib/apr/Makefile.in
+--- httpd-2.2.4_orig/srclib/apr/Makefile.in	2007-04-23 14:34:55.000000000 +0200
++++ httpd-2.2.4/srclib/apr/Makefile.in	2007-04-23 14:36:09.000000000 +0200
+@@ -28,7 +28,7 @@
+ 
+ TARGET_LIB = lib@APR_LIBNAME@.la
+ APR_PCFILE = apr-$(APR_MAJOR_VERSION).pc
+-APR_CONFIG = apr-$(APR_MAJOR_VERSION)-config
++APR_CONFIG = apr-config
+ INSTALL = @INSTALL@
+ INSTALL_DATA = @INSTALL_DATA@
+ 
+diff -r -u httpd-2.2.4_orig/srclib/apr/apr-config.in httpd-2.2.4/srclib/apr/apr-config.in
+--- httpd-2.2.4_orig/srclib/apr/apr-config.in	2007-04-23 14:34:55.000000000 +0200
++++ httpd-2.2.4/srclib/apr/apr-config.in	2007-04-23 14:36:09.000000000 +0200
+@@ -50,7 +50,7 @@
+ show_usage()
+ {
+     cat << EOF
+-Usage: apr-$APR_MAJOR_VERSION-config [OPTION]
++Usage: apr-config [OPTION]
+ 
+ Known values for OPTION are:
+   --prefix[=DIR]    change prefix to DIR
+@@ -76,9 +76,9 @@
+   --help            print this help
+ 
+ When linking with libtool, an application should do something like:
+-  APR_LIBS="\`apr-$APR_MAJOR_VERSION-config --link-libtool --libs\`"
++  APR_LIBS="\`apr-config --link-libtool --libs\`"
+ or when linking directly:
+-  APR_LIBS="\`apr-$APR_MAJOR_VERSION-config --link-ld --libs\`"
++  APR_LIBS="\`apr-config --link-ld --libs\`"
+ 
+ An application should use the results of --cflags, --cppflags, --includes,
+ and --ldflags in their build process.
+diff -r -u httpd-2.2.4_orig/srclib/apr/build/find_apr.m4 httpd-2.2.4/srclib/apr/build/find_apr.m4
+--- httpd-2.2.4_orig/srclib/apr/build/find_apr.m4	2007-04-23 14:34:54.000000000 +0200
++++ httpd-2.2.4/srclib/apr/build/find_apr.m4	2007-04-23 14:36:09.000000000 +0200
+@@ -82,7 +82,7 @@
+       apr_temp_acceptable_apr_config="$apr_temp_acceptable_apr_config apr-config"
+       ;;
+       *)
+-      apr_temp_acceptable_apr_config="$apr_temp_acceptable_apr_config apr-$apr_temp_major-config"
++      apr_temp_acceptable_apr_config="$apr_temp_acceptable_apr_config apr-config"
+       ;;
+     esac
+   done
+@@ -152,7 +152,7 @@
+           apr_temp_apr_config_file="apr-config"
+         ;;
+         *)
+-          apr_temp_apr_config_file="apr-$apr_bundled_major-config"
++          apr_temp_apr_config_file="apr-config"
+         ;;
+       esac
+       if test -n "$2"; then
+diff -r -u httpd-2.2.4_orig/srclib/apr/configure httpd-2.2.4/srclib/apr/configure
+--- httpd-2.2.4_orig/srclib/apr/configure	2007-04-23 14:34:55.000000000 +0200
++++ httpd-2.2.4/srclib/apr/configure	2007-04-23 14:36:09.000000000 +0200
+@@ -43577,7 +43577,7 @@
+ 
+ 
+ 
+-                                                            ac_config_files="$ac_config_files Makefile include/apr.h build/apr_rules.mk build/pkg/pkginfo apr-$APR_MAJOR_VERSION-config:apr-config.in apr.pc"
++                                                            ac_config_files="$ac_config_files Makefile include/apr.h build/apr_rules.mk build/pkg/pkginfo apr-config:apr-config.in apr.pc"
+ 
+ 
+ if test -d $srcdir/test; then
+@@ -44139,7 +44139,7 @@
+   "include/apr.h" ) CONFIG_FILES="$CONFIG_FILES include/apr.h" ;;
+   "build/apr_rules.mk" ) CONFIG_FILES="$CONFIG_FILES build/apr_rules.mk" ;;
+   "build/pkg/pkginfo" ) CONFIG_FILES="$CONFIG_FILES build/pkg/pkginfo" ;;
+-  "apr-$APR_MAJOR_VERSION-config" ) CONFIG_FILES="$CONFIG_FILES apr-$APR_MAJOR_VERSION-config:apr-config.in" ;;
++  "apr-config" ) CONFIG_FILES="$CONFIG_FILES apr-config:apr-config.in" ;;
+   "apr.pc" ) CONFIG_FILES="$CONFIG_FILES apr.pc" ;;
+   "test/Makefile" ) CONFIG_FILES="$CONFIG_FILES test/Makefile" ;;
+   "test/internal/Makefile" ) CONFIG_FILES="$CONFIG_FILES test/internal/Makefile" ;;
+@@ -45024,7 +45024,7 @@
+   fi
+   rm -f $i.save
+ done
+-chmod +x apr-$APR_MAJOR_VERSION-config
++chmod +x apr-config
+  ;;
+   esac
+ done
+diff -r -u httpd-2.2.4_orig/srclib/apr/configure.in httpd-2.2.4/srclib/apr/configure.in
+--- httpd-2.2.4_orig/srclib/apr/configure.in	2007-04-23 14:34:54.000000000 +0200
++++ httpd-2.2.4/srclib/apr/configure.in	2007-04-23 14:36:09.000000000 +0200
+@@ -2093,7 +2093,7 @@
+                  include/apr.h
+                  build/apr_rules.mk
+                  build/pkg/pkginfo
+-                 apr-$APR_MAJOR_VERSION-config:apr-config.in
++                 apr-config:apr-config.in
+                  apr.pc])
+ 
+ if test -d $srcdir/test; then
+@@ -2112,7 +2112,7 @@
+   fi
+   rm -f $i.save
+ done
+-chmod +x apr-$APR_MAJOR_VERSION-config
++chmod +x apr-config
+ ],[
+ dnl This section is expanded by configure UNQUOTED so variable 
+ dnl references must be backslash-escaped as necessary.
+diff -r -u httpd-2.2.4_orig/srclib/apr-util/CHANGES httpd-2.2.4/srclib/apr-util/CHANGES
+--- httpd-2.2.4_orig/srclib/apr-util/CHANGES	2007-04-23 14:34:53.000000000 +0200
++++ httpd-2.2.4/srclib/apr-util/CHANGES	2007-04-23 14:36:25.000000000 +0200
+@@ -145,7 +145,7 @@
+ 
+ Changes with APR-util 1.0
+ 
+-  *) Only install apu-$MAJOR-config and add appropriate detection code to
++  *) Only install apu-config and add appropriate detection code to
+      find_apu.m4 (APU_FIND_APU).  [Max Bowsher <maxb ukf.net>]
+ 
+   *) Overhaul support for LDAP URL parsing. Instead of using incompatible
+diff -r -u httpd-2.2.4_orig/srclib/apr-util/Makefile.in httpd-2.2.4/srclib/apr-util/Makefile.in
+--- httpd-2.2.4_orig/srclib/apr-util/Makefile.in	2007-04-23 14:34:54.000000000 +0200
++++ httpd-2.2.4/srclib/apr-util/Makefile.in	2007-04-23 14:36:25.000000000 +0200
+@@ -18,7 +18,7 @@
+ INSTALL_SUBDIRS = @APR_ICONV_DIR@ @APR_XML_DIR@
+ EXTRA_SOURCE_DIRS = @APR_ICONV_DIR@ @APR_XML_DIR@
+ APRUTIL_PCFILE = apr-util-$(APRUTIL_MAJOR_VERSION).pc
+-APU_CONFIG = apu-$(APRUTIL_MAJOR_VERSION)-config
++APU_CONFIG = apu-config
+ INSTALL = @INSTALL@
+ INSTALL_DATA = @INSTALL_DATA@
+ 
+diff -r -u httpd-2.2.4_orig/srclib/apr-util/apu-config.in httpd-2.2.4/srclib/apr-util/apu-config.in
+--- httpd-2.2.4_orig/srclib/apr-util/apu-config.in	2007-04-23 14:34:54.000000000 +0200
++++ httpd-2.2.4/srclib/apr-util/apu-config.in	2007-04-23 14:36:25.000000000 +0200
+@@ -44,7 +44,7 @@
+ show_usage()
+ {
+     cat << EOF
+-Usage: apu-$APRUTIL_MAJOR_VERSION-config [OPTION]
++Usage: apu-config [OPTION]
+ 
+ Known values for OPTION are:
+   --prefix[=DIR]    change prefix to DIR
+@@ -63,9 +63,9 @@
+   --help            print this help
+ 
+ When linking with libtool, an application should do something like:
+-  APU_LIBS="\`apu-$APRUTIL_MAJOR_VERSION-config --link-libtool --libs\`"
++  APU_LIBS="\`apu-config --link-libtool --libs\`"
+ or when linking directly:
+-  APU_LIBS="\`apu-$APRUTIL_MAJOR_VERSION-config --link-ld --libs\`"
++  APU_LIBS="\`apu-config --link-ld --libs\`"
+ 
+ An application should use the results of --includes, and --ldflags in
+ their build process.
+diff -r -u httpd-2.2.4_orig/srclib/apr-util/build/find_apr.m4 httpd-2.2.4/srclib/apr-util/build/find_apr.m4
+--- httpd-2.2.4_orig/srclib/apr-util/build/find_apr.m4	2007-04-23 14:34:53.000000000 +0200
++++ httpd-2.2.4/srclib/apr-util/build/find_apr.m4	2007-04-23 14:36:09.000000000 +0200
+@@ -82,7 +82,7 @@
+       apr_temp_acceptable_apr_config="$apr_temp_acceptable_apr_config apr-config"
+       ;;
+       *)
+-      apr_temp_acceptable_apr_config="$apr_temp_acceptable_apr_config apr-$apr_temp_major-config"
++      apr_temp_acceptable_apr_config="$apr_temp_acceptable_apr_config apr-config"
+       ;;
+     esac
+   done
+@@ -152,7 +152,7 @@
+           apr_temp_apr_config_file="apr-config"
+         ;;
+         *)
+-          apr_temp_apr_config_file="apr-$apr_bundled_major-config"
++          apr_temp_apr_config_file="apr-config"
+         ;;
+       esac
+       if test -n "$2"; then
+diff -r -u httpd-2.2.4_orig/srclib/apr-util/build/find_apu.m4 httpd-2.2.4/srclib/apr-util/build/find_apu.m4
+--- httpd-2.2.4_orig/srclib/apr-util/build/find_apu.m4	2007-04-23 14:34:53.000000000 +0200
++++ httpd-2.2.4/srclib/apr-util/build/find_apu.m4	2007-04-23 14:36:25.000000000 +0200
+@@ -92,7 +92,7 @@
+       apu_temp_acceptable_apu_config="$apu_temp_acceptable_apu_config apu-config"
+       ;;
+       *)
+-      apu_temp_acceptable_apu_config="$apu_temp_acceptable_apu_config apu-$apu_temp_major-config"
++      apu_temp_acceptable_apu_config="$apu_temp_acceptable_apu_config apu-config"
+       ;;
+     esac
+   done
+@@ -126,7 +126,7 @@
+     dnl if --with-apr-util is used, it is a fatal error for its argument
+     dnl to be invalid
+     if test "$apu_found" != "yes"; then
+-      AC_MSG_ERROR([the --with-apr-util parameter is incorrect. It must specify an install prefix, a build directory, or an apu-config file.])
++      AC_MSG_ERROR([the --with-apr-config file.])
+     fi
+   ],[
+     if test -n "$3" && test "$3" = "1"; then
+@@ -161,7 +161,7 @@
+           apu_temp_apu_config_file="apu-config"
+         ;;
+         *)
+-          apu_temp_apu_config_file="apu-$apu_bundled_major-config"
++          apu_temp_apu_config_file="apu-config"
+         ;;
+       esac
+       if test -n "$2"; then
+diff -r -u httpd-2.2.4_orig/srclib/apr-util/build/rpm/apr-util.spec.in httpd-2.2.4/srclib/apr-util/build/rpm/apr-util.spec.in
+--- httpd-2.2.4_orig/srclib/apr-util/build/rpm/apr-util.spec.in	2007-04-23 14:34:53.000000000 +0200
++++ httpd-2.2.4/srclib/apr-util/build/rpm/apr-util.spec.in	2007-04-23 14:36:25.000000000 +0200
+@@ -73,7 +73,7 @@
+ 
+ %files devel
+ %defattr(-,root,root,-)
+-%{_bindir}/apu-%{apuver}-config
++%{_bindir}/apu-config
+ %{_libdir}/libaprutil-%{apuver}.*a
+ %{_libdir}/libaprutil-%{apuver}.so
+ %{_libdir}/pkgconfig/apr-util-%{apuver}.pc
+diff -r -u httpd-2.2.4_orig/srclib/apr-util/configure httpd-2.2.4/srclib/apr-util/configure
+--- httpd-2.2.4_orig/srclib/apr-util/configure	2007-04-23 14:34:53.000000000 +0200
++++ httpd-2.2.4/srclib/apr-util/configure	2007-04-23 14:36:26.000000000 +0200
+@@ -2107,7 +2107,7 @@
+       apr_temp_acceptable_apr_config="$apr_temp_acceptable_apr_config apr-config"
+       ;;
+       *)
+-      apr_temp_acceptable_apr_config="$apr_temp_acceptable_apr_config apr-$apr_temp_major-config"
++      apr_temp_acceptable_apr_config="$apr_temp_acceptable_apr_config apr-config"
+       ;;
+     esac
+   done
+@@ -2182,7 +2182,7 @@
+           apr_temp_apr_config_file="apr-config"
+         ;;
+         *)
+-          apr_temp_apr_config_file="apr-$apr_bundled_major-config"
++          apr_temp_apr_config_file="apr-config"
+         ;;
+       esac
+       if test -n ""; then
+@@ -39683,7 +39683,7 @@
+     test -d $top_builddir/$d || mkdir $top_builddir/$d
+ done
+ 
+-                                                                                          ac_config_files="$ac_config_files Makefile export_vars.sh build/pkg/pkginfo apr-util.pc apu-$APRUTIL_MAJOR_VERSION-config:apu-config.in include/private/apu_select_dbm.h include/apr_ldap.h include/apu.h include/apu_want.h"
++                                                                                          ac_config_files="$ac_config_files Makefile export_vars.sh build/pkg/pkginfo apr-util.pc apu-config:apu-config.in include/private/apu_select_dbm.h include/apr_ldap.h include/apu.h include/apu_want.h"
+ 
+ 
+           ac_config_commands="$ac_config_commands default"
+@@ -40235,7 +40235,7 @@
+   "export_vars.sh" ) CONFIG_FILES="$CONFIG_FILES export_vars.sh" ;;
+   "build/pkg/pkginfo" ) CONFIG_FILES="$CONFIG_FILES build/pkg/pkginfo" ;;
+   "apr-util.pc" ) CONFIG_FILES="$CONFIG_FILES apr-util.pc" ;;
+-  "apu-$APRUTIL_MAJOR_VERSION-config" ) CONFIG_FILES="$CONFIG_FILES apu-$APRUTIL_MAJOR_VERSION-config:apu-config.in" ;;
++  "apu-config" ) CONFIG_FILES="$CONFIG_FILES apu-config:apu-config.in" ;;
+   "include/private/apu_select_dbm.h" ) CONFIG_FILES="$CONFIG_FILES include/private/apu_select_dbm.h" ;;
+   "include/apr_ldap.h" ) CONFIG_FILES="$CONFIG_FILES include/apr_ldap.h" ;;
+   "include/apu.h" ) CONFIG_FILES="$CONFIG_FILES include/apu.h" ;;
+@@ -40988,7 +40988,7 @@
+ echo "$as_me: executing $ac_dest commands" >&6;}
+   case $ac_dest in
+     default )
+-chmod +x apu-$APRUTIL_MAJOR_VERSION-config
++chmod +x apu-config
+  ;;
+   esac
+ done
+diff -r -u httpd-2.2.4_orig/srclib/apr-util/configure.in httpd-2.2.4/srclib/apr-util/configure.in
+--- httpd-2.2.4_orig/srclib/apr-util/configure.in	2007-04-23 14:34:53.000000000 +0200
++++ httpd-2.2.4/srclib/apr-util/configure.in	2007-04-23 14:36:26.000000000 +0200
+@@ -194,13 +194,13 @@
+ 
+ AC_CONFIG_FILES([Makefile export_vars.sh
+                  build/pkg/pkginfo apr-util.pc
+-                 apu-$APRUTIL_MAJOR_VERSION-config:apu-config.in
++                 apu-config:apu-config.in
+                  include/private/apu_select_dbm.h
+                  include/apr_ldap.h
+                  include/apu.h include/apu_want.h])
+ 
+ AC_CONFIG_COMMANDS([default], [
+-chmod +x apu-$APRUTIL_MAJOR_VERSION-config
++chmod +x apu-config
+ ],[
+ APRUTIL_MAJOR_VERSION=$APRUTIL_MAJOR_VERSION
+ ])

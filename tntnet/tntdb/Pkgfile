@@ -1,0 +1,51 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A C++ class library for database-independent database access.
+#  Tntdb is a c++-class-library for database access. It implements a
+#  database-independent layer, which loads the actual driver dynamically
+#  when a connection is made. The classes use automatic resource
+#  management with reference counts. Resources are freed when the classes
+#  go out of scope. Error handling is done with exceptions (derived from
+#  std::exception). There are STL-like iterators for result sets and rows,
+#  and also the cursor is an STL-like iterator. It is written in standard
+#  C++ with Linux. Drivers for PostgreSQL, sqlite3, MySQL, and Oracle
+#  are available.
+# URL: http://www.tntnet.org/tntdb.hms
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=tntdb
+version=1.0.0
+release=1
+source=(http://www.tntnet.org/download/tntdb-$version.tar.gz
+        tntdb-0.9.4-sonumber.patch
+        tntdb-0.9.4-avoid-version.patch
+        tntdb-0.9.4-version-number.patch)
+
+build()
+{
+  cd tntdb-$version
+
+  patch -N -p1 -i $SRC/tntdb-0.9.4-sonumber.patch
+#  patch -N -p1 -i $SRC/tntdb-0.9.4-avoid-version.patch
+  patch -N -p1 -i $SRC/tntdb-0.9.4-version-number.patch
+
+  libtoolize --force --copy
+  aclocal --force -I m4
+  autoconf --force
+  automake --force --copy --foreign --add-missing
+
+#  cp $prefix/share/automake/{depcomp,install-sh,missing} .
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix" \
+       --docdir="$prefix/share/doc/$name-$version" \
+       --${shared:=enable}-shared \
+       --${static:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+}

@@ -1,0 +1,46 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:42 roman Exp $
+#
+# Description: GNU Guile
+#  An implementation of the Scheme programming language built to be
+#  used as an extension language. It's a library you can link into
+#  your programs. Your program has full access to the interpreter's data
+#  structure, so you can extend Guile with your own primitives, datatypes,
+#  and syntax, and tailor the language to your application.
+#  It also lets more people use your language, as they needn't learn the
+#  internals of your app. They just need to understand the language and
+#  the primitives you've provided, and they can trade and share ideas by
+#  passing around scripts without you.
+#  It has arrays, lists, modules, objects, first class functions, and
+#  garbage collection.
+# URL: http://www.gnu.org/software/guile/guile.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=guile
+version=1.8.6
+release=1
+source=($mirror_gnu/guile/guile-$version.tar.gz)
+
+build()
+{
+  cd guile-$version
+
+  libtoolize --force --copy --install
+  aclocal --force
+  autoconf --force
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --disable-nls \
+      --${shared:=enable}-shared \
+      --${static:=enable}-shared \
+      --disable-error-on-warning
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/guile
+  install -m 644 COPYING.LESSER THANKS ABOUT-NLS NEWS INSTALL ChangeLog-2008 GUILE-VERSION README HACKING LICENSE FAQ AUTHORS ChangeLog $ROOT/share/doc/guile
+}

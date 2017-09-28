@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An OCR Engine that was developed at HP Labs between 1985 and 1995.
+# URL: http://code.google.com/p/tesseract-ocr/
+# Maintainer: Roman Senn <enki@digitall.ch>
+# Depends on: 
+
+name=tesseract-ocr
+version=2.03
+release=1
+source=(http://tesseract-ocr.googlecode.com/files/tesseract-2.03.tar.gz)
+
+build() 
+{
+  cd tesseract-$version
+ 
+  export CXXFLAGS="${CXXFLAGS--g -O2} -include cstring -include cstdlib -include climits"
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+  
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

@@ -1,0 +1,34 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:03:15 roman Exp $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=mesalib
+pkgname=mesalib
+version=7.5
+release=1
+source=($mirror_sf/mesa3d/MesaLib-$version.tar.bz2
+        $mirror_sf/mesa3d/MesaGLUT-$version.tar.bz2
+ #       Mesa-7.0.4-no-c99.patch
+        libGL.la
+        libGLU.la
+        libGLw.la
+        libOSMesa.la)
+
+build()
+{
+  cd Mesa-$version
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/mesalib/docs
+  install -m 644 docs/COPYING docs/README.3DFX docs/README.AMIWIN docs/README.BEOS docs/README.CYGWIN docs/README.D3D docs/README.DJ docs/README.GGI docs/README.LYNXOS docs/README.MINGW32 docs/README.MITS docs/README.NeXT docs/README.OpenStep docs/README.OS2 docs/README.QUAKE docs/README.THREADS docs/README.VMS docs/README.WIN32 docs/README.WINDML $ROOT/share/doc/mesalib/docs
+}

@@ -1,0 +1,203 @@
+diff -ru cryptsetup-0.2_orig/lib/libcryptsetup.h cryptsetup-0.2/lib/libcryptsetup.h
+--- cryptsetup-0.2_orig/lib/libcryptsetup.h	2004-05-15 17:20:51.000000000 +0200
++++ cryptsetup-0.2/lib/libcryptsetup.h	2004-05-15 17:57:20.125181176 +0200
+@@ -6,6 +6,7 @@
+ #define	CRYPT_FLAG_PASSPHRASE	(1 << 0)
+ #define	CRYPT_FLAG_VERIFY	(1 << 1)
+ #define CRYPT_FLAG_READONLY	(1 << 2)
++#define CRYPT_FLAG_REUSE	(1 << 3)
+ 
+ struct crypt_options {
+ 	const char	*name;
+diff -ru cryptsetup-0.2_orig/lib/setup.c cryptsetup-0.2/lib/setup.c
+--- cryptsetup-0.2_orig/lib/setup.c	2004-05-15 17:20:51.000000000 +0200
++++ cryptsetup-0.2/lib/setup.c	2004-05-15 18:01:28.559413432 +0200
+@@ -15,6 +15,7 @@
+ 
+ static int memory_unsafe = 0;
+ static char *default_backend = NULL;
++static char *global_key = NULL;
+ 
+ static int setup_enter(struct setup_backend *backend)
+ {
+@@ -95,9 +96,14 @@
+ 
+ static char *get_key(struct crypt_options *options)
+ {
+-	char *key = safe_alloc(options->key_size);
++	char *key;
+ 	char *pass = NULL, *pass2 = NULL;
+ 
++        if((options->flags & CRYPT_FLAG_REUSE) && global_key)
++          return global_key;
++  
++        key =  safe_alloc(options->key_size);
++  
+ 	if (!key) {
+ 		set_error("Not enough memory to allocate key");
+ 		goto out_err;
+@@ -170,6 +176,9 @@
+ 		safe_free(pass);
+ 	if (pass2)
+ 		safe_free(pass2);
++  
++        if((options->flags & CRYPT_FLAG_REUSE) && !global_key)
++          global_key = key;
+ 
+ 	return key;
+ 
+@@ -265,7 +274,8 @@
+ 
+ 	r = backend->create(reload, options, key);
+ 
+-	safe_free(key);
++        if(!(options->flags & CRYPT_FLAG_REUSE))
++          safe_free(key);
+ 
+ 	return r;
+ }
+diff -ru cryptsetup-0.2_orig/src/cryptsetup.c cryptsetup-0.2/src/cryptsetup.c
+--- cryptsetup-0.2_orig/src/cryptsetup.c	2004-05-15 17:20:51.000000000 +0200
++++ cryptsetup-0.2/src/cryptsetup.c	2004-05-15 17:56:50.347708040 +0200
+@@ -14,6 +14,7 @@
+ static char *opt_cipher = DEFAULT_CIPHER;
+ static char *opt_hash = DEFAULT_HASH;
+ static int opt_verify_passphrase = 0;
++static int opt_reuse_passphrase = 0;
+ static char *opt_key_file = NULL;
+ static unsigned int opt_key_size = DEFAULT_KEY_SIZE;
+ static uint64_t opt_size = 0;
+@@ -88,6 +89,8 @@
+ 		options.flags |= CRYPT_FLAG_PASSPHRASE;
+ 	if (opt_verify_passphrase)
+ 		options.flags |= CRYPT_FLAG_VERIFY;
++	if (opt_reuse_passphrase)
++		options.flags |= CRYPT_FLAG_REUSE;
+ 
+ 	if (reload)
+ 		r = crypt_update_device(&options);
+@@ -200,6 +203,7 @@
+ 		{ "cipher",            'c',  POPT_ARG_STRING | POPT_ARGFLAG_SHOW_DEFAULT, &opt_cipher,            0, N_("The cipher used to encrypt the disk (see /proc/crypto)"),          NULL },
+ 		{ "hash",              'h',  POPT_ARG_STRING | POPT_ARGFLAG_SHOW_DEFAULT, &opt_hash,              0, N_("The hash used to create the encryption key from the passphrase"),  NULL },
+ 		{ "verify-passphrase", 'y',  POPT_ARG_NONE,                               &opt_verify_passphrase, 0, N_("Verifies the passphrase by asking for it twice"),                  NULL },
++		{ "reuse-passphrase",  'r',  POPT_ARG_NONE,                               &opt_reuse_passphrase,  0, N_("Reuses the passphrase when mapping multiple devices"),                  NULL },
+ 		{ "key-file",          'd',  POPT_ARG_STRING,                             &opt_key_file,          0, N_("Read the key from a file (can be /dev/random)"),                   NULL },
+ 		{ "key-size",          's',  POPT_ARG_INT    | POPT_ARGFLAG_SHOW_DEFAULT, &opt_key_size,          0, N_("The size of the encryption key"),                                  N_("BITS") },
+ 		{ "size",              'b',  POPT_ARG_STRING,                             &popt_tmp,              1, N_("The size of the device"),                                          N_("SECTORS") },
+@@ -259,21 +263,24 @@
+ 		usage(popt_context, 1, _("Unknown action."),
+ 		      poptGetInvocationName(popt_context));
+ 
+-	if (!(dm_name = (char *)poptGetArg(popt_context)))
+-		usage(popt_context, 1, _("Argument <name> missing."),
+-		      poptGetInvocationName(popt_context));
+-
+-	device = (char *)poptGetArg(popt_context);
+-	if (!device && action->require_device)
+-		usage(popt_context, 1, _("Argument <device> missing."),
+-		      poptGetInvocationName(popt_context));
+-
+-	if (opt_key_size % 8)
++        while(1)
++        {
++          if (!(dm_name = (char *)poptGetArg(popt_context)))
++            usage(popt_context, 1, _("Argument <name> missing."),
++                  poptGetInvocationName(popt_context));
++          
++          device = (char *)poptGetArg(popt_context);
++          if (!device && action->require_device)
++            usage(popt_context, 1, _("Argument <device> missing."),
++                  poptGetInvocationName(popt_context));
++          
++          if (opt_key_size % 8)
+ 		usage(popt_context, 1,
+ 		      _("Key size must be a multiple of 8 bits"),
+ 		      poptGetInvocationName(popt_context));
+-
+-	action->handler(action->arg);
++          
++          action->handler(action->arg);
++        }
+ 
+ 	return 0;
+ }
+diff -ru cryptsetup-0.2_orig/src/cryptsetup.c cryptsetup-0.2/src/cryptsetup.c
+--- cryptsetup-0.2_orig/src/cryptsetup.c	2004-05-15 18:06:33.988236328 +0200
++++ cryptsetup-0.2/src/cryptsetup.c	2004-05-15 18:10:13.601849984 +0200
+@@ -34,14 +34,15 @@
+ 	void (*handler)(int);
+ 	int arg;
+ 	int require_device;
++        int multi;
+ 	const char *desc;
+ } action_types[] = {
+-	{ "create",	action_create, 0, 1, N_("create device") },
+-	{ "remove",	action_remove, 0, 0, N_("remove device") },
+-	{ "reload",	action_create, 1, 1, N_("modify active device") },
+-	{ "resize",	action_resize, 0, 0, N_("resize active device") },
+-	{ "status",	action_status, 0, 0, N_("show device status") },
+-	{ NULL, NULL, 0, 0, NULL }
++	{ "create",	action_create, 0, 1, 1, N_("create device") },
++	{ "remove",	action_remove, 0, 0, 1, N_("remove device") },
++	{ "reload",	action_create, 1, 1, 0, N_("modify active device") },
++	{ "resize",	action_resize, 0, 0, 0, N_("resize active device") },
++	{ "status",	action_status, 0, 0, 0, N_("show device status") },
++	{ NULL, NULL, 0, 0, 0, NULL }
+ };
+ 
+ static void show_error(int errcode)
+@@ -215,6 +216,7 @@
+ 	struct action_type *action;
+ 	char *aname;
+ 	int r;
++        int firstrun = 1;
+ 
+ 	setlocale(LC_ALL, "");
+ 	bindtextdomain(GETTEXT_PACKAGE, LOCALEDIR);
+@@ -263,23 +265,35 @@
+ 		usage(popt_context, 1, _("Unknown action."),
+ 		      poptGetInvocationName(popt_context));
+ 
++        if (opt_key_size % 8)
++                usage(popt_context, 1, ("Key size must be a multiple of 8 bits"),
++		      poptGetInvocationName(popt_context));
++          
+         while(1)
+         {
+           if (!(dm_name = (char *)poptGetArg(popt_context)))
+-            usage(popt_context, 1, _("Argument <name> missing."),
+-                  poptGetInvocationName(popt_context));
++          {
++            if(firstrun)
++              usage(popt_context, 1, _("Argument <name> missing."),
++                    poptGetInvocationName(popt_context));
++            break;
++          }
+           
+-          device = (char *)poptGetArg(popt_context);
+-          if (!device && action->require_device)
+-            usage(popt_context, 1, _("Argument <device> missing."),
+-                  poptGetInvocationName(popt_context));
+-          
+-          if (opt_key_size % 8)
+-		usage(popt_context, 1,
+-		      _("Key size must be a multiple of 8 bits"),
+-		      poptGetInvocationName(popt_context));
++          
++          if(action->require_device)
++          {
++            device = (char *)poptGetArg(popt_context);
++            if (!device)
++              usage(popt_context, 1, _("Argument <device> missing."),
++                    poptGetInvocationName(popt_context));
++          }
+           
+           action->handler(action->arg);
++          
++          firstrun = 0;
++          
++          if(!action->multi)
++            break;
+         }
+ 
+ 	return 0;

@@ -1,0 +1,57 @@
+# $Id: Pkgfile,v 1.4 2007/04/22 23:07:52 roman Exp $
+#
+# Description: SELinux shared libraries
+#  This package provides the shared libraries for Security-enhanced
+#  Linux. Security-enhanced Linux is a patch of the Linux kernel and a
+#  number of utilities with enhanced security functionality designed to add
+#  mandatory access controls to Linux. The Security-enhanced Linux kernel
+#  contains new architectural components originally developed to improve the
+#  security of the Flask operating system. These architectural components
+#  provide general support for the enforcement of many kinds of mandatory
+#  access control policies, including those based on the concepts of Type
+#  Enforcement, Role-based Access Control, and Multi-level Security.
+#  libselinux1 provides an API for SELinux applications to get and set
+#  process and file security contexts and to obtain security policy
+#  decisions. Required for any applications that use the SELinux API.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libselinux
+version=1.34.14
+release=1
+source=(http://distfiles.gentoo.org/distfiles/libselinux-$version.tgz)
+
+build()
+{
+  cd libselinux-$version
+
+  case $prefix in
+    /usr) libdir="/lib" ;;
+  esac
+
+  sed -i "s:/usr:$prefix:g" */Makefile
+
+  set -- $(python --version 2>&1)
+
+  export PREFIX="\$(DESTDIR)$prefix"
+
+  make PYLIBVER="python${2%.*}"
+
+  make DESTDIR="$PKG" install
+
+  case $libdir in
+    /lib) ;;
+
+    * | "")
+      if test -d $PKG/lib
+      then
+        mv -vf $PKG/lib/* $ROOT/lib
+        rm -rf $PKG/lib
+      fi
+
+      (cd $ROOT/lib && rm -v libselinux.so && ln -sf libselinux.so.[0-9] libselinux.so)
+      ;;
+  esac
+
+}

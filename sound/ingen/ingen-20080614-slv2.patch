@@ -1,0 +1,15 @@
+diff -ru ingen-20080614_orig/configure.ac ingen-20080614/configure.ac
+--- ingen-20080614_orig/configure.ac	2008-06-15 18:47:01.000000000 +0200
++++ ingen-20080614/configure.ac	2008-06-15 18:48:09.000000000 +0200
+@@ -46,7 +46,10 @@
+ abs_srcdir=`pwd`
+ cd $builddir
+ 
+-PKG_CHECK_MODULES([SLV2], [libslv2])
++PKG_CHECK_EXISTS([libslv2],
++  [PKG_CHECK_MODULES([SLV2], [libslv2])], 
++  [PKG_CHECK_MODULES([SLV2], [slv2])])
++
+ PKG_CHECK_MODULES([LV2_OSC], [lv2_osc])
+ PKG_CHECK_MODULES([RAUL], [raul])
+ PKG_CHECK_MODULES([FLOWCANVAS], [flowcanvas])

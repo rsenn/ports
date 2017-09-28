@@ -1,0 +1,26 @@
+# $Id: $
+#
+# Description: A Python wrapper for the liblo OSC library.
+#  pyliblo is a Python wrapper for the liblo OSC library. It supports almost
+#  the complete functionality of liblo, allowing you to send and receive
+#  OSC messages using a nice and simple Python API.
+# URL: http://das.nasophon.de/pyliblo/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=pyliblo
+version=0.7.1
+release=1
+source=(http://das.nasophon.de/download/pyliblo-$version.tar.gz)
+
+build()
+{
+  cd pyliblo-$version
+
+  ./setup.py install --prefix="$ROOT"
+
+  install -d $ROOT/share/doc
+  cp -rf doc $ROOT/share/doc/$name-$version
+  cp README $ROOT/share/doc/$name-$version
+}
+

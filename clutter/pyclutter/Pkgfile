@@ -1,0 +1,25 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: 
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=pyclutter
+version=0.6.2
+release=1
+source=(http://www.clutter-project.org/sources/pyclutter/0.6/pyclutter-$version.tar.bz2)
+
+build()
+{
+  cd pyclutter-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

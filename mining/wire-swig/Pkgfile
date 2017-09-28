@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=wire-swig
+version=0.20
+release=1
+source=(http://www.daionet.gr.jp/~knok/software/wire-swig/wire-swig-$version.tar.gz
+        wire-swig-0.20-off64_t.patch)
+
+build()
+{
+  cd wire-swig-$version
+
+  ruby extconf.rb \
+      --with-wire-include="$prefix/include/wire" \
+      --with-wire-lib="$prefix/lib" \
+      --with-univchardet-include="$prefix/include/univchardet"
+
+  patch -N -p1 -i $SRC/wire-swig-0.20-off64_t.patch
+
+  make
+  make DESTDIR="$PKG" install
+
+  python setup.py build
+
+  make
+  make DESTDIR="$PKG" install
+}

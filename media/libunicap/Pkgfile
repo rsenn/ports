@@ -1,0 +1,35 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Uniform interface to video capture devices.
+#  unicap provides a uniform interface to video capture devices. It allows
+#  applications to use any supported video capture device via a single
+#  API. unicap offers a high level of hardware abstraction while maintaining
+#  maximum performance. Zero copy capture of video buffers is possible for
+#  devices supporting it allowing fast video capture with low CPU usage
+#  even on low-speed architectures. unicap is dual licensed under either
+#  the terms of the General Public License (GPL) or a commercial license.
+#  .
+# URL: http://unicap-imaging.org/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=libunicap
+version=0.0.15
+release=1
+source=($mirror_sf/unicap/libunicap-$version.tar.gz)
+
+build()
+{
+  cd libunicap-$version
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

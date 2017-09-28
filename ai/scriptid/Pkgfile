@@ -1,0 +1,36 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A program and library that can identify scripting languages.
+# Scriptid is a program and a library that can be used to determine whether
+# a given text file contains code of a specified programming language. The
+# current release can tell whether a file contains vbscript or not. It
+# should be possible to extend this to any number of other languages. It is
+# important to also download the latest neural network weights update file.
+#
+# URL: http://rsandila.webhop.org/scriptid.html
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=scriptid
+version=0.0.3
+release=1
+source=(http://rsandila.webhop.org/scriptid-$version.tar.bz2)
+
+build()
+{
+  cd scriptid-$version
+
+  aclocal --force
+  #automake --force --copy --foreign --add-missing
+  #aclocal --force
+  autoconf --force
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

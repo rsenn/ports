@@ -1,0 +1,60 @@
+# $Id: Pkgfile 562 2008-10-01 21:39:31Z enki $
+#
+# Description: Extensible Metadata Platform
+#  Adobe's Extensible Metadata Platform (XMP) is a labeling technology that
+#  allows you to embed data about a file, known as metadata, into the file
+#  itself. With XMP, desktop applications and back-end publishing systems
+#  gain a common method for capturing, sharing, and leveraging this valuable
+#  metadata -- opening the door for more efficient job processing, workflow
+#  automation, and rights management, among many other possibilities. With
+#  XMP, Adobe has taken the 'heavy lifting' out of metadata integration,
+#  offering content creators an easy way to embed meaningful information
+#  about their projects and providing industry partners with standards-based
+#  building blocks to develop optimized workflow solutions.
+# URL: http://www.adobe.com/products/xmp/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=xmp
+version=4.4.2
+release=1
+source=(http://download.macromedia.com/pub/developer/xmp/sdk/XMP-Toolkit-SDK-$version.zip
+        xmp-toolkit-sdk-4.4.2-fixes.patch)
+
+build()
+{
+  cd XMP-Toolkit-SDK-$version
+
+  patch -p1 -i $SRC/xmp-toolkit-sdk-4.4.2-fixes.patch
+
+  case ${host=`${CC-gcc} -dumpmachine`} in
+    *linux*)
+      OS=i80386linux
+      ;;
+  esac
+
+  for STAGE in "release" "debug"; do
+    make -C build/gcc3.2 -f XMPCore.mak \
+      OS="$OS" \
+      STAGE="$STAGE"
+  done
+ 
+  for NAME in CustomSchema DumpScannedXMP XMPCoreCoverage; do
+    make -C samples/build/gcc3.2 -f XMPSamples.mak \
+      os="$OS" \
+      stage="release" \
+      name="$NAME"
+  done
+
+  install -d $ROOT/lib
+  install -m 644 public/libraries/$OS/*/*.a $ROOT/lib
+
+  install -d $ROOT/bin
+  install -m 755 samples/target/$OS/release/* $ROOT/bin
+
+  install -d $ROOT/share/doc/xmp
+  install -m 644 BSD-License.txt $ROOT/share/doc/xmp
+
+  install -d $ROOT/share/doc/xmp/java
+  install -m 644 java/readme.txt $ROOT/share/doc/xmp/README.java
+}

@@ -1,0 +1,50 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: configures encrypted block devices
+#  Cryptsetup provides a command-line interface for configuring encrypted
+#  devices. This is done using the Linux kernel device mapper target
+#  dm-crypt. This version of cryptsetup has integrated support for LUKS.
+#  cryptsetup is backwards compatible with the on-disk format of cryptoloop,
+#  but also supports more secure formats. This package includes support
+#  for automatically configuring encrypted devices at boot time via the
+#  config file /etc/crypttab. Additional features are cryptoroot support
+#  through initramfs-tools and several supported ways to read a passphrase or
+#  key. configures encrypted block devices Cryptsetup provides a command-line
+#  interface for configuring encrypted devices. This is done using the
+#  Linux kernel device mapper target dm-crypt. This version of cryptsetup
+#  has integrated support for LUKS.
+#  cryptsetup is backwards compatible with the on-disk format of cryptoloop,
+#  but also supports more secure formats. This package includes support for
+#  automatically configuring encrypted devices at boot time via the config
+#  file /etc/crypttab. Additional features are cryptoroot support through
+#  initramfs-tools and several supported ways to read a passphrase or key.
+# URL: http://luks.endorphin.org/
+#  http://luks.endorphin.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=cryptsetup
+version=1.0.6
+release=1
+source=($mirror_gentoo/cryptsetup-$version.tar.bz2
+        cryptsetup-0.2-reuse.patch)
+
+build()
+{
+  cd cryptsetup-$version
+
+  libtoolize --force --copy --install
+  aclocal --force -I.
+  autoconf --force
+
+  ./configure \
+        --build="$build" \
+        --host="$host" \
+        --prefix="$prefix"
+
+  make 
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/cryptsetup
+  install -m 644 AUTHORS INSTALL ABOUT-NLS ChangeLog COPYING TODO $ROOT/share/doc/cryptsetup
+}

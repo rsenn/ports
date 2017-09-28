@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A free tool to help monitoring the activity of a qmail mailserver
+# Its intended to be used with MRTG.
+# Qmrtg is modular. Each module carries out a different log analysis. A super-module lets the user easily request any analysis without to know anything about the modules themselves.
+# Qmrtg has been originally written for qmail, but most of its modules also work for other software, like postfix.
+# URL: http://dev.publicshout.org/qmrtg/index.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=qmrtg
+version=2.1
+release=1
+source=(http://dev.publicshout.org/qmrtg/download/qmrtg-$version.tar.bz2)
+
+build()
+{
+  cd qmrtg-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

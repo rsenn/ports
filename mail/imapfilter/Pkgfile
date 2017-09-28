@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A mail filtering utility for IMAP mailboxes.
+#  IMAPFilter is a mail filtering utility. It connects to remote mail
+#  servers using the Internet Message Access Protocol (IMAP), sends searching
+#  queries to the server, and processes mailboxes based on the results.
+#  .
+# URL: http://imapfilter.hellug.gr/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=imapfilter
+version=2.0.10
+release=1
+source=(ftp://mirror.switch.ch/mirror/gentoo/distfiles/imapfilter-$version.tar.bz2)
+build()
+{
+  cd imapfilter-$version
+
+  ./configure \
+      -p "$prefix" \
+      -m "$prefix/share/man"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/imapfilter
+  install -m 644 NEWS README LICENSE $ROOT/share/doc/imapfilter
+}
+
+# EOF

@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A graph-based image processing framework.
+#  GEGL is a graph-based image processing framework offering non-destructive
+#  projects ranging from small one-off projects to interactive applications.
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=gegl
+version=0.0.20
+release=1
+source=(ftp://ftp.gimp.org/pub/gegl/0.0/gegl-$version.tar.bz2)
+
+build()
+{
+  cd gegl-$version
+
+  #./autogen.sh
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

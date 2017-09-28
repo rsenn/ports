@@ -1,0 +1,92 @@
+Only in libextractor-0.5.18_orig/: Makefile
+Only in libextractor-0.5.18_orig/doc: Makefile
+Only in libextractor-0.5.18_orig/libltdl: Makefile
+Only in libextractor-0.5.18_orig/libltdl: config.h
+Only in libextractor-0.5.18_orig/libltdl: stamp-h1
+Only in libextractor-0.5.18_orig/m4: Makefile
+Only in libextractor-0.5.18_orig/po: Makefile
+Only in libextractor-0.5.18_orig/src: Makefile
+Only in libextractor-0.5.18_orig/src/include: Makefile
+Only in libextractor-0.5.18_orig/src/include: config.h
+Only in libextractor-0.5.18_orig/src/include: stamp-h1
+Only in libextractor-0.5.18_orig/src/main: Makefile
+diff -r -u -- libextractor-0.5.18_orig/src/main/extract.c libextractor-0.5.18/src/main/extract.c
+--- libextractor-0.5.18_orig/src/main/extract.c	2007-05-31 16:57:02.000000000 +0200
++++ libextractor-0.5.18/src/main/extract.c	2007-05-31 16:57:50.000000000 +0200
+@@ -183,6 +183,7 @@
+   char * keyword;
+   iconv_t cd;
+ 
++#undef iconv_open
+   cd = iconv_open(nl_langinfo(CODESET), "UTF-8");
+   while (keywords != NULL) {
+     if (EXTRACTOR_isBinaryType(keywords->keywordType)) {
+@@ -211,6 +212,7 @@
+     keywords = keywords->next;
+   }
+   if (cd != (iconv_t) -1)
++#undef iconv_close
+     iconv_close(cd);
+ }
+ 
+@@ -231,6 +233,7 @@
+   iconv_t cd;
+   size_t pos;
+ 
++#undef iconv_open
+   cd = iconv_open(nl_langinfo(CODESET), "UTF-8");
+   while (keywords != NULL) {
+     if ( (EXTRACTOR_isBinaryType(EXTRACTOR_THUMBNAIL_DATA)) &&
+@@ -259,6 +262,7 @@
+   }
+   fprintf(handle, "\n");
+   if (cd != (iconv_t) -1)
++#undef iconv_close
+     iconv_close(cd);
+ }
+ 
+diff -r -u -- libextractor-0.5.18_orig/src/main/extractor.c libextractor-0.5.18/src/main/extractor.c
+--- libextractor-0.5.18_orig/src/main/extractor.c	2007-05-31 16:57:02.000000000 +0200
++++ libextractor-0.5.18/src/main/extractor.c	2007-05-31 16:59:06.000000000 +0200
+@@ -1421,7 +1421,7 @@
+ {
+   iconv_t cd;
+   char * buf;
+-
++#undef iconv_open
+   cd = iconv_open(
+     nl_langinfo(CODESET)
+     , "UTF-8");
+@@ -1451,6 +1451,7 @@
+       keywords = keywords->next;
+     }
+   if (cd != (iconv_t) -1)
++#undef iconv_close
+     iconv_close(cd);
+ }
+ 
+diff -r -u -- libextractor-0.5.18_orig/src/main/iconv.c libextractor-0.5.18/src/main/iconv.c
+--- libextractor-0.5.18_orig/src/main/iconv.c	2007-05-31 16:57:02.000000000 +0200
++++ libextractor-0.5.18/src/main/iconv.c	2007-05-31 16:57:15.000000000 +0200
+@@ -33,6 +33,7 @@
+ 
+   i = in;
+   /* reset iconv */
++#undef iconv
+   iconv(cd, NULL, NULL, NULL, NULL);
+ 
+   inSize = strlen(in);
+Only in libextractor-0.5.18_orig/src/plugins: Makefile
+Only in libextractor-0.5.18_orig/src/plugins/exiv2: Makefile
+Only in libextractor-0.5.18_orig/src/plugins/hash: Makefile
+Only in libextractor-0.5.18_orig/src/plugins/ole2: Makefile
+Only in libextractor-0.5.18_orig/src/plugins/oo: Makefile
+Only in libextractor-0.5.18_orig/src/plugins/pdf: Makefile
+Only in libextractor-0.5.18_orig/src/plugins/printable: Makefile
+Only in libextractor-0.5.18_orig/src/plugins/printable: pefi.c
+Only in libextractor-0.5.18_orig/src/plugins/printable: pefr.c
+Only in libextractor-0.5.18_orig/src/plugins/printable: pega.c
+Only in libextractor-0.5.18_orig/src/plugins/printable: pesv.c
+Only in libextractor-0.5.18_orig/src/plugins/rpm: Makefile
+Only in libextractor-0.5.18_orig/src/plugins/thumbnail: Makefile
+Only in libextractor-0.5.18_orig/src/test: Makefile

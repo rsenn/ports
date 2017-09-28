@@ -1,0 +1,27 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An easing library.
+#  libease is a shared library containing easing algorithms that can be
+#  used for graphical effects or mathematical calculations. The main goal
+#  of this project is to try and create a centralised library for easing
+#  effects within the window manager environment.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libease
+version=0.0.3
+release=1
+source=($mirror_sf/libease/libease-$version.tar.gz)
+
+build()
+{
+  cd libease-$version
+
+  install -d $ROOT/{include,lib,share/man/man3}
+
+  sed -i "/ldconfig/d" Makefile
+
+  make
+  make PREFIX="$ROOT" install
+}

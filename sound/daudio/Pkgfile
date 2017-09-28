@@ -1,0 +1,26 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Fully synchronized, distributed audio on a local network.
+#  daudio is a set of programs for fully synchronized, distributed MP3
+#  audio over a local Linux network.
+#  .
+# URL: http://sourceforge.net/projects/daudio/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=daudio
+version=0.3
+release=1
+source=($mirror_sf/daudio/daudio-$version.tar.gz)
+
+build()
+{
+  cd daudio-$version
+
+  for DIR in client server streamer; do
+    make -C "$DIR"
+    make -C "$DIR" PREFIX="$ROOT" install
+  done
+}
+
+# EOF

@@ -1,0 +1,26 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Inno Setup Unpacker
+# URL: http://innounp.sourceforge.net/
+# Maintainer: 
+# Depends on: 
+
+name=innounp
+version=0.20
+release=1
+source=(http://heanet.dl.sourceforge.net/sourceforge/innounp/innounp${version/./}src.rar
+        http://heanet.dl.sourceforge.net/sourceforge/innounp/innounp${version/./}.rar)
+
+build() 
+{
+  install -d $ROOT/bin/innounp.exe
+
+  cat >$ROOT/bin/innounp.sh <<__EOF__
+#!/bin/sh
+exec wine ${0%.sh}.exe "$@"
+__EOF__
+  chmod +x $ROOT/bin/innounp.sh
+
+}
+
+# EOF

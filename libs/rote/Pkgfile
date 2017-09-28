@@ -1,0 +1,45 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:52 roman Exp $
+#
+# Description: ROTE is a simple C library for VT102 terminal emulation
+# It allows the programmer to set up virtual 'screens' and send them data.
+# They will emulate the behavior of a VT102 terminal, interpreting escape
+# sequences, control characters and such.
+# Description: test
+# URL: http://sourceforge.net/projects/rote/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libncurses5
+
+name=rote
+version=0.2.8
+release=1
+source=($mirror_sf/rote/rote-$version.tar.gz
+        rote-0.2.8-20080403.patch
+        rote-config.patch)
+
+build()
+{
+  cd rote-$version
+
+  patch -N -p1 -i $SRC/rote-0.2.8-20080403.patch
+  patch -N -p1 -i $SRC/rote-config.patch
+
+  libtoolize --force
+  aclocal --force
+  autoconf --force
+
+  case $host in
+    *mingw*)
+      args="${args:+$args }--disable-ncurses --disable-pty"
+      ;;
+  esac
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      $args
+
+  make
+  make DESTDIR="$PKG" install
+}
+

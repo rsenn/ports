@@ -1,0 +1,30 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:03:01 roman Exp $
+#
+# Description: GNU Portable Shell Tool.
+#  GNU shtool is a compilation of small but very stable and portable shell
+#  scripts into a single shell tool. All ingredients were in successful use
+#  over many years in various free software projects. The compiled shtool
+#  program is intended to be used inside the source tree of free software
+#  packages. There it can overtake various (usually non-portable) tasks
+#  related to the building and installation of an free software package.
+# URL: http://www.gnu.org/software/shtool/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=shtool
+version=2.0.7
+release=1
+source=(ftp://ftp.gnu.org/gnu/shtool/shtool-$version.tar.gz)
+
+build()
+{
+  cd shtool-$version
+
+  ./configure \
+        --build="$build" \
+        --host="$host" \
+        --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

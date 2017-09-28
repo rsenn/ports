@@ -1,0 +1,54 @@
+diff -ru femail-0.97_orig/Makefile femail-0.97/Makefile
+--- femail-0.97_orig/Makefile	2005-09-20 12:59:04.000000000 +0200
++++ femail-0.97/Makefile	2006-02-23 12:39:45.000000000 +0100
+@@ -1,10 +1,13 @@
+ #	$Id: femail-0.97-fixes.patch,v 1.1 2006/02/23 12:31:04 root Exp $
+ 
+-BINDIR = /usr/local/sbin
+-MANDIR = /usr/local/man
+-CFLAGS+= -DHAS_FGETLN -DHAS_STRLCPY
+-# CFLAGS+= -Wall -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations
+-# CFLAGS+= -Wshadow -Wpointer-arith -Wcast-qual -Wsign-compare
++prefix = /usr
++BINDIR = $(prefix)/sbin
++MANDIR = $(prefix)/man
++SYSCONFDIR = $(prefix)/etc
++
++CFLAGS += -fno-builtin
++
++DEFS = -DSYSCONFDIR=\"$(SYSCONFDIR)\"
+ 
+ all:		femail
+ 
+@@ -12,15 +15,15 @@
+ 	$(CC) $(LDFLAGS) femail.o openbsd_compat.o $(LDLIBS) -o femail
+ 
+ femail.o:	femail.c
+-	$(CC) $(CFLAGS) -c femail.c
++	$(CC) $(CFLAGS) $(DEFS) -c femail.c
+ 
+ openbsd_compat.o:	openbsd_compat.c
+ 	$(CC) $(CFLAGS) -c openbsd_compat.c
+ 
+ install:	all
+-	install -o root -g bin -m 0555 femail $(BINDIR)
+-	install -o root -g wheel -m 0755 -d $(MANDIR)/man8
+-	install -o root -g bin -m 0444 femail.8 $(MANDIR)/man8
++	install -o root -m 0755 femail $(BINDIR)
++	install -o root -m 0755 -d $(MANDIR)/man8
++	install -o root -m 0644 femail.8 $(MANDIR)/man8
+ 
+ clean:
+ 	rm -f femail *.o
+diff -ru femail-0.97_orig/femail.c femail-0.97/femail.c
+--- femail-0.97_orig/femail.c	2005-09-21 12:45:51.000000000 +0200
++++ femail-0.97/femail.c	2006-02-23 12:37:49.000000000 +0100
+@@ -100,7 +100,7 @@
+ };
+ 
+ #define	VERSION			"femail 0.97"
+-#define	CONFIGFILE		"/etc/femail.conf"
++#define	CONFIGFILE		SYSCONFDIR"/femail.conf"
+ #define	STATUS_GREETING		220
+ #define	STATUS_HELO		250
+ #define	STATUS_MAILFROM		250

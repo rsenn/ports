@@ -1,0 +1,89 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: RPC connection manager
+#  The portmapper manages RPC connections, which are used by protocols such
+#  as NFS and NIS. The portmap server must be running on machines which
+#  act as servers for protocols which make use of the RPC mechanism. This
+#  portmapper supports hosts.{allow,deny} type access control.
+# URL: http://neil.brown.name/portmap/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=portmap
+version=6.0
+release=1
+source=(http://neil.brown.name/portmap/portmap-$version.tgz
+        #ftp://ftp.ch.debian.org/debian/pool/main/p/portmap/portmap_6.0.orig.tar.gz
+        ftp://ftp.ch.debian.org/debian/pool/main/p/portmap/portmap_6.0-2.diff.gz
+        ftp://ftp.porcupine.org/pub/security/tcp_wrappers_7.6.tar.gz
+        tcp-wrappers-7.6-fixes.patch
+        tcp-wrappers-7.6-syslog.patch)
+
+build()
+{
+  ln -s tcp_wrappers_7.6 tcp_wrappers
+
+  cd tcp_wrappers_7.6
+
+  patch -N -p1 -i $SRC/tcp-wrappers-7.6-fixes.patch
+  patch -N -p1 -i $SRC/tcp-wrappers-7.6-syslog.patch
+
+  case ${prefix=/usr} in
+    /usr) sysconfdir="/etc" localstatedir="/var" bindir="/sbin" sbindir="/sbin" ;;
+  esac
+
+  make \
+    REAL_DAEMON_DIR="${sbindir=$prefix/sbin}" \
+    TABLES="-DHOSTS_DENY=\\\"${sysconfdir=$prefix/etc}/hosts.deny\\\" -DHOSTS_ALLOW=\\\"${sysconfdir=$prefix/etc}/hosts.allow\\\"" \
+    linux
+
+  cd $SRC/portmap_$version
+
+  zcat $SRC/portmap_6.0-2.diff.gz | patch -N -p1
+
+  make
+
+  install -d $PKG/${sbindir=$prefix/sbin}
+  install -m 755 portmap $PKG/$sbindir
+
+  install -d $PKG/${bindir=$prefix/bin}
+  install -m 755 pmap_dump $PKG/$bindir
+  install -m 755 pmap_set $PKG/$bindir
+}
+
+# set up the service for portmap
+# -----------------------------------------------------------------------------
+services()
+{
+  config_branch 'portmap'
+
+    config_branch 'log'
+    config_end
+
+    config_set 'TITLE'   'Portmapper'
+#    config_set 'PIDFILE' "$prefix/db/$hostname.pid"
+    config_set 'BIN'     "$prefix/sbin/portmap"
+    config_set 'START'   'portmap.*ready.*'
+#    config_set 'STOP'    'Shutdown complete'
+
+  config_end
+}
+
+portmap()
+{
+  exec 2>&1
+
+  # set default values
+  host=${portmap_host:-127.0.0.1}
+  port=111
+
+  export PATH="$bindir:$sbindir:$prefix/libexec"
+
+  # wait for the listener to become active
+  if ! inet_wait_unbind tcp $host:$port; then
+    service_error $host:$port "wasn't available after waiting $inet_timeout msecs"
+  fi
+
+  # finally execute portmap
+  exec $prefix/bin/argv0 $prefix/sbin/portmap portmap -d -l ${host}
+}

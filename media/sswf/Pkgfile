@@ -1,0 +1,25 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: $mirror_sf/sswf
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libfreetype6, libgcc1, libjpeg62, libstdc++6, zlib1g
+
+name=sswf
+version=1.8.3
+release=1
+source=($mirror_sf/sswf/sswf-$version-src.tar.bz2)
+
+build()
+{
+  cd sswf-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

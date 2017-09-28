@@ -1,0 +1,62 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Command-line tools for building SSL client-server applications.
+# They conform to the UNIX Client-Server Program Interface, UCSPI.
+# sslserver listens for connections, and runs a program for each connection it
+# accepts. The program environment includes variables that hold the local and
+# remote host names, IP addresses, and port numbers. sslserver offers a
+# concurrency limit on acceptance of new connections, and selective handling
+# of connections based on client identity.
+# sslclient requests a connection to a TCP socket, and runs a program. The
+# program environment includes the same variables as for sslserver.
+# URL: http://www.superscript.com/ucspi-ssl/intro.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libperl5.8, libssl0.9.8
+
+name=ucspi-ssl
+version=0.70
+release=1
+source=(http://www.superscript.com/ucspi-ssl/ucspi-ssl-$version.tar.gz
+        sslclient.1
+        sslserver.1
+        sslcat.1
+        sslconnect.1
+        https@.1
+        ssl-environ.5)
+
+build()
+{
+  cd host/superscript.com/net/ucspi-ssl-$version
+
+  case $prefix in
+    "/usr") sysconfdir="/etc" ;;
+  esac
+
+  echo ${CC-cc} $CFLAGS >src/conf-cc
+  echo ${CC-cc} $LDFLAGS >src/conf-ld
+
+  echo $PKG${bindir=$prefix/bin} >src/conf-tcpbin
+  echo $PKG${bindir=$prefix/bin} >package/command-cp
+  echo >package/command-ln
+
+  echo ${sysconfdir=$prefix/etc}/ssl >src/conf-cadir
+  echo ${sysconfdir=$prefix/etc}/ssl/pem/dh1024.pem >src/conf-dhfile
+
+
+  package/compile
+
+#  package/rts
+#  package/install
+  install -d $ROOT/bin
+  install -m 755 command/* $ROOT/bin
+
+  install -d $ROOT/share/doc/ucspi-ssl
+  install -m 644 {package,src}/[A-Z]*[A-Z]* $ROOT/share/doc/ucspi-ssl
+
+  install -d $PKG${sysconfdir}/ssl/pem
+  install -m 644 src/dh1024.pem $PKG${sysconfdir}/ssl/pem
+
+  install -d $ROOT/share/man/man{1,5}
+  install -m 644 $SRC/*.1 $ROOT/share/man/man1
+  install -m 644 $SRC/*.5 $ROOT/share/man/man5
+}

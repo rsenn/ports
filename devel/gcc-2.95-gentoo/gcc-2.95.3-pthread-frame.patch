@@ -1,0 +1,11 @@
+--- gcc-2.95.3_orig/gcc/frame.c	2007-10-24 20:35:26.000000000 +0000
++++ gcc-2.95.3/gcc/frame.c	2007-10-24 20:38:03.000000000 +0000
+@@ -51,7 +51,7 @@
+ #include "frame.h"
+ #include "gthr.h"
+ 
+-#ifdef __GTHREAD_MUTEX_INIT
++#if defined(__GTHREAD_MUTEX_INIT) && !defined(PTHREAD_MUTEX_INITIALIZER)
+ static __gthread_mutex_t object_mutex = __GTHREAD_MUTEX_INIT;
+ #else
+ static __gthread_mutex_t object_mutex;

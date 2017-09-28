@@ -1,0 +1,27 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Full-featured sound library
+# URL: http://mikmod.raphnet.net
+# Maintainer:  Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=libmikmod
+version=3.1.10
+release=1
+source=(http://mikmod.raphnet.net/files/libmikmod_$version.tar.gz)
+
+build()
+{
+  cd libmikmod-$version
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

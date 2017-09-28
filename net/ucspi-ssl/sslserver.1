@@ -1,0 +1,327 @@
+.TH sslserver 1 "" "" "ucspi-ssl"
+.SH NAME
+.LP
+sslserver \- accept incoming SSL/TLS connections
+.SH SYNOPSIS
+.B
+sslserver
+[
+.B \-13UXpPhHrRoOdDqQviIeEsS
+]
+[
+.B \-c\fIlimit
+]
+[
+.B \-x\fIrules.cdb
+]
+[
+.B \-B\fIbanner
+]
+[
+.B \-g\fIgid
+]
+[
+.B \-u\fIuid
+]
+[
+.B \-b\fIbacklog
+]
+[
+.B \-l\fIlocalname
+]
+[
+.B \-t\fItimeout
+]
+[
+.B \-T\fIssltimeout
+]
+[
+.B \-w\fIprogtimeout
+]
+.I host
+.I port
+.I program
+[
+.I arg ...
+]
+.SH DESCRIPTION
+.B sslserver
+listens for connections from TCP clients.  For each connection,
+it runs 
+.I program
+with the given arguments,
+with file descriptor 0 reading from, and file descriptor 1
+writing to a child process 
+.IR ssl .
+
+The 
+.I ssl
+process attempts an SSL handshake via the network. 
+If it succeeds, it translates data between 
+.I program
+and the network, performing any necessary SSL encoding and decoding.
+
+Before running 
+.IR prog , 
+sslserver sets certain
+environment variables.
+
+sslserver
+exits when it receives SIGTERM.
+
+.SH OPTIONS
+General Options:
+.TP
+.B \-q
+Quiet.  Do not print error messages.
+.TP
+.B \-Q
+(Default.)  Print error messages.
+.TP
+.B \-v
+Verbose.  Print error messages and status messages.
+.LP
+Connection options:
+.TP
+.B \-c\fIn\fR
+Do not handle more than \fIn\fR simultaneous
+connections.  If there are \fIn\fR simultaneous connections
+copies of prog running, defer acceptance of a new
+connection until one copy finishes.  \fIn\fR must be a positive
+integer.  The default value is 40.
+
+.TP
+.B \-x\fIcdb\fR
+Follow the rules compiled into \fIcdb\fR by
+tcprules.  These rules may specify setting
+environment variables or rejecting connections from bad sources.
+You can rerun tcprules to change the rules while
+sslserver is running.
+
+.TP
+.B \-X
+With -x\fIcdb\fR, allow connections even if \fIcdb\fR
+does not exist.  Normally sslserver will drop the
+connection if \fIcdb\fR does not exist.
+
+.TP
+.B \-B\fIbanner\fR
+Write \fIbanner\fR to the network
+immediately after each SSL connection is made.  The banner is subject to SSL
+translation.
+
+.TP
+.B \-g\fIgid\fR
+Switch group ID to \fIgid\fR after preparing
+to receive connections.  \fIgid\fR must be a positive integer.
+
+.TP
+.B \-u\fIuid\fR
+Switch user ID to \fIuid\fR after preparing
+to receive connections.  \fIuid\fR must be a positive integer.
+
+.TP
+.B \-U
+Same as -g $GID -u $UID.  Typically, $GID and
+$UID are set by
+envuidgid.
+
+.TP
+.B \-a
+Switch user ID or group ID after reading SSL
+certificates.
+
+.TP
+.B \-A
+(Default.) Switch user ID or group ID before reading SSL
+certificates.
+
+.TP
+.B \-1
+After preparing to receive connections, print the local port
+number to standard output.
+
+.TP
+.B \-b\fIbacklog\fR
+Allow up to \fIbacklog\fR simultaneous SYN_RECEIVEDs.
+Default: 20.
+On some systems, \fIbacklog\fR is silently limited to 5.  See listen(2) for more details.
+
+.TP
+.B \-o
+Leave IP options alone. If the client is sending packets along
+an IP source route, send packets back along the same route. 
+
+.TP
+.B \-O
+(Default.) Kill IP options. A client can still use source
+routing to connect and to send data, but packets will be sent back along the
+default route. 
+
+.TP
+.B \-d
+Delay sending data for a fraction of a second whenever the
+remote host is responding slowly.  This is currently the default, but it may
+not be in the future; if you want it, set it explicitly.
+
+.TP
+.B \-D
+Never delay sending data; enable TCP_NODELAY.
+
+.TP
+.B \-3
+Read a null-terminated key password from file descriptor 3.
+
+.TP
+.B \-i
+Require valid client certificates.
+
+.TP
+.B \-I
+(Default.) Do not require client certificates.
+.LP
+
+Data-gathering options:
+
+
+.TP
+.B \-h
+(Default.)
+Look up the remote host name in DNS
+to set the environment variable $SSLREMOTEHOST.
+
+.TP
+.B \-H
+Do not look up the remote host name in DNS;
+remove the environment variable $SSLREMOTEHOST.
+To avoid loops,
+you \fImust\fR use this option for servers on TCP port 53.
+
+.TP
+.B \-p
+Paranoid.
+After looking up the remote host name in DNS,
+look up the IP addresses in DNS for that host name,
+and remove the environment variable $SSLREMOTEHOST
+if none of the addresses match the client's IP address.
+
+.TP
+.B \-P
+(Default.) Not paranoid.
+
+.TP
+.B \-l\fIlocalname\fR
+Do not look up the local host name in DNS;
+use \fIlocalname\fR for the environment variable $SSLLOCALHOST.
+A common choice for \fIlocalname\fR is 0.
+To avoid loops,
+you \fImust\fR use this option for servers on TCP port 53.
+
+.TP
+.B \-r
+(Default.)
+Attempt to obtain $SSLREMOTEINFO from the remote host.
+
+.TP
+.B \-R
+Do not attempt to obtain $SSLREMOTEINFO from the remote host.
+To avoid loops,
+you \fImust\fR use this option for servers on TCP ports 53 and 113.
+
+.TP
+.B \-t\fItimeout\fR
+Give up on the $SSLREMOTEINFO connection attempt
+after \fItimeout\fR seconds.
+The default value is: 26.
+
+.TP
+.B \-T\fItimeout\fR
+Give up on the SSL connection attempt
+after \fItimeout\fR seconds.
+The default value is: 26.
+
+.TP
+.B \-w\fItimeout\fR
+Give up on a connection or program after waiting \fItimeout\fR seconds for read or
+write.  The default value is: 3600.
+
+.TP
+.B \-s
+Store client and server certificate information in the environment, a la
+mod_ssl
+
+.TP
+.B \-S
+(Default.)
+Do not store client and server certificate information in the environment.
+
+.B \-e
+Set protocol environment a la
+tcpserver.  Set
+$TCPLOCALIP, $TCPLOCALPORT, $TCPLOCALHOST,
+$TCPREMOTEIP, $TCPREMOTEPORT, $TCPREMOTEHOST, and
+$TCPREMOTEINFO from the corresponding $SSL variables.
+
+.TP
+.B \-E
+(Default.)
+Do not set any tcpserver environment variables.
+.LP
+
+SSL options:
+
+.TP
+.B $CAFILE
+If set, overrides the compiled-in CA file name.
+The CA file contains the list of CAs used to verify the client
+certificate.  Certificates in $CAFILE are processed when the
+server starts.
+
+.TP
+.B $CADIR
+If set, overrides the compiled-in CA directory name.
+The CA directory contains certificates files used to verify the client
+certificate.  This list augments the list from $CAFILE.
+Certificates in $CADIR are processed during certificate
+verification.  A server running with the -a option may not be
+able to read certificates in $CADIR.
+
+.TP
+.B $CCAFILE
+If set, overrides the compiled-in client CA file
+name for client certificate request.  The client CA file contains the
+list of CAs sent to the client when requesting a client certificate.
+
+.TP
+.B $CERTFILE
+If set, overrides the compiled-in certificate file name.
+The server presents this certificate to clients.
+
+.TP
+.B $CIPHERS
+If set, override the compiled-in SSL cipher list.
+
+.TP
+.B $DHFILE
+If set, overrides the compiled-in DH parameter file name.
+
+.TP
+.B $KEYFILE
+If set, overrides the compiled-in key file name.
+The key is used when loading the server certificate.
+Setting $KEYFILE to the empty string instructs the server not
+to use a keyfile when loading its certificate.
+
+.TP
+.B $VERIFYDEPTH
+If set, overrides the compiled-in verification depth.
+.LP
+
+
+.SH AUTHORS
+.LP
+SuperScript Technology, Inc.
+
+.SH SEE ALSO
+sslclient(1),
+tcpserver(1)

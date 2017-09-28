@@ -1,0 +1,29 @@
+# $Id: Pkgfile,v 1.8 2007/04/22 23:07:53 roman Exp $
+#
+# Description: Linux kernel headers
+# URL: http://kernel.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=static-headers
+version=2.6.28.7
+release=1
+source=(ftp://ftp.kernel.org/pub/linux/kernel/v2.6/linux-${version%.*}.tar.bz2
+        http://kernel.org/pub/linux/kernel/v2.6/patch-$version.bz2)
+
+build()
+{
+  cd linux-${version%.*}
+
+  bzcat $SRC/patch-$version.bz2 | patch -p1
+
+  make mrproper
+  make headers_check
+  make INSTALL_HDR_PATH="dest" headers_install
+
+  install -d $ROOT/include
+
+  find dest -name ".*" -type f -exec rm "{}" ";"
+
+  cp -r dest/include/* $ROOT/include/
+}

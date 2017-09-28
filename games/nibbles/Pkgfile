@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Nibbles/Snake clone for ncurses
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=nibbles
+version=0.0.4
+release=1
+source=(http://www.earth.li/projectpurple/files/nibbles-v$version.tar.gz)
+
+build() 
+{
+  cd nibbles-v$version
+  
+  make
+
+  install -d $ROOT/bin
+  install -m 755 nibbles $ROOT/bin
+
+  install -d $ROOT/games
+  install -d $PKG/var/lib/games
+
+  make RPM_BUILD_ROOT="$PKG" INSTALL_FOLDER="$prefix/games" install-rpm
+
+  install -d $ROOT/share/doc/nibblesforncurses
+  install -m 644 README TODO HISTORY LICENSE CREDITS $ROOT/share/doc/nibblesforncurses
+}
+
+# EOF

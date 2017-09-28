@@ -1,0 +1,35 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Qmail Perl email scanner
+# Qmail-Scanner, (also known as scan4virus) is an addon that enables a Qmail
+# Email server to scan all gatewayed Email for certain characteristics. It
+# is typically used for its anti-virus protection functions, in which case
+# it is used in conjunction with commercial virus scanners. but also enables
+# a site to react to Email (at a server/site level) that contains specific
+# strings in particular headers, or particular attachment filenames or
+# types (e.g. *.VBS attachments). It also can be used as an archiving tool
+# for auditing or backup purposes. Qmail-Scanner is integrated into the
+# mail server at a lower level than some other Unix-based virus scanners,
+# resulting in better performance. It is capable of scanning not only
+# locally sent/received Email, but also Email that crosses the server in
+# a relay capacity. It also has SpamAssassin support.
+#
+# URL: http://qmail-scanner.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=qmail-scanner
+version=2.05
+release=1
+source=($mirror_sf/qmail-scanner/qmail-scanner-$version.tgz)
+
+build()
+{
+  cd qmail-scanner-$version
+
+  ./configure \
+       --bindir "$prefix/bin"
+
+  make
+  make DESTDIR="$PKG" install
+}

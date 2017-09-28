@@ -1,0 +1,35 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Critical Mass Modula-3 (CM3)
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=cm3
+version=5.4.0
+release=1
+source=(http://modula3.elegosoft.com/cm3/cm3-src-all-5.4.0.tgz)
+
+build() 
+{
+  cd m3-sys
+
+  for DIR in m3cc/gcc m3gdb/gdb; do
+    (set -e
+
+     cd "$DIR"
+
+     ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+  
+  make
+  make DESTDIR="$PKG" install
+        
+     ) || return $?
+  done
+}
+
+# EOF

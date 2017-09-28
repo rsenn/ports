@@ -1,0 +1,96 @@
+diff -ru libfilth_orig/libfilth/filter.h libfilth/libfilth/filter.h
+--- libfilth_orig/libfilth/filter.h	2008-07-14 18:36:42.000000000 +0200
++++ libfilth/libfilth/filter.h	2008-07-14 18:45:19.000000000 +0200
+@@ -22,6 +24,7 @@
+ #ifndef _FILTER_H
+ #define _FILTER_H	1
+ 
++#include <complex.h>
+ 
+ #ifdef FFTW3_H
+ /*! Struct for representing a DFT filterbank */
+diff -ru libfilth_orig/libfilth/filth.h libfilth/libfilth/filth.h
+--- libfilth_orig/libfilth/filth.h	2008-07-14 18:36:42.000000000 +0200
++++ libfilth/libfilth/filth.h	2008-07-14 18:46:25.000000000 +0200
+@@ -77,12 +79,14 @@
+ 
+ /*! Double precision floating point type used in design routines. */
+ typedef double _ftype_t;
++#define _ftype_t double
+ 
+ /*! Definition of the dynamic range for _ftype_t*/
+ #define FTYPE_EPS 2.2204460492503131e-16
+ 
+ /*! Single precision floating point type, used in execution routines. */
+ typedef float _fshort_t;
++#define _fshort_t float
+ 
+ /* Approximate x using fractional representation. */
+ int quantise(_ftype_t x, unsigned int n, long long int* nx, int* dx);
+@@ -90,7 +94,7 @@
+ /* Return string describing error code. */
+ char* filter_strerror(int errnum);
+ 
+-#include <window.h>
+-#include <filter.h>
++#include "window.h"
++#include "filter.h"
+ 
+ #endif
+diff -ru libfilth_orig/libfilth/internal.c libfilth/libfilth/internal.c
+--- libfilth_orig/libfilth/internal.c	2008-07-14 18:36:42.000000000 +0200
++++ libfilth/libfilth/internal.c	2008-07-14 18:50:24.000000000 +0200
+@@ -51,7 +51,7 @@
+ */
+ int lp(int n, int m, _ftype_t* c, _ftype_t* x, _ftype_t** B, double* b)
+ {
+-  lprec*    lph = NULL;	       	/* Simplex engine handle */
++  void*    lph = NULL;	       	/* Simplex engine handle */
+   _ftype_t* xt  = NULL;		/* Temporary handle to x */
+   int i,j;
+ 
+diff -ru libfilth_orig/libfilth/matrix.c libfilth/libfilth/matrix.c
+--- libfilth_orig/libfilth/matrix.c	2008-07-14 18:36:42.000000000 +0200
++++ libfilth/libfilth/matrix.c	2008-07-14 19:02:00.000000000 +0200
+@@ -129,7 +129,7 @@
+    n	 number of dimensions
+    m 	 matrix
+ */
+-void mat_free(unsigned int n, void** m)
++void mat_free_(unsigned int n, void** m)
+ {
+   /* Sanity check */
+   if(!n || ! m)
+@@ -137,7 +137,7 @@
+ 
+   /* If this isn't the last iteration do recursive call */
+   if(--n)
+-    mat_free(n, *m);
++    mat_free_(n, *m);
+ 
+   if(m)
+     free(m); /* Free data */
+diff -ru libfilth_orig/libfilth/matrix.h libfilth/libfilth/matrix.h
+--- libfilth_orig/libfilth/matrix.h	2008-07-14 18:36:42.000000000 +0200
++++ libfilth/libfilth/matrix.h	2008-07-14 19:01:31.000000000 +0200
+@@ -38,7 +38,7 @@
+ extern void* mat_calloc(size_t wz, unsigned int n, ...);
+ 
+ /* Free matrix */
+-extern void mat_free(unsigned int n, void** m);
++extern void mat_free_(unsigned int n, void** m);
+ 
+ /* Convolve the two vectors z and y and return the result in z. */
+ extern int mat_conv(unsigned int n, unsigned int m, _ftype_t* x, _ftype_t* y, _ftype_t* z);
+diff -ru libfilth_orig/test/Makefile libfilth/test/Makefile
+--- libfilth_orig/test/Makefile	2008-07-14 18:36:42.000000000 +0200
++++ libfilth/test/Makefile	2008-07-14 19:09:43.000000000 +0200
+@@ -5,7 +5,7 @@
+ CFLAGS  = -O3 -Os -Wall -I../ -I../libfilth
+ 
+ LIBS  = -L../libfilth/ -lfilth
+-LIBS += -L/usr/lib/atlas/ -llpk -lgsl -lblas -lfftw3f -lfftw3 -lm 
++LIBS += -L/usr/lib/atlas/ -lgsl -lblas -lfftw3f -lfftw3 -lm 
+ 
+ all: $(OUT)
+ 

@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A user mode kernel for Windows 2000/XP.
+#  ring3k is a user mode kernel capable of running Windows 2000 and XP
+#  compatible native applications on a Linux platform. It is a light-weight
+#  virtualization of the NT kernel for the Linux x86 platform achieved by
+#  reimplementing kernel mode code as a ring 3 process in C++.
+#  .
+# URL: http://ring3k.org/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=ring3k
+version=0.0.23
+release=1
+source=(http://ring3k.org/ring3k-$version.tar.gz)
+
+build()
+{
+  cd ring3k-$version
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

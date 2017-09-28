@@ -1,0 +1,287 @@
+Binary files cdrtools-2.01.01_orig/mkisofs/diag/OBJ/i686-linux-cc/isoinfo and cdrtools-2.01.01/mkisofs/diag/OBJ/i686-linux-cc/isoinfo differ
+Binary files cdrtools-2.01.01_orig/mkisofs/diag/OBJ/i686-linux-cc/isoinfo.o and cdrtools-2.01.01/mkisofs/diag/OBJ/i686-linux-cc/isoinfo.o differ
+diff -ruN -x '*.d' -x '*.rej' -x '*.orig' -x '*~' cdrtools-2.01.01_orig/mkisofs/diag/isoinfo.8 cdrtools-2.01.01/mkisofs/diag/isoinfo.8
+--- cdrtools-2.01.01_orig/mkisofs/diag/isoinfo.8	2009-03-09 07:42:20.000000000 +0100
++++ cdrtools-2.01.01/mkisofs/diag/isoinfo.8	2009-03-09 08:34:14.000000000 +0100
+@@ -67,6 +67,9 @@
+ .B \-x
+ .I path
+ ]
++[
++.B \-t
++]
+ .PP
+ .B isovfy 
+ .I isoimage
+@@ -97,7 +100,7 @@
+ .RE
+ .PP
+ .B isoinfo
+-is a utility to perform directory like listings of iso9660 images.
++is a utility to perform directory like listings of iso9660 images and converting images to tar archives.
+ .PP
+ .B isovfy
+ is a utility to verify the integrity of an iso9660 image. Most of the tests
+@@ -221,6 +224,9 @@
+ .TP
+ .B \-x pathname
+ Extract specified file to stdout.
++.TP
++.B \-t
++Convert iso9660 image to stdout tar archive.
+ .SH AUTHOR
+ The author of the original sources (1993 .\|.\|. 1998) is
+ Eric Youngdale <ericy@gnu.ai.mit.edu> or <eric@andante.jic.com> is to blame
+@@ -230,6 +236,8 @@
+ them
+ Copyright (C) 1999-2004 J\*org Schilling.
+ Patches to improve general usability would be gladly accepted.
++.PP
++Anatoly A. Orehovsky <tolik@asplinux.ru> is the author of the patch for converting images to tar archives.
+ .SH BUGS
+ The user interface really sucks.
+ .SH FUTURE IMPROVEMENTS
+diff -ruN -x '*.d' -x '*.rej' -x '*.orig' -x '*~' cdrtools-2.01.01_orig/mkisofs/diag/isoinfo.c cdrtools-2.01.01/mkisofs/diag/isoinfo.c
+--- cdrtools-2.01.01_orig/mkisofs/diag/isoinfo.c	2009-03-09 07:42:20.000000000 +0100
++++ cdrtools-2.01.01/mkisofs/diag/isoinfo.c	2009-03-09 08:29:17.000000000 +0100
+@@ -57,6 +57,8 @@
+ #include "../../cdrecord/defaults.h"
+ 
+ #include <unls.h>
++#include <tar.h>
++#include <time.h>
+ 
+ #if	defined(__CYGWIN32__) || defined(__EMX__) || defined(__DJGPP__)
+ #include <io.h>					/* for setmode() prototype */
+@@ -140,6 +142,7 @@
+ int	su_version = 0;
+ int	aa_version = 0;
+ int	ucs_level = 0;
++int do_convert = 0;
+ 
+ struct stat	fstat_buf;
+ int		found_rr;
+@@ -399,7 +402,10 @@
+ 			flag2 |= 2048;					/* Apple Signature record */
+ 			aa_version = pnt[3] & 0xff;
+ 		}
+-
++    if(strncmp((char *)pnt, "PN", 2) == 0) {    /* POSIX device number */
++      fstat_buf.st_rdev = makedev(isonum_733(pnt+4),
++            isonum_733(pnt+12));                                                        
++    }
+ 		if (strncmp((char *)pnt, "PX", 2) == 0) {		/* POSIX attributes */
+ 			fstat_buf.st_mode = isonum_733(pnt+4);
+ 			fstat_buf.st_nlink = isonum_733(pnt+12);
+@@ -464,15 +470,19 @@
+ 				if ((pnts[0] & 0xfe) && pnts[1] != 0) {
+ 					printf("Incorrect length in symlink component");
+ 				}
+-				if (xname[0] == 0) strcpy(xname, "-> ");
+-				strcat(xname, symlinkname);
++				//if (xname[0] == 0) strcpy(xname, "-> ");
++				//strcat(xname, symlinkname);
+ 				symlinkname[0] = 0;
+ 				xlen = strlen(xname);
+ 				if ((pnts[0] & 1) == 0 && xname[xlen-1] != '/') strcat(xname, "/");
+ 
+ 				slen -= (pnts[1] + 2);
++        if((pnts[0] & 0xfe) != 8 && 
++          (pnts[0] & 1) == 0 &&
++          slen >= 1) strcat(symlinkname,"/");
+ 				pnts += (pnts[1] + 2);
+ 			}
++      strcat(xname, symlinkname);
+ 			symlinkname[0] = 0;
+ 		}
+ 
+@@ -636,7 +646,8 @@
+ 		if (outline[i] == 0) outline[i] = ' ';
+ 	}
+ 	outline[66] = 0;
+-	printf("%s %s %s\n", outline, name_buf, xname);
++	printf("%s %s%s%s\n", outline, name_buf, xname[0] ? " -> " : "", xname);
++
+ }
+ 
+ void
+@@ -669,6 +680,105 @@
+ }
+ 
+ void
++convert_file(name, extent, idr)
++        char *name;
++        int extent;
++	struct iso_directory_record *idr;
++{
++   char *snm;
++   snm = strrchr(name, '/');
++   snm = snm ? snm + 1 : name;
++   if (strcmp(snm, ".") == 0 || strcmp(snm, "..") == 0)
++     return;
++/* output tar header */
++  {
++    char header[512];
++    char type = '\0';
++
++  if(S_ISREG(fstat_buf.st_mode))
++    type = REGTYPE;
++  else   if(S_ISDIR(fstat_buf.st_mode))
++    type = DIRTYPE;
++  else   if(S_ISLNK(fstat_buf.st_mode))
++    type = SYMTYPE;
++  else   if(S_ISCHR(fstat_buf.st_mode))
++    type = CHRTYPE;
++  else   if(S_ISBLK(fstat_buf.st_mode))
++    type = BLKTYPE;
++  else   if(S_ISFIFO(fstat_buf.st_mode))
++    type = FIFOTYPE;
++
++    if (!use_rock)
++    {
++      fstat_buf.st_mode |= S_IRUSR | S_IWUSR | S_IXUSR;
++    }
++
++    memset(header, 0, sizeof(header));
++    snprintf(header, 100, "%s%s", name, /*type == DIRTYPE ? "/" :*/ "");
++    snprintf(header + 100, 8, "%07lo", fstat_buf.st_mode);
++    snprintf(header + 108, 8, "%07lo", fstat_buf.st_uid);
++    snprintf(header + 116, 8, "%07lo", fstat_buf.st_gid);
++    snprintf(header + 124, 12, "%011lo", S_ISREG(fstat_buf.st_mode) ?
++      fstat_buf.st_size : 0);
++    {
++      struct tm tm;
++      memset(&tm, 0, sizeof(tm));
++      tm.tm_year = (unsigned char)date_buf[0];
++      tm.tm_mon = (unsigned char)date_buf[1] - 1;
++      tm.tm_mday = (unsigned char)date_buf[2];
++      tm.tm_hour = (unsigned char)date_buf[3];
++      tm.tm_min = (unsigned char)date_buf[4];
++      tm.tm_sec = (unsigned char)date_buf[5];
++      snprintf(header + 136, 12, "%011lo", mktime(&tm) + ((date_buf[6] > 0) ? 
++	-(date_buf[6] * 15 * 60) : (date_buf[6] * 15 * 60)));
++    }
++    snprintf(header + 148, 9, "%s", "         ");
++
++    snprintf(header + 156, 2, "%c", type);
++    if (type == SYMTYPE)
++      {
++        snprintf(header + 157, 100, "%s", xname);
++      }
++
++    snprintf(header + 257, TMAGLEN + 1, "%s", TMAGIC);
++    snprintf(header + 263, TVERSLEN + 1, "%s", TVERSION);
++/* major, minor */
++    if (type == BLKTYPE || type == CHRTYPE)
++      {
++	snprintf(header + 329, 8, "%07lo", major(fstat_buf.st_rdev));
++	snprintf(header + 337, 8, "%07lo", minor(fstat_buf.st_rdev));
++      }
++    {
++      int chksum = 0;
++      int i;
++      for (i = 0; i < 512; i++)
++        chksum += header[i];
++      snprintf(header + 148, 8, "%07lo", chksum);
++    }
++    write(1, header, sizeof(header));
++  }
++
++/* output file data */
++  if(S_ISREG(fstat_buf.st_mode))
++  {
++    int len = isonum_733((unsigned char *)idr->size);
++
++    if (len) 
++      {
++      char buf[512];
++      int fill = len % 512;
++
++      extract_file(idr);
++      if (fill)
++        {
++          memset(buf, 0, 512 - fill);
++	  write(1, buf, 512 - fill);
++        }
++      }
++  }
++}
++
++void
+ parse_dir(rootname, extent, len)
+ 	char	*rootname;
+ 	int	extent;
+@@ -794,6 +904,12 @@
+ 			}
+ 			if (do_listing)
+ 				dump_stat(idr, isonum_733((unsigned char *)idr->extent));
++      if (do_convert) {
++        strcpy(testname, rootname);
++        strcat(testname, name_buf);
++              convert_file(testname, isonum_733((unsigned char *)idr->extent),
++                idr);
++      }
+ 			i += buffer[i];
+ 			if (i > 2048 - offsetof(struct iso_directory_record, name[0])) break;
+ 		}
+@@ -823,6 +939,7 @@
+ 	error("\t-i filename	Filename to read ISO-9660 image from\n");
+ 	error("\tdev=target	SCSI target to use as CD/DVD-Recorder\n");
+ 	error("\t-x pathname	Extract specified file to stdout\n");
++	error("\t-t 		Convert input file to stdout tar archive\n");
+ 	exit(excode);
+ }
+ 
+@@ -850,7 +967,7 @@
+ 	struct eltorito_boot_descriptor bpd;
+ 	struct iso_directory_record * idr;
+ 	char	*charset = NULL;
+-	char	*opts = "help,h,version,debug,d,p,i*,dev*,J,R,l,x*,f,s,N#l,T#l,j*";
++	char	*opts = "help,h,version,debug,d,p,i*,dev*,J,R,l,x*,f,s,N#l,T#l,j*,t";
+ 	BOOL	help = FALSE;
+ 	BOOL	prvers = FALSE;
+ 	BOOL	found_eltorito = FALSE;
+@@ -870,7 +987,8 @@
+ 				&xtract,
+ 				&do_find, &do_sectors,
+ 				&sector_offset, &toc_offset,
+-				&charset) < 0) {
++				&charset,
++        &do_convert) < 0) {
+ 		errmsgno(EX_BAD, "Bad Option: '%s'\n", cav[0]);
+ 		usage(EX_BAD);
+ 	}
+@@ -881,6 +999,10 @@
+ 					HOST_CPU, HOST_VENDOR, HOST_OS);
+ 		exit(0);
+ 	}
++  if (do_convert) {
++    setenv("TZ", "GMT", 1);
++    tzset();
++  }
+ 	cac = argc - 1;
+ 	cav = argv + 1;
+ 	if (getfiles(&cac, &cav, opts) != 0) {
+@@ -1243,8 +1365,8 @@
+ 		}
+ 	}
+ 
+-	parse_dir("/", isonum_733((unsigned char *)idr->extent),
+-				isonum_733((unsigned char *)idr->size));
++  parse_dir(do_convert ? "" : "/", isonum_733((unsigned char *)idr->extent), 
++        isonum_733((unsigned char *)idr->size));
+ 	td = todo_idr;
+ 	while (td) {
+ 		parse_dir(td->name, td->extent, td->length);
+@@ -1253,6 +1375,11 @@
+ 
+ 	if (infile != NULL)
+ 		fclose(infile);
++    if (do_convert) {
++      char buf[1024];
++      memset(buf, 0, sizeof(buf));
++      write(1, buf, sizeof(buf));
++    }
+ 	return (0);
+ }
+ 

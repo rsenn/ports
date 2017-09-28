@@ -1,0 +1,24 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Just-In-Time Compiler for the Lua programming language
+# URL: http://luajit.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=luajit
+version=1.1.4
+release=1
+source=(http://luajit.org/download/LuaJIT-$version.tar.gz)
+
+build()
+{
+  cd LuaJIT-$version
+
+  make linux
+  make \
+      INSTALL_TOP="$ROOT" \
+      INSTALL_MAN="\$(INSTALL_TOP)/share/man/man1" \
+    install
+}
+
+# EOF

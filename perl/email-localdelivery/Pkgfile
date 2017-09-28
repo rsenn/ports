@@ -1,0 +1,26 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Deliver a piece of email - simply
+# Email::LocalDelivery delivers an email to a list of mailboxes.
+#
+# URL: http://search.cpan.org/~rjbs/Email-LocalDelivery-0.217/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=email-localdelivery
+version=0.217
+release=1
+source=(http://search.cpan.org/CPAN/authors/id/R/RJ/RJBS/Email-LocalDelivery-$version.tar.gz)
+
+build()
+{
+  cd Email-LocalDelivery-$version
+
+  perl Makefile.PL
+
+  make \
+       DESTDIR="$PKG" \
+       INSTALLDIRS="vendor" \
+       PREFIX="$prefix" \
+       install
+}

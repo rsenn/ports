@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Shell Flags (shFlags) is a library written to greatly simplify the handling of command-line flags in Bourne based Unix shell scripts (bash, dash, ksh, sh, zsh) on many Unix OSes (Linux, Solaris, Mac OS X, etc.).
+# URL: http://code.google.com/p/shflags/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=shflags
+version=1.0.1
+release=1
+source=(http://shflags.googlecode.com/files/shflags-$version.tgz)
+
+build()
+{
+  cd shflags-$version
+
+  install -d $ROOT/share/doc/shflags
+  install -m 644 doc/* README* $ROOT/share/doc/shflags
+  cp -rf examples $ROOT/share/doc/shflags
+
+  install -d $ROOT/lib/shflags
+  install -m 644 lib/shunit2 $ROOT/lib/shflags
+
+  install -d $ROOT/bin
+  install -m 644 src/shflags $ROOT/bin
+
+  install -d $ROOT/share/shflags
+  install -m 644 src/shflags_test* $ROOT/share/shflags
+}

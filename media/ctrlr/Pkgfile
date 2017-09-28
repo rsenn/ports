@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Sends out all possible midi messages. Create your own control panles for devices.
+# URL: http://code.google.com/p/ctrlr/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=ctrlr
+version=20080608
+release=1
+source=(ctrlr-${version}svn.tar.bz2
+        ctrlr-20080608-fixes.patch)
+
+build()
+{
+  cd ctrlr-$version
+
+  patch -N -p1 -i $SRC/ctrlr-20080608-fixes.patch
+
+  for src in *.cpp
+  do
+    $CXX $CXXFLAGS -I. -c $src || exit $?
+  done
+
+  $CXX -o ctrlr *.o -ljuce -lGL -lX11 -lXinerama -lfreetype -lasound -lpthread
+
+  install -d $ROOT/bin
+  install -m 755 ctrlr $ROOT/bin
+}

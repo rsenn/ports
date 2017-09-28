@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: ELF abisum is a tool to generate an ABI checksum of ELF binaries from their DWARF debug information
+# It can be used to speed up builds by avoiding unnecessary re-linking
+# of binaries.
+#
+# URL: http://abisum.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libdwarf0, libelfg0, libgcc1, libpcre3, libssl0.9.8, libstdc++6
+
+name=elf-abisum
+version=0.1
+release=1
+source=($mirror_sf/abisum/abisum-$version.tar.gz)
+
+build()
+{
+  cd abisum-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --mandir="$prefix/share/man"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/elf-abisum
+  install -m 644 [A-Z]*[A-Z]* $ROOT/share/doc/elf-abisum
+  install -m 644 */*.html $ROOT/share/doc/elf-abisum
+}

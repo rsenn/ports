@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Not so simple IMAP client library
+# URL: http://search.cpan.org/~mishoo/Net-IMAP-Client-0.9/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=net-imap-client
+version=0.9
+release=1
+source=(http://search.cpan.org/CPAN/authors/id/M/MI/MISHOO/Net-IMAP-Client-$version.tar.gz)
+
+build()
+{
+  cd Net-IMAP-Client-$version
+
+  perl Makefile.PL
+  make \
+     DESTDIR="$PKG" \
+     INSTALLDIRS="vendor" \
+     PREFIX="$prefix" \
+   install
+
+  install -d $ROOT/share/doc/net-imap-client
+  install -m 644 Changes MANIFEST README $ROOT/share/doc/net-imap-client
+}
+
+# EOF

@@ -1,0 +1,32 @@
+# $Id: Pkgfile,v 1.5 2007/04/22 23:07:52 roman Exp $
+#
+# Description:
+# URL: http://cateee.net/lkddb/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=lkddb
+version=20071111
+release=1
+source=(build-lkddb.py devicetables.py kbuildparser.py lkddb.py srcparser.py
+        lkddb.data
+        README FORMAT)
+
+build()
+{
+  install -d $ROOT/bin
+
+  pyver=$(python -V 2>&1 | sed 's/^[^\s]\+\s\([0-9]\+\.[0-9]\+\).*$/\1/')
+
+  install -m 755 build-lkddb.py $ROOT/bin/lkddb-build
+
+  install -d $ROOT/lib/python$pyver
+  install -m 644 lkddb.py srcparser.py kbuildparser.py devicetables.py \
+     $ROOT/lib/python$pyver/
+
+  install -d $ROOT/share/doc/$name-$version/
+  install -m 644 README FORMAT $ROOT/share/doc/$name-$version/
+
+  install -d $PKG/var/lib/lkddb
+  install -m 644 lkddb.data $PKG/var/lib/lkddb/
+}

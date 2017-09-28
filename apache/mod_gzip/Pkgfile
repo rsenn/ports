@@ -1,0 +1,40 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: A content acceleration module for Apache servers.
+#   mod_gzip, a content acceleration module for Apache, contains a highly
+#   optimized and Web server thread-safe version of gzip. It runs perfectly
+#   as either an external DSO load module or built right into the core.
+#    .
+# URL: http://www.schroepl.net/projekte/mod_gzip/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=mod_gzip
+version=1.3.26.1a
+release=1
+source=($mirror_sf/mod-gzip/mod_gzip-$version.tgz)
+
+build()
+{
+  cd mod_gzip-$version
+
+  APXS=`ls $prefix/*bin/apxs*`
+
+  for apxs in $APXS; do
+   (rm -rf ${builddir=build-`apxs -q progname`}
+    mkdir -p $builddir
+    cd $builddir
+
+    $apxs \
+      -Wc"${CFLAGS--g -O2}" -c ../mod_gzip.c ../mod_gzip_debug.c ../mod_gzip_compress.c -o mod_gzip.so
+
+    libexecdir=`$apxs -q libexecdir`
+
+    install -d $PKG${libexecdir}
+    install -m 755 .libs/mod_gzip.so $PKG${libexecdir}/
+      )
+  done
+
+  install -d $ROOT/local/www/htdocs/manual
+  cp -rf docs/manual/english $ROOT/local/www/htdocs/manual/mod_gzip
+}

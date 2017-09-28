@@ -1,0 +1,43 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A multi-threaded SMTP stress testing tool.
+#  xstress is a small yet powerful tool to stress test SMTP mail
+#  servers. xstress creates multiple threads and sends mail messages with
+#  varying subjects, "to" addresses, and body texts. Mail attachments are
+#  supported. All the parameters are highly configurable. For example,
+#  you can configure the number of threads xstress creates, SMTP timeout,
+#  attachment files, "to" address, "from" address, etc.
+#  .
+# URL: http://xstress.sourceforge.net/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=xstress
+version=0.31-beta-20071115
+release=1
+source=($mirror_sf/xstress/xstress-src-$version.tar.gz
+        xstress-0.31-confdir.patch)
+
+build()
+{
+  cd xstress-src
+
+  patch -N -p1 -i $SRC/xstress-0.31-confdir.patch
+
+  case "$prefix" in
+    "/usr") sysconfdir="/etc" ;;
+  esac
+
+  make
+
+  install -d $ROOT/bin
+  install -m 755 bin/xstress $ROOT/bin
+
+  install -d $PKG${sysconfdir="$prefix/etc"}
+  install -m 644 xstress.conf $PKG${sysconfdir}
+
+  install -d $ROOT/share/doc/xstress
+  install -m 644 LICENSE README $ROOT/share/doc/xstress
+}
+
+# EOF

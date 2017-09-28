@@ -1,0 +1,27 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: GRand Unified Bootloader
+#  GRUB is a GPLed bootloader intended to unify bootloading across x86
+#  operating systems. In addition to loading the Linux kernel, it implements
+#  the Multiboot standard, which allows for flexible loading of multiple
+#  boot images (needed for modular kernels such as the GNU Hurd).
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=grub
+version=1.96
+release=1
+source=(ftp://alpha.gnu.org/gnu/grub/grub-$version.tar.gz)
+
+build()
+{
+  cd grub-$version
+
+  ./configure \
+       --host="i386-linux" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

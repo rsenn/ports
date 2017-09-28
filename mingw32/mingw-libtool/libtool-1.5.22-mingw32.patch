@@ -1,0 +1,43 @@
+diff -r -u src_orig/libtool-1.5.22/ltmain.in src/libtool-1.5.22/ltmain.in
+--- src_orig/libtool-1.5.22/ltmain.in	2007-04-21 02:58:28.000000000 +0200
++++ src/libtool-1.5.22/ltmain.in	2007-04-21 03:03:30.000000000 +0200
+@@ -1066,18 +1066,24 @@
+   link | relink)
+     modename="$modename: link"
+     case $host in
+-    *-*-cygwin* | *-*-mingw* | *-*-pw32* | *-*-os2*)
++    *-*-cygwin* | *-*-mingw* | *-*-pw32*)
+       # It is impossible to link a dll without this setting, and
+       # we shouldn't force the makefile maintainer to figure out
+       # which system we are compiling for in order to pass an extra
+       # flag for every libtool invocation.
+-      # allow_undefined=no
++      allow_undefined=no
+ 
+       # FIXME: Unfortunately, there are problems with the above when trying
+       # to make a dll which has undefined symbols, in which case not
+       # even a static library is built.  For now, we need to specify
+       # -no-undefined on the libtool link line when we can be certain
+       # that all symbols are satisfied, otherwise we get a static library.
++      #allow_undefined=yes
++      
++      # bah, i like those short dll names
++      need_lib_prefix=no
++      ;;
++    *-*-cygwin* | *-*-os2*)
+       allow_undefined=yes
+       ;;
+     *)
+diff -r -u src_orig/libtool-1.5.22/libtool.m4 src/libtool-1.5.22/libtool.m4
+--- src_orig/libtool-1.5.22/libtool.m4	2007-04-21 03:29:45.000000000 +0200
++++ src/libtool-1.5.22/libtool.m4	2007-04-21 03:32:41.000000000 +0200
+@@ -1328,7 +1328,7 @@
+       sys_lib_search_path_spec="/usr/lib /lib/w32api /lib /usr/local/lib"
+       ;;
+     mingw*)
+-      # MinGW DLLs use traditional 'lib' prefix
++      # I don't like the traditional 'lib' prefix
+-      soname_spec='${libname}`echo ${release} | $SED -e 's/[[.]]/-/g'`${versuffix}${shared_ext}'
++      soname_spec='${name}`echo ${release:+-$release} | $SED -e "s/^[[.]]/-/" -e "s/[-0-9]*$//"`${shared_ext}'
+       sys_lib_search_path_spec=`$CC -print-search-dirs | grep "^libraries:" | $SED -e "s/^libraries://" -e "s,=/,/,g"`
+       if echo "$sys_lib_search_path_spec" | [grep ';[c-zC-Z]:/' >/dev/null]; then

@@ -1,0 +1,173 @@
+# $Id: Pkgfile,v 1.2 2007/04/22 23:07:53 roman Exp $
+#
+# Description: Distcc
+#  'distcc' distributes compilation of C or C++ code across several machines
+#  on a network. It should always generate the same results as a local
+#  compile, is simple to install and use, and is often significantly faster
+#  than a local compile.
+#  'distcc' does not require all machines to share a filesystem, have
+#  synchronized clocks, or to have the same libraries or header files
+#  installed. Machines can be running different operating systems, as long
+#  as they have compatible binary formats or cross-compilers. 'distcc' sends
+#  the complete preprocessed source code across the network for each job,
+#  so all it requires of the volunteer machines is that they be running
+#  the distccd daemon, and that they have an appropriate compiler installed.
+# URL: http://distcc.samba.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=distcc
+version=3.0
+release=1
+source=(http://distcc.googlecode.com/files/distcc-$version.tar.bz2
+        distcc-discover)
+
+build()
+{
+  cd distcc-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --with-gnome \
+       --with-gtk
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/etc/distcc
+  install -m 755 $SRC/distcc-discover $ROOT/bin
+}
+
+# package postmerge script
+# --------------------------------------------------------------------------------
+postmerge()
+{
+  # check if the user that should run the server exists
+  if ! user_exists "${distccd_user}"; then
+    msg "no user '$distccd_user' found, creating it..."
+
+    # check if the group that should run the server exists
+    if ! group_exists "${distccd_group}"; then
+      msg "no group '$distccd_group' found, creating it..."
+
+      # try creating group, if failed we unset the group variable
+      if ! group_add "${distccd_group}"; then
+        warn "failed creating group '$distccd_group'," \
+            "omitting group when creating user"
+        unset group
+      fi
+    fi
+
+    # try to add user, if we fail here we cannot start the server
+    if ! user_add "$distccd_user" "$distccd_group" \
+       $prefix "" "distcc daemon"; then
+      error "failed adding user '$distccd_user'"
+    fi
+  fi
+}
+
+# package configuration
+# -----------------------------------------------------------------------------
+config()
+{
+  # add the main-menu entry "distccd"
+  config_branch 'distccd'   'DistCC daemon'
+
+	  config_value 'listen'     'DistCC server host'
+      config_description    'Address the DistCC server will listen to'
+      config_default        '$(config_getvalue global_ipaddr)'
+      config_function       'choose --help-{button,label} Other $(inet_list)'
+    config_end
+
+    config_value 'port'     'DistCC server port'
+      config_description    'Port the DistCC server will listen to'
+      config_default        '3632'
+    config_end
+
+    config_value 'user'     'DistCC daemon user'
+      config_description    'User-account the DistCC daemon will run under'
+      config_default        '$(user_find distcc nobody daemon)'
+    config_end
+
+    config_value 'allow'    'DistCC allowed hosts'
+      config_description    'Hosts allowed to connect to the DistCC server (CIDR netmasks allowed)'
+      config_default        '$(listen=$(config_getvalue distccd_listen); echo ${listen%.*}.0/24)'
+    config_end
+
+  config_end
+}
+
+# --------------------------------------------------------------------------------
+services()
+{
+  config_branch "distccd"
+
+    config_set 'TITLE'   'DistCC Daemon'
+    config_set 'PIDFILE' '$prefix/var/run/distccd.pid'
+    config_set 'START'   'daemon.*started'
+    config_set 'STOP'    'Terminated'
+
+  config_leave
+}
+
+# script to start distccd from supervise
+# --------------------------------------------------------------------------------
+distccd()
+{
+  exec 2>&1
+
+  # set default values
+  listen=${distccd_listen:-0.0.0.0}
+  port=${distccd_port:-80}
+  user=${distccd_user:-nobody}
+  allow=${distccd_allow:-${global_ipaddr%.*}.0/24}
+  pidfile=$(config_getvalue 'distccd_PIDFILE')
+
+  # is there already a distccd running?
+
+  if service_exists 'distccd' && service_enabled 'distccd'; then
+    echo "Checking for distccd..."
+
+    service_runs 'distccd' && echo "Ok, distccd runs." || {
+      echo "Starting distccd..."
+      service_up 'distccd'
+      sleep 0.25
+    }
+  fi
+
+  # check if the user is available to setuidgid
+  if ! user_avail "$user"; then
+    service_error "no such user:" "$user"
+  fi
+
+  # check if there's already an instance of distccd
+  if [ -f $pidfile ]; then
+    pid=$(<$pidfile)
+
+    if [ $((pid)) -gt 0 ] && [ -d $prefix/proc/$((pid)) ]; then
+      service_msg "distccd already running, restarting..."
+      kill ${pid}
+      sleep 2
+      exit 1
+    fi
+  fi
+
+  # check whether listen:port is bindable
+  if proc=$(inet_bound tcp $listen:$port); then
+    service_error $listen:$port 'already bound'
+  fi
+
+  export NO_DETACH=1
+
+  eval 'args="$(echo -a {'${allow// /,}'})"'
+
+  # finally execute distccd
+  exec -a distccd $bindir/distccd \
+       ${pidfile:+--pid-file="$pidfile"} \
+       --no-detach --log-stderr --daemon \
+       ${listen:+--listen="$listen"} \
+       ${user:+--user="$user"} \
+       ${post:+-p "$port"} $args
+}

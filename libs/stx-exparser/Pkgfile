@@ -1,0 +1,40 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A C++ framework to parse user-specified arithmetic expressions with variables.
+#  The STX Expression Parser provides a C++ framework that can
+#  process user-specified expression strings containing program-specific
+#  variables. It can be integrated into applications to allow user-customized
+#  data selection and filtering. The expression strings are intuitive
+#  SQL-like WHERE clauses, and can contain arbitrarily complex arithmetic. At
+#  the same time, the parse tree evaluation speed is guaranteed to be fast
+#  enough to safely iterate over larger data sets. The framework uses the
+#  Boost.Spirit parser library combined with a versatile custom scalar
+#  value class.
+# URL: http://idlebox.net/2007/stx-exparser/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=stx-exparser
+version=0.7
+release=1
+source=(http://idlebox.net/2007/stx-exparser/stx-exparser-$version.tar.bz2
+        http://idlebox.net/2007/stx-exparser/stx-exparser-$version-doxygen.tar.bz2)
+
+build()
+{
+  cd stx-exparser-$version
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --${shared:=enable}-shared \
+      --${static:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/bin
+  libtool --mode="install" install -m 755 examples/csvfilter/csvfilter $ROOT/bin
+  libtool --mode="install" install -m 755 examples/csvtool/csvtool $ROOT/bin
+}

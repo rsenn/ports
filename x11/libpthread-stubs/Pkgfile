@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: pthread stubs not provided by native libc
+#  This library provides weak aliases for pthread functions not provided
+#  in libc or otherwise available by default. Libraries like libxcb rely
+#  on pthread stubs to use pthreads optionally, becoming thread-safe
+#  when linked to libpthread, while avoiding any performance hit when
+#  running single-threaded. libpthread-stubs supports this behavior even
+#  on platforms which do not supply all the necessary pthread stubs. On
+#  platforms which already supply all the necessary pthread stubs, this
+#  package has no content.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libpthread-stubs
+version=0.1
+release=1
+source=(http://xcb.freedesktop.org/dist/libpthread-stubs-$version.tar.bz2)
+
+build()
+{
+  cd libpthread-stubs-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

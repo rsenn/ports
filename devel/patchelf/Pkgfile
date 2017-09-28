@@ -1,0 +1,27 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: utility to modify the dynamic linker and RPATH of ELF executables.
+# Dynamically linked ELF executables always specify a dynamic linker or interpreter, which is a program that actually loads the executable along with all its dynamically linked libraries. (The kernel just loads the interpreter, not the executable.) For example, on a Linux/x86 system the ELF interpreter is typically the file /lib/ld-linux.so.2. It is sometimes necessary to use a different ELF interpreter, say, when you want to test a version of Glibc installed in a location other than /lib.
+# URL: http://nixos.org/patchelf.html
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=patchelf
+category=devel
+version=0.3
+release=1
+source=(http://nixos.org/releases/patchelf/patchelf-$version/patchelf-$version.tar.bz2)
+
+build()
+{
+  cd patchelf-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

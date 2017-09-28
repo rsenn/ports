@@ -1,0 +1,60 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An easy-to-use implementation of SVM.
+#  LIBSVM is an integrated software for support vector classification,
+#  regression, and distribution estimation.
+#  It supports multi-class classification. The goal is to help users from
+#  other fields to easily use SVM as a tool. LIBSVM provides a simple
+#  interface where users can easily link it with their own programs. It
+#  is implemented in both C++ and Java. A Python interface and a GUI
+#  demonstrating SVM classification and regression are also included in
+#  the package.'
+#  .
+# URL: http://www.csie.ntu.edu.tw/~cjlin/libsvm/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libsvm
+version=2.88
+release=1
+source=(http://distfiles.gentoo.org/distfiles/libsvm-$version.tar.gz
+        libsvm-2.88-gnu.patch
+        libsvm-2.88-cstdlib.patch)
+
+build()
+{
+  cd libsvm-$version
+
+  patch -N -p1 -i $SRC/libsvm-2.88-gnu.patch
+  patch -N -p1 -i $SRC/libsvm-2.88-cstdlib.patch
+
+  make -f GNUmakefile \
+      CXX="${CXX-g++}" \
+      CFLAGS="${CXXFLAGS--g -O2}" \
+      DESTDIR="$PKG" \
+      prefix="$prefix" \
+    all install
+
+ (cd python
+  set -- `python --version 2>&1`
+  make \
+      PYTHON_INCLUDEDIR="$prefix/include/python$2" \
+      CXX="${CXX-g++}" \
+      CFLAGS="${CXXFLAGS--g -O2} -I\$(PYTHON_INCLUDEDIR) -I.." \
+    all
+
+  python setup.py install --prefix="$ROOT")
+
+
+  make -C svm-toy/qt CXX="${CXX-g++}" FLAGS="${CXXFLAGS--g -O2} -I\$(INCLUDE) -I\$(INCLUDE)/QtGui -lQtGui"
+  make -C svm-toy/gtk
+
+  install -d $ROOT/bin
+  install -m 755 svm-toy/qt/svm-toy $ROOT/bin/svm-toy-qt
+  install -m 755 svm-toy/gtk/svm-toy $ROOT/bin/svm-toy-gtk
+
+  install -d $ROOT/share/doc/libsvm
+  install -m 644 README COPYRIGHT $ROOT/share/doc/libsvm
+}
+
+# EOF

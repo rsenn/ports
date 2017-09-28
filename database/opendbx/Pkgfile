@@ -1,0 +1,37 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A unified database API and C/C++ library.
+#  The OpenDBX libraries provide a unified and consistent API for software
+#  developers to different database management systems. The C and C++
+#  libraries aim to implement access to the native database interfaces
+#  efficiently via a thin abstraction layer. They consist of a basic set
+#  of functions that are part of all vendor database libraries and can be
+#  extended by additional function blocks. Currently, Firebird/Interbase,
+#  MS SQL Server, MySQL, Oracle, PostgreSQL, SQLite 2 and 3, and Sybase
+#  ASE are supported.
+# URL: http://www.linuxnetworks.de/doc/index.php/OpenDBX
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=opendbx
+version=1.2.3
+release=1
+source=(http://linuxnetworks.de/opendbx/download/opendbx-$version.tar.gz)
+
+build()
+{
+  cd opendbx-$version
+
+  libtoolize --force --copy
+  aclocal --force
+  autoconf --force
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

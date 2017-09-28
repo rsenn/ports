@@ -1,0 +1,55 @@
+diff -u epto-0.8.16_orig/eptogen.sh.src epto-0.8.16/eptogen.sh.src
+--- epto-0.8.16_orig/eptogen.sh.src	2008-08-27 13:22:57.000000000 +0200
++++ epto-0.8.16/eptogen.sh.src	2008-08-27 13:25:30.000000000 +0200
+@@ -355,7 +355,7 @@
+ {
+     progname_=`basename $0`
+     EPTO_PROGNAME_=`echo $progname_ | tr '[:lower:]'  '[:upper:]' |
+-                   sed 's/\-/_/g'`
++                   sed 's/[^_[:alnum:]]/_/g'`
+ 
+     stdopt_syntax_="[-ADNUvV] [-F file]"
+ 
+diff -u epto-0.8.16_orig/eptolib.sh epto-0.8.16/eptolib.sh
+--- epto-0.8.16_orig/eptolib.sh	2008-08-27 13:22:57.000000000 +0200
++++ epto-0.8.16/eptolib.sh	2008-08-27 13:25:30.000000000 +0200
+@@ -546,7 +546,7 @@
+ {
+     epto_progname_=`basename $0`
+     EPTO_PROGNAME_=`echo $epto_progname_ | tr '[:lower:]'  '[:upper:]' |
+-                   sed 's/\-/_/g'`
++                   sed 's/[^_[:alnum:]]/_/g'`
+ 
+     epto_stdopt_syntax_="[-DUvV] [-A file] [-F file] [-S logarg] [-T timeout]"
+ 
+@@ -639,7 +640,7 @@
+     epto_max_nargs_=`epto_nelems $epto_epiv_max_`
+ 
+     epto_norm_syn_="`echo \"$epto_arg_syn_\" |
+-        sed 's/\-/_/g
++        sed 's/[^_[:alnum:]]/_/g
+ 	     s/ files / file ... /g
+ 	     s/ dirs / dir ... /g
+ 	     s/ pids / pid ... /g
+--- epto-0.8.16_orig/eptolite.template	2008-08-27 13:22:57.000000000 +0200
++++ epto-0.8.16/eptolite.template	2008-08-27 13:25:30.000000000 +0200
+@@ -252,7 +252,7 @@
+ {
+     progname_=`basename $0`
+     EPTO_PROGNAME_=`echo $progname_ | tr '[:lower:]'  '[:upper:]' |
+-                   sed 's/\-/_/g'`
++                   sed 's/[^_[:alnum:]]/_/g'`
+ 
+     stdopt_syntax_="[-ADUvV] [-F file] [-T timeout]"
+ 
+--- epto-0.8.16_orig/eptosimpletest.sh	2008-08-27 13:22:57.000000000 +0200
++++ epto-0.8.16/eptosimpletest.sh	2008-08-27 13:25:30.000000000 +0200
+@@ -587,7 +587,7 @@
+ {
+     progname_=`basename $0`
+     EPTO_PROGNAME_=`echo $progname_ | tr '[:lower:]'  '[:upper:]' |
+-                   sed 's/\-/_/g'`
++                   sed 's/[^_[:alnum:]]/_/g'`
+ 
+     stdopt_syntax_="[-ADNUvV] [-F file] [-T timeout]"
+ 

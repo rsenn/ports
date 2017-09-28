@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: X authentication utility
+#  > xauth is a small utility to read and manipulate Xauthority files,
+#  which > are used by servers and clients alike to control authentication
+#  and access > to X sessions.
+#  .
+# URL:
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=xauth
+version=1.0.3
+release=1
+source=(ftp://ftp.x.org/pub/individual/app/xauth-$version.tar.bz2)
+
+build()
+{
+  cd xauth-$version
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

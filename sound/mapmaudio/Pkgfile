@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An MPEG audio stream mapper.
+#  mapmaudio is an 1f42 MPEG audio stream mapper. The written MPEG audio
+#  stream maps contain information such as stream frame rate, stream
+#  duration and number of frames, file position of audio stream frames,
+#  and so forth. The output conforms the 1f42 H262 map file format (for
+#  which specifications are available at sourceforge.net/projects/x1f42/)
+#  and can be used by programs (such as Mylene1f4 MPEG audio player) in
+#  performing fast and accurate random access.
+#  .
+# URL: http://sourceforge.net/projects/mapmaudio/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=mapmaudio
+version=2.59
+release=1
+source=($mirror_sf/mapmaudio/mapmaudio-2.59.tar.gz)
+
+build()
+{
+  cd mapmaudio-2.59
+./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+make
+make DESTDIR="$PKG" install
+}
+
+# EOF

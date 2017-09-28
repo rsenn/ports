@@ -1,0 +1,27 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A FUSE filesystem with file conversion filters
+#  fuseflt is a FUSE filesystem that allows the user to define file
+#  conversion filters that will be applied when requested. It relies
+#  on filename extensions to determine file types. It can be used to
+#  create read-only compressed filesystems, to transparently convert
+#  proprietary file formats or for any other purpose where a suitable
+#  filter can be defined.
+# URL: http://users.softlab.ece.ntua.gr/~thkala/projects/fuseflt/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libcfg+, libfuse2
+
+name=fuseflt
+version=0.0.9
+release=1
+source=(http://users.softlab.ece.ntua.gr/~thkala/projects/fuseflt/files/fuseflt-$version.tar.bz2)
+
+build()
+{
+  cd fuseflt-$version
+
+  make CC="${CC-cc}" CFLAGS="$CFLAGS"
+
+  install -d $ROOT/bin
+  install -m 755 fuseflt $ROOT/bin
+}

@@ -1,0 +1,34 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:48 roman Exp $
+#
+# Description: Open implementation of the Service Location Protocol v2 (RFC 2608).
+#  The OpenSLP project is an effort to develop an open-source implementation
+#  of Service Location Protocol (RFC 2608) suitable for commercial and
+#  non-commercial application.
+# URL: http://www.openslp.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=openslp
+version=1.2.1
+release=1
+source=($mirror_sf/openslp/openslp-$version.tar.gz)
+
+build()
+{
+  cd openslp-$version
+
+  libtoolize --force --copy
+  aclocal --force
+  autoconf --force
+  automake --force --copy --foreign --add-missing
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --${shared:=enable}-shared \
+       --${static:=enable}-shared
+
+  make
+  make prefix="$ROOT" install
+}

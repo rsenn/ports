@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: LD_PRELOAD-able shared library designed for maintaining a home directory without dot-files
+# It intercepts file operations, so if a program tries to open a dotfile
+# in /root, it is redirected to (as defined by freedesktop). You can then
+# store all your configuration files in instead of using lots of dot-files
+# in /root.
+#
+# URL: http://ordiluc.net/fs/libetc/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libetc
+version=0.4
+release=1
+source=(http://ordiluc.net/fs/libetc/libetc-$version.tar.gz)
+
+build()
+{
+  cd libetc-$version
+
+  make CC="${CC-cc}" CFLAGS="$CFLAGS"
+
+  install -d $ROOT/lib
+  install -m 755 libetc.so* $ROOT/lib
+
+ (cd $ROOT/lib && ln -sf libetc.so.$version libetc.so.${version%.*})
+
+  install -d $ROOT/share/doc/libetc
+  install -m 644 [A-Z]*[A-Z]* $ROOT/share/doc/libetc
+}

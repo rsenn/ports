@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A MIME attachment extraction tool.
+#  ripMIME extracts attachment files out of a MIME-encoded email pack.
+#  .
+# URL: http://www.pldaniels.com/ripmime/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=ripmime
+version=1.4.0.7
+release=1
+source=(http://www.pldaniels.com/ripmime/ripmime-$version.tar.gz)
+
+build()
+{
+  cd ripmime-$version
+
+  make
+
+  install -d $ROOT/bin
+  install -d $ROOT/share/man/man1
+
+  sed -i "s,/man/man1,/share&," Makefile
+
+  make LOCATION="$ROOT" install
+
+  install -d $ROOT/share/doc/ripmime
+  install -m 644 CONTRIBUTORS INSTALL LICENSE README TODO $ROOT/share/doc/ripmime
+}
+
+# EOF

@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: XML parsers and writer, written in Ruby.
+#  NQXML is a pure Ruby implementation of a non-validating XML processor. It
+#  tree parser, an XML writer, and a context-sensitive callback mechanism.
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=nqxml
+version=1.1.3p1
+release=1
+source=($mirror_sf/nqxml/nqxml-$version.tar.gz)
+
+build()
+{
+  cd nqxml-$version
+
+  set -- `ruby --version`
+
+  RUBYVERSION="$2"
+  RUBYLIBDIR="$prefix/lib/ruby/${RUBYVERSION%.*}"
+
+  install -d $PKG/$RUBYLIBDIR
+  cp -rf nqxml $PKG/$RUBYLIBDIR/
+
+  install -d $ROOT/share/doc/nqxml
+  cp -rf examples $ROOT/share/doc/nqxml
+  install -m 644 ChangeLog Manifest TODO INSTALL README Credits $ROOT/share/doc/nqxml
+  cp -rf docs $ROOT/share/doc/nqxml/html
+}
+
+# EOF

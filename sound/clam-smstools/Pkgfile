@@ -1,0 +1,25 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: CLAM SMSTools, SMS based audio authoring tool
+# URL: http://www.clam.iua.upf.edu/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libclam1, libgcc1, libgl1-mesa-glx, libqt3-mt, libstdc++6, libx11-6, nvidia-glx-new
+
+name=clam-smstools
+version=0.4.10
+release=1
+source=(http://clam.iua.upf.edu/download/src/SMSTools-${version%%svn*}.tar.gz
+        SMSTools-0.4.9-20080601.patch)
+
+build()
+{
+  cd SMSTools-${version%%svn*}
+
+#  patch -N -p1 -i $SRC/SMSTools-0.4.9-20080601.patch
+
+  install -d $ROOT/{bin,include,lib}
+
+  scons prefix="$ROOT" clam_prefix="$prefix"
+  scons
+  scons install
+}

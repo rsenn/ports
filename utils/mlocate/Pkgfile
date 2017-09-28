@@ -1,0 +1,25 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: mlocate is a locate/updatedb implementation. The 'm' stands for merging: updatedb reuses the existing database to avoid rereading most of the file system, which makes updatedb faster and does not trash the system caches as much.
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=mlocate
+version=0.20
+release=1
+sources=(https://fedorahosted.org/mlocate/attachment/wiki/MlocateDownloads/mlocate-0.20.tar.bz2?format=raw)
+
+build()
+{
+  cd mlocate-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

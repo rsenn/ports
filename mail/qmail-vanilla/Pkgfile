@@ -1,0 +1,45 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Package: qmail-vanilla
+# Provides: qmail
+# Replaces: qmail-ldap
+# Description: A secure, reliable, efficient, simple message transfer agent
+#  It is designed for typical Internet-connected UNIX hosts.
+#  As of October 2001, qmail is the second most common SMTP server on the
+#  Internet, and has by far the fastest growth of any SMTP server.
+#  .
+# URL: http://cr.yp.to/qmail.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, daemontools | runit
+# Suggests: ucspi-tcp | ipsvd, ucspi-ssl
+
+name=qmail
+version=1.03
+release=1
+source=(http://cr.yp.to/software/qmail-$version.tar.gz)
+
+build()
+{
+  cd qmail-$version
+
+  case $prefix in
+    "/usr") localstatedir="/var" ;;
+  esac
+
+  echo "${CC-cc} $CFLAGS -include errno.h" >conf-cc
+  echo "${CC-cc} $LDFLAGS" >conf-ld
+  echo "${localstatedir=$prefix/var}/qmail" >conf-qmail
+
+  make
+
+  install -d $ROOT/bin
+  install -m 755 auto-{gid,int,int8,str,uid} $ROOT/bin
+  install -m 755 bouncesaying chkshsgr chkspawn condredirect dnscname dnsfq dnsmxip dnsptr except forward idedit ipmeprint maildir2mbox maildirmake maildirwatch predate preline qbiff $ROOT/bin
+  install -m 755 qmail-{clean,getpw,inject,local,lspawn,newmrh,newu,pop3d,popup,pw2u,qmqpc,qmqpd,qmtpd,qread,queue,remote,rspawn,send,showctl,smtpd,start,tcpok,tcpto} $ROOT/bin
+  install -m 755 qreceipt qsmhook sendmail splogger tcp-env $ROOT/bin
+
+  for man in *.[0-9]; do
+    install -d $ROOT/share/man/man${man##*.}
+    install -m 644 $man $ROOT/share/man/man${man##*.}
+  done
+}

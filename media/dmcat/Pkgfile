@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Section: universe/media
+# Description: Digital Music CATalog
+#  dmcat is a Digital Music CATalog program. Written in Perl, it recurses
+#  a physical directory, searching for digital music files, and builds
+#  a virtual catalog (out of symbolic links) in a sister directory. It
+#  currently only supports the MP3 format using ID3 tags. The following
+#  hierarchies are supported: Album, Artist, Artist_Album, Genre,
+#  Miscellaneous (catch-all), Title, and Year.
+#  .
+# URL: http://dmcat.sourceforge.net/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on: libmp3-info-perl, perl-base, perl-modules
+
+name=dmcat
+version=2.5
+release=1
+source=($mirror_sf/dmcat/dmcat-${version//./_}.tar.gz)
+
+build()
+{
+  cd dmcat
+
+  install -d $ROOT/bin
+  install -m 755 dmcat id3norm $ROOT/bin
+
+  install -d $ROOT/share/doc/dmcat
+  install -m 644 COPYING $ROOT/share/doc/dmcat
+}
+
+# EOF

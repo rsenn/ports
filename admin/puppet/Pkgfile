@@ -1,0 +1,73 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Puppet lets you centrally manage every important aspect of your system
+#  using a cross-platform specification language that manages all the
+#  separate elements normally aggregated in different files, including
+#  users, cron jobs, and hosts, along with obviously discrete elements like
+#  packages, services, and files. Its simple declarative specification
+#  language provides powerful classing abilities for drawing out the
+#  similarities between hosts while allowing them to be as specific as
+#  necessary, and it handles dependency and prerequisite relationships
+#  between objects clearly and explicitly.
+#  .
+# URL: http://reductivelabs.com/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=puppet
+version=0.24.5
+release=1
+source=(http://reductivelabs.com/downloads/puppet/puppet-$version.tgz
+        http://reductivelabs.com/downloads/puppet/puppet.vim)
+
+build()
+{
+  cd puppet-$version
+
+  case $prefix in
+    "/usr") localstatedir="/var" ;;
+  esac
+
+  set -- `ruby --version`
+
+  rubyversion="$2"
+  rubylibdir="$prefix/lib/ruby/${rubyversion%.*}"
+
+  vimversion=`vim --version | sed -n '1 s,.*\([0-9][.0-9a-z]\+\) (.*,\1,p'`
+  vimdatadir=$prefix/share/vim/vim`IFS=. && set -- $vimversion && IFS= && echo "$*"`
+
+  install -d $PKG${rubylibdir}
+  install -d $ROOT/bin
+  install -d $ROOT/sbin
+  install -d $PKG${localstatedir=$prefix/var}/lib/puppet
+  install -d $PKG${localstatedir=$prefix/var}/run
+  install -d $PKG${localstatedir=$prefix/var}/log/puppet
+
+  install -m 755 bin/puppet bin/puppetdoc $ROOT/bin
+  install -m 755 bin/puppetd bin/puppetmasterd bin/puppetca bin/puppetrun $ROOT/sbin
+  install -m 644 lib/puppet.rb $PKG${rubylibdir}
+
+  cp -a lib/puppet $PKG${rubylibdir}
+
+  find $PKG${rubylibdir} -type f -perm +ugo+x -exec chmod a-x '{}' ';'
+
+
+  install -d $PKG${vimdatadir}/syntax
+  install -m 644 $SRC/puppet.vim $PKG${vimdatadir}/syntax
+
+
+  #rake
+  #rake \
+  #    DESTDIR="$PKG" \
+  #    RUBYLIBDIR="$PKG${rubylibdir}" \
+  #  install
+
+  install -d $ROOT/share/doc/puppet
+  install -m 644 COPYING README $ROOT/share/doc/puppet
+
+  install -d $PKG${localstatedir="$prefix/var"}/{lib,log}/puppet
+
+  chown -R 0:0 $PKG
+}
+
+# EOF

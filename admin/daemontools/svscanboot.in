@@ -1,0 +1,28 @@
+#!@prefix@/bin/bash.static
+# WARNING: This file was auto-generated. Do not edit!
+
+export PATH=@prefix@/bin:@prefix@/sbin
+export LD_LIBRARY_PATH=@prefix@/lib
+
+exec </dev/null
+exec >/dev/null
+exec 2>/dev/null
+
+cd @prefix@/service
+
+svc -dx * */log
+
+proc=@prefix@/proc
+kernel=${proc}/sys/kernel
+core=@prefix@/var/core
+
+if [ -f $kernel/core_pattern ]; then
+  echo "$core/core.%e.s%s.u%u.g%g.%p" > $kernel/core_pattern
+elif [ -f $kernel/core_uses_pid ]; then
+  echo '1' > $kernel/core_uses_pid
+fi
+
+ulimit -c unlimited
+
+#exec svscan @prefix@/service 2>&1 | readproctitle service errors: ................................................................................................................................................................................................................................................................................................................................................................................................................
+exec svscan @prefix@/service 2>&1

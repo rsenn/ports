@@ -1,0 +1,76 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Section: universe/devel
+# Description: A unit test framework for Unix shell scripts.
+#  shUnit2 is a unit test framework for Bourne based shell scripts, and is designed to work in a similar manner to JUnit, PyUnit, etc.
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=shunit2
+version=2.1.3
+release=1
+source=(shunit2-$version.tgz)
+
+build()
+{
+  cd shunit2-$version
+
+  make
+ false && {
+  (cd src/test && ./run-test-suite)
+
+  sed -i 's|\./shunit2|shunit2|' src/test/test*
+
+  install -d $ROOT/bin
+  install -m 755 bin/*.{pl,sh} $ROOT/bin
+
+  cp -rf lib $ROOT
+
+  install -d $ROOT/share/doc/shunit2
+  install -m 644 doc/{CHANGES-${version%.*},README,RELEASE_NOTES-$version,TODO,contributors,design_doc}.txt $ROOT/share/doc/shunit2
+  cp -rf build/docbook $ROOT/share/doc/shunit2
+
+  install -d $ROOT/share/doc/shunit2/html
+  install -m 644 build/shunit2.html $ROOT/share/doc/shunit2/html
+  install -m 644 doc/README.html $ROOT/share/doc/shunit2/html
+
+  install -d $ROOT/share/shunit2
+  cp -rf src/test $ROOT/share/shunit2
+
+
+
+  return 0
+}
+
+  install -d $ROOT/bin
+  install -m 755 build/shunit2 $ROOT/bin
+
+  install -d $ROOT/share/doc/shunit2
+  install -m 644 doc/{CHANGES-${version%.*},README,RELEASE_NOTES-$version,TODO,contributors,design_doc}.txt $ROOT/share/doc/shunit2
+
+  install -d $ROOT/share/doc/shunit2/html
+  install -m 644 doc/*.{css,html} $ROOT/share/doc/shunit2/html
+  install -m 644 build/*.html $ROOT/share/doc/shunit2/html
+
+  cp -rf build/docbook $ROOT/share/doc/shunit2
+
+  install -d $ROOT/lib/shunit2
+  install -m 755 lib/sh/* $ROOT/lib/shunit2
+
+  install -d $ROOT/share/shunit2
+  install -m 755 bin/* $ROOT/share/shunit2
+
+  cd src/test
+
+  sed -i 's|\./shunit2|shunit2|' test*
+
+  PATH="../../build:$PATH" ./run-test-suite
+
+  sed -i 's|\(\.\s*"${MY_PATH}"\)/\([^"]*\)"|\1/../lib/shunit2/\2|' run-test-suite
+
+  install -m 644 *.inc $ROOT/lib/shunit2
+
+  install -d $ROOT/share/shunit2/test
+  install -m 755 run-test-suite test* $ROOT/share/shunit2/test
+}

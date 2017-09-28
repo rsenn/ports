@@ -1,0 +1,70 @@
+diff -wru csv2xml-0.6_orig/src/csv2xml.cpp csv2xml-0.6/src/csv2xml.cpp
+--- csv2xml-0.6_orig/src/csv2xml.cpp	2008-06-27 10:35:51.000000000 +0200
++++ csv2xml-0.6/src/csv2xml.cpp	2008-06-27 11:07:14.000000000 +0200
+@@ -30,6 +30,8 @@
+ static int quote = '"';
+ static const char *rowname = "row";
+ static const char *colname = "item";
++static const char *xmlname;
++static const char *xmlver = "1.0";
+ static FILE *input;
+ 
+ void cleanup(void) {
+@@ -42,7 +44,7 @@
+ 
+   }
+ 
+-int warn(const char *message) {
++void warn(const char *message) {
+ 
+   fprintf(stderr,"Warning: %s on line %d\n",message,line);
+ 
+@@ -168,8 +170,7 @@
+     }
+ 
+   if(colcount==0) {
+-    cleanup();
+-    exit(0);
++    return(-1);
+     }
+   if(colcount==MAX_FIELDS) {
+     fatal("Row contained more fields than this sofware can handle");
+@@ -230,8 +231,8 @@
+   fprintf(stderr," -s=char      To strip unicode characters, specify a replacement character.\n");
+   fprintf(stderr," -r=rowname   Name of row element. [row]\n");
+   fprintf(stderr," -i=colname   Name of column element. [item]\n");
++  fprintf(stderr," -D=docname   Name of document element.\n");
+   fprintf(stderr," -s=char      To strip unicode characters, specify a replacement character.\n");
+-  fprintf(stderr," -d=delim     Delimiter char.\n");
+   fprintf(stderr," -n           Hide fields that are null/empty\n");
+   fprintf(stderr," -h           Output this help.\n");
+   fprintf(stderr," -v           Display version information.\n");
+@@ -296,6 +296,8 @@
+     else if(argv[i][1]=='q') { opt_set_char(argv[i],&quote); }
+     else if(argv[i][1]=='r') { opt_set_name(argv[i],&rowname); }
+     else if(argv[i][1]=='i') { opt_set_name(argv[i],&colname); }
++    else if(argv[i][1]=='D') { opt_set_name(argv[i],&xmlname); }
++    else if(argv[i][1]=='V') { opt_set_name(argv[i],&xmlver); }
+ //    else if(argv[i][1]=='e') { opt_encoding(argv[i]); }
+     else if(argv[i][1]=='s') { opt_sub_non_unicode(argv[i]); }
+     else { option_help(); }
+@@ -318,9 +320,19 @@
+     fatal("Header row contains no entities.");
+     }
+ 
++  printf("<?xml version=\"%s\" encoding=\"iso-8859-1\"?>\n", xmlver);
++
++  if(xmlname)
++    printf("<%s>\n",xmlname);
++  
+   line=1;
+   while(get_row()>=0);
+ 
++  if(xmlname)
++    printf("</%s>\n",xmlname);
++  
++  fflush(stdout);
++  
+   cleanup();
+   exit(0);
+   }

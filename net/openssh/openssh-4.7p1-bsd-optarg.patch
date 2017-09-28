@@ -1,0 +1,2007 @@
+--- openssh-4.7p1_orig/config.h.in	2008-05-15 13:11:52.000000000 +0200
++++ openssh-4.7p1/config.h.in	2008-05-15 14:06:57.000000000 +0200
+@@ -176,6 +176,12 @@
+ /* Define to 1 if you have the `bindresvport_sa' function. */
+ #undef HAVE_BINDRESVPORT_SA
+ 
++/* Define this if you have BSDoptarg */
++#undef HAVE_BSD_OPTARG
++
++/* Define this if you have BSDoptind */
++#undef HAVE_BSD_OPTIND
++
+ /* Define to 1 if you have the <bsm/audit.h> header file. */
+ #undef HAVE_BSM_AUDIT_H
+ 
+--- openssh-4.7p1_orig/configure	2008-05-15 13:11:52.000000000 +0200
++++ openssh-4.7p1/configure	2008-05-15 14:07:04.000000000 +0200
+@@ -657,9 +657,10 @@
+ CFLAGS
+ LDFLAGS
+ CPPFLAGS
+-ac_ct_CC
+-EXEEXT
+ OBJEXT
++LIB
++INCLUDE
++EXEEXT
+ build
+ build_cpu
+ build_vendor
+@@ -1805,6 +1806,8 @@
+ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ ac_compiler_gnu=$ac_cv_c_compiler_gnu
++ac_compiler_msvc=$ac_cv_c_compiler_msvc
++ac_compiler_intel=$ac_cv_c_compiler_intel
+ 
+ 
+ 
+@@ -1817,6 +1820,8 @@
+ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ ac_compiler_gnu=$ac_cv_c_compiler_gnu
++ac_compiler_msvc=$ac_cv_c_compiler_msvc
++ac_compiler_intel=$ac_cv_c_compiler_intel
+ if test -n "$ac_tool_prefix"; then
+   # Extract the first word of "${ac_tool_prefix}gcc", so it can be a program name with args.
+ set dummy ${ac_tool_prefix}gcc; ac_word=$2
+@@ -2011,11 +2016,8 @@
+ 
+ fi
+ if test -z "$CC"; then
+-  if test -n "$ac_tool_prefix"; then
+-  for ac_prog in cl.exe
+-  do
+-    # Extract the first word of "$ac_tool_prefix$ac_prog", so it can be a program name with args.
+-set dummy $ac_tool_prefix$ac_prog; ac_word=$2
++  # Extract the first word of "icl.exe", so it can be a program name with args.
++set dummy icl.exe; ac_word=$2
+ { echo "$as_me:$LINENO: checking for $ac_word" >&5
+ echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6; }
+ if test "${ac_cv_prog_CC+set}" = set; then
+@@ -2031,7 +2033,7 @@
+   test -z "$as_dir" && as_dir=.
+   for ac_exec_ext in '' $ac_executable_extensions; do
+   if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
+-    ac_cv_prog_CC="$ac_tool_prefix$ac_prog"
++    ac_cv_prog_CC=""
+     echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+     break 2
+   fi
+@@ -2051,22 +2053,17 @@
+ fi
+ 
+ 
+-    test -n "$CC" && break
+-  done
+ fi
+ if test -z "$CC"; then
+-  ac_ct_CC=$CC
+-  for ac_prog in cl.exe
+-do
+-  # Extract the first word of "$ac_prog", so it can be a program name with args.
+-set dummy $ac_prog; ac_word=$2
++  # Extract the first word of "cl.exe", so it can be a program name with args.
++set dummy cl.exe; ac_word=$2
+ { echo "$as_me:$LINENO: checking for $ac_word" >&5
+ echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6; }
+-if test "${ac_cv_prog_ac_ct_CC+set}" = set; then
++if test "${ac_cv_prog_CC+set}" = set; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test -n "$ac_ct_CC"; then
+-  ac_cv_prog_ac_ct_CC="$ac_ct_CC" # Let the user override the test.
++  if test -n "$CC"; then
++  ac_cv_prog_CC="$CC" # Let the user override the test.
+ else
+ as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+ for as_dir in $PATH
+@@ -2075,7 +2072,7 @@
+   test -z "$as_dir" && as_dir=.
+   for ac_exec_ext in '' $ac_executable_extensions; do
+   if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
+-    ac_cv_prog_ac_ct_CC="$ac_prog"
++    ac_cv_prog_CC=""
+     echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+     break 2
+   fi
+@@ -2085,36 +2082,16 @@
+ 
+ fi
+ fi
+-ac_ct_CC=$ac_cv_prog_ac_ct_CC
+-if test -n "$ac_ct_CC"; then
+-  { echo "$as_me:$LINENO: result: $ac_ct_CC" >&5
+-echo "${ECHO_T}$ac_ct_CC" >&6; }
++CC=$ac_cv_prog_CC
++if test -n "$CC"; then
++  { echo "$as_me:$LINENO: result: $CC" >&5
++echo "${ECHO_T}$CC" >&6; }
+ else
+   { echo "$as_me:$LINENO: result: no" >&5
+ echo "${ECHO_T}no" >&6; }
+ fi
+ 
+ 
+-  test -n "$ac_ct_CC" && break
+-done
+-
+-  if test "x$ac_ct_CC" = x; then
+-    CC=""
+-  else
+-    case $cross_compiling:$ac_tool_warned in
+-yes:)
+-{ echo "$as_me:$LINENO: WARNING: In the future, Autoconf will not detect cross-tools
+-whose name does not start with the host triplet.  If you think this
+-configuration is useful to you, please write to autoconf@gnu.org." >&5
+-echo "$as_me: WARNING: In the future, Autoconf will not detect cross-tools
+-whose name does not start with the host triplet.  If you think this
+-configuration is useful to you, please write to autoconf@gnu.org." >&2;}
+-ac_tool_warned=yes ;;
+-esac
+-    CC=$ac_ct_CC
+-  fi
+-fi
+-
+ fi
+ 
+ 
+@@ -2126,8 +2103,41 @@
+ 
+ # Provide some information about the compiler.
+ echo "$as_me:$LINENO: checking for C compiler version" >&5
+-ac_compiler=`set X $ac_compile; echo $2`
+-{ (ac_try="$ac_compiler --version >&5"
++set dummy $CC; ac_compiler=$2
++case $ac_compiler in
++  */*) ac_compiler_name="${ac_compiler##*/}"; ac_compiler_path="$ac_compiler" ;;
++  *) ac_compiler_name="$ac_compiler"; as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
++for as_dir in $PATH
++do
++  IFS=$as_save_IFS
++  test -z "$as_dir" && as_dir=.
++  for ac_exec_ext in '' $ac_executable_extensions; do
++  if { test -f "$as_dir/$ac_compiler$ac_exec_ext" && $as_test_x "$as_dir/$ac_compiler$ac_exec_ext"; }; then
++    ac_compiler_path="$as_dir/$ac_compiler$ac_exec_ext"
++    echo "$as_me:$LINENO: found $as_dir/$ac_compiler$ac_exec_ext" >&5
++    break 2
++  fi
++done
++done
++IFS=$as_save_IFS
++ ;;
++esac
++case $ac_compiler_name in
++  cl.exe|icl.exe)
++    # Windows compilers don't take --version, -v or -V arguments...
++    { (ac_try="$ac_compiler >&5"
++case "(($ac_try" in
++  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
++  *) ac_try_echo=$ac_try;;
++esac
++eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
++  (eval "$ac_compiler >&5") 2>&5
++  ac_status=$?
++  echo "$as_me:$LINENO: \$? = $ac_status" >&5
++  (exit $ac_status); }
++    ;;
++  *)
++    { (ac_try="$ac_compiler --version >&5"
+ case "(($ac_try" in
+   *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+   *) ac_try_echo=$ac_try;;
+@@ -2137,7 +2147,7 @@
+   ac_status=$?
+   echo "$as_me:$LINENO: \$? = $ac_status" >&5
+   (exit $ac_status); }
+-{ (ac_try="$ac_compiler -v >&5"
++    { (ac_try="$ac_compiler -v >&5"
+ case "(($ac_try" in
+   *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+   *) ac_try_echo=$ac_try;;
+@@ -2147,7 +2157,7 @@
+   ac_status=$?
+   echo "$as_me:$LINENO: \$? = $ac_status" >&5
+   (exit $ac_status); }
+-{ (ac_try="$ac_compiler -V >&5"
++    { (ac_try="$ac_compiler -V >&5"
+ case "(($ac_try" in
+   *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+   *) ac_try_echo=$ac_try;;
+@@ -2157,7 +2167,368 @@
+   ac_status=$?
+   echo "$as_me:$LINENO: \$? = $ac_status" >&5
+   (exit $ac_status); }
++    ;;
++esac
++
++{ echo "$as_me:$LINENO: checking for suffix of object files" >&5
++echo $ECHO_N "checking for suffix of object files... $ECHO_C" >&6; }
++if test "${ac_cv_objext+set}" = set; then
++  echo $ECHO_N "(cached) $ECHO_C" >&6
++else
++  cat >conftest.$ac_ext <<_ACEOF
++/* confdefs.h.  */
++_ACEOF
++cat confdefs.h >>conftest.$ac_ext
++cat >>conftest.$ac_ext <<_ACEOF
++/* end confdefs.h.  */
+ 
++int
++main ()
++{
++
++  ;
++  return 0;
++}
++_ACEOF
++rm -f conftest.o conftest.obj
++if { (ac_try="$ac_compile"
++case "(($ac_try" in
++  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
++  *) ac_try_echo=$ac_try;;
++esac
++eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
++  (eval "$ac_compile") 2>&5
++  ac_status=$?
++  echo "$as_me:$LINENO: \$? = $ac_status" >&5
++  (exit $ac_status); }; then
++  for ac_file in conftest.o conftest.obj conftest.*; do
++  test -f "$ac_file" || continue;
++  case $ac_file in
++    *.$ac_ext | *.xcoff | *.tds | *.d | *.pdb | *.xSYM | *.bb | *.bbg | *.map | *.inf ) ;;
++    *) ac_cv_objext=`expr "$ac_file" : '.*\.\(.*\)'`
++       break;;
++  esac
++done
++else
++  echo "$as_me: failed program was:" >&5
++sed 's/^/| /' conftest.$ac_ext >&5
++
++{ { echo "$as_me:$LINENO: error: cannot compute suffix of object files: cannot compile
++See \`config.log' for more details." >&5
++echo "$as_me: error: cannot compute suffix of object files: cannot compile
++See \`config.log' for more details." >&2;}
++   { (exit 1); exit 1; }; }
++fi
++
++rm -f conftest.$ac_cv_objext conftest.$ac_ext
++fi
++{ echo "$as_me:$LINENO: result: $ac_cv_objext" >&5
++echo "${ECHO_T}$ac_cv_objext" >&6; }
++OBJEXT=$ac_cv_objext
++ac_objext=$OBJEXT
++{ echo "$as_me:$LINENO: checking whether we are using the GNU C compiler" >&5
++echo $ECHO_N "checking whether we are using the GNU C compiler... $ECHO_C" >&6; }
++if test "${ac_cv_c_compiler_gnu+set}" = set; then
++  echo $ECHO_N "(cached) $ECHO_C" >&6
++else
++  cat >conftest.$ac_ext <<_ACEOF
++/* confdefs.h.  */
++_ACEOF
++cat confdefs.h >>conftest.$ac_ext
++cat >>conftest.$ac_ext <<_ACEOF
++/* end confdefs.h.  */
++
++int
++main ()
++{
++#ifndef __GNUC__
++       choke me
++#endif
++
++  ;
++  return 0;
++}
++_ACEOF
++rm -f conftest.$ac_objext
++if { (ac_try="$ac_compile"
++case "(($ac_try" in
++  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
++  *) ac_try_echo=$ac_try;;
++esac
++eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
++  (eval "$ac_compile") 2>conftest.er1
++  ac_status=$?
++  grep -v '^ *+' conftest.er1 >conftest.err
++  rm -f conftest.er1
++  cat conftest.err >&5
++  echo "$as_me:$LINENO: \$? = $ac_status" >&5
++  (exit $ac_status); } && {
++	 test -z "$ac_c_werror_flag" ||
++	 test ! -s conftest.err
++       } && test -s conftest.$ac_objext; then
++  ac_compiler_gnu=yes
++else
++  echo "$as_me: failed program was:" >&5
++sed 's/^/| /' conftest.$ac_ext >&5
++
++	ac_compiler_gnu=no
++fi
++
++rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
++ac_cv_c_compiler_gnu=$ac_compiler_gnu
++
++fi
++{ echo "$as_me:$LINENO: result: $ac_cv_c_compiler_gnu" >&5
++echo "${ECHO_T}$ac_cv_c_compiler_gnu" >&6; }
++if test "$ac_compiler_gnu" != yes
++then
++  { echo "$as_me:$LINENO: checking whether we are using the Visual C++ compiler" >&5
++echo $ECHO_N "checking whether we are using the Visual C++ compiler... $ECHO_C" >&6; }
++if test "${ac_cv_c_compiler_msvc+set}" = set; then
++  echo $ECHO_N "(cached) $ECHO_C" >&6
++else
++  cat >conftest.$ac_ext <<_ACEOF
++/* confdefs.h.  */
++_ACEOF
++cat confdefs.h >>conftest.$ac_ext
++cat >>conftest.$ac_ext <<_ACEOF
++/* end confdefs.h.  */
++
++int
++main ()
++{
++#ifndef _MSC_VER
++       choke me
++#endif
++
++  ;
++  return 0;
++}
++_ACEOF
++rm -f conftest.$ac_objext
++if { (ac_try="$ac_compile"
++case "(($ac_try" in
++  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
++  *) ac_try_echo=$ac_try;;
++esac
++eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
++  (eval "$ac_compile") 2>conftest.er1
++  ac_status=$?
++  grep -v '^ *+' conftest.er1 >conftest.err
++  rm -f conftest.er1
++  cat conftest.err >&5
++  echo "$as_me:$LINENO: \$? = $ac_status" >&5
++  (exit $ac_status); } && {
++	 test -z "$ac_c_werror_flag" ||
++	 test ! -s conftest.err
++       } && test -s conftest.$ac_objext; then
++  ac_compiler_msvc=yes
++else
++  echo "$as_me: failed program was:" >&5
++sed 's/^/| /' conftest.$ac_ext >&5
++
++	ac_compiler_msvc=no
++fi
++
++rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
++ac_cv_c_compiler_msvc=$ac_compiler_msvc
++
++fi
++{ echo "$as_me:$LINENO: result: $ac_cv_c_compiler_msvc" >&5
++echo "${ECHO_T}$ac_cv_c_compiler_msvc" >&6; }
++  if test "$ac_compiler_msvc" = yes
++  then
++    { echo "$as_me:$LINENO: checking whether we are using the Intel C++ compiler" >&5
++echo $ECHO_N "checking whether we are using the Intel C++ compiler... $ECHO_C" >&6; }
++if test "${ac_cv_c_compiler_intel+set}" = set; then
++  echo $ECHO_N "(cached) $ECHO_C" >&6
++else
++  cat >conftest.$ac_ext <<_ACEOF
++/* confdefs.h.  */
++_ACEOF
++cat confdefs.h >>conftest.$ac_ext
++cat >>conftest.$ac_ext <<_ACEOF
++/* end confdefs.h.  */
++
++int
++main ()
++{
++#ifndef __INTEL_COMPILER
++       choke me
++#endif
++
++  ;
++  return 0;
++}
++_ACEOF
++rm -f conftest.$ac_objext
++if { (ac_try="$ac_compile"
++case "(($ac_try" in
++  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
++  *) ac_try_echo=$ac_try;;
++esac
++eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
++  (eval "$ac_compile") 2>conftest.er1
++  ac_status=$?
++  grep -v '^ *+' conftest.er1 >conftest.err
++  rm -f conftest.er1
++  cat conftest.err >&5
++  echo "$as_me:$LINENO: \$? = $ac_status" >&5
++  (exit $ac_status); } && {
++	 test -z "$ac_c_werror_flag" ||
++	 test ! -s conftest.err
++       } && test -s conftest.$ac_objext; then
++  ac_compiler_intel=yes
++else
++  echo "$as_me: failed program was:" >&5
++sed 's/^/| /' conftest.$ac_ext >&5
++
++	ac_compiler_intel=no
++fi
++
++rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
++ac_cv_c_compiler_intel=$ac_compiler_intel
++
++fi
++{ echo "$as_me:$LINENO: result: $ac_cv_c_compiler_intel" >&5
++echo "${ECHO_T}$ac_cv_c_compiler_intel" >&6; }
++  fi
++fi
++GCC=`test "$ac_compiler_gnu" = yes && echo yes`
++MSVC=`test "$ac_compiler_msvc" = yes && echo yes`
++INTELC=`test "$ac_compiler_intel" = yes && echo yes`
++if test "$MSVC" = yes; then
++
++  ac_env_prefix_MSVC="${ac_compiler_path%/[Bb]in/*}"
++#  ac_env_paths="$ac_env_prefix_MSVC"
++
++  if test "$INTELC" = yes; then
++    # Extract the first word of "link.exe", so it can be a program name with args.
++set dummy link.exe; ac_word=$2
++{ echo "$as_me:$LINENO: checking for $ac_word" >&5
++echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6; }
++if test "${ac_cv_prog_LINK+set}" = set; then
++  echo $ECHO_N "(cached) $ECHO_C" >&6
++else
++  if test -n "$LINK"; then
++  ac_cv_prog_LINK="$LINK" # Let the user override the test.
++else
++as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
++for as_dir in $PATH
++do
++  IFS=$as_save_IFS
++  test -z "$as_dir" && as_dir=.
++  for ac_exec_ext in '' $ac_executable_extensions; do
++  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
++    ac_cv_prog_LINK="link.exe"
++    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
++    break 2
++  fi
++done
++done
++IFS=$as_save_IFS
++
++fi
++fi
++LINK=$ac_cv_prog_LINK
++if test -n "$LINK"; then
++  { echo "$as_me:$LINENO: result: $LINK" >&5
++echo "${ECHO_T}$LINK" >&6; }
++else
++  { echo "$as_me:$LINENO: result: no" >&5
++echo "${ECHO_T}no" >&6; }
++fi
++
++
++    test -z "$LINK" && { { echo "$as_me:$LINENO: error: the Intel C++ compiler for Visual Studio needs the link.exe from Visual Studio in \$PATH
++See \`config.log' for more details." >&5
++echo "$as_me: error: the Intel C++ compiler for Visual Studio needs the link.exe from Visual Studio in \$PATH
++See \`config.log' for more details." >&2;}
++   { (exit 1); exit 1; }; }
++
++    ac_env_prefix_INTELC="$ac_env_prefix_MSVC"
++    ac_env_prefix_MSVC="${as_dir%/[Bb]in}"
++
++#    ac_env_paths="$ac_env_paths:$ac_env_prefix_MSVC"
++  fi
++
++  { echo "$as_me:$LINENO: checking for the Windows SDK directory" >&5
++echo $ECHO_N "checking for the Windows SDK directory... $ECHO_C" >&6; }
++
++  # in Visual C++ 8.0 it is in VC/PlatformSDK
++  if test -d "$ac_env_prefix_MSVC/PlatformSDK/"; then
++    ac_env_prefix_WINSDK="$ac_env_prefix_MSVC/PlatformSDK"
++  else
++    # Check for the ildasm.exe tool which accompanies SDKs >= v6.0
++    as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
++for as_dir in $PATH
++do
++  IFS=$as_save_IFS
++  test -z "$as_dir" && as_dir=.
++  for ac_exec_ext in '' $ac_executable_extensions; do
++  if { test -f "$as_dir/ildasm.exe$ac_exec_ext" && $as_test_x "$as_dir/ildasm.exe$ac_exec_ext"; }; then
++    ac_cv_path_ILDASM="$as_dir/ildasm.exe$ac_exec_ext"
++    echo "$as_me:$LINENO: found $as_dir/ildasm.exe$ac_exec_ext" >&5
++    break 2
++  fi
++done
++done
++IFS=$as_save_IFS
++
++
++    if test -n "$ac_cv_path_ILDASM"; then
++      ac_env_prefix_WINSDK="${ac_cv_path_ILDASM%/[Bb]in/*}"
++    else
++      # Still not found? Walk through paths until we find a kernel32.lib in the subdir "Lib".
++      as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
++      for as_bindir in $PATH; do
++        as_dir=${as_bindir%/[Bb]in}
++        for as_subdir in lib Lib; do
++          if test -d "$as_dir/$as_subdir/"; then
++            for ac_word in kernel32.lib Kernel32.Lib; do
++              if test -f "$as_dir/$as_subdir/$ac_word"; then
++                ac_env_prefix_WINSDK="$as_dir"
++                break 3
++              fi
++            done
++          fi
++        done
++      done
++      IFS=$as_save_IFS
++    fi
++
++    test -z "$ac_env_prefix_WINSDK" && { { echo "$as_me:$LINENO: error: could not find the Windows SDK in \$PATH
++See \`config.log' for more details." >&5
++echo "$as_me: error: could not find the Windows SDK in \$PATH
++See \`config.log' for more details." >&2;}
++   { (exit 1); exit 1; }; }
++  fi
++
++  { echo "$as_me:$LINENO: result: $ac_env_prefix_WINSDK" >&5
++echo "${ECHO_T}$ac_env_prefix_WINSDK" >&6; }
++
++  for as_dir in $ac_env_prefix_WINSDK $ac_env_prefix_MSVC $ac_env_prefix_INTELC; do
++    for as_subdir in lib Lib; do
++      if test -d "$as_dir/$as_subdir/"; then
++        LIB="$as_dir/$as_subdir${LIB:+;$LIB}"
++        break
++      fi
++    done
++    for as_subdir in include Include; do
++      if test -d "$as_dir/$as_subdir/"; then
++        INCLUDE="$as_dir/$as_subdir${INCLUDE:+;$INCLUDE}"
++        break
++      fi
++    done
++  done
++  export LIB INCLUDE
++
++  echo "$as_me:$LINENO: environment variable LIB='$LIB'" >&5
++  echo "$as_me:$LINENO: environment variable INCLUDE='$INCLUDE'" >&5
++
++
++
++fi
+ cat >conftest.$ac_ext <<_ACEOF
+ /* confdefs.h.  */
+ _ACEOF
+@@ -2345,128 +2716,22 @@
+ rm -f conftest.$ac_ext
+ EXEEXT=$ac_cv_exeext
+ ac_exeext=$EXEEXT
+-{ echo "$as_me:$LINENO: checking for suffix of object files" >&5
+-echo $ECHO_N "checking for suffix of object files... $ECHO_C" >&6; }
+-if test "${ac_cv_objext+set}" = set; then
+-  echo $ECHO_N "(cached) $ECHO_C" >&6
+-else
+-  cat >conftest.$ac_ext <<_ACEOF
+-/* confdefs.h.  */
+-_ACEOF
+-cat confdefs.h >>conftest.$ac_ext
+-cat >>conftest.$ac_ext <<_ACEOF
+-/* end confdefs.h.  */
+-
+-int
+-main ()
+-{
+-
+-  ;
+-  return 0;
+-}
+-_ACEOF
+-rm -f conftest.o conftest.obj
+-if { (ac_try="$ac_compile"
+-case "(($ac_try" in
+-  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+-  *) ac_try_echo=$ac_try;;
+-esac
+-eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
+-  (eval "$ac_compile") 2>&5
+-  ac_status=$?
+-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+-  (exit $ac_status); }; then
+-  for ac_file in conftest.o conftest.obj conftest.*; do
+-  test -f "$ac_file" || continue;
+-  case $ac_file in
+-    *.$ac_ext | *.xcoff | *.tds | *.d | *.pdb | *.xSYM | *.bb | *.bbg | *.map | *.inf ) ;;
+-    *) ac_cv_objext=`expr "$ac_file" : '.*\.\(.*\)'`
+-       break;;
+-  esac
+-done
+-else
+-  echo "$as_me: failed program was:" >&5
+-sed 's/^/| /' conftest.$ac_ext >&5
+-
+-{ { echo "$as_me:$LINENO: error: cannot compute suffix of object files: cannot compile
+-See \`config.log' for more details." >&5
+-echo "$as_me: error: cannot compute suffix of object files: cannot compile
+-See \`config.log' for more details." >&2;}
+-   { (exit 1); exit 1; }; }
+-fi
+-
+-rm -f conftest.$ac_cv_objext conftest.$ac_ext
+-fi
+-{ echo "$as_me:$LINENO: result: $ac_cv_objext" >&5
+-echo "${ECHO_T}$ac_cv_objext" >&6; }
+-OBJEXT=$ac_cv_objext
+-ac_objext=$OBJEXT
+-{ echo "$as_me:$LINENO: checking whether we are using the GNU C compiler" >&5
+-echo $ECHO_N "checking whether we are using the GNU C compiler... $ECHO_C" >&6; }
+-if test "${ac_cv_c_compiler_gnu+set}" = set; then
+-  echo $ECHO_N "(cached) $ECHO_C" >&6
+-else
+-  cat >conftest.$ac_ext <<_ACEOF
+-/* confdefs.h.  */
+-_ACEOF
+-cat confdefs.h >>conftest.$ac_ext
+-cat >>conftest.$ac_ext <<_ACEOF
+-/* end confdefs.h.  */
+-
+-int
+-main ()
+-{
+-#ifndef __GNUC__
+-       choke me
+-#endif
+-
+-  ;
+-  return 0;
+-}
+-_ACEOF
+-rm -f conftest.$ac_objext
+-if { (ac_try="$ac_compile"
+-case "(($ac_try" in
+-  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+-  *) ac_try_echo=$ac_try;;
+-esac
+-eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
+-  (eval "$ac_compile") 2>conftest.er1
+-  ac_status=$?
+-  grep -v '^ *+' conftest.er1 >conftest.err
+-  rm -f conftest.er1
+-  cat conftest.err >&5
+-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+-  (exit $ac_status); } && {
+-	 test -z "$ac_c_werror_flag" ||
+-	 test ! -s conftest.err
+-       } && test -s conftest.$ac_objext; then
+-  ac_compiler_gnu=yes
+-else
+-  echo "$as_me: failed program was:" >&5
+-sed 's/^/| /' conftest.$ac_ext >&5
+-
+-	ac_compiler_gnu=no
+-fi
+-
+-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+-ac_cv_c_compiler_gnu=$ac_compiler_gnu
+-
+-fi
+-{ echo "$as_me:$LINENO: result: $ac_cv_c_compiler_gnu" >&5
+-echo "${ECHO_T}$ac_cv_c_compiler_gnu" >&6; }
+-GCC=`test $ac_compiler_gnu = yes && echo yes`
+ ac_test_CFLAGS=${CFLAGS+set}
+ ac_save_CFLAGS=$CFLAGS
+-{ echo "$as_me:$LINENO: checking whether $CC accepts -g" >&5
+-echo $ECHO_N "checking whether $CC accepts -g... $ECHO_C" >&6; }
++if test "$MSVC" = yes; then
++  ac_c_debug_flag="-Zi"
++else
++  ac_c_debug_flag="-g"
++fi
++{ echo "$as_me:$LINENO: checking whether $CC accepts $ac_c_debug_flag" >&5
++echo $ECHO_N "checking whether $CC accepts $ac_c_debug_flag... $ECHO_C" >&6; }
+ if test "${ac_cv_prog_cc_g+set}" = set; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+   ac_save_c_werror_flag=$ac_c_werror_flag
+    ac_c_werror_flag=yes
+    ac_cv_prog_cc_g=no
+-   CFLAGS="-g"
++   CFLAGS="$ac_c_debug_flag"
+    cat >conftest.$ac_ext <<_ACEOF
+ /* confdefs.h.  */
+ _ACEOF
+@@ -2543,7 +2808,7 @@
+ sed 's/^/| /' conftest.$ac_ext >&5
+ 
+ 	ac_c_werror_flag=$ac_save_c_werror_flag
+-	 CFLAGS="-g"
++	 CFLAGS="$ac_c_debug_flag"
+ 	 cat >conftest.$ac_ext <<_ACEOF
+ /* confdefs.h.  */
+ _ACEOF
+@@ -2598,18 +2863,21 @@
+ if test "$ac_test_CFLAGS" = set; then
+   CFLAGS=$ac_save_CFLAGS
+ elif test $ac_cv_prog_cc_g = yes; then
+-  if test "$GCC" = yes; then
+-    CFLAGS="-g -O2"
++  if test "$GCC" = yes || test "$MSVC" = yes; then
++    CFLAGS="$ac_c_debug_flag -O2"
+   else
+-    CFLAGS="-g"
++    CFLAGS="$ac_c_debug_flag"
+   fi
+ else
+-  if test "$GCC" = yes; then
++  if test "$GCC" = yes || test "$MSVC" = yes; then
+     CFLAGS="-O2"
+   else
+     CFLAGS=
+   fi
+ fi
++if test "$MSVC" = yes; then
++  CFLAGS="-nologo $CFLAGS"
++fi
+ { echo "$as_me:$LINENO: checking for $CC option to accept ISO C89" >&5
+ echo $ECHO_N "checking for $CC option to accept ISO C89... $ECHO_C" >&6; }
+ if test "${ac_cv_prog_cc_c89+set}" = set; then
+@@ -2730,6 +2998,8 @@
+ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ ac_compiler_gnu=$ac_cv_c_compiler_gnu
++ac_compiler_msvc=$ac_cv_c_compiler_msvc
++ac_compiler_intel=$ac_cv_c_compiler_intel
+ 
+ ac_aux_dir=
+ for ac_dir in "$srcdir" "$srcdir/.." "$srcdir/../.."; do
+@@ -2851,6 +3121,8 @@
+ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ ac_compiler_gnu=$ac_cv_c_compiler_gnu
++ac_compiler_msvc=$ac_cv_c_compiler_msvc
++ac_compiler_intel=$ac_cv_c_compiler_intel
+ { echo "$as_me:$LINENO: checking how to run the C preprocessor" >&5
+ echo $ECHO_N "checking how to run the C preprocessor... $ECHO_C" >&6; }
+ # On Suns, sometimes $CPP names a directory.
+@@ -3075,6 +3347,8 @@
+ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ ac_compiler_gnu=$ac_cv_c_compiler_gnu
++ac_compiler_msvc=$ac_cv_c_compiler_msvc
++ac_compiler_intel=$ac_cv_c_compiler_intel
+ 
+ 
+ { echo "$as_me:$LINENO: checking for grep that handles long lines and -e" >&5
+@@ -3767,6 +4041,8 @@
+ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ ac_compiler_gnu=$ac_cv_c_compiler_gnu
++ac_compiler_msvc=$ac_cv_c_compiler_msvc
++ac_compiler_intel=$ac_cv_c_compiler_intel
+ { echo "$as_me:$LINENO: checking how to run the C preprocessor" >&5
+ echo $ECHO_N "checking how to run the C preprocessor... $ECHO_C" >&6; }
+ # On Suns, sometimes $CPP names a directory.
+@@ -3991,6 +4267,8 @@
+ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ ac_compiler_gnu=$ac_cv_c_compiler_gnu
++ac_compiler_msvc=$ac_cv_c_compiler_msvc
++ac_compiler_intel=$ac_cv_c_compiler_intel
+ 
+ if test -n "$ac_tool_prefix"; then
+   # Extract the first word of "${ac_tool_prefix}ranlib", so it can be a program name with args.
+@@ -4251,10 +4529,10 @@
+  EGREP="$ac_cv_path_EGREP"
+ 
+ 
++{ echo "$as_me:$LINENO: checking for ar" >&5
++echo $ECHO_N "checking for ar... $ECHO_C" >&6; }
+ # Extract the first word of "ar", so it can be a program name with args.
+ set dummy ar; ac_word=$2
+-{ echo "$as_me:$LINENO: checking for $ac_word" >&5
+-echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6; }
+ if test "${ac_cv_path_AR+set}" = set; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+@@ -4282,6 +4560,7 @@
+ esac
+ fi
+ AR=$ac_cv_path_AR
++
+ if test -n "$AR"; then
+   { echo "$as_me:$LINENO: result: $AR" >&5
+ echo "${ECHO_T}$AR" >&6; }
+@@ -4290,11 +4569,10 @@
+ echo "${ECHO_T}no" >&6; }
+ fi
+ 
+-
++{ echo "$as_me:$LINENO: checking for cat" >&5
++echo $ECHO_N "checking for cat... $ECHO_C" >&6; }
+ # Extract the first word of "cat", so it can be a program name with args.
+ set dummy cat; ac_word=$2
+-{ echo "$as_me:$LINENO: checking for $ac_word" >&5
+-echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6; }
+ if test "${ac_cv_path_CAT+set}" = set; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+@@ -4322,6 +4600,7 @@
+ esac
+ fi
+ CAT=$ac_cv_path_CAT
++
+ if test -n "$CAT"; then
+   { echo "$as_me:$LINENO: result: $CAT" >&5
+ echo "${ECHO_T}$CAT" >&6; }
+@@ -4330,11 +4609,10 @@
+ echo "${ECHO_T}no" >&6; }
+ fi
+ 
+-
++{ echo "$as_me:$LINENO: checking for kill" >&5
++echo $ECHO_N "checking for kill... $ECHO_C" >&6; }
+ # Extract the first word of "kill", so it can be a program name with args.
+ set dummy kill; ac_word=$2
+-{ echo "$as_me:$LINENO: checking for $ac_word" >&5
+-echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6; }
+ if test "${ac_cv_path_KILL+set}" = set; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+@@ -4362,6 +4640,7 @@
+ esac
+ fi
+ KILL=$ac_cv_path_KILL
++
+ if test -n "$KILL"; then
+   { echo "$as_me:$LINENO: result: $KILL" >&5
+ echo "${ECHO_T}$KILL" >&6; }
+@@ -4370,13 +4649,12 @@
+ echo "${ECHO_T}no" >&6; }
+ fi
+ 
+-
+ for ac_prog in perl5 perl
+ do
+-  # Extract the first word of "$ac_prog", so it can be a program name with args.
++  { echo "$as_me:$LINENO: checking for $ac_prog" >&5
++echo $ECHO_N "checking for $ac_prog... $ECHO_C" >&6; }
++# Extract the first word of "$ac_prog", so it can be a program name with args.
+ set dummy $ac_prog; ac_word=$2
+-{ echo "$as_me:$LINENO: checking for $ac_word" >&5
+-echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6; }
+ if test "${ac_cv_path_PERL+set}" = set; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+@@ -4404,6 +4682,7 @@
+ esac
+ fi
+ PERL=$ac_cv_path_PERL
++
+ if test -n "$PERL"; then
+   { echo "$as_me:$LINENO: result: $PERL" >&5
+ echo "${ECHO_T}$PERL" >&6; }
+@@ -4412,14 +4691,13 @@
+ echo "${ECHO_T}no" >&6; }
+ fi
+ 
+-
+   test -n "$PERL" && break
+ done
+ 
++{ echo "$as_me:$LINENO: checking for sed" >&5
++echo $ECHO_N "checking for sed... $ECHO_C" >&6; }
+ # Extract the first word of "sed", so it can be a program name with args.
+ set dummy sed; ac_word=$2
+-{ echo "$as_me:$LINENO: checking for $ac_word" >&5
+-echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6; }
+ if test "${ac_cv_path_SED+set}" = set; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+@@ -4447,6 +4725,7 @@
+ esac
+ fi
+ SED=$ac_cv_path_SED
++
+ if test -n "$SED"; then
+   { echo "$as_me:$LINENO: result: $SED" >&5
+ echo "${ECHO_T}$SED" >&6; }
+@@ -4456,11 +4735,10 @@
+ fi
+ 
+ 
+-
++{ echo "$as_me:$LINENO: checking for ent" >&5
++echo $ECHO_N "checking for ent... $ECHO_C" >&6; }
+ # Extract the first word of "ent", so it can be a program name with args.
+ set dummy ent; ac_word=$2
+-{ echo "$as_me:$LINENO: checking for $ac_word" >&5
+-echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6; }
+ if test "${ac_cv_path_ENT+set}" = set; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+@@ -4488,6 +4766,7 @@
+ esac
+ fi
+ ENT=$ac_cv_path_ENT
++
+ if test -n "$ENT"; then
+   { echo "$as_me:$LINENO: result: $ENT" >&5
+ echo "${ECHO_T}$ENT" >&6; }
+@@ -4497,11 +4776,10 @@
+ fi
+ 
+ 
+-
++{ echo "$as_me:$LINENO: checking for bash" >&5
++echo $ECHO_N "checking for bash... $ECHO_C" >&6; }
+ # Extract the first word of "bash", so it can be a program name with args.
+ set dummy bash; ac_word=$2
+-{ echo "$as_me:$LINENO: checking for $ac_word" >&5
+-echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6; }
+ if test "${ac_cv_path_TEST_MINUS_S_SH+set}" = set; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+@@ -4529,6 +4807,7 @@
+ esac
+ fi
+ TEST_MINUS_S_SH=$ac_cv_path_TEST_MINUS_S_SH
++
+ if test -n "$TEST_MINUS_S_SH"; then
+   { echo "$as_me:$LINENO: result: $TEST_MINUS_S_SH" >&5
+ echo "${ECHO_T}$TEST_MINUS_S_SH" >&6; }
+@@ -4537,11 +4816,10 @@
+ echo "${ECHO_T}no" >&6; }
+ fi
+ 
+-
++{ echo "$as_me:$LINENO: checking for ksh" >&5
++echo $ECHO_N "checking for ksh... $ECHO_C" >&6; }
+ # Extract the first word of "ksh", so it can be a program name with args.
+ set dummy ksh; ac_word=$2
+-{ echo "$as_me:$LINENO: checking for $ac_word" >&5
+-echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6; }
+ if test "${ac_cv_path_TEST_MINUS_S_SH+set}" = set; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+@@ -4569,6 +4847,7 @@
+ esac
+ fi
+ TEST_MINUS_S_SH=$ac_cv_path_TEST_MINUS_S_SH
++
+ if test -n "$TEST_MINUS_S_SH"; then
+   { echo "$as_me:$LINENO: result: $TEST_MINUS_S_SH" >&5
+ echo "${ECHO_T}$TEST_MINUS_S_SH" >&6; }
+@@ -4577,11 +4856,10 @@
+ echo "${ECHO_T}no" >&6; }
+ fi
+ 
+-
++{ echo "$as_me:$LINENO: checking for sh" >&5
++echo $ECHO_N "checking for sh... $ECHO_C" >&6; }
+ # Extract the first word of "sh", so it can be a program name with args.
+ set dummy sh; ac_word=$2
+-{ echo "$as_me:$LINENO: checking for $ac_word" >&5
+-echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6; }
+ if test "${ac_cv_path_TEST_MINUS_S_SH+set}" = set; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+@@ -4609,6 +4887,7 @@
+ esac
+ fi
+ TEST_MINUS_S_SH=$ac_cv_path_TEST_MINUS_S_SH
++
+ if test -n "$TEST_MINUS_S_SH"; then
+   { echo "$as_me:$LINENO: result: $TEST_MINUS_S_SH" >&5
+ echo "${ECHO_T}$TEST_MINUS_S_SH" >&6; }
+@@ -4617,11 +4896,10 @@
+ echo "${ECHO_T}no" >&6; }
+ fi
+ 
+-
++{ echo "$as_me:$LINENO: checking for sh" >&5
++echo $ECHO_N "checking for sh... $ECHO_C" >&6; }
+ # Extract the first word of "sh", so it can be a program name with args.
+ set dummy sh; ac_word=$2
+-{ echo "$as_me:$LINENO: checking for $ac_word" >&5
+-echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6; }
+ if test "${ac_cv_path_SH+set}" = set; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+@@ -4649,6 +4927,7 @@
+ esac
+ fi
+ SH=$ac_cv_path_SH
++
+ if test -n "$SH"; then
+   { echo "$as_me:$LINENO: result: $SH" >&5
+ echo "${ECHO_T}$SH" >&6; }
+@@ -4657,14 +4936,13 @@
+ echo "${ECHO_T}no" >&6; }
+ fi
+ 
+-
+ TEST_SHELL=sh
+ 
+ 
++{ echo "$as_me:$LINENO: checking for groupadd" >&5
++echo $ECHO_N "checking for groupadd... $ECHO_C" >&6; }
+ # Extract the first word of "groupadd", so it can be a program name with args.
+ set dummy groupadd; ac_word=$2
+-{ echo "$as_me:$LINENO: checking for $ac_word" >&5
+-echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6; }
+ if test "${ac_cv_path_PATH_GROUPADD_PROG+set}" = set; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+@@ -4693,6 +4971,7 @@
+ esac
+ fi
+ PATH_GROUPADD_PROG=$ac_cv_path_PATH_GROUPADD_PROG
++
+ if test -n "$PATH_GROUPADD_PROG"; then
+   { echo "$as_me:$LINENO: result: $PATH_GROUPADD_PROG" >&5
+ echo "${ECHO_T}$PATH_GROUPADD_PROG" >&6; }
+@@ -4701,11 +4980,10 @@
+ echo "${ECHO_T}no" >&6; }
+ fi
+ 
+-
++{ echo "$as_me:$LINENO: checking for useradd" >&5
++echo $ECHO_N "checking for useradd... $ECHO_C" >&6; }
+ # Extract the first word of "useradd", so it can be a program name with args.
+ set dummy useradd; ac_word=$2
+-{ echo "$as_me:$LINENO: checking for $ac_word" >&5
+-echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6; }
+ if test "${ac_cv_path_PATH_USERADD_PROG+set}" = set; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+@@ -4734,6 +5012,7 @@
+ esac
+ fi
+ PATH_USERADD_PROG=$ac_cv_path_PATH_USERADD_PROG
++
+ if test -n "$PATH_USERADD_PROG"; then
+   { echo "$as_me:$LINENO: result: $PATH_USERADD_PROG" >&5
+ echo "${ECHO_T}$PATH_USERADD_PROG" >&6; }
+@@ -4742,7 +5021,6 @@
+ echo "${ECHO_T}no" >&6; }
+ fi
+ 
+-
+ # Extract the first word of "pkgmk", so it can be a program name with args.
+ set dummy pkgmk; ac_word=$2
+ { echo "$as_me:$LINENO: checking for $ac_word" >&5
+@@ -5156,10 +5434,10 @@
+ 
+ else
+ 	# Search for login
+-	# Extract the first word of "login", so it can be a program name with args.
++	{ echo "$as_me:$LINENO: checking for login" >&5
++echo $ECHO_N "checking for login... $ECHO_C" >&6; }
++# Extract the first word of "login", so it can be a program name with args.
+ set dummy login; ac_word=$2
+-{ echo "$as_me:$LINENO: checking for $ac_word" >&5
+-echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6; }
+ if test "${ac_cv_path_LOGIN_PROGRAM_FALLBACK+set}" = set; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+@@ -5187,6 +5465,7 @@
+ esac
+ fi
+ LOGIN_PROGRAM_FALLBACK=$ac_cv_path_LOGIN_PROGRAM_FALLBACK
++
+ if test -n "$LOGIN_PROGRAM_FALLBACK"; then
+   { echo "$as_me:$LINENO: result: $LOGIN_PROGRAM_FALLBACK" >&5
+ echo "${ECHO_T}$LOGIN_PROGRAM_FALLBACK" >&6; }
+@@ -5195,7 +5474,6 @@
+ echo "${ECHO_T}no" >&6; }
+ fi
+ 
+-
+ 	if test ! -z "$LOGIN_PROGRAM_FALLBACK" ; then
+ 		cat >>confdefs.h <<_ACEOF
+ #define LOGIN_PROGRAM_FALLBACK "$LOGIN_PROGRAM_FALLBACK"
+@@ -5204,10 +5482,10 @@
+ 	fi
+ fi
+ 
++{ echo "$as_me:$LINENO: checking for passwd" >&5
++echo $ECHO_N "checking for passwd... $ECHO_C" >&6; }
+ # Extract the first word of "passwd", so it can be a program name with args.
+ set dummy passwd; ac_word=$2
+-{ echo "$as_me:$LINENO: checking for $ac_word" >&5
+-echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6; }
+ if test "${ac_cv_path_PATH_PASSWD_PROG+set}" = set; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+@@ -5235,6 +5513,7 @@
+ esac
+ fi
+ PATH_PASSWD_PROG=$ac_cv_path_PATH_PASSWD_PROG
++
+ if test -n "$PATH_PASSWD_PROG"; then
+   { echo "$as_me:$LINENO: result: $PATH_PASSWD_PROG" >&5
+ echo "${ECHO_T}$PATH_PASSWD_PROG" >&6; }
+@@ -5243,7 +5522,6 @@
+ echo "${ECHO_T}no" >&6; }
+ fi
+ 
+-
+ if test ! -z "$PATH_PASSWD_PROG" ; then
+ 
+ cat >>confdefs.h <<_ACEOF
+@@ -9434,6 +9712,186 @@
+ 
+ 
+ 
++{ echo "$as_me:$LINENO: checking for BSDoptarg" >&5
++echo $ECHO_N "checking for BSDoptarg... $ECHO_C" >&6; }
++if test "${ac_cv_func_BSDoptarg+set}" = set; then
++  echo $ECHO_N "(cached) $ECHO_C" >&6
++else
++  cat >conftest.$ac_ext <<_ACEOF
++/* confdefs.h.  */
++_ACEOF
++cat confdefs.h >>conftest.$ac_ext
++cat >>conftest.$ac_ext <<_ACEOF
++/* end confdefs.h.  */
++/* Define BSDoptarg to an innocuous variant, in case <limits.h> declares BSDoptarg.
++   For example, HP-UX 11i <limits.h> declares gettimeofday.  */
++#define BSDoptarg innocuous_BSDoptarg
++
++/* System header to define __stub macros and hopefully few prototypes,
++    which can conflict with char BSDoptarg (); below.
++    Prefer <limits.h> to <assert.h> if __STDC__ is defined, since
++    <limits.h> exists even on freestanding compilers.  */
++
++#ifdef __STDC__
++# include <limits.h>
++#else
++# include <assert.h>
++#endif
++
++#undef BSDoptarg
++
++/* Override any GCC internal prototype to avoid an error.
++   Use char because int might match the return type of a GCC
++   builtin and then its argument prototype would still apply.  */
++#ifdef __cplusplus
++extern "C"
++#endif
++char BSDoptarg ();
++/* The GNU C library defines this for functions which it implements
++    to always fail with ENOSYS.  Some functions are actually named
++    something starting with __ and the normal name is an alias.  */
++#if defined __stub_BSDoptarg || defined __stub___BSDoptarg
++choke me
++#endif
++
++int
++main ()
++{
++return BSDoptarg ();
++  ;
++  return 0;
++}
++_ACEOF
++rm -f conftest.$ac_objext conftest$ac_exeext
++if { (ac_try="$ac_link"
++case "(($ac_try" in
++  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
++  *) ac_try_echo=$ac_try;;
++esac
++eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
++  (eval "$ac_link") 2>conftest.er1
++  ac_status=$?
++  grep -v '^ *+' conftest.er1 >conftest.err
++  rm -f conftest.er1
++  cat conftest.err >&5
++  echo "$as_me:$LINENO: \$? = $ac_status" >&5
++  (exit $ac_status); } && {
++	 test -z "$ac_c_werror_flag" ||
++	 test ! -s conftest.err
++       } && test -s conftest$ac_exeext &&
++       $as_test_x conftest$ac_exeext; then
++  ac_cv_func_BSDoptarg=yes
++else
++  echo "$as_me: failed program was:" >&5
++sed 's/^/| /' conftest.$ac_ext >&5
++
++	ac_cv_func_BSDoptarg=no
++fi
++
++rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
++      conftest$ac_exeext conftest.$ac_ext
++fi
++{ echo "$as_me:$LINENO: result: $ac_cv_func_BSDoptarg" >&5
++echo "${ECHO_T}$ac_cv_func_BSDoptarg" >&6; }
++if test $ac_cv_func_BSDoptarg = yes; then
++
++cat >>confdefs.h <<_ACEOF
++#define HAVE_BSD_OPTARG 1
++_ACEOF
++
++fi
++
++{ echo "$as_me:$LINENO: checking for BSDoptind" >&5
++echo $ECHO_N "checking for BSDoptind... $ECHO_C" >&6; }
++if test "${ac_cv_func_BSDoptind+set}" = set; then
++  echo $ECHO_N "(cached) $ECHO_C" >&6
++else
++  cat >conftest.$ac_ext <<_ACEOF
++/* confdefs.h.  */
++_ACEOF
++cat confdefs.h >>conftest.$ac_ext
++cat >>conftest.$ac_ext <<_ACEOF
++/* end confdefs.h.  */
++/* Define BSDoptind to an innocuous variant, in case <limits.h> declares BSDoptind.
++   For example, HP-UX 11i <limits.h> declares gettimeofday.  */
++#define BSDoptind innocuous_BSDoptind
++
++/* System header to define __stub macros and hopefully few prototypes,
++    which can conflict with char BSDoptind (); below.
++    Prefer <limits.h> to <assert.h> if __STDC__ is defined, since
++    <limits.h> exists even on freestanding compilers.  */
++
++#ifdef __STDC__
++# include <limits.h>
++#else
++# include <assert.h>
++#endif
++
++#undef BSDoptind
++
++/* Override any GCC internal prototype to avoid an error.
++   Use char because int might match the return type of a GCC
++   builtin and then its argument prototype would still apply.  */
++#ifdef __cplusplus
++extern "C"
++#endif
++char BSDoptind ();
++/* The GNU C library defines this for functions which it implements
++    to always fail with ENOSYS.  Some functions are actually named
++    something starting with __ and the normal name is an alias.  */
++#if defined __stub_BSDoptind || defined __stub___BSDoptind
++choke me
++#endif
++
++int
++main ()
++{
++return BSDoptind ();
++  ;
++  return 0;
++}
++_ACEOF
++rm -f conftest.$ac_objext conftest$ac_exeext
++if { (ac_try="$ac_link"
++case "(($ac_try" in
++  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
++  *) ac_try_echo=$ac_try;;
++esac
++eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
++  (eval "$ac_link") 2>conftest.er1
++  ac_status=$?
++  grep -v '^ *+' conftest.er1 >conftest.err
++  rm -f conftest.er1
++  cat conftest.err >&5
++  echo "$as_me:$LINENO: \$? = $ac_status" >&5
++  (exit $ac_status); } && {
++	 test -z "$ac_c_werror_flag" ||
++	 test ! -s conftest.err
++       } && test -s conftest$ac_exeext &&
++       $as_test_x conftest$ac_exeext; then
++  ac_cv_func_BSDoptind=yes
++else
++  echo "$as_me: failed program was:" >&5
++sed 's/^/| /' conftest.$ac_ext >&5
++
++	ac_cv_func_BSDoptind=no
++fi
++
++rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
++      conftest$ac_exeext conftest.$ac_ext
++fi
++{ echo "$as_me:$LINENO: result: $ac_cv_func_BSDoptind" >&5
++echo "${ECHO_T}$ac_cv_func_BSDoptind" >&6; }
++if test $ac_cv_func_BSDoptind = yes; then
++
++cat >>confdefs.h <<_ACEOF
++#define HAVE_BSD_OPTIND 1
++_ACEOF
++
++fi
++
++
++
+ for ac_func in dirname
+ do
+ as_ac_var=`echo "ac_cv_func_$ac_func" | $as_tr_sh`
+@@ -17473,10 +17931,10 @@
+ 
+ # These programs are used by the command hashing source to gather entropy
+ 
+-	# Extract the first word of "ls", so it can be a program name with args.
++	{ echo "$as_me:$LINENO: checking for ls" >&5
++echo $ECHO_N "checking for ls... $ECHO_C" >&6; }
++# Extract the first word of "ls", so it can be a program name with args.
+ set dummy ls; ac_word=$2
+-{ echo "$as_me:$LINENO: checking for $ac_word" >&5
+-echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6; }
+ if test "${ac_cv_path_PROG_LS+set}" = set; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+@@ -17504,6 +17962,7 @@
+ esac
+ fi
+ PROG_LS=$ac_cv_path_PROG_LS
++
+ if test -n "$PROG_LS"; then
+   { echo "$as_me:$LINENO: result: $PROG_LS" >&5
+ echo "${ECHO_T}$PROG_LS" >&6; }
+@@ -17512,17 +17971,16 @@
+ echo "${ECHO_T}no" >&6; }
+ fi
+ 
+-
+ 	if test -z "$PROG_LS" ; then
+ 		PROG_LS="undef"
+ 	fi
+ 
+ 
+ 
+-	# Extract the first word of "netstat", so it can be a program name with args.
++	{ echo "$as_me:$LINENO: checking for netstat" >&5
++echo $ECHO_N "checking for netstat... $ECHO_C" >&6; }
++# Extract the first word of "netstat", so it can be a program name with args.
+ set dummy netstat; ac_word=$2
+-{ echo "$as_me:$LINENO: checking for $ac_word" >&5
+-echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6; }
+ if test "${ac_cv_path_PROG_NETSTAT+set}" = set; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+@@ -17550,6 +18008,7 @@
+ esac
+ fi
+ PROG_NETSTAT=$ac_cv_path_PROG_NETSTAT
++
+ if test -n "$PROG_NETSTAT"; then
+   { echo "$as_me:$LINENO: result: $PROG_NETSTAT" >&5
+ echo "${ECHO_T}$PROG_NETSTAT" >&6; }
+@@ -17558,17 +18017,16 @@
+ echo "${ECHO_T}no" >&6; }
+ fi
+ 
+-
+ 	if test -z "$PROG_NETSTAT" ; then
+ 		PROG_NETSTAT="undef"
+ 	fi
+ 
+ 
+ 
+-	# Extract the first word of "arp", so it can be a program name with args.
++	{ echo "$as_me:$LINENO: checking for arp" >&5
++echo $ECHO_N "checking for arp... $ECHO_C" >&6; }
++# Extract the first word of "arp", so it can be a program name with args.
+ set dummy arp; ac_word=$2
+-{ echo "$as_me:$LINENO: checking for $ac_word" >&5
+-echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6; }
+ if test "${ac_cv_path_PROG_ARP+set}" = set; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+@@ -17596,6 +18054,7 @@
+ esac
+ fi
+ PROG_ARP=$ac_cv_path_PROG_ARP
++
+ if test -n "$PROG_ARP"; then
+   { echo "$as_me:$LINENO: result: $PROG_ARP" >&5
+ echo "${ECHO_T}$PROG_ARP" >&6; }
+@@ -17604,17 +18063,16 @@
+ echo "${ECHO_T}no" >&6; }
+ fi
+ 
+-
+ 	if test -z "$PROG_ARP" ; then
+ 		PROG_ARP="undef"
+ 	fi
+ 
+ 
+ 
+-	# Extract the first word of "ifconfig", so it can be a program name with args.
++	{ echo "$as_me:$LINENO: checking for ifconfig" >&5
++echo $ECHO_N "checking for ifconfig... $ECHO_C" >&6; }
++# Extract the first word of "ifconfig", so it can be a program name with args.
+ set dummy ifconfig; ac_word=$2
+-{ echo "$as_me:$LINENO: checking for $ac_word" >&5
+-echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6; }
+ if test "${ac_cv_path_PROG_IFCONFIG+set}" = set; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+@@ -17642,6 +18100,7 @@
+ esac
+ fi
+ PROG_IFCONFIG=$ac_cv_path_PROG_IFCONFIG
++
+ if test -n "$PROG_IFCONFIG"; then
+   { echo "$as_me:$LINENO: result: $PROG_IFCONFIG" >&5
+ echo "${ECHO_T}$PROG_IFCONFIG" >&6; }
+@@ -17650,17 +18109,16 @@
+ echo "${ECHO_T}no" >&6; }
+ fi
+ 
+-
+ 	if test -z "$PROG_IFCONFIG" ; then
+ 		PROG_IFCONFIG="undef"
+ 	fi
+ 
+ 
+ 
+-	# Extract the first word of "jstat", so it can be a program name with args.
++	{ echo "$as_me:$LINENO: checking for jstat" >&5
++echo $ECHO_N "checking for jstat... $ECHO_C" >&6; }
++# Extract the first word of "jstat", so it can be a program name with args.
+ set dummy jstat; ac_word=$2
+-{ echo "$as_me:$LINENO: checking for $ac_word" >&5
+-echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6; }
+ if test "${ac_cv_path_PROG_JSTAT+set}" = set; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+@@ -17688,6 +18146,7 @@
+ esac
+ fi
+ PROG_JSTAT=$ac_cv_path_PROG_JSTAT
++
+ if test -n "$PROG_JSTAT"; then
+   { echo "$as_me:$LINENO: result: $PROG_JSTAT" >&5
+ echo "${ECHO_T}$PROG_JSTAT" >&6; }
+@@ -17696,17 +18155,16 @@
+ echo "${ECHO_T}no" >&6; }
+ fi
+ 
+-
+ 	if test -z "$PROG_JSTAT" ; then
+ 		PROG_JSTAT="undef"
+ 	fi
+ 
+ 
+ 
+-	# Extract the first word of "ps", so it can be a program name with args.
++	{ echo "$as_me:$LINENO: checking for ps" >&5
++echo $ECHO_N "checking for ps... $ECHO_C" >&6; }
++# Extract the first word of "ps", so it can be a program name with args.
+ set dummy ps; ac_word=$2
+-{ echo "$as_me:$LINENO: checking for $ac_word" >&5
+-echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6; }
+ if test "${ac_cv_path_PROG_PS+set}" = set; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+@@ -17734,6 +18192,7 @@
+ esac
+ fi
+ PROG_PS=$ac_cv_path_PROG_PS
++
+ if test -n "$PROG_PS"; then
+   { echo "$as_me:$LINENO: result: $PROG_PS" >&5
+ echo "${ECHO_T}$PROG_PS" >&6; }
+@@ -17742,17 +18201,16 @@
+ echo "${ECHO_T}no" >&6; }
+ fi
+ 
+-
+ 	if test -z "$PROG_PS" ; then
+ 		PROG_PS="undef"
+ 	fi
+ 
+ 
+ 
+-	# Extract the first word of "sar", so it can be a program name with args.
++	{ echo "$as_me:$LINENO: checking for sar" >&5
++echo $ECHO_N "checking for sar... $ECHO_C" >&6; }
++# Extract the first word of "sar", so it can be a program name with args.
+ set dummy sar; ac_word=$2
+-{ echo "$as_me:$LINENO: checking for $ac_word" >&5
+-echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6; }
+ if test "${ac_cv_path_PROG_SAR+set}" = set; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+@@ -17780,6 +18238,7 @@
+ esac
+ fi
+ PROG_SAR=$ac_cv_path_PROG_SAR
++
+ if test -n "$PROG_SAR"; then
+   { echo "$as_me:$LINENO: result: $PROG_SAR" >&5
+ echo "${ECHO_T}$PROG_SAR" >&6; }
+@@ -17788,17 +18247,16 @@
+ echo "${ECHO_T}no" >&6; }
+ fi
+ 
+-
+ 	if test -z "$PROG_SAR" ; then
+ 		PROG_SAR="undef"
+ 	fi
+ 
+ 
+ 
+-	# Extract the first word of "w", so it can be a program name with args.
++	{ echo "$as_me:$LINENO: checking for w" >&5
++echo $ECHO_N "checking for w... $ECHO_C" >&6; }
++# Extract the first word of "w", so it can be a program name with args.
+ set dummy w; ac_word=$2
+-{ echo "$as_me:$LINENO: checking for $ac_word" >&5
+-echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6; }
+ if test "${ac_cv_path_PROG_W+set}" = set; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+@@ -17826,6 +18284,7 @@
+ esac
+ fi
+ PROG_W=$ac_cv_path_PROG_W
++
+ if test -n "$PROG_W"; then
+   { echo "$as_me:$LINENO: result: $PROG_W" >&5
+ echo "${ECHO_T}$PROG_W" >&6; }
+@@ -17834,17 +18293,16 @@
+ echo "${ECHO_T}no" >&6; }
+ fi
+ 
+-
+ 	if test -z "$PROG_W" ; then
+ 		PROG_W="undef"
+ 	fi
+ 
+ 
+ 
+-	# Extract the first word of "who", so it can be a program name with args.
++	{ echo "$as_me:$LINENO: checking for who" >&5
++echo $ECHO_N "checking for who... $ECHO_C" >&6; }
++# Extract the first word of "who", so it can be a program name with args.
+ set dummy who; ac_word=$2
+-{ echo "$as_me:$LINENO: checking for $ac_word" >&5
+-echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6; }
+ if test "${ac_cv_path_PROG_WHO+set}" = set; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+@@ -17872,6 +18330,7 @@
+ esac
+ fi
+ PROG_WHO=$ac_cv_path_PROG_WHO
++
+ if test -n "$PROG_WHO"; then
+   { echo "$as_me:$LINENO: result: $PROG_WHO" >&5
+ echo "${ECHO_T}$PROG_WHO" >&6; }
+@@ -17880,17 +18339,16 @@
+ echo "${ECHO_T}no" >&6; }
+ fi
+ 
+-
+ 	if test -z "$PROG_WHO" ; then
+ 		PROG_WHO="undef"
+ 	fi
+ 
+ 
+ 
+-	# Extract the first word of "last", so it can be a program name with args.
++	{ echo "$as_me:$LINENO: checking for last" >&5
++echo $ECHO_N "checking for last... $ECHO_C" >&6; }
++# Extract the first word of "last", so it can be a program name with args.
+ set dummy last; ac_word=$2
+-{ echo "$as_me:$LINENO: checking for $ac_word" >&5
+-echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6; }
+ if test "${ac_cv_path_PROG_LAST+set}" = set; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+@@ -17918,6 +18376,7 @@
+ esac
+ fi
+ PROG_LAST=$ac_cv_path_PROG_LAST
++
+ if test -n "$PROG_LAST"; then
+   { echo "$as_me:$LINENO: result: $PROG_LAST" >&5
+ echo "${ECHO_T}$PROG_LAST" >&6; }
+@@ -17926,17 +18385,16 @@
+ echo "${ECHO_T}no" >&6; }
+ fi
+ 
+-
+ 	if test -z "$PROG_LAST" ; then
+ 		PROG_LAST="undef"
+ 	fi
+ 
+ 
+ 
+-	# Extract the first word of "lastlog", so it can be a program name with args.
++	{ echo "$as_me:$LINENO: checking for lastlog" >&5
++echo $ECHO_N "checking for lastlog... $ECHO_C" >&6; }
++# Extract the first word of "lastlog", so it can be a program name with args.
+ set dummy lastlog; ac_word=$2
+-{ echo "$as_me:$LINENO: checking for $ac_word" >&5
+-echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6; }
+ if test "${ac_cv_path_PROG_LASTLOG+set}" = set; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+@@ -17964,6 +18422,7 @@
+ esac
+ fi
+ PROG_LASTLOG=$ac_cv_path_PROG_LASTLOG
++
+ if test -n "$PROG_LASTLOG"; then
+   { echo "$as_me:$LINENO: result: $PROG_LASTLOG" >&5
+ echo "${ECHO_T}$PROG_LASTLOG" >&6; }
+@@ -17972,17 +18431,16 @@
+ echo "${ECHO_T}no" >&6; }
+ fi
+ 
+-
+ 	if test -z "$PROG_LASTLOG" ; then
+ 		PROG_LASTLOG="undef"
+ 	fi
+ 
+ 
+ 
+-	# Extract the first word of "df", so it can be a program name with args.
++	{ echo "$as_me:$LINENO: checking for df" >&5
++echo $ECHO_N "checking for df... $ECHO_C" >&6; }
++# Extract the first word of "df", so it can be a program name with args.
+ set dummy df; ac_word=$2
+-{ echo "$as_me:$LINENO: checking for $ac_word" >&5
+-echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6; }
+ if test "${ac_cv_path_PROG_DF+set}" = set; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+@@ -18010,6 +18468,7 @@
+ esac
+ fi
+ PROG_DF=$ac_cv_path_PROG_DF
++
+ if test -n "$PROG_DF"; then
+   { echo "$as_me:$LINENO: result: $PROG_DF" >&5
+ echo "${ECHO_T}$PROG_DF" >&6; }
+@@ -18018,17 +18477,16 @@
+ echo "${ECHO_T}no" >&6; }
+ fi
+ 
+-
+ 	if test -z "$PROG_DF" ; then
+ 		PROG_DF="undef"
+ 	fi
+ 
+ 
+ 
+-	# Extract the first word of "vmstat", so it can be a program name with args.
++	{ echo "$as_me:$LINENO: checking for vmstat" >&5
++echo $ECHO_N "checking for vmstat... $ECHO_C" >&6; }
++# Extract the first word of "vmstat", so it can be a program name with args.
+ set dummy vmstat; ac_word=$2
+-{ echo "$as_me:$LINENO: checking for $ac_word" >&5
+-echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6; }
+ if test "${ac_cv_path_PROG_VMSTAT+set}" = set; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+@@ -18056,6 +18514,7 @@
+ esac
+ fi
+ PROG_VMSTAT=$ac_cv_path_PROG_VMSTAT
++
+ if test -n "$PROG_VMSTAT"; then
+   { echo "$as_me:$LINENO: result: $PROG_VMSTAT" >&5
+ echo "${ECHO_T}$PROG_VMSTAT" >&6; }
+@@ -18064,17 +18523,16 @@
+ echo "${ECHO_T}no" >&6; }
+ fi
+ 
+-
+ 	if test -z "$PROG_VMSTAT" ; then
+ 		PROG_VMSTAT="undef"
+ 	fi
+ 
+ 
+ 
+-	# Extract the first word of "uptime", so it can be a program name with args.
++	{ echo "$as_me:$LINENO: checking for uptime" >&5
++echo $ECHO_N "checking for uptime... $ECHO_C" >&6; }
++# Extract the first word of "uptime", so it can be a program name with args.
+ set dummy uptime; ac_word=$2
+-{ echo "$as_me:$LINENO: checking for $ac_word" >&5
+-echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6; }
+ if test "${ac_cv_path_PROG_UPTIME+set}" = set; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+@@ -18102,6 +18560,7 @@
+ esac
+ fi
+ PROG_UPTIME=$ac_cv_path_PROG_UPTIME
++
+ if test -n "$PROG_UPTIME"; then
+   { echo "$as_me:$LINENO: result: $PROG_UPTIME" >&5
+ echo "${ECHO_T}$PROG_UPTIME" >&6; }
+@@ -18110,17 +18569,16 @@
+ echo "${ECHO_T}no" >&6; }
+ fi
+ 
+-
+ 	if test -z "$PROG_UPTIME" ; then
+ 		PROG_UPTIME="undef"
+ 	fi
+ 
+ 
+ 
+-	# Extract the first word of "ipcs", so it can be a program name with args.
++	{ echo "$as_me:$LINENO: checking for ipcs" >&5
++echo $ECHO_N "checking for ipcs... $ECHO_C" >&6; }
++# Extract the first word of "ipcs", so it can be a program name with args.
+ set dummy ipcs; ac_word=$2
+-{ echo "$as_me:$LINENO: checking for $ac_word" >&5
+-echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6; }
+ if test "${ac_cv_path_PROG_IPCS+set}" = set; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+@@ -18148,6 +18606,7 @@
+ esac
+ fi
+ PROG_IPCS=$ac_cv_path_PROG_IPCS
++
+ if test -n "$PROG_IPCS"; then
+   { echo "$as_me:$LINENO: result: $PROG_IPCS" >&5
+ echo "${ECHO_T}$PROG_IPCS" >&6; }
+@@ -18156,17 +18615,16 @@
+ echo "${ECHO_T}no" >&6; }
+ fi
+ 
+-
+ 	if test -z "$PROG_IPCS" ; then
+ 		PROG_IPCS="undef"
+ 	fi
+ 
+ 
+ 
+-	# Extract the first word of "tail", so it can be a program name with args.
++	{ echo "$as_me:$LINENO: checking for tail" >&5
++echo $ECHO_N "checking for tail... $ECHO_C" >&6; }
++# Extract the first word of "tail", so it can be a program name with args.
+ set dummy tail; ac_word=$2
+-{ echo "$as_me:$LINENO: checking for $ac_word" >&5
+-echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6; }
+ if test "${ac_cv_path_PROG_TAIL+set}" = set; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+@@ -18194,6 +18652,7 @@
+ esac
+ fi
+ PROG_TAIL=$ac_cv_path_PROG_TAIL
++
+ if test -n "$PROG_TAIL"; then
+   { echo "$as_me:$LINENO: result: $PROG_TAIL" >&5
+ echo "${ECHO_T}$PROG_TAIL" >&6; }
+@@ -18202,7 +18661,6 @@
+ echo "${ECHO_T}no" >&6; }
+ fi
+ 
+-
+ 	if test -z "$PROG_TAIL" ; then
+ 		PROG_TAIL="undef"
+ 	fi
+@@ -24681,10 +25139,10 @@
+ 		if test "x$withval" != "xyes" ; then
+   			OPENSC_CONFIG=$withval/bin/opensc-config
+ 		else
+-  			# Extract the first word of "opensc-config", so it can be a program name with args.
++  			{ echo "$as_me:$LINENO: checking for opensc-config" >&5
++echo $ECHO_N "checking for opensc-config... $ECHO_C" >&6; }
++# Extract the first word of "opensc-config", so it can be a program name with args.
+ set dummy opensc-config; ac_word=$2
+-{ echo "$as_me:$LINENO: checking for $ac_word" >&5
+-echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6; }
+ if test "${ac_cv_path_OPENSC_CONFIG+set}" = set; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+@@ -24713,6 +25171,7 @@
+ esac
+ fi
+ OPENSC_CONFIG=$ac_cv_path_OPENSC_CONFIG
++
+ if test -n "$OPENSC_CONFIG"; then
+   { echo "$as_me:$LINENO: result: $OPENSC_CONFIG" >&5
+ echo "${ECHO_T}$OPENSC_CONFIG" >&6; }
+@@ -24721,7 +25180,6 @@
+ echo "${ECHO_T}no" >&6; }
+ fi
+ 
+-
+ 		fi
+ 		if test "$OPENSC_CONFIG" != "no"; then
+ 			LIBOPENSC_CFLAGS=`$OPENSC_CONFIG --cflags`
+@@ -27248,10 +27706,10 @@
+ if test "${with_consolekit+set}" = set; then
+   withval=$with_consolekit;  if test "x$withval" != "xno" ; then
+ 		if test -n "$ac_tool_prefix"; then
+-  # Extract the first word of "${ac_tool_prefix}pkg-config", so it can be a program name with args.
++  { echo "$as_me:$LINENO: checking for ${ac_tool_prefix}pkg-config" >&5
++echo $ECHO_N "checking for ${ac_tool_prefix}pkg-config... $ECHO_C" >&6; }
++# Extract the first word of "${ac_tool_prefix}pkg-config", so it can be a program name with args.
+ set dummy ${ac_tool_prefix}pkg-config; ac_word=$2
+-{ echo "$as_me:$LINENO: checking for $ac_word" >&5
+-echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6; }
+ if test "${ac_cv_path_PKG_CONFIG+set}" = set; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+@@ -27279,6 +27737,7 @@
+ esac
+ fi
+ PKG_CONFIG=$ac_cv_path_PKG_CONFIG
++
+ if test -n "$PKG_CONFIG"; then
+   { echo "$as_me:$LINENO: result: $PKG_CONFIG" >&5
+ echo "${ECHO_T}$PKG_CONFIG" >&6; }
+@@ -27287,14 +27746,11 @@
+ echo "${ECHO_T}no" >&6; }
+ fi
+ 
+-
+ fi
+ if test -z "$ac_cv_path_PKG_CONFIG"; then
+   ac_pt_PKG_CONFIG=$PKG_CONFIG
+   # Extract the first word of "pkg-config", so it can be a program name with args.
+ set dummy pkg-config; ac_word=$2
+-{ echo "$as_me:$LINENO: checking for $ac_word" >&5
+-echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6; }
+ if test "${ac_cv_path_ac_pt_PKG_CONFIG+set}" = set; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+@@ -27322,13 +27778,6 @@
+ esac
+ fi
+ ac_pt_PKG_CONFIG=$ac_cv_path_ac_pt_PKG_CONFIG
+-if test -n "$ac_pt_PKG_CONFIG"; then
+-  { echo "$as_me:$LINENO: result: $ac_pt_PKG_CONFIG" >&5
+-echo "${ECHO_T}$ac_pt_PKG_CONFIG" >&6; }
+-else
+-  { echo "$as_me:$LINENO: result: no" >&5
+-echo "${ECHO_T}no" >&6; }
+-fi
+ 
+   if test "x$ac_pt_PKG_CONFIG" = x; then
+     PKG_CONFIG="no"
+@@ -27408,10 +27857,10 @@
+ 		TestPath="${TestPath}${PATH_SEPARATOR}/usr/bin/X11"
+ 		TestPath="${TestPath}${PATH_SEPARATOR}/usr/X11R6/bin"
+ 		TestPath="${TestPath}${PATH_SEPARATOR}/usr/openwin/bin"
+-		# Extract the first word of "xauth", so it can be a program name with args.
++		{ echo "$as_me:$LINENO: checking for xauth" >&5
++echo $ECHO_N "checking for xauth... $ECHO_C" >&6; }
++# Extract the first word of "xauth", so it can be a program name with args.
+ set dummy xauth; ac_word=$2
+-{ echo "$as_me:$LINENO: checking for $ac_word" >&5
+-echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6; }
+ if test "${ac_cv_path_xauth_path+set}" = set; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+@@ -27439,6 +27888,7 @@
+ esac
+ fi
+ xauth_path=$ac_cv_path_xauth_path
++
+ if test -n "$xauth_path"; then
+   { echo "$as_me:$LINENO: result: $xauth_path" >&5
+ echo "${ECHO_T}$xauth_path" >&6; }
+@@ -27447,7 +27897,6 @@
+ echo "${ECHO_T}no" >&6; }
+ fi
+ 
+-
+ 		if (test ! -z "$xauth_path" && test -x "/usr/openwin/bin/xauth") ; then
+ 			xauth_path="/usr/openwin/bin/xauth"
+ 		fi
+@@ -27589,10 +28038,10 @@
+ 	TestPath="/usr/bin${PATH_SEPARATOR}/usr/ucb"
+ 	for ac_prog in nroff awf
+ do
+-  # Extract the first word of "$ac_prog", so it can be a program name with args.
++  { echo "$as_me:$LINENO: checking for $ac_prog" >&5
++echo $ECHO_N "checking for $ac_prog... $ECHO_C" >&6; }
++# Extract the first word of "$ac_prog", so it can be a program name with args.
+ set dummy $ac_prog; ac_word=$2
+-{ echo "$as_me:$LINENO: checking for $ac_word" >&5
+-echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6; }
+ if test "${ac_cv_path_NROFF+set}" = set; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+@@ -27620,6 +28069,7 @@
+ esac
+ fi
+ NROFF=$ac_cv_path_NROFF
++
+ if test -n "$NROFF"; then
+   { echo "$as_me:$LINENO: result: $NROFF" >&5
+ echo "${ECHO_T}$NROFF" >&6; }
+@@ -27628,7 +28078,6 @@
+ echo "${ECHO_T}no" >&6; }
+ fi
+ 
+-
+   test -n "$NROFF" && break
+ done
+ test -n "$NROFF" || NROFF="/bin/false"
+@@ -29332,9 +29781,10 @@
+ CFLAGS!$CFLAGS$ac_delim
+ LDFLAGS!$LDFLAGS$ac_delim
+ CPPFLAGS!$CPPFLAGS$ac_delim
+-ac_ct_CC!$ac_ct_CC$ac_delim
+-EXEEXT!$EXEEXT$ac_delim
+ OBJEXT!$OBJEXT$ac_delim
++LIB!$LIB$ac_delim
++INCLUDE!$INCLUDE$ac_delim
++EXEEXT!$EXEEXT$ac_delim
+ build!$build$ac_delim
+ build_cpu!$build_cpu$ac_delim
+ build_vendor!$build_vendor$ac_delim
+@@ -29387,7 +29837,6 @@
+ PROG_UPTIME!$PROG_UPTIME$ac_delim
+ PROG_IPCS!$PROG_IPCS$ac_delim
+ PROG_TAIL!$PROG_TAIL$ac_delim
+-INSTALL_SSH_PRNG_CMDS!$INSTALL_SSH_PRNG_CMDS$ac_delim
+ _ACEOF
+ 
+   if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 97; then
+@@ -29429,6 +29878,7 @@
+ ac_delim='%!_!# '
+ for ac_last_try in false false false false false :; do
+   cat >conf$$subs.sed <<_ACEOF
++INSTALL_SSH_PRNG_CMDS!$INSTALL_SSH_PRNG_CMDS$ac_delim
+ OPENSC_CONFIG!$OPENSC_CONFIG$ac_delim
+ PKG_CONFIG!$PKG_CONFIG$ac_delim
+ PRIVSEP_PATH!$PRIVSEP_PATH$ac_delim
+@@ -29444,7 +29894,7 @@
+ LTLIBOBJS!$LTLIBOBJS$ac_delim
+ _ACEOF
+ 
+-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 13; then
++  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 14; then
+     break
+   elif $ac_last_try; then
+     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5
+@@ -29690,8 +30140,6 @@
+ ' $ac_file_inputs` in
+ *datarootdir*) ac_datarootdir_seen=yes;;
+ *@datadir@*|*@docdir@*|*@infodir@*|*@localedir@*|*@mandir@*)
+-  { echo "$as_me:$LINENO: WARNING: $ac_file_inputs seems to ignore the --datarootdir setting" >&5
+-echo "$as_me: WARNING: $ac_file_inputs seems to ignore the --datarootdir setting" >&2;}
+ _ACEOF
+ cat >>$CONFIG_STATUS <<_ACEOF
+   ac_datarootdir_hack='
+--- openssh-4.7p1_orig/configure.ac	2008-05-15 13:11:52.000000000 +0200
++++ openssh-4.7p1/configure.ac	2008-05-15 14:06:52.000000000 +0200
+@@ -858,6 +858,10 @@
+ AC_CHECK_FUNC(yp_match, , AC_CHECK_LIB(nsl, yp_match))
+ AC_CHECK_FUNC(setsockopt, , AC_CHECK_LIB(socket, setsockopt))
+ 
++
++AC_CHECK_FUNC(BSDoptarg, AC_DEFINE_UNQUOTED([HAVE_BSD_OPTARG], [1], [Define this if you have BSDoptarg]))
++AC_CHECK_FUNC(BSDoptind, AC_DEFINE_UNQUOTED([HAVE_BSD_OPTIND], [1], [Define this if you have BSDoptind]))
++
+ dnl IRIX and Solaris 2.5.1 have dirname() in libgen
+ AC_CHECK_FUNCS(dirname, [AC_CHECK_HEADERS(libgen.h)] ,[
+ 	AC_CHECK_LIB(gen, dirname,[
+--- openssh-4.7p1_orig/defines.h	2008-05-15 13:11:52.000000000 +0200
++++ openssh-4.7p1/defines.h	2008-05-15 14:07:54.000000000 +0200
+@@ -520,11 +520,15 @@
+ # undef optarg
+ # define getopt(ac, av, o)  BSDgetopt(ac, av, o)
+ # define opterr             BSDopterr
++#ifdef HAVE_BSD_OPTIND
+ # define optind             BSDoptind
++#endif
+ # define optopt             BSDoptopt
+ # define optreset           BSDoptreset
++#ifdef HAVE_BSD_OPTARG
+ # define optarg             BSDoptarg
+ #endif
++#endif
+ 
+ #if defined(BROKEN_GETADDRINFO) && defined(HAVE_GETADDRINFO)
+ # undef HAVE_GETADDRINFO

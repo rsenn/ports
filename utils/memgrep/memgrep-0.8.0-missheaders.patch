@@ -1,0 +1,35 @@
+Only in memgrep-0.8.0/examples: simple
+diff -ru memgrep-0.8.0_orig/examples/simple.c memgrep-0.8.0/examples/simple.c
+--- memgrep-0.8.0_orig/examples/simple.c	2009-03-01 14:21:54.000000000 +0100
++++ memgrep-0.8.0/examples/simple.c	2009-03-01 14:25:34.000000000 +0100
+@@ -1,5 +1,6 @@
+ #include <stdlib.h>
+ #include <stdio.h>
++#include <string.h>
+ 
+ #include "memgrep.h"
+ 
+Only in memgrep-0.8.0: heaplist.so
+Only in memgrep-0.8.0: libmemgrep.a
+Only in memgrep-0.8.0: libmemgrep.so
+Only in memgrep-0.8.0: memgrep
+Only in memgrep-0.8.0/src: heaplist.o
+diff -ru memgrep-0.8.0_orig/src/memgrep.c memgrep-0.8.0/src/memgrep.c
+--- memgrep-0.8.0_orig/src/memgrep.c	2009-03-01 14:21:54.000000000 +0100
++++ memgrep-0.8.0/src/memgrep.c	2009-03-01 14:25:08.000000000 +0100
+@@ -88,11 +88,12 @@
+ 
+ 	int myPtrace(MEM_CTX *ctx, int command, int pid, unsigned long addr, unsigned long data);
+ #else
+-	#include <linux/user.h>
++  #include <sys/ptrace.h>
++	#include <sys/user.h>
+ 	
+ 	#define PTRACE_ADDR_CAST void *
+ 
+-	extern long int ptrace (unsigned long int cmd, unsigned long int pid, void *param, unsigned long int data);
++	/*extern long int ptrace (unsigned long int cmd, unsigned long int pid, void *param, unsigned long int data);*/
+ #endif
+ 
+ const char memgrepVersion[] = "v0.8.0 12/21/2003";
+Only in memgrep-0.8.0/src: memgrep.o

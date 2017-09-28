@@ -1,0 +1,1784 @@
+diff -ru jslibs-0.9-r1881_orig/src/common/matrix44.h jslibs-0.9-r1881/src/common/matrix44.h
+--- jslibs-0.9-r1881_orig/src/common/matrix44.h	2009-02-06 05:13:13.000000000 +0100
++++ jslibs-0.9-r1881/src/common/matrix44.h	2009-02-06 05:34:05.000000000 +0100
+@@ -285,7 +285,7 @@
+ }
+ 
+ 
+-inline FORCEINLINE float Sin(float angle) {
++inline ALWAYS_INLINE float Sin(float angle) {
+ 
+ #ifdef SSE
+ 	__asm fld	angle
+@@ -295,7 +295,7 @@
+ #endif // SSE
+ }
+ 
+-inline FORCEINLINE float Cos(float angle)	{
++inline ALWAYS_INLINE float Cos(float angle)	{
+ 
+ #ifdef SSE
+ 	__asm fld	angle
+@@ -305,7 +305,7 @@
+ #endif // SSE
+ }
+ 
+-inline FORCEINLINE void SinCos(float angle, float *sinVal, float *cosVal) {
++inline ALWAYS_INLINE void SinCos(float angle, float *sinVal, float *cosVal) {
+ 
+ #ifdef SSE
+ 	__asm fld		[angle]
+@@ -319,7 +319,7 @@
+ #endif // SSE
+ }
+ 
+-inline FORCEINLINE float Sqrt(float val) {
++inline ALWAYS_INLINE float Sqrt(float val) {
+ 
+ #ifdef SSE
+ 	__asm fld		val
+diff -ru jslibs-0.9-r1881_orig/src/common/vector4.h jslibs-0.9-r1881/src/common/vector4.h
+--- jslibs-0.9-r1881_orig/src/common/vector4.h	2009-02-06 05:13:13.000000000 +0100
++++ jslibs-0.9-r1881/src/common/vector4.h	2009-02-06 05:33:07.000000000 +0100
+@@ -35,7 +35,7 @@
+ typedef union {
+     struct { float x, y, z, w; };
+     float raw[4];
+-} Vector3;
++} Vector4;
+ 
+ #endif // SSE
+ 
+diff -ru jslibs-0.9-r1881_orig/src/jsgraphics/Makefile jslibs-0.9-r1881/src/jsgraphics/Makefile
+--- jslibs-0.9-r1881_orig/src/jsgraphics/Makefile	2009-02-06 05:15:02.000000000 +0100
++++ jslibs-0.9-r1881/src/jsgraphics/Makefile	2009-02-06 05:14:44.000000000 +0100
+@@ -0,0 +1,8 @@
++TARGET     = jsgraphics.so
++SRC        = $(wildcard *.cpp)
++INCLUDES   = `pkg-config js gl --cflags`
++STATICLIBS = 
++SHAREDLIBS = `pkg-config js gl --libs`
++DEPENDS    = 
++
++include ../rules.mk
+diff -ru jslibs-0.9-r1881_orig/src/jsgraphics/glext.h jslibs-0.9-r1881/src/jsgraphics/glext.h
+--- jslibs-0.9-r1881_orig/src/jsgraphics/glext.h	2009-02-06 05:13:13.000000000 +0100
++++ jslibs-0.9-r1881/src/jsgraphics/glext.h	2009-02-06 06:17:01.000000000 +0100
+@@ -33,6 +33,8 @@
+ #include <windows.h>
+ #endif
+ 
++#include <GL/gl.h>
++
+ #ifndef APIENTRY
+ #define APIENTRY
+ #endif
+diff -ru jslibs-0.9-r1881_orig/src/jsgraphics/jsgl.cpp jslibs-0.9-r1881/src/jsgraphics/jsgl.cpp
+--- jslibs-0.9-r1881_orig/src/jsgraphics/jsgl.cpp	2009-02-06 05:13:13.000000000 +0100
++++ jslibs-0.9-r1881/src/jsgraphics/jsgl.cpp	2009-02-06 06:15:37.000000000 +0100
+@@ -48,7 +48,7 @@
+ 
+ //#define GL_GLEXT_PROTOTYPES
+ 
+-#include <gl/gl.h>
++#include <GL/gl.h>
+ #include "glext.h"
+ 
+ #include "oglError.h"
+@@ -196,10 +196,10 @@
+    glAccum
+ **/
+ DEFINE_FUNCTION_FAST( Accum ) {
+-
++  GLenum op;
+ 	J_S_ASSERT_ARG_MIN(2);
+ 	J_S_ASSERT_INT(J_FARG(1));
+-	GLenum op = JSVAL_TO_INT(J_FARG(1));
++	op = JSVAL_TO_INT(J_FARG(1));
+ 	jsdouble value;
+ 	JS_ValueToNumber(cx, J_FARG(2), &value);
+ 	glAccum(op, value);
+@@ -1069,7 +1069,7 @@
+    glGetIntegerv, glFrustum
+ **/
+ DEFINE_FUNCTION_FAST( Perspective ) {
+-
++  double aspect;
+ 	//cf. gluPerspective(fovy, float(viewport[2]) / float(viewport[3]), zNear, zFar);
+ 
+ 	J_S_ASSERT_ARG_MIN(3);
+@@ -1083,7 +1083,7 @@
+ 
+ 	GLint viewport[4];
+ 	glGetIntegerv( GL_VIEWPORT, viewport );
+-	double aspect = double(viewport[2]) / double(viewport[3]);
++	aspect = double(viewport[2]) / double(viewport[3]);
+ 
+ 	double xmin, xmax, ymin, ymax;
+ 	ymax = zNear * tan(fovy * M_PI / 360.0f);
+@@ -1164,9 +1164,9 @@
+    glLoadMatrixf
+ **/
+ DEFINE_FUNCTION_FAST( LoadMatrix ) {
+-
++  Matrix44 tmp, *m;
+ 	J_S_ASSERT_ARG_MIN(1);
+-	Matrix44 tmp, *m = &tmp;
++	m = &tmp;
+ 	if (GetMatrixHelper(cx, J_FARG(1), &m) == JS_FALSE)
+ 		return JS_FALSE;
+ 	glLoadMatrixf(m->raw);
+@@ -1277,10 +1277,10 @@
+    glDeleteLists
+ **/
+ DEFINE_FUNCTION_FAST( DeleteList ) {
+-
++  GLuint list;
+ 	J_S_ASSERT_ARG_MIN(1);
+ 	J_S_ASSERT_INT(J_FARG(1));
+-	GLuint list = JSVAL_TO_INT(J_FARG(1));
++	list = JSVAL_TO_INT(J_FARG(1));
+ 	glDeleteLists(list, 1);
+ 	*J_FRVAL = JSVAL_VOID;
+ 	return JS_TRUE;
+@@ -1449,10 +1449,10 @@
+    glDeleteTextures
+ **/
+ DEFINE_FUNCTION_FAST( DeleteTexture ) {
+-
++  GLuint texture;
+ 	J_S_ASSERT_ARG_MIN(1);
+ 	J_S_ASSERT_INT(J_FARG(1));
+-	GLuint texture = JSVAL_TO_INT( J_FARG(1) );
++	texture = JSVAL_TO_INT( J_FARG(1) );
+ 	glDeleteTextures(1, &texture);
+ 	*J_FRVAL = JSVAL_VOID;
+ 	return JS_TRUE;
+@@ -1476,7 +1476,8 @@
+    glCopyTexImage2D
+ **/
+ DEFINE_FUNCTION_FAST( CopyTexImage2D ) {
+-
++  GLenum internalFormat;
++  GLint level, x, y, width, height;
+ 	J_S_ASSERT_ARG_MIN(6);
+ 	J_S_ASSERT_INT(J_FARG(1));
+ 	J_S_ASSERT_INT(J_FARG(2));
+@@ -1485,13 +1486,13 @@
+ 	J_S_ASSERT_INT(J_FARG(5));
+ 	J_S_ASSERT_INT(J_FARG(6));
+ 
+-	GLint level = JSVAL_TO_INT(J_FARG(1));
+-	GLenum internalFormat = JSVAL_TO_INT(J_FARG(2));
++	level = JSVAL_TO_INT(J_FARG(1));
++	internalFormat = JSVAL_TO_INT(J_FARG(2));
+ 
+-	GLint x = JSVAL_TO_INT(J_FARG(3));
+-	GLint y = JSVAL_TO_INT(J_FARG(4));
+-	GLint width = JSVAL_TO_INT(J_FARG(5));
+-	GLint height = JSVAL_TO_INT(J_FARG(6));
++	x = JSVAL_TO_INT(J_FARG(3));
++	y = JSVAL_TO_INT(J_FARG(4));
++	width = JSVAL_TO_INT(J_FARG(5));
++	height = JSVAL_TO_INT(J_FARG(6));
+ 
+ 	GLint border;
+ 	if ( J_FARG_ISDEF(7) )
+@@ -1554,8 +1555,8 @@
+   $H OpenGL API
+    glGenBuffersARB
+ **/
++#ifdef GL_GET_PROC_ADDRESS
+ DEFINE_FUNCTION_FAST( GenBuffer ) {
+-
+ 	LOAD_OPENGL_EXTENSION( glGenBuffersARB, PFNGLGENBUFFERSARBPROC );
+ 
+ 	GLuint buffer;
+@@ -1564,6 +1565,7 @@
+ 	return JS_TRUE;
+ 	JL_BAD;
+ }
++#endif // GL_GET_PROC_ADDRESS
+ 
+ 
+ /**doc
+@@ -1574,20 +1576,22 @@
+   $H OpenGL API
+    glBindBufferARB
+ **/
++#ifdef GL_GET_PROC_ADDRESS
+ DEFINE_FUNCTION_FAST( BindBuffer ) {
+-
++  GLenum target, buffer;
+ 	LOAD_OPENGL_EXTENSION( glBindBufferARB, PFNGLBINDBUFFERARBPROC );
+ 
+ 	J_S_ASSERT_ARG_MIN(2);
+ 	J_S_ASSERT_INT(J_FARG(1));
+ 	J_S_ASSERT_INT(J_FARG(2));
+-	GLenum target = JSVAL_TO_INT(J_FARG(1));
+-	GLenum buffer = JSVAL_TO_INT(J_FARG(2));
++	target = JSVAL_TO_INT(J_FARG(1));
++	buffer = JSVAL_TO_INT(J_FARG(2));
+ 	glBindBufferARB(target, buffer);
+ 	*J_FRVAL = JSVAL_VOID;
+ 	return JS_TRUE;
+ 	JL_BAD;
+ }
++#endif // GL_GET_PROC_ADDRESS
+ 
+ 
+ 
+@@ -1599,6 +1603,7 @@
+   $H OpenGL API
+    glPointParameterf, glPointParameterfv
+ **/
++#ifdef GL_GET_PROC_ADDRESS
+ DEFINE_FUNCTION_FAST( PointParameter ) {
+ 
+ 	LOAD_OPENGL_EXTENSION( glPointParameterf, PFNGLPOINTPARAMETERFPROC );
+@@ -1631,7 +1636,7 @@
+ 	J_REPORT_ERROR("Invalid argument.");
+ 	JL_BAD;
+ }
+-
++#endif // GL_GET_PROC_ADDRESS
+ 
+ /**doc
+  * $VOID $INAME( texture )
+@@ -1640,19 +1645,20 @@
+   $H OpenGL API
+    glActiveTextureARB
+ **/
++#ifdef GL_GET_PROC_ADDRESS
+ DEFINE_FUNCTION_FAST( ActiveTexture ) {
+-
++  GLenum texture;
+ 	LOAD_OPENGL_EXTENSION( glActiveTextureARB, PFNGLACTIVETEXTUREARBPROC );
+ 
+ 	J_S_ASSERT_ARG_MIN(1);
+ 	J_S_ASSERT_INT(J_FARG(1));
+-	GLenum texture = JSVAL_TO_INT(J_FARG(1));
++	texture = JSVAL_TO_INT(J_FARG(1));
+ 	glActiveTextureARB(texture);
+ 	*J_FRVAL = JSVAL_VOID;
+ 	return JS_TRUE;
+ 	JL_BAD;
+ }
+-
++#endif // GL_GET_PROC_ADDRESS
+ 
+ /**doc
+  * $VOID $INAME( texture )
+@@ -1661,19 +1667,20 @@
+   $H OpenGL API
+    glClientActiveTextureARB
+ **/
++#ifdef GL_GET_PROC_ADDRESS
+ DEFINE_FUNCTION_FAST( ClientActiveTexture ) {
+-
++  GLenum texture;
+ 	LOAD_OPENGL_EXTENSION( glClientActiveTextureARB, PFNGLCLIENTACTIVETEXTUREARBPROC );
+ 
+ 	J_S_ASSERT_ARG_MIN(1);
+ 	J_S_ASSERT_INT(J_FARG(1));
+-	GLenum texture = JSVAL_TO_INT(J_FARG(1));
++	texture = JSVAL_TO_INT(J_FARG(1));
+ 	glClientActiveTextureARB(texture);
+ 	*J_FRVAL = JSVAL_VOID;
+ 	return JS_TRUE;
+ 	JL_BAD;
+ }
+-
++#endif // GL_GET_PROC_ADDRESS
+ 
+ /**doc
+  * $VOID $INAME( target, s [, t [, r]] )
+@@ -1685,8 +1692,9 @@
+   $H OpenGL API
+    glMultiTexCoord1d, glMultiTexCoord2d, glMultiTexCoord3d
+ **/
++#ifdef GL_GET_PROC_ADDRESS
+ DEFINE_FUNCTION_FAST( MultiTexCoord ) {
+-
++  GLenum target;
+ 	LOAD_OPENGL_EXTENSION( glMultiTexCoord1d, PFNGLMULTITEXCOORD1DARBPROC );
+ 	LOAD_OPENGL_EXTENSION( glMultiTexCoord2d, PFNGLMULTITEXCOORD2DARBPROC );
+ 	LOAD_OPENGL_EXTENSION( glMultiTexCoord3d, PFNGLMULTITEXCOORD3DARBPROC );
+@@ -1694,7 +1702,7 @@
+ 	J_S_ASSERT_ARG_MIN(2);
+ 
+ 	J_S_ASSERT_INT(J_FARG(1));
+-	GLenum target = JSVAL_TO_INT(J_FARG(1));
++	target = JSVAL_TO_INT(J_FARG(1));
+ 
+ 	*J_FRVAL = JSVAL_VOID;
+ 	jsdouble s;
+@@ -1721,7 +1729,7 @@
+ 	J_REPORT_ERROR("Invalid argument.");
+ 	JL_BAD;
+ }
+-
++#endif // GL_GET_PROC_ADDRESS
+ 
+ 
+ ///////////////////////////////////////////////////////////////////////////////
+@@ -1773,17 +1781,19 @@
+ /**doc
+  * $VOID $INAME( trimesh )
+ **/
++#ifdef GL_GET_PROC_ADDRESS
+ DEFINE_FUNCTION_FAST( LoadTrimesh ) {
+-
++  Surface *srf;
++  JSObject *trimeshObj;
+ 	LOAD_OPENGL_EXTENSION( glGenBuffersARB, PFNGLGENBUFFERSARBPROC );
+ 	LOAD_OPENGL_EXTENSION( glBindBufferARB, PFNGLBINDBUFFERARBPROC );
+ 	LOAD_OPENGL_EXTENSION( glBufferDataARB, PFNGLBUFFERDATAARBPROC );
+ 
+ 	J_S_ASSERT_ARG_MIN(1);
+ 	J_S_ASSERT_OBJECT(J_FARG(1));
+-	JSObject *trimeshObj = JSVAL_TO_OBJECT(J_FARG(1));
++	trimeshObj = JSVAL_TO_OBJECT(J_FARG(1));
+ 	J_S_ASSERT( IsTrimeshObject(cx, trimeshObj), "Invalid Trimesh object" );
+-	Surface *srf = GetTrimeshSurface(cx, trimeshObj);
++	srf = GetTrimeshSurface(cx, trimeshObj);
+ 	J_S_ASSERT_RESOURCE(srf);
+ 
+ 	J_S_ASSERT( srf->vertex && srf->vertexCount && srf->index && srf->indexCount, "No enough data" );
+@@ -1833,7 +1843,7 @@
+ 	return JS_TRUE;
+ 	JL_BAD;
+ }
+-
++#endif // GL_GET_PROC_ADDRESS
+ 
+ 
+ 
+@@ -1842,8 +1852,10 @@
+   $H OpenGL API
+    glVertexPointer
+ **/
++#ifdef GL_GET_PROC_ADDRESS
+ DEFINE_FUNCTION_FAST( DrawTrimesh ) {
+-
++  GLenum dataType;
++  TrimeshInfo *info;
+ 	LOAD_OPENGL_EXTENSION( glBindBufferARB, PFNGLBINDBUFFERARBPROC );
+ 
+ 	J_S_ASSERT_ARG_MIN(1);
+@@ -1851,9 +1863,9 @@
+ 
+ 	J_S_ASSERT( IsIdType(cx, J_FARG(1), TRIMESH_ID_NAME), "Invalid Id." );
+ 
+-	TrimeshInfo *info = (TrimeshInfo*)GetIdPrivate(cx, J_FARG(1));
++	info = (TrimeshInfo*)GetIdPrivate(cx, J_FARG(1));
+ 
+-	GLenum dataType = sizeof(SURFACE_REAL_TYPE) == sizeof(float) ? GL_FLOAT : GL_DOUBLE;
++	dataType = sizeof(SURFACE_REAL_TYPE) == sizeof(float) ? GL_FLOAT : GL_DOUBLE;
+ 
+ 	glEnableClientState(GL_VERTEX_ARRAY);
+ 	glBindBufferARB(GL_ARRAY_BUFFER_ARB, info->vertexBuffer);
+@@ -1903,7 +1915,7 @@
+ 	return JS_TRUE;
+ 	JL_BAD;
+ }
+-
++#endif // GL_GET_PROC_ADDRESS
+ 
+ 
+ 
+@@ -1918,9 +1930,10 @@
+   $H OpenGL API
+    glPixelStorei, glTexImage2D
+ **/
++#ifdef GL_GET_PROC_ADDRESS
+ // (TBD) manage compression: http://www.opengl.org/registry/specs/ARB/texture_compression.txt
+ DEFINE_FUNCTION_FAST( DefineTextureImage ) {
+-
++  JSObject *tObj;
+ 	J_S_ASSERT_ARG_MIN(3);
+ 	J_S_ASSERT_INT(J_FARG(1));
+ //	J_S_ASSERT_INT(J_FARG(2)); // may be undefined
+@@ -1931,7 +1944,7 @@
+ 	int channels;
+ 	const GLvoid *data;
+ 
+-	JSObject *tObj = JSVAL_TO_OBJECT(J_FARG(3));
++	tObj = JSVAL_TO_OBJECT(J_FARG(3));
+ 
+ 	if ( JS_GET_CLASS(cx, tObj) == TextureJSClass(cx) ) {
+ 
+@@ -1986,7 +1999,7 @@
+ 	return JS_TRUE;
+ 	JL_BAD;
+ }
+-
++#endif // GL_GET_PROC_ADDRESS
+ 
+ 
+ /**doc
+@@ -2033,7 +2046,6 @@
+ 
+ 	glDeleteTextures(1, &texture);
+ 	return JS_TRUE;
+-	JL_BAD;
+ }
+ 
+ 
+@@ -2677,8 +2689,11 @@
+ 		CONST_INTEGER( EXT_vertex_array        , GL_EXT_vertex_array        )
+ 		CONST_INTEGER( EXT_bgra                , GL_EXT_bgra                )
+ 		CONST_INTEGER( EXT_paletted_texture    , GL_EXT_paletted_texture    )
++
++#ifdef _WIN32
+ 		CONST_INTEGER( WIN_swap_hint           , GL_WIN_swap_hint           )
+ 		CONST_INTEGER( WIN_draw_range_elements , GL_WIN_draw_range_elements )
++#endif // _WIN32
+ 
+ 		CONST_INTEGER( VERTEX_ARRAY_EXT                , GL_VERTEX_ARRAY_EXT                )
+ 		CONST_INTEGER( NORMAL_ARRAY_EXT                , GL_NORMAL_ARRAY_EXT                )
+@@ -2712,19 +2727,37 @@
+ 		CONST_INTEGER( INDEX_ARRAY_POINTER_EXT         , GL_INDEX_ARRAY_POINTER_EXT         )
+ 		CONST_INTEGER( TEXTURE_COORD_ARRAY_POINTER_EXT , GL_TEXTURE_COORD_ARRAY_POINTER_EXT )
+ 		CONST_INTEGER( EDGE_FLAG_ARRAY_POINTER_EXT     , GL_EDGE_FLAG_ARRAY_POINTER_EXT     )
++#ifdef GL_DOUBLE_EXT
+ 		CONST_INTEGER( DOUBLE_EXT                      , GL_DOUBLE_EXT                      )
++#endif // GL_DOUBLE_EXT
+ 
+ 		CONST_INTEGER( BGR_EXT  , GL_BGR_EXT  )
+ 		CONST_INTEGER( BGRA_EXT , GL_BGRA_EXT )
+ 
++#ifdef GL_COLOR_TABLE_FORMAT_EXT
+ 		CONST_INTEGER( COLOR_TABLE_FORMAT_EXT         , GL_COLOR_TABLE_FORMAT_EXT         )
++#endif // GL_COLOR_TABLE_FORMAT_EXT
++#ifdef GL_COLOR_TABLE_WIDTH_EXT
+ 		CONST_INTEGER( COLOR_TABLE_WIDTH_EXT          , GL_COLOR_TABLE_WIDTH_EXT          )
++#endif // GL_COLOR_TABLE_WIDTH_EXT
++#ifdef GL_COLOR_TABLE_RED_SIZE_EXT
+ 		CONST_INTEGER( COLOR_TABLE_RED_SIZE_EXT       , GL_COLOR_TABLE_RED_SIZE_EXT       )
++#endif // GL_COLOR_TABLE_RED_SIZE_EXT
++#ifdef GL_COLOR_TABLE_GREEN_SIZE_EXT
+ 		CONST_INTEGER( COLOR_TABLE_GREEN_SIZE_EXT     , GL_COLOR_TABLE_GREEN_SIZE_EXT     )
++#endif // GL_COLOR_TABLE_GREEN_SIZE_EXT
++#ifdef GL_COLOR_TABLE_BLUE_SIZE_EXT
+ 		CONST_INTEGER( COLOR_TABLE_BLUE_SIZE_EXT      , GL_COLOR_TABLE_BLUE_SIZE_EXT      )
++#endif // GL_COLOR_TABLE_BLUE_SIZE_EXT
++#ifdef GL_COLOR_TABLE_ALPHA_SIZE_EXT
+ 		CONST_INTEGER( COLOR_TABLE_ALPHA_SIZE_EXT     , GL_COLOR_TABLE_ALPHA_SIZE_EXT     )
++#endif // GL_COLOR_TABLE_ALPHA_SIZE_EXT
++#ifdef GL_COLOR_TABLE_LUMINANCE_SIZE_EXT
+ 		CONST_INTEGER( COLOR_TABLE_LUMINANCE_SIZE_EXT , GL_COLOR_TABLE_LUMINANCE_SIZE_EXT )
++#endif // GL_COLOR_TABLE_LUMINANCE_SIZE_EXT
++#ifdef GL_COLOR_TABLE_INTENSITY_SIZE_EXT
+ 		CONST_INTEGER( COLOR_TABLE_INTENSITY_SIZE_EXT , GL_COLOR_TABLE_INTENSITY_SIZE_EXT )
++#endif // GL_COLOR_TABLE_INTENSITY_SIZE_EXT
+ 
+ 		CONST_INTEGER( COLOR_INDEX1_EXT  , GL_COLOR_INDEX1_EXT  )
+ 		CONST_INTEGER( COLOR_INDEX2_EXT  , GL_COLOR_INDEX2_EXT  )
+@@ -2733,8 +2766,12 @@
+ 		CONST_INTEGER( COLOR_INDEX12_EXT , GL_COLOR_INDEX12_EXT )
+ 		CONST_INTEGER( COLOR_INDEX16_EXT , GL_COLOR_INDEX16_EXT )
+ 
++#ifdef GL_MAX_ELEMENTS_VERTICES_WIN
+ 		CONST_INTEGER( MAX_ELEMENTS_VERTICES_WIN , GL_MAX_ELEMENTS_VERTICES_WIN )
++#endif // GL_MAX_ELEMENTS_VERTICES_WIN
++#ifdef GL_MAX_ELEMENTS_INDICES_WIN
+ 		CONST_INTEGER( MAX_ELEMENTS_INDICES_WIN  , GL_MAX_ELEMENTS_INDICES_WIN  )
++#endif // GL_MAX_ELEMENTS_INDICES_WIN
+ 
+ 		CONST_INTEGER( PHONG_WIN      , GL_PHONG_WIN      )
+ 		CONST_INTEGER( PHONG_HINT_WIN , GL_PHONG_HINT_WIN )
+@@ -2889,10 +2926,13 @@
+ 		FUNCTION_FAST_ARGC(BindTexture, 2) // target, texture
+ 		FUNCTION_FAST_ARGC(DeleteTexture, 1) // textureId
+ 		FUNCTION_FAST_ARGC(CopyTexImage2D, 7) // level, internalFormat, x, y, width, height, border
++#ifdef GL_GET_PROC_ADDRESS
+ 		FUNCTION_FAST_ARGC(DefineTextureImage, 3) // target, format, image (non-OpenGL API)
++#endif // GL_GET_PROC_ADDRESS
+ 		FUNCTION_FAST_ARGC(RenderToImage, 0) // (non-OpenGL API)
+ 
+ 		// OpenGL extensions
++#ifdef GL_GET_PROC_ADDRESS
+ 		FUNCTION_FAST_ARGC(GenBuffer, 0)
+ 		FUNCTION_FAST_ARGC(BindBuffer, 2) // target, buffer
+ 		FUNCTION_FAST_ARGC(PointParameter, 2) // pname, param | Array of param
+@@ -2904,6 +2944,7 @@
+ 
+ 		FUNCTION_FAST_ARGC(LoadTrimesh, 1) // Trimesh object
+ 		FUNCTION_FAST_ARGC(DrawTrimesh, 1) // Trimesh id
++#endif // GL_GET_PROC_ADDRESS
+ 
+ 	END_STATIC_FUNCTION_SPEC
+ 
+diff -ru jslibs-0.9-r1881_orig/src/jsgraphics/jstransformation.cpp jslibs-0.9-r1881/src/jsgraphics/jstransformation.cpp
+--- jslibs-0.9-r1881_orig/src/jsgraphics/jstransformation.cpp	2009-02-06 05:13:13.000000000 +0100
++++ jslibs-0.9-r1881/src/jsgraphics/jstransformation.cpp	2009-02-06 06:15:37.000000000 +0100
+@@ -52,9 +52,9 @@
+   Creates a new uninitialized Transformation object.
+ **/
+ DEFINE_CONSTRUCTOR() {
+-
++  Matrix44 *m;
+ 	J_S_ASSERT_CONSTRUCTING();
+-	Matrix44 *m = Matrix44Alloc();
++	m = Matrix44Alloc();
+ 	J_S_ASSERT_ALLOC(m);
+ //	Matrix44Identity(m);
+ 	JS_SetPrivate(cx, J_OBJ, m);
+@@ -116,13 +116,13 @@
+    $ARG value matrix: an Array or an object that supports NIMatrix44Read native interface.
+ **/
+ DEFINE_FUNCTION_FAST( Load ) {
+-
++  Matrix44 *m, *tm;
+ 	J_S_ASSERT_ARG_MIN(1);
+-	Matrix44 *tm = (Matrix44*)JS_GetPrivate(cx, J_FOBJ);
++  tm = (Matrix44*)JS_GetPrivate(cx, J_FOBJ);
+ 	J_S_ASSERT_RESOURCE(tm);
+ 	*J_FRVAL = OBJECT_TO_JSVAL(J_FOBJ);
+ 
+-	Matrix44 *m = tm;
++	m = tm;
+ 	J_CHK( GetMatrixHelper(cx, J_FARG(1), &m) ); // GetMatrixHelper will copy data into tmp OR replace tmp by its own float pointer
+ 	if ( m != tm ) // check if the pointer has been modified
+ 		memcpy(tm, m, sizeof(Matrix44)); // if it is, copy the data
+@@ -138,11 +138,11 @@
+    $ARG value matrix: an Array or an object that supports NIMatrix44Read native interface.
+ **/
+ DEFINE_FUNCTION_FAST( LoadRotation ) {
+-
++  Matrix44 *m, *tm, tmp;
+ 	J_S_ASSERT_ARG_MIN(1);
+-	Matrix44 *tm = (Matrix44*)JS_GetPrivate(cx, J_FOBJ); // tm for thisMatrix
++	tm = (Matrix44*)JS_GetPrivate(cx, J_FOBJ); // tm for thisMatrix
+ 	J_S_ASSERT_RESOURCE(tm);
+-	Matrix44 tmp, *m = &tmp;
++	m = &tmp;
+ 	J_CHK( GetMatrixHelper(cx, J_FARG(1), &m) );
+ 	tm->raw[0]  = m->raw[0] ; //L1
+ 	tm->raw[1]  = m->raw[1] ;
+@@ -169,11 +169,11 @@
+    $ARG value matrix: an Array or an object that supports NIMatrix44Read native interface.
+ **/
+ DEFINE_FUNCTION_FAST( LoadTranslation ) {
+-
++  Matrix44 *m, *tm, tmp;
+ 	J_S_ASSERT_ARG_MIN(1);
+-	Matrix44 *tm = (Matrix44*)JS_GetPrivate(cx, J_FOBJ); // tm for thisMatrix
++	tm = (Matrix44*)JS_GetPrivate(cx, J_FOBJ); // tm for thisMatrix
+ 	J_S_ASSERT_RESOURCE(tm);
+-	Matrix44 tmp, *m = &tmp;
++	m = &tmp;
+ 	J_CHK( GetMatrixHelper(cx, J_FARG(1), &m) );
+ 	tm->raw[3]  = m->raw[3];
+ 	tm->raw[7]  = m->raw[7];
+@@ -193,9 +193,9 @@
+    $ARG real z
+ **/
+ DEFINE_FUNCTION_FAST( Translation ) {
+-
++  Matrix44 *m;
+ 	J_S_ASSERT_ARG_MIN(3); // x, y, z
+-	Matrix44 *m = (Matrix44*)JS_GetPrivate(cx, J_FOBJ);
++	m = (Matrix44*)JS_GetPrivate(cx, J_FOBJ);
+ 	J_S_ASSERT_RESOURCE(m);
+ 	float x, y, z;
+ 	J_CHK( JsvalToFloat(cx, J_FARG(1), &x) ); 
+@@ -217,9 +217,9 @@
+    $ARG real z
+ **/
+ DEFINE_FUNCTION_FAST( Translate ) {
+-
++  Matrix44 *m;
+ 	J_S_ASSERT_ARG_MIN(3); // x, y, z
+-	Matrix44 *m = (Matrix44*)JS_GetPrivate(cx, J_FOBJ);
++	m = (Matrix44*)JS_GetPrivate(cx, J_FOBJ);
+ 	J_S_ASSERT_RESOURCE(m);
+ 	float x, y, z;
+ 	J_CHK( JsvalToFloat(cx, J_FARG(1), &x) ); 
+@@ -246,9 +246,10 @@
+    $ARG real z
+ **/
+ DEFINE_FUNCTION_FAST( RotationFromQuaternion ) {
+-
++  float fTx, fTy, fTz, fTwx, fTwy, fTwz, fTxx, fTxy, fTxz, fTyy, fTyz, fTzz;
++  Matrix44 *tm;
+ 	J_S_ASSERT_ARG_MIN(4); // w, x, y, z
+-	Matrix44 *tm = (Matrix44*)JS_GetPrivate(cx, J_FOBJ); // tm for thisMatrix
++	tm = (Matrix44*)JS_GetPrivate(cx, J_FOBJ); // tm for thisMatrix
+ 	J_S_ASSERT_RESOURCE(tm);
+ 
+ 	float w, x, y, z;
+@@ -258,18 +259,18 @@
+ 	J_CHK( JsvalToFloat(cx, J_FARG(4), &z) ); 
+ 
+ 
+-	float fTx  = 2.0 * x;
+-	float fTy  = 2.0 * y;
+-	float fTz  = 2.0 * z;
+-	float fTwx = fTx * w;
+-	float fTwy = fTy * w;
+-	float fTwz = fTz * w;
+-	float fTxx = fTx * x;
+-	float fTxy = fTy * x;
+-	float fTxz = fTz * x;
+-	float fTyy = fTy * y;
+-	float fTyz = fTz * y;
+-	float fTzz = fTz * z;
++	fTx  = 2.0 * x;
++	fTy  = 2.0 * y;
++	fTz  = 2.0 * z;
++	fTwx = fTx * w;
++	fTwy = fTy * w;
++	fTwz = fTz * w;
++	fTxx = fTx * x;
++	fTxy = fTy * x;
++	fTxz = fTz * x;
++	fTyy = fTy * y;
++	fTyz = fTz * y;
++	fTzz = fTz * z;
+ 
+ 	tm->m[0][0] = 1.0-(fTyy+fTzz);
+ 	tm->m[0][1] = fTxy-fTwz;
+@@ -295,9 +296,9 @@
+    $ARG real yaw
+ **/
+ DEFINE_FUNCTION_FAST( TaitBryanRotation ) {
+-
++  Matrix44 *tm;
+ 	J_S_ASSERT_ARG_MIN(3); // roll, pitch, yaw
+-	Matrix44 *tm = (Matrix44*)JS_GetPrivate(cx, J_FOBJ); // tm for thisMatrix
++	tm = (Matrix44*)JS_GetPrivate(cx, J_FOBJ); // tm for thisMatrix
+ 	J_S_ASSERT_RESOURCE(tm);
+ 
+ 	float roll, pitch, yaw;
+@@ -323,9 +324,9 @@
+    $ARG real z
+ **/
+ DEFINE_FUNCTION_FAST( Rotation ) {
+-
++  Matrix44 *tm;
+ 	J_S_ASSERT_ARG_MIN(4); // angle, x, y, z
+-	Matrix44 *tm = (Matrix44*)JS_GetPrivate(cx, J_FOBJ); // tm for thisMatrix
++	tm = (Matrix44*)JS_GetPrivate(cx, J_FOBJ); // tm for thisMatrix
+ 	J_S_ASSERT_RESOURCE(tm);
+ 
+ 	float angle, x, y, z;
+@@ -352,9 +353,9 @@
+    $ARG real z
+ **/
+ DEFINE_FUNCTION_FAST( Rotate ) {
+-
++  Matrix44 *m;
+ 	J_S_ASSERT_ARG_MIN(4); // angle, x, y, z
+-	Matrix44 *m = (Matrix44*)JS_GetPrivate(cx, J_FOBJ);
++	m = (Matrix44*)JS_GetPrivate(cx, J_FOBJ);
+ 	J_S_ASSERT_RESOURCE(m);
+ 	float angle, x, y, z;
+ 	J_CHK( JsvalToFloat(cx, J_FARG(1), &angle) ); 
+@@ -380,9 +381,9 @@
+    $ARG real angle in degres
+ **/
+ DEFINE_FUNCTION_FAST( RotationX ) {
+-
++  Matrix44 *m;
+ 	J_S_ASSERT_ARG_MIN(1); // angle
+-	Matrix44 *m = (Matrix44*)JS_GetPrivate(cx, J_FOBJ);
++	m = (Matrix44*)JS_GetPrivate(cx, J_FOBJ);
+ 	J_S_ASSERT_RESOURCE(m);
+ 	float angle;
+ 	J_CHK( JsvalToFloat(cx, J_FARG(1), &angle) ); 
+@@ -402,9 +403,9 @@
+    $ARG real angle in degres
+ **/
+ DEFINE_FUNCTION_FAST( RotationY ) {
+-
++  Matrix44 *m;
+ 	J_S_ASSERT_ARG_MIN(1); // angle
+-	Matrix44 *m = (Matrix44*)JS_GetPrivate(cx, J_FOBJ);
++	m = (Matrix44*)JS_GetPrivate(cx, J_FOBJ);
+ 	J_S_ASSERT_RESOURCE(m);
+ 	float angle;
+ 	J_CHK( JsvalToFloat(cx, J_FARG(1), &angle) ); 
+@@ -424,9 +425,9 @@
+    $ARG real angle in degres
+ **/
+ DEFINE_FUNCTION_FAST( RotationZ ) {
+-
++  Matrix44 *m;
+ 	J_S_ASSERT_ARG_MIN(1); // angle
+-	Matrix44 *m = (Matrix44*)JS_GetPrivate(cx, J_FOBJ);
++	m = (Matrix44*)JS_GetPrivate(cx, J_FOBJ);
+ 	J_S_ASSERT_RESOURCE(m);
+ 	float angle;
+ 	J_CHK( JsvalToFloat(cx, J_FARG(1), &angle) ); 
+@@ -462,11 +463,11 @@
+     m2 = y.m128;
+     m3 = z.m128;
+ */
+-
++  Matrix44 *m;
+ 	J_REPORT_ERROR("LookAt is buggy !! dont' use it");
+ 
+ 	J_S_ASSERT_ARG_MIN(3); // x, y, z
+-	Matrix44 *m = (Matrix44*)JS_GetPrivate(cx, J_FOBJ);
++	m = (Matrix44*)JS_GetPrivate(cx, J_FOBJ);
+ 	J_S_ASSERT_RESOURCE(m);
+ 	float x, y, z;
+ 	J_CHK( JsvalToFloat(cx, J_FARG(1), &x) ); 
+@@ -484,9 +485,10 @@
+ 
+ 
+ DEFINE_FUNCTION_FAST( RotateToVector ) {
+-
++  float angle;
++  Matrix44 *m;
+ 	J_S_ASSERT_ARG_MIN(3); // x, y, z
+-	Matrix44 *m = (Matrix44*)JS_GetPrivate(cx, J_FOBJ);
++	m = (Matrix44*)JS_GetPrivate(cx, J_FOBJ);
+ 	J_S_ASSERT_RESOURCE(m);
+ 	float x, y, z;
+ 	J_CHK( JsvalToFloat(cx, J_FARG(1), &x) ); 
+@@ -499,7 +501,7 @@
+ 	Vector3Normalize(&to);
+ 	Vector3Set(&up, 0,0,1);
+ 
+-	float angle = acos(Vector3Dot(&up, &to));
++	angle = acos(Vector3Dot(&up, &to));
+ 	
+ 	Vector3Cross(&up, &up, &to);
+ 
+@@ -536,11 +538,11 @@
+    $ARG value newTransformation: an Array or an object that supports NIMatrix44Read native interface.
+ **/
+ DEFINE_FUNCTION_FAST( Product ) {
+-
++  Matrix44 *m, *tm, tmp;
+ 	J_S_ASSERT_ARG_MIN(1);
+-	Matrix44 *tm = (Matrix44*)JS_GetPrivate(cx, J_FOBJ); // tm for thisMatrix
++	tm = (Matrix44*)JS_GetPrivate(cx, J_FOBJ); // tm for thisMatrix
+ 	J_S_ASSERT_RESOURCE(tm);
+-	Matrix44 tmp, *m = &tmp;
++	m = &tmp;
+ 	J_CHK( GetMatrixHelper(cx, J_FARG(1), &m) );
+ 	Matrix44Product(tm, m); // <- mult
+ 	*J_FRVAL = OBJECT_TO_JSVAL(J_FOBJ);
+@@ -557,11 +559,11 @@
+    $ARG value otherTransformation: an Array or an object that supports NIMatrix44Read native interface.
+ **/
+ DEFINE_FUNCTION_FAST( ReverseProduct ) {
+-
++  Matrix44 *m, *tm, tmp;
+ 	J_S_ASSERT_ARG_MIN(1);
+-	Matrix44 *tm = (Matrix44*)JS_GetPrivate(cx, J_FOBJ); // tm for thisMatrix
++	tm = (Matrix44*)JS_GetPrivate(cx, J_FOBJ); // tm for thisMatrix
+ 	J_S_ASSERT_RESOURCE(tm);
+-	Matrix44 tmp, *m = &tmp;
++	m = &tmp;
+ 	J_CHK( GetMatrixHelper(cx, J_FARG(1), &m) );
+ 	Matrix44ReverseProduct(tm, m); // <- mult
+ 	*J_FRVAL = OBJECT_TO_JSVAL(J_FOBJ);
+@@ -577,11 +579,11 @@
+    $ARG Array vector
+ **/
+ DEFINE_FUNCTION_FAST( TransformVector ) {
+-
++  Matrix44 *tm;
+ 	J_S_ASSERT_ARG_MIN(1);
+ 	J_S_ASSERT_ARRAY( J_FARG(1) );
+ 
+-	Matrix44 *tm = (Matrix44*)JS_GetPrivate(cx, J_FOBJ); // tm for thisMatrix
++	tm = (Matrix44*)JS_GetPrivate(cx, J_FOBJ); // tm for thisMatrix
+ 	J_S_ASSERT_RESOURCE(tm);
+ 
+ 	size_t length;
+diff -ru jslibs-0.9-r1881_orig/src/jsgraphics/jstransformation.h jslibs-0.9-r1881/src/jsgraphics/jstransformation.h
+--- jslibs-0.9-r1881_orig/src/jsgraphics/jstransformation.h	2009-02-06 05:13:13.000000000 +0100
++++ jslibs-0.9-r1881/src/jsgraphics/jstransformation.h	2009-02-06 06:15:37.000000000 +0100
+@@ -24,9 +24,9 @@
+  * see Load for an example
+  */
+ inline JSBool GetMatrixHelper( JSContext *cx, jsval val, Matrix44 **m ) {
+-
++  JSObject *matrixObj;
+ 	J_S_ASSERT_OBJECT(val);
+-	JSObject *matrixObj = JSVAL_TO_OBJECT(val);
++	matrixObj = JSVAL_TO_OBJECT(val);
+ 
+ 	NIMatrix44Read Matrix44Read;
+ 	J_CHK( GetMatrix44ReadInterface(cx, matrixObj, &Matrix44Read) );
+diff -ru jslibs-0.9-r1881_orig/src/jsgraphics/jswindow.cpp jslibs-0.9-r1881/src/jsgraphics/jswindow.cpp
+--- jslibs-0.9-r1881_orig/src/jsgraphics/jswindow.cpp	2009-02-06 05:13:13.000000000 +0100
++++ jslibs-0.9-r1881/src/jsgraphics/jswindow.cpp	2009-02-06 06:33:13.000000000 +0100
+@@ -57,6 +57,7 @@
+ //		return JS_TRUE;
+ //	}
+ 
++#ifdef _WIN32
+ static LRESULT WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
+ 
+ 	CxObj *cxobj = (CxObj*)GetWindowLong(hWnd, GWL_USERDATA);
+@@ -195,12 +196,17 @@
+ 		//	break;
+ 	}
+ 	return DefWindowProc(hWnd, message, wParam, lParam); // We do not want to handle this message so pass back to Windows to handle it in a default way
++
++  return 0;
+ }
++#endif // _WIN32
+ 
+ DEFINE_CONSTRUCTOR() {
+ 
+ //	JSClass *test = JS_GetClass(obj);
+ 	J_S_ASSERT_CLASS( obj, _class );
++
++#ifdef _WIN32
+ 	HINSTANCE hInst = (HINSTANCE)GetModuleHandle(NULL);
+ 	J_S_ASSERT( hInst != NULL, "Unable to GetModuleHandle." );
+ 
+@@ -225,21 +231,35 @@
+ 	J_SAFE(SetLastError(0));
+ 	LONG prevWindowLong = SetWindowLong(hWnd, GWL_USERDATA, (LONG)cxobj );
+ 	J_S_ASSERT_1( prevWindowLong != 0 || (err=GetLastError()) == 0, "Unable to SetWindowLong. (error %d)", err );
++
++#else
++
++#endif // _WIN32
++
+ 	return JS_TRUE;
++  JL_BAD;
+ }
+ 
+ bool TrackMouseLeave( HWND hWnd ) {
+ 
++#ifdef _WIN32
++
+ 	TRACKMOUSEEVENT trackMouseEvent;
+ 	trackMouseEvent.cbSize = sizeof(TRACKMOUSEEVENT);
+ 	trackMouseEvent.dwFlags = TME_LEAVE;
+ 	trackMouseEvent.hwndTrack = hWnd;
+ 	return TrackMouseEvent(&trackMouseEvent) != 0;
++
++#else
++  return 0;
++#endif // _WIN32
++
+ //	J_S_ASSERT_1( status != 0, "Unable to TrackMouseEvent.(%d)", GetLastError() );
+ }
+ 
+ DEFINE_FUNCTION( Open ) {
+ 
++#ifdef _WIN32
+ 	HWND hWnd = (HWND)JS_GetPrivate(cx, obj);
+ 	J_S_ASSERT_RESOURCE( hWnd );
+ 
+@@ -247,12 +267,17 @@
+ 	SetForegroundWindow(hWnd);
+ 	UpdateWindow(hWnd);
+ 	SetFocus(hWnd);
++
++#else
++#endif  // _WIN32
++
+ 	return JS_TRUE;
+ }
+ 
+ 
+ DEFINE_FUNCTION( ProcessEvents ) {
+ 
++#ifdef _WIN32
+ 	HWND hWnd = (HWND)JS_GetPrivate(cx, obj);
+ 	J_S_ASSERT_RESOURCE( hWnd );
+ 
+@@ -287,6 +312,8 @@
+ 		}
+ 
+ //	} while(!quit);
++#else
++#endif // _WIN32
+ 
+ 	return JS_TRUE;
+ }
+@@ -295,6 +322,7 @@
+ DEFINE_FUNCTION( Close ) {
+ 
+ // some events can occur after this point, then we NUST keep cxobj as long as possible
++#ifdef _WIN32
+ 
+ 	HWND hWnd = (HWND)JS_GetPrivate(cx, obj);
+ 	J_S_ASSERT_RESOURCE( hWnd );
+@@ -305,6 +333,8 @@
+ 	free(cxobj);
+ 	UnregisterClass(WINDOW_CLASS_NAME, GetModuleHandle(NULL));
+ 
++#else
++#endif // _WIN32
+ 
+ 	return JS_TRUE;
+ }
+@@ -324,9 +354,14 @@
+ 	int32 val;
+ 	JS_ValueToInt32(cx, argv[0], &val);
+ 
++#ifdef _WIN32
+ 	DWORD status = MsgWaitForMultipleObjects(0, NULL, FALSE, val, QS_ALLEVENTS);
+ 	*rval = (status == WAIT_TIMEOUT) ? JSVAL_FALSE : JSVAL_TRUE;
++#else
++#endif // _WIN32
++
+ 	return JS_TRUE;
++  JL_BAD;
+ }
+ 
+ /*
+@@ -378,6 +413,7 @@
+ //	J_S_ASSERT_OBJECT(argv[0]);
+ //	J_S_ASSERT_CLASS(JSVAL_TO_OBJECT(argv[0]), &classWindow);
+ 
++#ifdef _WIN32
+ 	HWND hWnd = (HWND)JS_GetPrivate(cx, obj);
+ 	J_S_ASSERT_RESOURCE( hWnd );
+ 
+@@ -431,6 +467,10 @@
+ 
+ //  wglMakeCurrent(NULL,NULL); // This step is not required, but it can help find errors, especially when you are using multiple rendering contexts.
+ //  wglDeleteContext(hRC);
++
++#else
++#endif // _WIN32
++
+ 	return JS_TRUE;
+ }
+ 
+@@ -439,6 +479,7 @@
+ //		http://www.futuretech.blinkenlights.nl/dbuffer.html
+ static JSBool _SwapBuffers(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval *rval) {
+ 
++#ifdef _WIN32
+ //	glFlush();
+ //	glFinish();
+ //	J_S_ASSERT( JS_GET_CLASS(cx,obj) == _class, RT_ERROR_INVALID_CLASS );
+@@ -446,12 +487,16 @@
+ 	J_S_ASSERT( hDC != NULL, "Could not get the Current Device Context." );
+ 	BOOL res = SwapBuffers(hDC); // Doc: With multithread applications, flush the drawing commands in any other threads drawing to the same window before calling SwapBuffers.
+ 	J_S_ASSERT_1( res, "Unable to SwapBuffers.(%x)", GetLastError() );
++#else
++#endif // _WIN32
++
+ 	return JS_TRUE;
+ }
+ 
+ 
+ DEFINE_FUNCTION( Mode ) {
+ 
++#ifdef _WIN32
+ 	LONG status;
+ 	if ( argc > 0 ) {
+ 
+@@ -482,12 +527,16 @@
+ 		status = ChangeDisplaySettings(NULL, 0);
+ 	}
+ 	J_S_ASSERT_1( status == DISP_CHANGE_SUCCESSFUL, "Unable to ChangeDisplaySettings.(%d)", status);
++#else
++#endif // _WIN32
++
+ 	return JS_TRUE;
+ }
+ 
+ 
+ DEFINE_PROPERTY( clipCursor ) {
+ 
++#ifdef _WIN32
+ 	HWND hWnd = (HWND)JS_GetPrivate(cx, obj);
+ 	J_S_ASSERT_INITIALIZED(hWnd);
+ 	JSBool clip;
+@@ -496,12 +545,16 @@
+ 	GetWindowRect(hWnd, &r);
+ 	BOOL sysStatus = ClipCursor( clip ? &r : NULL );
+ 	J_S_ASSERT( sysStatus != 0, "Unable to ClipCursor." );
++#else
++#endif // _WIN32
++
+ 	return JS_TRUE;
+ }
+ 
+ 
+ DEFINE_PROPERTY( absoluteClipCursor ) {
+ 
++#ifdef _WIN32
+ 	BOOL sysStatus;
+ 	if ( !JSVAL_IS_VOID( *vp ) ) {
+ 
+@@ -519,6 +572,9 @@
+ 		sysStatus = ClipCursor( NULL );
+ 	}
+ 	J_S_ASSERT( sysStatus != 0, "Unable to ClipCursor." );
++#else
++#endif // _WIN32
++
+ 	return JS_TRUE;
+ }
+ 
+@@ -526,9 +582,13 @@
+ 
+ DEFINE_PROPERTY( showCursor ) {
+ 
++#ifdef _WIN32
+ 	JSBool show;
+ 	JS_ValueToBoolean(cx, *vp, &show);
+ 	ShowCursor( show ? TRUE : FALSE );
++#else
++#endif // _WIN32
++
+ 	return JS_TRUE;
+ }
+ 
+@@ -537,6 +597,7 @@
+ 
+ DEFINE_PROPERTY( clientRect ) {
+ 
++#ifdef _WIN32
+ 	HWND hWnd = (HWND)JS_GetPrivate(cx, obj);
+ 	J_S_ASSERT_RESOURCE(hWnd);
+ 	RECT r;
+@@ -562,12 +623,16 @@
+ 	J_CHK( JS_SetElement(cx, arrayObj, 2, &value) );
+ 	value = INT_TO_JSVAL(r.bottom);
+ 	J_CHK( JS_SetElement(cx, arrayObj, 3, &value) );
++#else
++#endif // _WIN32
++
+ 	return JS_TRUE;
+ }
+ 
+ 
+ DEFINE_PROPERTY( rectGetter ) {
+ 
++#ifdef _WIN32
+ 	HWND hWnd = (HWND)JS_GetPrivate(cx, obj);
+ 	J_S_ASSERT_RESOURCE(hWnd);
+ 	RECT r;
+@@ -591,12 +656,16 @@
+ 	int vector[] = { r.left, r.top, r.right, r.bottom };
+ 	J_CHK( IntVectorToJsval(cx, vector, COUNTOF(vector), vp) );
+ //	}
++#else
++#endif // _WIN32
++
+ 	return JS_TRUE;
+ }
+ 
+ 
+ DEFINE_PROPERTY( rectSetter ) {
+ 
++#ifdef _WIN32
+ 	HWND hWnd = (HWND)JS_GetPrivate(cx, obj);
+ 	J_S_ASSERT_RESOURCE(hWnd);
+ 	int v[4];
+@@ -609,12 +678,16 @@
+ 	J_S_ASSERT( length == 4, "Invalid array size." );
+ 
+ 	SetWindowPos(hWnd, 0, v[0], v[1], v[2] - v[0], v[3] - v[1], SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOACTIVATE);
++#else
++#endif // _WIN32
++
+ 	return JS_TRUE;
+ }
+ 
+ 
+ DEFINE_PROPERTY( cursorAbsolutePositionSetter ) {
+ 
++#ifdef _WIN32
+ 	HWND hWnd = (HWND)JS_GetPrivate(cx, obj);
+ 	J_S_ASSERT_RESOURCE(hWnd);
+ 	int vec[2];
+@@ -626,12 +699,16 @@
+ 
+ 	BOOL sysStatus = SetCursorPos(vec[0], vec[1]); // http://windowssdk.msdn.microsoft.com/en-us/library/ms648394.aspx
+ 	J_S_ASSERT( sysStatus != 0, "Unable to SetCursorPos." );
++#else
++#endif // _WIN32
++
+ 	return JS_TRUE;
+ }
+ 
+ 
+ DEFINE_PROPERTY( cursorAbsolutePositionGetter ) {
+ 
++#ifdef _WIN32
+ 	HWND hWnd = (HWND)JS_GetPrivate(cx, obj);
+ 	J_S_ASSERT_RESOURCE(hWnd);
+ 	POINT pt;
+@@ -639,11 +716,15 @@
+ 	int vector[] = { pt.x, pt.y };
+ 	//IntVectorToArray(cx, COUNTOF(vector), vector, vp);
+ 	J_CHK( IntVectorToJsval(cx, vector, COUNTOF(vector), vp) );
++#else
++#endif
++
+ 	return JS_TRUE;
+ }
+ 
+ DEFINE_PROPERTY( cursorPositionSetter ) {
+ 
++#ifdef _WIN32                                                                                                          
+ 	HWND hWnd = (HWND)JS_GetPrivate(cx, obj);
+ 	J_S_ASSERT_RESOURCE(hWnd);
+ 	int vec[2];
+@@ -656,11 +737,15 @@
+ 	ClientToScreen(hWnd, &pt);
+ 	BOOL sysStatus = SetCursorPos(pt.x, pt.y); // http://windowssdk.msdn.microsoft.com/en-us/library/ms648394.aspx
+ 	J_S_ASSERT( sysStatus != 0, "Unable to SetCursorPos." );
++#else                                                                                                                  
++#endif // _WIN32
++
+ 	return JS_TRUE;
+ }
+ 
+ DEFINE_PROPERTY( cursorPositionGetter ) {
+ 
++#ifdef _WIN32                                                                                                          
+ 	HWND hWnd = (HWND)JS_GetPrivate(cx, obj);
+ 	J_S_ASSERT_RESOURCE(hWnd);
+ 	POINT pt;
+@@ -669,22 +754,30 @@
+ 	int vector[] = { pt.x, pt.y };
+ //	IntVectorToArray(cx, COUNTOF(vector), vector, vp);
+ 	J_CHK( IntVectorToJsval(cx, vector, COUNTOF(vector), vp) );
++#else                                                                                                                  
++#endif // _WIN32
++
+ 	return JS_TRUE;
+ }
+ 
+ DEFINE_PROPERTY( title ) {
+ 
++#ifdef _WIN32                                                                                                          
+ 	HWND hWnd = (HWND)JS_GetPrivate(cx, obj);
+ 	J_S_ASSERT_RESOURCE(hWnd);
+ 	const char *title;
+ 	J_CHK( JsvalToString(cx, vp, &title) );
+ 	SetWindowText(hWnd, title);
++#else                                                                                                                  
++#endif // _WIN32
++
+ 	return JS_TRUE;
+ }
+ 
+ 
+ DEFINE_PROPERTY( showFrame ) {
+ 
++#ifdef _WIN32                                                                                                          
+ 	HWND hWnd = (HWND)JS_GetPrivate(cx, obj);
+ 	J_S_ASSERT_RESOURCE(hWnd);
+ 
+@@ -703,23 +796,32 @@
+ 	// Certain window data is cached, so changes you make using SetWindowLong will not take effect until you call the SetWindowPos function.
+ 	// Specifically, if you change any of the frame styles, you must call SetWindowPos with the SWP_FRAMECHANGED flag for the cache to be updated properly.
+ 	SetWindowPos(hWnd, HWND_TOP, 0,0,0,0,  SWP_FRAMECHANGED | SWP_NOSIZE | SWP_NOMOVE | SWP_NOZORDER | SWP_NOOWNERZORDER); //HWND_TOPMOST
++#else                                                                                                                  
++#endif // _WIN32
++
+ 	return JS_TRUE;
+ }
+ 
+ 
+ DEFINE_PROPERTY( desktopRect ) {
+ 
++#ifdef _WIN32                                                                                                          
+ 	RECT r;
+ 	GetWindowRect(GetDesktopWindow(), &r);
+ 	int vector[] = { r.left, r.top, r.right, r.bottom };
+ //	IntVectorToArray(cx, COUNTOF(vector), vector, vp);
+ 	J_CHK( IntVectorToJsval(cx, vector, COUNTOF(vector), vp) );
++#else                                                                                                                  
++#endif // _WIN32
++
+ 	return JS_TRUE;
+ }
+ 
+ 
+ DEFINE_PROPERTY( captureMouse ) {
+ 
++#ifdef _WIN32
++
+ 	HWND hWnd = (HWND)JS_GetPrivate(cx, obj);
+ 	J_S_ASSERT_RESOURCE(hWnd);
+ 	JSBool capture;
+@@ -731,25 +833,36 @@
+ 		SetCapture(hWnd);
+ 	else
+ 		ReleaseCapture();
++#else
++#endif // _WIN32
++
+ 	return JS_TRUE;
+ }
+ 
+ DEFINE_PROPERTY( activeGetter ) {
+ 
++#ifdef _WIN32
+ 	HWND hWnd = (HWND)JS_GetPrivate(cx, obj);
+ 	J_S_ASSERT_RESOURCE(hWnd);
+ 	*vp = BOOLEAN_TO_JSVAL( GetActiveWindow() == hWnd );
++#else
++#endif // _WIN32
++
+ 	return JS_TRUE;
+ }
+ 
+ DEFINE_PROPERTY( activeSetter ) {
+ 
++#ifdef _WIN32
+ 	HWND hWnd = (HWND)JS_GetPrivate(cx, obj);
+ 	J_S_ASSERT_RESOURCE(hWnd);
+ 	JSBool active;
+ 	JS_ValueToBoolean(cx, *vp, &active);
+ 	if ( active )
+ 		SetActiveWindow(hWnd);
++#else
++#endif // _WIN32
++
+ 	return JS_TRUE;
+ }
+ 
+@@ -796,109 +909,307 @@
+ 
+ 	BEGIN_CONST_INTEGER_SPEC
+ 
++#ifdef VK_LBUTTON
+ 		CONST_INTEGER_SINGLE(VK_LBUTTON)
++#endif // VK_LBUTTON
++#ifdef VK_RBUTTON
+ 		CONST_INTEGER_SINGLE(VK_RBUTTON)
++#endif // VK_RBUTTON
++#ifdef VK_CANCEL
+ 		CONST_INTEGER_SINGLE(VK_CANCEL)
++#endif // VK_CANCEL
++#ifdef VK_MBUTTON
+ 		CONST_INTEGER_SINGLE(VK_MBUTTON)
++#endif // VK_MBUTTON
+ 		#if(_WIN32_WINNT >= 0x0500)
+ 		CONST_INTEGER_SINGLE(VK_XBUTTON1)
+ 		CONST_INTEGER_SINGLE(VK_XBUTTON2)
+ 		#endif /* _WIN32_WINNT >= 0x0500 */
++#ifdef VK_BACK
+ 		CONST_INTEGER_SINGLE(VK_BACK)
++#endif // VK_BACK
++#ifdef VK_TAB
+ 		CONST_INTEGER_SINGLE(VK_TAB)
++#endif // VK_TAB
++#ifdef VK_CLEAR
+ 		CONST_INTEGER_SINGLE(VK_CLEAR)
++#endif // VK_CLEAR
++#ifdef VK_RETURN
+ 		CONST_INTEGER_SINGLE(VK_RETURN)
++#endif // VK_RETURN
++#ifdef VK_SHIFT
+ 		CONST_INTEGER_SINGLE(VK_SHIFT)
++#endif // VK_SHIFT
++#ifdef VK_CONTROL
+ 		CONST_INTEGER_SINGLE(VK_CONTROL)
++#endif // VK_CONTROL
++#ifdef VK_MENU
+ 		CONST_INTEGER_SINGLE(VK_MENU)
++#endif // VK_MENU
++#ifdef VK_PAUSE
+ 		CONST_INTEGER_SINGLE(VK_PAUSE)
++#endif // VK_PAUSE
++#ifdef VK_CAPITAL
+ 		CONST_INTEGER_SINGLE(VK_CAPITAL)
++#endif // VK_CAPITAL
++#ifdef VK_KANA
+ 		CONST_INTEGER_SINGLE(VK_KANA)
++#endif // VK_KANA
++#ifdef VK_HANGEUL
+ 		CONST_INTEGER_SINGLE(VK_HANGEUL)
++#endif // VK_HANGEUL
++#ifdef VK_HANGUL
+ 		CONST_INTEGER_SINGLE(VK_HANGUL)
++#endif // VK_HANGUL
++#ifdef VK_JUNJA
+ 		CONST_INTEGER_SINGLE(VK_JUNJA)
++#endif // VK_JUNJA
++#ifdef VK_FINAL
+ 		CONST_INTEGER_SINGLE(VK_FINAL)
++#endif // VK_FINAL
++#ifdef VK_HANJA
+ 		CONST_INTEGER_SINGLE(VK_HANJA)
++#endif // VK_HANJA
++#ifdef VK_KANJI
+ 		CONST_INTEGER_SINGLE(VK_KANJI)
++#endif // VK_KANJI
++#ifdef VK_ESCAPE
+ 		CONST_INTEGER_SINGLE(VK_ESCAPE)
++#endif // VK_ESCAPE
++#ifdef VK_CONVERT
+ 		CONST_INTEGER_SINGLE(VK_CONVERT)
++#endif // VK_CONVERT
++#ifdef VK_NONCONVERT
+ 		CONST_INTEGER_SINGLE(VK_NONCONVERT)
++#endif // VK_NONCONVERT
++#ifdef VK_ACCEPT
+ 		CONST_INTEGER_SINGLE(VK_ACCEPT)
++#endif // VK_ACCEPT
++#ifdef VK_MODECHANGE
+ 		CONST_INTEGER_SINGLE(VK_MODECHANGE)
++#endif // VK_MODECHANGE
++#ifdef VK_SPACE
+ 		CONST_INTEGER_SINGLE(VK_SPACE)
++#endif // VK_SPACE
++#ifdef VK_PRIOR
+ 		CONST_INTEGER_SINGLE(VK_PRIOR)
++#endif // VK_PRIOR
++#ifdef VK_NEXT
+ 		CONST_INTEGER_SINGLE(VK_NEXT)
++#endif // VK_NEXT
++#ifdef VK_END
+ 		CONST_INTEGER_SINGLE(VK_END)
++#endif // VK_END
++#ifdef VK_HOME
+ 		CONST_INTEGER_SINGLE(VK_HOME)
++#endif // VK_HOME
++#ifdef VK_LEFT
+ 		CONST_INTEGER_SINGLE(VK_LEFT)
++#endif // VK_LEFT
++#ifdef VK_UP
+ 		CONST_INTEGER_SINGLE(VK_UP)
++#endif // VK_UP
++#ifdef VK_RIGHT
+ 		CONST_INTEGER_SINGLE(VK_RIGHT)
++#endif // VK_RIGHT
++#ifdef VK_DOWN
+ 		CONST_INTEGER_SINGLE(VK_DOWN)
++#endif // VK_DOWN
++#ifdef VK_SELECT
+ 		CONST_INTEGER_SINGLE(VK_SELECT)
++#endif // VK_SELECT
++#ifdef VK_PRINT
+ 		CONST_INTEGER_SINGLE(VK_PRINT)
++#endif // VK_PRINT
++#ifdef VK_EXECUTE
+ 		CONST_INTEGER_SINGLE(VK_EXECUTE)
++#endif // VK_EXECUTE
++#ifdef VK_SNAPSHOT
+ 		CONST_INTEGER_SINGLE(VK_SNAPSHOT)
++#endif // VK_SNAPSHOT
++#ifdef VK_INSERT
+ 		CONST_INTEGER_SINGLE(VK_INSERT)
++#endif // VK_INSERT
++#ifdef VK_DELETE
+ 		CONST_INTEGER_SINGLE(VK_DELETE)
++#endif // VK_DELETE
++#ifdef VK_HELP
+ 		CONST_INTEGER_SINGLE(VK_HELP)
++#endif // VK_HELP
++#ifdef VK_LWIN
+ 		CONST_INTEGER_SINGLE(VK_LWIN)
++#endif // VK_LWIN
++#ifdef VK_RWIN
+ 		CONST_INTEGER_SINGLE(VK_RWIN)
++#endif // VK_RWIN
++#ifdef VK_APPS
+ 		CONST_INTEGER_SINGLE(VK_APPS)
++#endif // VK_APPS
++#ifdef VK_SLEEP
+ 		CONST_INTEGER_SINGLE(VK_SLEEP)
++#endif // VK_SLEEP
++#ifdef VK_NUMPAD0
+ 		CONST_INTEGER_SINGLE(VK_NUMPAD0)
++#endif // VK_NUMPAD0
++#ifdef VK_NUMPAD1
+ 		CONST_INTEGER_SINGLE(VK_NUMPAD1)
++#endif // VK_NUMPAD1
++#ifdef VK_NUMPAD2
+ 		CONST_INTEGER_SINGLE(VK_NUMPAD2)
++#endif // VK_NUMPAD2
++#ifdef VK_NUMPAD3
+ 		CONST_INTEGER_SINGLE(VK_NUMPAD3)
++#endif // VK_NUMPAD3
++#ifdef VK_NUMPAD4
+ 		CONST_INTEGER_SINGLE(VK_NUMPAD4)
++#endif // VK_NUMPAD4
++#ifdef VK_NUMPAD5
+ 		CONST_INTEGER_SINGLE(VK_NUMPAD5)
++#endif // VK_NUMPAD5
++#ifdef VK_NUMPAD6
+ 		CONST_INTEGER_SINGLE(VK_NUMPAD6)
++#endif // VK_NUMPAD6
++#ifdef VK_NUMPAD7
+ 		CONST_INTEGER_SINGLE(VK_NUMPAD7)
++#endif // VK_NUMPAD7
++#ifdef VK_NUMPAD8
+ 		CONST_INTEGER_SINGLE(VK_NUMPAD8)
++#endif // VK_NUMPAD8
++#ifdef VK_NUMPAD9
+ 		CONST_INTEGER_SINGLE(VK_NUMPAD9)
++#endif // VK_NUMPAD9
++#ifdef VK_MULTIPLY
+ 		CONST_INTEGER_SINGLE(VK_MULTIPLY)
++#endif // VK_MULTIPLY
++#ifdef VK_ADD
+ 		CONST_INTEGER_SINGLE(VK_ADD)
++#endif // VK_ADD
++#ifdef VK_SEPARATOR
+ 		CONST_INTEGER_SINGLE(VK_SEPARATOR)
++#endif // VK_SEPARATOR
++#ifdef VK_SUBTRACT
+ 		CONST_INTEGER_SINGLE(VK_SUBTRACT)
++#endif // VK_SUBTRACT
++#ifdef VK_DECIMAL
+ 		CONST_INTEGER_SINGLE(VK_DECIMAL)
++#endif // VK_DECIMAL
++#ifdef VK_DIVIDE
+ 		CONST_INTEGER_SINGLE(VK_DIVIDE)
++#endif // VK_DIVIDE
++#ifdef VK_F1
+ 		CONST_INTEGER_SINGLE(VK_F1)
++#endif // VK_F1
++#ifdef VK_F2
+ 		CONST_INTEGER_SINGLE(VK_F2)
++#endif // VK_F2
++#ifdef VK_F3
+ 		CONST_INTEGER_SINGLE(VK_F3)
++#endif // VK_F3
++#ifdef VK_F4
+ 		CONST_INTEGER_SINGLE(VK_F4)
++#endif // VK_F4
++#ifdef VK_F5
+ 		CONST_INTEGER_SINGLE(VK_F5)
++#endif // VK_F5
++#ifdef VK_F6
+ 		CONST_INTEGER_SINGLE(VK_F6)
++#endif // VK_F6
++#ifdef VK_F7
+ 		CONST_INTEGER_SINGLE(VK_F7)
++#endif // VK_F7
++#ifdef VK_F8
+ 		CONST_INTEGER_SINGLE(VK_F8)
++#endif // VK_F8
++#ifdef VK_F9
+ 		CONST_INTEGER_SINGLE(VK_F9)
++#endif // VK_F9
++#ifdef VK_F10
+ 		CONST_INTEGER_SINGLE(VK_F10)
++#endif // VK_F10
++#ifdef VK_F11
+ 		CONST_INTEGER_SINGLE(VK_F11)
++#endif // VK_F11
++#ifdef VK_F12
+ 		CONST_INTEGER_SINGLE(VK_F12)
++#endif // VK_F12
++#ifdef VK_F13
+ 		CONST_INTEGER_SINGLE(VK_F13)
++#endif // VK_F13
++#ifdef VK_F14
+ 		CONST_INTEGER_SINGLE(VK_F14)
++#endif // VK_F14
++#ifdef VK_F15
+ 		CONST_INTEGER_SINGLE(VK_F15)
++#endif // VK_F15
++#ifdef VK_F16
+ 		CONST_INTEGER_SINGLE(VK_F16)
++#endif // VK_F16
++#ifdef VK_F17
+ 		CONST_INTEGER_SINGLE(VK_F17)
++#endif // VK_F17
++#ifdef VK_F18
+ 		CONST_INTEGER_SINGLE(VK_F18)
++#endif // VK_F18
++#ifdef VK_F19
+ 		CONST_INTEGER_SINGLE(VK_F19)
++#endif // VK_F19
++#ifdef VK_F20
+ 		CONST_INTEGER_SINGLE(VK_F20)
++#endif // VK_F20
++#ifdef VK_F21
+ 		CONST_INTEGER_SINGLE(VK_F21)
++#endif // VK_F21
++#ifdef VK_F22
+ 		CONST_INTEGER_SINGLE(VK_F22)
++#endif // VK_F22
++#ifdef VK_F23
+ 		CONST_INTEGER_SINGLE(VK_F23)
++#endif // VK_F23
++#ifdef VK_F24
+ 		CONST_INTEGER_SINGLE(VK_F24)
++#endif // VK_F24
++#ifdef VK_NUMLOCK
+ 		CONST_INTEGER_SINGLE(VK_NUMLOCK)
++#endif // VK_NUMLOCK
++#ifdef VK_SCROLL
+ 		CONST_INTEGER_SINGLE(VK_SCROLL)
++#endif // VK_SCROLL
++#ifdef VK_OEM_NEC_EQUAL
+ 		CONST_INTEGER_SINGLE(VK_OEM_NEC_EQUAL)
++#endif // VK_OEM_NEC_EQUAL
++#ifdef VK_OEM_FJ_JISHO
+ 		CONST_INTEGER_SINGLE(VK_OEM_FJ_JISHO)
++#endif // VK_OEM_FJ_JISHO
++#ifdef VK_OEM_FJ_MASSHOU
+ 		CONST_INTEGER_SINGLE(VK_OEM_FJ_MASSHOU)
++#endif // VK_OEM_FJ_MASSHOU
++#ifdef VK_OEM_FJ_TOUROKU
+ 		CONST_INTEGER_SINGLE(VK_OEM_FJ_TOUROKU)
++#endif // VK_OEM_FJ_TOUROKU
++#ifdef VK_OEM_FJ_LOYA
+ 		CONST_INTEGER_SINGLE(VK_OEM_FJ_LOYA)
++#endif // VK_OEM_FJ_LOYA
++#ifdef VK_OEM_FJ_ROYA
+ 		CONST_INTEGER_SINGLE(VK_OEM_FJ_ROYA)
++#endif // VK_OEM_FJ_ROYA
++#ifdef VK_LSHIFT
+ 		CONST_INTEGER_SINGLE(VK_LSHIFT)
++#endif // VK_LSHIFT
++#ifdef VK_RSHIFT
+ 		CONST_INTEGER_SINGLE(VK_RSHIFT)
++#endif // VK_RSHIFT
++#ifdef VK_LCONTROL
+ 		CONST_INTEGER_SINGLE(VK_LCONTROL)
++#endif // VK_LCONTROL
++#ifdef VK_RCONTROL
+ 		CONST_INTEGER_SINGLE(VK_RCONTROL)
++#endif // VK_RCONTROL
++#ifdef VK_LMENU
+ 		CONST_INTEGER_SINGLE(VK_LMENU)
++#endif // VK_LMENU
++#ifdef VK_RMENU
+ 		CONST_INTEGER_SINGLE(VK_RMENU)
++#endif // VK_RMENU
+ 		#if(_WIN32_WINNT >= 0x0500)
+ 		CONST_INTEGER_SINGLE(VK_BROWSER_BACK)
+ 		CONST_INTEGER_SINGLE(VK_BROWSER_FORWARD)
+@@ -919,51 +1230,129 @@
+ 		CONST_INTEGER_SINGLE(VK_LAUNCH_APP1)
+ 		CONST_INTEGER_SINGLE(VK_LAUNCH_APP2)
+ 		#endif /* _WIN32_WINNT >= 0x0500 */
++#ifdef VK_OEM_1
+ 		CONST_INTEGER_SINGLE(VK_OEM_1)
++#endif // VK_OEM_1
++#ifdef VK_OEM_PLUS
+ 		CONST_INTEGER_SINGLE(VK_OEM_PLUS)
++#endif // VK_OEM_PLUS
++#ifdef VK_OEM_COMMA
+ 		CONST_INTEGER_SINGLE(VK_OEM_COMMA)
++#endif // VK_OEM_COMMA
++#ifdef VK_OEM_MINUS
+ 		CONST_INTEGER_SINGLE(VK_OEM_MINUS)
++#endif // VK_OEM_MINUS
++#ifdef VK_OEM_PERIOD
+ 		CONST_INTEGER_SINGLE(VK_OEM_PERIOD)
++#endif // VK_OEM_PERIOD
++#ifdef VK_OEM_2
+ 		CONST_INTEGER_SINGLE(VK_OEM_2)
++#endif // VK_OEM_2
++#ifdef VK_OEM_3
+ 		CONST_INTEGER_SINGLE(VK_OEM_3)
++#endif // VK_OEM_3
++#ifdef VK_OEM_4
+ 		CONST_INTEGER_SINGLE(VK_OEM_4)
++#endif // VK_OEM_4
++#ifdef VK_OEM_5
+ 		CONST_INTEGER_SINGLE(VK_OEM_5)
++#endif // VK_OEM_5
++#ifdef VK_OEM_6
+ 		CONST_INTEGER_SINGLE(VK_OEM_6)
++#endif // VK_OEM_6
++#ifdef VK_OEM_7
+ 		CONST_INTEGER_SINGLE(VK_OEM_7)
++#endif // VK_OEM_7
++#ifdef VK_OEM_8
+ 		CONST_INTEGER_SINGLE(VK_OEM_8)
++#endif // VK_OEM_8
++#ifdef VK_OEM_AX
+ 		CONST_INTEGER_SINGLE(VK_OEM_AX)
++#endif // VK_OEM_AX
++#ifdef VK_OEM_102
+ 		CONST_INTEGER_SINGLE(VK_OEM_102)
++#endif // VK_OEM_102
++#ifdef VK_ICO_HELP
+ 		CONST_INTEGER_SINGLE(VK_ICO_HELP)
++#endif // VK_ICO_HELP
++#ifdef VK_ICO_00
+ 		CONST_INTEGER_SINGLE(VK_ICO_00)
++#endif // VK_ICO_00
+ 		#if(WINVER >= 0x0400)
+ 		CONST_INTEGER_SINGLE(VK_PROCESSKEY)
+ 		#endif /* WINVER >= 0x0400 */
++#ifdef VK_ICO_CLEAR
+ 		CONST_INTEGER_SINGLE(VK_ICO_CLEAR)
++#endif // VK_ICO_CLEAR
+ 		#if(_WIN32_WINNT >= 0x0500)
+ 		CONST_INTEGER_SINGLE(VK_PACKET)
+ 		#endif /* _WIN32_WINNT >= 0x0500 */
++#ifdef VK_OEM_RESET
+ 		CONST_INTEGER_SINGLE(VK_OEM_RESET)
++#endif // VK_OEM_RESET
++#ifdef VK_OEM_JUMP
+ 		CONST_INTEGER_SINGLE(VK_OEM_JUMP)
++#endif // VK_OEM_JUMP
++#ifdef VK_OEM_PA1
+ 		CONST_INTEGER_SINGLE(VK_OEM_PA1)
++#endif // VK_OEM_PA1
++#ifdef VK_OEM_PA2
+ 		CONST_INTEGER_SINGLE(VK_OEM_PA2)
++#endif // VK_OEM_PA2
++#ifdef VK_OEM_PA3
+ 		CONST_INTEGER_SINGLE(VK_OEM_PA3)
++#endif // VK_OEM_PA3
++#ifdef VK_OEM_WSCTRL
+ 		CONST_INTEGER_SINGLE(VK_OEM_WSCTRL)
++#endif // VK_OEM_WSCTRL
++#ifdef VK_OEM_CUSEL
+ 		CONST_INTEGER_SINGLE(VK_OEM_CUSEL)
++#endif // VK_OEM_CUSEL
++#ifdef VK_OEM_ATTN
+ 		CONST_INTEGER_SINGLE(VK_OEM_ATTN)
++#endif // VK_OEM_ATTN
++#ifdef VK_OEM_FINISH
+ 		CONST_INTEGER_SINGLE(VK_OEM_FINISH)
++#endif // VK_OEM_FINISH
++#ifdef VK_OEM_COPY
+ 		CONST_INTEGER_SINGLE(VK_OEM_COPY)
++#endif // VK_OEM_COPY
++#ifdef VK_OEM_AUTO
+ 		CONST_INTEGER_SINGLE(VK_OEM_AUTO)
++#endif // VK_OEM_AUTO
++#ifdef VK_OEM_ENLW
+ 		CONST_INTEGER_SINGLE(VK_OEM_ENLW)
++#endif // VK_OEM_ENLW
++#ifdef VK_OEM_BACKTAB
+ 		CONST_INTEGER_SINGLE(VK_OEM_BACKTAB)
++#endif // VK_OEM_BACKTAB
++#ifdef VK_ATTN
+ 		CONST_INTEGER_SINGLE(VK_ATTN)
++#endif // VK_ATTN
++#ifdef VK_CRSEL
+ 		CONST_INTEGER_SINGLE(VK_CRSEL)
++#endif // VK_CRSEL
++#ifdef VK_EXSEL
+ 		CONST_INTEGER_SINGLE(VK_EXSEL)
++#endif // VK_EXSEL
++#ifdef VK_EREOF
+ 		CONST_INTEGER_SINGLE(VK_EREOF)
++#endif // VK_EREOF
++#ifdef VK_PLAY
+ 		CONST_INTEGER_SINGLE(VK_PLAY)
++#endif // VK_PLAY
++#ifdef VK_ZOOM
+ 		CONST_INTEGER_SINGLE(VK_ZOOM)
++#endif // VK_ZOOM
++#ifdef VK_NONAME
+ 		CONST_INTEGER_SINGLE(VK_NONAME)
++#endif // VK_NONAME
++#ifdef VK_PA1
+ 		CONST_INTEGER_SINGLE(VK_PA1)
++#endif // VK_PA1
++#ifdef VK_OEM_CLEAR
+ 		CONST_INTEGER_SINGLE(VK_OEM_CLEAR)
++#endif // VK_OEM_CLEAR
+ 	END_CONST_INTEGER_SPEC
+ 
+ END_CLASS
+diff -ru jslibs-0.9-r1881_orig/src/jsgraphics/oglError.cpp jslibs-0.9-r1881/src/jsgraphics/oglError.cpp
+--- jslibs-0.9-r1881_orig/src/jsgraphics/oglError.cpp	2009-02-06 05:13:13.000000000 +0100
++++ jslibs-0.9-r1881/src/jsgraphics/oglError.cpp	2009-02-06 06:18:34.000000000 +0100
+@@ -21,7 +21,7 @@
+ 
+ //#define GL_GLEXT_PROTOTYPES
+ 
+-#include <gl/gl.h>
++#include <GL/gl.h>
+ #include "glext.h"
+ 
+ 
+@@ -43,11 +43,11 @@
+ 
+ 
+ DEFINE_PROPERTY( text ) {
+-
++  JSString *str;
+ 	JS_GetReservedSlot( cx, obj, 0, vp );
+ 	int errorCode;
+ 	J_CHK( JsvalToInt(cx, *vp, &errorCode) );
+-	char *errStr;
++	const char *errStr;
+ 	switch (errorCode) {
+ 		case GL_NO_ERROR:
+ 			errStr = "No Error.";
+@@ -74,7 +74,7 @@
+ 			errStr = "Unknown error.";
+ 			break;
+ 	}
+-	JSString *str = JS_NewStringCopyZ( cx, errStr );
++	str = JS_NewStringCopyZ( cx, errStr );
+ 	*vp = STRING_TO_JSVAL( str );
+ 	return JS_TRUE;
+ 	JL_BAD;
+@@ -82,11 +82,11 @@
+ 
+ 
+ DEFINE_PROPERTY( const ) {
+-
++  JSString *str;
+ 	JS_GetReservedSlot( cx, obj, 0, vp );
+ 	int errorCode;
+ 	J_CHK( JsvalToInt(cx, *vp, &errorCode) );
+-	char *errStr;
++	const char *errStr;
+ 	switch (errorCode) {
+ 		case GL_NO_ERROR:
+ 			errStr = "GL_NO_ERROR";
+@@ -113,7 +113,7 @@
+ 			errStr = "???";
+ 			break;
+ 	}
+-	JSString *str = JS_NewStringCopyZ( cx, errStr );
++	str = JS_NewStringCopyZ( cx, errStr );
+ 	*vp = STRING_TO_JSVAL( str );
+ 	return JS_TRUE;
+ 	JL_BAD;
+diff -ru jslibs-0.9-r1881_orig/src/jsgraphics/stdafx.h jslibs-0.9-r1881/src/jsgraphics/stdafx.h
+--- jslibs-0.9-r1881_orig/src/jsgraphics/stdafx.h	2009-02-06 05:13:13.000000000 +0100
++++ jslibs-0.9-r1881/src/jsgraphics/stdafx.h	2009-02-06 06:16:02.000000000 +0100
+@@ -3,12 +3,40 @@
+ // are changed infrequently
+ //
+ 
++#ifdef _MSC_VER
+ #pragma once
++#endif
+ 
+ #include "../common/platform.h"
+ 
+ #include "stdlib.h"
+ 
++#ifndef _WIN32
++
++typedef long *LRESULT, *LONG_PTR, *LPARAM;
++typedef void *HINSTANCE, *HWND;
++typedef unsigned int UINT, *UINT_PTR, *WPARAM;
++typedef unsigned long DWORD, *DWORD_PTR;
++typedef unsigned short WORD, *WORD_PTR;
++typedef short SHORT, *SHORT_PTR;
++
++#define LOWORD(l)              ((WORD)((DWORD_PTR)(l) & 0xFFFF))
++#define HIWORD(l)              ((WORD)((DWORD_PTR)(l) >> 16))
++#define MAKEPOINTS(l)  (*((POINTS *)&(l)))
++
++typedef struct tagPOINTS
++{
++#ifdef WORDS_BIGENDIAN
++    SHORT y;
++    SHORT x;
++#else
++    SHORT x;
++    SHORT y;
++#endif
++} POINTS, *PPOINTS, *LPPOINTS;
++
++#endif
++
+ #include <jsapi.h>
+ 
+ #include "../common/jsHelper.h"

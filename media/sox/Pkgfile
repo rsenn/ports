@@ -1,0 +1,29 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:50 roman Exp $
+#
+# Description: Sound Processing Tool
+#  SoX is the Swiss Army knife of sound processing tools: it can convert
+#  sound files between many different file formats and audio devices, and
+#  can apply many sound effects and transformations, as well as doing basic
+#  analysis and providing input to more capable analysis and plotting tools.
+# URL: http://sox.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=sox
+version=14.0.1
+release=1
+source=($mirror_sf/sox/sox-$version.tar.gz)
+
+build()
+{
+  cd sox-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+

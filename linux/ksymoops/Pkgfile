@@ -1,0 +1,22 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A utility to decode Linux kernel oopses.
+#  ksymoops reads a Linux kernel oops file and makes the best stab at
+#  converting the code to instructions and mapping addresses to kernel
+#  symbols.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=ksymoops
+version=2.4.11
+release=1
+source=(ftp://ftp.kernel.org/pub/linux/utils/kernel/ksymoops/v2.4/ksymoops-$version.tar.bz2)
+
+build()
+{
+  cd ksymoops-$version
+
+  make
+  make INSTALL_PREFIX="$ROOT" INSTALL_MANDIR="$ROOT/share/man" install
+}

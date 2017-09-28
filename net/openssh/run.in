@@ -1,0 +1,37 @@
+#!@prefix@/bin/sh
+prefix="@prefix@"
+
+exec 2>&1
+
+export PATH="${prefix}/bin:${prefix}/sbin"
+
+if ! setuidgid sshd true 2>/dev/null; then
+  echo "Missing user \`sshd', please create it!"
+  sleep 10
+  exit 1
+fi
+
+if [ ! -f ${prefix}/etc/ssh_host_rsa_key ]; then
+  echo "Missing sshd host key, creating one..."
+  ${prefix}/bin/ssh-hostkeygen
+fi
+
+if [ -f ${prefix}/var/run/sshd.pid ]; then
+  pid=$(cat ${prefix}/var/run/sshd.pid)
+
+  if [ -d ${prefix}/proc/${pid} ]; then
+    echo "sshd already running, restarting..."
+    kill ${pid}
+    sleep 1
+    exit 1
+  fi
+fi
+
+proc=$(netstat -nlp -A inet -A inet6 | grep ':22[\t ]' | sed 's,^.*LISTEN[ \t]*,,;;s,[ \t]*$,,')
+
+if [ "$proc" ]; then
+  echo "There is already \`$proc' listening on port 22, disabling sshd for 15 minutes..."
+  exec sleep $((15 * 60))
+fi
+
+exec -a sshd ${prefix}/sbin/sshd -De

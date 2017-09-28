@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A tool for executing tasks in parallel on several hosts.
+# Tentakel is a program that executes the same command on many hosts in
+# parallel using SSH or other remote methods. It is designed to be easily
+# extendable. The output of the remote command can be controlled by means
+# of format strings.
+#
+# URL: http://tentakel.biskalar.de/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=tentakel
+version=2.2
+release=1
+source=($mirror_sf/tentakel/tentakel-$version.tgz)
+
+build()
+{
+  cd tentakel-$version
+
+  sed -i -e 's,man/man1,share/&,' py/setup.py
+
+  make
+  make PREFIX="$ROOT" install
+
+#  python setup.py install --prefix="$ROOT"
+}

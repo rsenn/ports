@@ -1,0 +1,24 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Perl extension for Version Objects
+# URL: http://search.cpan.org/~jpeacock/version-0.76/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=version
+version=0.76
+release=1
+source=(http://search.cpan.org/CPAN/authors/id/J/JP/JPEACOCK/version-$version.tar.gz)
+
+build()
+{
+  cd version-$version
+
+  #perl Makefile.PL installdirs="vendor"
+  perl Build.PL installdirs="vendor"
+  perl Build
+  perl Build test
+  perl Build install destdir="$PKG" create_packlist=0
+}
+
+# EOF

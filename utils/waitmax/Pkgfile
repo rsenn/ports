@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Waitmax executes program in a new process
+# If that process does not exit within a certain time, it is being killed
+# with signal TERM.
+#
+# URL: http://mathias-kettner.de/waitmax.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6
+
+name=waitmax
+version=1.1
+release=1
+source=(http://mathias-kettner.de/download/waitmax-$version.tar.gz)
+
+build()
+{
+  cd waitmax-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

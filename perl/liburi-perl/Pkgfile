@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Manipulates and accesses URI strings
+#  From the README:
+#  This package contains the URI.pm module with friends. The module
+#  implements the URI class. Objects of this class represent Uniform Resource
+#  Identifier (URI) references as specified in RFC 2396.
+#  URI objects can be used to access and manipulate the various components
+#  that make up these strings. There are also methods to combine URIs in
+#  various ways.
+#  The URI class replace the URI::URL class that used to be distributed
+#  with libwww-perl. This package contains an emulation of the old the
+#  new interface.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=liburi-perl
+version=1.35
+release=1
+source=(http://ftp.de.debian.org/debian/pool/main/libu/liburi-perl/liburi-perl_$version.dfsg.1.orig.tar.gz)
+
+build()
+{
+  cd liburi-perl-$version.dfsg.1.orig
+
+  perl Makefile.PL
+
+  make
+  make DESTDIR="$PKG" install
+}

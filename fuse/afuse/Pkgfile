@@ -1,0 +1,44 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Section: universe/utils
+# Description: automounting file system implemented in user-space using FUSE
+#  Afuse is a FUSE based filesystem which implements filesystem automounting
+#  functionality similar to Linux's autofs.
+# URL: http://sourceforge.net/projects/afuse/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libfuse2
+
+name=afuse
+version=0.2
+release=4
+source=($mirror_sf/afuse/afuse-$version.tar.gz
+        mount.afuse.sh
+        afuse.1)
+
+build()
+{
+  cd afuse-$version
+
+  case $prefix in
+    "/usr") sbindir="/sbin" ;;
+  esac
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  rm -f NEWS
+
+  install -d $ROOT/share/doc/afuse
+  install -m 644 [A-Z]*[A-Z]* $ROOT/share/doc/afuse
+
+  install -d $ROOT/share/man/man1
+  install -m 644 $SRC/afuse.1 $ROOT/share/man/man1
+
+  install -d ${PKG}${sbindir=$prefix/sbin}
+  install -m 755 $SRC/mount.afuse.sh ${PKG}${sbindir}/mount.afuse
+}

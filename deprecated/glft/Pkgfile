@@ -1,0 +1,36 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:50 roman Exp $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=glft
+version=cvs
+release=1
+source=(glft-20070801.tar.bz2
+        glft-20070801-cmath.patch
+        glft-20070801-cmake.patch)
+
+build()
+{
+  cd glft-*
+
+  patch -N -p1 -i $SRC/glft-20070801-cmath.patch
+  patch -N -p1 -i $SRC/glft-20070801-cmake.patch
+
+  (cd build/automake/files && find * -type f | while read x; do cp $x ../../../$x; done)
+
+  aclocal --force
+  automake -a --foreign --force --copy
+  libtoolize --force
+  autoconf --force
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

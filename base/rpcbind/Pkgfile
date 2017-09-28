@@ -1,0 +1,61 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: universal addresses to RPC program number mapper.
+#  rpcbind is a server that converts RPC program numbers into universal 
+#  addresses. It must be running on the host to be able to make RPC 
+#  calls on a server on that machine. 
+# URL: ftp://ftp.porcupine.org/pub/security/rpcbind_2.1.README
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=rpcbind
+version=2.1
+release=1
+source=(ftp://ftp.porcupine.org/pub/security/rpcbind_$version.tar.gz)
+
+build()
+{
+  cd rpcbind_$version
+
+  WRAP_DIR="$prefix/lib"
+  export WRAP_DIR
+
+  make
+}
+
+# set up the service for rpcbind
+# -----------------------------------------------------------------------------
+services()
+{
+  config_branch 'rpcbind'
+
+    config_branch 'log'
+    config_end
+
+    config_set 'TITLE'   'rpcbindper'
+#    config_set 'PIDFILE' "$prefix/db/$hostname.pid"
+    config_set 'BIN'     "$prefix/sbin/rpcbind"
+    config_set 'START'   'rpcbind.*ready.*'
+#    config_set 'STOP'    'Shutdown complete'
+
+  config_end
+}
+
+rpcbind()
+{
+  exec 2>&1
+
+  # set default values
+  host=${rpcbind_host:-127.0.0.1}
+  port=111
+
+  export PATH="$bindir:$sbindir:$prefix/libexec"
+
+  # wait for the listener to become active
+  if ! inet_wait_unbind tcp $host:$port; then
+    service_error $host:$port "wasn't available after waiting $inet_timeout msecs"
+  fi
+
+  # finally execute rpcbind
+  exec $prefix/bin/argv0 $prefix/sbin/rpcbind rpcbind -d -l ${host}
+}

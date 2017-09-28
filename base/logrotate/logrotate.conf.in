@@ -1,0 +1,83 @@
+# $Id: logrotate.conf.in,v 1.4 2007/04/18 12:36:00 roman Exp $
+#
+# Generic logrotate for flat files or multilog directories.
+# Format is FreeBSD rc.conf style (see http://iain.cx/src/logrotate/ or 
+# example below).
+#
+# Credits:
+# Toni Giorgino <toni.giorgino@unipv.it>: gzip path and error checking.
+# Stephen Crosby <stevecrozz@gmail.com>: Configure other paths.
+#
+
+# Configuration:
+# Edit these as appropriate:
+#     $archive is where the rotated logs will go.
+#     $firstly will be run before the script does anything.
+#     $finally will be run before the script exits.
+# Set $verbose to something to be verbose (or use the argument -v).
+#archive="/nexbyte/backup/logs/${global_hostname}"
+archive="@logrotate_archive@"
+firstly=""
+finally=""
+verbose="yes"
+
+# Directories
+logdir="@prefix@/logs"
+svcdir="@prefix@/service"
+
+# Adds a service log (subdir of /usr/local/logs):
+# log_service <service name>
+#
+log_service()
+  {
+  local name="$1"
+  var_set "path_$name" "$logdir"
+  var_set "files_$name" "$name"
+  var_set "hup_$name" "$svc -a $svcdir/$name/log"
+  list_append "logs" "$name"
+  }
+
+# Adds a file log:
+# log_file <name> <directory> [files]
+#
+log_file()
+  {
+  local name="$1" dir="$2"
+  shift 2
+  local files="${*:-*}"
+  
+  var_set "path_$name" "$dir"
+  var_set "files_$name" "$files"
+  var_set "copy_$name" "yes"
+  var_set "touch_$name" "echo -n >"
+  list_append "logs" "$name"
+  }
+
+# List of logs
+logs=""
+
+# Define your targets:
+# For each xxx in $logs, you MUST define:
+#   path_xxx: Directory where the logs are stored.
+#   files_xxx: Files (or multilog directories) to be rotated (wildcards are OK).
+# You MAY define:
+#   prefix_xxx: 
+#   suffix_xxx:
+#     By default, logs are archived into $archive/yyyy/$xxx/yyyy-mm-dd.gz.
+#     Use these variables to change this to
+#     $archive/yyyy/$prefix_xxx/$xxx.$suffix_xxx/yyyy-mm-dd.gz.
+#   hup_xxx: Command to be run after processing xxx.
+#   touch_xxx: Set to something to touch the logfile after rotating.
+#   keep_xxx: Set to something to keep the logfile and not delete it.
+#   copy_xxx: Set to something to snapshot the logfile and archive the copy.
+#   old_xxx: Override the suffix with which archived (kept) files will be 
+#            renamed.  Default is .old.
+
+
+# For each service we rotate its log
+source @prefix@/etc/nexbyte.conf
+
+for service in ${services_run}
+do
+  log_service "$service"
+done

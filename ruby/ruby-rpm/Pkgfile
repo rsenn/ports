@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Bindings for accessing RPM packages and databases from Ruby.
+#  ruby-rpm provides bindings for accessing RPM packages and databases
+#  from Ruby. It includes the low-level C API to talk to rpm as well as
+#  Ruby classes to model the various objects that RPM deals with (such as
+#  packages, dependencies, and files).
+#  .
+# URL: http://rubyforge.org/projects/ruby-rpm/
+# Maintainer:  Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=ruby-rpm
+version=1.2.3
+release=1
+source=(http://files.rubyforge.vm.bytemark.co.uk/ruby-rpm/ruby-rpm-$version.tgz)
+
+build()
+{
+  cd ruby-rpm-$version
+
+  set -- `ruby --version`
+
+  RUBYVERSION="$2"
+  RUBYLIBDIR="$prefix/lib/ruby/${RUBYVERSION%.*}"
+
+  ruby install.rb config
+  ruby install.rb setup
+  ruby install.rb install --prefix="$PKG"
+}
+
+
+# EOF

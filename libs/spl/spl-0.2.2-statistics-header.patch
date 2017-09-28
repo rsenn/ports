@@ -1,0 +1,175 @@
+diff -ru spl-0.2.2_orig/spl/math/Statistics.h spl-0.2.2/spl/math/Statistics.h
+--- spl-0.2.2_orig/spl/math/Statistics.h	2008-03-28 21:15:31.000000000 +0000
++++ spl-0.2.2/spl/math/Statistics.h	2008-03-28 21:15:39.000000000 +0000
+@@ -0,0 +1,171 @@
++/*
++ *   This file is part of the Standard Portable Library (SPL).
++ *
++ *   SPL is free software: you can redistribute it and/or modify
++ *   it under the terms of the GNU General Public License as published by
++ *   the Free Software Foundation, either version 3 of the License, or
++ *   (at your option) any later version.
++ *
++ *   SPL is distributed in the hope that it will be useful,
++ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *   GNU General Public License for more details.
++ *
++ *   You should have received a copy of the GNU General Public License
++ *   along with SPL.  If not, see <http://www.gnu.org/licenses/>.
++ */
++#ifndef _Statistics_h
++#define _statistics_h
++
++#include <spl/Exception.h>
++#include <spl/math/Math.h>
++#include <spl/collection/List.h>
++#include <spl/collection/Vector.h>
++
++class Statistics
++{
++private:
++
++	double *m_data;
++	double m_min;
++	double m_max;
++	double m_mean;
++	int m_n;
++	double m_ssd;
++	double m_variance;
++	double m_averageDeviation;
++
++	void Recalc();
++	static double Gammp(const double a, const double x);
++	static double Gammq(const double a, const double x);
++	static double Gcf(const double a, const double x);
++	static double Gser(const double a, const double x);
++
++public:
++
++	Statistics(List<double> *list);
++	Statistics(Vector<double> *list);
++	Statistics(const double *list, const int count);
++	Statistics (const Statistics& s);
++	virtual ~Statistics();
++
++	inline double Min()
++	{
++		return m_min;
++	}
++
++	inline double Max()
++	{
++		return m_max;
++	}
++
++	inline double Mean()
++	{
++		return m_mean;
++	}
++
++	inline int N()
++	{
++		return m_n;
++	}
++
++	inline double StDevSample()
++	{
++		return m_ssd;
++	}
++	
++	inline double Variance()
++	{
++		return m_variance;
++	}
++	
++	inline double AverageDeviation()
++	{
++		return m_averageDeviation;
++	}
++
++	inline double Item(int idx)
++	{
++		if ( idx >= m_n || idx < 0 )
++		{
++			throw IndexOutOfBoundsException();
++		}
++		return m_data[idx];
++	}
++	
++	double AverageVariance();
++	double Median();
++	double Skew();
++	double Kurtosis();
++	double ErrorFunction(double x);
++
++	Statistics TransformASin();
++	Statistics TransformSqrt375();
++	Statistics TransformLog10();
++
++#ifdef DEBUG
++	virtual void ValidateMem ();
++	virtual void CheckMem ();
++#else
++	inline void ValidateMem () {}
++	inline void CheckMem () {}
++#endif
++};
++
++class Test
++{
++protected:
++	Statistics m_s1;
++	Statistics m_s2;
++	
++	static double Betacf(double a, double b, double x);
++
++public:
++	Test(const Statistics& s1, const Statistics& s2);
++	Test(List<double> *s1, List<double> *s2);
++	Test(Vector<double> *s1, Vector<double> *s2);
++	Test(const double *s1, const int s1count, const double *s2, const int s2count);
++	Test(const Test& t);
++	virtual ~Test();
++	
++	inline Statistics& DataSet1() { return m_s1; }
++	inline Statistics& DataSet2() { return m_s2; }
++
++	double StudentsT(double *prob);
++	double FTest(double *fstat);
++	double ApproximateTTest(double *prob, double *df);
++	double OneSampleTTest();
++	double UStat();
++	double UStatAlternate();
++
++	double WTestSmall();
++	double Levene(double *prob);
++	double LeveneAlternate(double *prob);
++
++	void Rankit(Statistics **x1, Statistics **x2);
++	
++	inline double StandardError()
++	{
++		return Math::Sqrt((m_s1.StDevSample() * m_s1.StDevSample()) / m_s1.N() + (m_s2.StDevSample() * m_s2.StDevSample()) / m_s2.N());
++	}
++
++	static double Betai(double a, double b, double x);
++	static double Gammaln(double xx);
++	static double Gamma(double d);
++	static double FDistr(double x, double v, double w);
++	
++	static double TCriticalValue(int N, double alpha);
++	static double TCriticalValueAlternate(int N, double alpha);
++	static double WTestCriticalValue(int N, double alpha);
++	static double UCriticalPoint(int N1, int N2, double alpha);
++
++#ifdef DEBUG
++	virtual void ValidateMem ();
++	virtual void CheckMem ();
++#else
++	inline void ValidateMem () {}
++	inline void CheckMem () {}
++#endif
++};
++
++#endif

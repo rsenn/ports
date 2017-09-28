@@ -1,0 +1,42 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Importing CSV files to a usable form in Ruby
+#  CsvMapper is a small library intended to simplify the common steps
+#  involved with importing CSV files to a usable form in Ruby.
+#  .
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=csv-mapper
+version=0.0.3
+release=1
+source=($mirror_rubyforge/csv-mapper/csv-mapper-$version.tgz)
+
+build()
+{
+  cd csv-mapper-$version
+
+  find -name ".*" -type f -exec rm "{}" ";"
+
+  set `ruby --version`
+
+  RUBYVERSION=$2
+  RUBYLIBDIR=$prefix/lib/ruby/${RUBYVERSION%.*}
+
+  install -d $PKG/$RUBYLIBDIR
+  cp -rf lib/* $PKG/$RUBYLIBDIR
+
+  install -d $ROOT/share/doc/csv-mapper
+  install -m 644 History.txt Manifest.txt PostInstall.txt $ROOT/share/doc/csv-mapper
+
+  cp -rf website test $ROOT/share/doc/csv-mapper
+
+  install -d $ROOT/share/csv-mapper
+  cp -rf config spec $ROOT/share/doc/csv-mapper
+
+  install -d $ROOT/bin
+  install -m 755 script/* $ROOT/bin
+}
+
+# EOF

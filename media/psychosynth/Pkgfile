@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Welcome to the Psychosynth project, a free software synthesizer
+# inspired by the ideas of the Reactable.
+# URL: http://www.psychosynth.com/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libasound2, libc6, libcegui-mk2-1, libceguiogre14, libgcc1, libjack0, liblo0, libogg0, libogre14, libois1, libsndfile1, libsoundtouch1c2, libstdc++6, libvorbis0a, libvorbisfile3, libxml2
+
+name=psychosynth
+version=0.1.2
+release=1
+source=(http://mirrors.zerg.biz/nongnu/psychosynth/psychosynth-$version.tar.gz)
+
+build()
+{
+  cd psychosynth-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/psychosynth
+  install -m 644 COPYING README TODO NEWS ChangeLog INSTALL AUTHORS $ROOT/share/doc/psychosynth
+  install -m 644 data/README $ROOT/share/doc/psychosynth/README.data
+}

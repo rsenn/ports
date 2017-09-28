@@ -1,0 +1,307 @@
+diff -ru smtptools-0.2.3_orig/configure smtptools-0.2.3_patched/configure
+--- smtptools-0.2.3_orig/configure	2008-10-23 21:14:46.000000000 +0200
++++ smtptools-0.2.3_patched/configure	2008-10-23 21:49:11.000000000 +0200
+@@ -2443,7 +2443,7 @@
+ #define SIZEOF_UNSIGNED_LONG_LONG $ac_cv_sizeof_unsigned_long_long
+ EOF
+ 
+-
++CFLAGS="$CFLAGS -Wall -Wno-trigraphs"
+ 
+ echo $ac_n "checking for 8-bit clean memcmp""... $ac_c" 1>&6
+ echo "configure:2450: checking for 8-bit clean memcmp" >&5
+diff -ru smtptools-0.2.3_orig/configure.in smtptools-0.2.3_patched/configure.in
+--- smtptools-0.2.3_orig/configure.in	2008-10-23 21:14:46.000000000 +0200
++++ smtptools-0.2.3_patched/configure.in	2008-10-23 21:48:53.000000000 +0200
+@@ -84,6 +84,8 @@
+ AC_CHECK_SIZEOF(long long,0)
+ AC_CHECK_SIZEOF(unsigned long long,0)
+ 
++CFLAGS="$CFLAGS -Wno-trigraphs"
++
+ dnl Checks for library functions.
+ AC_FUNC_MEMCMP
+ AC_TYPE_SIGNAL
+diff -ru smtptools-0.2.3_orig/logmsg.c smtptools-0.2.3_patched/logmsg.c
+--- smtptools-0.2.3_orig/logmsg.c	2008-10-23 21:14:46.000000000 +0200
++++ smtptools-0.2.3_patched/logmsg.c	2008-10-23 21:48:53.000000000 +0200
+@@ -18,8 +18,8 @@
+ static void 
+ logstartchar(int code)
+ {
+-	if (!init_done) uoio_assign_w(&u,logmsgfd,write,0);
+-	else if (u.fd!=logmsgfd) {uoio_destroy(&u); uoio_assign_w(&u,logmsgfd,write,0);}
++	if (!init_done) uoio_assign_w(&u,logmsgfd,(ssize_t (*)())write,0);
++	else if (u.fd!=logmsgfd) {uoio_destroy(&u); uoio_assign_w(&u,logmsgfd,(ssize_t (*)())write,0);}
+ 
+ 	if (code==SMTP_SUCCESS) uoio_write_char(&u,'O');
+ 	else if (code==SMTP_DEFER) uoio_write_char(&u,'D');
+diff -ru smtptools-0.2.3_orig/maildirblast.c smtptools-0.2.3_patched/maildirblast.c
+--- smtptools-0.2.3_orig/maildirblast.c	2008-10-23 21:14:46.000000000 +0200
++++ smtptools-0.2.3_patched/maildirblast.c	2008-10-23 21:48:53.000000000 +0200
+@@ -126,7 +126,7 @@
+ 		} 
+ 		reply_log_chan=malloc(sizeof(uoio_t));
+ 		if (!reply_log_chan) exitmsg0(SMTP_DEFER,"out of memory");
+-		uoio_assign_w(reply_log_chan,reply_log_fd,write,0);
++		uoio_assign_w(reply_log_chan,reply_log_fd,(ssize_t (*)())write,0);
+ 	}
+ 	if (smtpport>65535) exitmsg0(SMTP_FATAL,"SMTP port too large\n");
+ 	/* need target host, from and to */
+diff -ru smtptools-0.2.3_orig/mkmail.c smtptools-0.2.3_patched/mkmail.c
+--- smtptools-0.2.3_orig/mkmail.c	2008-10-23 21:14:46.000000000 +0200
++++ smtptools-0.2.3_patched/mkmail.c	2008-10-23 21:48:53.000000000 +0200
+@@ -143,8 +143,8 @@
+ 		if (argc==1) break;
+ 	}
+ 
+-	uoio_assign_w(&o,1,write,0);
+-	uoio_assign_w(&e,2,write,0);
++	uoio_assign_w(&o,1,(ssize_t (*)())write,0);
++	uoio_assign_w(&e,2,(ssize_t (*)())write,0);
+ 
+ 	/* header */
+ 	if (return_path) {
+@@ -259,7 +259,7 @@
+ 			uoio_t i;
+ 			char *s;
+ 			ssize_t len;
+-			uoio_assign_r(&i,fd,read,0);
++			uoio_assign_r(&i,fd,(ssize_t (*)())read,0);
+ 			while (1) {
+ 				len=uoio_getdelim_zc(&i,&s,'\n');
+ 				if (len==-1) {
+diff -ru smtptools-0.2.3_orig/mta_maildir.c smtptools-0.2.3_patched/mta_maildir.c
+--- smtptools-0.2.3_orig/mta_maildir.c	2008-10-23 21:14:46.000000000 +0200
++++ smtptools-0.2.3_patched/mta_maildir.c	2008-10-23 21:48:53.000000000 +0200
+@@ -138,7 +138,7 @@
+ 	if (fd==-1) { e=errno; mta_set_err("open error: ","(#4.3.0)",1); goto cleanup_close; }
+ 	priv->fname=strdup(tmpfname.data);
+ 	if (!priv->fname) {close(fd);e=ENOMEM;mta_set_err("out of memory","(#4.3.0)",0); goto cleanup_close;}
+-	uoio_assign_w(&priv->o,fd,write,0);
++	uoio_assign_w(&priv->o,fd,(ssize_t (*)())write,0);
+ 	/* heya */
+ 	mta->priv=priv;
+ 	*m=mta;
+diff -ru smtptools-0.2.3_orig/mta_qq.c smtptools-0.2.3_patched/mta_qq.c
+--- smtptools-0.2.3_orig/mta_qq.c	2008-10-23 21:14:46.000000000 +0200
++++ smtptools-0.2.3_patched/mta_qq.c	2008-10-23 21:48:53.000000000 +0200
+@@ -90,8 +90,8 @@
+ 	}
+ 	close(pipe_env[0]);
+ 	close(pipe_mess[0]);
+-	uoio_assign_w(&((struct priv *)mta->priv)->mess,pipe_mess[1],write,0);
+-	uoio_assign_w(&((struct priv *)mta->priv)->env,pipe_env[1],write,0);
++	uoio_assign_w(&((struct priv *)mta->priv)->mess,pipe_mess[1],(ssize_t (*)())write,0);
++	uoio_assign_w(&((struct priv *)mta->priv)->env,pipe_env[1],(ssize_t (*)())write,0);
+ 	((struct priv *)mta->priv)->pid=pid;
+ 	((struct priv *)mta->priv)->from=copy_from;
+ 	((struct priv *)mta->priv)->to=copy_to;
+diff -ru smtptools-0.2.3_orig/relaydb.c smtptools-0.2.3_patched/relaydb.c
+--- smtptools-0.2.3_orig/relaydb.c	2008-10-23 21:14:46.000000000 +0200
++++ smtptools-0.2.3_patched/relaydb.c	2008-10-23 21:48:53.000000000 +0200
+@@ -7,6 +7,7 @@
+ #include <stdlib.h> /* malloc + free */
+ #include <errno.h>
+ #include <sys/stat.h>
++#include <string.h>
+ #include "relaydb.h"
+ #include "uostr.h"
+ #include "crc32ansi.h"
+@@ -34,7 +35,7 @@
+ 	if (fd==-1 && errno!=ENOENT) return -1;
+ 	if (fd==-1) return 0; /* don't relay */
+ 	if (-1==fstat(fd,&st)) {int e=errno;close(fd);errno=e;return -1;}
+-	uoio_assign_r(&i,fd,read,0);
++	uoio_assign_r(&i,fd,(ssize_t (*)())read,0);
+ 	while (1) {
+ 		ssize_t len;
+ 		char *s;
+diff -ru smtptools-0.2.3_orig/rewriteheader.c smtptools-0.2.3_patched/rewriteheader.c
+--- smtptools-0.2.3_orig/rewriteheader.c	2008-10-23 21:14:46.000000000 +0200
++++ smtptools-0.2.3_patched/rewriteheader.c	2008-10-23 21:48:53.000000000 +0200
+@@ -48,9 +48,9 @@
+ 	int got_it=0;
+ 	argv0=strrchr(argv[0],'/'); if (!argv0) argv0=argv[0]; else argv0++;
+ 
+-	uoio_assign_r(&input,0,read,0);
+-	uoio_assign_w(&o,1,write,0);
+-	uoio_assign_w(&e,2,write,0);
++	uoio_assign_r(&input,0,(ssize_t (*)())read,0);
++	uoio_assign_w(&o,1,(ssize_t (*)())write,0);
++	uoio_assign_w(&e,2,(ssize_t (*)())write,0);
+ 
+ 	if (gethostname(buf,sizeof(buf)-1)==-1) {
+ 		uoio_write_cstrmulti(&e,argv0,": hostname too long, gethostname failed: ",strerror(errno),"\n",0);
+@@ -124,9 +124,9 @@
+ 				if (0==strcasecmp(argv[j],argv[got_it])) {
+ 					char *x;
+ 					if (!*wordchars)
+-						x=strdupsub(s,argv[j+1],argv[j+2],&len,strcasestr);
++						x=strdupsub(s,argv[j+1],argv[j+2],(size_t *)&len,strcasestr);
+ 					else
+-						x=strdupsubw(s,argv[j+1],argv[j+2],wordchars,&len,strcasestr);
++						x=strdupsubw(s,argv[j+1],argv[j+2],wordchars,(size_t *)&len,strcasestr);
+ 					if (!x) { 
+ 						write(2,argv0,strlen(argv0));
+ 						write(2,": out of memory\n",16);
+diff -ru smtptools-0.2.3_orig/runqueue.c smtptools-0.2.3_patched/runqueue.c
+--- smtptools-0.2.3_orig/runqueue.c	2008-10-23 21:14:46.000000000 +0200
++++ smtptools-0.2.3_patched/runqueue.c	2008-10-23 21:48:53.000000000 +0200
+@@ -109,7 +109,7 @@
+ 	}
+ 
+ 	lseek(rfd,0,SEEK_SET);
+-	uoio_assign_r(&i,rfd,read,0);
++	uoio_assign_r(&i,rfd,(ssize_t (*)())read,0);
+ 	uostr_xdup_cstrmulti(&str,
+ 		"Return-Path: <",bfrom,">\n"
+ 		"Maildirblast-To: ",bto,"\n" /* can't use delivered-to here */
+@@ -406,7 +406,7 @@
+ 	id=strrchr(fname,'/')+1;
+ 
+ 	/* work on header */
+-	uoio_assign_r(&io,cfd,read,0);
++	uoio_assign_r(&io,cfd,(ssize_t (*)())read,0);
+ 	while (1) {
+ 		ssize_t len;
+ 		char *line;
+diff -ru smtptools-0.2.3_orig/smtp.c smtptools-0.2.3_patched/smtp.c
+--- smtptools-0.2.3_orig/smtp.c	2008-10-23 21:14:46.000000000 +0200
++++ smtptools-0.2.3_patched/smtp.c	2008-10-23 21:48:53.000000000 +0200
+@@ -122,7 +122,7 @@
+ 			uostr_xdup_cstrmulti(logstr,host, " (",t,"): connect failed: ",strerror(errno),NULL);
+ 			continue;
+ 		}
+-		uoio_assign_r(rop,fd,read,0);
++		uoio_assign_r(rop,fd,(ssize_t (*)())read,0);
+ 		rop->timeout=read_timeout;
+ 		rop_ok=1;
+ 		got=smtp_read_answer(rop,&ansstr);
+@@ -137,7 +137,7 @@
+ 			uostr_xadd_uostr(logstr,&ansstr);
+ 			goto do_continue;
+ 		}
+-		uoio_assign_w(wop,fd,write,0);
++		uoio_assign_w(wop,fd,(ssize_t (*)())write,0);
+ 		rop->timeout=write_timeout;
+ 		wop_ok=1;
+ 		WRITECHAN(host,wop,uoio_write_cstrmulti(wop,"HELO ",greet ? greet : "NULL","\r\n",0),do_continue);
+@@ -210,7 +210,7 @@
+ 	WRITECHAN(host,wop,uoio_write_cstr(wop,"DATA\r\n"),bailoutquit);
+ 	REPLYHANDLER("DATA","message");
+ 
+-	uoio_assign_r(&fop,inputfd,read,0);
++	uoio_assign_r(&fop,inputfd,(ssize_t (*)())read,0);
+ 
+ 	while (1) {	
+ 		char *p;
+diff -ru smtptools-0.2.3_orig/smtpblast.c smtptools-0.2.3_patched/smtpblast.c
+--- smtptools-0.2.3_orig/smtpblast.c	2008-10-23 21:14:46.000000000 +0200
++++ smtptools-0.2.3_patched/smtpblast.c	2008-10-23 21:48:53.000000000 +0200
+@@ -127,7 +127,7 @@
+ 		} 
+ 		reply_log_chan=malloc(sizeof(uoio_t));
+ 		if (!reply_log_chan) exitmsg0(SMTP_DEFER,"out of memory");
+-		uoio_assign_w(reply_log_chan,reply_log_fd,write,0);
++		uoio_assign_w(reply_log_chan,reply_log_fd,(ssize_t (*)())write,0);
+ 	}
+ 	if (smtpport>65535) exitmsg0(SMTP_FATAL,"SMTP port too large\n");
+ 	/* need target host, from and to */
+diff -ru smtptools-0.2.3_orig/tomaildir.c smtptools-0.2.3_patched/tomaildir.c
+--- smtptools-0.2.3_orig/tomaildir.c	2008-10-23 21:14:46.000000000 +0200
++++ smtptools-0.2.3_patched/tomaildir.c	2008-10-23 21:48:53.000000000 +0200
+@@ -133,7 +133,7 @@
+ 		if (mta_ret!=MTA_SUCCESS) goto bailoutlocalerr;
+ 	}
+ 
+-	uoio_assign_r(&rop,ifd,read,0);
++	uoio_assign_r(&rop,ifd,(ssize_t (*)())read,0);
+ 	while (1) {
+ 		ssize_t len;
+ 		char *s;
+diff -ru smtptools-0.2.3_orig/uosock_connect.c smtptools-0.2.3_patched/uosock_connect.c
+--- smtptools-0.2.3_orig/uosock_connect.c	2008-10-23 21:14:46.000000000 +0200
++++ smtptools-0.2.3_patched/uosock_connect.c	2008-10-23 21:48:53.000000000 +0200
+@@ -57,7 +57,7 @@
+ 			/* select returns when connect failed or succeeded */
+ 			struct sockaddr_in s_in;
+ 			int len=sizeof(s_in);
+-			if (0==getpeername(fd,(struct sockaddr *)&s_in,&len)) {
++			if (0==getpeername(fd,(struct sockaddr *)&s_in,(size_t *)&len)) {
+ 				nonblock(fd,0);
+ 				return fd;
+ 			} else {
+diff -ru smtptools-0.2.3_orig/uostr.c smtptools-0.2.3_patched/uostr.c
+--- smtptools-0.2.3_orig/uostr.c	2008-10-23 21:14:46.000000000 +0200
++++ smtptools-0.2.3_patched/uostr.c	2008-10-23 21:48:53.000000000 +0200
+@@ -1,6 +1,7 @@
+ #include <stdlib.h>
+ #include <errno.h>
+ #include <unistd.h> /* write */
++#include <string.h> /* strlen */
+ #include "uostr.h"
+ 
+ /* core functions */
+diff -ru smtptools-0.2.3_orig/uostr_cstr.c smtptools-0.2.3_patched/uostr_cstr.c
+--- smtptools-0.2.3_orig/uostr_cstr.c	2008-10-23 21:14:46.000000000 +0200
++++ smtptools-0.2.3_patched/uostr_cstr.c	2008-10-23 21:48:53.000000000 +0200
+@@ -1,4 +1,5 @@
+ #include "uostr.h"
++#include <string.h>
+ 
+ uostr_t *
+ uostr_add_cstr(uostr_t *u,const char *s)
+diff -ru smtptools-0.2.3_orig/uostr_cstrmu.c smtptools-0.2.3_patched/uostr_cstrmu.c
+--- smtptools-0.2.3_orig/uostr_cstrmu.c	2008-10-23 21:14:46.000000000 +0200
++++ smtptools-0.2.3_patched/uostr_cstrmu.c	2008-10-23 21:48:53.000000000 +0200
+@@ -1,4 +1,5 @@
+ #include "uostr.h"
++#include <string.h>
+ 
+ #if defined(__STDC__)
+ #  include <stdarg.h>
+diff -ru smtptools-0.2.3_orig/uostr_mem.c smtptools-0.2.3_patched/uostr_mem.c
+--- smtptools-0.2.3_orig/uostr_mem.c	2008-10-23 21:14:46.000000000 +0200
++++ smtptools-0.2.3_patched/uostr_mem.c	2008-10-23 21:48:53.000000000 +0200
+@@ -1,4 +1,5 @@
+ #include "uostr.h"
++#include <string.h>
+ 
+ uostr_t *
+ uostr_add_mem(uostr_t *u, const char *v, size_t len)
+diff -ru smtptools-0.2.3_orig/usmtpd.c smtptools-0.2.3_patched/usmtpd.c
+--- smtptools-0.2.3_orig/usmtpd.c	2008-10-23 21:14:46.000000000 +0200
++++ smtptools-0.2.3_patched/usmtpd.c	2008-10-23 21:48:53.000000000 +0200
+@@ -60,8 +60,8 @@
+ /* run */ static const char *reminfo;
+ /* run */ static const char *relayclient;
+ 
+-/* opt */ static unsigned long read_timeout=1200;
+-/* opt */ static unsigned long write_timeout=1200;
++/* opt */ unsigned long read_timeout=1200;
++/* opt */ unsigned long write_timeout=1200;
+ /* opt */ static char *log_spec_str=NULL;
+ /* opt */ static unsigned long aging=0;
+ 
+@@ -589,7 +589,7 @@
+ 	if (!remip || !remhost) { 
+ 		struct sockaddr_in s_in;
+ 		int l_in=sizeof(s_in);
+-		if (-1==getpeername(0,(struct sockaddr *)&s_in,&l_in)) { 
++		if (-1==getpeername(0,(struct sockaddr *)&s_in,(size_t *)&l_in)) { 
+ 			if (errno!=ENOTSOCK) normerrexit("stdin",strerror(errno));
+ 			/* stdin mode */
+ 			if (!remip) remip="127.0.0.1";
+@@ -631,9 +631,9 @@
+ 		memset(recipients,0,sizeof(uostr_t) *maxrcpts);
+ 	}
+ 
+-	uoio_assign_r(&i,0,read,0);
++	uoio_assign_r(&i,0,(ssize_t (*)())read,0);
+ 	i.timeout=read_timeout;
+-	uoio_assign_w(&o,1,write,0);
++	uoio_assign_w(&o,1,(ssize_t (*)())write,0);
+ 	o.timeout=write_timeout;
+ 
+ 	if (rblcheck) do_rbl_check(&o);

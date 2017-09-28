@@ -1,0 +1,105 @@
+diff -ru libtommath-0.41_orig/makefile.shared libtommath-0.41/makefile.shared
+--- libtommath-0.41_orig/makefile.shared	2008-11-10 11:59:34.000000000 +0100
++++ libtommath-0.41/makefile.shared	2008-11-10 11:57:57.000000000 +0100
+@@ -2,15 +2,16 @@
+ #
+ #Tom St Denis
+ VERSION=0:41
++LIBTOOL=libtool --tag=CC
+ 
+-CC = libtool --mode=compile --tag=CC gcc
++CC = $(LIBTOOL) --mode=compile gcc
+ 
+ CFLAGS  +=  -I./ -Wall -W -Wshadow -Wsign-compare
+ 
+ ifndef IGNORE_SPEED
+ 
+ #for speed 
+-CFLAGS += -O3 -funroll-loops
++CFLAGS += $(OPTFLAGS)
+ 
+ #for size 
+ #CFLAGS += -Os
+@@ -52,48 +53,51 @@
+ INCPATH=/usr/include
+ DATAPATH=/usr/share/doc/libtommath/pdf
+ 
+-OBJECTS=bncore.o bn_mp_init.o bn_mp_clear.o bn_mp_exch.o bn_mp_grow.o bn_mp_shrink.o \
+-bn_mp_clamp.o bn_mp_zero.o  bn_mp_set.o bn_mp_set_int.o bn_mp_init_size.o bn_mp_copy.o \
+-bn_mp_init_copy.o bn_mp_abs.o bn_mp_neg.o bn_mp_cmp_mag.o bn_mp_cmp.o bn_mp_cmp_d.o \
+-bn_mp_rshd.o bn_mp_lshd.o bn_mp_mod_2d.o bn_mp_div_2d.o bn_mp_mul_2d.o bn_mp_div_2.o \
+-bn_mp_mul_2.o bn_s_mp_add.o bn_s_mp_sub.o bn_fast_s_mp_mul_digs.o bn_s_mp_mul_digs.o \
+-bn_fast_s_mp_mul_high_digs.o bn_s_mp_mul_high_digs.o bn_fast_s_mp_sqr.o bn_s_mp_sqr.o \
+-bn_mp_add.o bn_mp_sub.o bn_mp_karatsuba_mul.o bn_mp_mul.o bn_mp_karatsuba_sqr.o \
+-bn_mp_sqr.o bn_mp_div.o bn_mp_mod.o bn_mp_add_d.o bn_mp_sub_d.o bn_mp_mul_d.o \
+-bn_mp_div_d.o bn_mp_mod_d.o bn_mp_expt_d.o bn_mp_addmod.o bn_mp_submod.o \
+-bn_mp_mulmod.o bn_mp_sqrmod.o bn_mp_gcd.o bn_mp_lcm.o bn_fast_mp_invmod.o bn_mp_invmod.o \
+-bn_mp_reduce.o bn_mp_montgomery_setup.o bn_fast_mp_montgomery_reduce.o bn_mp_montgomery_reduce.o \
+-bn_mp_exptmod_fast.o bn_mp_exptmod.o bn_mp_2expt.o bn_mp_n_root.o bn_mp_jacobi.o bn_reverse.o \
+-bn_mp_count_bits.o bn_mp_read_unsigned_bin.o bn_mp_read_signed_bin.o bn_mp_to_unsigned_bin.o \
+-bn_mp_to_signed_bin.o bn_mp_unsigned_bin_size.o bn_mp_signed_bin_size.o  \
+-bn_mp_xor.o bn_mp_and.o bn_mp_or.o bn_mp_rand.o bn_mp_montgomery_calc_normalization.o \
+-bn_mp_prime_is_divisible.o bn_prime_tab.o bn_mp_prime_fermat.o bn_mp_prime_miller_rabin.o \
+-bn_mp_prime_is_prime.o bn_mp_prime_next_prime.o bn_mp_dr_reduce.o \
+-bn_mp_dr_is_modulus.o bn_mp_dr_setup.o bn_mp_reduce_setup.o \
+-bn_mp_toom_mul.o bn_mp_toom_sqr.o bn_mp_div_3.o bn_s_mp_exptmod.o \
+-bn_mp_reduce_2k.o bn_mp_reduce_is_2k.o bn_mp_reduce_2k_setup.o \
+-bn_mp_reduce_2k_l.o bn_mp_reduce_is_2k_l.o bn_mp_reduce_2k_setup_l.o \
+-bn_mp_radix_smap.o bn_mp_read_radix.o bn_mp_toradix.o bn_mp_radix_size.o \
+-bn_mp_fread.o bn_mp_fwrite.o bn_mp_cnt_lsb.o bn_error.o \
+-bn_mp_init_multi.o bn_mp_clear_multi.o bn_mp_exteuclid.o bn_mp_toradix_n.o \
+-bn_mp_prime_random_ex.o bn_mp_get_int.o bn_mp_sqrt.o bn_mp_is_square.o bn_mp_init_set.o \
+-bn_mp_init_set_int.o bn_mp_invmod_slow.o bn_mp_prime_rabin_miller_trials.o \
+-bn_mp_to_signed_bin_n.o bn_mp_to_unsigned_bin_n.o
++OBJECTS=bncore.lo bn_mp_init.lo bn_mp_clear.lo bn_mp_exch.lo bn_mp_grow.lo bn_mp_shrink.lo \
++bn_mp_clamp.lo bn_mp_zero.lo  bn_mp_set.lo bn_mp_set_int.lo bn_mp_init_size.lo bn_mp_copy.lo \
++bn_mp_init_copy.lo bn_mp_abs.lo bn_mp_neg.lo bn_mp_cmp_mag.lo bn_mp_cmp.lo bn_mp_cmp_d.lo \
++bn_mp_rshd.lo bn_mp_lshd.lo bn_mp_mod_2d.lo bn_mp_div_2d.lo bn_mp_mul_2d.lo bn_mp_div_2.lo \
++bn_mp_mul_2.lo bn_s_mp_add.lo bn_s_mp_sub.lo bn_fast_s_mp_mul_digs.lo bn_s_mp_mul_digs.lo \
++bn_fast_s_mp_mul_high_digs.lo bn_s_mp_mul_high_digs.lo bn_fast_s_mp_sqr.lo bn_s_mp_sqr.lo \
++bn_mp_add.lo bn_mp_sub.lo bn_mp_karatsuba_mul.lo bn_mp_mul.lo bn_mp_karatsuba_sqr.lo \
++bn_mp_sqr.lo bn_mp_div.lo bn_mp_mod.lo bn_mp_add_d.lo bn_mp_sub_d.lo bn_mp_mul_d.lo \
++bn_mp_div_d.lo bn_mp_mod_d.lo bn_mp_expt_d.lo bn_mp_addmod.lo bn_mp_submod.lo \
++bn_mp_mulmod.lo bn_mp_sqrmod.lo bn_mp_gcd.lo bn_mp_lcm.lo bn_fast_mp_invmod.lo bn_mp_invmod.lo \
++bn_mp_reduce.lo bn_mp_montgomery_setup.lo bn_fast_mp_montgomery_reduce.lo bn_mp_montgomery_reduce.lo \
++bn_mp_exptmod_fast.lo bn_mp_exptmod.lo bn_mp_2expt.lo bn_mp_n_root.lo bn_mp_jacobi.lo bn_reverse.lo \
++bn_mp_count_bits.lo bn_mp_read_unsigned_bin.lo bn_mp_read_signed_bin.lo bn_mp_to_unsigned_bin.lo \
++bn_mp_to_signed_bin.lo bn_mp_unsigned_bin_size.lo bn_mp_signed_bin_size.lo  \
++bn_mp_xor.lo bn_mp_and.lo bn_mp_or.lo bn_mp_rand.lo bn_mp_montgomery_calc_normalization.lo \
++bn_mp_prime_is_divisible.lo bn_prime_tab.lo bn_mp_prime_fermat.lo bn_mp_prime_miller_rabin.lo \
++bn_mp_prime_is_prime.lo bn_mp_prime_next_prime.lo bn_mp_dr_reduce.lo \
++bn_mp_dr_is_modulus.lo bn_mp_dr_setup.lo bn_mp_reduce_setup.lo \
++bn_mp_toom_mul.lo bn_mp_toom_sqr.lo bn_mp_div_3.lo bn_s_mp_exptmod.lo \
++bn_mp_reduce_2k.lo bn_mp_reduce_is_2k.lo bn_mp_reduce_2k_setup.lo \
++bn_mp_reduce_2k_l.lo bn_mp_reduce_is_2k_l.lo bn_mp_reduce_2k_setup_l.lo \
++bn_mp_radix_smap.lo bn_mp_read_radix.lo bn_mp_toradix.lo bn_mp_radix_size.lo \
++bn_mp_fread.lo bn_mp_fwrite.lo bn_mp_cnt_lsb.lo bn_error.lo \
++bn_mp_init_multi.lo bn_mp_clear_multi.lo bn_mp_exteuclid.lo bn_mp_toradix_n.lo \
++bn_mp_prime_random_ex.lo bn_mp_get_int.lo bn_mp_sqrt.lo bn_mp_is_square.lo bn_mp_init_set.lo \
++bn_mp_init_set_int.lo bn_mp_invmod_slow.lo bn_mp_prime_rabin_miller_trials.lo \
++bn_mp_to_signed_bin_n.lo bn_mp_to_unsigned_bin_n.lo
+ 
+ objs: $(OBJECTS)
+ 
++%.lo: %.c
++	$(CC) $(CFLAGS) -c $<
++
+ $(LIBNAME):  $(OBJECTS)
+-	libtool --mode=link gcc *.lo -o $(LIBNAME) -rpath $(LIBPATH) -version-info $(VERSION)
++	$(LIBTOOL) --mode=link gcc *.lo -o $(LIBNAME) -rpath $(LIBPATH) -version-info $(VERSION)
+ 
+ install: $(LIBNAME)
+ 	install -d -g $(GROUP) -o $(USER) $(DESTDIR)$(LIBPATH)
+-	libtool --mode=install install -c $(LIBNAME) $(DESTDIR)$(LIBPATH)/$(LIBNAME)
++	$(LIBTOOL) --mode=install install -c $(LIBNAME) $(DESTDIR)$(LIBPATH)/$(LIBNAME)
+ 	install -d -g $(GROUP) -o $(USER) $(DESTDIR)$(INCPATH)
+ 	install -g $(GROUP) -o $(USER) $(HEADERS) $(DESTDIR)$(INCPATH)
+ 
+-test: $(LIBNAME) demo/demo.o
++test: $(LIBNAME) demo/demo.lo
+ 	gcc $(CFLAGS) -c demo/demo.c -o demo/demo.o
+-	libtool --mode=link gcc -o test demo/demo.o $(LIBNAME_S)
++	$(LIBTOOL) --mode=link gcc -o test demo/demo.o $(LIBNAME_S)
+ 	
+ mtest: test	
+ 	cd mtest ; gcc $(CFLAGS) mtest.c -o mtest

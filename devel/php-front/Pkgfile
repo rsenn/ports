@@ -1,0 +1,41 @@
+# $Id: Pkgfile,v 1.2 2007/04/22 23:07:53 roman Exp $
+#
+# Section: universe/devel
+# Description: Static analysis for PHP
+#  PHP-front is a package you can use to generate, analyse, or transform
+#  pretty printer, an extensive library for reflecting over PHP code,
+# URL: http://www.program-transformation.org/PHP/PhpFront
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libaterm2 (>= 2.5), strategoxt (>= 0.17pre17928)
+
+name=php-front
+version=0.1pre435
+release=1
+source=(http://releases.strategoxt.org/php-front/php-front-unstable/php-front-$version.tar.gz
+#        phpsat-doc-20070521.tar.gz
+        php-front-0.1pre350-mingw32.patch)
+
+build()
+{
+  cd php-front-$version
+
+#  patch -N -p1 -i $SRC/php-front-0.1pre350-mingw32.patch
+
+  export SDF="${prefix%/$host}"
+#  echo "$SDF"
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --with-strategoxt="$prefix" \
+      --with-xtc="$prefix" \
+      --with-aterm="$prefix" \
+      --with-sdf="$prefix" \
+      --with-stratego-libraries="$prefix"
+
+  make SDF="$SDF" DESTDIR="$PKG" install
+
+#  install -d $ROOT/share/doc
+#  cp -rf $SRC/phpsat-doc-* $ROOT/share/doc/$name-$version
+}

@@ -1,0 +1,39 @@
+# $Id: Pkgfile: js 494 2008-08-26 12:23:37Z root $
+#
+# Package: libjs1.8
+# Provides: libjs
+# Replaces: js, js1.8
+# Section: universe/libs
+# Description: The Mozilla SpiderMonkey JavaScript library
+#  This library provides the embeddable JavaScript/ECMAScript engine from
+#  browsers as well as by the iPlanet WebServer).
+# URL: http://www.mozilla.org/js/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=js
+version=1.8-20080924
+release=2
+source=(js-$version.tar.bz2
+        js-$version-autotools.patch
+        js-$version-dl.patch)
+
+build()
+{
+  cd js-$version
+
+  patch -N -p1 -i $SRC/js-1.8-20080924-autotools.patch
+  patch -N -p1 -i $SRC/js-1.8-20080924-dl.patch
+
+  sh autogen.sh
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --disable-maintainer-mode \
+       --disable-dependency-tracking
+
+  make
+  make DESTDIR="$PKG" install
+}

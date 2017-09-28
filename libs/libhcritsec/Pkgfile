@@ -1,0 +1,26 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Libhcritsec is a library that provides platform-independent critical sections
+# It can be used in conjunction with POSIX threads or Win32 threads.
+#
+# URL: http://www.elemental-programming.org/hcritsec.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libgcc1, libstdc++6
+
+name=libhcritsec
+version=0.20
+release=1
+source=($mirror_sf/elementals/critsec-$version.tar.gz
+        libhcritsec-0.20-fixes.patch)
+
+build()
+{
+  cd critsec-$version
+
+  patch -N -p1 -i $SRC/libhcritsec-0.20-fixes.patch
+
+  make
+  make PREFIX="$ROOT" PREFIX_DOC="$ROOT/share/doc" install
+
+  mv -vf $ROOT/share/doc/{critsec,libhcritsec}
+}

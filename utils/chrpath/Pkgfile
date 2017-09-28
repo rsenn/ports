@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Tool to edit the rpath in ELF binaries
+#  chrpath allows you to change the rpath (where the application looks
+#  for libraries) in an application. It does not (yet) allow you to add an
+#  rpath if there isn't one already.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=chrpath
+version=0.13
+release=1
+source=(http://www.tux.org/pub/X-Windows/ftp.hungry.com/chrpath/chrpath-$version.tar.gz)
+
+build()
+{
+  cd chrpath-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix" \
+       --program-prefix=""
+
+  make
+  make DESTDIR="$PKG" install
+}

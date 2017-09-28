@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A C++ API library for JACK.
+# libJackMM is a C++ API library for JACK audio connection kit. It allows
+# easy object based access to JACK functionality.
+#
+# URL: http://sourceforge.net/projects/libjackmm/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libjackmm
+version=0.2
+release=1
+source=($mirror_sf/libjackmm/libJackMM-$version.tar.gz
+        libjackmm-0.2-fixes.patch)
+
+build()
+{
+  cd libJackMM-$version
+
+  patch -N -p1 -i $SRC/libjackmm-0.2-fixes.patch
+
+  make
+
+  install -d $ROOT/include
+  install -d $ROOT/lib
+
+  make PREFIX="$ROOT" install
+
+  install -d $ROOT/share/doc/libjackmm
+  install -m 644 [A-Z][A-Z]* $ROOT/share/doc/libjackmm
+}

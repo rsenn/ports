@@ -1,0 +1,26 @@
+--- ImageMagick-6.4.5_orig/magick/magick-type.h	2009-02-20 14:45:43.000000000 +0100
++++ ImageMagick-6.4.5/magick/magick-type.h	2009-02-20 14:54:01.000000000 +0100
+@@ -24,6 +24,10 @@
+ 
+ #include "magick/magick-config.h"
+ 
++#if defined(MAGICKCORE_HAVE_STDINT_H) && defined(__cplusplus) && defined(__GNUC__)
++#include <cstdint>
++#endif
++
+ #if !defined(MAGICKCORE_QUANTUM_DEPTH)
+ #define MAGICKCORE_QUANTUM_DEPTH  16
+ #endif
+@@ -116,7 +120,11 @@
+ */
+ typedef unsigned int MagickStatusType;
+ #if !defined(__WINDOWS__)
+-#if (MAGICKCORE_SIZEOF_UNSIGNED_LONG_LONG == 8)
++#if defined(MAGICKCORE_HAVE_STDINT_H) && defined(__cplusplus) && defined(__GNUC__)
++typedef int64_t MagickOffsetType;
++typedef uint64_t MagickSizeType;
++#define MagickSizeFormat  "%10llu"
++#elif (MAGICKCORE_SIZEOF_UNSIGNED_LONG_LONG == 8)
+ typedef long long MagickOffsetType;
+ typedef unsigned long long MagickSizeType;
+ #define MagickSizeFormat  "%10llu"

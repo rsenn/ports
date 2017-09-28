@@ -1,0 +1,41 @@
+Only in automake-1.10.2_orig: Makefile.in.orig
+Only in automake-1.10.2_orig: configure.ac.orig
+diff -ru automake-1.10.2_orig/lib/am/footer.am automake-1.10.2/lib/am/footer.am
+--- automake-1.10.2_orig/lib/am/footer.am	2009-03-19 01:49:46.000000000 +0100
++++ automake-1.10.2/lib/am/footer.am	2009-03-19 01:52:00.000000000 +0100
+@@ -18,3 +18,6 @@
+ # Tell versions [3.59,3.63) of GNU make to not export all variables.
+ # Otherwise a system limit (for SysV at least) may be exceeded.
+ .NOEXPORT:
++
++# Explicitly export LIB and INCLUDE for Visual Studio compilers
++export LIB INCLUDE
+Only in automake-1.10.2_orig/lib: config.guess.orig
+diff -ru automake-1.10.2_orig/lib/config.sub automake-1.10.2/lib/config.sub
+--- automake-1.10.2_orig/lib/config.sub	2009-03-19 01:49:46.000000000 +0100
++++ automake-1.10.2/lib/config.sub	2009-03-19 01:53:13.000000000 +0100
+@@ -714,9 +714,9 @@
+ 		basic_machine=ns32k-utek
+ 		os=-sysv
+ 		;;
+-	mingw32)
++	mingw32*|msvc*|icl*)
++		os=-$basic_machine
+ 		basic_machine=i386-pc
+-		os=-mingw32
+ 		;;
+ 	mingw32ce)
+ 		basic_machine=arm-unknown
+@@ -1277,6 +1277,7 @@
+ 	      | -uxpv* | -beos* | -mpeix* | -udk* \
+ 	      | -interix* | -uwin* | -mks* | -rhapsody* | -darwin* | -opened* \
+ 	      | -openstep* | -oskit* | -conix* | -pw32* | -nonstopux* \
++        | -msvc* | -icl* \
+ 	      | -storm-chaos* | -tops10* | -tenex* | -tops20* | -its* \
+ 	      | -os2* | -vos* | -palmos* | -uclinux* | -nucleus* \
+ 	      | -morphos* | -superux* | -rtmk* | -rtmk-nova* | -windiss* \
+Only in automake-1.10.2_orig/lib: config.sub.orig
+Only in automake-1.10.2/lib: config.sub.rej
+Only in automake-1.10.2_orig/m4: Makefile.in.orig
+Only in automake-1.10.2_orig/tests: Makefile.am.orig
+Only in automake-1.10.2_orig/tests: Makefile.in.orig

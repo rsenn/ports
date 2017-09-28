@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A free h264/avc encoder. 
+# URL: http://www.videolan.org/developers/x264.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=x264
+version=20090219-2245
+release=1
+source=(ftp://ftp.videolan.org/pub/videolan/x264/snapshots/x264-snapshot-$version.tar.bz2)
+
+build() 
+{
+  cd x264-snapshot-$version
+  
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --disable-mp4-output \
+       --enable-visualize \
+       --enable-shared
+  
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/x264
+  install -m 644 doc/vui.txt doc/threads.txt doc/standards.txt doc/regression_test.txt doc/ratecontrol.txt COPYING AUTHORS $ROOT/share/doc/x264
+}
+
+# EOF

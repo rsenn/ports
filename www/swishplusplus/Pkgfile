@@ -1,0 +1,21 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=bash
+version=6.1.5
+release=1
+source=($mirror_sf/swishplusplus/swish++-$version.tar.gz)
+
+build()
+{
+  cd swish++-$version
+
+  sed -i "/^#error/ s,^,// ," \
+      config.h
+
+  make PERL="perl"
+}

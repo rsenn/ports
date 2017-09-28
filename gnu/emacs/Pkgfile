@@ -1,0 +1,44 @@
+# $Id: Pkgfile,v 1.10 2007/04/22 23:07:54 roman Exp $
+#
+# Description: GNU Emacs
+#  Extraordinarily powerful text editor with additional features including
+#  content sensitive major modes, complete online documentation, highly
+#  extensible through Lisp, support for many languages and their scripts
+#  through its multilingual extension, and a large number of other extensions
+#  available either separately or with the GNU Emacs distribution. Runs on
+#  many different operating systems regardless of machine.
+#  It offers true Lisp, smoothly integrated into the editor, for writing
+#  extensions and provides an interface to the X windows system.
+# URL: http://www.gnu.org/software/emacs/emacs.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=emacs
+version=22.1
+release=1
+source=($mirror_gnu/$name/$name-$version.tar.gz
+        emacs-21.4-startfiles.patch)
+
+build()
+{
+  cd emacs-$version
+
+#  patch -N -p1 -i $SRC/emacs-21.4-startfiles.patch
+
+  ./configure \
+       --host="$host" \
+       --prefix="$prefix" \
+       --sysconfdir="$prefix/etc" \
+       --${static:=enable}-shared \
+       --${shared:=enable}-shared \
+       --without-x \
+       --without-xim \
+       --without-xpm
+
+  make
+  make prefix="$ROOT" install
+
+  copy_license "src/COPYING"
+
+  rm -f $ROOT/info/dir
+}

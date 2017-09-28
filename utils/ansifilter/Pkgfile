@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A utility that strips or converts ANSI code sequences.
+#  Ansifilter handles text files containing ANSI terminal escape codes. The
+#  command sequences may be stripped or be interpreted to generate formatted
+#  output (HTML, LaTeX, TeX, and RTF).
+# URL: http://www.andre-simon.de/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=ansifilter
+version=1.0
+release=1
+source=(http://www.andre-simon.de/zip/ansifilter-$version.tar.bz2)
+
+build()
+{
+  cd ansifilter-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

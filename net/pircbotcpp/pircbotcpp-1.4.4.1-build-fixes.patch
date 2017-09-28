@@ -1,0 +1,335 @@
+diff -r -u -- pircbotcpp-src-1.4.4.1_orig/build_files/autoconf/bootstrap.sh pircbotcpp-src-1.4.4.1/build_files/autoconf/bootstrap.sh
+--- pircbotcpp-src-1.4.4.1_orig/build_files/autoconf/bootstrap.sh	2008-07-04 03:10:06.000000000 +0200
++++ pircbotcpp-src-1.4.4.1/build_files/autoconf/bootstrap.sh	2008-07-04 03:23:10.000000000 +0200
+@@ -2,16 +2,24 @@
+ 
+ echo "[Bootstraping in current directory]"
+ 
+-echo Calling aclocal
+-aclocal
++set -e
+ 
+-echo Calling autoconf
+-autoconf
++echo Calling libtoolize
++libtoolize --force --copy
++
++echo Calling aclocal
++aclocal --force
+ 
+ echo Calling automake
+-automake
++automake --force --copy --foreign --add-missing
+ echo ""
+ 
++echo Calling aclocal
++aclocal --force
++
++echo Calling autoconf
++autoconf --force
++
+ # If we don't have any parameters then don't
+ # do a recursive bootstrap
+ if [ $# -eq 0 ]
+@@ -21,13 +29,13 @@
+ 
+ echo "[Booststraping in lib directory]"
+ cd lib
+-./bootstrap.sh
++./bootstrap.sh || exit $?
+ cd ..
+ echo ""
+ 
+ echo "[Booststraping in simple directory]"
+ cd simple
+-./bootstrap.sh
++./bootstrap.sh || exit $?
+ cd ..
+ echo ""
+ 
+diff -r -u -- pircbotcpp-src-1.4.4.1_orig/build_files/autoconf/lib/Makefile.am pircbotcpp-src-1.4.4.1/build_files/autoconf/lib/Makefile.am
+--- pircbotcpp-src-1.4.4.1_orig/build_files/autoconf/lib/Makefile.am	2008-07-04 03:10:06.000000000 +0200
++++ pircbotcpp-src-1.4.4.1/build_files/autoconf/lib/Makefile.am	2008-07-04 03:32:00.000000000 +0200
+@@ -1,5 +1,7 @@
+ AUTOMAKE_OPTIONS = gnu
+ 
++LIBS = -lboost_date_time -lboost_regex-mt -lboost_thread-mt -lpthread
++
+ lib_LTLIBRARIES = libpircbot-mt.la
+ libpircbot_mt_la_SOURCES = ../../../src/pircbotcpp/Colors.cpp \
+ 						   ../../../src/pircbotcpp/PircBot.cpp \
+diff -r -u -- pircbotcpp-src-1.4.4.1_orig/build_files/autoconf/lib/bootstrap.sh pircbotcpp-src-1.4.4.1/build_files/autoconf/lib/bootstrap.sh
+--- pircbotcpp-src-1.4.4.1_orig/build_files/autoconf/lib/bootstrap.sh	2008-07-04 03:10:06.000000000 +0200
++++ pircbotcpp-src-1.4.4.1/build_files/autoconf/lib/bootstrap.sh	2008-07-04 03:19:02.000000000 +0200
+@@ -1,17 +1,22 @@
+ #!/bin/sh
+ 
+-echo Calling autoheader
+-autoheader
+-
+-echo Calling aclocal
+-aclocal
++set -e
+ 
+ echo Calling libtoolize
+ libtoolize --force --copy
+ 
+-echo Calling autoconf
+-autoconf
++echo Calling aclocal
++aclocal --force
+ 
+ echo Calling automake
+-automake
++automake --force --copy --foreign --add-missing
++
++echo Calling aclocal
++aclocal --force
++
++echo Calling autoheader
++autoheader --force
++
++echo Calling autoconf
++autoconf --force
+ 
+diff -r -u -- pircbotcpp-src-1.4.4.1_orig/build_files/autoconf/lib/configure.in pircbotcpp-src-1.4.4.1/build_files/autoconf/lib/configure.in
+--- pircbotcpp-src-1.4.4.1_orig/build_files/autoconf/lib/configure.in	2008-07-04 03:10:06.000000000 +0200
++++ pircbotcpp-src-1.4.4.1/build_files/autoconf/lib/configure.in	2008-07-04 03:17:23.000000000 +0200
+@@ -7,99 +7,100 @@
+ 
+ dnl find test the C and C++ compiler
+ AC_PROG_CC
++AC_PROG_CXX
+ AC_LANG_C
+ AC_LANG_CPLUSPLUS
+ AC_PROG_MAKE_SET
+ 
+-AC_HEADER_STDC
++dnl AC_HEADER_STDC
+ 
+ dnl Check all the dependency header files
+-dnl Make sure they're all there.
+-
+-
+-AC_CHECK_HEADERS(boost/algorithm/string.hpp,,
+-AC_MSG_ERROR([
+-pircbot cannot find
+-the above boost header file!  Do you have boost installed
+-and are pointing to the boost header file?  You need to
+-have boost installed to work.  Download 
+-Boost at http://www.boost.org/
+-]))
+-
+-AC_CHECK_HEADERS(boost/tokenizer.hpp,,
+-AC_MSG_ERROR([
+-pircbot cannot find
+-the above boost header file!  Do you have boost installed
+-and are pointing to the boost header file?  You need to
+-have boost installed to work.  Download 
+-Boost at http://www.boost.org/
+-]))
+-
+-
+-AC_CHECK_HEADERS(boost/shared_ptr.hpp,,
+-AC_MSG_ERROR([
+-pircbot cannot find
+-the above boost header file!  Do you have boost installed
+-and are pointing to the boost header file?  You need to
+-have boost installed to work.  Download 
+-Boost at http://www.boost.org/
+-]))
+-
+-AC_CHECK_HEADERS(boost/algorithm/string_regex.hpp,,
+-AC_MSG_ERROR([
+-pircbot cannot find
+-the above boost header file!  Do you have boost installed
+-and are pointing to the boost header file?  You need to
+-have boost installed to work.  Download 
+-Boost at http://www.boost.org/
+-]))
+-
+-AC_CHECK_HEADERS(boost/cast.hpp,,
+-AC_MSG_ERROR([
+-pircbot cannot find
+-the above boost header file!  Do you have boost installed
+-and are pointing to the boost header file?  You need to
+-have boost installed to work.  Download 
+-Boost at http://www.boost.org/
+-]))
+-
+-AC_CHECK_HEADERS(boost/lexical_cast.hpp,,
+-AC_MSG_ERROR([
+-pircbot cannot find
+-the above boost header file!  Do you have boost installed
+-and are pointing to the boost header file?  You need to
+-have boost installed to work.  Download 
+-Boost at http://www.boost.org/
+-]))
+-
+-AC_CHECK_LIB(boost_filesystem, main,,
+-AC_MSG_ERROR([
+-pircbot requires 
+-boost file system to be installed to work.  Download Boost 
+-at http://www.boost.org/
+-]))
+-
+-AC_CHECK_LIB(boost_regex, main,,
+-AC_MSG_ERROR([
+-pircbot requires 
+-boost regex to be installed to work.  Download Boost
+-at http://www.boost.org/
+-]))
+-
+-AC_CHECK_LIB(boost_date_time, main,,
+-AC_MSG_ERROR([
+-pircbot requires boost date and time
+-to be installed to work.  Download Boost
+-at http://www.boost.org/
+-]))	
+-
+-AC_CHECK_LIB(boost_thread, main,,
+-AC_MSG_ERROR([
+-pircbot requires boost date and time
+-to be installed to work.  Download Boost
+-at http://www.boost.org/
+-]))	
++dnl Make sure they are all there.
+ 
+ 
++dnl AC_CHECK_HEADERS(boost/algorithm/string.hpp,,
++dnl AC_MSG_ERROR([
++dnl pircbot cannot find
++dnl the above boost header file!  Do you have boost installed
++dnl and are pointing to the boost header file?  You need to
++dnl have boost installed to work.  Download 
++dnl Boost at http://www.boost.org/
++dnl ]))
++dnl 
++dnl AC_CHECK_HEADERS(boost/tokenizer.hpp,,
++dnl AC_MSG_ERROR([
++dnl pircbot cannot find
++dnl the above boost header file!  Do you have boost installed
++dnl and are pointing to the boost header file?  You need to
++dnl have boost installed to work.  Download 
++dnl Boost at http://www.boost.org/
++dnl ]))
++dnl 
++dnl 
++dnl AC_CHECK_HEADERS(boost/shared_ptr.hpp,,
++dnl AC_MSG_ERROR([
++dnl pircbot cannot find
++dnl the above boost header file!  Do you have boost installed
++dnl and are pointing to the boost header file?  You need to
++dnl have boost installed to work.  Download 
++dnl Boost at http://www.boost.org/
++dnl ]))
++dnl 
++dnl AC_CHECK_HEADERS(boost/algorithm/string_regex.hpp,,
++dnl AC_MSG_ERROR([
++dnl pircbot cannot find
++dnl the above boost header file!  Do you have boost installed
++dnl and are pointing to the boost header file?  You need to
++dnl have boost installed to work.  Download 
++dnl Boost at http://www.boost.org/
++dnl ]))
++dnl 
++dnl AC_CHECK_HEADERS(boost/cast.hpp,,
++dnl AC_MSG_ERROR([
++dnl pircbot cannot find
++dnl the above boost header file!  Do you have boost installed
++dnl and are pointing to the boost header file?  You need to
++dnl have boost installed to work.  Download 
++dnl Boost at http://www.boost.org/
++dnl ]))
++dnl 
++dnl AC_CHECK_HEADERS(boost/lexical_cast.hpp,,
++dnl AC_MSG_ERROR([
++dnl pircbot cannot find
++dnl the above boost header file!  Do you have boost installed
++dnl and are pointing to the boost header file?  You need to
++dnl have boost installed to work.  Download 
++dnl Boost at http://www.boost.org/
++dnl ]))
++dnl 
++dnl AC_CHECK_LIB(boost_filesystem, main,,
++dnl AC_MSG_ERROR([
++dnl pircbot requires 
++dnl boost file system to be installed to work.  Download Boost 
++dnl at http://www.boost.org/
++dnl ]))
++dnl 
++dnl AC_CHECK_LIB(boost_regex, main,,
++dnl AC_MSG_ERROR([
++dnl pircbot requires 
++dnl boost regex to be installed to work.  Download Boost
++dnl at http://www.boost.org/
++dnl ]))
++dnl 
++dnl AC_CHECK_LIB(boost_date_time, main,,
++dnl AC_MSG_ERROR([
++dnl pircbot requires boost date and time
++dnl to be installed to work.  Download Boost
++dnl at http://www.boost.org/
++dnl ]))	
++dnl 
++dnl AC_CHECK_LIB(boost_thread, main,,
++dnl AC_MSG_ERROR([
++dnl pircbot requires boost date and time
++dnl to be installed to work.  Download Boost
++dnl at http://www.boost.org/
++dnl ]))	
++dnl 
++dnl 
+ dnl read Makefile.in and write Makefile
+ AC_OUTPUT(Makefile)
+diff -r -u -- pircbotcpp-src-1.4.4.1_orig/build_files/autoconf/simple/bootstrap.sh pircbotcpp-src-1.4.4.1/build_files/autoconf/simple/bootstrap.sh
+--- pircbotcpp-src-1.4.4.1_orig/build_files/autoconf/simple/bootstrap.sh	2008-07-04 03:10:06.000000000 +0200
++++ pircbotcpp-src-1.4.4.1/build_files/autoconf/simple/bootstrap.sh	2008-07-04 03:19:32.000000000 +0200
+@@ -1,17 +1,22 @@
+ #!/bin/sh
+ 
+-echo Calling autoheader
+-autoheader
+-
+-echo Calling aclocal
+-aclocal
++set -e
+ 
+ echo Calling libtoolize
+ libtoolize --force --copy
+ 
+-echo Calling autoconf
+-autoconf
++echo Calling aclocal
++aclocal --force
+ 
+ echo Calling automake
+-automake
++automake --force --copy --foreign --add-missing
++
++echo Calling aclocal
++aclocal --force
++
++echo Calling autoheader
++autoheader --force
++
++echo Calling autoconf
++autoconf --force
+ 
+diff -r -u -- pircbotcpp-src-1.4.4.1_orig/build_files/autoconf/simple/configure.in pircbotcpp-src-1.4.4.1/build_files/autoconf/simple/configure.in
+--- pircbotcpp-src-1.4.4.1_orig/build_files/autoconf/simple/configure.in	2008-07-04 03:10:06.000000000 +0200
++++ pircbotcpp-src-1.4.4.1/build_files/autoconf/simple/configure.in	2008-07-04 03:17:40.000000000 +0200
+@@ -6,11 +6,12 @@
+ AC_PROG_INSTALL
+ dnl find and test the C and C++ compiler
+ AC_PROG_CC
++AC_PROG_CXX
+ AC_LANG_C
+ AC_LANG_CPLUSPLUS
+ AC_PROG_MAKE_SET
+ 
+-AC_HEADER_STDC
++dnl AC_HEADER_STDC
+ 
+ dnl AC_CHECK_HEADERS(pircbot/all.h,,
+ dnl AC_MSG_ERROR([

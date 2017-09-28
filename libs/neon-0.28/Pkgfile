@@ -1,0 +1,36 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:50 roman Exp $
+#
+# Description: WebDAV client library
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=neon
+version=0.28.4
+release=1
+source=(http://www.webdav.org/neon/neon-$version.tar.gz)
+
+build()
+{
+  cd neon-$version
+
+  libtoolize --force --copy --install --automake
+  aclocal --force -I macros
+  autoheader --force
+  automake --force --copy --foreign --add-missing-a --foreign --copy --force || true
+  aclocal --force -I macros
+  autoconf --force
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --${shared:=enable}-shared \
+      --${static:=enable}-shared \
+      --with-ssl="openssl" \
+      --with-libxml2
+
+  make
+  make DESTDIR="$PKG" install
+}
+

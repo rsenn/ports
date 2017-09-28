@@ -1,0 +1,30 @@
+# $Id: Pkgfile,v 1.9 2007/04/23 17:39:08 roman Exp $
+#
+# Description: A relational database offering many ANSI SQL-99 features.
+#  Firebird is a relational database offering many ANSI SQL-99 features
+#  that runs on Linux, Windows, and a variety of Unix platforms. It offers
+#  excellent concurrency, high performance, and powerful language support
+#  for stored procedures and triggers.
+# URL: http://www.firebirdsql.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=firebird
+version=2.0.1
+release=1
+source=($mirror_sf/firebird/Firebird-$version.12855-0.tar.bz2)
+
+build()
+{
+  cd Firebird*
+
+  sh autogen.sh
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

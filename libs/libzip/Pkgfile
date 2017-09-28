@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: C library for reading, creating, and modifying zip archives.
+#  libzip is a C library for reading, creating, and modifying zip
+#  archives. Files can be added from data buffers, files, or compressed data
+#  copied directly from other zip archives. Changes made without closing
+#  the archive can be reverted.
+# URL: http://www.nih.at/libzip/
+# Maintainer: 
+# Depends on: 
+
+name=libzip
+version=0.9
+release=1
+source=(http://nih.at/libzip/libzip-$version.tar.bz2)
+
+build() 
+{
+  cd libzip-$version
+  
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+  
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/libzip
+  install -m 644 README AUTHORS INSTALL NEWS THANKS TODO $ROOT/share/doc/libzip
+}
+
+# EOF

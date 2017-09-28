@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Perl module to converter csv files to text files
+# URL: http://www.sanface.com/csv2txt.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: perl5
+
+name=csv2txt
+version=2.0
+release=1
+source=(http://www.cpan.org/authors/id/S/SA/SANFACE/csv2txt-$version.tar.gz)
+
+build()
+{
+  cd csv2txt-$version
+
+  perl Makefile.PL
+
+  make \
+      DESTDIR="$PKG" \
+      SITEPREFIX='$(PREFIX)' \
+      INSTALLSITELIB='$(INSTALLVENDORLIB)' \
+      INSTALLSITEARCH='$(INSTALLVENDORARCH)' \
+      INSTALLSITEMAN3DIR="$prefix/share/man/man3" \
+    install
+
+  rm -f $ROOT/lib/*/*.pod
+}

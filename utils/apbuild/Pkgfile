@@ -1,0 +1,22 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Portability tools for developers.
+# URL: http://autopackage.org/aptools.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=apbuild
+version=2.0.5
+release=1
+source=(http://ftp.sunsite.dk/projects/autopackage/tools/apbuild-$version.tar.gz)
+
+build()
+{
+  cd apbuild-$version
+
+  make
+  make PREFIX="$ROOT" install
+
+  install -d $ROOT/share/doc/apbuild
+  install -m 644 BINARY-PORTABILITY-NOTES README $ROOT/share/doc/apbuild
+}

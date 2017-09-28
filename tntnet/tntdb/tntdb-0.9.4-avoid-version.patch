@@ -1,0 +1,96 @@
+diff -r -u tntdb-0.9.4_orig/src/mysql/Makefile.am tntdb-0.9.4/src/mysql/Makefile.am
+--- tntdb-0.9.4_orig/src/mysql/Makefile.am	2007-10-25 12:34:43.000000000 +0000
++++ tntdb-0.9.4/src/mysql/Makefile.am	2007-10-25 12:34:55.000000000 +0000
+@@ -10,7 +10,7 @@
+ driver_LTLIBRARIES = tntdb-mysql.la
+ 
+ tntdb_mysql_la_SOURCES = $(sources)
+-tntdb_mysql_la_LDFLAGS = -module -version-info @sonumber@ $(PTHREAD_LIBS) @MYSQL_LDFLAGS@ @SHARED_LIB_FLAG@
++tntdb_mysql_la_LDFLAGS = -module -avoid-version $(PTHREAD_LIBS) @MYSQL_LDFLAGS@ @SHARED_LIB_FLAG@
+ tntdb_mysql_la_LIBADD = $(top_srcdir)/src/libtntdb.la
+ 
+ endif
+diff -r -u tntdb-0.9.4_orig/src/mysql/Makefile.in tntdb-0.9.4/src/mysql/Makefile.in
+--- tntdb-0.9.4_orig/src/mysql/Makefile.in	2007-10-25 12:34:43.000000000 +0000
++++ tntdb-0.9.4/src/mysql/Makefile.in	2007-10-25 12:36:02.000000000 +0000
+@@ -219,7 +219,7 @@
+ AM_CXXFLAGS = $(PTHREAD_CFLAGS)
+ @MAKE_MYSQL_TRUE@driver_LTLIBRARIES = tntdb-mysql.la
+ @MAKE_MYSQL_TRUE@tntdb_mysql_la_SOURCES = $(sources)
+-@MAKE_MYSQL_TRUE@tntdb_mysql_la_LDFLAGS = -module -version-info @sonumber@ $(PTHREAD_LIBS) @MYSQL_LDFLAGS@ @SHARED_LIB_FLAG@
++@MAKE_MYSQL_TRUE@tntdb_mysql_la_LDFLAGS = -module -avoid-version $(PTHREAD_LIBS) @MYSQL_LDFLAGS@ @SHARED_LIB_FLAG@
+ @MAKE_MYSQL_TRUE@tntdb_mysql_la_LIBADD = $(top_srcdir)/src/libtntdb.la
+ all: all-am
+ 
+diff -r -u tntdb-0.9.4_orig/src/oracle/Makefile.am tntdb-0.9.4/src/oracle/Makefile.am
+--- tntdb-0.9.4_orig/src/oracle/Makefile.am	2007-10-25 12:34:42.000000000 +0000
++++ tntdb-0.9.4/src/oracle/Makefile.am	2007-10-25 12:35:05.000000000 +0000
+@@ -19,7 +19,7 @@
+ driver_LTLIBRARIES = tntdb-oracle.la
+ 
+ tntdb_oracle_la_SOURCES = $(sources)
+-tntdb_oracle_la_LDFLAGS = -module -version-info @sonumber@ @SHARED_LIB_FLAG@ $(PTHREAD_LIBS)
++tntdb_oracle_la_LDFLAGS = -module -avoid-version @SHARED_LIB_FLAG@ $(PTHREAD_LIBS)
+ tntdb_oracle_la_LIBADD = $(top_srcdir)/src/libtntdb.la -lclntsh
+ 
+ endif
+diff -r -u tntdb-0.9.4_orig/src/oracle/Makefile.in tntdb-0.9.4/src/oracle/Makefile.in
+--- tntdb-0.9.4_orig/src/oracle/Makefile.in	2007-10-25 12:34:42.000000000 +0000
++++ tntdb-0.9.4/src/oracle/Makefile.in	2007-10-25 12:36:02.000000000 +0000
+@@ -227,7 +227,7 @@
+ AM_CXXFLAGS = $(PTHREAD_CFLAGS)
+ @MAKE_ORACLE_TRUE@driver_LTLIBRARIES = tntdb-oracle.la
+ @MAKE_ORACLE_TRUE@tntdb_oracle_la_SOURCES = $(sources)
+-@MAKE_ORACLE_TRUE@tntdb_oracle_la_LDFLAGS = -module -version-info @sonumber@ @SHARED_LIB_FLAG@ $(PTHREAD_LIBS)
++@MAKE_ORACLE_TRUE@tntdb_oracle_la_LDFLAGS = -module -avoid-version @SHARED_LIB_FLAG@ $(PTHREAD_LIBS)
+ @MAKE_ORACLE_TRUE@tntdb_oracle_la_LIBADD = $(top_srcdir)/src/libtntdb.la -lclntsh
+ all: all-am
+ 
+diff -r -u tntdb-0.9.4_orig/src/postgresql/Makefile.am tntdb-0.9.4/src/postgresql/Makefile.am
+--- tntdb-0.9.4_orig/src/postgresql/Makefile.am	2007-10-25 12:34:42.000000000 +0000
++++ tntdb-0.9.4/src/postgresql/Makefile.am	2007-10-25 12:35:23.000000000 +0000
+@@ -10,7 +10,7 @@
+ driver_LTLIBRARIES = tntdb-postgresql.la
+ 
+ tntdb_postgresql_la_SOURCES = $(sources)
+-tntdb_postgresql_la_LDFLAGS = -module -version-info @sonumber@ $(PTHREAD_LIBS) @PG_LDFLAGS@ @SHARED_LIB_FLAG@
++tntdb_postgresql_la_LDFLAGS = -module -avoid-version $(PTHREAD_LIBS) @PG_LDFLAGS@ @SHARED_LIB_FLAG@
+ tntdb_postgresql_la_LIBADD = $(top_srcdir)/src/libtntdb.la
+ 
+ endif
+diff -r -u tntdb-0.9.4_orig/src/postgresql/Makefile.in tntdb-0.9.4/src/postgresql/Makefile.in
+--- tntdb-0.9.4_orig/src/postgresql/Makefile.in	2007-10-25 12:34:42.000000000 +0000
++++ tntdb-0.9.4/src/postgresql/Makefile.in	2007-10-25 12:36:02.000000000 +0000
+@@ -218,7 +218,7 @@
+ AM_CXXFLAGS = $(PTHREAD_CFLAGS)
+ @MAKE_POSTGRESQL_TRUE@driver_LTLIBRARIES = tntdb-postgresql.la
+ @MAKE_POSTGRESQL_TRUE@tntdb_postgresql_la_SOURCES = $(sources)
+-@MAKE_POSTGRESQL_TRUE@tntdb_postgresql_la_LDFLAGS = -module -version-info @sonumber@ $(PTHREAD_LIBS) @PG_LDFLAGS@ @SHARED_LIB_FLAG@
++@MAKE_POSTGRESQL_TRUE@tntdb_postgresql_la_LDFLAGS = -module -avoid-version $(PTHREAD_LIBS) @PG_LDFLAGS@ @SHARED_LIB_FLAG@
+ @MAKE_POSTGRESQL_TRUE@tntdb_postgresql_la_LIBADD = $(top_srcdir)/src/libtntdb.la
+ all: all-am
+ 
+diff -r -u tntdb-0.9.4_orig/src/sqlite/Makefile.am tntdb-0.9.4/src/sqlite/Makefile.am
+--- tntdb-0.9.4_orig/src/sqlite/Makefile.am	2007-10-25 12:34:43.000000000 +0000
++++ tntdb-0.9.4/src/sqlite/Makefile.am	2007-10-25 12:35:31.000000000 +0000
+@@ -9,7 +9,7 @@
+ driver_LTLIBRARIES = tntdb-sqlite.la
+ 
+ tntdb_sqlite_la_SOURCES = $(sources)
+-tntdb_sqlite_la_LDFLAGS = -module -version-info @sonumber@ $(PTHREAD_LIBS) -lsqlite3 @SHARED_LIB_FLAG@
++tntdb_sqlite_la_LDFLAGS = -module -avoid-version $(PTHREAD_LIBS) -lsqlite3 @SHARED_LIB_FLAG@
+ tntdb_sqlite_la_LIBADD = $(top_srcdir)/src/libtntdb.la
+ 
+ endif
+diff -r -u tntdb-0.9.4_orig/src/sqlite/Makefile.in tntdb-0.9.4/src/sqlite/Makefile.in
+--- tntdb-0.9.4_orig/src/sqlite/Makefile.in	2007-10-25 12:34:43.000000000 +0000
++++ tntdb-0.9.4/src/sqlite/Makefile.in	2007-10-25 12:36:02.000000000 +0000
+@@ -215,7 +215,7 @@
+ AM_CXXFLAGS = $(PTHREAD_CFLAGS)
+ @MAKE_SQLITE_TRUE@driver_LTLIBRARIES = tntdb-sqlite.la
+ @MAKE_SQLITE_TRUE@tntdb_sqlite_la_SOURCES = $(sources)
+-@MAKE_SQLITE_TRUE@tntdb_sqlite_la_LDFLAGS = -module -version-info @sonumber@ $(PTHREAD_LIBS) -lsqlite3 @SHARED_LIB_FLAG@
++@MAKE_SQLITE_TRUE@tntdb_sqlite_la_LDFLAGS = -module -avoid-version $(PTHREAD_LIBS) -lsqlite3 @SHARED_LIB_FLAG@
+ @MAKE_SQLITE_TRUE@tntdb_sqlite_la_LIBADD = $(top_srcdir)/src/libtntdb.la
+ all: all-am
+ 

@@ -1,0 +1,34 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A recursive descent C99 compiler frontend.
+#  cparser is a recursive descent C99 parser written in C99. It contains
+#  a lexer, parser, constructs an AST, and does semantic analysis. It is
+#  currently used as a frontend to the libFirm intermediate representation,
+#  but can be used independently. It supports lots of GNU extensions:
+#  enough to parse Linux/BSD system headers and compile typical C projects
+#  with it. It is able to bootstrap itself, and compiles and runs the spec
+#  CINT2000 without problems.
+#  .
+# URL: http://www.libfirm.org
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=cparser
+version=0.9.5
+release=1
+source=($mirror_sf/cparser/cparser-$version.tar.bz2)
+
+build()
+{
+  cd cparser-$version
+
+  make
+
+  install -d $ROOT/bin
+  install -m 755 build/cparser $ROOT/bin
+
+  install -d $ROOT/share/doc/cparser
+  install -m 755 AUTHOR COPYING NEWS README TODO $ROOT/share/doc/cparser
+}
+
+# EOF

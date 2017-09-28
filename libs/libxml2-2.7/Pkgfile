@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: 
+# URL: 
+# Maintainer: 
+# Depends on: 
+
+name=libxml2
+version=2.7.3
+release=1
+source=(ftp://xmlsoft.org/libxml2/libxml2-$version.tar.gz)
+
+build() 
+{
+  cd libxml2-$version
+
+  rm -f config.sub
+  autoreconf --force --verbose --install
+  
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+  
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

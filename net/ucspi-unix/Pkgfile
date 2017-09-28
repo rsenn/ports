@@ -1,0 +1,43 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: UNIX-domain socket client-server command-line tools
+#  unixclient and unixserver are command-line tools for building UNIX
+#  domain client-server applications. unixclient connects to a UNIX domain
+#  socket and runs a program of your choice. unixserver creates a UNIX
+#  domain socket, waits for incoming connections and, for each connection,
+#  runs a program of your choice.
+#  .
+#  unixclient and unixserver conform to UCSPI, the UNIX Client-Server
+#  Program Interface, using UNIX domain sockets. UCSPI tools are available
+#  for several different networks.
+#  .
+# URL: http://untroubled.org/ucspi-unix/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6
+
+name=ucspi-unix
+version=0.36
+release=1
+source=(http://untroubled.org/ucspi-unix/ucspi-unix-$version.tar.gz
+        ucspi-unix-0.36-no-sysdeps.patch)
+
+build()
+{
+  cd ucspi-unix-$version
+
+  patch -N -p1 -i $SRC/ucspi-unix-0.36-no-sysdeps.patch
+
+  echo "${CC-cc} $CFLAGS -I$prefix/include/bglibs" >conf-cc
+  echo "${CC-cc} $CFLAGS $LDFLAGS -L$prefix/lib/bglibs" >conf-ld
+
+  make unix{client,server,cat}
+
+  install -d $ROOT/bin
+  install -m 755 unix{client,server,cat} $ROOT/bin
+
+  install -d $ROOT/share/man/man1
+  install -m 644 *.1 $ROOT/share/man/man1
+
+  install -d $ROOT/share/doc/ucspi-unix
+  install -m 644 ANNOUNCEMENT COPYING FILES NEWS PROTOCOL README TARGETS TODO VERSION $ROOT/share/doc/ucspi-unix
+}

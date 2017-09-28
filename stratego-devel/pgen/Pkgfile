@@ -1,0 +1,27 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Section: devel
+# Description: Generic pretty-printer package
+# URL: http://www.program-transformation.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=pgen
+version=2.6.1
+release=1
+source=(http://homepages.cwi.nl/~daybuild/releases/pgen-2.6.1.tar.gz)
+
+build()
+{
+  cd pgen-2.6.1
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

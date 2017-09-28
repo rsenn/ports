@@ -1,0 +1,37 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A cross-platform C++ library for asynchronous network programming.
+#  asio is a cross-platform C++ library for network programming that provides
+#  developers with a consistent asynchronous I/O model using a modern C++
+#  approach
+#  .
+# URL: http://asio.sourceforge.net/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=asio-1.0
+version=1.0.0
+release=1
+source=($mirror_sf/asio/asio-$version.tar.bz2)
+
+build()
+{
+  cd asio-$version
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/asio-1.0
+  install -m 644 COPYING INSTALL LICENSE* README $ROOT/share/doc/asio-1.0
+
+  cp -rf doc/* $ROOT/share/doc/asio-1.0
+  cp -rf src/examples $ROOT/share/doc/asio-1.0
+}
+
+# EOF

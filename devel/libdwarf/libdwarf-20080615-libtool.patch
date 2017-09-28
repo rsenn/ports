@@ -1,0 +1,241 @@
+diff -r -u -N -- dwarf-20080615_orig/Makefile.am dwarf-20080615/Makefile.am
+--- dwarf-20080615_orig/Makefile.am	1970-01-01 01:00:00.000000000 +0100
++++ dwarf-20080615/Makefile.am	2008-07-08 05:14:00.000000000 +0200
+@@ -0,0 +1 @@
++SUBDIRS = libdwarf
+diff -r -u -N -- dwarf-20080615_orig/configure.in dwarf-20080615/configure.in
+--- dwarf-20080615_orig/configure.in	1970-01-01 01:00:00.000000000 +0100
++++ dwarf-20080615/configure.in	2008-07-08 05:22:40.000000000 +0200
+@@ -0,0 +1,10 @@
++AC_INIT([dwarf], [20080615])
++AC_CONFIG_AUX_DIR([.])
++AC_CONFIG_MACRO_DIR([m4])
++AM_INIT_AUTOMAKE
++
++AC_CANONICAL_HOST
++
++AC_CONFIG_SUBDIRS([libdwarf])
++
++AC_OUTPUT([Makefile])
+diff -r -u -N -- dwarf-20080615_orig/libdwarf/Makefile.am dwarf-20080615/libdwarf/Makefile.am
+--- dwarf-20080615_orig/libdwarf/Makefile.am	1970-01-01 01:00:00.000000000 +0100
++++ dwarf-20080615/libdwarf/Makefile.am	2008-07-08 05:40:41.000000000 +0200
+@@ -0,0 +1,193 @@
++#
++#
++#  Copyright (C) 2000,2003,2004,2006 Silicon Graphics, Inc.  All Rights Reserved.
++#
++#  This program is free software; you can redistribute it and/or modify it
++#  under the terms of version 2.1 of the GNU Lesser General Public License 
++#  as published by the Free Software Foundation.
++#
++#  This program is distributed in the hope that it would be useful, but
++#  WITHOUT ANY WARRANTY; without even the implied warranty of
++#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
++#
++#  Further, this software is distributed without any warranty that it is
++#  free of the rightful claim of any third person regarding infringement 
++#  or the like.  Any license provided herein, whether implied or 
++#  otherwise, applies only to this software file.  Patent licenses, if
++#  any, provided herein do not apply to combinations of this program with 
++#  other software, or any other product whatsoever.  
++#
++#  You should have received a copy of the GNU Lesser General Public 
++#  License along with this program; if not, write the Free Software 
++#  Foundation, Inc., 51 Franklin Street - Fifth Floor, Boston MA 02110-1301,
++#  USA.
++
++#
++#  Contact information:  Silicon Graphics, Inc., 1500 Crittenden Lane,
++#  Mountain View, CA 94043, or:
++#
++#  http://www.sgi.com
++#
++#  For further information regarding this notice, see:
++#
++#  http://oss.sgi.com/projects/GenInfo/NoticeExplan
++#
++#
++
++#
++#  Makefile for libdwarf
++#  This is made very simple so it should work with
++#  any 'make'.
++#
++
++lib_LTLIBRARIES = libdwarf.la
++
++INCLUDES = -I$(builddir) -I$(srcdir)
++
++libdwarf_la_LIBADD = -lelf
++libdwarf_la_SOURCES = \
++        dwarf_abbrev.c \
++        dwarf_alloc.c \
++        dwarf_arange.c \
++        dwarf_die_deliv.c \
++        dwarf_elf_access.c \
++        dwarf_error.c \
++        dwarf_form.c \
++        dwarf_frame.c \
++        dwarf_frame2.c \
++        dwarf_frame3.c \
++        dwarf_funcs.c \
++        dwarf_global.c \
++        dwarf_init_finish.c  \
++        dwarf_line.c \
++        dwarf_line2.c \
++        dwarf_loc.c \
++        dwarf_original_elf_init.c \
++        dwarf_query.c \
++        dwarf_string.c \
++        dwarf_stubs.c \
++        dwarf_pubtypes.c \
++        dwarf_types.c \
++        dwarf_util.c \
++        dwarf_leb.c \
++        dwarf_vars.c \
++        dwarf_weaks.c \
++        dwarf_addr_finder.c \
++        dwarf_sort_line.c \
++        dwarf_print_lines.c \
++        dwarf_macro.c \
++        malloc_check.c \
++        pro_alloc.c \
++        pro_arange.c \
++        pro_die.c \
++        pro_encode_nm.c \
++        pro_error.c \
++        pro_expr.c \
++        pro_finish.c \
++        pro_forms.c \
++        pro_funcs.c \
++        pro_frame.c \
++        pro_init.c \
++        pro_line.c \
++        pro_reloc.c \
++        pro_reloc_stream.c \
++        pro_reloc_symbolic.c \
++        pro_pubnames.c \
++        pro_section.c \
++        pro_types.c \
++        pro_vars.c \
++        pro_macinfo.c \
++        pro_weaks.c \
++        cmplrs/dwarf_addr_finder.h \
++        dwarf.h \
++        dwarf_abbrev.h \
++        dwarf_alloc.h \
++        dwarf_arange.h \
++        dwarf_base_types.h \
++        dwarf_die_deliv.h \
++        dwarf_elf_access.h \
++        dwarf_error.h \
++        dwarf_frame.h \
++        dwarf_funcs.h \
++        dwarf_global.h \
++        dwarf_incl.h \
++        dwarf_line.h \
++        dwarf_loc.h \
++        dwarf_macro.h \
++        dwarf_opaque.h \
++        dwarf_types.h \
++        dwarf_util.h \
++        dwarf_vars.h \
++        dwarf_weaks.h \
++        malloc_check.h \
++        pro_alloc.h \
++        pro_arange.h \
++        pro_die.h \
++        pro_encode_nm.h \
++        pro_error.h \
++        pro_expr.h \
++        pro_frame.h \
++        pro_incl.h \
++        pro_line.h \
++        pro_macinfo.h \
++        pro_opaque.h \
++        pro_reloc.h \
++        pro_reloc_stream.h \
++        pro_reloc_symbolic.h \
++        pro_section.h \
++        pro_types.h \
++        pro_util.h
++include_HEADERS = \
++        libdwarf.h \
++        libdwarfdefs.h
++#
++# The following are very SGI-centric
++# psroff is just a troff formatter.
++# the .mm files are in ATT/USL/USG mm form.
++#
++
++docbld:pdfbld 
++pdfbld: libdwarf2.1.pdf libdwarf2p.1.pdf dwarf.v2.pdf index.v2.pdf mips_extensions.pdf
++#Oriented to using gsroff now.
++TROFF=/usr/bin/groff
++#TROFFDEV="-T ps"
++TROFFDEV=
++PSTOPDF=/usr/bin/ps2pdf
++# pr expands tabs to spaces: this avoids problems with tab
++# interpretation
++
++# The warning about 'cant break line' is a too-long line used
++# in the table of contents.
++# Ignore the warning (and those like it).
++libdwarf2.1.pdf:  $(BUILD_BASE)/libdwarf2.1.mm
++	-pr -t -e $(BUILD_BASE)/libdwarf2.1.mm \
++		  | tbl | $(TROFF) $(TROFFDEV) -mm >libdwarf2.1.ps
++	$(PSTOPDF) libdwarf2.1.ps libdwarf2.1.pdf
++
++libdwarf2p.1.pdf:  $(BUILD_BASE)/libdwarf2p.1.mm
++	-pr -t -e  $(BUILD_BASE)/libdwarf2p.1.mm \
++		  | tbl | $(TROFF) $(TROFFDEV) -mm >libdwarf2p.1.ps
++	$(PSTOPDF) libdwarf2p.1.ps libdwarf2p.1.pdf
++
++# At present, the newIndex is not usable: we have no tools
++# to build a new index page at the moment.
++
++dwarf.v2.pdf:	$(BUILD_BASE)/dwarf.v2.mm
++	-pic $(BUILD_BASE)/dwarf.v2.mm \
++		  | tbl | $(TROFF) $(TROFFDEV) -mm >dwarf.v2.ps 2> newIndex
++	$(PSTOPDF) dwarf.v2.ps dwarf.v2.pdf
++
++# the index is only useful till the document changes: it is
++# not autmatically correct. It was prepared by tools internal
++# to USL/Novell
++
++index.v2.pdf:  index.v2.mm
++	-pic index.v2.mm | tbl | $(TROFF) $(TROFFDEV) -mm >index.v2.ps
++	$(PSTOPDF) index.v2.ps  index.v2.pdf
++
++
++mips_extensions.pdf: mips_extensions.mm
++	-pr $(TROFFDEV) -e mips_extensions.mm | tbl | \
++                 $(TROFF) $(TROFFDEV) -mm >mips_extensions.ps
++	$(PSTOPDF) mips_extensions.ps  mips_extensions.pdf
++
+diff -r -u -N -- dwarf-20080615_orig/libdwarf/configure.in dwarf-20080615/libdwarf/configure.in
+--- dwarf-20080615_orig/libdwarf/configure.in	2008-07-08 05:03:58.000000000 +0200
++++ dwarf-20080615/libdwarf/configure.in	2008-07-08 05:09:03.000000000 +0200
+@@ -1,13 +1,18 @@
+ dnl Process this file with autoconf to produce a configure script.
+-AC_INIT(libdwarf.h)
++AC_INIT([libdwarf], [20080615], [libdwarf.h])
+ AC_CONFIG_HEADER(config.h)
++AC_CONFIG_AUX_DIR([.])
++AC_CONFIG_MACRO_DIR([m4])
+ 
++AM_INIT_AUTOMAKE
++
+ AC_PROG_CC
+ AC_C_BIGENDIAN
+ AC_GCC_TRADITIONAL
+ AC_PROG_INSTALL
+-AC_CHECK_TOOL(RANLIB, ranlib, :)
+-AC_CHECK_TOOL(AR, ar)
++dnl AC_CHECK_TOOL(RANLIB, ranlib, :)
++dnl AC_CHECK_TOOL(AR, ar)
++AC_PROG_LIBTOOL
+ 
+ dnl AC_ARFLAGS
+ 

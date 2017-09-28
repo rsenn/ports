@@ -1,0 +1,71 @@
+# $Id: Pkgfile,v 1.18 2007/04/22 23:07:53 roman Exp $
+#
+# Package: binutils-static
+# Description: Collection of binary utilities
+#  Includes tools capable of linking and managing archives, including
+#  handling object code, libraries, profile data, and symbol names.
+#  .
+# URL: http://www.gnu.org/software/binutils
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=binutils
+version=2.19.1
+release=1
+source=(ftp://sourceware.org/pub/binutils/releases/binutils-$version.tar.bz2)
+
+build()
+{
+  cd binutils-$version
+
+  # configure the linker
+  case $target in
+    *-linux-gnu)
+      { echo "HOSTING_CRT0='-dynamic-linker $prefix/lib/ld-linux.so.2 $prefix/lib/crt1.o $prefix/lib/crti.o $prefix/$target/lib/crtbegin.o'"
+        echo "HOSTING_LIBS='-L$prefix/lib --start-group $prefix/$target/lib/libgcc.a $prefix/$target/lib/libgcc_eh.a -lc --end-group $prefix/$target/lib/crtend.o $prefix/lib/crtn.o'"
+      } >>ld/configure.host
+      ;;
+    *)
+      ;;
+  esac
+
+  export LDFLAGS="-static"
+
+  ./configure \
+       --host="$host" \
+       --build="$build" \
+       ${target+--target="$target"} \
+       --prefix="$prefix" \
+       --mandir="$prefix/share/man" \
+       --infodir="$prefix/share/info" \
+       --disable-nls \
+       --with-included-gettext \
+       --${static:=enable}-shared \
+       --${shared:=enable}-shared \
+       --with-mmap \
+       --enable-bfd-assembler \
+       --enable-64-bit-bfd \
+       --disable-commonbfdlib \
+       --disable-install-libbfd \
+       --disable-install-libiberty \
+       --with-lib-path="$prefix/lib" \
+       --disable-werror
+
+  make configure-host
+  make LDFLAGS="-all-static" LIB_PATH="$prefix/lib"
+  make DESTDIR="$PKG" install
+
+  cd $ROOT/$target/bin
+
+  for bin in ../../bin/*
+  do
+    ln -sf $bin .
+  done
+
+  cd $ROOT/bin
+  for bin in *
+  do
+    mv $bin $target-$bin
+    ln -s $target-$bin $bin
+  done
+}

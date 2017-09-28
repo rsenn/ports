@@ -1,0 +1,157 @@
+args: -r -u -- rtorrent-0.8.2_orig rtorrent-0.8.2
+diff -r -u -- rtorrent-0.8.2_orig/rak/functional.h rtorrent-0.8.2/rak/functional.h
+--- rtorrent-0.8.2_orig/rak/functional.h	2009-03-01 10:12:46.000000000 +0100
++++ rtorrent-0.8.2/rak/functional.h	2009-03-01 10:55:32.000000000 +0100
+@@ -480,7 +480,7 @@
+   typedef Ret result_type;
+   typedef Ret (Object::*Function)();
+ 
+-  mem_fun0() : m_object(NULL) {}
++  mem_fun0() : m_object(0) {}
+   mem_fun0(Object* o, Function f) : m_object(o), m_function(f) {}
+ 
+   bool is_valid() const { return m_object; }
+@@ -498,7 +498,7 @@
+   typedef Ret result_type;
+   typedef Ret (Object::*Function)() const;
+ 
+-  const_mem_fun0() : m_object(NULL) {}
++  const_mem_fun0() : m_object(0) {}
+   const_mem_fun0(const Object* o, Function f) : m_object(o), m_function(f) {}
+ 
+   bool is_valid() const { return m_object; }
+@@ -516,7 +516,7 @@
+   typedef Ret result_type;
+   typedef Ret (Object::*Function)(Arg1);
+ 
+-  mem_fun1() : m_object(NULL) {}
++  mem_fun1() : m_object(0) {}
+   mem_fun1(Object* o, Function f) : m_object(o), m_function(f) {}
+ 
+   bool is_valid() const { return m_object; }
+@@ -534,7 +534,7 @@
+   typedef Ret result_type;
+   typedef Ret (Object::*Function)(Arg1) const;
+ 
+-  const_mem_fun1() : m_object(NULL) {}
++  const_mem_fun1() : m_object(0) {}
+   const_mem_fun1(const Object* o, Function f) : m_object(o), m_function(f) {}
+ 
+   bool is_valid() const { return m_object; }
+@@ -553,7 +553,7 @@
+   typedef Ret (Object::*Function)(Arg1, Arg2);
+   typedef Object object_type;
+ 
+-  mem_fun2() : m_object(NULL) {}
++  mem_fun2() : m_object(0) {}
+   mem_fun2(Object* o, Function f) : m_object(o), m_function(f) {}
+ 
+   bool         is_valid() const { return m_object; }
+@@ -574,7 +574,7 @@
+   typedef Ret result_type;
+   typedef Ret (Object::*Function)(Arg1, Arg2, Arg3);
+ 
+-  mem_fun3() : m_object(NULL) {}
++  mem_fun3() : m_object(0) {}
+   mem_fun3(Object* o, Function f) : m_object(o), m_function(f) {}
+ 
+   bool is_valid() const { return m_object; }
+diff -r -u -- rtorrent-0.8.2_orig/src/.deps/command_download.Po rtorrent-0.8.2/src/.deps/command_download.Po
+diff -r -u -- rtorrent-0.8.2_orig/src/.deps/command_events.Po rtorrent-0.8.2/src/.deps/command_events.Po
+diff -r -u -- rtorrent-0.8.2_orig/src/.deps/command_file.Po rtorrent-0.8.2/src/.deps/command_file.Po
+diff -r -u -- rtorrent-0.8.2_orig/src/.deps/command_helpers.Po rtorrent-0.8.2/src/.deps/command_helpers.Po
+diff -r -u -- rtorrent-0.8.2_orig/src/.deps/command_local.Po rtorrent-0.8.2/src/.deps/command_local.Po
+diff -r -u -- rtorrent-0.8.2_orig/src/.deps/command_network.Po rtorrent-0.8.2/src/.deps/command_network.Po
+diff -r -u -- rtorrent-0.8.2_orig/src/.deps/command_peer.Po rtorrent-0.8.2/src/.deps/command_peer.Po
+diff -r -u -- rtorrent-0.8.2_orig/src/.deps/command_scheduler.Po rtorrent-0.8.2/src/.deps/command_scheduler.Po
+diff -r -u -- rtorrent-0.8.2_orig/src/.deps/command_tracker.Po rtorrent-0.8.2/src/.deps/command_tracker.Po
+diff -r -u -- rtorrent-0.8.2_orig/src/.deps/command_ui.Po rtorrent-0.8.2/src/.deps/command_ui.Po
+diff -r -u -- rtorrent-0.8.2_orig/src/.deps/control.Po rtorrent-0.8.2/src/.deps/control.Po
+diff -r -u -- rtorrent-0.8.2_orig/src/.deps/globals.Po rtorrent-0.8.2/src/.deps/globals.Po
+diff -r -u -- rtorrent-0.8.2_orig/src/.deps/main.Po rtorrent-0.8.2/src/.deps/main.Po
+diff -r -u -- rtorrent-0.8.2_orig/src/.deps/option_parser.Po rtorrent-0.8.2/src/.deps/option_parser.Po
+diff -r -u -- rtorrent-0.8.2_orig/src/.deps/signal_handler.Po rtorrent-0.8.2/src/.deps/signal_handler.Po
+diff -r -u -- rtorrent-0.8.2_orig/src/command_ui.cc rtorrent-0.8.2/src/command_ui.cc
+--- rtorrent-0.8.2_orig/src/command_ui.cc	2009-03-01 10:12:42.000000000 +0100
++++ rtorrent-0.8.2/src/command_ui.cc	2009-03-01 10:59:13.000000000 +0100
+@@ -36,6 +36,7 @@
+ 
+ #include "config.h"
+ 
++#include <ctime>
+ #include <rak/functional.h>
+ #include <rak/functional_fun.h>
+ #include <sigc++/adaptors/bind.h>
+diff -r -u -- rtorrent-0.8.2_orig/src/display/.deps/text_element_value.Po rtorrent-0.8.2/src/display/.deps/text_element_value.Po
+diff -r -u -- rtorrent-0.8.2_orig/src/display/.deps/window.Po rtorrent-0.8.2/src/display/.deps/window.Po
+diff -r -u -- rtorrent-0.8.2_orig/src/display/.deps/window_download_chunks_seen.Po rtorrent-0.8.2/src/display/.deps/window_download_chunks_seen.Po
+diff -r -u -- rtorrent-0.8.2_orig/src/display/.deps/window_download_list.Po rtorrent-0.8.2/src/display/.deps/window_download_list.Po
+diff -r -u -- rtorrent-0.8.2_orig/src/display/.deps/window_download_statusbar.Po rtorrent-0.8.2/src/display/.deps/window_download_statusbar.Po
+diff -r -u -- rtorrent-0.8.2_orig/src/display/.deps/window_download_transfer_list.Po rtorrent-0.8.2/src/display/.deps/window_download_transfer_list.Po
+diff -r -u -- rtorrent-0.8.2_orig/src/display/.deps/window_file_list.Po rtorrent-0.8.2/src/display/.deps/window_file_list.Po
+diff -r -u -- rtorrent-0.8.2_orig/src/display/.deps/window_http_queue.Po rtorrent-0.8.2/src/display/.deps/window_http_queue.Po
+diff -r -u -- rtorrent-0.8.2_orig/src/display/.deps/window_input.Po rtorrent-0.8.2/src/display/.deps/window_input.Po
+diff -r -u -- rtorrent-0.8.2_orig/src/display/.deps/window_log.Po rtorrent-0.8.2/src/display/.deps/window_log.Po
+diff -r -u -- rtorrent-0.8.2_orig/src/display/.deps/window_log_complete.Po rtorrent-0.8.2/src/display/.deps/window_log_complete.Po
+diff -r -u -- rtorrent-0.8.2_orig/src/display/.deps/window_peer_list.Po rtorrent-0.8.2/src/display/.deps/window_peer_list.Po
+diff -r -u -- rtorrent-0.8.2_orig/src/display/.deps/window_statusbar.Po rtorrent-0.8.2/src/display/.deps/window_statusbar.Po
+diff -r -u -- rtorrent-0.8.2_orig/src/display/.deps/window_string_list.Po rtorrent-0.8.2/src/display/.deps/window_string_list.Po
+diff -r -u -- rtorrent-0.8.2_orig/src/display/.deps/window_text.Po rtorrent-0.8.2/src/display/.deps/window_text.Po
+diff -r -u -- rtorrent-0.8.2_orig/src/display/.deps/window_title.Po rtorrent-0.8.2/src/display/.deps/window_title.Po
+diff -r -u -- rtorrent-0.8.2_orig/src/display/.deps/window_tracker_list.Po rtorrent-0.8.2/src/display/.deps/window_tracker_list.Po
+diff -r -u -- rtorrent-0.8.2_orig/src/display/text_element_value.cc rtorrent-0.8.2/src/display/text_element_value.cc
+--- rtorrent-0.8.2_orig/src/display/text_element_value.cc	2009-03-01 10:12:44.000000000 +0100
++++ rtorrent-0.8.2/src/display/text_element_value.cc	2009-03-01 10:14:14.000000000 +0100
+@@ -39,6 +39,8 @@
+ #include "globals.h"
+ #include "text_element_value.h"
+ 
++#include <ctime>
++
+ namespace display {
+ 
+ // Should be in text_element.cc.
+diff -r -u -- rtorrent-0.8.2_orig/src/input/.deps/bindings.Po rtorrent-0.8.2/src/input/.deps/bindings.Po
+diff -r -u -- rtorrent-0.8.2_orig/src/input/.deps/input_event.Po rtorrent-0.8.2/src/input/.deps/input_event.Po
+diff -r -u -- rtorrent-0.8.2_orig/src/input/.deps/manager.Po rtorrent-0.8.2/src/input/.deps/manager.Po
+diff -r -u -- rtorrent-0.8.2_orig/src/input/.deps/path_input.Po rtorrent-0.8.2/src/input/.deps/path_input.Po
+diff -r -u -- rtorrent-0.8.2_orig/src/input/.deps/text_input.Po rtorrent-0.8.2/src/input/.deps/text_input.Po
+diff -r -u -- rtorrent-0.8.2_orig/src/rpc/.deps/command_map.Po rtorrent-0.8.2/src/rpc/.deps/command_map.Po
+diff -r -u -- rtorrent-0.8.2_orig/src/rpc/.deps/command_scheduler.Po rtorrent-0.8.2/src/rpc/.deps/command_scheduler.Po
+diff -r -u -- rtorrent-0.8.2_orig/src/rpc/.deps/command_scheduler_item.Po rtorrent-0.8.2/src/rpc/.deps/command_scheduler_item.Po
+diff -r -u -- rtorrent-0.8.2_orig/src/rpc/.deps/command_slot.Po rtorrent-0.8.2/src/rpc/.deps/command_slot.Po
+diff -r -u -- rtorrent-0.8.2_orig/src/rpc/.deps/command_variable.Po rtorrent-0.8.2/src/rpc/.deps/command_variable.Po
+diff -r -u -- rtorrent-0.8.2_orig/src/rpc/.deps/exec_file.Po rtorrent-0.8.2/src/rpc/.deps/exec_file.Po
+diff -r -u -- rtorrent-0.8.2_orig/src/rpc/.deps/parse.Po rtorrent-0.8.2/src/rpc/.deps/parse.Po
+diff -r -u -- rtorrent-0.8.2_orig/src/rpc/.deps/parse_commands.Po rtorrent-0.8.2/src/rpc/.deps/parse_commands.Po
+diff -r -u -- rtorrent-0.8.2_orig/src/rpc/.deps/scgi.Po rtorrent-0.8.2/src/rpc/.deps/scgi.Po
+diff -r -u -- rtorrent-0.8.2_orig/src/rpc/.deps/scgi_task.Po rtorrent-0.8.2/src/rpc/.deps/scgi_task.Po
+diff -r -u -- rtorrent-0.8.2_orig/src/rpc/.deps/xmlrpc.Po rtorrent-0.8.2/src/rpc/.deps/xmlrpc.Po
+diff -r -u -- rtorrent-0.8.2_orig/src/rpc/parse.cc rtorrent-0.8.2/src/rpc/parse.cc
+--- rtorrent-0.8.2_orig/src/rpc/parse.cc	2009-03-01 10:12:45.000000000 +0100
++++ rtorrent-0.8.2/src/rpc/parse.cc	2009-03-01 10:54:51.000000000 +0100
+@@ -37,6 +37,7 @@
+ #include "config.h"
+ 
+ #include <locale>
++#include <cstring>
+ #include <rak/path.h>
+ #include <torrent/exceptions.h>
+ 
+diff -r -u -- rtorrent-0.8.2_orig/src/ui/.deps/download.Po rtorrent-0.8.2/src/ui/.deps/download.Po
+diff -r -u -- rtorrent-0.8.2_orig/src/ui/.deps/download_list.Po rtorrent-0.8.2/src/ui/.deps/download_list.Po
+diff -r -u -- rtorrent-0.8.2_orig/src/ui/.deps/element_chunks_seen.Po rtorrent-0.8.2/src/ui/.deps/element_chunks_seen.Po
+diff -r -u -- rtorrent-0.8.2_orig/src/ui/.deps/element_download_list.Po rtorrent-0.8.2/src/ui/.deps/element_download_list.Po
+diff -r -u -- rtorrent-0.8.2_orig/src/ui/.deps/element_file_list.Po rtorrent-0.8.2/src/ui/.deps/element_file_list.Po
+diff -r -u -- rtorrent-0.8.2_orig/src/ui/.deps/element_log_complete.Po rtorrent-0.8.2/src/ui/.deps/element_log_complete.Po
+diff -r -u -- rtorrent-0.8.2_orig/src/ui/.deps/element_menu.Po rtorrent-0.8.2/src/ui/.deps/element_menu.Po
+diff -r -u -- rtorrent-0.8.2_orig/src/ui/.deps/element_peer_list.Po rtorrent-0.8.2/src/ui/.deps/element_peer_list.Po
+diff -r -u -- rtorrent-0.8.2_orig/src/ui/.deps/element_string_list.Po rtorrent-0.8.2/src/ui/.deps/element_string_list.Po
+diff -r -u -- rtorrent-0.8.2_orig/src/ui/.deps/element_text.Po rtorrent-0.8.2/src/ui/.deps/element_text.Po
+diff -r -u -- rtorrent-0.8.2_orig/src/ui/.deps/element_tracker_list.Po rtorrent-0.8.2/src/ui/.deps/element_tracker_list.Po
+diff -r -u -- rtorrent-0.8.2_orig/src/ui/.deps/element_transfer_list.Po rtorrent-0.8.2/src/ui/.deps/element_transfer_list.Po
+diff -r -u -- rtorrent-0.8.2_orig/src/ui/.deps/root.Po rtorrent-0.8.2/src/ui/.deps/root.Po
+diff -r -u -- rtorrent-0.8.2_orig/src/utils/.deps/directory.Po rtorrent-0.8.2/src/utils/.deps/directory.Po
+diff -r -u -- rtorrent-0.8.2_orig/src/utils/.deps/file_status_cache.Po rtorrent-0.8.2/src/utils/.deps/file_status_cache.Po
+diff -r -u -- rtorrent-0.8.2_orig/src/utils/.deps/lockfile.Po rtorrent-0.8.2/src/utils/.deps/lockfile.Po
+diff -r -u -- rtorrent-0.8.2_orig/src/utils/.deps/socket_fd.Po rtorrent-0.8.2/src/utils/.deps/socket_fd.Po

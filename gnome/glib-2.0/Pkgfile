@@ -1,0 +1,87 @@
+# $Id: Pkgfile,v 1.11 2007/04/22 23:07:53 roman Exp $
+#
+# Package: libglib2.0
+# Section: libs
+# Description: The GLib library of C routines.
+#  GLib is a library containing many useful C routines for things such as
+#  toolkit, but has been split off as of the developers' version 1.1.0.
+# URL: http://www.gtk.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libglib2.0-0, libpcre3, libselinux1
+# Recommends: libglib2.0-data
+# Conflicts: libpango1.0-0 (<< 1.11)
+# Split: libglib2.0-dev
+
+name=glib-2.0
+version=2.21.4
+release=1
+source=($mirror_gnome/sources/glib/${version%.*}/glib-$version.tar.bz2
+        glib-2.12.0-nonewline.patch
+        glib-2.12.11-fixes.patch
+        glib-2.17.4-acbootstrap.patch
+        glib-2.17.6-mingw32.patch)
+
+build()
+{
+  cd ${srcdir=$SRC/glib-$version}
+
+  fs_duplicate "$srcdir"
+
+  patch -N -p1 -i $SRC/glib-2.12.0-nonewline.patch
+#  patch -N -p1 -i $SRC/glib-2.17.4-acbootstrap.patch
+#  patch -N -p1 -i $SRC/glib-2.17.6-mingw32.patch
+
+# sh autogen.sh
+#  for dir in . glib/libcharset; do
+#   (set -e
+#    cd $dir
+#    libtoolize --force --copy
+#    aclocal --force
+#    automake --force --copy --foreign --add-missing
+#    aclocal --force
+#    autoconf --force)
+#  done
+
+#  patch -N -p1 -i $SRC/glib-2.12.11-fixes.patch
+
+#  unset CFLAGS
+
+#  (echo "#!/bin/sh" && echo 'echo "$@"') >config.sub
+
+  rm -rf ${builddir=$srcdir/build/$host} && mkdir -p $builddir && cd $builddir
+
+  case $prefix in
+    "/usr") sysconfdir="/etc" localstatedir="/var" ;;
+  esac
+
+  case $CFLAGS in
+    *-ggdb*) debug="yes" ;;
+       *-g*) debug="minimum" ;;
+         *) debug="no" ;;
+  esac
+
+  if set -- $prefix/lib/libpcre.* && [ -e $1 ]; then
+    pcre=system
+  fi
+
+  if set -- $prefix/lib/libpthread.* && [ -e $1 ]; then
+    threads=posix
+  fi
+
+  $srcdir/configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --sysconfdir="${sysconfdir=$prefix/etc}" \
+       --localstatedir="${sysconfdir=$prefix/var}" \
+       --disable-dependency-tracking \
+       ${debug:+--enable-debug="$debug"} \
+       ${pcre:+--with-pcre="$pcre"} \
+       ${threads:+--with-threads="$threads"} \
+       --${fam:=disable}-fam \
+       --${shared:=enable}-shared \
+       --${static:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+}

@@ -1,0 +1,33 @@
+# $Id: Pkgfile,v 1.8 2007/04/22 23:07:53 roman Exp $
+#
+# Description: A simple CGI library.
+#  cgilib is a library that provides a simple programming API to the Common
+#  Gateway Interface (CGI). It features HTTP Redirect, provides read access
+#  to form variables, and sets and reads HTTP cookies.
+# URL: http://www.infodrom.org/projects/cgilib/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=cgilib
+version=0.5
+release=1
+source=(http://www.infodrom.org/projects/cgilib/download/cgilib-$version.tar.gz
+        cgilib-$version-fixes.patch
+        cgilib-$version-shlib.patch
+        cgilib-$version-pkgconfig.patch)
+
+build()
+{
+  cd cgilib-$version
+
+  patch -N -p1 -i $SRC/cgilib-$version-fixes.patch
+  patch -N -p1 -i $SRC/cgilib-$version-shlib.patch
+  patch -N -p1 -i $SRC/cgilib-$version-pkgconfig.patch
+
+  sed -i 's/malloc.h/stdlib.h/' *.c
+
+  make
+  make \
+      DESTDIR="$PKG" prefix="$prefix" \
+      all install
+}

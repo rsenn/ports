@@ -1,0 +1,24 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Tinydns-rrd generates realtime graphs from your tinydns logs by using rrdtool
+# It works well with high traffic DNS servers.
+#
+# URL:  http://develooper.com/code/tinydns-rrd/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: librrds-perl, perl, perl-base
+
+name=tinydns-rrd
+version=0.50
+release=1
+source=(http://develooper.com/code/tinydns-rrd/tinydns-rrd-$version.tar.gz)
+
+build()
+{
+  cd tinydns-rrd-$version
+
+  install -d $ROOT/bin
+  install -m 755 tinydns-rrd $ROOT/bin
+
+  install -d $ROOT/share/doc/tinydns-rrd
+  install -m 644 [A-Z]* $ROOT/share/doc/tinydns-rrd
+}

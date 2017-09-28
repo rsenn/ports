@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A streaming media broadcasting system.
+#  Icecast is a streaming media server which currently supports Ogg Vorbis
+#  and MP3 audio streams. It can be used to create an Internet radio
+#  station or a privately running jukebox and many things in between. It
+#  is very versatile in that new formats can be added relatively easily,
+#  and it supports open standards for communication and interaction.
+# URL: http://www.icecast.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=icecast
+version=2.3.2
+release=1
+source=(http://downloads.xiph.org/releases/icecast/icecast-$version.tar.gz
+        icecast-2.3.1-curl-passwd.patch)
+
+build()
+{
+  cd icecast-$version
+
+#  patch -N -p1 -i $SRC/icecast-2.3.1-curl-passwd.patch
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

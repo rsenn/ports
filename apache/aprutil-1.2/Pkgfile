@@ -1,0 +1,42 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: The Apache Portable Runtime Utility Library
+#  APR is Apache's Portable Runtime Library, designed to be a support library
+#  platform-specific implementations.
+#  APR Util is a utilities library implemented on top of apr, providing
+#  access, xml parsing, and other useful functionality.
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=aprutil-1
+version=1.2.12
+release=1
+source=(http://www.apache.org/dist/apr/apr-util-$version.tar.bz2
+        apr-util-1.2.8-mingw32.patch)
+
+build()
+{
+  cd apr-util-$version
+
+#  patch -N -p1 -i $SRC/apr-util-1.2.8-mingw32.patch
+
+  ./configure \
+      --host="$host" \
+      --build="$build" \
+      --prefix="$prefix" \
+      --datadir="$prefix/share/apr-util-1" \
+      --with-apr="$prefix/bin/apr-1-config" \
+      --with-expat="$prefix" \
+      --with-gdbm="$prefix" \
+      --with-mysql="$prefix" \
+      --with-pgsql="$prefix" \
+      --without-berkeley-db \
+      --with-iconv="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/apr-util-1
+  install -m 644 NOTICE README README.MySQL CHANGES LICENSE $ROOT/share/doc/apr-util-1
+}

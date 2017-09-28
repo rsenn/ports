@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Section: universe/sound
+# Description: BPM measurement software and a music player.
+#  Divine Intervention consists of two programs. The first is a very accurate
+#  BPM measurement tool. The second is a player which can change the tempo
+#  of music. The player allows nudging, forward and backward movement by
+#  measures, and other nice things.
+#  .
+# URL: http://bpmdj.sourceforge.net/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=didj
+version=3.4
+release=1
+source=($mirror_sf/bpmdj/bpmdj-$version.source.tgz)
+
+build()
+{
+  cd bpmdj-$version
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

@@ -1,0 +1,20 @@
+diff -ru libiconv-1.11_orig/src/iconv.c libiconv-1.11/src/iconv.c
+--- libiconv-1.11_orig/src/iconv.c	2007-12-05 12:15:58.000000000 +0100
++++ libiconv-1.11/src/iconv.c	2007-12-05 13:07:53.000000000 +0100
+@@ -797,6 +797,7 @@
+   struct iconv_hooks hooks;
+   int i;
+   int status;
++  FILE* outfile;
+ 
+   set_program_name (argv[0]);
+ #if HAVE_SETLOCALE
+@@ -1037,7 +1038,7 @@
+     hooks.data = NULL;
+     iconvctl(cd, ICONV_SET_HOOKS, &hooks);
+   
+-    FILE* outfile = stdout;
++    outfile = stdout;
+   
+     if(strcmp(output, "-"))
+     {

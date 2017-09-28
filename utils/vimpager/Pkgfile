@@ -1,0 +1,68 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Package: vimpager
+# Section: text
+# Description: A color screen-pager using VIM in read-only mode.
+#  A slightly more sophisticated replacement for less.sh that also supports
+#  being set as the PAGER environment variable.
+#  Displays man pages, perldocs and python documentation properly.
+#  Definitely works on Linux, Solaris and Cygwin. Should work in most other
+#  places, if it detects your "ps" correctly.
+#
+# URL: http://www.vim.org/scripts/script.php?script_id=1723
+# Author: Rafael Kitover <rkitover@io.com>
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, debianutils
+
+name=vimpager
+version=0.8
+release=1
+source=(vimpager-$version.sh)
+
+build()
+{
+  install -d $ROOT/bin
+  install -m 755 $SRC/vimpager-$version.sh $ROOT/bin/vimpager
+}
+
+postinst()
+{
+  case "$1" in
+    configure)
+      update-alternatives --quiet --install /usr/bin/pager pager \
+        /usr/bin/vimpager 80 --slave /usr/share/man/man1/pager.1.gz \
+        pager.1.gz /usr/share/man/man1/vim.1.gz
+      # Purge the debconf database we no longer need.
+      if [ -e /usr/share/debconf/confmodule ]; then
+        . /usr/share/debconf/confmodule
+        db_version 2.0
+        db_purge
+      fi
+    ;;
+
+    abort-upgrade|abort-remove|abort-deconfigure)
+    ;;
+
+    *)
+      echo "postinst called with unknown argument \`$1'" >&2
+      exit 0
+    ;;
+  esac
+}
+
+prerm()
+{
+  case "$1" in
+    remove)
+      update-alternatives --quiet --remove pager /usr/bin/vimpager
+    ;;
+
+    upgrade|failed-upgrade|deconfigure)
+    ;;
+
+    *)
+      echo "prerm called with unknown argument \`$1'" >&2
+      exit 0
+    ;;
+  esac
+}

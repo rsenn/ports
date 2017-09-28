@@ -1,0 +1,25 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Mylene is a command line audio MPEG player
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=mylene
+version=7.62
+release=1
+source=($mirror_sf/mylene/Mylene0fa-$version.tar.gz)
+
+build()
+{
+  cd Mylene0fa-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

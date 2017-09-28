@@ -1,0 +1,25 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Virtual machine software.
+#  Sun xVM VirtualBox, formerly innotek VirtualBox, is a family of x86
+#  virtualization products for enterprise and home use.
+# URL: http://www.virtualbox.org/
+# Maintainer: 
+# Depends on: 
+
+name=VirtualBox
+version=2.1.4
+release=1
+source=(http://download.virtualbox.org/virtualbox/$version/VirtualBox-$version-3-OSE.tar.bz2)
+
+build() 
+{
+  cd VirtualBox-$version
+  
+  ./configure
+  
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

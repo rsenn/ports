@@ -1,0 +1,40 @@
+diff -ru -ru php-4.3.11_orig/sapi/cli/php_cli.c php-4.3.11/sapi/cli/php_cli.c
+--- php-4.3.11_orig/sapi/cli/php_cli.c	2006-06-01 17:24:47.000000000 +0200
++++ php-4.3.11/sapi/cli/php_cli.c	2006-06-01 17:25:21.000000000 +0200
+@@ -91,6 +91,13 @@
+ #define PHP_MODE_STRIP       5
+ #define PHP_MODE_CLI_DIRECT  6
+ 
++#ifdef ZTS
++zend_compiler_globals *compiler_globals;
++zend_executor_globals *executor_globals;
++php_core_globals *core_globals;
++sapi_globals_struct *sapi_globals;
++#endif /* ZTS */
++
+ static char *php_optarg = NULL;
+ static int php_optind = 1;
+ 
+@@ -519,10 +526,6 @@
+ 	int hide_argv = 0;
+ /* end of temporary locals */
+ #ifdef ZTS
+-	zend_compiler_globals *compiler_globals;
+-	zend_executor_globals *executor_globals;
+-	php_core_globals *core_globals;
+-	sapi_globals_struct *sapi_globals;
+ 	void ***tsrm_ls;
+ #endif
+ 
+diff -ru php-4.3.11_orig/sapi/cli/php_cli.c php-4.3.11/sapi/cli/php_cli.c
+--- php-4.3.11_orig/sapi/cli/php_cli.c	2006-06-01 18:05:03.000000000 +0200
++++ php-4.3.11/sapi/cli/php_cli.c	2006-06-01 18:05:17.000000000 +0200
+@@ -318,7 +318,7 @@
+ 
+ /* {{{ sapi_module_struct cli_sapi_module
+  */
+-static sapi_module_struct cli_sapi_module = {
++sapi_module_struct cli_sapi_module = {
+ 	"cli",							/* name */
+ 	"Command Line Interface",    	/* pretty name */
+ 

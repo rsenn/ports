@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: irrKlang is a cross platform audio library designed to be used
+# in games, scientific simulations and similar.
+# It is a high level 2D and 3D cross platform (Windows, Mac OS X, Linux) sound
+# engine and audio library which plays WAV, MP3, OGG, MOD, XM, IT, S3M and
+# more file formats, and is usable in C++ and all .NET languages (C#, VisualBasic.NET, etc). It has all the features known from low level audio libraries as well as lots of useful features like a sophisticated streaming engine, extendable audio reading, single and multithreading modes, 3d audio emulation for low end hardware, a plugin system, multiple rolloff models and more. All this can be accessed via an extremely simple API.
+# URL: http://www.ambiera.com/irrklang/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=irrKlang
+version=1.0.4.zip
+release=1
+source=(http://irrlicht.piskernig.at/irrKlang-$version)
+
+build()
+{
+  cd /tmp/bash.k11770
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

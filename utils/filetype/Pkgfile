@@ -1,0 +1,35 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A file type detection library and application.
+# FileType is a file type detection engine written in C. It will appeal
+# to coders looking for functionality similar to that provided by the
+# 'file' command. FileType is compact (less than 20K binary), efficient,
+# and very portable. FileType is part of the family of software created
+# from the commercial Xamime email filtering project.
+#
+# URL: http://www.pldaniels.com/filetype/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=filetype
+version=0.1.3
+release=1
+source=(http://www.pldaniels.com/filetype/filetype-$version.tar.gz)
+
+build()
+{
+  cd filetype-$version
+
+  sed -i \
+      -e 's,/usr/local,$(PREFIX),g' \
+      -e 's,/man/,/share/man/,g' \
+      -e 's,/usr,$(PREFIX),g' \
+    Makefile
+
+  make CC="${CC-cc}" CFLAGS="$CFLAGS"
+
+  install -d $ROOT/bin
+  install -d $ROOT/share/man/man1
+
+  make PREFIX="$ROOT" install
+}

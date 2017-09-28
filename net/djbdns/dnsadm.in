@@ -1,0 +1,121 @@
+#!@SHELL@
+
+prefix="@prefix@"
+exec_prefix="@prefix@"
+bindir="@bindir@"
+libdir="@libdir@"
+sysconfdir="@sysconfdir@"
+dnsdata="@prefix@/local/tinydns/data"
+
+source $sysconfdir/epiphyte.conf
+source $shelldir/inet
+
+: ${tinydns_user=dns}
+: ${default_ttl=86400}
+
+usage()
+{
+  echo "Usage: ${0##*/} <command> [options]" 1>&2
+  echo 1>&2
+  echo "Valid commands are:" 1>&2
+  echo "  list    [ns|childns|host|host6|alias|alias6|mx]" 1>&2
+  echo "  add     <ns|childns|host|host6|alias|alias6|mx> <name> <address> [ttl]" 1>&2
+  echo "  remove  <ns|childns|host|host6|alias|alias6|mx> <name>" 1>&2
+  echo "  update" 1>&2
+  exit 
+}
+
+if [ $# -le 0 ]; then
+  usage
+fi
+
+tok_ns='.'
+tok_childns='&'
+tok_host='='
+tok_host6='6'
+tok_alias='+'
+tok_alias6='3'
+tok_mx='@'
+
+expr_ns='\.'
+expr_childns='\&'
+expr_host='='
+expr_host6='6'
+expr_alias='+'
+expr_alias6='3'
+expr_mx='@'
+
+eval "tok=\$tok_$2"
+eval "texpr=^\$expr_$2"
+
+case $1 in
+  list)
+    sed -n "/$texpr/ p" "$dnsdata"
+    ;;
+  add)
+    if [ -z "$tok" ]; then
+      echo "Error: Not a valid record type." 1>&2
+      usage
+    elif [ -z "$3" ]; then 
+      echo "Error: No name provided." 1>&2
+      usage
+    elif [ -z "$4" ]; then
+      echo "Error: No address provided." 1>&2
+      usage
+    fi
+    name=$3
+    addr=$4
+    default_ttl=259200
+    ttl='${5:-$default_ttl}'
+
+    case $2 in
+      ns|childns|mx)      
+        if inet_valid "$addr"
+        then
+          line='$tok$name:$addr:a:$ttl'
+        else
+          line='$tok$name::$addr:$ttl'
+        fi
+        ;;
+      alias|alias6)
+        line='$tok$name:$addr'
+        ;;
+      host|host6|mx)
+        line='$tok$name:$addr:a:$ttl'
+        ;;
+    esac
+
+    eval "line=\"$line\""
+    eval "line=\"$line\""
+
+    echo "$line" >>$dnsdata
+    echo "Added record $line"
+    ;;
+  remove)
+    if [ -z "$tok" ]; then
+      echo "Error: Not a valid record type." 1>&2
+      usage
+    elif [ -z "$3" ]; then 
+      echo "Error: No name provided." 1>&2
+      usage
+    fi
+    name=$3
+    addr=$4
+    
+    record=$(grep "$texpr$3:" "$dnsdata")
+    if [ -z "$record" ]; then
+      echo "Error: $tok record for $3 not found." 1>&2
+      exit 1
+    fi
+    sed -i "/$texpr$3:/ d" "$dnsdata"
+    echo "Removed record $record"
+    ;;
+  update)
+    (cd "$(dirname "$dnsdata")" && ${bindir}/tinydns-data 'data')
+    echo "Updated binary cdb at $dnsdata"
+    ;;
+  *)
+    usage
+    exit 1
+    ;;
+esac

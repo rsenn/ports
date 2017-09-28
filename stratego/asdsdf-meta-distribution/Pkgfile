@@ -1,0 +1,37 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: ASF+SDF Meta-Environment
+#  The Meta-Environment is a framework for language development,
+#  source code analysis and source code transformation consisting of:
+#  Syntax analysis tools. Semantic analysis and transformation tools. An
+#  interactive development environment. The Meta-Environment is an open
+#  framework that can be easily extended with third-party components;
+#  can be easily tailored, modified, or extended; is supported by an open
+#  source community. The Meta-Environment is a generalization of the ASF+SDF
+#  Meta-Environment that has been successfully used in a wide variety of
+#  analysis, transformation and renovation projects.
+#  .
+# URL: http://www.meta-environment.org/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=asdsdf-meta-distribution
+version=1.5.3
+release=1
+source=(http://homepages.cwi.nl/~daybuild/releases/asfsdf-meta-distribution-${version}p2.tar.gz)
+
+build()
+{
+  cd asfsdf-meta-asf-sdf-meta_1-5-bundle-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

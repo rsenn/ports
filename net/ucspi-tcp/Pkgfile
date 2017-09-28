@@ -1,0 +1,62 @@
+# $Id: Pkgfile,v 1.8 2007/04/22 23:07:57 roman Exp $
+#
+# Description: TCP client-server command-line tools
+#  The ucspi-tcp distribution contains tcpserver and tcpclient, which are
+#  easy-to-use command-line tools for building TCP client-server applications.
+#  tcpserver waits for incoming connections and, for each connection, runs a
+#  program of your choice. tcpclient makes a TCP connection and runs a program
+#  of your choice. This package includes several sample clients built on top of
+#  tcpclient: who@, date@, finger@, http@, tcpcat, and mconnect. tcpserver and
+#  tcpclient conform to UCSPI, the UNIX Client-Server Program Interface, using
+#  the TCP protocol. UCSPI tools are available for several different networks.
+# .
+# URL: http://cr.yp.to/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6
+
+name=ucspi-tcp
+version=0.88
+release=2
+source=(http://cr.yp.to/ucspi-tcp/ucspi-tcp-0.88.tar.gz
+        ucspi-tcp-conf-home-inst.patch
+        http://smarden.org/pape/djb/manpages/ucspi-tcp-0.88-man.tar.gz
+        http://www.fefe.de/ucspi/ucspi-tcp-0.88-ipv6.diff13.bz2)
+
+#----------------------------------------------------------------------------
+build()
+{
+  cd ucspi-tcp-$version
+  patch -N -p1 -i $SRC/ucspi-tcp-conf-home-inst.patch
+  bzcat $SRC/ucspi-tcp-0.88-ipv6.diff13.bz2 | patch -N -p1
+
+  echo "${CC-cc} $CFLAGS -DPREFIX=\\\"$prefix\\\" -include errno.h" >conf-cc
+  echo "${CC-cc}" >conf-ld
+
+  echo $prefix >conf-home
+  mkdir -p $ROOT
+  echo $ROOT >conf-home-inst
+
+  make setup
+
+  mkdir -p $ROOT/share/man
+  mv -f $ROOT/man/* $ROOT/share/man || true
+  mkdir -p $ROOT/share/man/man1
+  mv -f $SRC/ucspi-tcp-0.88-man/*.1 $ROOT/share/man/man1
+  rm -rf $ROOT/man
+
+  find $PKG -type d -exec chmod 755 '{}' ';'
+}
+
+#----------------------------------------------------------------------------
+#services()
+#{
+#  config_branch 'inetd'       'Services configuration'
+#
+#    config_branch 'tcp'       'tcp daemon complex'
+#    config_end
+#
+#    config_branch 'udp'       'udp daemon complex'
+#    config_end
+#
+#  config_end
+#}

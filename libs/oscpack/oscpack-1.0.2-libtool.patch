@@ -1,0 +1,94 @@
+diff -r -u oscpack_orig/Makefile oscpack/Makefile
+--- oscpack_orig/Makefile	2007-08-14 09:18:18.000000000 +0200
++++ oscpack/Makefile	2007-08-14 09:26:33.000000000 +0200
+@@ -4,7 +4,10 @@
+ # i386 GNU/Linux: OSC_HOST_LITTLE_ENDIAN
+ ENDIANESS=OSC_HOST_LITTLE_ENDIAN
+ 
++LIBTOOL = libtool
+ CXX = g++
++LTCOMPILE = $(LIBTOOL) --mode=compile $(CXX) 
++LTLINK = $(LIBTOOL) --mode=link $(CXX)
+ INCLUDES = -I./
+ COPTS  = -Wall -O3
+ CDEBUG = -Wall -g 
+@@ -12,6 +15,8 @@
+ 
+ PREFIX = /usr/local
+ INSTALL = /usr/bin/install -c
++OS = posix
++VERSION = 1.0.2
+ 
+ #Name definitions
+ UNITTESTS=OscUnitTests
+@@ -22,51 +27,54 @@
+ INCLUDEDIR = oscpack
+ LIBNAME = liboscpack
+ LIBSONAME = $(LIBNAME).so
+-LIBFILENAME = $(LIBSONAME).1.0.2
++LIBFILENAME = $(LIBNAME).la
+ 
+ #Test and example source
+ SENDSOURCES = ./tests/OscSendTests.cpp ./osc/OscOutboundPacketStream.cpp ./osc/OscTypes.cpp ./ip/$(OS)/NetworkingUtils.cpp ./ip/$(OS)/UdpSocket.cpp ./ip/IpEndpointName.cpp
+-SENDOBJECTS = $(SENDSOURCES:.cpp=.o)
++SENDOBJECTS = $(SENDSOURCES:.cpp=.lo)
+ 
+ RECEIVESOURCES = ./tests/OscReceiveTest.cpp ./osc/OscTypes.cpp ./osc/OscReceivedElements.cpp ./osc/OscPrintReceivedElements.cpp ./ip/$(OS)/NetworkingUtils.cpp ./ip/$(OS)/UdpSocket.cpp
+-RECEIVEOBJECTS = $(RECEIVESOURCES:.cpp=.o)
++RECEIVEOBJECTS = $(RECEIVESOURCES:.cpp=.lo)
+ 
+ DUMPSOURCES = ./examples/OscDump.cpp ./osc/OscTypes.cpp ./osc/OscReceivedElements.cpp ./osc/OscPrintReceivedElements.cpp ./ip/$(OS)/NetworkingUtils.cpp ./ip/$(OS)/UdpSocket.cpp
+-DUMPOBJECTS = $(DUMPSOURCES:.cpp=.o)
++DUMPOBJECTS = $(DUMPSOURCES:.cpp=.lo)
+ 
+ UNITTESTSOURCES = ./tests/OscUnitTests.cpp ./osc/OscOutboundPacketStream.cpp ./osc/OscTypes.cpp ./osc/OscReceivedElements.cpp ./osc/OscPrintReceivedElements.cpp
+-UNITTESTOBJECTS = $(UNITTESTSOURCES:.cpp=.o)
++UNITTESTOBJECTS = $(UNITTESTSOURCES:.cpp=.lo)
+ 
+ #Library sources
+ LIBSOURCES = ./ip/IpEndpointName.cpp \
+ 	./ip/$(OS)/NetworkingUtils.cpp ./ip/$(OS)/UdpSocket.cpp\
+ 	./osc/OscOutboundPacketStream.cpp ./osc/OscPrintReceivedElements.cpp ./osc/OscReceivedElements.cpp ./osc/OscTypes.cpp
+-LIBOBJECTS = $(LIBSOURCES:.cpp=.o)
++LIBOBJECTS = $(LIBSOURCES:.cpp=.lo)
+ 
+ all:	unittests send receive dump
+ 
+-unittests : $(UNITTESTOBJECTS)
++unittests : $(UNITTESTOBJECTS) liboscpack.la
+ 	@if [ ! -d bin ] ; then mkdir bin ; fi
+-	$(CXX) -o bin/$(UNITTESTS) $+ $(LIBS) 
+-send : $(SENDOBJECTS)
++	$(LTLINK) -o bin/$(UNITTESTS) $^
++send : $(SENDOBJECTS) liboscpack.la
+ 	@if [ ! -d bin ] ; then mkdir bin ; fi
+-	$(CXX) -o bin/$(SEND) $+ $(LIBS) 
+-receive : $(RECEIVEOBJECTS)
++	$(LTLINK) -o bin/$(SEND) $^
++receive : $(RECEIVEOBJECTS) liboscpack.la
+ 	@if [ ! -d bin ] ; then mkdir bin ; fi
+-	$(CXX) -o bin/$(RECEIVE) $+ $(LIBS) 
+-dump : $(DUMPOBJECTS)
++	$(LTLINK) -o bin/$(RECEIVE) $^
++dump : $(DUMPOBJECTS) liboscpack.la
+ 	@if [ ! -d bin ] ; then mkdir bin ; fi
+-	$(CXX) -o bin/$(DUMP) $+ $(LIBS) 
++	$(LTLINK) -o bin/$(DUMP) $^
+ 
+ clean:
+ 	rm -rf bin $(UNITTESTOBJECTS) $(SENDOBJECTS) $(RECEIVEOBJECTS) $(DUMPOBJECTS) $(LIBOBJECTS) $(LIBFILENAME) include lib oscpack &> /dev/null
+ 
+ $(LIBFILENAME): $(LIBOBJECTS)
+ 	@#GNU/Linux case
+-	$(CXX) -shared -Wl,-soname,$(LIBSONAME) -o $(LIBFILENAME) $(LIBOBJECTS) $(LIBS)
++	$(LTLINK) -shared -rpath $(libdir) -no-undefined -version-info $(subst .,:,$(VERSION)) -o $(LIBFILENAME) $(LIBOBJECTS) $(LIBS)
+ 	@#Mac OS X case
+ 	@#$(CXX) -dynamiclib -Wl,-install_name,$(LIBSONAME) -o $(LIBFILENAME) $(LIBOBJECTS) $(LIBS)
+-	
++
++%.lo: %.cpp
++	$(LTCOMPILE) $(CXXFLAGS) -c -o $@ $<
++
+ lib: $(LIBFILENAME)
+ 
+ #Installs the library on a system global location

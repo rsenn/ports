@@ -1,0 +1,1327 @@
+diff --git a/FILES b/FILES
+index ff24263..e6de6b3 100644
+--- a/FILES
++++ b/FILES
+@@ -8,8 +8,6 @@ Makefile.lib.sun
+ Makefile.prog
+ Makefile.wat
+ README
+-SP.dsw
+-SP.mak
+ VERSION
+ all/README
+ doc/Makefile
+@@ -378,7 +376,6 @@ lib/jis0201.h
+ lib/jis0208.h
+ lib/jis0212.h
+ lib/ksc5601.h
+-lib/lib.dsp
+ lib/lib.rc
+ lib/memmove.c
+ lib/mkversion.pl
+@@ -414,7 +411,6 @@ nsgmls/SgmlsEventHandler.h
+ nsgmls/StringSet.cxx
+ nsgmls/StringSet.h
+ nsgmls/nsgmls.cxx
+-nsgmls/nsgmls.dsp
+ nsgmls/nsgmls.rc
+ nsgmls/nsgmls_inst.cxx
+ nsgmls/nsgmls_inst.m4
+@@ -422,7 +418,6 @@ sgmlnorm/Makefile.sub
+ sgmlnorm/SGMLGenerator.cxx
+ sgmlnorm/SGMLGenerator.h
+ sgmlnorm/sgmlnorm.cxx
+-sgmlnorm/sgmlnorm.dsp
+ spam/CopyEventHandler.cxx
+ spam/CopyEventHandler.h
+ spam/MarkupEventHandler.cxx
+@@ -432,14 +427,11 @@ spam/SpamMessages.msg
+ spam/SpamMessages.rc
+ spam/Makefile.sub
+ spam/spam.cxx
+-spam/spam.dsp
+ spam/spam.rc
+ spam/spam_inst.cxx
+ spam/spam_inst.m4
+ spent/Makefile.sub
+ spent/spent.cxx
+-spent/spent.dsp
+-sp-generate.mak
+ sunfix.sh
+ sx/Makefile.sub
+ sx/SxMessages.h
+@@ -451,7 +443,6 @@ sx/XmlOutputMessages.h
+ sx/XmlOutputMessages.msg
+ sx/XmlOutputMessages.rc
+ sx/sx.cxx
+-sx/sx.dsp
+ sx/sx.rc
+ sx/sx_inst.cxx
+ sx/sx_inst.m4
+diff --git a/Makefile.comm.in b/Makefile.comm.in
+index 1274d56..174cf4b 100644
+--- a/Makefile.comm.in
++++ b/Makefile.comm.in
+@@ -17,6 +17,8 @@ CXX=@CXX@
+ CC=@CC@
+ M4=@M4@
+ PERL=@PERL@
++# needed by libtool
++top_builddir=$(TOP)
+ LIBTOOL=@LIBTOOL@
+ INSTALL=@INSTALL@
+ 
+diff --git a/Makefile.in b/Makefile.in
+index e6ad8f1..3ea59e7 100644
+--- a/Makefile.in
++++ b/Makefile.in
+@@ -15,12 +15,16 @@ exec_prefix=@exec_prefix@
+ srcdir=@srcdir@
+ bindir=@bindir@
+ 
++# needed by libtool
++top_builddir=$(TOP)
++
+ LIBTOOL=@LIBTOOL@
+ 
+ LIBDIRS=lib grove spgrove style
+ PROGDIRS=nsgmls spam sgmlnorm spent jade sx
+ dodirs=$(LIBDIRS) $(PROGDIRS)
+ 
++
+ # Automatic template instantiation can cause compilers to generate
+ # various extra files; the clean target won't delete these.
+ TARGETS=all install depend gen clean pure
+@@ -44,6 +48,8 @@ $(LIBDIRS): FORCE
+ 		-f $$srcdir/../Makefile.comm -f $$srcdir/Makefile.sub \
+ 	        -f $$srcdir/../Makefile.lib -f $$srcdir/Makefile.dep \
+ 		Makefile.lt; \
++	test -d .libs || mkdir .libs; \
++	test -f .libs/.libs || ln -sf . .libs/.libs; \
+ 	$(MAKE) srcdir=$$srcdir VPATH=$$srcdir \
+ 		-f $$srcdir/../Makefile.comm -f $$srcdir/Makefile.sub \
+ 		-f $$srcdir/Makefile.lt -f $$srcdir/../Makefile.lib \
+diff --git a/Makefile.jade b/Makefile.jade
+new file mode 100644
+index 0000000..54eb472
+--- /dev/null
++++ b/Makefile.jade
+@@ -0,0 +1,8 @@
++sp_srcdir=.
++XPROGDIRS=jade
++XLIBDIRS=grove spgrove style
++include $(sp_srcdir)/Makefile
++# Use -DJADE_MIF to include the MIF backend
++XDEFINES=-DSP_MULTI_BYTE -DJADE_MIF
++XLIBS=-lm
++srcdir=$(sp_srcdir)
+diff --git a/Makefile.lib.in b/Makefile.lib.in
+index f718065..0b411cf 100644
+--- a/Makefile.lib.in
++++ b/Makefile.lib.in
+@@ -9,6 +9,8 @@ LTVERSION=@LTVERSION@
+ 
+ CLEANFILES=-r lib$(LIB).la $(OBJS) $(COBJS) $(LT_OBJS) core .libs Makefile.lt
+ 
++LIB_THREADS=@LIB_THREADS@
++
+ all: lib$(LIB).la
+ pure: all
+ 
+@@ -17,7 +19,7 @@ Makefile.lt:
+ 
+ lib$(LIB).la: $(LT_OBJS)
+ 	$(LIBTOOL) --mode=link $(CC) -o lib$(LIB).la $(LT_OBJS) \
+-	    -rpath $(libdir) -version-info $(LTVERSION)
++	    -rpath $(libdir) -version-info $(LTVERSION) $(DEPLIBS)
+ 
+ install:
+ 	$(LIBTOOL) --mode=install $(INSTALL) lib$(LIB).la $(libdir)
+diff --git a/VERSION b/VERSION
+index 31e5c84..d0149fe 100644
+--- a/VERSION
++++ b/VERSION
+@@ -1 +1 @@
+-1.3.3
++1.3.4
+diff --git a/autogen.sh b/autogen.sh
+new file mode 100755
+index 0000000..d071f01
+--- /dev/null
++++ b/autogen.sh
+@@ -0,0 +1,7 @@
++#!/bin/sh
++#
++# 20081205
++
++libtoolize --force --copy --install
++aclocal --force
++autoconf --force
+diff --git a/configure.in b/configure.in
+new file mode 100644
+index 0000000..3a0cd5d
+--- /dev/null
++++ b/configure.in
+@@ -0,0 +1,196 @@
++dnl
++dnl  configure.in
++dnl
++AC_REVISION($Id: configure.in,v 1.3 2001/10/14 20:27:45 adam Exp $)
++dnl
++dnl  Process this file with autoconf to produce a configure script.
++dnl
++dnl  Copyright (C) 1998 Cees A. de Groot
++dnl
++
++dnl
++dnl  Credits: this autoconf script was largely "inspired" <g> by the
++dnl  autoconf script around SP made by Henry Thompson.
++dnl
++AC_INIT(dsssl)
++AC_CONFIG_AUX_DIR(config)
++TOP=`pwd`
++AC_SUBST(TOP)
++
++if test "$CXXFLAGS" = ""; then 
++  CXXFLAGS="-O2"
++fi
++
++LTVERSION=`cat VERSION | cut -d'.' -f1,2 | sed 's/\./:/g'`
++AC_SUBST(LTVERSION)
++
++dnl
++dnl  Backup original Makefiles, people may want to revert to it if
++dnl  configure doesn't work.
++dnl
++echo 'saving distribution makefiles...'
++test ! -f Makefile.dist && cp Makefile Makefile.dist
++test ! -f Makefile.lib.dist && cp Makefile.lib Makefile.lib.dist
++test ! -f Makefile.prog.dist && cp Makefile.prog Makefile.prog.dist
++test ! -f Makefile.comm.dist && cp Makefile.comm Makefile.comm.dist
++
++dnl
++dnl  Check for programs
++dnl
++AC_PROG_CC
++AC_PROG_INSTALL
++AC_PROG_LN_S
++AC_PROG_CXX
++AC_PROG_CXXCPP
++AC_PATH_PROGS(M4, gm4 gnum4 m4, m4)
++AC_PATH_PROGS(PERL, perl, perl)
++test "$INSTALL" = "./config/install.sh -c" && INSTALL=`pwd`"/config/install.sh -c"
++
++dnl
++dnl  Stuff special to GNU C++
++dnl
++if test "$GXX"
++then
++  CXXFLAGS="$CXXFLAGS -fno-implicit-templates"
++fi
++
++dnl
++dnl  Checks for header files.
++dnl
++AC_HEADER_STDC
++AC_CHECK_HEADERS(limits.h)
++
++dnl
++dnl  Checks for typedefs, structures, and compiler characteristics.
++dnl
++AC_C_CONST
++AC_C_INLINE
++AC_TYPE_SIZE_T
++AC_STRUCT_ST_BLKSIZE
++AC_CACHE_CHECK(for sig_atomic_t in signal.h,
++    ac_cv_have_sig_atomic_t,
++    AC_TRY_LINK([#include <signal.h>],sig_atomic_t x;,
++	ac_cv_have_sig_atomic_t=yes,
++	ac_cv_have_sig_atomic_t=no))
++if test "$ac_cv_have_sig_atomic_t" = "no"
++then
++    AC_CHECK_TYPE(sig_atomic_t,int)
++fi
++
++dnl
++dnl the following tests require c++, not c; note that if you switch this
++dnl earlier, AC_C_CONST will fail, at least
++dnl
++AC_LANG_CPLUSPLUS
++
++AC_CACHE_CHECK(support for bool,
++    ac_cv_typedef_bool,
++    AC_TRY_LINK(,bool x; x=(false | true);,
++       	ac_cv_typedef_bool=yes,
++	ac_cv_typedef_bool=no))
++if test "$ac_cv_typedef_bool" = "yes"
++then
++    AC_DEFINE(SP_HAVE_BOOL)
++fi
++
++dnl
++dnl  Checks for library functions.
++dnl 
++AC_CHECK_FUNC(memmove,,[AC_LIBOBJ([memmove])])
++AC_CHECK_FUNC(strerror,,[AC_LIBOBJ([strerror])])
++dnl this source file doesn't exist
++dnl AC_CHECK_FUNC(strtoul,,[AC_LIBOBJ([strtoul])])
++
++dnl AC_CHECK_FUNC(setlocale,AC_DEFINE(SP_HAVE_LOCALE))
++dnl AC_CHECK_LIB(intl,gettext,AC_DEFINE(SP_HAVE_GETTEXT) LIBS="$LIBS -lintl")
++
++dnl
++dnl Check for thread support.
++AC_CHECK_LIB(threads,cthread_fork,LIB_THREADS="-lthreads",LIB_THREADS="")
++AC_SUBST(LIB_THREADS)
++
++dnl 
++dnl  ANSI templates
++dnl
++AC_CACHE_CHECK(for ANSI template instantiation,
++               ac_cv_c_template_ansi,
++               AC_TRY_LINK([
++class foo {
++};
++
++template<class T> class test {
++public:
++ T *data();};
++template class test<foo>;
++],,ac_cv_c_template_ansi=yes,
++   ac_cv_c_template_ansi=no))
++if test "$ac_cv_c_template_ansi" = "yes"
++ then
++  AC_DEFINE(SP_ANSI_CLASS_INST)
++fi
++
++dnl
++dnl  HTTP support
++dnl
++AC_ARG_ENABLE(http,
++[  --enable-http           bind in support for http],
++    if test $enableval
++    then
++	AC_DEFINE(SP_HAVE_SOCKET)
++	AC_CHECK_LIB(nsl,main,LIBS="$LIBS -lnsl")
++	AC_CHECK_LIB(socket,main,LIBS="$LIBS -lsocket")
++	AC_MSG_CHECKING(h_errno in netdb.h)
++	AC_EGREP_HEADER(h_errno,netdb.h,
++	    AC_MSG_RESULT(yes),
++	    AC_DEFINE(SP_DECLARE_H_ERRNO)
++	    AC_MSG_RESULT(no))
++    fi)
++
++dnl
++dnl  Framemaker support
++dnl
++AC_ARG_ENABLE(mif,
++[  --enable-mif            include support for FrameMaker MIF output],
++    if test $enableval
++    then
++	AC_DEFINE(JADE_MIF)
++    fi)
++
++dnl
++dnl  HTML backend support
++dnl
++AC_ARG_ENABLE(html,
++[  --enable-html           include support for HTML output],
++    if test $enableval
++    then
++	AC_DEFINE(JADE_HTML)
++    fi)
++
++
++dnl 
++dnl  Other options
++dnl
++AC_DEFINE(SP_MULTI_BYTE)
++AC_ARG_ENABLE(default-catalog,
++[  --enable-default-catalog=pathlist
++                          provide one or more default catalog files or
++                          sysids, e.g. /usr/local/lib/sgml/catalog],
++              if test $enableval
++               then
++                AC_DEFINE_UNQUOTED(SGML_CATALOG_FILES_DEFAULT,"$enableval")
++              fi)
++AC_ARG_ENABLE(default-search-path,
++[  --enable-default-search-path=pathlist
++                          provide a default value for SGML_SEARCH_PATH],
++    if test $enableval
++    then
++	AC_DEFINE_UNQUOTED(SGML_SEARCH_PATH_DEFAULT,"$enableval")
++    fi)
++
++dnl AC_SUBST(LIBOBJS)
++
++AC_PROG_CC(g++)
++AC_PROG_LIBTOOL
++
++AC_OUTPUT(Makefile Makefile.lib Makefile.prog Makefile.comm)
++
+diff --git a/grove/Makefile.sub b/grove/Makefile.sub
+index aae5e8e..5facc12 100644
+--- a/grove/Makefile.sub
++++ b/grove/Makefile.sub
+@@ -1,2 +1,3 @@
+ LIB=grove
++DEPLIBS=-lm
+ OBJS=Node.o LocNode.o
+diff --git a/include/Attribute.h b/include/Attribute.h
+index 5f65e7a..57a335f 100644
+--- a/include/Attribute.h
++++ b/include/Attribute.h
+@@ -25,12 +25,32 @@ namespace SP_NAMESPACE {
+ class Entity;
+ class Notation;
+ class DeclaredValue;
+-class AttributeValue;
+ class TokenizedAttributeValue;
+ class AttributeSemantics;
+ class AttributeContext;
+ class Syntax;
+ 
++class SP_API AttributeValue : public Resource {
++public:
++  enum Type {
++    implied,
++    cdata,
++    tokenized
++    };
++  AttributeValue();
++  virtual ~AttributeValue();
++  virtual AttributeSemantics *makeSemantics(const DeclaredValue *,
++					    AttributeContext &,
++					    const StringC &,
++					    unsigned &,
++					    unsigned &) const;
++  virtual Type info(const Text *&, const StringC *&) const = 0;
++  virtual const Text *text() const;
++  virtual Boolean recoverUnquoted(const StringC &, const Location &,
++				  AttributeContext &, const StringC &);
++  static Boolean handleAsUnterminated(const Text &, AttributeContext &);
++};
++
+ class SP_API AttributeDefinitionDesc {
+ public:
+   AttributeDefinitionDesc() { }
+@@ -373,27 +393,6 @@ private:
+   ConstPtr<Notation> notation_;
+ };
+ 
+-class SP_API AttributeValue : public Resource {
+-public:
+-  enum Type {
+-    implied,
+-    cdata,
+-    tokenized
+-    };
+-  AttributeValue();
+-  virtual ~AttributeValue();
+-  virtual AttributeSemantics *makeSemantics(const DeclaredValue *,
+-					    AttributeContext &,
+-					    const StringC &,
+-					    unsigned &,
+-					    unsigned &) const;
+-  virtual Type info(const Text *&, const StringC *&) const = 0;
+-  virtual const Text *text() const;
+-  virtual Boolean recoverUnquoted(const StringC &, const Location &,
+-				  AttributeContext &, const StringC &);
+-  static Boolean handleAsUnterminated(const Text &, AttributeContext &);
+-};
+-
+ class SP_API ImpliedAttributeValue : public AttributeValue {
+ public:
+   ImpliedAttributeValue();
+diff --git a/include/CharMap.cxx b/include/CharMap.cxx
+index 9e27082..5fde9ba 100644
+--- a/include/CharMap.cxx
++++ b/include/CharMap.cxx
+@@ -77,7 +77,7 @@ void CharMap<T>::setRange(Char from, Char to, T val)
+ 	// Set a complete page.
+ 	CharMapPage<T> &pg = pages_[from >> (CharMapBits::level2 + CharMapBits::level3)];
+ 	pg.value = val;
+-	delete pg.values;
++	delete [] pg.values;
+ 	pg.values = 0;
+ 	from += (1 << (CharMapBits::level2 + CharMapBits::level3)) - 1;
+       }
+@@ -87,7 +87,7 @@ void CharMap<T>::setRange(Char from, Char to, T val)
+ 	if (pg.values) {
+ 	  CharMapColumn<T> &column = pg.values[(from >> CharMapBits::level3) & ((1 << CharMapBits::level2) - 1)];
+ 	  column.value = val;
+-	  delete column.values;
++	  delete [] column.values;
+ 	  column.values = 0;
+ 	}
+ 	else if (val != pg.value) {
+diff --git a/include/config.h b/include/config.h
+index 7e43b05..1da45c1 100644
+--- a/include/config.h
++++ b/include/config.h
+@@ -29,7 +29,12 @@
+ #define SP_NO_STD_NAMESPACE
+ #undef SP_NEW_H_MISSING
+ #endif
+-
++#if __GNUC__ > 2 
++#define SP_HAVE_TYPENAME
++#endif
++#if __GNUC__ > 3
++#undef SP_NO_STD_NAMESPACE
++#endif
+ #endif /* __GNUG__ */
+ 
+ #if defined(sun) || defined(__sun)
+diff --git a/jade/MifFOTBuilder_inst.cxx b/jade/MifFOTBuilder_inst.cxx
+index 1a04744..c98ede0 100644
+--- a/jade/MifFOTBuilder_inst.cxx
++++ b/jade/MifFOTBuilder_inst.cxx
+@@ -371,6 +371,7 @@ typedef Vector<MifDoc::CrossRefInfo> Dummy_26;
+ #endif
+ #endif
+ #endif
++#if defined(__GNUC__) && __GNUC__ < 3 &&  __GNUC_MINOR__ < 95 
+ #ifdef __DECCXX
+ #pragma define_template Vector<MifDoc::ElementSet::SgmlIdInfo*>
+ #else
+@@ -384,6 +385,7 @@ typedef Vector<MifDoc::ElementSet::SgmlIdInfo*> Dummy_27;
+ #endif
+ #endif
+ #endif
++#endif
+ #ifdef __DECCXX
+ #pragma define_template PointerTable<MifDoc::Ruling*, String<char>, StringHash, MifDoc::Ruling>
+ #else
+diff --git a/jade/MifFOTBuilder_inst.m4 b/jade/MifFOTBuilder_inst.m4
+index 1255ad6..a4f1be5 100644
+--- a/jade/MifFOTBuilder_inst.m4
++++ b/jade/MifFOTBuilder_inst.m4
+@@ -39,7 +39,9 @@ __instantiate(Vector<MifDoc::Frame>)
+ __instantiate(Vector<MifDoc::Object*>)
+ __instantiate(Vector<MifDoc::T_XY>)
+ __instantiate(Vector<MifDoc::CrossRefInfo>)
++#if defined(__GNUC__) && __GNUC__ < 3 &&  __GNUC_MINOR__ < 95 
+ __instantiate(Vector<MifDoc::ElementSet::SgmlIdInfo*>)
++#endif
+ __instantiate(`PointerTable<MifDoc::Ruling*, String<char>, StringHash, MifDoc::Ruling>')
+ __instantiate(`PointerTableIter<MifDoc::Ruling*, String<char>, StringHash, MifDoc::Ruling>')
+ __instantiate(Vector<MifDoc::Ruling*>)
+diff --git a/jade/TeXFOTBuilder.cxx b/jade/TeXFOTBuilder.cxx
+index dfb9b38..df609da 100644
+--- a/jade/TeXFOTBuilder.cxx
++++ b/jade/TeXFOTBuilder.cxx
+@@ -784,6 +784,7 @@ private:
+   StrOutputByteStream stringout_;
+   Messenger *mgr_;
+   bool preserveSdata_;
++  int inMath_;
+ 
+   Vector<size_t> DisplayBoxLevels;
+   Vector<Format> FormatStack;
+@@ -1711,7 +1712,7 @@ FOTBuilder *makeTeXFOTBuilder(OutputByteStream *os, Messenger *mgr,
+ ////////////////////////////////////////////////////////////////////////
+ 
+ TeXFOTBuilder::TeXFOTBuilder(OutputByteStream *o, Messenger *mgr)
+-: fileout_(o), mgr_(mgr), CurOs( NULL ), preserveSdata_(1)
++: fileout_(o), mgr_(mgr), CurOs( NULL ), preserveSdata_(1), inMath_(0)
+ {
+   #ifdef TEXDEBUG
+     CurInstance = this;
+@@ -1768,6 +1769,14 @@ void TeXFOTBuilder::characters(const Char *s, size_t n)
+ 	break;
+       case '\n':
+ 	break;
++      case '-':
++      case '<':
++      case '>':
++        os() << char(*s);   
++	if (!inMath_)
++          os() << "\\/"; // break ligatures
++        break;
++
+       }
+     }
+   }
+@@ -2347,12 +2356,14 @@ void TeXFOTBuilder::endTablePartFooter()
+ 
+ void TeXFOTBuilder::startMathSequence()
+ {
++  inMath_++;
+   startGroup("MathSeq");
+ }
+ 
+ void TeXFOTBuilder::endMathSequence()
+ {
+   endGroup("MathSeq");
++  inMath_++;
+ }
+ 
+ void TeXFOTBuilder::startFractionSerial()
+diff --git a/lib/Attribute.cxx b/lib/Attribute.cxx
+index 48ec11d..b18c705 100644
+--- a/lib/Attribute.cxx
++++ b/lib/Attribute.cxx
+@@ -1140,12 +1140,14 @@ void AttributeList::finish(AttributeContext &context)
+     if (!vec_[i].specified()) {
+       ConstPtr<AttributeValue> value
+ 	= def(i)->makeMissingValue(context);
+-      vec_[i].setValue(value);
+-      if (!value.isNull())
+-	vec_[i].setSemantics(def(i)->makeSemantics(value.pointer(),
+-						   context,
+-						   nIdrefs_,
+-						   nEntityNames_));
++      if (!conref_ || def_->notationIndex() != i) {
++	vec_[i].setValue(value);
++        if (!value.isNull())
++      	  vec_[i].setSemantics(def(i)->makeSemantics(value.pointer(),
++						     context,
++						     nIdrefs_,
++						     nEntityNames_));
++      }
+     }
+   const Syntax &syntax = context.attributeSyntax();
+   if (nIdrefs_ > syntax.grpcnt())
+diff --git a/lib/Makefile.sub b/lib/Makefile.sub
+index 8e9ef0f..fa767d6 100644
+--- a/lib/Makefile.sub
++++ b/lib/Makefile.sub
+@@ -1,5 +1,6 @@
+ LIB=sp
+ INCLUDE=-I$(srcdir)/../generic
++DEPLIBS=-lm
+ MSGGENFLAGS=-l
+ COMMON_OBJS=Allocator.o Link.o IListBase.o TypeId.o assert.o
+ ENTMGR_OBJS=CharsetInfo.o EntityCatalog.o EntityDecl.o EntityManager.o \
+diff --git a/lib/SOEntityCatalog.cxx b/lib/SOEntityCatalog.cxx
+index 6a66bdd..4769301 100644
+--- a/lib/SOEntityCatalog.cxx
++++ b/lib/SOEntityCatalog.cxx
+@@ -762,6 +762,7 @@ CatalogParser::CatalogParser(const CharsetInfo &charset)
+   static const char ucletters[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+   // minimum data other than lcletter, ucletter
+   static const char minChars[] = "0123456789-.'()+,/:=?";
++  static const char wwwMinChars[] = { 33, 35, 36, 37, 42, 59, 64, 95, 0 };
+   static const char sChars[] = " \n\r\t";
+   categoryTable_.setChar(0, nul);
+   const char *p;
+@@ -777,6 +778,12 @@ CatalogParser::CatalogParser(const CharsetInfo &charset)
+     categoryTable_.setChar(charset.execToDesc(*p), s);
+   for (p = minChars; *p; p++)
+     categoryTable_.setChar(charset.execToDesc(*p), min);
++  for (p = wwwMinChars; *p; p++) {
++    WideChar c;
++    ISet<WideChar> set;
++    if (charset.univToDesc(*p, c, set) > 0 && c <= Char(-1))
++      categoryTable_.setChar(Char(c), min);
++  }
+   categoryTable_.setChar(charset.execToDesc('\''), lita);
+   categoryTable_.setChar(charset.execToDesc('"'), lit);
+   minus_ = charset.execToDesc('-');
+@@ -976,7 +983,7 @@ void CatalogParser::parseDelegate()
+ 
+ void CatalogParser::parseDtddecl()
+ {
+-  message(CatalogMessages::dtddeclNotSupported);
++  // message(CatalogMessages::dtddeclNotSupported);
+   if (parseParam(minimumLiteral) != literalParam) {
+     message(CatalogMessages::literalExpected);
+     return;
+diff --git a/lib/WinApp.cxx b/lib/WinApp.cxx
+index a6f3939..efff0b7 100644
+--- a/lib/WinApp.cxx
++++ b/lib/WinApp.cxx
+@@ -187,7 +187,7 @@ void WinApp::setRegistry(const char *name, const StringC &value)
+   buf.resize(len + 1);
+   WideCharToMultiByte(CP_ACP, 0, value.data(), value.size(), buf.begin(), len, 0, 0);
+   buf[len] = '\0';
+-  RegSetValue(hk, name, REG_SZ, buf.data(), len);
++  RegSetValueA(hk, name, REG_SZ, buf.data(), len);
+   RegCloseKey(hk);
+ }
+ 
+diff --git a/lib/XMLCodingSystem.cxx b/lib/XMLCodingSystem.cxx
+index c3f34bd..e12eb2a 100644
+--- a/lib/XMLCodingSystem.cxx
++++ b/lib/XMLCodingSystem.cxx
+@@ -224,6 +224,8 @@ size_t XMLDecoder::decode(Char *to, const char *from, size_t fromLen,
+   size_t n = p - to;
+   if (phase_ == phaseFinish && fromLen > 0)
+     n += subDecoder_->decode(p, from, fromLen, rest);
++  else
++    *rest = from;
+   return n;
+ }
+ 
+diff --git a/lib/assert.cxx b/lib/assert.cxx
+index 41661eb..33de2c9 100644
+--- a/lib/assert.cxx
++++ b/lib/assert.cxx
+@@ -6,7 +6,7 @@
+ #include "macros.h"
+ 
+ #ifdef __GNUG__
+-void exit(int) __attribute__((noreturn));
++void exit (int __status) __THROW __attribute__ ((__noreturn__));
+ #endif
+ 
+ #ifdef SP_NAMESPACE
+diff --git a/lib/entmgr_inst.cxx b/lib/entmgr_inst.cxx
+index c98a895..e0c31a1 100644
+--- a/lib/entmgr_inst.cxx
++++ b/lib/entmgr_inst.cxx
+@@ -429,6 +429,7 @@ typedef Vector<StringC> Dummy_29;
+ #endif
+ #endif
+ #endif
++#if 0
+ #ifdef __DECCXX
+ #pragma define_template Vector<String<EquivCode> >
+ #else
+@@ -442,6 +443,7 @@ typedef Vector<String<EquivCode> > Dummy_30;
+ #endif
+ #endif
+ #endif
++#endif
+ #ifdef __DECCXX
+ #pragma define_template Owner<ExternalInfo>
+ #else
+@@ -559,6 +561,7 @@ typedef SharedXcharMap<PackedBoolean> Dummy_39;
+ #endif
+ #endif
+ #endif
++#if defined(__GNUC__) && __GNUC__ < 3 &&  __GNUC_MINOR__ < 95 
+ #ifdef __DECCXX
+ #pragma define_template SharedXcharMap<unsigned char>
+ #else
+@@ -572,6 +575,7 @@ typedef SharedXcharMap<unsigned char> Dummy_40;
+ #endif
+ #endif
+ #endif
++#endif
+ #ifdef __DECCXX
+ #pragma define_template SharedXcharMap<EquivCode>
+ #else
+@@ -585,6 +589,7 @@ typedef SharedXcharMap<EquivCode> Dummy_41;
+ #endif
+ #endif
+ #endif
++#if 0
+ #ifdef __DECCXX
+ #pragma define_template String<EquivCode>
+ #else
+@@ -598,6 +603,7 @@ typedef String<EquivCode> Dummy_42;
+ #endif
+ #endif
+ #endif
++#endif
+ #ifdef __DECCXX
+ #pragma define_template String<SyntaxChar>
+ #else
+@@ -625,19 +631,6 @@ typedef XcharMap<PackedBoolean> Dummy_44;
+ #endif
+ #endif
+ #ifdef __DECCXX
+-#pragma define_template XcharMap<unsigned char>
+-#else
+-#ifdef __xlC__
+-#pragma define(XcharMap<unsigned char>)
+-#else
+-#ifdef SP_ANSI_CLASS_INST
+-template class XcharMap<unsigned char>;
+-#else
+-typedef XcharMap<unsigned char> Dummy_45;
+-#endif
+-#endif
+-#endif
+-#ifdef __DECCXX
+ #pragma define_template XcharMap<EquivCode>
+ #else
+ #ifdef __xlC__
+@@ -646,7 +639,7 @@ typedef XcharMap<unsigned char> Dummy_45;
+ #ifdef SP_ANSI_CLASS_INST
+ template class XcharMap<EquivCode>;
+ #else
+-typedef XcharMap<EquivCode> Dummy_46;
++typedef XcharMap<EquivCode> Dummy_45;
+ #endif
+ #endif
+ #endif
+@@ -659,10 +652,11 @@ typedef XcharMap<EquivCode> Dummy_46;
+ #ifdef SP_ANSI_CLASS_INST
+ template class Vector<char>;
+ #else
+-typedef Vector<char> Dummy_47;
++typedef Vector<char> Dummy_46;
+ #endif
+ #endif
+ #endif
++#ifdef SP_SIZEOF_BOOL_1
+ #ifdef __DECCXX
+ #pragma define_template Vector<PackedBoolean>
+ #else
+@@ -672,20 +666,8 @@ typedef Vector<char> Dummy_47;
+ #ifdef SP_ANSI_CLASS_INST
+ template class Vector<PackedBoolean>;
+ #else
+-typedef Vector<PackedBoolean> Dummy_48;
+-#endif
+-#endif
++typedef Vector<PackedBoolean> Dummy_47;
+ #endif
+-#ifdef __DECCXX
+-#pragma define_template SubstTable<Char>
+-#else
+-#ifdef __xlC__
+-#pragma define(SubstTable<Char>)
+-#else
+-#ifdef SP_ANSI_CLASS_INST
+-template class SubstTable<Char>;
+-#else
+-typedef SubstTable<Char> Dummy_49;
+ #endif
+ #endif
+ #endif
+@@ -698,7 +680,7 @@ typedef SubstTable<Char> Dummy_49;
+ #ifdef SP_ANSI_CLASS_INST
+ template class CharMap<Unsigned32>;
+ #else
+-typedef CharMap<Unsigned32> Dummy_50;
++typedef CharMap<Unsigned32> Dummy_48;
+ #endif
+ #endif
+ #endif
+@@ -712,7 +694,7 @@ typedef CharMap<Unsigned32> Dummy_50;
+ #ifdef SP_ANSI_CLASS_INST
+ template class CharMapPage<Unsigned32>;
+ #else
+-typedef CharMapPage<Unsigned32> Dummy_51;
++typedef CharMapPage<Unsigned32> Dummy_49;
+ #endif
+ #endif
+ #endif
+@@ -725,7 +707,7 @@ typedef CharMapPage<Unsigned32> Dummy_51;
+ #ifdef SP_ANSI_CLASS_INST
+ template class CharMapColumn<Unsigned32>;
+ #else
+-typedef CharMapColumn<Unsigned32> Dummy_52;
++typedef CharMapColumn<Unsigned32> Dummy_50;
+ #endif
+ #endif
+ #endif
+@@ -739,7 +721,7 @@ typedef CharMapColumn<Unsigned32> Dummy_52;
+ #ifdef SP_ANSI_CLASS_INST
+ template class CharMapResource<Unsigned32>;
+ #else
+-typedef CharMapResource<Unsigned32> Dummy_53;
++typedef CharMapResource<Unsigned32> Dummy_51;
+ #endif
+ #endif
+ #endif
+@@ -752,7 +734,7 @@ typedef CharMapResource<Unsigned32> Dummy_53;
+ #ifdef SP_ANSI_CLASS_INST
+ template class Ptr<CharMapResource<Unsigned32> >;
+ #else
+-typedef Ptr<CharMapResource<Unsigned32> > Dummy_54;
++typedef Ptr<CharMapResource<Unsigned32> > Dummy_52;
+ #endif
+ #endif
+ #endif
+@@ -765,7 +747,7 @@ typedef Ptr<CharMapResource<Unsigned32> > Dummy_54;
+ #ifdef SP_ANSI_CLASS_INST
+ template class ConstPtr<CharMapResource<Unsigned32> >;
+ #else
+-typedef ConstPtr<CharMapResource<Unsigned32> > Dummy_55;
++typedef ConstPtr<CharMapResource<Unsigned32> > Dummy_53;
+ #endif
+ #endif
+ #endif
+diff --git a/lib/entmgr_inst.m4 b/lib/entmgr_inst.m4
+index 31ac7ef..41c1483 100644
+--- a/lib/entmgr_inst.m4
++++ b/lib/entmgr_inst.m4
+@@ -61,7 +61,9 @@ __instantiate(`RangeMapIter<WideChar,UnivChar>')
+ __instantiate(`RangeMap<WideChar,UnivChar>')
+ __instantiate(Vector<InputSourceOriginNamedCharRef>)
+ __instantiate(Vector<StringC>)
++#if 0
+ __instantiate(Vector<String<EquivCode> >)
++#endif
+ __instantiate(Owner<ExternalInfo>)
+ __instantiate(ISet<Char>)
+ __instantiate(Vector<ISetRange<Char> >)
+@@ -71,16 +73,20 @@ __instantiate(ISetIter<WideChar>)
+ __instantiate(Vector<ISetRange<WideChar> >)
+ __instantiate(SubstTable<Char>)
+ __instantiate(SharedXcharMap<PackedBoolean>)
++#if defined(__GNUC__) && __GNUC__ < 3 &&  __GNUC_MINOR__ < 95 
+ __instantiate(SharedXcharMap<unsigned char>)
++#endif
+ __instantiate(SharedXcharMap<EquivCode>)
++#if 0
+ __instantiate(String<EquivCode>)
++#endif
+ __instantiate(String<SyntaxChar>)
+ __instantiate(XcharMap<PackedBoolean>)
+-__instantiate(XcharMap<unsigned char>)
+ __instantiate(XcharMap<EquivCode>)
+ __instantiate(Vector<char>)
++#ifdef SP_SIZEOF_BOOL_1
+ __instantiate(Vector<PackedBoolean>)
+-__instantiate(SubstTable<Char>)
++#endif
+ __instantiate(CharMap<Unsigned32>)
+ #ifdef SP_MULTI_BYTE
+ __instantiate(CharMapPage<Unsigned32>)
+diff --git a/lib/parser_inst.cxx b/lib/parser_inst.cxx
+index 9ec76b7..a9f69c6 100644
+--- a/lib/parser_inst.cxx
++++ b/lib/parser_inst.cxx
+@@ -1324,6 +1324,7 @@ typedef Vector<LeafContentToken*> Dummy_95;
+ #endif
+ #endif
+ #endif
++#if SIZEOF_SIZE_T == 8
+ #ifdef __DECCXX
+ #pragma define_template Vector<size_t>
+ #else
+@@ -1337,6 +1338,21 @@ typedef Vector<size_t> Dummy_96;
+ #endif
+ #endif
+ #endif
++#else
++#ifdef __DECCXX
++#pragma define_template Vector<long unsigned int>
++#else
++#ifdef __xlC__
++#pragma define(Vector<long unsigned int>)
++#else
++#ifdef SP_ANSI_CLASS_INST
++template class Vector<long unsigned int>;
++#else
++typedef Vector<long unsigned int> Dummy_97;
++#endif
++#endif
++#endif
++#endif
+ #ifdef __DECCXX
+ #pragma define_template Vector<unsigned int>
+ #else
+@@ -1346,7 +1362,7 @@ typedef Vector<size_t> Dummy_96;
+ #ifdef SP_ANSI_CLASS_INST
+ template class Vector<unsigned int>;
+ #else
+-typedef Vector<unsigned int> Dummy_97;
++typedef Vector<unsigned int> Dummy_98;
+ #endif
+ #endif
+ #endif
+@@ -1360,7 +1376,7 @@ typedef Vector<unsigned int> Dummy_97;
+ #ifdef SP_ANSI_CLASS_INST
+ template class NamedTable<Id>;
+ #else
+-typedef NamedTable<Id> Dummy_98;
++typedef NamedTable<Id> Dummy_99;
+ #endif
+ #endif
+ #endif
+@@ -1373,7 +1389,7 @@ typedef NamedTable<Id> Dummy_98;
+ #ifdef SP_ANSI_CLASS_INST
+ template class NamedTableIter<Id>;
+ #else
+-typedef NamedTableIter<Id> Dummy_99;
++typedef NamedTableIter<Id> Dummy_100;
+ #endif
+ #endif
+ #endif
+@@ -1386,7 +1402,7 @@ typedef NamedTableIter<Id> Dummy_99;
+ #ifdef SP_ANSI_CLASS_INST
+ template class IListIter<EquivClass>;
+ #else
+-typedef IListIter<EquivClass> Dummy_100;
++typedef IListIter<EquivClass> Dummy_101;
+ #endif
+ #endif
+ #endif
+@@ -1399,7 +1415,7 @@ typedef IListIter<EquivClass> Dummy_100;
+ #ifdef SP_ANSI_CLASS_INST
+ template class IListIter<InputSource>;
+ #else
+-typedef IListIter<InputSource> Dummy_101;
++typedef IListIter<InputSource> Dummy_102;
+ #endif
+ #endif
+ #endif
+@@ -1413,7 +1429,7 @@ typedef IListIter<InputSource> Dummy_101;
+ #ifdef SP_ANSI_CLASS_INST
+ template class NamedResourceTable<Notation>;
+ #else
+-typedef NamedResourceTable<Notation> Dummy_102;
++typedef NamedResourceTable<Notation> Dummy_103;
+ #endif
+ #endif
+ #endif
+@@ -1426,7 +1442,7 @@ typedef NamedResourceTable<Notation> Dummy_102;
+ #ifdef SP_ANSI_CLASS_INST
+ template class NamedResourceTable<Entity>;
+ #else
+-typedef NamedResourceTable<Entity> Dummy_103;
++typedef NamedResourceTable<Entity> Dummy_104;
+ #endif
+ #endif
+ #endif
+@@ -1439,7 +1455,7 @@ typedef NamedResourceTable<Entity> Dummy_103;
+ #ifdef SP_ANSI_CLASS_INST
+ template class NamedResourceTableIter<Entity>;
+ #else
+-typedef NamedResourceTableIter<Entity> Dummy_104;
++typedef NamedResourceTableIter<Entity> Dummy_105;
+ #endif
+ #endif
+ #endif
+@@ -1452,7 +1468,7 @@ typedef NamedResourceTableIter<Entity> Dummy_104;
+ #ifdef SP_ANSI_CLASS_INST
+ template class NamedResourceTableIter<Notation>;
+ #else
+-typedef NamedResourceTableIter<Notation> Dummy_105;
++typedef NamedResourceTableIter<Notation> Dummy_106;
+ #endif
+ #endif
+ #endif
+@@ -1465,7 +1481,7 @@ typedef NamedResourceTableIter<Notation> Dummy_105;
+ #ifdef SP_ANSI_CLASS_INST
+ template class ConstNamedResourceTableIter<Entity>;
+ #else
+-typedef ConstNamedResourceTableIter<Entity> Dummy_106;
++typedef ConstNamedResourceTableIter<Entity> Dummy_107;
+ #endif
+ #endif
+ #endif
+@@ -1478,7 +1494,7 @@ typedef ConstNamedResourceTableIter<Entity> Dummy_106;
+ #ifdef SP_ANSI_CLASS_INST
+ template class ConstNamedResourceTableIter<Notation>;
+ #else
+-typedef ConstNamedResourceTableIter<Notation> Dummy_107;
++typedef ConstNamedResourceTableIter<Notation> Dummy_108;
+ #endif
+ #endif
+ #endif
+@@ -1492,7 +1508,7 @@ typedef ConstNamedResourceTableIter<Notation> Dummy_107;
+ #ifdef SP_ANSI_CLASS_INST
+ template class Vector<IdLinkRule>;
+ #else
+-typedef Vector<IdLinkRule> Dummy_108;
++typedef Vector<IdLinkRule> Dummy_109;
+ #endif
+ #endif
+ #endif
+@@ -1505,7 +1521,7 @@ typedef Vector<IdLinkRule> Dummy_108;
+ #ifdef SP_ANSI_CLASS_INST
+ template class Vector<ConstPtr<SourceLinkRuleResource> >;
+ #else
+-typedef Vector<ConstPtr<SourceLinkRuleResource> > Dummy_109;
++typedef Vector<ConstPtr<SourceLinkRuleResource> > Dummy_110;
+ #endif
+ #endif
+ #endif
+@@ -1518,7 +1534,7 @@ typedef Vector<ConstPtr<SourceLinkRuleResource> > Dummy_109;
+ #ifdef SP_ANSI_CLASS_INST
+ template class Vector<Vector<ConstPtr<SourceLinkRuleResource> > >;
+ #else
+-typedef Vector<Vector<ConstPtr<SourceLinkRuleResource> > > Dummy_110;
++typedef Vector<Vector<ConstPtr<SourceLinkRuleResource> > > Dummy_111;
+ #endif
+ #endif
+ #endif
+@@ -1531,7 +1547,7 @@ typedef Vector<Vector<ConstPtr<SourceLinkRuleResource> > > Dummy_110;
+ #ifdef SP_ANSI_CLASS_INST
+ template class Vector<ResultElementSpec>;
+ #else
+-typedef Vector<ResultElementSpec> Dummy_111;
++typedef Vector<ResultElementSpec> Dummy_112;
+ #endif
+ #endif
+ #endif
+@@ -1544,7 +1560,7 @@ typedef Vector<ResultElementSpec> Dummy_111;
+ #ifdef SP_ANSI_CLASS_INST
+ template class Vector<ConstPtr<AttributeDefinitionList> >;
+ #else
+-typedef Vector<ConstPtr<AttributeDefinitionList> > Dummy_112;
++typedef Vector<ConstPtr<AttributeDefinitionList> > Dummy_113;
+ #endif
+ #endif
+ #endif
+@@ -1557,7 +1573,7 @@ typedef Vector<ConstPtr<AttributeDefinitionList> > Dummy_112;
+ #ifdef SP_ANSI_CLASS_INST
+ template class Vector<ConstPtr<Lpd> >;
+ #else
+-typedef Vector<ConstPtr<Lpd> > Dummy_113;
++typedef Vector<ConstPtr<Lpd> > Dummy_114;
+ #endif
+ #endif
+ #endif
+@@ -1570,7 +1586,7 @@ typedef Vector<ConstPtr<Lpd> > Dummy_113;
+ #ifdef SP_ANSI_CLASS_INST
+ template class Vector<LpdEntityRef *>;
+ #else
+-typedef Vector<LpdEntityRef *> Dummy_114;
++typedef Vector<LpdEntityRef *> Dummy_115;
+ #endif
+ #endif
+ #endif
+@@ -1583,7 +1599,7 @@ typedef Vector<LpdEntityRef *> Dummy_114;
+ #ifdef SP_ANSI_CLASS_INST
+ template class PointerTable<LpdEntityRef *, LpdEntityRef, LpdEntityRef, LpdEntityRef>;
+ #else
+-typedef PointerTable<LpdEntityRef *, LpdEntityRef, LpdEntityRef, LpdEntityRef> Dummy_115;
++typedef PointerTable<LpdEntityRef *, LpdEntityRef, LpdEntityRef, LpdEntityRef> Dummy_116;
+ #endif
+ #endif
+ #endif
+@@ -1596,7 +1612,7 @@ typedef PointerTable<LpdEntityRef *, LpdEntityRef, LpdEntityRef, LpdEntityRef> D
+ #ifdef SP_ANSI_CLASS_INST
+ template class PointerTableIter<LpdEntityRef *, LpdEntityRef, LpdEntityRef, LpdEntityRef>;
+ #else
+-typedef PointerTableIter<LpdEntityRef *, LpdEntityRef, LpdEntityRef, LpdEntityRef> Dummy_116;
++typedef PointerTableIter<LpdEntityRef *, LpdEntityRef, LpdEntityRef, LpdEntityRef> Dummy_117;
+ #endif
+ #endif
+ #endif
+@@ -1609,7 +1625,7 @@ typedef PointerTableIter<LpdEntityRef *, LpdEntityRef, LpdEntityRef, LpdEntityRe
+ #ifdef SP_ANSI_CLASS_INST
+ template class OwnerTable<LpdEntityRef, LpdEntityRef, LpdEntityRef, LpdEntityRef>;
+ #else
+-typedef OwnerTable<LpdEntityRef, LpdEntityRef, LpdEntityRef, LpdEntityRef> Dummy_117;
++typedef OwnerTable<LpdEntityRef, LpdEntityRef, LpdEntityRef, LpdEntityRef> Dummy_118;
+ #endif
+ #endif
+ #endif
+@@ -1622,7 +1638,7 @@ typedef OwnerTable<LpdEntityRef, LpdEntityRef, LpdEntityRef, LpdEntityRef> Dummy
+ #ifdef SP_ANSI_CLASS_INST
+ template class OwnerTableIter<LpdEntityRef, LpdEntityRef, LpdEntityRef, LpdEntityRef>;
+ #else
+-typedef OwnerTableIter<LpdEntityRef, LpdEntityRef, LpdEntityRef, LpdEntityRef> Dummy_118;
++typedef OwnerTableIter<LpdEntityRef, LpdEntityRef, LpdEntityRef, LpdEntityRef> Dummy_119;
+ #endif
+ #endif
+ #endif
+@@ -1635,7 +1651,7 @@ typedef OwnerTableIter<LpdEntityRef, LpdEntityRef, LpdEntityRef, LpdEntityRef> D
+ #ifdef SP_ANSI_CLASS_INST
+ template class IList<LinkProcessOpenElement>;
+ #else
+-typedef IList<LinkProcessOpenElement> Dummy_119;
++typedef IList<LinkProcessOpenElement> Dummy_120;
+ #endif
+ #endif
+ #endif
+diff --git a/lib/parser_inst.m4 b/lib/parser_inst.m4
+index 9ade7b8..5c47902 100644
+--- a/lib/parser_inst.m4
++++ b/lib/parser_inst.m4
+@@ -164,7 +164,11 @@ __instantiate(Vector<NamedResourceTable<Entity> >)
+ __instantiate(Vector<ContentModelAmbiguity>)
+ __instantiate(Vector<Transition>)
+ __instantiate(Vector<LeafContentToken*>)
++#if SIZEOF_SIZE_T == 8
+ __instantiate(Vector<size_t>)
++#else
++__instantiate(Vector<long unsigned int>)
++#endif
+ __instantiate(Vector<unsigned int>)
+ 
+ __instantiate(NamedTable<Id>)
+diff --git a/lib/version.h b/lib/version.h
+index 5f7efa8..7d5998f 100644
+--- a/lib/version.h
++++ b/lib/version.h
+@@ -1 +1 @@
+-#define SP_VERSION SP_T("1.3.3")
++#define SP_VERSION SP_T("1.3.4")
+diff --git a/nsgmls/RastEventHandler.cxx b/nsgmls/RastEventHandler.cxx
+index 4d9c5e4..d18d5a5 100644
+--- a/nsgmls/RastEventHandler.cxx
++++ b/nsgmls/RastEventHandler.cxx
+@@ -13,7 +13,6 @@
+ #include "Notation.h"
+ #include "Attribute.h"
+ #include "Vector.h"
+-#include "Vector.h"
+ #include "MessageArg.h"
+ 
+ #include "RastEventHandlerMessages.h"
+@@ -28,6 +27,22 @@
+ namespace SP_NAMESPACE {
+ #endif
+ 
++#if SIZEOF_SIZE_T == 8
++#ifdef __DECCXX
++#pragma define_template Vector<size_t>
++#else
++#ifdef __xlC__
++#pragma define(Vector<size_t>)
++#else
++#ifdef SP_ANSI_CLASS_INST
++template class Vector<size_t>;
++#else
++typedef Vector<size_t> Dummy_96;
++#endif
++#endif
++#endif
++#endif
++
+ const OutputCharStream::Newline nl = OutputCharStream::newline;
+ 
+ class EventHandlerMessenger : public Messenger {
+diff --git a/nsgmls/nsgmls.cxx b/nsgmls/nsgmls.cxx
+index ed384e7..b5db489 100644
+--- a/nsgmls/nsgmls.cxx
++++ b/nsgmls/nsgmls.cxx
+@@ -55,13 +55,13 @@ public:
+ 		    const StringC &filenameStr,
+ 		    const OutputCodingSystem *,
+ 		    CmdLineApp *,
+-		    Messenger *messenger);
++		    ::Messenger *messenger);
+   ~XRastEventHandler();
+   void message(MessageEvent *);
+   void truncateOutput();
+   void allLinkTypesActivated();
+ private:
+-  Messenger *messenger_;
++  ::Messenger *messenger_;
+   // file_ must come before os_ so it gets inited first
+   FileOutputByteStream file_;
+   EncodeOutputCharStream os_;
+@@ -216,7 +216,7 @@ XRastEventHandler::XRastEventHandler(SgmlParser *parser,
+ 				     const StringC &filenameStr,
+ 				     const OutputCodingSystem *codingSystem,
+ 				     CmdLineApp *app,
+-				     Messenger *messenger)
++				     ::Messenger *messenger)
+ : RastEventHandler(parser, messenger),
+   messenger_(messenger),
+   filename_(filename),
+diff --git a/spgrove/GroveBuilder.cxx b/spgrove/GroveBuilder.cxx
+index 3c7d074..51aa502 100644
+--- a/spgrove/GroveBuilder.cxx
++++ b/spgrove/GroveBuilder.cxx
+@@ -630,11 +630,11 @@ class PiChunk : private CharsChunk {
+ };
+ 
+ class PrologPiChunk : public PiChunk {
+-  AccessResult getFirstSibling(const GroveImpl *, const Chunk *&) const;
++  AccessResult getFirstSibling(const GroveImpl *, const ::Chunk *&) const;
+ };
+ 
+ class EpilogPiChunk : public PiChunk {
+-  AccessResult getFirstSibling(const GroveImpl *, const Chunk *&) const;
++  AccessResult getFirstSibling(const GroveImpl *, const ::Chunk *&) const;
+ };
+ 
+ class PiNode : public ChunkNode {
+@@ -2892,13 +2892,13 @@ AccessResult PiChunk::setNodePtrFirst(NodePtr &ptr, const BaseNode *node) const
+   return accessOK;
+ }
+ 
+-AccessResult PrologPiChunk::getFirstSibling(const GroveImpl *grove, const Chunk *&p) const
++AccessResult PrologPiChunk::getFirstSibling(const GroveImpl *grove, const ::Chunk *&p) const
+ {
+   p = grove->root()->prolog;
+   return accessOK;
+ }
+ 
+-AccessResult EpilogPiChunk::getFirstSibling(const GroveImpl *grove, const Chunk *&p) const
++AccessResult EpilogPiChunk::getFirstSibling(const GroveImpl *grove, const ::Chunk *&p) const
+ {
+   p = grove->root()->epilog;
+   return accessOK;
+diff --git a/spgrove/Makefile.sub b/spgrove/Makefile.sub
+index f7ee293..cdd08fd 100644
+--- a/spgrove/Makefile.sub
++++ b/spgrove/Makefile.sub
+@@ -1,5 +1,6 @@
+ LIB=spgrove
+ INCLUDE=-I$(srcdir)/../grove
++DEPLIBS=-lm -L$(TOP)/grove/.libs -lgrove -L$(TOP)/lib/.libs -lsp $(LIB_THREADS)
+ OBJS=GroveApp.o GroveBuilder.o SdNode.o
+ GENSRCS=grove_inst.cxx
+ 
+diff --git a/spgrove/threads.h b/spgrove/threads.h
+index e0cfa69..d54a810 100644
+--- a/spgrove/threads.h
++++ b/spgrove/threads.h
+@@ -141,7 +141,7 @@ private:
+ 
+ #endif /* _MSC_VER && _MT */
+ 
+-#ifdef __MACH__
++#if (defined __MACH__) || (defined __GNU__)
+ 
+ // For Mach, using C Threads. May or may not work as-is on your Mach-based OS.
+ // Written by Raf Schietekat <RfSchtkt@maze.ruca.ua.ac.be> on 1996-11-10.
+@@ -158,6 +158,13 @@ extern "C" {
+ #undef catch
+ // don't want ASSERT to clash with ASSERT in SP's macros.h
+ #undef ASSERT
++#elif defined __GNU__
++// catch is a reserved word in C++, it's only used to declare a struct member
++#define catch catch22
++#include <cthreads.h>
++#undef catch
++// don't want ASSERT to clash with ASSERT in SP's macros.h
++#undef ASSERT
+ #else
+ // Change to whatever works for you, and tell James Clark (or me).
+ // catch is a reserved word in C++, it's only used to declare a struct member
+@@ -295,7 +302,7 @@ private:
+ 
+ #endif /* SP_NO_BLOCK */
+ 
+-#endif /* __MACH__ */
++#endif /* __MACH__ || __GNU__ */
+ 
+ #ifdef SP_USE_PTHREADS
+ 
+diff --git a/style/Makefile.sub b/style/Makefile.sub
+index 097c7e2..30bca40 100644
+--- a/style/Makefile.sub
++++ b/style/Makefile.sub
+@@ -1,4 +1,6 @@
+ LIB=style
++DEPLIBS=-lm -L$(TOP)/grove/.libs -lgrove -L$(TOP)/lib/.libs -lsp 	\
++  -L$(TOP)/spgrove/.libs -lspgrove
+ OBJS=Collector.o \
+   DssslApp.o \
+   DssslSpecEventHandler.o \
+diff --git a/sx/XmlOutputEventHandler.cxx b/sx/XmlOutputEventHandler.cxx
+index 5ccc232..469001b 100644
+--- a/sx/XmlOutputEventHandler.cxx
++++ b/sx/XmlOutputEventHandler.cxx
+@@ -394,6 +394,7 @@ void XmlOutputEventHandler::endProlog(EndPrologEvent *event)
+       const AttributeDefinitionList *adl = elementType->attributeDefTemp();
+       if (adl) {
+ 	if (options_.attlist) {
++	    maybeStartDoctype(doctypeStarted, dtd);
+ 	    os() << "<!ATTLIST " << generalName(elementType->name(), nameBuf_);
+ 	    for (size_t i = 0; i < adl->size(); i++) {
+ 	      const AttributeDefinition *def = adl->def(i);
+@@ -660,6 +661,8 @@ void XmlOutputEventHandler::outputCdata(const Char *s, size_t n)
+       else
+ 	nCdataEndMatched_++;
+     }
++    else
++      nCdataEndMatched_ = 0;
+     os().put(c);
+   }
+ }
+diff --git a/unicode/catalog b/unicode/catalog
+index 6539bef..db7df8a 100644
+--- a/unicode/catalog
++++ b/unicode/catalog
+@@ -2,4 +2,4 @@ PUBLIC
+ "-//SGML Open:TR95xx//SYNTAX Extended (ISO/IEC 10646-1:1993 repertoire)//EN"
+ unicode.syn
+ 
+-SGMLDECL unicode.sd
++SGMLDECL unicode.decl

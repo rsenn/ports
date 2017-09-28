@@ -1,0 +1,854 @@
+diff -ru fontutils-0.7_orig/bpltobzr/main.c fontutils-0.7/bpltobzr/main.c
+--- fontutils-0.7_orig/bpltobzr/main.c	2008-12-05 22:26:20.000000000 +0100
++++ fontutils-0.7/bpltobzr/main.c	2008-12-05 22:15:10.000000000 +0100
+@@ -79,17 +79,17 @@
+ /* This is defined in version.c.  */
+ extern string version_string;
+ 
+-#define USAGE "Options:
+-<font_name> should be a filename, e.g., `cmr10'.  Any extension is ignored." \
++#define USAGE "Options:\n" \
++"<font_name> should be a filename, e.g., `cmr10'.  Any extension is ignored." \
+   GETOPT_USAGE								     \
+-"help: print this message.
+-output-file <filename>: output to <filename> (if it has a suffix) or to
+-  <filename>.bzr (if it doesn't).
+-range <char1>-<char2>: only work on characters between <char1> and
+-  <char2> inclusive.
+-verbose: print brief progress reports on stderr.
+-version: print the version number of this program.
+-"
++"help: print this message.\n" \
++"output-file <filename>: output to <filename> (if it has a suffix) or to\n" \
++"  <filename>.bzr (if it doesn't).\n" \
++"range <char1>-<char2>: only work on characters between <char1> and\n" \
++"  <char2> inclusive.\n" \
++"verbose: print brief progress reports on stderr.\n" \
++"version: print the version number of this program.\n"
++
+ 
+ 
+ /* We return the name of the font to process.  */
+diff -ru fontutils-0.7_orig/bzr/bzr_input.c fontutils-0.7/bzr/bzr_input.c
+--- fontutils-0.7_orig/bzr/bzr_input.c	2008-12-05 22:26:20.000000000 +0100
++++ fontutils-0.7/bzr/bzr_input.c	2008-12-05 22:15:10.000000000 +0100
+@@ -26,6 +26,8 @@
+ #include "bzr_opcodes.h"
+ #include "bzr_types.h"
+ 
++#include "include/global.h"
++
+ /* Where the input will come from.  */
+ static FILE *bzr_input_file = NULL;
+ static string bzr_input_filename;
+@@ -67,8 +69,7 @@
+ bzr_open_input_file (string filename)
+ {
+   if (bzr_input_file != NULL)
+-    FATAL2 ("bzr_open_input_file: Attempt to open `%s', but `%s' is
+-already open", filename, bzr_input_filename);
++    FATAL2 ("bzr_open_input_file: Attempt to open `%s', but `%s' is already open", filename, bzr_input_filename);
+ 
+   bzr_input_filename = filename;
+   bzr_input_file = fopen (filename, "r");
+diff -ru fontutils-0.7_orig/bzrto/main.c fontutils-0.7/bzrto/main.c
+--- fontutils-0.7_orig/bzrto/main.c	2008-12-05 22:26:20.000000000 +0100
++++ fontutils-0.7/bzrto/main.c	2008-12-05 22:15:10.000000000 +0100
+@@ -458,41 +458,40 @@
+ /* This is defined in version.c.  */
+ extern string version_string;
+ 
+-#define USAGE "Options:
+-<font_name> should be a filename, e.g., `cmr10'.  Any extension is ignored." \
++#define USAGE "Options:\n" \
++"<font_name> should be a filename, e.g., `cmr10'.  Any extension is ignored." \
+   GETOPT_USAGE								     \
+-"concat <bzr_name_1>,<bzr_name_2>,...: concatenate the main input bzr file with
+-  the given <bzr_name>s; if a character code exists in more than one
+-  bzr file, it's the first occurrence that counts.
+-ccc-file <filename>: read the CCC file <filename> (if <filename> has a
+-  suffix) or <filename>.ccc (if it doesn't).  Default is <font_name>.
+-encoding <filename>: specify the encoding file; if <filename> has no
+-  suffix, use <filename>.enc, otherwise just <filename>.  Default is to
+-  try to guess the encoding from the coding_scheme string in the TFM
+-  file if exists, else to use the default " DEFAULT_ENCODING ".
+-help: print this message.
+-metafont: translate the font to a Metafont program.
+-mf: same as `metafont'.
+-oblique-angle <angle-in-degrees>: angle from the vertical by which to
+-  slant the shapes; default is 0.
+-output-file <filename>: output to <filename> (if it has a suffix) or to
+-  <filename>.<font format> (if it doesn't), where the <font format> is
+-  `mf', `gsf', etc.  <filename> cannot have a suffix if more than one of
+-  `metafont', `pstype1' and `pstype3' options are give.  Default is
+-  <font_name> with a trailing number removed.
+-ps-font-info <name>:<value>,...: assign each <value> to the
+-  corresponding <name> when outputting a PostScript font.  Possible
+-  <name>s: FontName, FamilyName, Weight, ItalicAngle, isFixedPitch,
+-  UnderlinePosition, UnderlineThickness, UniqueID, version.  Case is
+-  significant.  See the manual for more details.
+-pstype1: translate the font to (unencrypted) PostScript Type 1 font format.
+-pstype3: translate the font to PostScript Type 3 font format.
+-range <char1>-<char2>: only work on characters between <char1> and
+-  <char2> inclusive.
+-text: translate the font to human-readable text; write to stdout.
+-verbose: print brief progress reports.
+-version: print the version number of this program.
+-"
++"concat <bzr_name_1>,<bzr_name_2>,...: concatenate the main input bzr file with\n" \
++"  the given <bzr_name>s; if a character code exists in more than one\n" \
++"  bzr file, it's the first occurrence that counts.\n" \
++"ccc-file <filename>: read the CCC file <filename> (if <filename> has a\n" \
++"  suffix) or <filename>.ccc (if it doesn't).  Default is <font_name>.\n" \
++"encoding <filename>: specify the encoding file; if <filename> has no\n" \
++"  suffix, use <filename>.enc, otherwise just <filename>.  Default is to\n" \
++"  try to guess the encoding from the coding_scheme string in the TFM\n" \
++"  file if exists, else to use the default " DEFAULT_ENCODING ".\n" \
++"help: print this message.\n" \
++"metafont: translate the font to a Metafont program.\n" \
++"mf: same as `metafont'.\n" \
++"oblique-angle <angle-in-degrees>: angle from the vertical by which to\n" \
++"  slant the shapes; default is 0.\n" \
++"output-file <filename>: output to <filename> (if it has a suffix) or to\n" \
++"  <filename>.<font format> (if it doesn't), where the <font format> is\n" \
++"  `mf', `gsf', etc.  <filename> cannot have a suffix if more than one of\n" \
++"  `metafont', `pstype1' and `pstype3' options are give.  Default is\n" \
++"  <font_name> with a trailing number removed.\n" \
++"ps-font-info <name>:<value>,...: assign each <value> to the\n" \
++"  corresponding <name> when outputting a PostScript font.  Possible\n" \
++"  <name>s: FontName, FamilyName, Weight, ItalicAngle, isFixedPitch,\n" \
++"  UnderlinePosition, UnderlineThickness, UniqueID, version.  Case is\n" \
++"  significant.  See the manual for more details.\n" \
++"pstype1: translate the font to (unencrypted) PostScript Type 1 font format.\n" \
++"pstype3: translate the font to PostScript Type 3 font format.\n" \
++"range <char1>-<char2>: only work on characters between <char1> and\n" \
++"  <char2> inclusive.\n" \
++"text: translate the font to human-readable text; write to stdout.\n" \
++"verbose: print brief progress reports.\n" \
++"version: print the version number of this program."
+ 
+ 
+ /* We return the name of the font to process.  */
+Only in fontutils-0.7/charspace: charspace
+diff -ru fontutils-0.7_orig/charspace/main.c fontutils-0.7/charspace/main.c
+--- fontutils-0.7_orig/charspace/main.c	2008-12-05 22:26:20.000000000 +0100
++++ fontutils-0.7/charspace/main.c	2008-12-05 22:22:53.000000000 +0100
+@@ -202,36 +202,36 @@
+ /* This is defined in version.c.  */
+ extern string version_string;
+ 
+-#define USAGE "Options:
+-<font_name> should be a filename, possibly with a resolution, e.g.,
+-  `cmr10' or `cmr10.300'.\n"						\
++#define USAGE "Options:\n" \
++"<font_name> should be a filename, possibly with a resolution, e.g.,\n" \
++"  `cmr10' or `cmr10.300'.\n"						\
+   GETOPT_USAGE								\
+-"cmi-files <file1>,<file2>,...: read the CMI files
+-  `<file1>.<dpi>cmi', `<file2>.<dpi>cmi', etc., after reading
+-  `common.cmi'; default is `<font-name>.<dpi>cmi'.  The <dpi>cmi is not
+-  appended to any of the <file>s which already have a suffix.
+-dpi <unsigned>: use this resolution; default is 300.
+-encoding <filename>: read ligature and other encoding information
+-  from <filename>.enc; there is no default.  (A TFM file <font-name>.tfm
+-  is also read, if it exists.)
+-fontdimens <fontdimen>:<real>,<fontdimen>:<real>,...: assign <value>
+-  to each <fontdimen> given, when outputting a TFM file.  A <fontdimen>
+-  can be either one of the standard names (in either upper or
+-  lowercase), or a number between 1 and 30.  Each <real> is taken to be
+-  in points (except in the case of the <fontdimen> `SLANT' (parameter
+-  1), which is a dimensionless number).
+-no-gf: don't output a GF file.
+-output-file <filename>: write the TFM file to `<filename>.tfm' and the
+-  GF file to `<filename>.<dpi>gf'; <filename> shouldn't have a suffix;
+-  default is <font-name>.tfm and <font-name>.<dpi>gf, or, if those would
+-  overwrite the input, those preceded by `x'.
+-range <char1>-<char2>: only process characters between <char1> and
+-  <char2>, inclusive. 
+-verbose: print brief progress reports on stdout.
+-version: print the version number of this program.
+-xheight-char <charcode>: use the height of this character as the
+-  default x-height (for the TFM output); default is 120 (ASCII `x').
+-"
++"cmi-files <file1>,<file2>,...: read the CMI files\n" \
++"  `<file1>.<dpi>cmi', `<file2>.<dpi>cmi', etc., after reading\n" \
++"  `common.cmi'; default is `<font-name>.<dpi>cmi'.  The <dpi>cmi is not\n" \
++"  appended to any of the <file>s which already have a suffix.\n" \
++"dpi <unsigned>: use this resolution; default is 300.\n" \
++"encoding <filename>: read ligature and other encoding information\n" \
++"  from <filename>.enc; there is no default.  (A TFM file <font-name>.tfm\n" \
++"  is also read, if it exists.)\n" \
++"fontdimens <fontdimen>:<real>,<fontdimen>:<real>,...: assign <value>\n" \
++"  to each <fontdimen> given, when outputting a TFM file.  A <fontdimen>\n" \
++"  can be either one of the standard names (in either upper or\n" \
++"  lowercase), or a number between 1 and 30.  Each <real> is taken to be\n" \
++"  in points (except in the case of the <fontdimen> `SLANT' (parameter\n" \
++"  1), which is a dimensionless number).\n" \
++"no-gf: don't output a GF file.\n" \
++"output-file <filename>: write the TFM file to `<filename>.tfm' and the\n" \
++"  GF file to `<filename>.<dpi>gf'; <filename> shouldn't have a suffix;\n" \
++"  default is <font-name>.tfm and <font-name>.<dpi>gf, or, if those would\n" \
++"  overwrite the input, those preceded by `x'.\n" \
++"range <char1>-<char2>: only process characters between <char1> and\n" \
++"  <char2>, inclusive.\n" \
++"verbose: print brief progress reports on stdout.\n" \
++"version: print the version number of this program.\n" \
++"xheight-char <charcode>: use the height of this character as the\n" \
++"  default x-height (for the TFM output); default is 120 (ASCII `x')."
++
+ 
+ static string
+ read_command_line (int argc, string argv[])
+Only in fontutils-0.7/charspace: main.o
+Only in fontutils-0.7/charspace: output.o
+Only in fontutils-0.7/charspace: symtab.o
+Only in fontutils-0.7/charspace: version.o
+diff -ru fontutils-0.7_orig/data/defs.make fontutils-0.7/data/defs.make
+--- fontutils-0.7_orig/data/defs.make	2008-12-05 22:26:20.000000000 +0100
++++ fontutils-0.7/data/defs.make	2008-12-05 22:15:10.000000000 +0100
+@@ -33,7 +33,7 @@
+ 
+ # Here is the rule to make `foo.o' from `foo.c'.  We want CFLAGS to be
+ # user-settable, so we can't use the default implicit rule.
+-CPPFLAGS = -I../$(srcdir)/include $(xincludedir)
++CPPFLAGS = -I../$(srcdir) -I../$(srcdir)/include $(xincludedir)
+ %.o: %.c
+ 	$(CC) $(CFLAGS) $(CPPFLAGS) -c $<
+ 
+Only in fontutils-0.7/fontconvert: fontconvert
+diff -ru fontutils-0.7_orig/fontconvert/main.c fontutils-0.7/fontconvert/main.c
+--- fontutils-0.7_orig/fontconvert/main.c	2008-12-05 22:26:20.000000000 +0100
++++ fontutils-0.7/fontconvert/main.c	2008-12-05 22:19:03.000000000 +0100
+@@ -363,72 +363,71 @@
+ /* This is defined in version.c.  */
+ extern string version_string;
+ 
+-#define USAGE "Options:
+-<font_name> should be a filename, possibly with a resolution, e.g.,
+-  `cmr10' or `cmr10.300'.\n"						\
++#define USAGE "Options:\n" \
++"<font_name> should be a filename, possibly with a resolution, e.g.,\n" \
++"  `cmr10' or `cmr10.300'.\n"						\
+   GETOPT_USAGE								\
+-"baseline-adjust <char1>:<integer1>,<char2>:<integer2>,...: move the baseline
+-  of each <char> by the corresponding <integer>.  A positive number
+-  moves the baseline up, a negative one down.
+-column-split <char>@<column1>,...,<columnN>: split the character with
+-  code <char> (before remapping) before each of the <column>s, producing n
+-  new characters, with codes <char>, <char> + 1, ..., <char> + n, whose
+-  bitmaps go from 0 to <column1> - 1 (inclusive), then <column1> to
+-  <column2> - 1, ..., from <columnN> to the bitmap width.
+-  Give the <column>s in bitmap coordinates, i.e., starting at zero.
+-  To split more than one character, give this option for each.
+-concat <font_name>,<font_name>,...: concatenate the main input font with
+-  the given <font_name>s; if a character code exists in more than one
+-  font, it's the first occurrence that counts.
+-designsize <real>: use this as the design size for both the GF and TFM
+-  output files, if any, unless overridden by `designsize' in the
+-  `tfm-header' option.
+-dpi <unsigned>: use a resolution of <unsigned>; default is 300.
+-encoding <filename>: read encoding information for the character specs
+-  from `<filename>.enc'; there is no default.  Must come before any
+-  options which use character specs.
+-epsf: output each character as an Encapsulated PostScript file named
+-  <font_name>-<code>.eps, where <code> is the character code in decimal.
+-filter-passes <unsigned>: do the filtering this many times on each
+-  character; default is 0.
+-filter-size <unsigned>: half the size of the filter cell, i.e., a side
+-  is this number * 2 + 1; default is 1.
+-filter-threshold <real>: if the average of the pixels in the filter cell
+-  is greater than this, change the pixel; default is .5.
+-fontdimens <fontdimen>:<real>,<fontdimen>:<real>,...: assign each <real>
+-  to the corresponding <fontdimen> when outputting a TFM file.  A
+-  <fontdimen> can be either one of the standard names (in either upper
+-  or lowercase), or a number between 1 and 30.  Each <real> is taken to
+-  be in points (except in the case of the <fontdimen> `slant' (parameter
+-  1), which is a dimensionless number).
+-gf: write a GF file to `<font_name>.<dpi>gf'.  If this would overwrite the
+-  input file, write to `x<font_name>.<dpi>gf' instead.
+-help: print this message.
+-omit <char1>,<char2>,...: omit the characters with the given codes or names
+-  (before remapping) from the output.
+-output-file <filename>: use <filename> as the output filename if it has
+-   a suffix, and as the base of the output files if it doesn't.  It
+-   cannot have a suffix if using the `epsf' option, or both the `gf' and the
+-   `tfm' option.  Default is the base part of the input font name.
+-random <real>: move each pixel a (uniformly) random distance between
+-   -<real> and <real> in both x and y; default is 0.
+-random-threshold <real>: if randomizing, do not move pixels with
+-  probability <real>; default is 0.2.
+-range <char1>-<char2>: only process characters between <char1> and
+-  <char2> in the input font, inclusive.
+-remap <char1>:<char2>,<char1>:<char2>,...: for each pair, make the input
+-  character with code <char1> have code <char2> in the output.
+-text: output the font to stdout as plain text, using `*'s and ` 's.
+-tfm: write a TFM file to `<font_name>.tfm'.
+-tfm-header: <header-item>:<value>,<header-item>:<value>,...: assign each
+-  <value> to the corresponding <header-item> when outputting a TFM file.
+-  A <header-item> is one of `checksum', `designsize' or `codingscheme',
+-  with casefolding. `checksum' requires an unsigned integer,
+-  `designsize' a real, with 1.0 <= designsize < 2048, and `codingscheme'
+-  a string of length less than 40 containing no parens or commas.
+-verbose: print brief progress reports on stdout.
+-version: print the version number of this program.
+-"
++"baseline-adjust <char1>:<integer1>,<char2>:<integer2>,...: move the baseline\n" \
++"  of each <char> by the corresponding <integer>.  A positive number\n" \
++"  moves the baseline up, a negative one down.\n" \
++"column-split <char>@<column1>,...,<columnN>: split the character with\n" \
++"  code <char> (before remapping) before each of the <column>s, producing n\n" \
++"  new characters, with codes <char>, <char> + 1, ..., <char> + n, whose\n" \
++"  bitmaps go from 0 to <column1> - 1 (inclusive), then <column1> to\n" \
++"  <column2> - 1, ..., from <columnN> to the bitmap width.\n" \
++"  Give the <column>s in bitmap coordinates, i.e., starting at zero.\n" \
++"  To split more than one character, give this option for each.\n" \
++"concat <font_name>,<font_name>,...: concatenate the main input font with\n" \
++"  the given <font_name>s; if a character code exists in more than one\n" \
++"  font, it's the first occurrence that counts.\n" \
++"designsize <real>: use this as the design size for both the GF and TFM\n" \
++"  output files, if any, unless overridden by `designsize' in the\n" \
++"  `tfm-header' option.\n" \
++"dpi <unsigned>: use a resolution of <unsigned>; default is 300.\n" \
++"encoding <filename>: read encoding information for the character specs\n" \
++"  from `<filename>.enc'; there is no default.  Must come before any\n" \
++"  options which use character specs.\n" \
++"epsf: output each character as an Encapsulated PostScript file named\n" \
++"  <font_name>-<code>.eps, where <code> is the character code in decimal.\n" \
++"filter-passes <unsigned>: do the filtering this many times on each\n" \
++"  character; default is 0.\n" \
++"filter-size <unsigned>: half the size of the filter cell, i.e., a side\n" \
++"  is this number * 2 + 1; default is 1.\n" \
++"filter-threshold <real>: if the average of the pixels in the filter cell\n" \
++"  is greater than this, change the pixel; default is .5.\n" \
++"fontdimens <fontdimen>:<real>,<fontdimen>:<real>,...: assign each <real>\n" \
++"  to the corresponding <fontdimen> when outputting a TFM file.  A\n" \
++"  <fontdimen> can be either one of the standard names (in either upper\n" \
++"  or lowercase), or a number between 1 and 30.  Each <real> is taken to\n" \
++"  be in points (except in the case of the <fontdimen> `slant' (parameter\n" \
++"  1), which is a dimensionless number).\n" \
++"gf: write a GF file to `<font_name>.<dpi>gf'.  If this would overwrite the\n" \
++"  input file, write to `x<font_name>.<dpi>gf' instead.\n" \
++"help: print this message.\n" \
++"omit <char1>,<char2>,...: omit the characters with the given codes or names\n" \
++"  (before remapping) from the output.\n" \
++"output-file <filename>: use <filename> as the output filename if it has\n" \
++"   a suffix, and as the base of the output files if it doesn't.  It\n" \
++"   cannot have a suffix if using the `epsf' option, or both the `gf' and the\n" \
++"   `tfm' option.  Default is the base part of the input font name.\n" \
++"random <real>: move each pixel a (uniformly) random distance between\n" \
++"   -<real> and <real> in both x and y; default is 0.\n" \
++"random-threshold <real>: if randomizing, do not move pixels with\n" \
++"  probability <real>; default is 0.2.\n" \
++"range <char1>-<char2>: only process characters between <char1> and\n" \
++"  <char2> in the input font, inclusive.\n" \
++"remap <char1>:<char2>,<char1>:<char2>,...: for each pair, make the input\n" \
++"  character with code <char1> have code <char2> in the output.\n" \
++"text: output the font to stdout as plain text, using `*'s and ` 's.\n" \
++"tfm: write a TFM file to `<font_name>.tfm'.\n" \
++"tfm-header: <header-item>:<value>,<header-item>:<value>,...: assign each\n" \
++"  <value> to the corresponding <header-item> when outputting a TFM file.\n" \
++"  A <header-item> is one of `checksum', `designsize' or `codingscheme',\n" \
++"  with casefolding. `checksum' requires an unsigned integer,\n" \
++"  `designsize' a real, with 1.0 <= designsize < 2048, and `codingscheme'\n" \
++"  a string of length less than 40 containing no parens or commas.\n" \
++"verbose: print brief progress reports on stdout.\n" \
++"version: print the version number of this program."
+ 
+ /* We return the name of the font to process.  */
+ 
+Only in fontutils-0.7/fontconvert: main.o
+Only in fontutils-0.7/fontconvert: output-epsf.o
+Only in fontutils-0.7/fontconvert: output-gf.o
+Only in fontutils-0.7/fontconvert: output-tfm.o
+Only in fontutils-0.7/fontconvert: random.o
+Only in fontutils-0.7/fontconvert: version.o
+diff -ru fontutils-0.7_orig/gf/gf_input.c fontutils-0.7/gf/gf_input.c
+--- fontutils-0.7_orig/gf/gf_input.c	2008-12-05 22:26:20.000000000 +0100
++++ fontutils-0.7/gf/gf_input.c	2008-12-05 22:15:10.000000000 +0100
+@@ -94,8 +94,7 @@
+ gf_open_input_file (string filename)
+ {
+   if (gf_input_file != NULL)
+-    FATAL2 ("gf_open_input_file: Attempt to open `%s', but `%s' is
+-already open", filename, gf_input_filename);
++    FATAL2 ("gf_open_input_file: Attempt to open `%s', but `%s' is already open", filename, gf_input_filename);
+ 
+   gf_input_filename = filename;
+   gf_input_file = fopen (filename, "r");
+Only in fontutils-0.7/gsrenderfont: bbcount
+Only in fontutils-0.7/gsrenderfont: gsrenderfont
+diff -ru fontutils-0.7_orig/gsrenderfont/main.c fontutils-0.7/gsrenderfont/main.c
+--- fontutils-0.7_orig/gsrenderfont/main.c	2008-12-05 22:15:50.000000000 +0100
++++ fontutils-0.7/gsrenderfont/main.c	2008-12-05 22:19:55.000000000 +0100
+@@ -139,16 +139,15 @@
+ /* This is defined in version.c.  */
+ extern string version_string;
+ 
+-#define USAGE "Options:
+-  <font_name> should be a base filename, e.g., `cmr10'."		\
++#define USAGE "Options:\n" \
++"  <font_name> should be a base filename, e.g., `cmr10'."		\
+     GETOPT_USAGE							\
+-"help: print this message.
+-output-file <filename>: write to <filename>.bbs if <filename> has no
+-  suffix, and to <filename> if it has.  Default is standard output.
+-trace-scanlines: show every scanline as we read it.
+-verbose: output progress reports to stderr.
+-version: print the version number of this program.
+-"
++"help: print this message.\n" \
++"output-file <filename>: write to <filename>.bbs if <filename> has no\n" \
++"  suffix, and to <filename> if it has.  Default is standard output.\n" \
++"trace-scanlines: show every scanline as we read it.\n" \
++"verbose: output progress reports to stderr.\n" \
++"version: print the version number of this program.\n"
+ 
+ static string
+ read_command_line (int argc, string argv[])
+Only in fontutils-0.7/gsrenderfont: main.o
+Only in fontutils-0.7/gsrenderfont: version.o
+Only in fontutils-0.7/imageto: imageto
+diff -ru fontutils-0.7_orig/imageto/main.c fontutils-0.7/imageto/main.c
+--- fontutils-0.7_orig/imageto/main.c	2008-12-05 22:15:50.000000000 +0100
++++ fontutils-0.7/imageto/main.c	2008-12-05 22:22:21.000000000 +0100
+@@ -220,42 +220,41 @@
+ /* This is defined in version.c.  */
+ extern string version_string;
+ 
+-#define USAGE "Options:
+-<font_name> should be a base filename, e.g., `ggmr'.  (More properly, it
+-is an <image_name>, not a <font_name>.)" 				\
++#define USAGE "Options:\n" \
++"<font_name> should be a base filename, e.g., `ggmr'.  (More properly, it\n" \
++"is an <image_name>, not a <font_name>.)" 				\
+   GETOPT_USAGE								\
+-"baselines <row1>,<row2>,...: define the baselines for each image row.
+-  The baseline of the first image row is taken to be scanline <row1>, etc.
+-designsize <real>: set the designsize of the font to <real>; default is 10.0.
+-dpi <unsigned>: resolution (required for pbm input).
+-encoding <filename>: read ligature and other encoding information
+-  from `<filename>.enc'; the default is to assign successive character codes.
+-epsf: write the image as an Encapsulated PostScript file, instead of a
+-  bitmap font.
+-help: print this message.
+-ifi-file <filename>: use <filename>.ifi (if <filename doesn't have a
+-  suffix; otherwise use <filename>) for the IFI filename; default is
+-  `<font_name>.ifi'.
+-input-format <format>: specify format of input image; <format> must be
+-  one of `pbm' or `img'.
+-nchars <unsigned>: only write the first <unsigned> (approximately)
+-  characters to the font; default is infinity.
+-output-file <filename>: write to <filename> if <filename> has a suffix.
+-  If <filename> doesn't have a suffix, then if writing strips, write to
+-  <filename>sp.<dpi>gf and to <filename>.<dpi>gf if not.  By default,
+-  use <font_name> for <filename>.
+-print-clean-info: print gray values for the bounding boxes that are
+-  considered for cleaning.  This implies `-verbose'.
+-print-guidelines: print the numbers of the top and bottom rows (in that
+-  order) of each character.  This implies `-verbose'.
+-range <char1>-<char2>: only process characters between <char1> and
+-  <char2>, inclusive. 
+-strips: take a constant number of scanlines as each character,
+-  instead of using an IFI file to analyze the image.
+-trace-scanlines: show every scanline as we read it.
+-verbose: output progress reports.
+-version: print the version number of this program.
+-"
++"baselines <row1>,<row2>,...: define the baselines for each image row.\n" \
++"  The baseline of the first image row is taken to be scanline <row1>, etc.\n" \
++"designsize <real>: set the designsize of the font to <real>; default is 10.0.\n" \
++"dpi <unsigned>: resolution (required for pbm input).\n" \
++"encoding <filename>: read ligature and other encoding information\n" \
++"  from `<filename>.enc'; the default is to assign successive character codes.\n" \
++"epsf: write the image as an Encapsulated PostScript file, instead of a\n" \
++"  bitmap font.\n" \
++"help: print this message.\n" \
++"ifi-file <filename>: use <filename>.ifi (if <filename doesn't have a\n" \
++"  suffix; otherwise use <filename>) for the IFI filename; default is\n" \
++"  `<font_name>.ifi'.\n" \
++"input-format <format>: specify format of input image; <format> must be\n" \
++"  one of `pbm' or `img'.\n" \
++"nchars <unsigned>: only write the first <unsigned> (approximately)\n" \
++"  characters to the font; default is infinity.\n" \
++"output-file <filename>: write to <filename> if <filename> has a suffix.\n" \
++"  If <filename> doesn't have a suffix, then if writing strips, write to\n" \
++"  <filename>sp.<dpi>gf and to <filename>.<dpi>gf if not.  By default,\n" \
++"  use <font_name> for <filename>.\n" \
++"print-clean-info: print gray values for the bounding boxes that are\n" \
++"  considered for cleaning.  This implies `-verbose'.\n" \
++"print-guidelines: print the numbers of the top and bottom rows (in that\n" \
++"  order) of each character.  This implies `-verbose'.\n" \
++"range <char1>-<char2>: only process characters between <char1> and\n" \
++"  <char2>, inclusive. \n" \
++"strips: take a constant number of scanlines as each character,\n" \
++"  instead of using an IFI file to analyze the image.\n" \
++"trace-scanlines: show every scanline as we read it.\n" \
++"verbose: output progress reports.\n" \
++"version: print the version number of this program.\n"
+ 
+ static string
+ read_command_line (int argc, string argv[])
+Only in fontutils-0.7/imageto: main.o
+Only in fontutils-0.7/imageto: out-chars.o
+Only in fontutils-0.7/imageto: out-epsf.o
+Only in fontutils-0.7/imageto: out-strips.o
+Only in fontutils-0.7/imageto: version.o
+Only in fontutils-0.7/imgrotate: imgrotate
+diff -ru fontutils-0.7_orig/imgrotate/main.c fontutils-0.7/imgrotate/main.c
+--- fontutils-0.7_orig/imgrotate/main.c	2008-12-05 22:15:50.000000000 +0100
++++ fontutils-0.7/imgrotate/main.c	2008-12-05 22:22:51.000000000 +0100
+@@ -259,19 +259,18 @@
+ /* This is defined in version.c.  */
+ extern string version_string;
+ 
+-#define USAGE "Options:
+-  <font_name> should be a base filename, e.g., `gmr'.  It is extended
+-    with `.img'."							\
++#define USAGE "Options:\n" \
++"  <font_name> should be a base filename, e.g., `gmr'.  It is extended\n" \
++"    with `.img'."							\
+   GETOPT_USAGE								\
+-"flip: rotate the image 180 degrees.
+-help: print this message.
+-output-file <filename>: write the output to <filename>, extended with
+-   `.img' if <filename> does not have a suffix.  The default is the input
+-   filename, prepended with `x' if that would overwrite the input file.
+-rotate-clockwise: rotate the image 90 degrees clockwise.
+-verbose: output progress reports to stdout.
+-version: print the version number of this program.
+-"
++"flip: rotate the image 180 degrees.\n" \
++"help: print this message.\n" \
++"output-file <filename>: write the output to <filename>, extended with\n" \
++"   `.img' if <filename> does not have a suffix.  The default is the input\n" \
++"   filename, prepended with `x' if that would overwrite the input file.\n" \
++"rotate-clockwise: rotate the image 90 degrees clockwise.\n" \
++"verbose: output progress reports to stdout.\n" \
++"version: print the version number of this program.\n"
+ 
+ static string
+ read_command_line (int argc, string argv[])
+Only in fontutils-0.7/imgrotate: main.o
+Only in fontutils-0.7/imgrotate: version.o
+diff -ru fontutils-0.7_orig/include/cmdline.h fontutils-0.7/include/cmdline.h
+--- fontutils-0.7_orig/include/cmdline.h	2008-12-05 22:26:20.000000000 +0100
++++ fontutils-0.7/include/cmdline.h	2008-12-05 22:15:10.000000000 +0100
+@@ -114,10 +114,9 @@
+   while (0)
+ 
+ #define GETOPT_USAGE \
+-"  You can use `--' or `-' to start an option.
+-  You can use any unambiguous abbreviation for an option name.
+-  You can separate option names and values with `=' or ` '.
+-"
++"  You can use `--' or `-' to start an option.\n" \
++"  You can use any unambiguous abbreviation for an option name.\n" \
++"  You can separate option names and values with `=' or ` '.\n"
+ 
+ /* What to pass to `strtok' to separate different arguments to an
+    option, as in `-option=arg1,arg2,arg3'.  It is useful to allow
+Only in fontutils-0.7: la
+Only in fontutils-0.7/limn: limn
+diff -ru fontutils-0.7_orig/limn/main.c fontutils-0.7/limn/main.c
+--- fontutils-0.7_orig/limn/main.c	2008-12-05 22:15:50.000000000 +0100
++++ fontutils-0.7/limn/main.c	2008-12-05 22:25:47.000000000 +0100
+@@ -126,75 +126,74 @@
+ /* This is defined in version.c.  */
+ extern string version_string;
+ 
+-#define USAGE "Options:
+-<font_name> should be a filename, possibly with a resolution, e.g.,
+-  `cmr10' or `cmr10.300'.\n"						\
++#define USAGE "Options:\n" \
++"<font_name> should be a filename, possibly with a resolution, e.g.,\n" \
++"  `cmr10' or `cmr10.300'.\n"						\
+   GETOPT_USAGE								\
+-"align-threshold <real>: if either coordinate of the endpoints on a
+-  spline is closer than this, make them the same; default is .5.
+-corner-always-threshold <angle-in-degrees>: if the angle at a pixel is
+-  less than this, it is considered a corner, even if it is within
+-  `corner-surround' pixels of another corner; default is 60.
+-corner-surround <unsigned>: number of pixels on either side of a
+-  point to consider when determining if that point is a corner; default
+-  is 4.
+-corner-threshold <angle-in-degrees>: if a pixel, its predecessor(s),
+-  and its successor(s) meet at an angle smaller than this, it's a
+-  corner; default is 100.
+-display-continue: do not wait for you to hit return after displaying
+-  each character.
+-display-grid-size <unsigned>: number of expanded pixels between the grid
+-  lines; default is 10. 
+-display-pixel-size <unsigned>: length of one side of the square that
+-  each pixel expands into; default is 9.
+-display-rectangle-size <unsigned>: length of one side of the square
+-  we draw to represent pixels; default is 6.  Must be less than
+-  display-pixel-size. 
+-do-display: show some information in a window, online.
+-dpi <unsigned>: use a resolution of <unsigned>; default is 300.
+-error-threshold <real>: subdivide fitted curves that are off by
+-  more pixels than this; default is 2.0.
+-filter-alternative-surround <unsigned>: another choice for
+-  filter-surround; default is 1.
+-filter-epsilon <real>: if the angles using filter-surround and
+-   filter-alternative-surround points differ by more than this, use the
+-   latter; default is 10.0.
+-filter-iterations <unsigned>: smooth the curve this many times
+-  before fitting; default is 4.
+-filter-percent <percent>: when filtering, use the old point plus this
+-  much of neighbors to determine the new point; default is 33.
+-filter-surround <unsigned>: number of pixels on either side of a point
+-  to consider when filtering that point; default is 2.
+-help: print this message.
+-keep-knees: do not remove ``knees''---points on the inside of the
+-  outline that are between two others.
+-line-reversion-threshold <real>: if a spline is closer to a straight
+-   line than this, weighted by the square of the curve length, keep it a
+-   straight line even if it is a list with curves; default is .01.
+-line-threshold <real>: if the spline is not more than this far away
+-  from the straight line defined by its endpoints, 
+-  then output a straight line; default is 1.
+-log: write detailed progress reports to <font_name>.log.
+-output-file <filename>: write to <filename> if it has a suffix and to
+-  `<filename>.bzr' if it doesn't.  Default is `<font_name>.bzr'.
+-range <char1>-<char2>: only process characters between <char1> and
+-  <char2>, inclusive. 
+-reparameterize-improve <percent>: if reparameterization
+-  doesn't improve the fit by this much, as a percentage, stop; default
+-  is 10.
+-reparameterize-threshold <real>: if an initial fit is off by more
+-  pixels than this, don't bother to reparameterize; default is 30.
+-subdivide-search <percent>: percentage of the curve from the initial
+-  guess for a subdivision point to look for a better one; default is 10.
+-subdivide-surround <unsigned>: number of points on either side of a
+-  point to consider when looking for a subdivision point; default is 4.
+-subdivide-threshold <real>: if a point is this close or closer to a
+-  straight line, subdivide there; default is .03.
+-tangent-surround <unsigned>: number of points on either side of a
+-  point to consider when computing the tangent at that point; default is 3.
+-verbose: print brief progress reports on stderr.
+-version: print the version number of this program.
+-"
++"align-threshold <real>: if either coordinate of the endpoints on a\n" \
++"  spline is closer than this, make them the same; default is .5.\n" \
++"corner-always-threshold <angle-in-degrees>: if the angle at a pixel is\n" \
++"  less than this, it is considered a corner, even if it is within\n" \
++"  `corner-surround' pixels of another corner; default is 60.\n" \
++"corner-surround <unsigned>: number of pixels on either side of a\n" \
++"  point to consider when determining if that point is a corner; default\n" \
++"  is 4.\n" \
++"corner-threshold <angle-in-degrees>: if a pixel, its predecessor(s),\n" \
++"  and its successor(s) meet at an angle smaller than this, it's a\n" \
++"  corner; default is 100.\n" \
++"display-continue: do not wait for you to hit return after displaying\n" \
++"  each character.\n" \
++"display-grid-size <unsigned>: number of expanded pixels between the grid\n" \
++"  lines; default is 10. \n" \
++"display-pixel-size <unsigned>: length of one side of the square that\n" \
++"  each pixel expands into; default is 9.\n" \
++"display-rectangle-size <unsigned>: length of one side of the square\n" \
++"  we draw to represent pixels; default is 6.  Must be less than\n" \
++"  display-pixel-size. \n" \
++"do-display: show some information in a window, online.\n" \
++"dpi <unsigned>: use a resolution of <unsigned>; default is 300.\n" \
++"error-threshold <real>: subdivide fitted curves that are off by\n" \
++"  more pixels than this; default is 2.0.\n" \
++"filter-alternative-surround <unsigned>: another choice for\n" \
++"  filter-surround; default is 1.\n" \
++"filter-epsilon <real>: if the angles using filter-surround and\n" \
++"   filter-alternative-surround points differ by more than this, use the\n" \
++"   latter; default is 10.0.\n" \
++"filter-iterations <unsigned>: smooth the curve this many times\n" \
++"  before fitting; default is 4.\n" \
++"filter-percent <percent>: when filtering, use the old point plus this\n" \
++"  much of neighbors to determine the new point; default is 33.\n" \
++"filter-surround <unsigned>: number of pixels on either side of a point\n" \
++"  to consider when filtering that point; default is 2.\n" \
++"help: print this message.\n" \
++"keep-knees: do not remove ``knees''---points on the inside of the\n" \
++"  outline that are between two others.\n" \
++"line-reversion-threshold <real>: if a spline is closer to a straight\n" \
++"   line than this, weighted by the square of the curve length, keep it a\n" \
++"   straight line even if it is a list with curves; default is .01.\n" \
++"line-threshold <real>: if the spline is not more than this far away\n" \
++"  from the straight line defined by its endpoints, \n" \
++"  then output a straight line; default is 1.\n" \
++"log: write detailed progress reports to <font_name>.log.\n" \
++"output-file <filename>: write to <filename> if it has a suffix and to\n" \
++"  `<filename>.bzr' if it doesn't.  Default is `<font_name>.bzr'.\n" \
++"range <char1>-<char2>: only process characters between <char1> and\n" \
++"  <char2>, inclusive. \n" \
++"reparameterize-improve <percent>: if reparameterization\n" \
++"  doesn't improve the fit by this much, as a percentage, stop; default\n" \
++"  is 10.\n" \
++"reparameterize-threshold <real>: if an initial fit is off by more\n" \
++"  pixels than this, don't bother to reparameterize; default is 30.\n" \
++"subdivide-search <percent>: percentage of the curve from the initial\n" \
++"  guess for a subdivision point to look for a better one; default is 10.\n" \
++"subdivide-surround <unsigned>: number of points on either side of a\n" \
++"  point to consider when looking for a subdivision point; default is 4.\n" \
++"subdivide-threshold <real>: if a point is this close or closer to a\n" \
++"  straight line, subdivide there; default is .03.\n" \
++"tangent-surround <unsigned>: number of points on either side of a\n" \
++"  point to consider when computing the tangent at that point; default is 3.\n" \
++"verbose: print brief progress reports on stderr.\n" \
++"version: print the version number of this program.\n"
+ 
+ /* We return the name of the font to process.  */
+ 
+Only in fontutils-0.7/limn: main.o
+Only in fontutils-0.7/limn: output-bzr.o
+Only in fontutils-0.7/limn: pxl-outline.o
+Only in fontutils-0.7/limn: version.o
+Only in fontutils-0.7/limn: xserver.o
+diff -ru fontutils-0.7_orig/pbm/libpbm1.c fontutils-0.7/pbm/libpbm1.c
+--- fontutils-0.7_orig/pbm/libpbm1.c	2008-12-05 22:26:20.000000000 +0100
++++ fontutils-0.7/pbm/libpbm1.c	2008-12-05 22:15:10.000000000 +0100
+@@ -14,7 +14,7 @@
+ 
+ #include "pbm.h"
+ #include "libpbm.h"
+-#include <varargs.h>
++#include <stdarg.h>
+ 
+ #if 0 /* karl */
+ extern char *malloc ();
+diff -ru fontutils-0.7_orig/tfm/tfm_input.c fontutils-0.7/tfm/tfm_input.c
+--- fontutils-0.7_orig/tfm/tfm_input.c	2008-12-05 22:26:20.000000000 +0100
++++ fontutils-0.7/tfm/tfm_input.c	2008-12-05 22:15:10.000000000 +0100
+@@ -81,8 +81,7 @@
+ tfm_open_input_file (string filename)
+ {
+   if (tfm_input_file != NULL)
+-    FATAL2 ("tfm_open_input_file: Attempt to open `%s', but `%s' is
+-already open", filename, tfm_input_name);
++    FATAL2 ("tfm_open_input_file: Attempt to open `%s', but `%s' is already open", filename, tfm_input_name);
+ 
+   tfm_input_name = filename;
+   tfm_input_file = fopen (filename, "r");
+@@ -264,8 +263,7 @@
+      than we can deal with.  */
+   if (tfm_header.param_word_count > TFM_MAX_FONTDIMENS)
+     {
+-      WARNING3 ("%s: TFM file has %u parameters, which is more than the
+-%u I can handle",
++      WARNING3 ("%s: TFM file has %u parameters, which is more than the %u I can handle",
+                 tfm_input_name, tfm_header.param_word_count,
+                 TFM_MAX_FONTDIMENS);
+       tfm_header.param_word_count = TFM_MAX_FONTDIMENS;
+@@ -384,10 +382,10 @@
+ #define GET_CHAR_DIMEN(d)						\
+    if (d##_index != 0)							\
+      {									\
+-       TFM_FSEEK (tfm_header.##d##_pos + d##_index*4, SEEK_SET);	\
++       TFM_FSEEK (tfm_header.d##_pos + d##_index*4, SEEK_SET);	\
+        tfm_char.fix_##d = TFM_GET_FOUR ();				\
+-       tfm_char.##d = fix_to_real (tfm_char.fix_##d)			\
+-                      * global_info->design_size;			\
++       tfm_char.d = fix_to_real (tfm_char.fix_##d)			\
++                    * global_info->design_size;			\
+      }
+ 
+   GET_CHAR_DIMEN (width);
+diff -ru fontutils-0.7_orig/widgets/Form.c fontutils-0.7/widgets/Form.c
+--- fontutils-0.7_orig/widgets/Form.c	2008-12-05 22:26:20.000000000 +0100
++++ fontutils-0.7/widgets/Form.c	2008-12-05 22:15:10.000000000 +0100
+@@ -236,12 +236,15 @@
+ 	w->form.needs_relayout = True;
+     }
+     else {
+-	(*((FormWidgetClass)w->core.widget_class)->form_class.layout)
++      typedef Boolean (*RefigureFnType)();
++	((RefigureFnType)(*((FormWidgetClass)w->core.widget_class)->form_class.layout))
+ 	    ( w, w->core.width, w->core.height );
+ 	w->form.needs_relayout = False;
+     }
+ }
+ 
++static void LayoutChild();
++
+ /* ARGSUSED */
+ static Boolean Layout(fw, width, height)
+     FormWidget fw;
+@@ -251,7 +254,6 @@
+     WidgetList children = fw->composite.children;
+     Widget *childP;
+     Position maxx, maxy;
+-    static void LayoutChild();
+     Boolean ret_val;
+ 
+     for (childP = children; childP - children < num_children; childP++) {
+diff -ru fontutils-0.7_orig/widgets/Viewport.c fontutils-0.7/widgets/Viewport.c
+--- fontutils-0.7_orig/widgets/Viewport.c	2008-12-05 22:26:20.000000000 +0100
++++ fontutils-0.7/widgets/Viewport.c	2008-12-05 22:15:10.000000000 +0100
+@@ -346,8 +346,9 @@
+ 			XtMapWidget( child );
+ 		}
+ 	    }
++      typedef Boolean (*RefigureFnType)();
+ 	    GetGeometry( widget, child->core.width, child->core.height );
+-	    (*((ViewportWidgetClass)w->core.widget_class)->form_class.layout)
++	    ((RefigureFnType)(*((ViewportWidgetClass)w->core.widget_class)->form_class.layout))
+ 		( (FormWidget)w, w->core.width, w->core.height );
+ 	    /* %%% do we need to hide this child from Form?  */
+ 	}
+@@ -407,6 +408,7 @@
+     RedrawThumbs(w);
+ }
+ 
++static void ComputeWithForceBars();
+ 
+ static void ComputeLayout(widget, query, destroy_scrollbars)
+     Widget widget;		/* Viewport */
+@@ -421,7 +423,6 @@
+     Boolean needshoriz, needsvert;
+     Dimension clip_width, clip_height;
+     XtWidgetGeometry intended;
+-    static void ComputeWithForceBars();
+ 
+     if (child == (Widget) NULL) return;
+ 
+diff -ru fontutils-0.7_orig/xbfe/main.c fontutils-0.7/xbfe/main.c
+--- fontutils-0.7_orig/xbfe/main.c	2008-12-05 22:15:50.000000000 +0100
++++ fontutils-0.7/xbfe/main.c	2008-12-05 22:18:06.000000000 +0100
+@@ -421,23 +421,22 @@
+ /* This is defined in version.c.  */
+ extern string version_string;
+ 
+-#define USAGE "Options:
+-<font_name> should be a filename, possibly with a resolution, e.g.,
+-  `cmr10' or `cmr10.300'.\n"						\
++#define USAGE "Options:\n" \
++"<font_name> should be a filename, possibly with a resolution, e.g.,\n" \
++"  `cmr10' or `cmr10.300'.\n"						\
+   GETOPT_USAGE 								\
+-"  The standard X toolkit options are also accepted.  The class name is `XBfe'.
+-dpi <unsigned>: use this resolution; default is 300.
+-expansion <unsigned>: each pixel in the bitmap will be this many pixels
+-  square on the display; default is 12.  You can't use `=' here to
+-  separate the option name and value.  You can set this value by setting
+-  a resource `expansion' in your .Xdefaults file.
+-initial-char <char>: start up displaying the character <char>; default is
+-  the character in the font with the smallest code.
+-help: print this message.
+-output-file <filename>: use <filename> as the output file; default is
+-  `<font_name>.<dpi>gf' and `<font_name>.tfm'.
+-version: print the version number of this program.
+-"
++"  The standard X toolkit options are also accepted.  The class name is `XBfe'.\n" \
++"dpi <unsigned>: use this resolution; default is 300.\n" \
++"expansion <unsigned>: each pixel in the bitmap will be this many pixels\n" \
++"  square on the display; default is 12.  You can't use `=' here to\n" \
++"  separate the option name and value.  You can set this value by setting\n" \
++"  a resource `expansion' in your .Xdefaults file.\n" \
++"initial-char <char>: start up displaying the character <char>; default is\n" \
++"  the character in the font with the smallest code.\n" \
++"help: print this message.\n" \
++"output-file <filename>: use <filename> as the output file; default is\n" \
++"  `<font_name>.<dpi>gf' and `<font_name>.tfm'.\n" \
++"version: print the version number of this program.\n"
+ 
+ static string
+ read_command_line (int argc, string argv[])
+Only in fontutils-0.7/xbfe: main.o
+Only in fontutils-0.7/xbfe: version.o
+Only in fontutils-0.7/xbfe: xbfe

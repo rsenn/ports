@@ -1,0 +1,100 @@
+# $Id: Pkgfile,v 1.3 2006/06/11 13:27:37 roman Exp $
+#
+# Description: Collection of binary utilities
+# Longdescription:
+# Includes tools capable of linking and managing archives, including
+# handling object code, libraries, profile data, and symbol names.
+# URL: http://www.gnu.org/software/binutils
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=msys-binutils
+
+version=2.17.50
+date=20060824
+release=1
+target=i686-pc-msys
+
+source=($mirror_sf/mingw/binutils-$version-$date-$release-src.tar.gz
+        binutils-2.17.50-msys.patch
+        binutils-2.17.50-20060824-1-extdeps.patch
+        binutils-2.17.50-20060824-1-extdeps-full.patch)
+
+build()
+{
+  cd binutils-$version-$date-$release-src
+
+#  cp -rf $SRC/binutils-$version-$date-$release-src{,_orig}
+
+#  patch -N -p1 -i $SRC/binutils-2.17.50-20060824-1-extdeps-full.patch
+  patch -N -p1 -i $SRC/binutils-2.17.50-msys.patch
+
+  autotoolize
+
+#  rm -f include/bfdver.h
+#  LIBINTL="-lintl" \
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       ${target+--target="$target"} \
+       --prefix="$prefix"
+
+  make INSTALL="$INSTALL" DESTDIR="$PKG" all install
+
+  rm -rf $ROOT/{info,share}
+  rm -f $ROOT/lib/libiberty.a
+
+  return 0
+
+  (cd $ROOT/$target/bin
+   for bin in *
+   do
+     ln -svf ../../bin/$target-$bin $bin
+   done)
+
+  (cd $ROOT/bin
+   for bin in $target-*
+   do
+     test -e $ROOT/$target/bin/${bin#$target-} || \
+     ln -sv ../../bin/$bin $ROOT/$target/bin/${bin#$target-}
+   done)
+
+  (cd $ROOT/man/man1
+   for man in *
+   do
+     rm -f $man
+     ln -svf ${man#$host-}.gz ${man}.gz
+   done)
+
+  copy_license "COPYING"
+}
+
+autotoolize()
+{
+  autoconf --force
+
+  for dir in binutils gas ld gprof; do
+    (cd $dir
+
+    libtoolize --force --copy
+    aclocal --force -I . -I .. -I ../config --force
+
+    if [ -f "Makefile.am" ]; then
+      automake -a --foreign --force --copy &&
+      aclocal -I . -I .. -I ../config --force
+    fi
+
+    autoconf --force)
+  done
+
+  if [ "$target" != "$host" ]; then
+    libs="$prefix/$target/lib"
+    headers="$prefix/$target/include"
+  else
+    unset libs headers
+  fi
+
+  msg "Copying 'config.{guess,sub}' from '$datadir/automake'..."
+  cp $datadir/automake/config.{sub,guess} .
+}

@@ -1,0 +1,46 @@
+# $Id: Pkgfile,v 1.8 2007/04/22 23:07:53 roman Exp $
+#
+# Description: the GNU TLS library
+#  gnutls is a portable library which implements the Transport Layer
+#  Security (TLS) 1.0 and Secure Sockets Layer (SSL) 3.0 protocols.
+#  .
+#  Currently gnutls implements:
+#   - the TLS 1.0 and SSL 3.0 protocols, without any US-export
+#     controlled algorithms
+#   - X509 Public Key Infrastructure (with several limitations).
+#   - SRP for TLS authentication.
+#   - TLS Extension mechanism
+#   .
+# URL: http://www.gnutls.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=gnutls
+version=2.6.2
+release=1
+source=(ftp://ftp.gnupg.org/gcrypt/gnutls/gnutls-$version.tar.bz2)
+
+build()
+{
+  cd gnutls-$version
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --infodir="$prefix/info" \
+      --${static:=enable}-shared \
+      --${shared:=enable}-shared \
+      --with-libiconv-prefix="$prefix" \
+      --with-libintl-prefix="$prefix" \
+      --with-libgcrypt-prefix="$prefix" \
+      --with-libopencdk-prefix="$prefix" \
+      --with-libtasn1-prefix="$prefix" \
+      --with-libz-prefix="$prefix" \
+      --with-libreadline-prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  rm -f $ROOT/info/dir
+}

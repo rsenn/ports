@@ -1,0 +1,26 @@
+diff -ru httpd-2.0.63_orig/server/mpm/prefork/prefork.c httpd-2.0.63/server/mpm/prefork/prefork.c
+--- httpd-2.0.63_orig/server/mpm/prefork/prefork.c	2008-11-22 01:31:46.000000000 +0100
++++ httpd-2.0.63/server/mpm/prefork/prefork.c	2008-11-22 01:34:29.000000000 +0100
+@@ -1179,6 +1179,9 @@
+ 	parent_pid = ap_my_pid = getpid();
+     }
+ 
++    int pid = getpid();
++    setpgid(pid, pid);
++  
+     unixd_pre_config(ptemp);
+     ap_listen_pre_config();
+     ap_daemons_to_start = DEFAULT_START_DAEMON;
+diff -ru httpd-2.0.63_orig/server/mpm/worker/worker.c httpd-2.0.63/server/mpm/worker/worker.c
+--- httpd-2.0.63_orig/server/mpm/worker/worker.c	2008-11-22 01:31:46.000000000 +0100
++++ httpd-2.0.63/server/mpm/worker/worker.c	2008-11-22 01:34:29.000000000 +0100
+@@ -1852,6 +1852,9 @@
+         parent_pid = ap_my_pid = getpid();
+     }
+ 
++    int pid = getpid();
++    setpgid(pid, pid);
++    
+     unixd_pre_config(ptemp);
+     ap_listen_pre_config();
+     ap_daemons_to_start = DEFAULT_START_DAEMON;

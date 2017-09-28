@@ -1,0 +1,147 @@
+diff -ru XMP-Toolkit-SDK-4.4.2_orig/build/gcc3.2/XMPCore.mak XMP-Toolkit-SDK-4.4.2/build/gcc3.2/XMPCore.mak
+--- XMP-Toolkit-SDK-4.4.2_orig/build/gcc3.2/XMPCore.mak	2009-02-27 19:50:38.000000000 +0100
++++ XMP-Toolkit-SDK-4.4.2/build/gcc3.2/XMPCore.mak	2009-02-27 19:51:48.000000000 +0100
+@@ -140,10 +140,10 @@
+     WXMPUtils.cpp \
+     XML_Node.cpp
+ 
+-CCSources = \
+-    xmlparse.c \
+-    xmlrole.c \
+-    xmltok.c
++#CCSources = \
++#    xmlparse.c \
++#    xmlrole.c \
++#    xmltok.c
+ 
+ Includes = \
+    -I${HeaderRoot} \
+Only in XMP-Toolkit-SDK-4.4.2/intermediate/i80386linux/release: ExpatAdapter.o
+Only in XMP-Toolkit-SDK-4.4.2/intermediate/i80386linux/release: MD5.o
+Only in XMP-Toolkit-SDK-4.4.2/intermediate/i80386linux/release: ParseRDF.o
+Only in XMP-Toolkit-SDK-4.4.2/intermediate/i80386linux/release: UnicodeConversions.o
+Only in XMP-Toolkit-SDK-4.4.2/intermediate/i80386linux/release: WXMPIterator.o
+Only in XMP-Toolkit-SDK-4.4.2/intermediate/i80386linux/release: WXMPMeta.o
+Only in XMP-Toolkit-SDK-4.4.2/intermediate/i80386linux/release: WXMPUtils.o
+Only in XMP-Toolkit-SDK-4.4.2/intermediate/i80386linux/release: XML_Node.o
+Only in XMP-Toolkit-SDK-4.4.2/intermediate/i80386linux/release: XMPCore_Impl.o
+Only in XMP-Toolkit-SDK-4.4.2/intermediate/i80386linux/release: XMPIterator.o
+Only in XMP-Toolkit-SDK-4.4.2/intermediate/i80386linux/release: XMPMeta-GetSet.o
+Only in XMP-Toolkit-SDK-4.4.2/intermediate/i80386linux/release: XMPMeta-Parse.o
+Only in XMP-Toolkit-SDK-4.4.2/intermediate/i80386linux/release: XMPMeta-Serialize.o
+Only in XMP-Toolkit-SDK-4.4.2/intermediate/i80386linux/release: XMPMeta.o
+Only in XMP-Toolkit-SDK-4.4.2/intermediate/i80386linux/release: XMPUtils-FileInfo.o
+Only in XMP-Toolkit-SDK-4.4.2/intermediate/i80386linux/release: XMPUtils.o
+Only in XMP-Toolkit-SDK-4.4.2/public/libraries/i80386linux/release: libXMPCoreStaticRelease.a
+diff -ru XMP-Toolkit-SDK-4.4.2_orig/samples/build/gcc3.2/XMPSamples.mak XMP-Toolkit-SDK-4.4.2/samples/build/gcc3.2/XMPSamples.mak
+--- XMP-Toolkit-SDK-4.4.2_orig/samples/build/gcc3.2/XMPSamples.mak	2009-02-27 19:50:37.000000000 +0100
++++ XMP-Toolkit-SDK-4.4.2/samples/build/gcc3.2/XMPSamples.mak	2009-02-27 20:21:21.000000000 +0100
+@@ -99,6 +99,7 @@
+ LDFlags = 
+ LDLibs  =  ${LibXMP} -Xlinker -R -Xlinker .
+ LDLibs  += -lc -lm -lpthread -lstdc++
++LDLibs  += -lexpat
+ 
+ ifeq "${TargetOS}" "i80386linux"
+ 	CPPFlags += -D__LITTLE_ENDIAN__=1
+Only in XMP-Toolkit-SDK-4.4.2/samples: intermediate
+diff -ru XMP-Toolkit-SDK-4.4.2_orig/samples/source/DumpMainXMP.cpp XMP-Toolkit-SDK-4.4.2/samples/source/DumpMainXMP.cpp
+--- XMP-Toolkit-SDK-4.4.2_orig/samples/source/DumpMainXMP.cpp	2009-02-27 19:50:36.000000000 +0100
++++ XMP-Toolkit-SDK-4.4.2/samples/source/DumpMainXMP.cpp	2009-02-27 20:23:19.000000000 +0100
+@@ -18,6 +18,7 @@
+ #include <stdlib.h>
+ #include <stdexcept>
+ #include <errno.h>
++#include <cstring>
+ 
+ #if WIN_ENV
+ 	#pragma warning ( disable : 4127 )	// conditional expression is constant
+diff -ru XMP-Toolkit-SDK-4.4.2_orig/samples/source/DumpScannedXMP.cpp XMP-Toolkit-SDK-4.4.2/samples/source/DumpScannedXMP.cpp
+--- XMP-Toolkit-SDK-4.4.2_orig/samples/source/DumpScannedXMP.cpp	2009-02-27 19:50:37.000000000 +0100
++++ XMP-Toolkit-SDK-4.4.2/samples/source/DumpScannedXMP.cpp	2009-02-27 20:24:01.000000000 +0100
+@@ -18,6 +18,7 @@
+ #include <stdlib.h>
+ #include <stdexcept>
+ #include <errno.h>
++#include <cstring>
+ 
+ #if WIN_ENV
+ 	#pragma warning ( disable : 4127 )	// conditional expression is constant
+diff -ru XMP-Toolkit-SDK-4.4.2_orig/samples/source/ModifyingXMP.cpp XMP-Toolkit-SDK-4.4.2/samples/source/ModifyingXMP.cpp
+--- XMP-Toolkit-SDK-4.4.2_orig/samples/source/ModifyingXMP.cpp	2009-02-27 19:50:37.000000000 +0100
++++ XMP-Toolkit-SDK-4.4.2/samples/source/ModifyingXMP.cpp	2009-02-27 20:24:43.000000000 +0100
+@@ -27,6 +27,7 @@
+ 
+ #include <iostream>
+ #include <fstream>
++#include <cstring>
+ 
+ using namespace std; 
+ 
+diff -ru XMP-Toolkit-SDK-4.4.2_orig/samples/source/XMPCoreCoverage.cpp XMP-Toolkit-SDK-4.4.2/samples/source/XMPCoreCoverage.cpp
+--- XMP-Toolkit-SDK-4.4.2_orig/samples/source/XMPCoreCoverage.cpp	2009-02-27 19:50:36.000000000 +0100
++++ XMP-Toolkit-SDK-4.4.2/samples/source/XMPCoreCoverage.cpp	2009-02-27 19:59:47.000000000 +0100
+@@ -19,6 +19,7 @@
+ #include <stdlib.h>
+ #include <errno.h>
+ #include <time.h>
++#include <cstring>
+ 
+ #define TXMP_STRING_TYPE	std::string
+ 
+diff -ru XMP-Toolkit-SDK-4.4.2_orig/samples/source/XMPFilesCoverage.cpp XMP-Toolkit-SDK-4.4.2/samples/source/XMPFilesCoverage.cpp
+--- XMP-Toolkit-SDK-4.4.2_orig/samples/source/XMPFilesCoverage.cpp	2009-02-27 19:50:36.000000000 +0100
++++ XMP-Toolkit-SDK-4.4.2/samples/source/XMPFilesCoverage.cpp	2009-02-27 20:27:42.000000000 +0100
+@@ -16,6 +16,7 @@
+ #include <stdexcept>
+ #include <errno.h>
+ #include <time.h>
++#include <cstring>
+ 
+ #define TXMP_STRING_TYPE std::string
+ #define XMP_INCLUDE_XMPFILES 1
+diff -ru XMP-Toolkit-SDK-4.4.2_orig/samples/source/XMPScanner.cpp XMP-Toolkit-SDK-4.4.2/samples/source/XMPScanner.cpp
+--- XMP-Toolkit-SDK-4.4.2_orig/samples/source/XMPScanner.cpp	2009-02-27 19:50:36.000000000 +0100
++++ XMP-Toolkit-SDK-4.4.2/samples/source/XMPScanner.cpp	2009-02-27 20:20:32.000000000 +0100
+@@ -22,6 +22,7 @@
+ #include <cassert>
+ #include <string>
+ #include <cstdlib>
++#include <cstring>
+ 
+ #if DEBUG
+ 	#include <iostream>
+diff -ru XMP-Toolkit-SDK-4.4.2_orig/samples/source/XmpIterations.cpp XMP-Toolkit-SDK-4.4.2/samples/source/XmpIterations.cpp
+--- XMP-Toolkit-SDK-4.4.2_orig/samples/source/XmpIterations.cpp	2009-02-27 19:50:37.000000000 +0100
++++ XMP-Toolkit-SDK-4.4.2/samples/source/XmpIterations.cpp	2009-02-27 20:27:58.000000000 +0100
+@@ -25,6 +25,7 @@
+ #include "XMP.hpp"
+ 
+ #include <iostream>
++#include <cstring>
+ 
+ using namespace std;
+ 
+Only in XMP-Toolkit-SDK-4.4.2/samples: target
+diff -ru XMP-Toolkit-SDK-4.4.2_orig/source/XMPCore/XMPCore_Impl.hpp XMP-Toolkit-SDK-4.4.2/source/XMPCore/XMPCore_Impl.hpp
+--- XMP-Toolkit-SDK-4.4.2_orig/source/XMPCore/XMPCore_Impl.hpp	2009-02-27 19:50:36.000000000 +0100
++++ XMP-Toolkit-SDK-4.4.2/source/XMPCore/XMPCore_Impl.hpp	2009-02-27 19:52:34.000000000 +0100
+@@ -20,6 +20,7 @@
+ #include <map>
+ 
+ #include <cassert>
++#include <cstring>
+ 
+ #if XMP_WinBuild
+ 	#include <Windows.h>
+diff -ru XMP-Toolkit-SDK-4.4.2_orig/source/common/XML_Node.cpp XMP-Toolkit-SDK-4.4.2/source/common/XML_Node.cpp
+--- XMP-Toolkit-SDK-4.4.2_orig/source/common/XML_Node.cpp	2009-02-27 19:50:36.000000000 +0100
++++ XMP-Toolkit-SDK-4.4.2/source/common/XML_Node.cpp	2009-02-27 19:56:21.000000000 +0100
+@@ -10,6 +10,7 @@
+ #include "XMLParserAdapter.hpp"
+ 
+ #include <map>
++#include <cstring>
+ 
+ // ! Can't include XMP..._Impl.hpp - used by both Core and Files.
+ #define XMP_LitNMatch(s,l,n)	(std::strncmp((s),(l),(n)) == 0)

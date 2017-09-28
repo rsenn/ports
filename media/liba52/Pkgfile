@@ -1,0 +1,37 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: a free ATSC A/52 stream decoder
+#  liba52 is a free library for decoding ATSC A/52 streams. 
+#  The A/52 standard is used in a variety of applications, including digital 
+#  television and DVD. It is also known as AC-3. The package also includes 
+#  a52dec, a small test program for liba52.
+#  .
+# URL: http://liba52.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=liba52
+version=0.7.4
+release=1
+source=(http://liba52.sourceforge.net/files/a52dec-$version.tar.gz)
+
+build() 
+{
+  cd a52dec-$version
+  
+  #./bootstrap
+  
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --mandir="$prefix/share/man"
+  
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/liba52
+  install -m 644 README AUTHORS COPYING ChangeLog INSTALL NEWS TODO HISTORY doc/liba52.txt $ROOT/share/doc/liba52
+}
+
+# EOF

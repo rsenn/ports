@@ -1,0 +1,46 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: A patching tool to graphically connect signal processing units in a network
+#  CLAM is a multiplatform software framework for research and application
+#  development for the Audio and Music domains. It offers a conceptual model
+#  for building systems as well as tools for the analysis, synthesis, and
+#  transformation of audio signals using high level representation (notes,
+#  spectral peaks, etc.). It also provides multiplatform system abstraction
+#  and tools for audio and MIDI file handling, device handling, GUI and XML
+#  support, and more. It has proper Linux audio architecture integration
+#  (Ladspa, Alsa, OSC, Jack, VST, etc.) and rapid graphical prototyping both
+#  for the processing core and the user interface (Qt designer integration).
+# URL: http://clam.iua.upf.es
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libaudio2, libc6, libclam13, libfontconfig1, libfreetype6, libgcc1, libgl1-mesa-glx, libglib2.0-0, libglu1-mesa, libice6, libpng12-0, libqt4-core, libqt4-gui, libsm6, libstdc++6, libx11-6, libxcursor1, libxext6, libxfixes3, libxi6, libxinerama1, libxrandr2, libxrender1, libxt6, zlib1g
+
+name=networkeditor
+version=1.3.0
+release=1
+source=(http://clam.iua.upf.edu/download/src/NetworkEditor-$version.tar.gz
+#        NetworkEditor-1.2.1-20080601.patch
+#        NetworkEditor-1.2.1-20080601-20080607.patch
+        NetworkEditor-1.3.0-20090302.diff.gz
+        NetworkEditor-1.3.0-20090302-images.tar.gz
+        network-editor-qinterfaces.patch)
+
+build()
+{
+  cd NetworkEditor-$version
+
+#  patch -N -p1 -i $SRC/NetworkEditor-1.2.1-20080601.patch
+#  patch -N -p1 -i $SRC/NetworkEditor-1.2.1-20080601-20080607.patch
+   zcat $SRC/NetworkEditor-1.3.0-20090302.diff.gz | patch -p1
+   tar -xzf $SRC/NetworkEditor-1.3.0-20090302-images.tar.gz
+
+  install -d $ROOT/{bin,include,lib}
+
+  scons \
+      release="yes" \
+      verbose="yes" \
+      prefix="$ROOT" \
+      clam_prefix="$prefix" \
+      with_osc="yes"
+
+  scons install
+}

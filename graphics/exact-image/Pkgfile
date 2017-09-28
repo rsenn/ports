@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A fast and generic image processing library.
+#  ExactImage is a fast C++ image processing library. Unlike ImageMagick,
+#  it allows operation in several color spaces and bit depths natively,
+#  resulting in much lower memory and computational requirements. Some
+#  optimized algorithms operate in 1/20 of the time ImageMagick requires,
+#  and displaying large images can be as fast as 1/10 of the time the
+#  "display" program takes.
+#  .
+# URL: http://www.exactcode.de/site/open_source/exactimage/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=exact-image
+version=0.6.5
+release=1
+source=(http://dl.exactcode.de/oss/exact-image/exact-image-$version.tar.bz2)
+
+build()
+{
+  cd exact-image-$version
+
+  ./configure \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

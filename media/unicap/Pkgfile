@@ -1,0 +1,27 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: unicap provides a uniform interface to video capture devices.
+# It allows applications to use any supported video capture device via a
+# single API.
+# URL: http://www.unicap-imaging.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=unicap
+version=0.2.19
+release=1
+source=(http://www.unicap-imaging.org/downloads/unicap-$version.tar.gz)
+
+build()
+{
+  cd unicap-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

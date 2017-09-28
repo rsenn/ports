@@ -1,0 +1,27 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Play sounds in response to network traffic
+#  The tcpsound(1) utility will play sounds in response to network traffic
+#  permitting a user to literally listen to a network. Specifically tcpsound
+#  forks a pseudo terminal in which to run tcpdump(8), parses that output,
+#  and plays a wide variety of user configuable sounds. Interpreting the
+#  output of tcpdump in a pty permits tcpsound to first ssh(1) to a remote
+#  host if desired.
+#  .
+# URL: http://www.ioplex.com/~miallen/tcpsound/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=tcpsound
+version=
+release=1
+source=(http://www.ioplex.com/~miallen/tcpsound/dl/tcpsound-0.3.1.tar.gz)
+
+build()
+{
+  cd tcpsound-0.3.1
+make
+make prefix="$ROOT" install
+}
+
+# EOF

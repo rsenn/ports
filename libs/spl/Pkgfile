@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: The Standard Portable Library is a pointer friendly C/C++ STL
+# replacement. The API is similar to java or .net and includes network and
+# database support.
+# URL: http://sourceforge.net/projects/spl/
+
+name=spl
+version=0.2.2
+release=1
+source=($mirror_sf/spl/spl-$version.tar.gz
+        spl-0.2.2-statistics-header.patch)
+
+build()
+{
+  cd spl-$version
+
+  patch -N -p1 -i $SRC/spl-0.2.2-statistics-header.patch
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make #libspl_la_LDFLAGS="-rpath \$(libdir) -no-undefined -version-info 1:0:0"
+  make DESTDIR="$PKG" install
+}

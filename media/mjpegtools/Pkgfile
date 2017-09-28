@@ -1,0 +1,40 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:50 roman Exp $
+#
+# Description: Tools for MJPEG/MPEG capture/editing/compression.
+#  Mjpeg tools is a suite of programs which support video capture, basic editing, 
+#  playback, and compression to MPEG-1/2 of MJPEG video. The capture software 
+#  allows MJPEG video streams in AVI, Quicktime, and movtar format to be produced 
+#  using the Iomega Buz, Miro DC10+, Matrox Marvel, and similar hardware. 
+#  The editing and playback tools are hardware independent, with support for 
+#  hardware accelerated playback if present. The MPEG compression tools are 
+#  based on MPEG Software Simulation Group's reference encoder with enhancements 
+#  to provide far faster compression and significant quality improvements.
+#  .
+# URL: http://mjpeg.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=mjpegtools
+version=1.9.0
+release=1
+source=($mirror_sf/mjpeg/mjpegtools-$version.tar.gz)
+
+build()
+{
+  cd mjpegtools-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --mandir="$prefix/share/man" \
+       --infodir="$prefix/info/man" \
+       --disable-shared \
+       --${static:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/mjpegtools
+  install -m 644 mjpeg_howto.txt COPYING BUGS HINTS README README.DV docs/FAQ.txt AUTHORS TODO README.AltiVec CHANGES ChangeLog INSTALL PLANS NEWS $ROOT/share/doc/mjpegtools
+}

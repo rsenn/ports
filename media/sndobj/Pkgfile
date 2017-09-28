@@ -1,0 +1,51 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:52 roman Exp $
+#
+# Description: Sound object library.
+#  The Sound Object Library is an object-oriented audio processing
+#  library. It provides objects for synthesis and processing of sound that
+#  can be used to build applications for computer-generated music.
+# URL: http://sndobj.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=sndobj
+version=2.6.6
+release=1
+source=($mirror_sf/sndobj/SndObj-$version.tar.gz
+        SndObj-2.6.4-fixes.patch
+        SndObj-2.6.6-cstring.patch)
+
+build()
+{
+  cd SndObj-$version || cd SndObj
+
+  patch -N -p1 -i $SRC/SndObj-2.6.4-fixes.patch
+  patch -N -p1 -i $SRC/SndObj-2.6.6-cstring.patch
+
+  #install -d $ROOT/lib/libsndobj.so
+
+  scons \
+      prefix="$ROOT" \
+      nostaticlib="yes" \
+      pythonmodule="no"
+
+  scons install
+
+  #rm -rf $ROOT/lib/libsndobj.so
+
+  #install -m 755 lib/libsndobj.so $ROOT/lib/libsndobj.so.${version%.*}
+  #ln -s libsndobj.so.${version%.*} $ROOT/lib/libsndobj.so.${version%%.*}
+  #ln -s libsndobj.so.${version%%.*} $ROOT/lib/libsndobj.so
+
+  #install -d $ROOT/lib/python2.5/site-packages
+  #install -m 755 python/_sndobj.so $ROOT/lib/python2.5/site-packages
+
+  #install -d $ROOT/include
+  #cp -rf include/SndObj $ROOT/include
+
+  #install -d $ROOT/share/doc/sndobj
+  #install -m 644 build.txt licence.txt $ROOT/share/doc/sndobj
+#  scons prefix="$ROOT" install
+  install -d $ROOT/share/doc/sndobj
+  install -m 644 License.txt build.txt $ROOT/share/doc/sndobj
+}

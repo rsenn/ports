@@ -1,0 +1,76 @@
+diff -ru exscalibar-1.0.4_orig/doc/tutorial/tutorial13/tutorial13.pro exscalibar-1.0.4/doc/tutorial/tutorial13/tutorial13.pro
+--- exscalibar-1.0.4_orig/doc/tutorial/tutorial13/tutorial13.pro	2009-02-28 10:44:10.000000000 +0100
++++ exscalibar-1.0.4/doc/tutorial/tutorial13/tutorial13.pro	2009-02-28 10:48:27.000000000 +0100
+@@ -14,4 +14,4 @@
+ CONFIG += qt thread exceptions debug warn_on
+ VERSION = 1.0.0
+ INSTALLS += target
+-target.path = ${EXSCALIBAR_LOCATION}/plugins/geddei
++target.path = ${EXSCALIBAR_LOCATION}/lib/exscalibar/plugins/geddei
+diff -ru exscalibar-1.0.4_orig/doc/tutorials.tex exscalibar-1.0.4/doc/tutorials.tex
+--- exscalibar-1.0.4_orig/doc/tutorials.tex	2009-02-28 10:44:10.000000000 +0100
++++ exscalibar-1.0.4/doc/tutorials.tex	2009-02-28 10:48:27.000000000 +0100
+@@ -1212,13 +1212,13 @@
+ VERSION = 1.0.0
+ \end{verbatim}
+ 
+-Running \texttt{qmake}, and then \texttt{make} will result in our library being built. The name will depend upon your platform, but under Linux we can see that is called \texttt{libtutorial13.so.1.0.0}. Now we have to put this somewhere where Geddei's (\texttt{Sub})\texttt{ProcessorFactory} class can see it. A guaranteed location where it will search is \texttt{\$EXSCALIBAR\_LOCATION/plugins/geddei}. Copying it over is a platform dependant operation, and typically would be a function done by your software's installer.
++Running \texttt{qmake}, and then \texttt{make} will result in our library being built. The name will depend upon your platform, but under Linux we can see that is called \texttt{libtutorial13.so.1.0.0}. Now we have to put this somewhere where Geddei's (\texttt{Sub})\texttt{ProcessorFactory} class can see it. A guaranteed location where it will search is \texttt{\$EXSCALIBAR\_LOCATION/lib/exscalibar/plugins/geddei}. Copying it over is a platform dependant operation, and typically would be a function done by your software's installer.
+ 
+ Instead of manually copying it over we will utilise QMake's installation functionality. With an extra two lines we can change the \texttt{Makefile} so that it will not only build our plugin, but also install it:
+ 
+ \begin{verbatim}
+ INSTALLS += target
+-target.path = ${EXSCALIBAR_LOCATION}/plugins/geddei
++target.path = ${EXSCALIBAR_LOCATION}/lib/exscalibar/plugins/geddei
+ \end{verbatim}
+ 
+ Running \texttt{qmake} followed by \texttt{make install} will now result in the necessary plugin libraries being copied to the correct location in the system (assuming the current user has the right privileges). Let's check everything went OK with the exinfo tool:
+diff -ru exscalibar-1.0.4_orig/src/geddei/globals.cpp exscalibar-1.0.4/src/geddei/globals.cpp
+--- exscalibar-1.0.4_orig/src/geddei/globals.cpp	2009-02-28 10:44:10.000000000 +0100
++++ exscalibar-1.0.4/src/geddei/globals.cpp	2009-02-28 10:48:27.000000000 +0100
+@@ -75,7 +75,7 @@
+ 	if(std::getenv("GEDDEI_PLUGINS"))
+ 		ret += QStringList::split(":", std::getenv("GEDDEI_PLUGINS"));
+ 	if(std::getenv("EXSCALIBAR_LOCATION"))
+-		ret += QString(std::getenv("EXSCALIBAR_LOCATION")) + "/plugins/geddei";
++		ret += QString(std::getenv("EXSCALIBAR_LOCATION")) + "/lib/exscalibar/plugins/geddei";
+ 	QStringList thePaths(QApplication::libraryPaths());
+ 	for(QStringList::Iterator i = thePaths.begin(); i != thePaths.end(); i++)
+ 		ret += ((*i) + "/geddei");
+diff -ru exscalibar-1.0.4_orig/src/processors/math/math.pro exscalibar-1.0.4/src/processors/math/math.pro
+--- exscalibar-1.0.4_orig/src/processors/math/math.pro	2009-02-28 10:44:10.000000000 +0100
++++ exscalibar-1.0.4/src/processors/math/math.pro	2009-02-28 10:48:27.000000000 +0100
+@@ -6,7 +6,7 @@
+ include( ../../../globalplugin.pro )
+ 
+ INSTALLS += target 
+-target.path = $$PREFIX/plugins/geddei 
++target.path = $$PREFIX/lib/exscalibar/plugins/geddei 
+ TARGETDEPS += ../../../src/qtextra/libqtextra.so \
+               ../../../src/geddei/libgeddei.so 
+ LIBS += -lgeddei \
+diff -ru exscalibar-1.0.4_orig/src/processors/mir/mir.pro exscalibar-1.0.4/src/processors/mir/mir.pro
+--- exscalibar-1.0.4_orig/src/processors/mir/mir.pro	2009-02-28 10:44:10.000000000 +0100
++++ exscalibar-1.0.4/src/processors/mir/mir.pro	2009-02-28 10:48:27.000000000 +0100
+@@ -6,7 +6,7 @@
+ include( ../../../globalplugin.pro )
+ 
+ INSTALLS += target 
+-target.path = $$PREFIX/plugins/geddei 
++target.path = $$PREFIX/lib/exscalibar/plugins/geddei 
+ TARGETDEPS += ../../../src/qtextra/libqtextra.so \
+               ../../../src/geddei/libgeddei.so 
+ LIBS += -lgeddei \
+diff -ru exscalibar-1.0.4_orig/src/processors/toolkit/toolkit.pro exscalibar-1.0.4/src/processors/toolkit/toolkit.pro
+--- exscalibar-1.0.4_orig/src/processors/toolkit/toolkit.pro	2009-02-28 10:44:10.000000000 +0100
++++ exscalibar-1.0.4/src/processors/toolkit/toolkit.pro	2009-02-28 10:48:27.000000000 +0100
+@@ -6,7 +6,7 @@
+ include( ../../../globalplugin.pro )
+ INSTALLS += headers \
+             target 
+-target.path = $$PREFIX/plugins/geddei 
++target.path = $$PREFIX/lib/exscalibar/plugins/geddei 
+ headers.files += *.h 
+ headers.path = $$PREFIX/include/geddeiprocessors 
+ HEADERS += monitor.h \

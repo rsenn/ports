@@ -1,0 +1,24 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: WavTools is a set of WAV file processing programs for Unix.
+# URL: http://www.morphet.org.uk/comp/wavtools.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=wavtools
+version=0.2.1
+release=1
+source=(http://www.morphet.org.uk/downloads/wavtools-$version.tar.gz)
+
+build()
+{
+  cd wavtools-$version
+
+  make CC="${CC-cc}" CFLAGS="$CFLAGS"
+
+  install -d $ROOT/bin
+  install -m 755 wav{cat,info,pad} $ROOT/bin
+
+  install -d $ROOT/share/doc/wavtools
+  install -m 644 COPYING README $ROOT/share/doc/wavtools
+}

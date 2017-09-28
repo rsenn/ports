@@ -1,0 +1,26 @@
+#!/usr/local/bin/sh
+#
+# $Id: mysqlbackup.in,v 1.1 2007/01/19 11:43:32 root Exp $
+
+source '/usr/local/etc/nexbyte.conf'
+source '/usr/local/etc/mysqlbackup.conf'
+source '/usr/local/local/config/mysqlbackup.conf'
+
+if [ "$databases" = "*" ]; then
+  dbopt='--all-databases'
+fi
+
+mkdir -p "$destination"
+
+exec mysql-zrm \
+  --action "backup" \
+  --backup-set "$backupset" \
+  --user "$mysql_username" \
+  --password "$mysql_password" \
+  --host "$mysql_host" \
+  --port "$mysql_port" \
+  ${dbopt:-"--databases" "$databases"} ${dbopt} \
+  ${destination:+--destination "$destination"} \
+  --verbose \
+  --backup-mode logical
+

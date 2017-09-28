@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A command-line program for downloading via HTTP, HTTPS, or FTP.
+#  syren is a CLI file downloader somewhat similar to wget and aria2c. It
+#  features support for HTTP, HTTPS, and FTP, resumable downloads, HTTP
+#  proxy support (including CONNECT mode for HTTPS), LISP scripting support,
+#  a small reusable downloader library, a small, reusable, and fast LISP
+#  interpreter library, predictable console output suitable for parsing by
+#  frontends, cookie support, easy changing of UserAgent and Referer fields,
+#  POST method support, and more.
+#  .
+# URL: http://trac-git.assembla.com/syren
+# Maintainer:  Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=syren
+version=0.0.6
+release=1
+source=(http://www.assembla.com/spaces/syren/documents/bzavQwwmGr3BzEab7jnrAJ/download?filename=full+sources)
+
+build()
+{
+  cd syren-$version
+
+  jam
+
+  install -d $ROOT/share/doc/syren
+  install -m 644 ChangeLog $ROOT/share/doc/syren
+}
+
+# EOF

@@ -1,0 +1,137 @@
+diff -ru rxvt-2.7.10_orig/autoconf/configure.in rxvt-2.7.10/autoconf/configure.in
+--- rxvt-2.7.10_orig/autoconf/configure.in	2007-10-26 11:02:21.000000000 +0200
++++ rxvt-2.7.10/autoconf/configure.in	2007-10-26 12:23:31.000000000 +0200
+@@ -175,6 +175,12 @@
+     AC_DEFINE(HALFSHADOW, 1, Define if you want the depth of scrollbars and menus to be less)
+   fi])
+ 
++AC_ARG_ENABLE(reverse-video,
++  [  --enable-reverse-video  reverse video (white on black)],
++  [if test x$enableval = xyes; then
++    AC_DEFINE_UNQUOTED([REVERSE_VIDEO], [1], [reverse video (white on black)])
++  fi])
++
+ AC_ARG_ENABLE(xim,
+   [  --enable-xim            XIM (X Input Method) protocol support               *],
+   [if test x$enableval = xyes -o x$enableval = xno; then
+@@ -1218,7 +1224,6 @@
+ 
+ AC_OUTPUT(autoconf/Make.common \
+ Makefile \
+-doc/Makefile \
+ src/Makefile \
+ src/graphics/Makefile \
+ src/test/Makefile \
+diff -ru rxvt-2.7.10_orig/src/feature.h rxvt-2.7.10/src/feature.h
+--- rxvt-2.7.10_orig/src/feature.h	2007-10-26 11:02:21.000000000 +0200
++++ rxvt-2.7.10/src/feature.h	2007-10-26 12:26:27.000000000 +0200
+@@ -123,7 +123,7 @@
+  */
+ /* These colours MUST be defined */
+ #define COLOR_FOREGROUND	"Black"
+-#define COLOR_BACKGROUND	"White"
++#define COLOR_BACKGROUND	"#c7c7c7"
+ #define COLOR_SCROLLBAR		"#B2B2B2"	/* scrollColor match Netscape */
+ #define COLOR_SCROLLTROUGH	"#969696"
+ /*
+@@ -427,7 +427,7 @@
+ /*
+  * Default number of lines in the scrollback buffer
+  */
+-#define SAVELINES	64
++#define SAVELINES	256
+ 
+ /*
+  * Provide termcap/terminfo bw support
+@@ -441,6 +441,6 @@
+  * sets (NFONT_LIST) have been matched up
+  */
+ #define MAX_NFONTS	7
+-#define FONT0_IDX	2
++#define FONT0_IDX	0
+ 
+ #endif
+diff -ru rxvt-2.7.10_orig/src/init.c rxvt-2.7.10/src/init.c
+--- rxvt-2.7.10_orig/src/init.c	2007-10-26 11:02:21.000000000 +0200
++++ rxvt-2.7.10/src/init.c	2007-10-26 12:36:00.000000000 +0200
+@@ -640,7 +640,7 @@
+ 			 rs[Rs_scrollBar_thickness]);
+ #endif
+ 
+-#if 0	/* #ifndef NO_BOLDFONT */
++#ifndef NO_BOLDFONT 
+     if (rs[Rs_font] == NULL && rs[Rs_boldFont] != NULL) {
+ 	rs[Rs_font] = rs[Rs_boldFont];
+ 	rs[Rs_boldFont] = NULL;
+@@ -648,9 +648,12 @@
+ #endif
+     rxvt_set_defaultfont(r, rs);
+ 
++#ifndef REVERSE_VIDEO
++#define REVERSE_VIDEO 0
++#endif
+ #ifdef XTERM_REVERSE_VIDEO
+ /* this is how xterm implements reverseVideo */
+-    if (r->Options & Opt_reverseVideo) {
++    if (!(r->Options & Opt_reverseVideo) == !REVERSE_VIDEO) {
+ 	if (!rs[Rs_color + Color_fg])
+ 	    rs[Rs_color + Color_fg] = def_colorName[Color_bg];
+ 	if (!rs[Rs_color + Color_bg])
+@@ -664,7 +667,7 @@
+ 
+ #ifndef XTERM_REVERSE_VIDEO
+ /* this is how we implement reverseVideo */
+-    if (r->Options & Opt_reverseVideo)
++    if (!(r->Options & Opt_reverseVideo) == !REVERSE_VIDEO)
+ 	SWAP_IT(rs[Rs_color + Color_fg], rs[Rs_color + Color_bg], const char *);
+ #endif
+ 
+@@ -784,7 +787,7 @@
+ 	    rxvt_print_error("The locale is not supported by Xlib");
+ 	    return;
+ 	}
+-	rxvt_setTermFontSet(r, 0);
++	rxvt_setTermFontSet(r, 2);
+ 
+ 	/* see if we can connect yet */
+ 	rxvt_IMInstantiateCallback(r->Xdisplay, NULL, NULL);
+@@ -1096,7 +1099,7 @@
+ /* grab colors before netscape does */
+     rxvt_Get_Colours(r);
+ 
+-    rxvt_change_font(r, 1, NULL);
++    rxvt_change_font(r, 1, A_12);
+     rxvt_window_calc(r, 0, 0);
+     r->h->old_width = r->szHint.width;
+     r->h->old_height = r->szHint.height;
+diff -ru rxvt-2.7.10_orig/src/defaultfont.h rxvt-2.7.10/src/defaultfont.h
+--- rxvt-2.7.10_orig/src/defaultfont.h	2008-06-08 03:27:16.000000000 +0200
++++ rxvt-2.7.10/src/defaultfont.h	2008-06-08 03:31:16.000000000 +0200
+@@ -90,6 +90,7 @@
+  * ASCII font definitions (only used in this file)
+  */
+ 
++#define A_10 "-misc-fixed-medium-r-semicondensed--10-90-75-75-c-50-iso8859-1"
+ #define A_12 "-misc-fixed-medium-r-semicondensed--12-110-75-75-c-60-iso8859-1"
+ #define A_14 "-misc-fixed-medium-r-normal--14-130-75-75-c-70-iso8859-1"
+ #define A_16 "-etl-fixed-medium-r-normal--16-160-72-72-c-80-iso8859-1"
+diff -ru rxvt-2.7.10_orig/src/init.c rxvt-2.7.10/src/init.c
+--- rxvt-2.7.10_orig/src/init.c	2008-06-08 03:27:16.000000000 +0200
++++ rxvt-2.7.10/src/init.c	2008-06-08 03:31:40.000000000 +0200
+@@ -34,6 +34,7 @@
+ #include "../config.h"		/* NECESSARY */
+ #include "rxvt.h"		/* NECESSARY */
+ #include "init.h"
++#include "defaultfont.h"
+ 
+ #include <signal.h>
+ 
+@@ -1099,7 +1100,7 @@
+ /* grab colors before netscape does */
+     rxvt_Get_Colours(r);
+ 
+-    rxvt_change_font(r, 1, A_12);
++    rxvt_change_font(r, 1, "6x13");
+     rxvt_window_calc(r, 0, 0);
+     r->h->old_width = r->szHint.width;
+     r->h->old_height = r->szHint.height;

@@ -1,0 +1,24 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:48 roman Exp $
+#
+# Description: A parallel classical molecular dynamics package.
+#  LAMMPS is classical molecular dynamics simulation software designed to
+#  run efficiently on parallel computers or single-processor boxes. It
+#  can simulate atomic systems, polymers, metals, proteins, or other
+#  bio-molecules, and granular materials. It's designed to allow for easy
+#  modification and extension.
+# URL: http://www.cs.sandia.gov/~sjplimp/lammps.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=lammps
+version=20070722
+release=1
+source=(http://lammps.sandia.gov/tars/lammps.tar.gz)
+
+build()
+{
+  cd lammps*/src
+
+  make g++ USRLIB="-lfftw -lmpich -lpthread"
+  make prefix="$ROOT" install
+}

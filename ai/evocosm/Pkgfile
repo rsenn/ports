@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A C++ framework for evolutionary computing and genetic algorithms.
+#  Evocosm is a C++ class framework for programming a wide variety of
+#  evolutionary algorithms, ranging from genetic algorithms to agent
+#  simulations. Evocosm is the foundation for Acovea.
+#  .
+# URL: http://www.coyotegulch.com/products/libevocosm/index.html
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=evocosm
+version=3.3.1
+release=1
+source=(http://www.coyotegulch.com/distfiles/libevocosm-3.3.1.tar.bz2)
+
+build()
+{
+  cd libevocosm-3.3.1
+./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+make
+make DESTDIR="$PKG" install
+}
+
+# EOF

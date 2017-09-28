@@ -1,0 +1,45 @@
+diff -ru jabberd-1.4.3.1_orig/configure jabberd-1.4.3.1/configure
+--- jabberd-1.4.3.1_orig/configure	2008-07-30 15:04:19.000000000 +0200
++++ jabberd-1.4.3.1/configure	2008-07-30 15:05:52.000000000 +0200
+@@ -35,7 +35,8 @@
+ LDFLAGS="$LDFLAGS -lexpat"
+ LIBS="$LIBS"
+ XLDFLAGS="$XLDFLAGS "
+-JHOME=`pwd`
++JHOME="$prefix/lib/jabberd14"
++CONFIGXML="/etc/jabberd14/jabber.xml"
+ 
+ ##
+ # Print a cool header
+@@ -207,6 +208,7 @@
+ PSUBDIR=$PSUBDIR
+ PLINK=$PLINK
+ JHOME=$JHOME
++CONFIGXML=$CONFIGXML
+ __CYGWIN__=$CYGWIN
+ EOF
+ chmod 0700 platform-settings
+diff -ru jabberd-1.4.3.1_orig/jabberd/Makefile jabberd-1.4.3.1/jabberd/Makefile
+--- jabberd-1.4.3.1_orig/jabberd/Makefile	2008-07-30 15:04:19.000000000 +0200
++++ jabberd-1.4.3.1/jabberd/Makefile	2008-07-30 15:06:16.000000000 +0200
+@@ -6,7 +6,7 @@
+ ifeq ($(ISSINGLE),1)
+ 	DEFINES=-DHOME="\"$(JHOME)\"" -DSINGLE -DSTATIC
+ else
+-	DEFINES=-DHOME="\"$(JHOME)\"" -DCONFIGXML="\"jabber.xml\""
++	DEFINES=-DHOME="\"$(JHOME)\"" -DCONFIGXML="\"$(CONFIGXML)\""
+ endif
+ ifeq ($(ISSTATIC),1)
+ 	DEFINES=-DHOME="\"$(JHOME)\"" -DSTATIC
+diff -ru jabberd-1.4.3.1_orig/jabberd/config.c jabberd-1.4.3.1/jabberd/config.c
+--- jabberd-1.4.3.1_orig/jabberd/config.c	2008-07-30 15:10:33.000000000 +0200
++++ jabberd-1.4.3.1/jabberd/config.c	2008-07-30 15:10:58.000000000 +0200
+@@ -174,7 +174,7 @@
+ 
+ int configurate(char *file)
+ {
+-    char def[] = "jabber.xml";
++    char def[] = CONFIGXML;
+     char *realfile = (char *)def;
+     xmlnode incl;
+     char *c;

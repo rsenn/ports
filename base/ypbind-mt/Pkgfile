@@ -1,0 +1,30 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: ypbind-mt is a complete new implementation of a NIS binding daemon
+#  ypbind-mt is a multi-threaded implementation of a NIS binding
+#  daemon. ypbind-mt compiles and works on Linux with glibx 2.x (libc6). It
+#  should work on every System with POSIX threads and glibc 2.x. It works
+#  under Linux with libc5 and linuxthreads 0.7.1, but this C library isn't
+#  really thread safe and shouldn't be used with threads.
+# URL: http://www.linux-nis.org/nis/ypbind-mt/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=ypbind-mt
+version=1.20.4
+release=1
+source=(ftp://ftp.kernel.org/pub/linux/utils/net/NIS/ypbind-mt-$version.tar.bz2)
+
+build()
+{
+  cd ypbind-mt-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

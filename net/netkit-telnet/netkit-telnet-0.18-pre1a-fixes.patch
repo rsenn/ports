@@ -1,0 +1,51 @@
+Only in netkit-telnet-0.18-pre1a/telnet: environ.o
+Only in netkit-telnet-0.18-pre1a/telnet: genget.o
+Only in netkit-telnet-0.18-pre1a/telnet: netlink.o
+Only in netkit-telnet-0.18-pre1a/telnet: telnet
+diff -ru netkit-telnet-0.18-pre1a_orig/telnet/telnet.c netkit-telnet-0.18-pre1a/telnet/telnet.c
+--- netkit-telnet-0.18-pre1a_orig/telnet/telnet.c	2009-03-13 05:37:12.000000000 +0100
++++ netkit-telnet-0.18-pre1a/telnet/telnet.c	2009-03-13 05:38:22.000000000 +0100
+@@ -558,7 +558,7 @@
+ 	 newalloced = (newalloced+1)*2;
+       }
+ 
+-      assert(SIZE_T_MAX/sizeof(struct stringentry) > newalloced);
++      assert(UINT_MAX/sizeof(struct stringentry) > newalloced);
+       allocsize = newalloced*sizeof(struct stringentry);
+ 
+       newentries = (struct stringentry *)realloc(ar->entries, allocsize);
+Only in netkit-telnet-0.18-pre1a/telnet: telnet.o
+Only in netkit-telnet-0.18-pre1a/telnet: terminal.o
+Only in netkit-telnet-0.18-pre1a/telnet: tn3270.o
+diff -ru netkit-telnet-0.18-pre1a_orig/telnet/utilities.c netkit-telnet-0.18-pre1a/telnet/utilities.c
+--- netkit-telnet-0.18-pre1a_orig/telnet/utilities.c	2009-03-13 05:37:12.000000000 +0100
++++ netkit-telnet-0.18-pre1a/telnet/utilities.c	2009-03-13 05:40:02.000000000 +0100
+@@ -80,13 +80,15 @@
+     if (file && strcmp(file, "-")) {
+ 	NetTrace = fopen(file, "w");
+ 	if (NetTrace) {
+-	    strlcpy(NetTraceFile, file, sizeof(NetTraceFile));
++	    strncpy(NetTraceFile, file, sizeof(NetTraceFile));
++      NetTraceFile[sizeof(NetTraceFile)-1] = '\0';
+ 	    return;
+ 	}
+ 	fprintf(stderr, "Cannot open %s.\n", file);
+     }
+     NetTrace = stdout;
+-    strlcpy(NetTraceFile, "(standard output)", sizeof(NetTraceFile));
++    strncpy(NetTraceFile, "(standard output)", sizeof(NetTraceFile));
++    NetTraceFile[sizeof(NetTraceFile)-1] = '\0';
+ }
+ 
+ #define BYTES_PER_LINE	32
+Only in netkit-telnet-0.18-pre1a/telnet: utilities.o
+Only in netkit-telnet-0.18-pre1a/telnetd: buffer.o
+Only in netkit-telnet-0.18-pre1a/telnetd: global.o
+Only in netkit-telnet-0.18-pre1a/telnetd: setproctitle.o
+Only in netkit-telnet-0.18-pre1a/telnetd: slc.o
+Only in netkit-telnet-0.18-pre1a/telnetd: state.o
+Only in netkit-telnet-0.18-pre1a/telnetd: sys_term.o
+Only in netkit-telnet-0.18-pre1a/telnetd: telnetd
+Only in netkit-telnet-0.18-pre1a/telnetd: telnetd.o
+Only in netkit-telnet-0.18-pre1a/telnetd: termstat.o
+Only in netkit-telnet-0.18-pre1a/telnetd: utility.o

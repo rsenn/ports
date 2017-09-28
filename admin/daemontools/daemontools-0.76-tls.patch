@@ -1,0 +1,187 @@
+diff -ru daemontools-0.76_orig/src/alloc.c daemontools-0.76/src/alloc.c
+--- daemontools-0.76_orig/src/alloc.c	2006-01-30 13:31:28.000000000 +0100
++++ daemontools-0.76/src/alloc.c	2006-01-30 13:36:14.000000000 +0100
+@@ -1,6 +1,7 @@
+ /* Public domain. */
+ 
+ #include <stdlib.h>
++#include <errno.h>
+ #include "alloc.h"
+ #include "error.h"
+ 
+diff -ru daemontools-0.76_orig/src/buffer_get.c daemontools-0.76/src/buffer_get.c
+--- daemontools-0.76_orig/src/buffer_get.c	2006-01-30 13:31:28.000000000 +0100
++++ daemontools-0.76/src/buffer_get.c	2006-01-30 13:36:58.000000000 +0100
+@@ -1,5 +1,6 @@
+ /* Public domain. */
+ 
++#include <errno.h>
+ #include "buffer.h"
+ #include "byte.h"
+ #include "error.h"
+diff -ru daemontools-0.76_orig/src/buffer_put.c daemontools-0.76/src/buffer_put.c
+--- daemontools-0.76_orig/src/buffer_put.c	2006-01-30 13:31:28.000000000 +0100
++++ daemontools-0.76/src/buffer_put.c	2006-01-30 13:36:23.000000000 +0100
+@@ -1,5 +1,6 @@
+ /* Public domain. */
+ 
++#include <errno.h>
+ #include "buffer.h"
+ #include "str.h"
+ #include "byte.h"
+diff -ru daemontools-0.76_orig/src/envdir.c daemontools-0.76/src/envdir.c
+--- daemontools-0.76_orig/src/envdir.c	2006-01-30 13:31:28.000000000 +0100
++++ daemontools-0.76/src/envdir.c	2006-01-30 13:34:34.000000000 +0100
+@@ -1,4 +1,5 @@
+ #include <unistd.h>
++#include <errno.h>
+ #include "byte.h"
+ #include "open.h"
+ #include "error.h"
+@@ -19,8 +20,6 @@
+   strerr_die2x(111,FATAL,"out of memory");
+ }
+ 
+-static stralloc sa;
+-
+ int main(int argc,const char *const *argv)
+ {
+   int fdorigdir;
+@@ -28,6 +27,7 @@
+   DIR *dir;
+   direntry *d;
+   int i;
++  stralloc sa = {0,0,0};
+ 
+   if (!*argv) die_usage();
+ 
+diff -ru daemontools-0.76_orig/src/fghack.c daemontools-0.76/src/fghack.c
+--- daemontools-0.76_orig/src/fghack.c	2006-01-30 13:31:28.000000000 +0100
++++ daemontools-0.76/src/fghack.c	2006-01-30 13:36:31.000000000 +0100
+@@ -1,4 +1,5 @@
+ #include <unistd.h>
++#include <errno.h>
+ #include "wait.h"
+ #include "error.h"
+ #include "strerr.h"
+diff -ru daemontools-0.76_orig/src/multilog.c daemontools-0.76/src/multilog.c
+--- daemontools-0.76_orig/src/multilog.c	2006-01-30 13:31:28.000000000 +0100
++++ daemontools-0.76/src/multilog.c	2006-01-30 13:36:50.000000000 +0100
+@@ -1,6 +1,7 @@
+ #include <unistd.h>
+ #include <sys/types.h>
+ #include <sys/stat.h>
++#include <errno.h>
+ #include "direntry.h"
+ #include "alloc.h"
+ #include "buffer.h"
+diff -ru daemontools-0.76_orig/src/openreadclose.c daemontools-0.76/src/openreadclose.c
+--- daemontools-0.76_orig/src/openreadclose.c	2006-01-30 13:31:28.000000000 +0100
++++ daemontools-0.76/src/openreadclose.c	2006-01-30 13:35:10.000000000 +0100
+@@ -1,5 +1,7 @@
+ /* Public domain. */
+ 
++#include <errno.h>
++
+ #include "error.h"
+ #include "open.h"
+ #include "readclose.h"
+diff -ru daemontools-0.76_orig/src/pathexec_run.c daemontools-0.76/src/pathexec_run.c
+--- daemontools-0.76_orig/src/pathexec_run.c	2006-01-30 13:31:28.000000000 +0100
++++ daemontools-0.76/src/pathexec_run.c	2006-01-30 13:35:25.000000000 +0100
+@@ -1,5 +1,7 @@
+ /* Public domain. */
+ 
++#include <errno.h>
++
+ #include "error.h"
+ #include "stralloc.h"
+ #include "str.h"
+diff -ru daemontools-0.76_orig/src/readclose.c daemontools-0.76/src/readclose.c
+--- daemontools-0.76_orig/src/readclose.c	2006-01-30 13:31:28.000000000 +0100
++++ daemontools-0.76/src/readclose.c	2006-01-30 13:35:53.000000000 +0100
+@@ -1,6 +1,7 @@
+ /* Public domain. */
+ 
+ #include <unistd.h>
++#include <errno.h>
+ #include "error.h"
+ #include "readclose.h"
+ 
+diff -ru daemontools-0.76_orig/src/readproctitle.c daemontools-0.76/src/readproctitle.c
+--- daemontools-0.76_orig/src/readproctitle.c	2006-01-30 13:31:28.000000000 +0100
++++ daemontools-0.76/src/readproctitle.c	2006-01-30 13:37:05.000000000 +0100
+@@ -1,4 +1,5 @@
+ #include <unistd.h>
++#include <errno.h>
+ #include "error.h"
+ 
+ int main(int argc,char **argv)
+diff -ru daemontools-0.76_orig/src/strerr_sys.c daemontools-0.76/src/strerr_sys.c
+--- daemontools-0.76_orig/src/strerr_sys.c	2006-01-30 13:31:28.000000000 +0100
++++ daemontools-0.76/src/strerr_sys.c	2006-01-30 13:36:03.000000000 +0100
+@@ -1,5 +1,6 @@
+ /* Public domain. */
+ 
++#include <errno.h>
+ #include "error.h"
+ #include "strerr.h"
+ 
+diff -ru daemontools-0.76_orig/src/supervise.c daemontools-0.76/src/supervise.c
+--- daemontools-0.76_orig/src/supervise.c	2006-01-30 13:31:28.000000000 +0100
++++ daemontools-0.76/src/supervise.c	2006-01-30 13:37:14.000000000 +0100
+@@ -2,6 +2,7 @@
+ #include <sys/types.h>
+ #include <sys/stat.h>
+ #include <signal.h>
++#include <errno.h>
+ #include "sig.h"
+ #include "strerr.h"
+ #include "error.h"
+diff -ru daemontools-0.76_orig/src/svc.c daemontools-0.76/src/svc.c
+--- daemontools-0.76_orig/src/svc.c	2006-01-30 13:31:28.000000000 +0100
++++ daemontools-0.76/src/svc.c	2006-01-30 13:37:20.000000000 +0100
+@@ -1,4 +1,5 @@
+ #include <unistd.h>
++#include <errno.h>
+ #include "ndelay.h"
+ #include "strerr.h"
+ #include "error.h"
+diff -ru daemontools-0.76_orig/src/svok.c daemontools-0.76/src/svok.c
+--- daemontools-0.76_orig/src/svok.c	2006-01-30 13:31:28.000000000 +0100
++++ daemontools-0.76/src/svok.c	2006-01-30 13:37:26.000000000 +0100
+@@ -1,4 +1,5 @@
+ #include <unistd.h>
++#include <errno.h>
+ #include "strerr.h"
+ #include "error.h"
+ #include "open.h"
+diff -ru daemontools-0.76_orig/src/svscan.c daemontools-0.76/src/svscan.c
+--- daemontools-0.76_orig/src/svscan.c	2006-01-30 13:31:28.000000000 +0100
++++ daemontools-0.76/src/svscan.c	2006-01-30 13:37:33.000000000 +0100
+@@ -1,4 +1,5 @@
+ #include <unistd.h>
++#include <errno.h>
+ #include <sys/types.h>
+ #include <sys/stat.h>
+ #include "direntry.h"
+diff -ru daemontools-0.76_orig/src/svstat.c daemontools-0.76/src/svstat.c
+--- daemontools-0.76_orig/src/svstat.c	2006-01-30 13:31:28.000000000 +0100
++++ daemontools-0.76/src/svstat.c	2006-01-30 13:37:39.000000000 +0100
+@@ -1,4 +1,5 @@
+ #include <unistd.h>
++#include <errno.h>
+ #include <sys/types.h>
+ #include <sys/stat.h>
+ #include "strerr.h"
+diff -ru daemontools-0.76_orig/src/wait_pid.c daemontools-0.76/src/wait_pid.c
+--- daemontools-0.76_orig/src/wait_pid.c	2006-01-30 13:31:28.000000000 +0100
++++ daemontools-0.76/src/wait_pid.c	2006-01-30 13:36:40.000000000 +0100
+@@ -2,6 +2,7 @@
+ 
+ #include <sys/types.h>
+ #include <sys/wait.h>
++#include <errno.h>
+ #include "error.h"
+ #include "haswaitp.h"
+ 

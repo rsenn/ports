@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Render stdin onto the root window with line wrap and scrolling
+# xroottext takes text from stdin and renders it into a rectangular
+# pseudo-terminal in the root window. It processes newlines and tabs and
+# does line wrap and scroll. There is no scrollbar.
+#
+# URL: http://web.purplefrog.com/~thoth/xroottext.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libx11-6, libxau6, libxdmcp6
+
+name=xroottext
+version=0.8
+release=1
+source=(http://web.purplefrog.com/~thoth/ftp/xroottext-$version.tgz)
+
+build()
+{
+  cd xroottext-$version
+
+  ${CC-cc} $LDFLAGS $CFLAGS -include string.h -o xroottext xroottext.c -lX11 -lXdmcp -lXau
+
+  install -d $ROOT/bin
+  install -m 755 xroottext $ROOT/bin
+
+  install -d $ROOT/share/doc/xroottext
+  install -m 644 [A-Z]*[A-Z]* $ROOT/share/doc/xroottext
+}

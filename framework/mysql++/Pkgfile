@@ -1,0 +1,30 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:52 roman Exp $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=mysql++
+version=2.2.2
+release=1
+source=($mirror_gentoo/mysql++-$version.tar.gz
+        mysql++-2.2.2-cstring.patch)
+
+build() 
+{
+  cd mysql++-$version
+  
+  patch -p1 -i $SRC/mysql++-2.2.2-cstring.patch
+  
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --${shared:=enable}-shared \
+      --${static:=enable}-shared
+
+  make #LDFLAGS="-no-undefined -version-number ${version//./:}"
+  make DESTDIR="$PKG" install
+}
+

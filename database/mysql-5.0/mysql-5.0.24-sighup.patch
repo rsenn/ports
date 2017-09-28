@@ -1,0 +1,88 @@
+diff -ru -ru mysql-5.0.24_orig/sql/mysqld.cc mysql-5.0.24/sql/mysqld.cc
+--- mysql-5.0.24_orig/sql/mysqld.cc	2006-10-05 14:49:01.000000000 +0200
++++ mysql-5.0.24/sql/mysqld.cc	2006-10-05 14:51:00.000000000 +0200
+@@ -964,7 +964,7 @@
+   abort_loop=1;					// This should be set
+   if (sig != 0) // 0 is not a valid signal number
+     my_sigset(sig,SIG_IGN);
+-  if (sig == MYSQL_KILL_SIGNAL || sig == 0)
++  if (sig == MYSQL_KILL_SIGNAL && sig != 0)
+     sql_print_information(ER(ER_NORMAL_SHUTDOWN),my_progname);
+   else
+     sql_print_error(ER(ER_GOT_SIGNAL),my_progname,sig); /* purecov: inspected */
+@@ -1725,7 +1725,7 @@
+ #if defined(__WIN__) || defined(OS2)
+ static void init_signals(void)
+ {
+-  int signals[] = {SIGINT,SIGILL,SIGFPE,SIGSEGV,SIGTERM,SIGABRT } ;
++  int signals[] = {SIGINT,SIGHUP,SIGILL,SIGFPE,SIGSEGV,SIGTERM,SIGABRT } ;
+   for (uint i=0 ; i < sizeof(signals)/sizeof(int) ; i++)
+     signal(signals[i], kill_server) ;
+ #if defined(__WIN__)
+@@ -1954,7 +1954,7 @@
+ 
+ static void init_signals(void)
+ {
+-  int signals[] = {SIGINT,SIGILL,SIGFPE,SIGSEGV,SIGTERM,SIGABRT};
++  int signals[] = {SIGINT,SIGHUP,SIGILL,SIGFPE,SIGSEGV,SIGTERM,SIGABRT};
+ 
+   for (uint i=0 ; i < sizeof(signals)/sizeof(int) ; i++)
+     signal(signals[i], kill_server);
+@@ -2007,7 +2007,8 @@
+   signal(SIGKILL, sig_kill);
+   signal(SIGTERM, sig_kill);
+   signal(SIGINT,  sig_kill);
+-  signal(SIGHUP,  sig_reload);	// Flush everything
++  signal(SIGHUP,  sig_kill);
++  signal(SIGUSR1, sig_reload);	// Flush everything
+   signal(SIGALRM, SIG_IGN);
+   signal(SIGBREAK,SIG_IGN);
+   signal_thread = pthread_self();
+@@ -2171,8 +2172,8 @@
+   sigaddset(&set,SIGINT);
+ #ifndef IGNORE_SIGHUP_SIGQUIT
+   sigaddset(&set,SIGQUIT);
+-  sigaddset(&set,SIGHUP);
+ #endif
++  sigaddset(&set,SIGHUP);
+   sigaddset(&set,SIGTERM);
+ 
+   /* Fix signals if blocked by parents (can happen on Mac OS X) */
+@@ -2257,7 +2258,7 @@
+   if (test_flags & TEST_SIGINT)
+   {
+     (void) sigemptyset(&set);			// Setup up SIGINT for debug
+-    (void) sigaddset(&set,SIGINT);		// For debugging
++/*    (void) sigaddset(&set,SIGINT);*/
+     (void) pthread_sigmask(SIG_UNBLOCK,&set,NULL);
+   }
+ #endif
+@@ -2267,10 +2268,8 @@
+ #endif
+ #ifndef IGNORE_SIGHUP_SIGQUIT
+   (void) sigaddset(&set,SIGQUIT);
+-#if THR_CLIENT_ALARM != SIGHUP
+-  (void) sigaddset(&set,SIGHUP);
+-#endif
+ #endif
++  (void) sigaddset(&set,SIGHUP);
+   (void) sigaddset(&set,SIGTERM);
+   (void) sigaddset(&set,SIGTSTP);
+ 
+@@ -2319,6 +2318,7 @@
+     case SIGTERM:
+     case SIGQUIT:
+     case SIGKILL:
++    case SIGHUP:
+ #ifdef EXTRA_DEBUG
+       sql_print_information("Got signal %d to shutdown mysqld",sig);
+ #endif
+@@ -2338,7 +2338,7 @@
+ #endif
+       }
+       break;
+-    case SIGHUP:
++    case SIGUSR1:
+       if (!abort_loop)
+       {
+         bool not_used;

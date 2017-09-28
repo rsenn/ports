@@ -1,0 +1,27 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: The Linux Trace Toolkit catalogs system events in minute detail,
+# and allows a user to determine exactly what is transpiring on his system,
+# down to the microsecond.
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=TraceToolkit
+version=0.9.5a
+release=1
+source=(http://www.opersys.com/ftp/pub/LTT/TraceToolkit-$version.tgz)
+
+build()
+{
+  cd TraceToolkit-${version%[a-z]}
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

@@ -1,0 +1,37 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Audio synthesis tools and instrument simulation.
+# Virtual Sound provides unlimited effects and modulation for sophisticated
+# audio generation, with unique instrument simulation capabilities to
+# craft your own unique soundscapes. All effects are parametrized and their
+# parameters may be controlled through the outputs of other effects, through
+# samples, or through special modulators. Instrument simulation is based
+# on recursively-linked filter networks. Actual instruments can also be
+# simulated through the statistical learning library incorporated in VSound.
+#
+# URL: http://vsound.sourceforge.net/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=vsound
+version=0.2.7
+release=1
+source=($mirror_sf/vsound/vsound-dev-$version-docs.tar.gz
+        $mirror_sf/vsound/vsound-dev-$version.tar.gz
+        vsound-0.2.7-libtool.patch)
+
+build()
+{
+  fs_duplicate vsound-dev-$version
+
+  cd vsound-dev-$version
+
+  patch -N -p1 -i $SRC/vsound-0.2.7-libtool.patch
+
+  make depend
+  make CFLAGS="${CFLAGS-"-g -O2"}"
+  make DESTDIR="$PKG" PREFIX="$prefix" install
+
+  install -d $ROOT/share/doc/vsound
+  cp -rf $SRC/docs/* $ROOT/share/doc/vsound
+}

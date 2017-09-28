@@ -1,0 +1,141 @@
+--- jslibs-0.9-r1881_orig/src/jstrimesh/Makefile	2009-02-06 09:50:31.000000000 +0100
++++ jslibs-0.9-r1881/src/jstrimesh/Makefile	2009-02-06 10:54:05.000000000 +0100
+@@ -1,7 +1,7 @@
+ TARGET     = jstrimesh.so
+ SRC        = $(wildcard *.cpp)
+-INCLUDES   =
++INCLUDES   = `pkg-config js --cflags` 
+ STATICLIBS =
+-SHAREDLIBS =
++SHAREDLIBS = `pkg-config js --libs`
+ 
+ include ../rules.mk
+--- jslibs-0.9-r1881_orig/src/jstrimesh/trimesh.cpp	2009-02-06 09:50:31.000000000 +0100
++++ jslibs-0.9-r1881/src/jstrimesh/trimesh.cpp	2009-02-06 11:02:11.000000000 +0100
+@@ -46,10 +46,10 @@
+ }
+ 
+ DEFINE_CONSTRUCTOR() {
+-
++  Surface *pv;
+ 	J_S_ASSERT_CONSTRUCTING();
+ 	J_S_ASSERT_THIS_CLASS();
+-	Surface *pv = (Surface*)JS_malloc(cx, sizeof(Surface));
++	pv = (Surface*)JS_malloc(cx, sizeof(Surface));
+ 
+ 	Surface empty;
+ 	memset(&empty, 0, sizeof(Surface));
+@@ -158,13 +158,14 @@
+ 
+ 
+ DEFINE_FUNCTION_FAST( DefineVertexBuffer ) {
+-
++  JSObject *arrayObj;
++  Surface *pv;
+ 	J_S_ASSERT_ARG_MIN( 1 );
+ 	J_S_ASSERT_ARRAY( J_FARG(1) );
+-	Surface *pv = (Surface*)JS_GetPrivate(cx, J_FOBJ);
++	pv = (Surface*)JS_GetPrivate(cx, J_FOBJ);
+ 	J_S_ASSERT_ALLOC(pv);
+ 
+-	JSObject *arrayObj = JSVAL_TO_OBJECT(J_FARG(1));
++	arrayObj = JSVAL_TO_OBJECT(J_FARG(1));
+ 	jsuint count;
+ 	J_CHK( JS_GetArrayLength(cx, arrayObj, &count) );
+ 
+@@ -188,13 +189,14 @@
+ 
+ 
+ DEFINE_FUNCTION_FAST( DefineNormalBuffer ) {
+-
++  Surface *pv;
++  JSObject *arrayObj;
+ 	J_S_ASSERT_ARG_MIN( 1 );
+ 	J_S_ASSERT_ARRAY( J_FARG(1) );
+-	Surface *pv = (Surface*)JS_GetPrivate(cx, J_FOBJ);
++	pv = (Surface*)JS_GetPrivate(cx, J_FOBJ);
+ 	J_S_ASSERT_ALLOC(pv);
+ 
+-	JSObject *arrayObj = JSVAL_TO_OBJECT(J_FARG(1));
++	arrayObj = JSVAL_TO_OBJECT(J_FARG(1));
+ 	jsuint count;
+ 	J_CHK( JS_GetArrayLength(cx, arrayObj, &count) );
+ 
+@@ -215,13 +217,14 @@
+ 
+ 
+ DEFINE_FUNCTION_FAST( DefineTextureCoordinateBuffer ) {
+-
++  Surface *pv;
++  JSObject *arrayObj;
+ 	J_S_ASSERT_ARG_MIN( 1 );
+ 	J_S_ASSERT_ARRAY( J_FARG(1) );
+-	Surface *pv = (Surface*)JS_GetPrivate(cx, J_FOBJ);
++	pv = (Surface*)JS_GetPrivate(cx, J_FOBJ);
+ 	J_S_ASSERT_ALLOC(pv);
+ 
+-	JSObject *arrayObj = JSVAL_TO_OBJECT(J_FARG(1));
++	arrayObj = JSVAL_TO_OBJECT(J_FARG(1));
+ 	jsuint count;
+ 	J_CHK( JS_GetArrayLength(cx, arrayObj, &count) );
+ 
+@@ -242,13 +245,14 @@
+ 
+ 
+ DEFINE_FUNCTION_FAST( DefineColorBuffer ) {
+-
++  JSObject *arrayObj;
++  Surface *pv;
+ 	J_S_ASSERT_ARG_MIN( 1 );
+ 	J_S_ASSERT_ARRAY( J_FARG(1) );
+-	Surface *pv = (Surface*)JS_GetPrivate(cx, J_FOBJ);
++	pv = (Surface*)JS_GetPrivate(cx, J_FOBJ);
+ 	J_S_ASSERT_ALLOC(pv);
+ 
+-	JSObject *arrayObj = JSVAL_TO_OBJECT(J_FARG(1));
++	arrayObj = JSVAL_TO_OBJECT(J_FARG(1));
+ 	jsuint count;
+ 	J_CHK( JS_GetArrayLength(cx, arrayObj, &count) );
+ 
+@@ -269,13 +273,14 @@
+ 
+ 
+ DEFINE_FUNCTION_FAST( DefineIndexBuffer ) {
+-
++  JSObject *arrayObj;
++  Surface *pv;
+ 	J_S_ASSERT_ARG_MIN( 1 );
+ 	J_S_ASSERT_ARRAY( J_FARG(1) );
+-	Surface *pv = (Surface*)JS_GetPrivate(cx, J_FOBJ);
++	pv = (Surface*)JS_GetPrivate(cx, J_FOBJ);
+ 	J_S_ASSERT_ALLOC(pv);
+ 
+-	JSObject *arrayObj = JSVAL_TO_OBJECT(J_FARG(1));
++	arrayObj = JSVAL_TO_OBJECT(J_FARG(1));
+ 	jsuint count;
+ 	J_CHK( JS_GetArrayLength(cx, arrayObj, &count) );
+ 
+@@ -320,7 +325,6 @@
+ 	J_S_ASSERT_ALLOC(pv);
+ 	*vp = pv->normal != NULL ? JSVAL_TRUE : JSVAL_FALSE;
+ 	return JS_TRUE;
+-	JL_BAD;
+ }
+ 
+ DEFINE_PROPERTY( hasTextureCoordinateBuffer ) {
+@@ -329,7 +333,6 @@
+ 	J_S_ASSERT_ALLOC(pv);
+ 	*vp = pv->normal != NULL ? JSVAL_TRUE : JSVAL_FALSE;
+ 	return JS_TRUE;
+-	JL_BAD;
+ }
+ 
+ DEFINE_PROPERTY( hasColor ) {
+@@ -338,7 +341,6 @@
+ 	J_S_ASSERT_ALLOC(pv);
+ 	*vp = pv->normal != NULL ? JSVAL_TRUE : JSVAL_FALSE;
+ 	return JS_TRUE;
+-	JL_BAD;
+ }
+ 
+ 

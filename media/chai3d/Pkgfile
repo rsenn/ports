@@ -1,0 +1,38 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: CHAI 3D is an open source, freely available set of C++ libraries for computer haptics, visualization and interactive real-time simulation. CHAI 3D supports several commercially-available three- and six-degree-of-freedom haptic devices, and makes it simple to support new custom force feedback devices.
+# URL: http://www.chai3d.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=chai3d
+version=1.62
+release=1
+source=(http://www.chai3d.org/builds/chai3d%5Bv${version}%5D.zip)
+
+build()
+{
+  cd chai3d
+
+  case $host in
+    *linux*) os="linux" ;;
+  esac
+
+  make -C linux \
+      CC="$CXX -c \$(DEFS)" \
+      CFLAGS="$CXXFLAGS \$(INCLUDE)" \
+      LD="$CXX -o"
+
+  install -d $ROOT/lib
+
+  for lib in lib/${os:-*}/*.a
+  do
+    name=${lib##*/}
+    name=${name%.a}
+
+    install -m 644 $lib $ROOT/lib/${name%_${os:-dummy}}.a
+  done
+
+  install -d $ROOT/include/chai3d
+  cp -rf include/* $ROOT/include/chai3d
+}

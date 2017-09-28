@@ -1,0 +1,35 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=mntd
+version=0.5.0
+release=1
+source=($mirror_sf/mntd/mntd-$version.tar.gz)
+
+build()
+{
+  cd mntd-$version
+
+  case $prefix in
+    "/usr") sysconfdir="/etc" bindir="/bin" sbindir="/sbin" localstatedir="/var" ;;
+  esac
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --sysconfdir="${sysconfdir=$prefix/etc}" \
+      --bindir="${bindir=$prefix/bin}" \
+      --sbindir="${sbindir=$prefix/sbin}" \
+      --localstatedir="${localstatedir=$prefix/etc}" \
+      --${static:=enable}-shared \
+      --${shared:=enable}-shared \
+      --disable-dependency-tracking
+
+  make
+  make DESTDIR="$PKG" install
+}

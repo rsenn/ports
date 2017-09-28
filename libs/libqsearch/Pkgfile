@@ -1,0 +1,25 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: That's a C library aimed to search for set of patterns in buffers as fast as possible. It has also been ported to kernel space.
+# URL: http://www.secdev.org/projects/libqsearch/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libqsearch
+version=0.8
+release=1
+source=(http://www.secdev.org/projects/libqsearch/files/libqsearch-$version.tar.gz)
+
+build()
+{
+  cd libqsearch-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

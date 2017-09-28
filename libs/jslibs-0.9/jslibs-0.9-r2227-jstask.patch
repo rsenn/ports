@@ -1,0 +1,32 @@
+--- jslibs-0.9-r1881_orig/src/jstask/Makefile	2009-02-06 09:50:31.000000000 +0100
++++ jslibs-0.9-r1881/src/jstask/Makefile	2009-02-06 10:54:43.000000000 +0100
+@@ -1,7 +1,7 @@
+ TARGET     = jstask.so
+ SRC        = $(wildcard *.cpp)
+-INCLUDES   =
++INCLUDES   = `pkg-config js --cflags`
+ STATICLIBS =
+-SHAREDLIBS =
++SHAREDLIBS = `pkg-config js --libs`
+ 
+ include ../rules.mk
+--- jslibs-0.9-r1881_orig/src/jstask/task.cpp	2009-02-06 09:50:31.000000000 +0100
++++ jslibs-0.9-r1881/src/jstask/task.cpp	2009-02-06 10:55:17.000000000 +0100
+@@ -157,7 +157,7 @@
+ 			if ( JS_IsExceptionPending(cx) ) { // manageable error
+ 
+ 				J_CHK( JS_GetPendingException(cx, &ex) );
+-				if ( !IsSerializable(ex) ) {
++				if ( !IsSerializable(cx, ex) ) {
+ 
+ 					JSString *jsstr = JS_ValueToString(cx, ex); // transform the exception into a string
+ 					ex = STRING_TO_JSVAL(jsstr);
+@@ -235,7 +235,7 @@
+ 
+ 			J_CHK( JS_GetPendingException(cx, &ex) );
+ 
+-			if ( !IsSerializable(ex) ) {
++			if ( !IsSerializable(cx, ex) ) {
+ 
+ 				JSString *jsstr = JS_ValueToString(cx, ex); // transform the exception into a string
+ 				ex = STRING_TO_JSVAL(jsstr);

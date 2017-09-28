@@ -1,0 +1,36 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:52 roman Exp $
+#
+# Description: A comprehensive object-oriented framework.
+#  ROOT is an OO framework for large-scale scientific data analysis and
+#  data mining. It contains an efficient hierarchical OO database, a C++
+#  interpreter, advanced statistical analysis, visualization, introspection,
+#  documentation, networking, and GUI classes. The command/scripting language
+#  is C++, and large scripts can be compiled and dynamically linked in. Using
+#  the PROOF (Parallel ROOT Facility) extension, large databases can be
+#  analyzed in parallel. The system runs on all known POSIX platforms,
+#  Windows, and MacOS X.
+# URL: http://root.cern.ch/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libfftw3-3, libgcc1, libgfortran2, libgif4, libgl1-mesa-glx, libglu1-mesa, libiodbc2, libjpeg62, libldap-2.4-2, libmysqlclient15off, libpng12-0, libpq5, libssl0.9.8, libstdc++6, libtiff4, libx11-6, libxext6, libxft2, libxml2, libxpm4, nvidia-glx-new, python2.5, zlib1g
+
+name=root
+version=5.19.04
+release=1
+source=(ftp://root.cern.ch/root/root_v$version.source.tar.gz)
+
+build()
+{
+  cd root*
+
+  sed -i "s,/usr/local,$prefix,g" configure
+
+  ./configure 'linux' \
+      --etcdir="$sysconfdir" \
+      --prefix="$prefix" \
+      --disable-krb5 \
+      --disable-xrootd
+
+  make
+  make DESTDIR="$PKG" install
+}
+

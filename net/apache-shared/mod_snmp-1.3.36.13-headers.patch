@@ -1,0 +1,66 @@
+diff -ru -ruN apache_1.3.34_orig/src/include/httpd.h apache_1.3.34/src/include/httpd.h
+--- apache_1.3.34_orig/src/include/httpd.h	2006-05-18 17:32:40.227362096 +0200
++++ apache_1.3.34/src/include/httpd.h	2006-05-18 17:33:58.273497280 +0200
+@@ -180,6 +180,13 @@
+ #define ACCESS_CONFIG_FILE "conf/access.conf"
+ #endif
+ 
++/* Max to the # of virtual hosts, only needed by the SNMP module
++ * (currently) as it claims a static block in the score board.
++ */
++#ifndef HARD_VIRTUAL_HOST_MAX
++#define HARD_VIRTUAL_HOST_MAX 30
++#endif
++
+ /* Whether we should enable rfc1413 identity checking */
+ #ifndef DEFAULT_RFC1413
+ #define DEFAULT_RFC1413 0
+@@ -807,6 +814,7 @@
+  * record to improve 64bit alignment the next time we need to break
+  * binary compatibility for some other reason.
+  */
++    long bytes_recv;		/* body byte count, for easy access */
+ };
+ 
+ 
+@@ -927,6 +935,11 @@
+     int limit_req_line;      /* limit on size of the HTTP request line    */
+     int limit_req_fieldsize; /* limit on size of any request header field */
+     int limit_req_fields;    /* limit on number of request header fields  */
++
++    /* silly mod_snmp added it right inbetween the 
++       struct, breaking binary compatiblity... -rsenn */
++    int   vhost_index;     /* fast search/index shortcut */
++    void *snmp_www_stats;  /* snmp data for this virtual host */
+ };
+ 
+ /* These are more like real hosts than virtual hosts */
+@@ -1212,5 +1225,5 @@
+ #ifdef __cplusplus
+ }
+ #endif
+-
++#define SNMP_SCOREBOARD(var) ap_scoreboard_image->global.var
+ #endif	/* !APACHE_HTTPD_H */
+diff -ru -ruN apache_1.3.34_orig/src/include/scoreboard.h apache_1.3.34/src/include/scoreboard.h
+--- apache_1.3.34_orig/src/include/scoreboard.h	2006-05-18 17:32:40.229361792 +0200
++++ apache_1.3.34/src/include/scoreboard.h	2006-05-18 17:32:40.236360728 +0200
+@@ -123,6 +123,18 @@
+ typedef struct {
+     ap_generation_t running_generation;	/* the generation of children which
+                                          * should still be serving requests. */
++    int ap_extended_status;
++    int ap_daemons_limit;
++    int ap_daemons_min_free;
++    int ap_daemons_max_free;
++    int ap_max_requests_per_child;
++    int keep_alive;
++    int keep_alive_requests;
++    int keep_alive_timeout;
++    int hostname_lookup;
++    int log_level;
++    unsigned long operStatus[HARD_VIRTUAL_HOST_MAX];
++    unsigned long lastChange[HARD_VIRTUAL_HOST_MAX];
+ } global_score;
+ 
+ /* stuff which the parent generally writes and the children rarely read */

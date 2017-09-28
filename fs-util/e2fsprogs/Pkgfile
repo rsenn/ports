@@ -1,0 +1,40 @@
+# $Id: Pkgfile,v 1.15 2007/05/09 21:02:55 roman Exp $
+#
+# Description: Ext2 Filesystem Utilities
+#  The ext2fsprogs package contains essential ext2 filesystem utilities
+#  which consists of e2fsck, mke2fs, debugfs, dumpe2fs, tune2fs, and most
+#  of the other core ext2 filesystem utilities.
+# URL: http://e2fsprogs.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=e2fsprogs
+version=1.41.4
+release=1
+source=($mirror_sf/e2fsprogs/e2fsprogs-libs-$version.tar.gz
+        $mirror_sf/e2fsprogs/e2fsprogs-$version.tar.gz
+        e2fsprogs-1.40.2-fixes.patch)
+
+build()
+{
+  cd ${srcdir=$SRC/e2fsprogs-$version}
+
+#  patch -N -p1 -i $SRC/e2fsprogs-1.40.2-fixes.patch
+
+  install -d $ROOT/{bin,sbin,etc,lib}
+
+  for dir in $SRC/e2fsprogs{-libs,}-$version
+  do
+   (cd $dir &&
+    ./configure \
+         --build="$build" \
+         --host="$host" \
+         --prefix="$prefix" \
+         --${shared:=enable}-shared \
+         --${static:=enable}-shared \
+         --enable-elf-shlibs
+
+    make LDFLAG_STATIC=""
+    make DESTDIR="$PKG" install)
+  done
+}

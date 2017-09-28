@@ -1,0 +1,36 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:50 roman Exp $
+#
+# Description: A software synthesizer based on SoundFont instrument banks.
+#  FluidSynth is a real-time software synthesizer based on the SoundFont 2
+#  specifications. It can read MIDI events from MIDI input devices or files
+#  and render them to an audio device using SoundFont instrument banks. It
+#  can also play MIDI files. Other features include real time effect control
+#  and a powerful API for embedding FluidSynth in other programs.
+# URL: http://www.fluidsynth.org
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=fluid
+version=26-06-2007
+release=1
+source=(http://eve.hut.fi/fluid/download/fluid-$version.tgz
+        fluid-$version-fixes.patch)
+
+build()
+{
+  cd fluid
+
+  patch -N -p1 -i $SRC/fluid-26-06-2007-fixes.patch
+
+  make -C src \
+    MOC="moc" \
+    FLUID_ROOT="$(pwd)" \
+    BASEPLATFORM="$host"
+
+  install -d $ROOT/{include,lib}
+
+  find -name "*.so" | while read LIB; do
+    cp -L "$LIB" "$ROOT/lib/${x##*/}" # || true
+  done
+}
+

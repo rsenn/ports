@@ -1,0 +1,35 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Repairs or generates a qmail queue structure
+#  You can use this to help move your queue location, or if you regenerate
+#  the file system and the inode numbering changes. It will also fix
+#  permissions and ownerships of the files.
+#  .
+# URL:
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=qmail-queue-fix
+version=1.4
+release=1
+source=(http://www.netmeridian.com/e-huss/queue-fix.tar.gz
+        http://www.qmail.org/queue-fix-todo.patch)
+
+build()
+{
+  cd queue-fix-$version
+
+  patch -N -p1 -i $SRC/queue-fix-todo.patch
+
+  echo ${CC-cc} ${CFLAGS-"-O2"} -include errno.h >conf-cc
+
+  make
+
+  install -d $ROOT/bin
+  install -m 755 queue-fix $ROOT/bin/qmail-queue-fix
+
+  install -d $ROOT/share/doc/qmail-queue-fix
+  install -m 644 CHANGES README $ROOT/share/doc/qmail-queue-fix
+}
+
+# EOF

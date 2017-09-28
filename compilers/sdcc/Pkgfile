@@ -1,0 +1,37 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Retargettable, optimizing ANSI-C compiler for the 8051 MCU.
+#  SDCC is a freeware, retargettable, optimizing ANSI-C compiler. The
+#  current version targets Intel 8051-based MCUs, the Zilog Z80, and the
+#  DS390. Targets for the Microchip PIC and Amtel AVR series are under
+#  development, and the compiler can be retargeted for other 8 bit MCUs
+#  or PICs. The entire source code for the compiler is distributed under
+#  GPL. SDCC uses ASXXXX and ASLINK, a freeware, retargettable assembler
+#  & linker. SDCC has extensive MCU (8051)-specific language extensions,
+#  which lets it utilize the underlying hardware effectively. It includes
+#  a source-level debugger/simulator and can generate debug info for the
+#  NoICE debugger.
+# URL: http://sdcc.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=sdcc
+version=2.8.0
+release=1
+source=(http://heanet.dl.sourceforge.net/sourceforge/sdcc/sdcc-src-$version.tar.bz2)
+
+build() 
+{
+  cd sdcc
+  
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+  
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

@@ -1,0 +1,35 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A 2D scenegraph (canvas) library with Gtkmm widgets.
+#  Papyrus is a 2D C++ scenegraph (canvas) library that utilizes the
+#  cairo library to perform drawing operations. Similar canvas libraries
+#  are the Gnome Canvas, Diacanvas, and the QT Canvas. Numerous canvas
+#  primitives are available, including arcs, rectangles, polylines, and
+#  line markers. An optional companion library, Papyrusmm, provides a set of
+#  Gtkmm widgets which includes viewports (a canvas display widget similar
+#  to Gtk::DrawingArea) and other UI widgets related to drawing interfaces.
+# URL: http://libpapyrus.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=libpapyrus
+version=0.9.0
+release=1
+source=($mirror_sf/libpapyrus/papyrus-$version.tar.bz2)
+
+build() 
+{
+  cd papyrus-$version
+  
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+  
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/libpapyrus
+  install -m 644 AUTHORS COPYING README NEWS TODO ChangeLog INSTALL $ROOT/share/doc/libpapyrus
+}
+# EOF

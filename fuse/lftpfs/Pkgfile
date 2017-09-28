@@ -1,0 +1,26 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: FUSE filesystem with caching for smart mirror of sites.
+# Useful for mirroring of Linux repositories. It's based on LFTP client,
+# which supports FTP, HTTP, FISH, SFTP, HTTPS, FTPS protocols and works
+# over proxies.
+# URL: http://lftpfs.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: perl, perl-modules
+
+name=lftpfs
+version=0.4.2
+release=1
+source=($mirror_sf/lftpfs/lftpfs-$version.tar.gz)
+
+build()
+{
+  cd lftpfs-$version
+
+  perl Makefile.PL
+
+  make SITEPREFIX="$prefix" DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/lftpfs
+  install -m 644 LICENSE MANIFEST README $ROOT/share/doc/lftpfs
+}

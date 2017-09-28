@@ -1,0 +1,36 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A shell for creation of data and audio disks on CD and DVD media.
+#  cdwrite is a shell for creation of data and audio disks on CD and
+#  DVD media. The shell needs mkisofs and cdrecord for data, cdparanoia,
+#  cdda2wav, cdrdao, and lame for audio, and growisofs, dvd+rw-format,
+#  and dvd+rw-mediainfo for DVD disks.
+# URL: http://c.kruk.webpark.pl/#cdwrite
+# Maintainer: 
+# Depends on: 
+
+name=cdwrite
+version=2.2
+release=1
+source=(http://c.kruk.webpark.pl/cdwrite-$version.tar.gz
+        cdwrite-2.2-makefile.patch)
+
+build() 
+{
+  cd cdwrite-$version
+
+  patch -p1 -i $SRC/cdwrite-2.2-makefile.patch
+  
+  case $prefix in
+    "/usr") sysconfdir="/etc" ;;
+  esac
+
+  make \
+      PACKAGE="cdwrite" \
+      PREFIX="$prefix" \
+      ETCDIR="${sysconfdir=$prefix/etc}" \
+      DESTDIR="$PKG" \
+    install
+}
+
+# EOF

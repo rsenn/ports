@@ -1,0 +1,51 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Section: multiverse/utils
+# Description: Sophie is a daemon which uses 'libsavi' library from Sophos anti-virus vendor (http://www.sophos.com). On startup, Sophie initializes SAPI (Sophos Anti-Virus Interface), loads virus patterns into memory, opens local UNIX domain socket, and waits for someone to connect and instructs it which path to scan. Since the database is loaded in RAM, scanning is very fast. (Note: speed of scanning also depends on SAVI settings and size of the file.) It works on Linux, Solaris (Sparc/x86), HP-UX, and FreeBSD.
+# URL: http://sophie.sourceforge.net
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on: 
+
+name=sophie
+version=3.04rc2
+release=1
+source=(http://sophie.sourceforge.net/sophie-$version.tar.gz)
+
+build() 
+{
+  cd sophie-$version
+ 
+  case $prefix in
+    "/usr") sysconfdir="/etc" localstatedir="/var" ;;
+  esac
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --enable-only-fatal-err
+  
+  make
+
+  install -d $ROOT/sbin
+  install -m 755 sophie $ROOT/sbin
+
+  install -d $ROOT/share/doc/sophie
+  install -m 644 Changes Credits LICENSE README README.NETWORK $ROOT/share/doc/sophie
+
+  install -d $PKG/${sysconfdir="$prefix/etc"}
+  install -m 644 etc/* $PKG/${sysconfdir}/
+  install -m 644 *.cfg $PKG/${sysconfdir}/
+
+  install -d $PKG/${sysconfdir="$prefix/etc"}/init.d
+  install -m 755 contrib/sophie.init $PKG/${sysconfdir="$prefix/etc"}/init.d/sophie
+
+  install -d $ROOT/share/man/man8
+  install -m 644 *.8 $ROOT/share/man/man8
+
+  install -d $ROOT/share/sophie
+  cp -r sample_apps sav_if eicar.com $ROOT/share/sophie/
+
+}
+
+# EOF

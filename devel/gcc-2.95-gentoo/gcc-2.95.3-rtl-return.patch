@@ -1,0 +1,85 @@
+diff -ru gcc-2.95.3_orig/gcc/c-parse.gperf gcc-2.95.3/gcc/c-parse.gperf
+--- gcc-2.95.3_orig/gcc/c-parse.gperf	2007-09-17 03:42:26.000000000 +0200
++++ gcc-2.95.3/gcc/c-parse.gperf	2007-09-17 04:28:54.000000000 +0200
+@@ -72,7 +72,7 @@
+ out, TYPE_QUAL, RID_OUT
+ register, SCSPEC, RID_REGISTER
+ restrict, TYPE_QUAL, RID_RESTRICT
+-return, RETURN, NORID
++return, FN_RETURN, NORID
+ short, TYPESPEC, RID_SHORT
+ signed, TYPESPEC, RID_SIGNED
+ sizeof, SIZEOF, NORID
+diff -ru gcc-2.95.3_orig/gcc/c-parse.in gcc-2.95.3/gcc/c-parse.in
+--- gcc-2.95.3_orig/gcc/c-parse.in	2007-09-17 03:42:29.000000000 +0200
++++ gcc-2.95.3/gcc/c-parse.in	2007-09-17 04:28:34.000000000 +0200
+@@ -134,7 +134,7 @@
+ /* the reserved words */
+ /* SCO include files test "ASM", so use something else. */
+ %token SIZEOF ENUM STRUCT UNION IF ELSE WHILE DO FOR SWITCH CASE DEFAULT
+-%token BREAK CONTINUE RETURN GOTO ASM_KEYWORD TYPEOF ALIGNOF
++%token BREAK CONTINUE FN_RETURN GOTO ASM_KEYWORD TYPEOF ALIGNOF
+ %token ATTRIBUTE EXTENSION LABEL
+ %token REALPART IMAGPART
+ 
+@@ -2027,11 +2027,11 @@
+ 		  emit_line_note ($<filename>-1, $<lineno>0);
+ 		  if (! expand_continue_loop (NULL_PTR))
+ 		    error ("continue statement not within a loop"); }
+-	| RETURN ';'
++	| FN_RETURN ';'
+ 		{ stmt_count++;
+ 		  emit_line_note ($<filename>-1, $<lineno>0);
+ 		  c_expand_return (NULL_TREE); }
+-	| RETURN expr ';'
++	| FN_RETURN expr ';'
+ 		{ stmt_count++;
+ 		  emit_line_note ($<filename>-1, $<lineno>0);
+ 		  c_expand_return ($2); }
+@@ -2953,7 +2953,7 @@
+ 	| DEFAULT { $$ = get_identifier (token_buffer); }
+ 	| BREAK { $$ = get_identifier (token_buffer); }
+ 	| CONTINUE { $$ = get_identifier (token_buffer); }
+-	| RETURN  { $$ = get_identifier (token_buffer); }
++	| FN_RETURN  { $$ = get_identifier (token_buffer); }
+ 	| GOTO { $$ = get_identifier (token_buffer); }
+ 	| ASM_KEYWORD { $$ = get_identifier (token_buffer); }
+         | SIZEOF { $$ = get_identifier (token_buffer); }
+diff -ru gcc-2.95.3_orig/gcc/c-parse.y gcc-2.95.3/gcc/c-parse.y
+--- gcc-2.95.3_orig/gcc/c-parse.y	2007-09-17 03:42:29.000000000 +0200
++++ gcc-2.95.3/gcc/c-parse.y	2007-09-17 04:24:53.000000000 +0200
+@@ -122,7 +122,7 @@
+ /* the reserved words */
+ /* SCO include files test "ASM", so use something else. */
+ %token SIZEOF ENUM STRUCT UNION IF ELSE WHILE DO FOR SWITCH CASE DEFAULT
+-%token BREAK CONTINUE RETURN GOTO ASM_KEYWORD TYPEOF ALIGNOF
++%token BREAK CONTINUE FN_RETURN GOTO ASM_KEYWORD TYPEOF ALIGNOF
+ %token ATTRIBUTE EXTENSION LABEL
+ %token REALPART IMAGPART
+ 
+@@ -1832,11 +1832,11 @@
+ 		  emit_line_note ($<filename>-1, $<lineno>0);
+ 		  if (! expand_continue_loop (NULL_PTR))
+ 		    error ("continue statement not within a loop"); }
+-	| RETURN ';'
++	| FN_RETURN ';'
+ 		{ stmt_count++;
+ 		  emit_line_note ($<filename>-1, $<lineno>0);
+ 		  c_expand_return (NULL_TREE); }
+-	| RETURN expr ';'
++	| FN_RETURN expr ';'
+ 		{ stmt_count++;
+ 		  emit_line_note ($<filename>-1, $<lineno>0);
+ 		  c_expand_return ($2); }
+diff -ru gcc-2.95.3_orig/gcc/c-gperf.h gcc-2.95.3/gcc/c-gperf.h
+--- gcc-2.95.3_orig/gcc/c-gperf.h	2007-09-17 04:57:04.000000000 +0200
++++ gcc-2.95.3/gcc/c-gperf.h	2007-09-17 04:57:43.000000000 +0200
+@@ -127,7 +127,7 @@
+     {"__label__", LABEL, NORID},
+     {"", 0, 0}, {"", 0, 0},
+     {"enum", ENUM, NORID},
+-    {"return", RETURN, NORID},
++    {"return", FN_RETURN, NORID},
+     {"", 0, 0}, {"", 0, 0},
+     {"signed", TYPESPEC, RID_SIGNED},
+     {"", 0, 0}, {"", 0, 0}, {"", 0, 0}, {"", 0, 0},

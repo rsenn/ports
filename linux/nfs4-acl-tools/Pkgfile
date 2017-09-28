@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=nfs4-acl-tools
+version=0.3.2
+release=1
+source=(http://www.citi.umich.edu/projects/nfsv4/linux/nfs4-acl-tools/nfs4-acl-tools-$version.tar.gz)
+
+build()
+{
+  cd nfs4-acl-tools-$version
+
+  libtoolize --force --copy
+  aclocal --force
+  autoconf --force
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix" \
+       --disable-rpath \
+       --${shared:=enable}-shared \
+       --${static:=enable}-shared
+
+  export PKG_LIB_DIR="$prefix/lib"
+
+  make LTLDFLAGS="" LTVERSION="2:2:3" DESTDIR="$PKG" default install
+}

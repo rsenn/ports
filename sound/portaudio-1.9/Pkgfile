@@ -1,0 +1,46 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:52 roman Exp $
+#
+# Description: Portable cross-platform Audio API.
+#  PortAudio is a free, cross platform, open-source, audio I/O library. 
+#  It lets you write simple audio programs in 'C' that will compile and 
+#  run on many platforms including Windows, Macintosh (8,9,X), Unix (OSS), 
+#  SGI, and BeOS. PortAudio is intended to promote the exchange of audio 
+#  synthesis software between developers on different platforms.
+#  .
+#  PortAudio provides a very simple API for recording and/or playing sound 
+#  using a simple callback function.  Example programs are included that 
+#  synthesize sine waves and pink noise, perform fuzz distortion on a guitar, 
+#  list available audio devices, etc. 
+#  .
+# URL: http://www.portaudio.com/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=portaudio
+version=1.9
+release=1
+source=(http://www.portaudio.com/archives/pa_snapshot_v${version/./}.tar.gz)
+
+build()
+{
+  cd portaudio
+
+  libtoolize --force --copy --install
+  aclocal --force
+  autoconf --force
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --enable-shared \
+      --enable-static \
+      --with-host_os="linux"
+
+  make 
+  make DESTDIR="$PKG" install
+  
+  install -d $ROOT/share/doc/portaudio
+  install -m 644 src/hostapi/asio/ASIO-README.txt COMPILING.DARWIN LICENSE.txt README.txt $ROOT/share/doc/portaudio
+}
+

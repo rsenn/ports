@@ -1,0 +1,26 @@
+# $Id: Pkgfile,v 1.5 2007/05/09 21:02:56 roman Exp $
+#
+# Description: libmsntp is a full-featured, compact, portable SNTP library.
+# libmsntp provides SNTP client and server functionality in a shared library
+# with a simple API. SNTP (RFC 2030) is a simplified version of NTP, which
+# allows precise synchronization of system clocks over a best-effort network.
+# URL: http://snarfed.org/space/libmsntp
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libmsntp
+version=1.6a
+release=1
+source=(http://snarfed.org/space/libmsntp-$version.tar.gz)
+
+build()
+{
+  cd libmsntp-$version
+
+  install -d $ROOT/{include,lib}
+
+  make CC="${CC-cc}" CFLAGS="$CFLAGS" PREFIX="$ROOT" all install
+
+  rm -f $ROOT/lib/libmsntp.so
+  ln -s libmsntp.so.$version $ROOT/lib/libmsntp.so
+}

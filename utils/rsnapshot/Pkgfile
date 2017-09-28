@@ -1,0 +1,40 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A filesystem snapshot utility.
+#  rsnapshot is a filesystem snapshot utility based on rsync. It makes it
+#  easy to make periodic snapshots of local machines, and remote machines
+#  over ssh. It uses hard links whenever possible, to greatly reduce the
+#  disk space required.
+#  .
+# URL: http://www.rsnapshot.org/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=rsnapshot
+version=1.3.1
+release=1
+source=(http://www.rsnapshot.org/downloads/rsnapshot-$version.tar.gz)
+
+build()
+{
+  cd rsnapshot-$version
+
+  case $prefix in
+    "/usr") sysconfdir="/etc" ;;
+  esac
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --prefix="$prefix" \
+     --sysconfdir="${sysconfdir=$prefix/etc}" \
+     --mandir="$prefix/share/man"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/rsnapshot
+  install -m 644 AUTHORS COPYING INSTALL README TODO NEWS ChangeLog $ROOT/share/doc/rsnapshot
+}
+
+# EOF

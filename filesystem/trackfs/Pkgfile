@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A small program that tracks file system changes.
+#  Trackfs is a small program that tracks file system changes made by another
+#  program (or group of programs). It is similar to "installwatch", but works
+#  quite differently. While installwatch uses LD_PRELOAD to intercept library
+#  functions like open() and unlink(), trackfs runs the child program(s)
+#  with tracing enabled and tracks the system calls they make.
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=trackfs
+version=0.0.7
+release=1
+source=(http://www.mr511.de/software/trackfs-$version.tar.gz)
+
+build()
+{
+  cd trackfs-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

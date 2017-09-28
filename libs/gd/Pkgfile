@@ -1,0 +1,47 @@
+# $Id: Pkgfile,v 1.16 2007/05/09 21:02:55 roman Exp $
+#
+# Description: A library used to create PNGs, JPEGs, and other images
+#  gd is a library for creating and reading PNG, JPEG, GIF, WBMP, and
+#  XPM images. It has many features and can be used in scripts (e.g. PHP,
+#  Perl, Ruby, Lua, and Python) for dynamic image generation. PHP users
+#  should note that PHP 4.3.x includes its own distribution of gd, which
+#  is currently the best choice for PHP applications.
+# URL: http://www.libgd.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libpng
+
+name=gd
+version=2.0.36RC1
+release=1
+source=(http://www.libgd.org/releases/gd-$version.tar.bz2
+        gd-2.0.33-libpng.patch
+        gd-2.0.33-autotools.patch)
+
+build()
+{
+  cd gd-$version
+
+  libtoolize --force --copy --install
+  aclocal --force
+  autoconf --force
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --disable-rpath \
+      --disable-dependency-tracking \
+      --with-libiconv-prefix="$prefix" \
+      --with-png="$prefix" \
+      --with-freetype="$prefix" \
+      --with-fontconfig="$prefix" \
+      --with-jpeg="$prefix" \
+      --without-xpm \
+      --without-x
+
+  make
+  make prefix="$ROOT" install
+
+  install -d $ROOT/share/doc/gd
+  install -m 644 COPYING ChangeLog INSTALL NEWS README-JPEG.TXT README.TESTING README.TXT $ROOT/share/doc/gd
+}

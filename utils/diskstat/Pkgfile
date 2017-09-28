@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Using diskstat, insight can be gained into the performance of the Linux I/O subsystem. Data is provided on number of requests in flight, PIDs causing I/O, order of submission and fullfillment of requests, as wel as true disk latencies, splitting out outlier spikes.
+# URL: http://ds9a.nl/diskstat/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=diskstat
+version=0.1
+release=1
+source=(http://ds9a.nl/diskstat/diskstat-$version.tar.gz)
+
+build()
+{
+  cd diskstat-$version
+
+  sed -i \
+      -e "s/^\tg++ /\t\$(CXX) /" \
+    Makefile
+
+  make CXX="$CXX" CXXFLAGS="$CFLAGS"
+
+  install -d $ROOT/bin
+  install -m 755 dswalk dumpdiskstat $ROOT/bin
+
+  install -d $ROOT/share/doc/diskstat
+  install -m 644 README $ROOT/share/doc/diskstat
+}

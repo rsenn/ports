@@ -1,0 +1,30 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:50 roman Exp $
+#
+# Description: A library for accessing the MusicBrainz metadata server.
+#  The MusicBrainz client library (also known as mb_client or libmusicbrainz)
+#  is a library for developers that wish to add MusicBrainz metadata lookup
+#  capabilities to their applications. It calculates CD Index IDs and
+#  Relatable's acoustic fingerprints, and looks up the metadata associated
+#  with the calculated IDs.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libmusicbrainz
+version=3.0.2
+release=1
+source=(ftp://ftp.musicbrainz.org/pub/musicbrainz/libmusicbrainz-$version.tar.gz)
+
+build()
+{
+  cd libmusicbrainz-$version
+
+  cmake \
+      -DCMAKE_VERBOSE_MAKEFILE="TRUE" \
+      -DCMAKE_INSTALL_PREFIX="$prefix" \
+      -DCMAKE_BUILD_TYPE="RelWithDebInfo" \
+    .
+
+  make
+  make DESTDIR="$PKG" install
+}

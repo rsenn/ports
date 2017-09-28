@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A C library for parsing, writing, and creating RSS feeds.
+# libmRSS is a C library for parsing, writing, and creating RSS (Rich
+# Site Summary, Really Simple Syndication, and RDF Site Summary) and ATOM
+# files or streams. The formats supported are: RSS 0.91, RSS 0.92, RSS 1.0,
+# RSS 2.0, ATOM 0.3, and ATOM 1.0.
+#
+# URL: http://autistici.org/bakunin/codes.php
+# Depends on:
+
+name=libmrss
+version=0.19.1
+release=1
+source=(http://autistici.org/bakunin/libmrss/libmrss-$version.tar.gz)
+
+build()
+{
+  cd libmrss-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

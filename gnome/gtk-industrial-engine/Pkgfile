@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description:  Industrial GTK 1  2 theme engine from the Ximian Artwork package.
+# URL: http://art.gnome.org/themes/gtk_engines/672
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=gtk-industrial-engine
+version=0.2.36
+release=1
+source=(http://ftp.gnome.org/pub/GNOME/teams/art.gnome.org/archive/themes/gtk_engines/gtk-industrial-engine_0.2.36-2.tar.gz
+        gtk-industrial-engine-$version-fixes.patch)
+
+build()
+{
+  cd gtk-industrial-engine-$version
+
+  patch -N -p1 -i $SRC/gtk-industrial-engine-0.2.36-fixes.patch
+
+  ./autogen.sh
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

@@ -1,0 +1,76 @@
+# $Id: Pkgfile,v 1.14 2007/04/22 23:07:53 roman Exp $
+#
+# Description: OpenSSL cryptographic library
+# URL: http://www.openssl.org
+# Maintainer: Lukas Beeler <lukas.beeler@projectdream.org>
+# Depends on:
+
+name=openssl
+version=0.9.8k
+release=1
+source=(http://www.openssl.org/source/openssl-$version.tar.gz
+        openssl-0.9.8b-soname.patch
+        openssl.cnf
+        openssl-0.9.8e-cygwin.diff
+        openssl-0.9.7e-gentoo.patch
+        openssl-0.9.7-alpha-default-gcc.patch
+        openssl-0.9.8j-parallel-build.patch
+        openssl-0.9.8-make-engines-dir.patch
+        openssl-0.9.8-toolchain.patch
+        openssl-0.9.8b-doc-updates.patch
+        openssl-0.9.8-makedepend.patch
+        openssl-0.9.8g-export-env.patch
+        openssl-0.9.8g-diet.patch
+        openssl-0.9.8i-enc.patch)
+
+build()
+{
+  cd openssl-$version
+
+  patch -N -p1 -i $SRC/openssl-0.9.8b-soname.patch
+  patch -N -p1 -i $SRC/openssl-0.9.7e-gentoo.patch
+  patch -N -p1 -i $SRC/openssl-0.9.7-alpha-default-gcc.patch
+  patch -N -p1 -i $SRC/openssl-0.9.8j-parallel-build.patch
+  patch -N -p1 -i $SRC/openssl-0.9.8-make-engines-dir.patch
+  #patch -N -p0 -i $SRC/openssl-0.9.8-toolchain.patch
+  patch -N -p0 -i $SRC/openssl-0.9.8b-doc-updates.patch
+  patch -N -p0 -i $SRC/openssl-0.9.8-makedepend.patch
+  patch -N -p1 -i $SRC/openssl-0.9.8g-diet.patch
+  patch -N -p1 -i $SRC/openssl-0.9.8i-enc.patch
+
+  case $prefix in
+    /usr) sysconfdir="/etc" ;;
+  esac
+
+  if [ "$host" != "$build" ]; then
+    case $host in
+      *mingw*) CROSS_HOST=mingw ;;
+    esac
+  fi
+
+  sed -i "s/-O3 -fomit-frame-pointer/\\\\\$(OPTFLAGS)/" Configure
+
+  ./config --openssldir="${sysconfdir=$prefix/etc}/ssl" --prefix="$prefix" shared $CROSS_HOST
+
+  make MANDIR="$prefix/share/man" ${CC+CC="$CC"} OPTFLAGS="${CFLAGS--g -O2}"
+  make MANDIR="$prefix/share/man" INSTALL_PREFIX="$PKG" install
+
+  cp -v -r certs $PKG${sysconfdir="$prefix/etc"}/ssl &&
+  install -v -d -m755 $ROOT/share/doc/openssl &&
+  cp -v -r doc/{HOWTO,README,*.{txt,html,gif}} \
+      $ROOT/share/doc/openssl
+
+  cd $ROOT/lib
+
+  rm -f libcrypto.so libcrypto.so.0 libssl.so.${version%%.*}
+  ln -sf libcrypto.so.${version%[a-z]} libcrypto.so.${version%%.*}
+  ln -sf libcrypto.so.${version%%.*} libcrypto.so
+
+  rm -f libssl.so libssl.so.0 libssl.so.${version%%.*}
+  ln -sf libssl.so.${version%[a-z]} libssl.so.${version%%.*}
+  ln -sf libssl.so.${version%%.*} libssl.so
+
+  install -d $ROOT/share/doc/openssl
+  install -m 644 CHANGES CHANGES.SSLeay doc/fingerprints.txt doc/HOWTO/certificates.txt doc/HOWTO/keys.txt doc/HOWTO/proxy_certificates.txt doc/openssl-shared.txt doc/openssl.txt doc/README doc/ssleay.txt doc/standards.txt FAQ INSTALL INSTALL.DJGPP INSTALL.MacOS INSTALL.NW INSTALL.OS2 INSTALL.VMS INSTALL.W32 INSTALL.W64 INSTALL.WCE LICENSE NEWS PROBLEMS README README.ASN1 README.ENGINE $ROOT/share/doc/openssl
+}
+

@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: $'AN ULTRA-LOW DELAY AUDIO CODEC.\NCELT (CONSTRAINED ENERGY LAPPED TRANSFORM) IS AN ULTRA-LOW DELAY AUDIO CODEC DESIGNED FOR REALTIME TRANSMISSION OF HIGH QUALITY SPEECH AND AUDIO'An ultra-low delay audio codec.\nCELT (Constrained Energy Lapped Transform) is an ultra-low delay audio codec designed for realtime transmission of high quality speech and audio
+#  This is meant to close the gap between traditional speech codecs (such
+#  as Speex) and traditional audio codecs (such as Vorbis).'
+#  .
+# URL: http://www.celt-codec.org
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=celt
+version=0.5.2
+release=1
+source=(http://downloads.us.xiph.org/releases/celt/celt-$version.tar.gz)
+
+build()
+{
+  cd celt-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/celt
+  install -m 644 README TODO Doxyfile INSTALL COPYING $ROOT/share/doc/celt
+}
+
+# EOF

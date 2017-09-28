@@ -1,0 +1,95 @@
+# $Id: Pkgfile,v 1.2 2007/04/22 23:07:53 roman Exp $
+#
+# Description: gcc
+# URL: http://gcc.gnu.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=cygwin-gcc-3.4
+version=3.4.4
+release=1
+target=i686-pc-cygwin
+
+source=(ftp://sunsite.cnlab-switch.ch/mirror/cygwin/release/gcc/gcc-core/gcc-core-$version-3-src.tar.bz2
+        ftp://sunsite.cnlab-switch.ch/mirror/cygwin/release/gcc/gcc-g++/gcc-g++-$version-3-src.tar.bz2
+        ftp://sunsite.cnlab-switch.ch/mirror/cygwin/release/gcc/gcc-ada/gcc-ada-$version-3-src.tar.bz2
+        ftp://sunsite.cnlab-switch.ch/mirror/cygwin/release/gcc/gcc-java/gcc-java-$version-3-src.tar.bz2
+        ftp://sunsite.cnlab-switch.ch/mirror/cygwin/release/gcc/gcc-gpc/gcc-gpc-$version-3-src.tar.bz2
+        ftp://sunsite.cnlab-switch.ch/mirror/cygwin/release/gcc/gcc-testsuite/gcc-testsuite-$version-3-src.tar.bz2
+        ftp://sunsite.cnlab-switch.ch/mirror/cygwin/release/gcc/gcc-g77/gcc-g77-$version-3-src.tar.bz2
+        ftp://sunsite.cnlab-switch.ch/mirror/cygwin/release/gcc/gcc-objc/gcc-objc-$version-3-src.tar.bz2)
+
+build()
+{
+  tar -xvf gcc-core-$version.tar.bz2
+  tar -xvf gcc-g++-$version.tar.bz2
+  tar -xvf gcc-ada-$version.tar.bz2
+  tar -xvf gcc-java-$version.tar.bz2
+#  tar -xvf gcc-gpc-$version.tar.bz2
+  tar -xvf gcc-testsuite-$version.tar.bz2
+  tar -xvf gcc-g77-$version.tar.bz2
+  tar -xvf gcc-objc-$version.tar.bz2
+
+#  cp -rf gcc-$version gcc-${version}_orig
+
+  cd ${srcdir=$SRC/gcc-$version}
+#  patch -N -p1 -i $SRC/gcc-$version-3.patch
+
+#  patch -N -p1 -i $SRC/gcc-4.1.0-nofixincludes.patch
+#  patch -N -p1 -i $SRC/gcc-4.1.0-path.patch
+#  patch -N -p1 -i $SRC/gcc-4.1.0-rpath.patch
+#  patch -N -p1 -i $SRC/gcc-4.1.1-rpathspec.patch
+
+  (echo "#!/bin/sh" && echo '${CC-gcc} -dumpmachine') >$srcdir/config.guess
+  (echo "#!/bin/sh" && echo 'echo "$@"') >$srcdir/config.sub
+
+
+  # now configure in a separate build tree
+  rm -rvf ${builddir=$SRC/gcc-build-$version} && mkdir -p $builddir && cd $builddir
+
+  $srcdir/configure \
+       --prefix="$prefix" \
+       --with-local-prefix="$prefix/$target" \
+       --disable-nls \
+       --without-included-gettext \
+       --enable-threads="posix" \
+       --with-tls \
+       --disable-rpath \
+       --${shared:=enable}-shared \
+       --${static:=enable}-shared \
+       --enable-languages="c,c++" \
+       --with-system-zlib \
+       ${build+--build="${build//redhat-linux/pc-linux-gnu}"} \
+       ${host+--host="${host//redhat-linux/pc-linux-gnu}"} \
+       --target="$target"
+
+  make \
+      CROSS_SYSTEM_HEADER_DIR="$prefix/$target/include" \
+      DESTDIR="$PKG" \
+      all \
+      install
+
+  rm -rf $ROOT/{info,man/man7}
+  rm -f $ROOT/lib/libiberty.a
+#  rm -rf $ROOT/{lib,info,include,man/man7}
+
+  return 0
+
+  # remove duplicate binaries
+  rm $ROOT/bin/gcc
+  rm $ROOT/bin/$target-gcc-${version}
+
+  # make symlinks instead
+  ln -s $target-gcc $ROOT/bin/gcc
+  ln -s $target-gcc $ROOT/bin/cc
+
+  cd ../gcc-${version}
+  copy_license "COPYING" "COPYING.LIB"
+
+  rm -f $ROOT/lib/*.so*
+  rm $ROOT/lib/libiberty.a
+
+  chmod 644 $ROOT/lib/*.la
+
+  rm -f $ROOT/info/dir
+}

@@ -1,0 +1,38 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Extremely lightweight stackless threads in C.
+# Protothreads are a type of extremely lightweight, stackless threads
+# written in 100% portable C. While protothreads were originally designed
+# for severely memory-constrained systems such as deeply embedded systems,
+# they have found a number of uses as a general purpose portable library
+# as well.
+#
+# URL: http://www.sics.se/~adam/pt/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=pt
+version=1.4
+release=1
+source=(http://www.sics.se/~adam/download/?f=pt-$version.tar.gz)
+
+build()
+{
+  cd pt-$version
+
+  make -C doc
+
+  install -d $ROOT/include
+  install -m 644 pt*.h $ROOT/include
+  install -m 644 lc*.h $ROOT/include
+
+  install -d $ROOT/share/doc/pt
+  install -m 644 [A-Z]*[A-Z]* $ROOT/share/doc/pt
+
+  rm -f doc/{Makefile,Doxyfile} doc/latex/Makefile
+  cp -rf doc/* $ROOT/share/doc/pt
+
+  install -d $ROOT/share/doc/pt/examples
+  install -m 644 *.c $ROOT/share/doc/pt/examples
+
+}

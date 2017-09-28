@@ -1,0 +1,38 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: SystemTap provides free software (GPL) infrastructure to simplify
+# the gathering of information about the running Linux system. This assists
+# diagnosis of a performance or functional problem. SystemTap eliminates the
+# need for the developer to go through the tedious and disruptive instrument,
+# recompile, install, and reboot sequence that may be otherwise required to
+# collect data.
+# SystemTap provides a simple command line interface and scripting language
+# for writing instrumentation for a live running kernel. We are publishing
+# samples, as well as enlarging the internal tapset script library to aid
+# reuse and abstraction. We also plan to support probing userspace applications.
+# We are investigating interfacing Systemtap with similar tools such as Frysk,
+# Oprofile and LTT.
+# Current project members include Red Hat, IBM, Intel, and Hitachi.
+# URL: http://sourceware.org/systemtap/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=systemtap
+version=20080412
+release=1
+source=(http://sources.redhat.com/systemtap/ftp/snapshots/systemtap-$version.tar.bz2)
+
+build()
+{
+#  cd systemtap-$version
+  cd src
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

@@ -1,0 +1,16 @@
+diff -ru -ru mysql-5.0.27_orig/tests/mysql_client_test.c mysql-5.0.27/tests/mysql_client_test.c
+--- mysql-5.0.27_orig/tests/mysql_client_test.c	2007-01-19 15:12:30.000000000 +0100
++++ mysql-5.0.27/tests/mysql_client_test.c	2007-01-19 15:14:58.000000000 +0100
+@@ -15019,9 +15019,9 @@
+             DIE("Read error");
+           }
+ 
+-        } while (my_memmem(line_buffer, MAX_TEST_QUERY_LENGTH*2,
+-                           statement_cursor->buffer,
+-                           statement_cursor->length) == NULL);
++        } while (memmem(line_buffer, MAX_TEST_QUERY_LENGTH*2,
++                        statement_cursor->buffer,
++                        statement_cursor->length) == NULL);
+         hits++;
+       } while (hits < expected_hits);
+ 

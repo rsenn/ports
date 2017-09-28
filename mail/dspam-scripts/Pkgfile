@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Bash script to ease procmail/IMAP/dspam integration
+# URL:
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=dspam-scripts
+version=0.0.6
+release=1
+source=(http://vaab.chez.com/pkg/dspam-scripts-$version.tar.gz)
+
+build()
+{
+  cd dspam-scripts-$version
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/dspam-scripts
+  install -m 644 THANKS AUTHORS ChangeLog README INSTALL COPYING $ROOT/share/doc/dspam-scripts
+  cp -rf src/sample $ROOT/share/doc/dspam-scripts
+}
+
+# EOF

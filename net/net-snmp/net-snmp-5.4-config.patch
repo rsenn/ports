@@ -1,0 +1,138 @@
+diff -ru -ru net-snmp-5.4_orig/acconfig.h net-snmp-5.4/acconfig.h
+--- net-snmp-5.4_orig/acconfig.h	2007-01-22 18:57:11.000000000 +0100
++++ net-snmp-5.4/acconfig.h	2007-01-22 18:37:09.000000000 +0100
+@@ -437,6 +437,7 @@
+ #undef NETSNMP_DEFAULT_CLIENT_RECV_BUF
+ 
+ /* net-snmp's major path names */
++#undef SNMPPREFIX
+ #undef SNMPLIBPATH
+ #undef SNMPSHAREPATH
+ #undef SNMPCONFPATH
+diff -ru -ru net-snmp-5.4_orig/configure net-snmp-5.4/configure
+--- net-snmp-5.4_orig/configure	2007-01-22 18:57:11.000000000 +0100
++++ net-snmp-5.4/configure	2007-01-22 18:37:09.000000000 +0100
+@@ -466,7 +466,7 @@
+ # include <unistd.h>
+ #endif"
+ 
+-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS CONFIGURE_OPTIONS LIBTOOLFLAGS INSTALL_PREFIX SNMPD TRAPLIBS USETRAPLIBS MAINSUBS HAVE_DMALLOC_H WRAPLIBS installucdheaders installucdlibs CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CPP LINKCC EGREP build build_cpu build_vendor build_os host host_cpu host_vendor host_os LN_S ECHO AR ac_ct_AR RANLIB ac_ct_RANLIB STRIP ac_ct_STRIP DLLTOOL ac_ct_DLLTOOL AS ac_ct_AS OBJDUMP ac_ct_OBJDUMP CXX CXXFLAGS ac_ct_CXX CXXCPP F77 FFLAGS ac_ct_F77 LIBTOOL LIBTOOL_DEPS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA SET_MAKE PSPROG PERLPROG WHOAMI SED FIND AUTOCONF AUTOHEADER UNAMEPROG VERSION RELEASEVERSION DEVFLAGS TOP_INCLUDES SNMPLIB_INCLUDES AGENT_INCLUDES HELPER_INCLUDES MIBGROUP_INCLUDES GNU_vpath NON_GNU_VPATH target target_cpu target_vendor target_os CCPATH EXTRACPPFLAGS SNMPLIBPATH SNMPSHAREPATH NETSNMP_DEFAULT_MIBDIRS SNMPCONFPATH other_src_list other_objs_list other_lobjs_list other_agentobjs other_lagentobjs other_trapd_objects transport_hdr_list transport_src_list transport_obj_list transport_lobj_list security_src_list security_hdr_list security_obj_list security_lobj_list krb5_config default_mibs_install dllcleans ENV_SEPARATOR NETSNMP_DEFAULT_MIBS SENSORLIBS EMBEDPERLINSTALL EMBEDPERLUNINSTALL PERLLDOPTS PERLTARGS PERLINSTALLTARGS PERLUNINSTALLTARGS PERLARGS PYTHONTARGS PYTHONINSTALLTARGS PYTHONUNINSTALLTARGS PYTHONCLEANTARGS PYTHONARGS LPSTAT_PATH LIBCRYPTO PSCMD ALLOCA LIBOBJS AGENTLIBS OTHERAGENTLIBOBJS OTHERAGENTLIBLOBJS PERSISTENT_DIRECTORY UCDPERSISTENT_DIRECTORY COPY_PERSISTENT_FILES DLLIBS LTLIBOBJS'
++ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS CONFIGURE_OPTIONS LIBTOOLFLAGS INSTALL_PREFIX SNMPD TRAPLIBS USETRAPLIBS MAINSUBS HAVE_DMALLOC_H WRAPLIBS installucdheaders installucdlibs CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CPP LINKCC EGREP build build_cpu build_vendor build_os host host_cpu host_vendor host_os LN_S ECHO AR ac_ct_AR RANLIB ac_ct_RANLIB STRIP ac_ct_STRIP DLLTOOL ac_ct_DLLTOOL AS ac_ct_AS OBJDUMP ac_ct_OBJDUMP CXX CXXFLAGS ac_ct_CXX CXXCPP F77 FFLAGS ac_ct_F77 LIBTOOL LIBTOOL_DEPS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA SET_MAKE PSPROG PERLPROG WHOAMI SED FIND AUTOCONF AUTOHEADER UNAMEPROG VERSION RELEASEVERSION DEVFLAGS TOP_INCLUDES SNMPLIB_INCLUDES AGENT_INCLUDES HELPER_INCLUDES MIBGROUP_INCLUDES GNU_vpath NON_GNU_VPATH target target_cpu target_vendor target_os CCPATH EXTRACPPFLAGS SNMPPREFIX SNMPLIBPATH SNMPSHAREPATH NETSNMP_DEFAULT_MIBDIRS SNMPCONFPATH other_src_list other_objs_list other_lobjs_list other_agentobjs other_lagentobjs other_trapd_objects transport_hdr_list transport_src_list transport_obj_list transport_lobj_list security_src_list security_hdr_list security_obj_list security_lobj_list krb5_config default_mibs_install dllcleans ENV_SEPARATOR NETSNMP_DEFAULT_MIBS SENSORLIBS EMBEDPERLINSTALL EMBEDPERLUNINSTALL PERLLDOPTS PERLTARGS PERLINSTALLTARGS PERLUNINSTALLTARGS PERLARGS PYTHONTARGS PYTHONINSTALLTARGS PYTHONUNINSTALLTARGS PYTHONCLEANTARGS PYTHONARGS LPSTAT_PATH LIBCRYPTO PSCMD ALLOCA LIBOBJS AGENTLIBS OTHERAGENTLIBOBJS OTHERAGENTLIBLOBJS PERSISTENT_DIRECTORY UCDPERSISTENT_DIRECTORY COPY_PERSISTENT_FILES DLLIBS LTLIBOBJS'
+ ac_subst_files='MODULE_LIST module_list_c module_list_o module_list_lo mib_module_list_c mib_module_list_o mib_module_list_lo agent_module_list_c agent_module_list_o agent_module_list_lo mibgroup_list_o mibgroup_list_lo agentgroup_list_o agentgroup_list_lo agent_module_list module_rules module_list_deps mib_module_list_deps agent_module_list_deps'
+ 
+ # Initialize some variables set by options.
+@@ -21070,6 +21070,20 @@
+    fi
+ fi
+ 
++# Set SNMPPREFIX
++
++SNMPPREFIX=""
++tmpset="$prefix"
++while test "x$tmpset" != "x$SNMPPREFIX"; do
++  SNMPPREFIX="$tmpset"
++  eval tmpset="$tmpset"
++done
++cat >>confdefs.h <<_ACEOF
++#define SNMPPREFIX "$SNMPPREFIX"
++_ACEOF
++
++
++
+ # Set SNMPLIBPATH & SNMPSHAREPATH
+ 
+ SNMPLIBPATH=""
+@@ -21110,7 +21124,7 @@
+ 
+ 
+ SNMPCONFPATH=""
+-tmpset="$sysconfdir/snmp"
++tmpset="$sysconfdir"
+ while test "x$tmpset" != "x$SNMPCONFPATH"; do
+   SNMPCONFPATH="$tmpset"
+   eval tmpset="$tmpset"
+@@ -48304,6 +48318,7 @@
+ s,@target_os@,$target_os,;t t
+ s,@CCPATH@,$CCPATH,;t t
+ s,@EXTRACPPFLAGS@,$EXTRACPPFLAGS,;t t
++s,@SNMPPREFIX@,$SNMPPREFIX,;t t
+ s,@SNMPLIBPATH@,$SNMPLIBPATH,;t t
+ s,@SNMPSHAREPATH@,$SNMPSHAREPATH,;t t
+ s,@NETSNMP_DEFAULT_MIBDIRS@,$NETSNMP_DEFAULT_MIBDIRS,;t t
+diff -ru -ru net-snmp-5.4_orig/configure.in net-snmp-5.4/configure.in
+--- net-snmp-5.4_orig/configure.in	2007-01-22 18:57:11.000000000 +0100
++++ net-snmp-5.4/configure.in	2007-01-22 18:37:09.000000000 +0100
+@@ -1274,6 +1274,17 @@
+    fi
+ fi
+ 
++# Set SNMPPREFIX 
++
++SNMPPREFIX=""
++tmpset="$prefix"
++while test "x$tmpset" != "x$SNMPPREFIX"; do
++  SNMPPREFIX="$tmpset"
++  eval tmpset="$tmpset"
++done
++AC_DEFINE_UNQUOTED(SNMPPREFIX,"$SNMPPREFIX")
++AC_SUBST(SNMPPREFIX)
++
+ # Set SNMPLIBPATH & SNMPSHAREPATH
+ 
+ SNMPLIBPATH=""
+@@ -1302,7 +1313,7 @@
+ AC_SUBST(NETSNMP_DEFAULT_MIBDIRS)
+ 
+ SNMPCONFPATH=""
+-tmpset="$sysconfdir/snmp"
++tmpset="$sysconfdir"
+ while test "x$tmpset" != "x$SNMPCONFPATH"; do
+   SNMPCONFPATH="$tmpset"
+   eval tmpset="$tmpset"
+diff -ru -ru net-snmp-5.4_orig/include/net-snmp/net-snmp-config.h.in net-snmp-5.4/include/net-snmp/net-snmp-config.h.in
+--- net-snmp-5.4_orig/include/net-snmp/net-snmp-config.h.in	2007-01-22 18:57:11.000000000 +0100
++++ net-snmp-5.4/include/net-snmp/net-snmp-config.h.in	2007-01-22 18:37:09.000000000 +0100
+@@ -1332,6 +1332,7 @@
+ #undef NETSNMP_DEFAULT_CLIENT_RECV_BUF
+ 
+ /* net-snmp's major path names */
++#undef SNMPPREFIX
+ #undef SNMPLIBPATH
+ #undef SNMPSHAREPATH
+ #undef SNMPCONFPATH
+diff -ru -ru net-snmp-5.4_orig/snmplib/read_config.c net-snmp-5.4/snmplib/read_config.c
+--- net-snmp-5.4_orig/snmplib/read_config.c	2007-01-22 18:57:11.000000000 +0100
++++ net-snmp-5.4/snmplib/read_config.c	2007-01-22 18:57:33.000000000 +0100
+@@ -918,17 +918,17 @@
+ get_configuration_directory()
+ {
+     char            defaultPath[SPRINT_MAX_LEN];
+-    char           *homepath;
++    char           *prefix;
+ 
+     if (NULL == netsnmp_ds_get_string(NETSNMP_DS_LIBRARY_ID, 
+ 				      NETSNMP_DS_LIB_CONFIGURATION_DIR)) {
+-        homepath = netsnmp_getenv("HOME");
+-        snprintf(defaultPath, sizeof(defaultPath), "%s%c%s%c%s%s%s%s",
++        prefix = SNMPPREFIX;
++        snprintf(defaultPath, sizeof(defaultPath), "%s%c%s%s%s%s",
+                 SNMPCONFPATH, ENV_SEPARATOR_CHAR,
+-                SNMPSHAREPATH, ENV_SEPARATOR_CHAR, SNMPLIBPATH,
+-                ((homepath == NULL) ? "" : ENV_SEPARATOR),
+-                ((homepath == NULL) ? "" : homepath),
+-                ((homepath == NULL) ? "" : "/.snmp"));
++                SNMPSHAREPATH,
++                ((prefix == NULL) ? "" : ENV_SEPARATOR),
++                ((prefix == NULL) ? "" : prefix),
++                ((prefix == NULL) ? "" : "/local/config"));
+         defaultPath[ sizeof(defaultPath)-1 ] = 0;
+         set_configuration_directory(defaultPath);
+     }
+@@ -1153,6 +1153,7 @@
+          * read the config files 
+          */
+         perspath = get_persistent_directory();
++      
+         if (envconfpath == NULL) {
+             /*
+              * read just the config files (no persistent stuff), since

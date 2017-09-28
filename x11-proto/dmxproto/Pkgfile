@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: X11 Distributed Multihead X extension wire protocol
+#  This package provides development headers describing the wire protocol for
+#  the DMX extension, used to set up a distributed multi-head environment
+#  with a single server acting as a gateway to multiple X servers on
+#  multiple machines.
+#  This package is built from the X.org dmxproto proto module.
+# URL: http://www.X.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=dmxproto
+version=2.2.2
+release=1
+source=(ftp://ftp.x.org/pub/individual/proto/dmxproto-$version.tar.bz2)
+
+build()
+{
+  cd dmxproto-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

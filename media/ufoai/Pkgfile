@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: It is the year 2084
+# You control a secret organisation charged with defending Earth from a
+# brutal alien enemy. Build up your bases, prepare your team, and dive
+# head-first into the fast and flowing turn-based combat.
+#
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=ufoai
+version=2.2.1
+release=1
+source=($mirror_sf/ufoai/ufoai-$version-source.tar.bz2)
+
+build()
+{
+  cd ufoai-$version-source
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

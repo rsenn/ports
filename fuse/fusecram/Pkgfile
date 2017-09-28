@@ -1,0 +1,27 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: FUSE module to mount cramfs image files
+# URL: http://www.ubiz.ru/dm/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libfuse2, libglib2.0-0, zlib1g
+
+name=fusecram
+version=20051104
+release=1
+source=(http://ubiz.ru/dm/fusecram-$version.tar.bz2)
+
+build()
+{
+  cd fusecram-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/fusecram
+  install -m 644 [A-Z]*[A-Z]* $ROOT/share/doc/fusecram
+}

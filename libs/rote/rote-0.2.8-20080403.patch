@@ -1,0 +1,302 @@
+diff -ru rote-0.2.8/Makefile.in rote-cvs/Makefile.in
+--- rote-0.2.8/Makefile.in	2004-10-25 03:50:31.000000000 +0000
++++ rote-cvs/Makefile.in	2006-09-24 19:29:03.000000000 +0000
+@@ -60,13 +60,13 @@
+ 	@echo "compile programs that use rote, use the rote-config"
+ 	@echo "program (make sure $(DESTDIR)$(bindir) is in your path)."
+ 	@echo "-----------------------------------------------------------"
+-        
++
+ librote.so.$(ROTE_VERSION): $(OBJECTS)
+ 	$(CC) $(CFLAGS) -shared -o $@ -Wl,-soname=$(ROTE_SONAME) $(OBJECTS) $(LDFLAGS) $(LIBS)
+ 
+ .depends: $(SOURCES) $(HEADERS)
+ 	$(CC) $(CFLAGS) -MM $(SOURCES) >.depends
+-	
++
+ -include .depends
+ 
+ clean:
+diff -ru rote-0.2.8/README rote-cvs/README
+--- rote-0.2.8/README	2005-05-09 13:23:57.000000000 +0000
++++ rote-cvs/README	2006-09-08 22:30:39.000000000 +0000
+@@ -13,6 +13,7 @@
+ [[ OTHER PEOPLE INVOLVED IN DEVELOPING THIS LIBRARY ]]
+ 
+ * Phil Endecott (phil_achbq_endecott@chezphil.org)
++* Johan Bevemyr (jb@bevemyr.com)
+ 
+ [[ WHAT IS IT? ]]
+ 
+diff -ru rote-0.2.8/configure.ac rote-cvs/configure.ac
+--- rote-0.2.8/configure.ac	2005-07-08 01:28:05.000000000 +0000
++++ rote-cvs/configure.ac	2006-09-24 19:29:03.000000000 +0000
+@@ -1,6 +1,6 @@
+ dnl Process this file with autoconf to produce a configure script.
+ 
+-AC_INIT([rote], 0.2.8)
++AC_INIT([rote], 0.3.0)
+ 
+ AC_SUBST(PACKAGE_NAME)
+ AC_SUBST(PACKAGE_VERSION)
+@@ -16,10 +16,21 @@
+ AC_CHECK_HEADERS([sys/types.h unistd.h stdlib.h string.h])
+ 
+ dnl Check for libraries
+-AC_CHECK_LIB([ncurses], [initscr], [],
+-                AC_MSG_ERROR([Need ncurses to compile librote.]))
+-AC_CHECK_LIB([util], [forkpty], [],
+-      AC_MSG_ERROR([Need util library (forkpty function) to compile librote.]))
++AC_ARG_ENABLE([ncurses],AS_HELP_STRING([--disable-ncurses],[disables ncurses support (default enabled)]),[enable_curses=n],[enable_curses=y])
++
++if test "$enable_curses" = y; then
++   AC_CHECK_LIB([ncurses], [initscr], [],
++                AC_MSG_ERROR([Need ncurses to compile ncurses support.]))
++   CFLAGS="$CFLAGS -DUSE_NCURSES"
++fi
++
++AC_ARG_ENABLE([pty],AS_HELP_STRING([--disable-pty],[disables pty support (default enabled)]),[enable_pty=n],[enable_pty=y])
++
++if test "$enable_pty" = y; then
++   AC_CHECK_LIB([util], [forkpty], [],
++   AC_MSG_ERROR([Need util library (forkpty function) to compile pty support.]))
++   CFLAGS="$CFLAGS -DUSE_PTY"
++fi
+ 
+ dnl Checks for library functions
+ AC_CHECK_FUNCS([memset select setenv])
+diff -ru rote-0.2.8/inject.c rote-cvs/inject.c
+--- rote-0.2.8/inject.c	2005-05-09 13:24:10.000000000 +0000
++++ rote-cvs/inject.c	2006-09-08 22:29:56.000000000 +0000
+@@ -23,6 +23,7 @@
+ #include "roteprivate.h"
+ #include "inject_csi.h"
+ #include <string.h>
++#include <stdio.h>
+ 
+ static void cursor_line_down(RoteTerm *rt) {
+    int i;
+@@ -80,6 +81,13 @@
+       cursor_line_down(rt);
+    }
+ 
++   if (rt->insert) {
++       int i;
++
++       for(i = rt->cols - 1; i >= rt->ccol+1; i--)
++	   rt->cells[rt->crow][i] = rt->cells[rt->crow][i-1];
++   }
++
+    rt->cells[rt->crow][rt->ccol].ch = c;
+    rt->cells[rt->crow][rt->ccol].attr = rt->curattr;
+    rt->ccol++;
+@@ -128,7 +136,8 @@
+          rt->curpos_dirty = true;
+          break;
+       case '\t': /* tab */
+-         while (rt->ccol % 8) put_normal_char(rt, ' ');
++         rt->ccol += 8 - (rt->ccol % 8);
++         clamp_cursor_to_bounds(rt);
+          break;
+       case '\x1B': /* begin escape sequence (aborting previous one if any) */
+          new_escape_sequence(rt);
+diff -ru rote-0.2.8/inject_csi.c rote-cvs/inject_csi.c
+--- rote-0.2.8/inject_csi.c	2005-05-10 00:08:12.000000000 +0000
++++ rote-cvs/inject_csi.c	2006-09-08 22:29:56.000000000 +0000
+@@ -23,20 +23,10 @@
+ #include "roteprivate.h"
+ #include <stdlib.h>
+ #include <string.h>
++#include <stdio.h>
+ 
+ #define MAX_CSI_ES_PARAMS 32
+    
+-static inline void clamp_cursor_to_bounds(RoteTerm *rt) {
+-   if (rt->crow < 0) rt->curpos_dirty = true, rt->crow = 0;
+-   if (rt->ccol < 0) rt->curpos_dirty = true, rt->ccol = 0;
+-
+-   if (rt->crow >= rt->rows) 
+-      rt->curpos_dirty = true, rt->crow = rt->rows - 1;
+-
+-   if (rt->ccol >= rt->cols)
+-      rt->curpos_dirty = true, rt->ccol = rt->cols - 1;
+-}
+-
+ /* interprets a 'set attribute' (SGR) CSI escape sequence */
+ static void interpret_csi_SGR(RoteTerm *rt, int param[], int pcount) {
+    int i;
+@@ -328,6 +318,14 @@
+ 
+    /* delegate handling depending on command character (verb) */
+    switch (verb) {
++      case 'h':
++	  if (param_count == 1 && csiparam[0] == 4) /* insert mode */ 
++	      rt->insert = true;
++	  break;
++      case 'l':
++	  if (param_count == 1 && csiparam[0] == 4) /* replace mode */
++              rt->insert = false;
++          break;
+       case 'm': /* it's a 'set attribute' sequence */
+          interpret_csi_SGR(rt, csiparam, param_count); break;
+       case 'J': /* it's an 'erase display' sequence */
+@@ -356,10 +354,12 @@
+          interpret_csi_SAVECUR(rt, csiparam, param_count); break;
+       case 'u': /* restore cursor location */
+          interpret_csi_RESTORECUR(rt, csiparam, param_count); break;
+-      #ifdef DEBUG
+       default:
+-         fprintf(stderr, "Unrecogized CSI: <%s>\n", rt->pd->esbuf); break;
+-      #endif
++	 #ifdef DEBUG
++         fprintf(stderr, "Unrecogized CSI: verb=%c <%s>\n", 
++		 verb, rt->pd->esbuf); 
++	 #endif
++	 break;
+    }
+ }
+ 
+diff -ru rote-0.2.8/inject_csi.h rote-cvs/inject_csi.h
+--- rote-0.2.8/inject_csi.h	2004-10-06 12:18:49.000000000 +0000
++++ rote-cvs/inject_csi.h	2006-09-08 22:29:56.000000000 +0000
+@@ -30,5 +30,15 @@
+  * related fields in it */
+ void rote_es_interpret_csi(RoteTerm *rt);
+ 
++static inline void clamp_cursor_to_bounds(RoteTerm *rt) {
++   if (rt->crow < 0) rt->curpos_dirty = true, rt->crow = 0;
++   if (rt->ccol < 0) rt->curpos_dirty = true, rt->ccol = 0;
++
++   if (rt->crow >= rt->rows) 
++      rt->curpos_dirty = true, rt->crow = rt->rows - 1;
++
++   if (rt->ccol >= rt->cols)
++      rt->curpos_dirty = true, rt->ccol = rt->cols - 1;
++}
+ #endif
+ 
+diff -ru rote-0.2.8/rote-config.in rote-cvs/rote-config.in
+--- rote-0.2.8/rote-config.in	2004-10-06 12:14:05.000000000 +0000
++++ rote-cvs/rote-config.in	2006-09-24 19:29:03.000000000 +0000
+@@ -5,6 +5,7 @@
+ libdir=@libdir@
+ includedir=@includedir@
+ version=@PACKAGE_VERSION@
++libs=@LIBS@
+ 
+ if test $# -eq 0; then
+    echo "Usage: rote-config [--cflags] [--libs]"
+@@ -18,7 +19,7 @@
+          echo "-I$includedir"
+          ;;
+       --libs)
+-         echo "-L$libdir -lrote"
++         echo "$libs -L$libdir -lrote"
+          ;;
+       --version)
+          echo "ROTE version $version"
+diff -ru rote-0.2.8/rote.c rote-cvs/rote.c
+--- rote-0.2.8/rote.c	2005-07-08 01:16:51.000000000 +0000
++++ rote-cvs/rote.c	2006-09-08 22:29:56.000000000 +0000
+@@ -22,7 +22,9 @@
+ #include "rote.h"
+ #include "roteprivate.h"
+ #include <stdlib.h>
++#ifdef USE_PTY
+ #include <pty.h>
++#endif
+ #include <stdio.h>
+ #include <string.h>
+ 
+@@ -41,6 +43,9 @@
+    rt->rows = rows;
+    rt->cols = cols;
+ 
++   /* default mode is replace */
++   rt->insert = false; 
++
+    /* create the cell matrix */
+    rt->cells = (RoteCell**) malloc(sizeof(RoteCell*) * rt->rows);
+    for (i = 0; i < rt->rows; i++) {
+@@ -89,6 +94,8 @@
+    free(rt);
+ }
+ 
++#ifdef USE_NCURSES
++
+ static void default_cur_set_attr(WINDOW *win, unsigned char attr) {
+    int cp = ROTE_ATTR_BG(attr) * 8 + 7 - ROTE_ATTR_FG(attr);
+    if (!cp) wattrset(win, A_NORMAL);
+@@ -98,9 +105,13 @@
+    if (ROTE_ATTR_BLINK(attr))    wattron(win, A_BLINK);
+ }
+ 
++#endif
++
+ static inline unsigned char ensure_printable(unsigned char ch) 
+                                         { return ch >= 32 ? ch : 32; }
+ 
++#ifdef USE_NCURSES
++
+ void rote_vt_draw(RoteTerm *rt, WINDOW *win, int srow, int scol, 
+                                 void (*cur_set_attr)(WINDOW*,unsigned char)) {
+ 
+@@ -119,6 +130,10 @@
+    wmove(win, srow + rt->crow, scol + rt->ccol);
+ }
+ 
++#endif
++
++#ifdef USE_PTY
++
+ pid_t rote_vt_forkpty(RoteTerm *rt, const char *command) {
+    struct winsize ws;
+    pid_t childpid;
+@@ -155,6 +170,8 @@
+    rt->childpid = 0;
+ }
+ 
++#endif
++
+ void rote_vt_update(RoteTerm *rt) {
+    fd_set ifs;
+    struct timeval tvzero;
+diff -ru rote-0.2.8/rote.h rote-cvs/rote.h
+--- rote-0.2.8/rote.h	2005-07-08 01:18:10.000000000 +0000
++++ rote-cvs/rote.h	2006-09-08 22:29:56.000000000 +0000
+@@ -29,7 +29,11 @@
+ #ifndef btco_ROTE_rote_h
+ #define btco_ROTE_rote_h
+ 
++#ifdef USE_NCURSES
+ #include <ncurses.h>
++#else
++#include <stdbool.h>
++#endif
+ #include <sys/types.h>
+ #include <unistd.h>
+ #include <stdlib.h>
+@@ -126,6 +130,7 @@
+ 
+    RoteTermPrivate *pd;         /* private state data */
+ 
++   bool insert;                 /* insert or replace mode */
+    /* --- dirtiness flags: the following flags will be raised when the
+     * corresponding items are modified. They can only be unset by YOU
+     * (when, for example, you redraw the term or something) --- */
+@@ -200,6 +205,7 @@
+  */
+ void rote_vt_inject(RoteTerm *rt, const char *data, int length);
+ 
++#ifdef USE_NCURSES
+ /* Paints the virtual terminal screen on the given window, putting
+  * the top-left corner at the given position. The cur_set_attr
+  * function must set the curses attributes given a Rote attribute
+@@ -221,6 +227,7 @@
+ void rote_vt_draw(RoteTerm *rt, WINDOW *win, int startrow, int startcol,
+                   void (*cur_set_attr)(WINDOW *win, unsigned char attr));
+ 
++#endif
+ /* Indicates to the terminal that the given key has been pressed.
+  * This will cause the terminal to rote_vt_write() the appropriate
+  * escape sequence for that key (that is, the escape sequence

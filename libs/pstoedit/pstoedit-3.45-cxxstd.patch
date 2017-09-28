@@ -1,0 +1,391 @@
+diff -r -u -N -- pstoedit-3.45_orig/acinclude.m4 pstoedit-3.45/acinclude.m4
+--- pstoedit-3.45_orig/acinclude.m4	1970-01-01 01:00:00.000000000 +0100
++++ pstoedit-3.45/acinclude.m4	2009-02-21 11:25:54.000000000 +0100
+@@ -0,0 +1,158 @@
++dnl
++dnl Tests for newer compiler features, or features that are present in newer
++dnl compiler versions but not older compiler versions still in use, should
++dnl be placed here.
++dnl
++dnl Defines:
++dnl  WERROR='-Werror' if requested and possible; g++'s that lack the
++dnl   new inlining code or the new system_header pragma will die on -Werror.
++dnl   Leave it out by default and use maint-mode to use it.
++dnl  SECTION_FLAGS='-ffunction-sections -fdata-sections' if
++dnl   compiler supports it and the user has not requested debug mode.
++dnl
++AC_DEFUN([AC_CXX_CHECK_COMPILER_FEATURES], [
++  # All these tests are for C++; save the language and the compiler flags.
++  # The CXXFLAGS thing is suspicious, but based on similar bits previously
++  # found in AC_CXX_CONFIGURE.
++  AC_LANG_SAVE
++  AC_LANG_CPLUSPLUS
++  ac_test_CXXFLAGS="${CXXFLAGS+set}"
++  ac_save_CXXFLAGS="$CXXFLAGS"
++
++  # Check for maintainer-mode bits.
++  if test x"$USE_MAINTAINER_MODE" = xno; then
++    WERROR=''
++  else
++    WERROR='-Werror'
++  fi
++
++  # Check for -ffunction-sections -fdata-sections
++  AC_MSG_CHECKING([for g++ that supports -ffunction-sections -fdata-sections])
++  CXXFLAGS='-g -Werror -ffunction-sections -fdata-sections'
++  AC_TRY_COMPILE([int foo; void bar() { };],, [ac_fdsections=yes], [ac_fdsections=no])
++  if test "$ac_test_CXXFLAGS" = set; then
++    CXXFLAGS="$ac_save_CXXFLAGS"
++  else
++    # this is the suspicious part
++    CXXFLAGS=''
++  fi
++  if test x"$ac_fdsections" = x"yes"; then
++    SECTION_FLAGS='-ffunction-sections -fdata-sections'
++  fi
++  AC_MSG_RESULT($ac_fdsections)
++
++  AC_LANG_RESTORE
++  AC_SUBST(WERROR)
++  AC_SUBST(SECTION_FLAGS)
++])
++
++
++dnl
++dnl Check whether int64_t is available in <stdint.h>, and define HAVE_INT64_T.
++dnl
++AC_DEFUN([AC_CXX_CHECK_INT64_T], [
++  AC_MSG_CHECKING([for int64_t])
++  AC_CACHE_VAL(cxx_cv_INT64_T, [
++    AC_TRY_COMPILE(
++      [#include <stdint.h>],
++      [int64_t var;],
++      [cxx_cv_INT64_T=yes],
++      [cxx_cv_INT64_T=no])
++  ])
++  if test $cxx_cv_INT64_T = yes; then
++    AC_DEFINE(HAVE_INT64_T, 1, [Define if int64_t is available in <stdint.h>.])
++  fi
++  AC_MSG_RESULT($cxx_cv_INT64_T)
++])
++
++
++dnl
++dnl Check for ISO/IEC 9899:1999 "C99" support to ISO/IEC DTR 19768 "TR1"
++dnl facilities in Chapter 8, "C compatibility".
++dnl
++AC_DEFUN([AC_CHECK_C99_TR1], [
++
++  AC_LANG_SAVE
++  AC_LANG_CPLUSPLUS
++
++  # Use -std=c++0x because the default (-std=gnu++98) leaves __STRICT_ANSI__
++  # undefined and fake C99 facilities may be spuriously enabled.
++  ac_save_CXXFLAGS="$CXXFLAGS"
++  CXXFLAGS="$CXXFLAGS -std=c++0x"
++
++  # Check for the existence of <stdint.h> types.
++  AC_MSG_CHECKING([for ISO C99 support to TR1 in <stdint.h>])
++  AC_CACHE_VAL(ac_cv_c99_stdint_tr1, [
++  AC_TRY_COMPILE([#include <stdint.h>],
++	         [typedef int8_t          my_int8_t;
++	          typedef int16_t         my_int16_t;
++	          typedef int32_t         my_int32_t;
++	          typedef int64_t         my_int64_t;
++	          typedef int_fast8_t     my_int_fast8_t;
++	          typedef int_fast16_t    my_int_fast16_t;
++	          typedef int_fast32_t    my_int_fast32_t;
++	          typedef int_fast64_t    my_int_fast64_t;	
++	          typedef int_least8_t    my_int_least8_t;
++	          typedef int_least16_t   my_int_least16_t;
++	          typedef int_least32_t   my_int_least32_t;
++	          typedef int_least64_t   my_int_least64_t;
++		  typedef intmax_t        my_intmax_t;
++		  typedef intptr_t        my_intptr_t;
++	          typedef uint8_t         my_uint8_t;
++	          typedef uint16_t        my_uint16_t;
++	          typedef uint32_t        my_uint32_t;
++	          typedef uint64_t        my_uint64_t;
++	          typedef uint_fast8_t    my_uint_fast8_t;
++	          typedef uint_fast16_t   my_uint_fast16_t;
++	          typedef uint_fast32_t   my_uint_fast32_t;
++	          typedef uint_fast64_t   my_uint_fast64_t;	
++	          typedef uint_least8_t   my_uint_least8_t;
++	          typedef uint_least16_t  my_uint_least16_t;
++	          typedef uint_least32_t  my_uint_least32_t;
++	          typedef uint_least64_t  my_uint_least64_t;
++		  typedef uintmax_t       my_uintmax_t;
++		  typedef uintptr_t       my_uintptr_t;
++		 ],[ac_cv_c99_stdint_tr1=yes], [ac_cv_c99_stdint_tr1=no])
++  ])
++  AC_MSG_RESULT($ac_cv_c99_stdint_tr1)
++dnl  if test x"$ac_cv_c99_stdint_tr1" = x"yes"; then
++dnl    AC_DEFINE(_AC_CXX_USE_C99_STDINT_TR1, 1,
++dnl              [Define if C99 types in <stdint.h> should be imported in
++dnl	      <tr1/cstdint> in namespace std::tr1.])
++dnl  fi
++
++  # Check for the existence of <inttypes.h> functions (NB: doesn't make
++  # sense if the previous check fails, per C99, 7.8/1).
++  ac_cv_c99_inttypes_tr1=no;
++  if test x"$ac_cv_c99_stdint_tr1" = x"yes"; then
++    AC_MSG_CHECKING([for ISO C99 support to TR1 in <inttypes.h>])
++    AC_TRY_COMPILE([#include <inttypes.h>],
++	           [intmax_t i, numer, denom, base;
++	            const char* s;
++	            char** endptr;
++	            intmax_t ret = imaxabs(i);
++	            imaxdiv_t dret = imaxdiv(numer, denom);
++	            ret = strtoimax(s, endptr, base);
++	            uintmax_t uret = strtoumax(s, endptr, base);
++        	   ],[ac_cv_c99_inttypes_tr1=yes], [ac_cv_c99_inttypes_tr1=no])
++  fi
++  AC_MSG_RESULT($ac_cv_c99_inttypes_tr1)
++dnl  if test x"$ac_cv_c99_inttypes_tr1" = x"yes"; then
++dnl    AC_DEFINE(_AC_CXX_USE_C99_INTTYPES_TR1, 1,
++dnl              [Define if C99 functions in <inttypes.h> should be imported in
++dnl              <tr1/cinttypes> in namespace std::tr1.])
++dnl  fi
++
++  # Check for the existence of the <stdbool.h> header.	
++  AC_CHECK_HEADERS(stdbool.h)
++
++  CXXFLAGS="$ac_save_CXXFLAGS"
++  AC_LANG_RESTORE
++
++  if test x"$ac_cv_c99_stdint_tr1" = x"yes"; then
++    CXX_STD_FLAG="-std=c++0x"
++  fi
++
++  AC_SUBST([CXX_STD_FLAG])
++])
++
+diff -r -u -N -- pstoedit-3.45_orig/autogen.sh pstoedit-3.45/autogen.sh
+--- pstoedit-3.45_orig/autogen.sh	2009-02-21 00:35:16.000000000 +0100
++++ pstoedit-3.45/autogen.sh	2009-02-21 11:22:45.000000000 +0100
+@@ -1,36 +1,10 @@
+ #!/bin/sh
+-AMVERSION=1.xxx
+-AMVERSION=1.7
+-AMVERSION=local
+-AMVERSION=1.9
+-AMVERSION=any
++#
++# 20090221
+ 
+-BINDIR=/usr/local/bin
+-BINDIR=/usr/bin
+-set -x
+-echo running aclocal
+-if (aclocal-$AMVERSION --version)  < /dev/null > /dev/null 2>&1; then
+-    aclocal-$AMVERSION ${ACLOCAL_FLAGS}
+-else
+-    $BINDIR/aclocal ${ACLOCAL_FLAGS}
+-fi
+-
+-echo running automake
+-if (automake-$AMVERSION --version) < /dev/null > /dev/null 2>&1; then
+-    automake-$AMVERSION -a
+-else
+-    $BINDIR/automake -a
+-fi
+-
+-echo running autoconf
+-$BINDIR/autoconf
+-# CONFIG_DIR=config
+-# echo aclocal -I /usr/local/share/aclocal/ --output=${CONFIG_DIR}/aclocal.m4
+-# aclocal -I /usr/local/share/aclocal --output=${CONFIG_DIR}/aclocal.m4
+-
+-# echo automake -a
+-# automake -a --include-deps
+-
+-# echo autoconf  --localdir=${CONFIG_DIR}
+-# autoconf  --localdir=${CONFIG_DIR}
+ 
++libtoolize --force --copy --automake
++aclocal --force
++automake --force --copy --add-missing --foreign --foreign
++aclocal --force
++autoconf --force
+diff -r -u -N -- pstoedit-3.45_orig/configure.ac pstoedit-3.45/configure.ac
+--- pstoedit-3.45_orig/configure.ac	2009-02-21 00:35:16.000000000 +0100
++++ pstoedit-3.45/configure.ac	2009-02-21 10:45:55.000000000 +0100
+@@ -27,6 +27,9 @@
+ AC_PROG_AWK
+ AC_PROG_YACC
+ AC_PROG_INSTALL
++
++AC_CHECK_C99_TR1
++
+ dnl there is not need to build the static libs if shared libs are available
+ AC_DISABLE_STATIC
+ 
+@@ -36,6 +39,7 @@
+ AC_PROG_LIBTOOL
+ AC_PROG_MAKE_SET
+ 
++
+ dnl Check file command
+ dnl FILECMD=""
+ dnl AC_PATH_PROG(FILECMD,file)
+diff -r -u -N -- pstoedit-3.45_orig/src/Makefile.am pstoedit-3.45/src/Makefile.am
+--- pstoedit-3.45_orig/src/Makefile.am	2009-02-21 00:35:15.000000000 +0100
++++ pstoedit-3.45/src/Makefile.am	2009-02-21 11:26:30.000000000 +0100
+@@ -135,4 +135,5 @@
+         -DDEFAULTGS=$(GS)			\
+ 	-DPSTOEDITDATADIR="\"$(pkgdatadir)\""	\
+ 	-DPSTOEDITLIBDIR="\"$(pkglibdir)\""	\
+-        ${SPECIAL_CXXFLAGS}
++        ${SPECIAL_CXXFLAGS} \
++				${CXX_STD_FLAG}
+diff -r -u -N -- pstoedit-3.45_orig/src/pstoedit pstoedit-3.45/src/pstoedit
+--- pstoedit-3.45_orig/src/pstoedit	1970-01-01 01:00:00.000000000 +0100
++++ pstoedit-3.45/src/pstoedit	2009-02-21 11:26:50.000000000 +0100
+@@ -0,0 +1,147 @@
++#! /bin/sh
++
++# pstoedit - temporary wrapper script for .libs/pstoedit
++# Generated by ltmain.sh (GNU libtool) 2.2.4 Debian-2.2.4-0ubuntu4
++#
++# The pstoedit program cannot be directly executed until all the libtool
++# libraries that it depends on are installed.
++#
++# This wrapper script should never be moved out of the build directory.
++# If it is, it will not operate correctly.
++
++# Sed substitution that helps us do robust quoting.  It backslashifies
++# metacharacters that are still active within double-quoted strings.
++Xsed='/bin/sed -e 1s/^X//'
++sed_quote_subst='s/\([`"$\\]\)/\\\1/g'
++
++# Be Bourne compatible
++if test -n "${ZSH_VERSION+set}" && (emulate sh) >/dev/null 2>&1; then
++  emulate sh
++  NULLCMD=:
++  # Zsh 3.x and 4.x performs word splitting on ${1+"$@"}, which
++  # is contrary to our usage.  Disable this feature.
++  alias -g '${1+"$@"}'='"$@"'
++  setopt NO_GLOB_SUBST
++else
++  case `(set -o) 2>/dev/null` in *posix*) set -o posix;; esac
++fi
++BIN_SH=xpg4; export BIN_SH # for Tru64
++DUALCASE=1; export DUALCASE # for MKS sh
++
++# The HP-UX ksh and POSIX shell print the target directory to stdout
++# if CDPATH is set.
++(unset CDPATH) >/dev/null 2>&1 && unset CDPATH
++
++relink_command="(cd /storage/home/enki/src/libs/pstoedit-3.45/src; { test -z \"\${LIBRARY_PATH+set}\" || unset LIBRARY_PATH || { LIBRARY_PATH=; export LIBRARY_PATH; }; }; { test -z \"\${COMPILER_PATH+set}\" || unset COMPILER_PATH || { COMPILER_PATH=; export COMPILER_PATH; }; }; { test -z \"\${GCC_EXEC_PREFIX+set}\" || unset GCC_EXEC_PREFIX || { GCC_EXEC_PREFIX=; export GCC_EXEC_PREFIX; }; }; { test -z \"\${LD_RUN_PATH+set}\" || unset LD_RUN_PATH || { LD_RUN_PATH=; export LD_RUN_PATH; }; }; { test -z \"\${LD_LIBRARY_PATH+set}\" || unset LD_LIBRARY_PATH || { LD_LIBRARY_PATH=; export LD_LIBRARY_PATH; }; }; PATH=/storage/home/enki/bin:/storage/home/enki/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/lib/common-lisp:/usr/lib/diet:/usr/lib/initramfs-tools:/usr/lib/klibc:/usr/lib/pd:/usr/lib/pm-utils; export PATH; i486-linux-gnu-g++ -g -o \$progdir/\$file cmdmain.o  -L/storage/home/enki/src/libs/pstoedit-3.45/src ./.libs/libpstoedit.so -ldl -Wl,-rpath -Wl,/storage/home/enki/src/libs/pstoedit-3.45/src/.libs)"
++
++# This environment variable determines our operation mode.
++if test "$libtool_install_magic" = "%%%MAGIC variable%%%"; then
++  # install mode needs the following variables:
++  generated_by_libtool_version='2.2.4'
++  notinst_deplibs=' libpstoedit.la'
++else
++  # When we are sourced in execute mode, $file and $ECHO are already set.
++  if test "$libtool_execute_magic" != "%%%MAGIC variable%%%"; then
++    ECHO="echo"
++    file="$0"
++    # Make sure echo works.
++    if test "X$1" = X--no-reexec; then
++      # Discard the --no-reexec flag, and continue.
++      shift
++    elif test "X`{ $ECHO '\t'; } 2>/dev/null`" = 'X\t'; then
++      # Yippee, $ECHO works!
++      :
++    else
++      # Restart under the correct shell, and then maybe $ECHO will work.
++      exec /bin/sh "$0" --no-reexec ${1+"$@"}
++    fi
++  fi
++
++  # Find the directory that this script lives in.
++  thisdir=`$ECHO "X$file" | $Xsed -e 's%/[^/]*$%%'`
++  test "x$thisdir" = "x$file" && thisdir=.
++
++  # Follow symbolic links until we get to the real thisdir.
++  file=`ls -ld "$file" | /bin/sed -n 's/.*-> //p'`
++  while test -n "$file"; do
++    destdir=`$ECHO "X$file" | $Xsed -e 's%/[^/]*$%%'`
++
++    # If there was a directory component, then change thisdir.
++    if test "x$destdir" != "x$file"; then
++      case "$destdir" in
++      [\\/]* | [A-Za-z]:[\\/]*) thisdir="$destdir" ;;
++      *) thisdir="$thisdir/$destdir" ;;
++      esac
++    fi
++
++    file=`$ECHO "X$file" | $Xsed -e 's%^.*/%%'`
++    file=`ls -ld "$thisdir/$file" | /bin/sed -n 's/.*-> //p'`
++  done
++
++  # Usually 'no', except on cygwin/mingw when embedded into
++  # the cwrapper.
++  WRAPPER_SCRIPT_BELONGS_IN_OBJDIR=no
++  if test "$WRAPPER_SCRIPT_BELONGS_IN_OBJDIR" = "yes"; then
++    # special case for '.'
++    if test "$thisdir" = "."; then
++      thisdir=`pwd`
++    fi
++    # remove .libs from thisdir
++    case "$thisdir" in
++    *[\\/].libs ) thisdir=`$ECHO "X$thisdir" | $Xsed -e 's%[\\/][^\\/]*$%%'` ;;
++    .libs )   thisdir=. ;;
++    esac
++  fi
++
++  # Try to get the absolute directory name.
++  absdir=`cd "$thisdir" && pwd`
++  test -n "$absdir" && thisdir="$absdir"
++
++  program=lt-'pstoedit'
++  progdir="$thisdir/.libs"
++
++  if test ! -f "$progdir/$program" ||
++     { file=`ls -1dt "$progdir/$program" "$progdir/../$program" 2>/dev/null | /bin/sed 1q`; \
++       test "X$file" != "X$progdir/$program"; }; then
++
++    file="$$-$program"
++
++    if test ! -d "$progdir"; then
++      mkdir "$progdir"
++    else
++      rm -f "$progdir/$file"
++    fi
++
++    # relink executable if necessary
++    if test -n "$relink_command"; then
++      if relink_command_output=`eval $relink_command 2>&1`; then :
++      else
++	echo "$relink_command_output" >&2
++	rm -f "$progdir/$file"
++	exit 1
++      fi
++    fi
++
++    mv -f "$progdir/$file" "$progdir/$program" 2>/dev/null ||
++    { rm -f "$progdir/$program";
++      mv -f "$progdir/$file" "$progdir/$program"; }
++    rm -f "$progdir/$file"
++  fi
++
++  if test -f "$progdir/$program"; then
++    if test "$libtool_execute_magic" != "%%%MAGIC variable%%%"; then
++      # Run the actual program with our arguments.
++
++      exec "$progdir/$program" ${1+"$@"}
++
++      $ECHO "$0: cannot exec $program $*" 1>&2
++      exit 1
++    fi
++  else
++    # The program doesn't exist.
++    $ECHO "$0: error: \`$progdir/$program' does not exist" 1>&2
++    $ECHO "This script is just a wrapper for $program." 1>&2
++    echo "See the libtool documentation for more information." 1>&2
++    exit 1
++  fi
++fi

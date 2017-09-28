@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: FireWatir is a browser-driver QA Test Automation tool that aims to provide WATiR like functionality to Firefox based testing.
+# URL: http://code.google.com/p/firewatir/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=firewatir
+version=1.2.0
+release=1
+source=(http://firewatir.googlecode.com/files/firewatir-$version.gem)
+
+build() 
+{
+  gem unpack firewatir-$version.gem &&
+  cd firewatir-$version ||
+  tar -xzf data.tar.gz
+
+  IFS="$IFS[]"
+  set -- `ruby --version`
+
+  RUBYVERSION="$2"
+  RUBYLIBDIR="$prefix/lib/ruby/${RUBYVERSION%.*}"
+
+  install -d $PKG/$RUBYLIBDIR
+  cp -r *.rb firewatir $PKG/$RUBYLIBDIR
+
+
+  
+}
+
+# EOF

@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A library which provides functions for reading DVD video disks.
+#  libdvdread provides a simple foundation for reading DVD video disks. 
+#  It provides the functionality that is required to access many DVDs. 
+#  It parses IFO files, reads NAV-blocks, and performs CSS authentication and 
+#  descrambling.
+#  .
+# URL: http://www.dtek.chalmers.se/~dvd/downloads.shtml
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libdvdread
+version=0.9.7
+release=1
+source=(http://www.dtek.chalmers.se/~dvd/dist/libdvdread-$version.tar.gz)
+
+build()
+{
+  cd libdvdread-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/libdvdread
+  install -m 644 TODO INSTALL README COPYING NEWS AUTHORS $ROOT/share/doc/libdvdread
+}

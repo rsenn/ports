@@ -1,0 +1,22 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: tavrasm - A GNU/Linux assembler for the Atmel AVR series of
+# micro-controllers.
+
+name=atemu
+version=0.4
+release=1
+source=(http://www.hynet.umd.edu/research/atemu/downloads/atemu-$version.tar.gz)
+
+build()
+{
+  cd atemu-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

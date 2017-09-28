@@ -1,0 +1,25 @@
+# $Id: Pkgfile,v 1.3 2007/05/09 21:02:55 roman Exp $
+#
+# Description: An 8-bit clean, POSIX-compliant line editor.
+#  GNU ed is an 8-bit clean implementation of the POSIX line-oriented text
+#  editor. Ed is the "standard" text editor in the sense that it is the
+#  original editor for Unix, and thus widely available. For most purposes,
+#  however, it is superseded by full-screen editors such as GNU Emacs or
+#  GNU Moe.
+# URL: http://www.gnu.org/software/ed/ed.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=ed
+version=0.2
+release=1
+source=($mirror_gnu/ed/ed-$version.tar.gz)
+
+build()
+{
+  cd ed-${version}
+  ./configure \
+    --prefix="$prefix"
+  make
+  make prefix=$ROOT install
+}

@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A C++ library and utility to read and write Exif, IPTC, and XMP image metadata.
+#  Exiv2 is a C++ image metadata manipulation library that makes reading and
+#  writing Exif, IPTC, and XMP image metadata easy. It provides full Exif
+#  makernote and thumbnail support. The Exiv2 command line utility prints
+#  Exif, IPTC and XMP metadata including Makernote tags in various formats,
+#  adjusts Exif timestamps, renames images according to the Exif timestamp,
+#  extracts and inserts Exif, IPTC, and XMP metadata and JPEG comments,
+#  or deletes the thumbnail or a specific type of metadata from an image.
+# URL: http://www.exiv2.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=exiv2
+version=0.17
+release=1
+source=(http://www.exiv2.org/exiv2-$version.tar.gz)
+
+build()
+{
+  cd exiv2-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

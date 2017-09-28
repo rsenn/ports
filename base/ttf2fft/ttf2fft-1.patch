@@ -1,0 +1,66 @@
+Only in ttf2fft: fontinfo
+diff -ru ttf2fft_orig/fontinfo.c ttf2fft/fontinfo.c
+--- ttf2fft_orig/fontinfo.c	2009-02-28 04:33:41.000000000 +0100
++++ ttf2fft/fontinfo.c	2009-02-28 04:38:46.000000000 +0100
+@@ -15,6 +15,7 @@
+ #include FT_CACHE_CHARMAP_H
+ #include <freetype/ftoutln.h>
+ #include <freetype/ftbbox.h>
++#include <freetype/internal/internal.h>
+ #include <freetype/internal/tttypes.h>
+ #include <freetype/ttnameid.h>
+ 
+Only in ttf2fft: ttf2fft
+diff -ru ttf2fft_orig/ttf2fft.cxx ttf2fft/ttf2fft.cxx
+--- ttf2fft_orig/ttf2fft.cxx	2009-02-28 04:33:41.000000000 +0100
++++ ttf2fft/ttf2fft.cxx	2009-02-28 04:39:02.000000000 +0100
+@@ -51,13 +51,14 @@
+ #include <ft2build.h>
+ #include FT_FREETYPE_H
+ #include FT_CACHE_H
+-
+ #include FT_CACHE_IMAGE_H
+ #include FT_CACHE_SMALL_BITMAPS_H
+ #include FT_CACHE_CHARMAP_H
+ #include <freetype/ftoutln.h>
+ #include <freetype/ftbbox.h>
++#include <freetype/internal/internal.h>
+ #include <freetype/internal/tttypes.h>
++#include <freetype/internal/ftgloadr.h>
+ #include <freetype/ttnameid.h>
+ 
+ #include <stdio.h>
+@@ -477,21 +478,21 @@
+ 
+ static double ratio_EM;
+ 
+-int Outline_MoveTo_Func( FT_Vector * to, void * user ) {
++int Outline_MoveTo_Func( const FT_Vector * to, void * user ) {
+     Shape* shape = (Shape*) user;
+     //printf("  moveTo(%d, %d)\n", to->x, to->y);
+     shape->movePenTo((int)(to->x*ratio_EM), -(int)(to->y*ratio_EM));
+     return 0;
+ }
+ 
+-static int Outline_LineTo_Func( FT_Vector * to, void * user ) {
++static int Outline_LineTo_Func( const FT_Vector * to, void * user ) {
+     Shape* shape = (Shape*) user;
+     //printf("  lineTo(%d, %d)\n", to->x, to->y);
+     shape->drawLineTo((int)(to->x*ratio_EM), -(int)(to->y*ratio_EM));
+     return 0;
+ }
+ 
+-static int Outline_ConicTo_Func( FT_Vector* ctrl, FT_Vector * to, void * user ) {
++static int Outline_ConicTo_Func( const FT_Vector* ctrl, const FT_Vector * to, void * user ) {
+     Shape* shape = (Shape*) user;
+     //printf("  conicTo(%d, %d, %d, %d)\n",ctrl->x, ctrl->y, to->x, to->y);
+     shape->drawCurveTo((int)(ctrl->x*ratio_EM), -(int)(ctrl->y*ratio_EM),
+@@ -499,7 +500,7 @@
+     return 0;
+ }
+ 
+-static int Outline_CubicTo_Func( FT_Vector* ctrl1, FT_Vector* ctrl2, FT_Vector * to, void * user ) {
++static int Outline_CubicTo_Func( const FT_Vector* ctrl1, const FT_Vector* ctrl2, const FT_Vector * to, void * user ) {
+     Shape* shape = (Shape*) user;
+     //printf("  CUBICTo(%d, %d, %d, %d)\n",ctrl1->x, ctrl1->y, to->x, to->y);
+     return 1;

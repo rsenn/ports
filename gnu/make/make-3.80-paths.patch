@@ -1,0 +1,72 @@
+diff -ru make-3.80_orig/Makefile.in make-3.80/Makefile.in
+--- make-3.80_orig/Makefile.in	2006-02-09 11:14:18.000000000 +0000
++++ make-3.80/Makefile.in	2006-02-09 11:20:20.000000000 +0000
+@@ -55,7 +55,7 @@
+ CPPFLAGS = @CPPFLAGS@
+ CYGPATH_W = @CYGPATH_W@
+ 
+-DEFS = -DLOCALEDIR=\"$(localedir)\" -DLIBDIR=\"$(libdir)\" -DINCLUDEDIR=\"$(includedir)\" @DEFS@
++DEFS = -DLOCALEDIR=\"$(localedir)\" -DLIBDIR=\"$(libdir)\" -DINCLUDEDIR=\"$(includedir)\" -DBINDIR=\"$(bindir)\" -DPREFIX=\"$(prefix)\" @DEFS@
+ DEPDIR = @DEPDIR@
+ ECHO_C = @ECHO_C@
+ ECHO_N = @ECHO_N@
+diff -ru make-3.80_orig/job.c make-3.80/job.c
+--- make-3.80_orig/job.c	2006-02-09 11:14:18.000000000 +0000
++++ make-3.80/job.c	2006-02-09 11:18:32.000000000 +0000
+@@ -51,7 +51,7 @@
+ #    include <descrip.h>
+ char default_shell[] = "";
+ #   else
+-char default_shell[] = "/bin/sh";
++char default_shell[] = BINDIR"/sh";
+ #   endif /* VMS */
+ #  endif /* __MSDOS__ */
+ int batch_mode_shell = 0;
+@@ -1009,7 +1009,7 @@
+ #ifdef __MSDOS__
+       unixy_shell	/* the test is complicated and we already did it */
+ #else
+-      (argv[0] && !strcmp (argv[0], "/bin/sh"))
++      (argv[0] && !strcmp (argv[0], BINDIR"/sh"))
+ #endif
+       && (argv[1]
+           && argv[1][0] == '-' && argv[1][1] == 'c' && argv[1][2] == '\0')
+diff -ru make-3.80_orig/main.c make-3.80/main.c
+--- make-3.80_orig/main.c	2006-02-09 11:14:18.000000000 +0000
++++ make-3.80/main.c	2006-02-09 11:18:53.000000000 +0000
+@@ -1327,7 +1327,7 @@
+ # ifdef P_tmpdir
+ #  define DEFAULT_TMPDIR    P_tmpdir
+ # else
+-#  define DEFAULT_TMPDIR    "/tmp"
++#  define DEFAULT_TMPDIR    TMPDIR
+ # endif
+ #endif
+ #define DEFAULT_TMPFILE     "GmXXXXXX"
+diff -ru make-3.80_orig/read.c make-3.80/read.c
+--- make-3.80_orig/read.c	2006-02-09 11:14:18.000000000 +0000
++++ make-3.80/read.c	2006-02-09 11:19:11.000000000 +0000
+@@ -99,9 +99,7 @@
+ #endif
+     INCLUDEDIR,
+ #ifndef _AMIGA
+-    "/usr/gnu/include",
+-    "/usr/local/include",
+-    "/usr/include",
++    PREFIX"/include",
+ #endif
+     0
+   };
+diff -ru make-3.80_orig/remake.c make-3.80/remake.c
+--- make-3.80_orig/remake.c	2006-02-09 11:14:18.000000000 +0000
++++ make-3.80/remake.c	2006-02-09 11:19:21.000000000 +0000
+@@ -1296,8 +1296,7 @@
+   static char *dirs[] =
+     {
+ #ifndef _AMIGA
+-      "/lib",
+-      "/usr/lib",
++      PREFIX"/lib",
+ #endif
+ #if defined(WINDOWS32) && !defined(LIBDIR)
+ /*

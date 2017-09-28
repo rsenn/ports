@@ -1,0 +1,35 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A transport-agnostic network filesystem using FUSE
+# Transport is arranged by helper programs, such as SSH.
+# The PUSH transport mode acts like a "reverse" NFS and makes it possible
+# to export a filesystem from a firewalled host.
+# URL: http://sourceforge.net/projects/ccgfs/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libfuse2, libssl0.9.8, libxml2
+
+name=ccgfs
+version=0.72
+release=1
+source=($mirror_sf/ccgfs/ccgfs-$version.tar.bz2)
+
+build()
+{
+  cd ccgfs-$version
+
+  case $prefix in
+    "/usr") sysconfdir="/etc" ;;
+  esac
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --sysconfdir="${sysconfdir=$prefix/etc}"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/doc/share/ccgfs
+  install -m 644 doc/*.txt $ROOT/doc/share/ccgfs
+}

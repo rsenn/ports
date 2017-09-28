@@ -1,0 +1,373 @@
+diff -ru ez-ipupdate-3.0.11b7_orig/conf_file.c ez-ipupdate-3.0.11b7/conf_file.c
+--- ez-ipupdate-3.0.11b7_orig/conf_file.c	2000-10-23 04:36:18.000000000 +0200
++++ ez-ipupdate-3.0.11b7/conf_file.c	2007-12-03 00:45:30.000000000 +0100
+@@ -36,6 +36,7 @@
+ #include <string.h>
+ 
+ #include <conf_file.h>
++#include <errno.h>
+ 
+ #if HAVE_STRERROR
+ extern int errno;
+diff -ru ez-ipupdate-3.0.11b7_orig/ez-ipupdate.c ez-ipupdate-3.0.11b7/ez-ipupdate.c
+--- ez-ipupdate-3.0.11b7_orig/ez-ipupdate.c	2002-03-12 00:31:47.000000000 +0100
++++ ez-ipupdate-3.0.11b7/ez-ipupdate.c	2007-12-03 01:45:47.000000000 +0100
+@@ -258,6 +258,7 @@
+ char *host = NULL;
+ char *cloak_title = NULL;
+ char *interface = NULL;
++char *ip_script = NULL;
+ int ntrys = 1;
+ int update_period = DEFAULT_UPDATE_PERIOD;
+ int resolv_period = DEFAULT_RESOLV_PERIOD;
+@@ -540,6 +541,7 @@
+   CMD_host,
+   CMD_cloak_title,
+   CMD_interface,
++  CMD_script,
+   CMD_retrys,
+   CMD_resolv_period,
+   CMD_period,
+@@ -572,6 +574,7 @@
+   { CMD_pid_file,        "pid-file",        CONF_NEED_ARG, 1, conf_handler, "%s=<file>" },
+   { CMD_host,            "host",            CONF_NEED_ARG, 1, conf_handler, "%s=<host>" },
+   { CMD_interface,       "interface",       CONF_NEED_ARG, 1, conf_handler, "%s=<interface>" },
++  { CMD_script,          "script",          CONF_NEED_ARG, 1, conf_handler, "%s=<script>" },
+   { CMD_mx,              "mx",              CONF_NEED_ARG, 1, conf_handler, "%s=<mail exchanger>" },
+   { CMD_max_interval,    "max-interval",    CONF_NEED_ARG, 1, conf_handler, "%s=<number of seconds between updates>" },
+   { CMD_notify_email,    "notify-email",    CONF_NEED_ARG, 1, conf_handler, "%s=<address to email if bad things happen>" },
+@@ -630,6 +633,7 @@
+   fprintf(stdout, "  -g, --request-uri <uri>\tURI to send updates to\n");
+   fprintf(stdout, "  -h, --host <host>\t\tstring to send as host parameter\n");
+   fprintf(stdout, "  -i, --interface <iface>\twhich interface to use\n");
++  fprintf(stdout, "  -x, --script <script>\t\tscript which determines ip and outputs it to stdout\n");
+   fprintf(stdout, "  -L, --cloak_title <host>\tsome stupid thing for DHS only\n");
+   fprintf(stdout, "  -m, --mx <mail exchange>\tstring to send as your mail exchange\n");
+   fprintf(stdout, "  -M, --max-interval <# of sec>\tmax time in between updates\n");
+@@ -953,6 +957,12 @@
+ #endif
+       break;
+ 
++    case CMD_script:
++      if(ip_script) { free(ip_script); }
++      ip_script = strdup(optarg);
++      dprintf((stderr, "ip_script: %s\n", ip_script));
++      break;
++
+     case CMD_mx:
+       if(mx) { free(mx); }
+       mx = strdup(optarg);
+@@ -1177,6 +1187,7 @@
+       {"pid-file",        required_argument,      0, 'F'},
+       {"host",            required_argument,      0, 'h'},
+       {"interface",       required_argument,      0, 'i'},
++      {"script",          required_argument,      0, 'x'},
+       {"cloak_title",     required_argument,      0, 'L'},
+       {"mx",              required_argument,      0, 'm'},
+       {"max-interval",    required_argument,      0, 'M'},
+@@ -1264,6 +1275,10 @@
+         option_handler(CMD_interface, optarg);
+         break;
+ 
++      case 'x':
++        option_handler(CMD_script, optarg);
++        break;
++
+       case 'L':
+         option_handler(CMD_cloak_title, optarg);
+         break;
+@@ -1602,13 +1617,32 @@
+   return(bread);
+ }
+ 
++int get_ext_addr(char *script, struct sockaddr_in *sin)
++{
++  char buf[1024];
++  FILE *out = popen(script, "r");
++  if(out == NULL) return -1;
++  while(!feof(out) && fgets(buf, sizeof(buf), out))
++  {
++    char *p;
++    if((p=strchr(buf,'\r'))) *p='\0';
++    if((p=strchr(buf,'\n'))) *p='\0';
++    dprintf((stderr, "got address: %s", buf));
++    if(inet_aton(buf, &sin->sin_addr) != 0)
++      return 0;
++  }
++  return -1;
++}
++
+ int get_if_addr(int sock, char *name, struct sockaddr_in *sin)
+ {
++  dprintf((stderr, "get if addr: %s", name));
+ #ifdef IF_LOOKUP
+   struct ifreq ifr;
+ 
+   memset(&ifr, 0, sizeof(ifr));
+-  strcpy(ifr.ifr_name, name);
++  if(name) strcpy(ifr.ifr_name, name);
++  else return -1;
+   /* why does this need to be done twice? */
+   if(ioctl(sock, SIOCGIFADDR, &ifr) < 0) 
+   { 
+@@ -1865,11 +1899,11 @@
+     return(-1);
+   }
+ 
+-  if(interface == NULL && address == NULL)
++  if(interface == NULL && address == NULL && ip_script == NULL)
+   {
+     if(options & OPT_DAEMON)
+     {
+-      fprintf(stderr, "you must provide either an interface or an address\n");
++      fprintf(stderr, "you must provide either an interface, an address or a script\n");
+       return(-1);
+     }
+     if(interface) { free(interface); }
+@@ -2155,11 +2189,11 @@
+     chomp(host);
+   }
+ 
+-  if(interface == NULL && address == NULL)
++  if(interface == NULL && address == NULL && ip_script == NULL)
+   {
+     if(options & OPT_DAEMON)
+     {
+-      fprintf(stderr, "you must provide either an interface or an address\n");
++      fprintf(stderr, "you must provide either an interface, an address or a script\n");
+       return(-1);
+     }
+     if(interface) { free(interface); }
+@@ -2354,11 +2388,11 @@
+     chomp(host);
+   }
+ 
+-  if(interface == NULL && address == NULL)
++  if(interface == NULL && address == NULL && ip_script == NULL)
+   {
+     if(options & OPT_DAEMON)
+     {
+-      fprintf(stderr, "you must provide either an interface or an address\n");
++      fprintf(stderr, "you must provide either an interface, an address or a script\n");
+       return(-1);
+     }
+     if(interface) { free(interface); }
+@@ -2708,11 +2742,11 @@
+     chomp(host);
+   }
+ 
+-  if(interface == NULL && address == NULL)
++  if(interface == NULL && address == NULL && ip_script == NULL)
+   {
+     if(options & OPT_DAEMON)
+     {
+-      fprintf(stderr, "you must provide either an interface or an address\n");
++      fprintf(stderr, "you must provide either an interface, an address or a script\n");
+       return(-1);
+     }
+     if(address) { free(address); }
+@@ -2832,11 +2866,11 @@
+     chomp(host);
+   }
+ 
+-  if(interface == NULL && address == NULL)
++  if(interface == NULL && address == NULL && ip_script == NULL)
+   {
+     if(options & OPT_DAEMON)
+     {
+-      fprintf(stderr, "you must provide either an interface or an address\n");
++      fprintf(stderr, "you must provide either an interface, an address or a script\n");
+       return(-1);
+     }
+     if(interface) { free(interface); }
+@@ -3000,11 +3034,11 @@
+     chomp(host);
+   }
+ 
+-  if(interface == NULL && address == NULL)
++  if(interface == NULL && address == NULL && ip_script == NULL)
+   {
+     if(options & OPT_DAEMON)
+     {
+-      fprintf(stderr, "you must provide either an interface or an address\n");
++      fprintf(stderr, "you must provide either an interface, an address or a script\n");
+       return(-1);
+     }
+     if(interface) { free(interface); }
+@@ -3170,11 +3204,11 @@
+     chomp(partner);
+   }
+ 
+-  if(interface == NULL && address == NULL)
++  if(interface == NULL && address == NULL && ip_script == NULL)
+   {
+     if(options & OPT_DAEMON)
+     {
+-      fprintf(stderr, "you must provide either an interface or an address\n");
++      fprintf(stderr, "you must provide either an interface, an address or a script\n");
+       return(-1);
+     }
+     if(interface) { free(interface); }
+@@ -3527,11 +3561,11 @@
+     host = strdup(buf);
+   }
+ 
+-  if(interface == NULL && address == NULL)
++  if(interface == NULL && address == NULL && ip_script == NULL)
+   {
+     if(options & OPT_DAEMON)
+     {
+-      fprintf(stderr, "you must provide either an interface or an address\n");
++      fprintf(stderr, "you must provide either an interface, an address or a script\n");
+       return(-1);
+     }
+     if(interface) { free(interface); }
+@@ -3677,11 +3711,11 @@
+     host = strdup(buf);
+   }
+ 
+-  if(interface == NULL && address == NULL)
++  if(interface == NULL && address == NULL && ip_script == NULL)
+   {
+     if(options & OPT_DAEMON)
+     {
+-      fprintf(stderr, "you must provide either an interface or an address\n");
++      fprintf(stderr, "you must provide either an interface, an address or a script\n");
+       return(-1);
+     }
+     if(interface) { free(interface); }
+@@ -4139,11 +4173,11 @@
+ {
+   char buf[BUFSIZ+1];
+ 
+-  if(interface == NULL)
++  if(interface == NULL && ip_script == NULL)
+   {
+     if(options & OPT_DAEMON)
+     {
+-      fprintf(stderr, "you must provide either an interface or an address\n");
++      fprintf(stderr, "you must provide either an interface or a script\n");
+       return(-1);
+     }
+     if(interface) { free(interface); }
+@@ -4501,10 +4535,10 @@
+     struct sockaddr_in sin;
+     struct sockaddr_in sin2;
+ 
+-    if(interface == NULL) 
++    if(interface == NULL && ip_script == NULL)
+     { 
+       fprintf(stderr, "invalid data to perform requested action.\n");
+-      fprintf(stderr, "you must provide an interface for daemon mode");
++      fprintf(stderr, "you must provide an interface or a script for daemon mode");
+       exit(1);
+     }
+ 
+@@ -4533,8 +4567,12 @@
+ #  endif
+     show_message("ez-ipupdate Version %s, Copyright (C) 1998-2001 Angus Mackay.\n", 
+         VERSION);
+-    show_message("%s started for interface %s host %s using server %s and service %s\n",
+-        program_name, N_STR(interface), N_STR(host), server, service->title);
++    if(interface && !ip_script)
++      show_message("%s started for interface %s host %s using server %s and service %s\n",
++                   program_name, N_STR(interface), N_STR(host), server, service->title);
++    else 
++      show_message("%s started using script %s host %s using server %s and service %s\n",
++                   program_name, N_STR(ip_script), N_STR(host), server, service->title);
+ 
+     memset(&sin, 0, sizeof(sin));
+ 
+@@ -4584,14 +4622,22 @@
+       }
+ #endif
+ 
+-      if(get_if_addr(sock, interface, &sin2) == 0)
++//      dprintf((stderr, "ip script: %s", ip_script));
++      
++      if((interface && (get_if_addr(sock, interface, &sin2) == 0)) ||
++         (ip_script && (get_ext_addr(ip_script, &sin2) == 0)))
+       {
+         ifresolve_warned = 0;
+         if(memcmp(&sin.sin_addr, &sin2.sin_addr, sizeof(struct in_addr)) != 0 || 
+             (max_interval > 0 && time(NULL) - last_update > max_interval))
+         {
+           int updateres;
++          char new_ip[16];
++          
++          strncpy(new_ip, inet_ntoa(sin2.sin_addr), sizeof(new_ip));
+ 
++          show_message("ip changed from %s to %s\n", inet_ntoa(sin.sin_addr), new_ip);
++          
+           // save this new ipaddr
+           memcpy(&sin, &sin2, sizeof(sin));
+ 
+@@ -4605,7 +4651,7 @@
+             local_update_period = update_period;
+ 
+             show_message("successful update for %s->%s (%s)\n",
+-                interface, inet_ntoa(sin.sin_addr), N_STR(host));
++                         (interface?interface:ip_script), inet_ntoa(sin.sin_addr), N_STR(host));
+ 
+             if(post_update_cmd)
+             {
+Binary files ez-ipupdate-3.0.11b7_orig/ez-ipupdate and ez-ipupdate-3.0.11b7/ez-ipupdate differ
+diff -ru ez-ipupdate-3.0.11b7_orig/ez-ipupdate.c ez-ipupdate-3.0.11b7/ez-ipupdate.c
+--- ez-ipupdate-3.0.11b7_orig/ez-ipupdate.c	2008-11-15 20:02:58.000000000 +0100
++++ ez-ipupdate-3.0.11b7/ez-ipupdate.c	2008-11-15 20:10:42.000000000 +0100
+@@ -1227,7 +1227,7 @@
+ #endif
+   int opt;
+ 
+-  while((opt=xgetopt(argc, argv, "a:b:c:dDe:fF:g:h:i:L:m:M:N:o:p:P:qQ:r:R:s:S:t:T:U:u:wHVCZz:", 
++  while((opt=xgetopt(argc, argv, "a:b:c:dDe:fF:g:h:i:L:m:M:N:o:p:P:qQ:r:R:s:S:t:T:U:u:wHVCx:Zz:", 
+           long_options, NULL)) != -1)
+   {
+     switch (opt)
+@@ -1891,10 +1891,10 @@
+ 
+   if((host == NULL) || (*host == '\0'))
+   {
+-    if(options & OPT_DAEMON)
++/*    if(options & OPT_DAEMON)
+     {
+       return(-1);
+-    }
++    }*/
+     if(host) { free(host); }
+     printf("host: ");
+     *buf = '\0';
+@@ -4470,6 +4470,7 @@
+ 
+   dprintf((stderr, "options: 0x%04X\n", options));
+   dprintf((stderr, "interface: %s\n", interface));
++  dprintf((stderr, "script: %s\n", ip_script));
+   dprintf((stderr, "ntrys: %d\n", ntrys));
+   dprintf((stderr, "server: %s:%s\n", server, port));
+ 
+Binary files ez-ipupdate-3.0.11b7_orig/ez-ipupdate.o and ez-ipupdate-3.0.11b7/ez-ipupdate.o differ
+Binary files ez-ipupdate-3.0.11b7_orig/ez-ipupdate and ez-ipupdate-3.0.11b7/ez-ipupdate differ
+diff -ru ez-ipupdate-3.0.11b7_orig/ez-ipupdate.c ez-ipupdate-3.0.11b7/ez-ipupdate.c
+--- ez-ipupdate-3.0.11b7_orig/ez-ipupdate.c	2008-11-15 20:30:24.000000000 +0100
++++ ez-ipupdate-3.0.11b7/ez-ipupdate.c	2008-11-15 20:33:27.000000000 +0100
+@@ -178,6 +178,7 @@
+ #include <conf_file.h>
+ #include <cache_file.h>
+ #include <pid_file.h>
++#include <time.h>
+ 
+ #if !defined(__GNUC__) && !defined(HAVE_SNPRINTF)
+ #error "get gcc, fix this code, or find yourself a snprintf!"
+@@ -4651,7 +4652,10 @@
+           
+           strncpy(new_ip, inet_ntoa(sin2.sin_addr), sizeof(new_ip));
+ 
+-          show_message("ip changed from %s to %s\n", inet_ntoa(sin.sin_addr), new_ip);
++          if(sin.sin_addr.s_addr)
++            show_message("IP address changed from %s to %s\n", inet_ntoa(sin.sin_addr), new_ip);
++          else
++            show_message("IP address determined to be %s\n", new_ip);
+           
+           // save this new ipaddr
+           memcpy(&sin, &sin2, sizeof(sin));
+Binary files ez-ipupdate-3.0.11b7_orig/ez-ipupdate.o and ez-ipupdate-3.0.11b7/ez-ipupdate.o differ

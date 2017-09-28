@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Libcanberra is an implementation of the XDG Sound Theme and Name Specifications, for generating event sounds on free desktops, such as GNOME
+#  It comes with several backends (ALSA, PulseAudio, OSS, GStreamer, null)
+#  and is designed to be portable.
+#  .
+# URL:
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=libcanberra
+version=
+release=1
+source=(http://0pointer.de/lennart/projects/libcanberra/libcanberra-0.10.tar.gz)
+
+build()
+{
+  cd libcanberra-0.10
+./bootstrap.sh
+./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+make
+make DESTDIR="$PKG" install
+}
+
+# EOF

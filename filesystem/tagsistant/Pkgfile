@@ -1,0 +1,34 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A semantic filesystem for Linux and BSD kernels.
+#  Tagsistant is a semantic filesystem for Linux and BSD kernels. It uses
+#  directories as tags and allows file tagging by simply putting files
+#  inside desired tag directories. The path you are walking by is your
+#  query, e.g. tagsistant/tag1/AND/tag2/OR/tag3/AND/tag2/. Being a low
+#  level interface, a filesystem can be instantly used by shell users,
+#  file managers, or CGI. A plug-in architecture is under development to
+#  add autotagging functionality for common files like .mp3, .ogg, .jpeg,
+#  .html, and .xml. A transparent ontology engine is also under development
+#  to allow users create a relationship schema between directories.
+# URL: http://www.tagsistant.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=tagsistant
+version=20071009
+release=1
+source=(http://download.gna.org/tagfs/tagsistant.$version.tar.bz2)
+
+build()
+{
+  cd tagsistant
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

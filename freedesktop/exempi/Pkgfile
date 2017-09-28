@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: library to parse XMP metadata (Library)
+#  Exempi is a library to parse XMP metadata as defined by the specification.
+#  XMP (Extensible Metadata Platform) facilitates embedding metadata in files
+#  using a subset of RDF. Most notably XMP supports embedding metadata in
+#  PDF and many image formats, though it is designed to support nearly any
+#  file type.
+# URL: http://libopenraw.freedesktop.org/wiki/Exempi
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=exempi
+version=1.99.9
+release=1
+source=(http://libopenraw.freedesktop.org/download/exempi-$version.tar.gz)
+
+build()
+{
+  cd exempi-$version
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

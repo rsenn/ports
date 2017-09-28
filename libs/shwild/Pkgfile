@@ -1,0 +1,39 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A library for implementing shell-compatible wildcard matching.
+#  shwild is a simple, platform-independent library that implements
+#  shell-compatible wildcard pattern matching. It is implemented in C/C++,
+#  expressing a C API with a C++ wrapper.
+# URL: http://shwild.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=shwild
+version=0.9.7
+release=1
+source=($mirror_sf/shwild/shwild-$version.zip)
+
+build()
+{
+  cd shwild-$version
+
+  case $host in
+   *-mingw32*) builddir="build/gcc34" makefile="makefile.mingw32" ;;
+     *-linux*) builddir="build/gcc40" makefile="makefile.unix" ;;
+  esac
+
+  # Converting line endings to UNIX
+  find -type f -name "*.cpp" -or -name "*.hpp" -or -name "*.h" | xargs dos2unix
+
+  mkdir -p lib bin
+
+  make -C "$builddir" -f "$makefile" \
+    ${CC+CC="${CC-cc}"} \
+    ${CXX+CPPC="$CXX"$} \
+    ${AR+AR="$AR"} \
+    CPPC_F_WARNING_ERR="" \
+    AR_ARGS=""
+
+  install -d $ROOT
+  mv include lib $ROOT
+}

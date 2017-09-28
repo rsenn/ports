@@ -1,0 +1,41 @@
+diff -r -u BitchX_orig/source/dcc.c BitchX/source/dcc.c
+--- BitchX_orig/source/dcc.c	2007-05-29 11:55:27.865691200 +0200
++++ BitchX/source/dcc.c	2007-05-29 11:55:46.532532800 +0200
+@@ -26,6 +26,10 @@
+ #include <sys/filio.h>
+ #endif
+ 
++#ifdef __CYGWIN__
++#include <asm/ioctls.h>
++#endif
++  
+ #if defined(HAVE_SYSCONF) && defined(_SC_OPEN_MAX) && !defined(__EMX__)
+ # define IO_ARRAYLEN sysconf(_SC_OPEN_MAX)
+ #else
+diff -r -u BitchX_orig/source/newio.c BitchX/source/newio.c
+--- BitchX_orig/source/newio.c	2007-05-29 11:55:28.005892800 +0200
++++ BitchX/source/newio.c	2007-05-29 11:57:01.069712000 +0200
+@@ -27,6 +27,10 @@
+ #include "winbitchx.h"
+ #endif
+ 
++#ifdef __CYGWIN__
++#include <asm/ioctls.h>
++#endif
++  
+ #define MAIN_SOURCE
+ #include "modval.h"
+ 
+diff -r -u BitchX_orig/dll/nap/nap_file.c BitchX/dll/nap/nap_file.c
+--- BitchX_orig/dll/nap/nap_file.c	2007-05-29 12:04:41.261435200 +0200
++++ BitchX/dll/nap/nap_file.c	2007-05-29 12:05:05.426182400 +0200
+@@ -24,6 +24,9 @@
+ #ifdef HAVE_SYS_FILIO_H
+ #include <sys/filio.h>
+ #endif
++#ifdef __CYGWIN__
++#include <asm/ioctls.h>
++#endif
+ 
+ GetFile *getfile_struct = NULL;
+ ResumeFile *resume_struct = NULL;

@@ -1,0 +1,36 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: The OSSP Mozilla Javascript engine.
+#  OSSP js is a stand-alone distribution of the Javascript programming
+#  language reference implementation from Mozilla, provided through a build
+#  environment based on GNU autoconf, GNU libtool, and GNU shtool, including
+#  support for easy JavaScript build-time feature set selection (ECMA-3,
+#  JS-1.5, JS-1.6), optional CLI line editing support, optional "stdio"
+#  based File object support, and JS/Perl bindings. The C API in "libjs"
+#  contains both the Javascript engine and the required Sun math library
+#  ("fdlibm") with all internal symbols carefully protected under the "js"
+#  namespace. A js-config utility and a pkg-config specification are provided
+#  to allow applications to easily build with the JavaScript C API.
+#  .
+# URL: http://www.ossp.org/pkg/lib/js/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=js
+version=1.6.20070208
+release=1
+source=(ftp://ftp.ossp.org/pkg/lib/js/js-1.6.20070208.tar.gz)
+
+build()
+{
+  cd js-1.6.20070208
+./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+make
+make DESTDIR="$PKG" install
+}
+
+# EOF

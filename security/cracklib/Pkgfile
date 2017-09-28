@@ -1,0 +1,27 @@
+# $Id: Pkgfile,v 1.6 2007/05/09 21:02:52 roman Exp $
+#
+# Description: Next generation version of libCrack password checking library
+# URL: http://sourceforge.net/projects/cracklib/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6
+
+name=cracklib
+version=2.8.13
+release=1
+source=($mirror_sf/cracklib/cracklib-$version.tar.gz)
+
+build()
+{
+  cd cracklib-$version
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --with-libintl-prefix="$prefix" \
+      --with-libiconv-prefix="$prefix" \
+      --with-libcrack
+
+  make
+  make DESTDIR="$PKG" install
+}

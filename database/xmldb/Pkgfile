@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A three-tier Web application suite using libxml, PostgreSQL, and PHP.
+#  XMLDB uses an RDBMS to persist arbitrary XML documents. Due to its storage
+#  mechanism, searching for and recalling documents is extremely quick. You
+#  can also perform XSL translation on documents with surprising speed. The
+#  library can be used in any program to store libxml2 documents. A PHP
+#  module is also included, making XMLDB into a complete three-tier Web
+#  application development suite.
+# URL: http://xmldb.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=xmldb
+version=0.5.4
+release=1
+source=($mirror_sf/xmldb/xmldb-$version.tar.gz)
+
+build()
+{
+  cd xmldb-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

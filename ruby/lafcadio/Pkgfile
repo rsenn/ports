@@ -1,0 +1,38 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Object-relational mapping framework for Ruby
+#  Lafcadio is an object-relational mapping framework for Ruby. It currently
+#  supports MySQL; in the future it will support a wide range of databases.
+#  .
+# URL: http://rubyforge.org/projects/lafcadio/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=lafcadio
+version=0.9.5
+release=1
+source=($mirror_rubyforge/lafcadio/lafcadio-$version.tar.gz)
+
+build()
+{
+  cd lafcadio-$version
+
+  set `ruby --version`
+
+  RUBYVERSION=$2
+  RUBYLIBDIR=$prefix/lib/ruby/${RUBYVERSION%.*}
+
+  install -d $PKG/$RUBYLIBDIR
+  cp -rf lib/* $PKG/$RUBYLIBDIR
+
+  install -d $ROOT/bin
+  install -m 755 bin/* $ROOT/bin
+
+  install -d $ROOT/share/doc/lafcadio
+  install -m 644 README *.txt $ROOT/share/doc/lafcadio/
+
+  cp -rf docs $ROOT/share/doc/lafcadio/html
+  cp -rf test $ROOT/share/doc/lafcadio/
+}
+
+# EOF

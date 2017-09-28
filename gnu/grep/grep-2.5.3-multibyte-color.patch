@@ -1,0 +1,59 @@
+--- grep-2.5.3_orig/src/grep.c	2005-12-09 17:37:35.000000000 +0000
++++ grep-2.5.3/src/grep.c	2005-12-12 14:36:42.000000000 +0000
+@@ -130,8 +130,8 @@
+ /* The color strings used for matched text.
+    The user can overwrite them using the deprecated
+    environment variable GREP_COLOR or the new GREP_COLORS.  */
+-static const char *selected_match_color = "01;31";	/* bold red */
+-static const char *context_match_color  = "01;31";	/* bold red */
++static const char *selected_match_color = "1;31";	/* bold red */
++static const char *context_match_color  = "1;31";	/* bold red */
+ 
+ /* Other colors.  Defaults look damn good.  */
+ static const char *filename_color = "35";	/* magenta */
+@@ -788,6 +788,19 @@
+   const char *mid = NULL;
+   char *buf;		/* XXX */
+   const char *ibeg;	/* XXX */
++  int match_color_end_pending = 0;
++
++#define MATCH_COLOR_START() \
++  do { if (!match_color_end_pending) { \
++    PR_SGR_START_IF(match_color); \
++    match_color_end_pending = 1; }\
++  } while (0)
++
++#define MATCH_COLOR_END() \
++  do { if (match_color_end_pending) { \
++    PR_SGR_END_IF(match_color); \
++    match_color_end_pending = 0; }\
++  } while (0)
+ 
+   if (match_icase)	/* XXX - None of the -i stuff should be here.  */
+     {
+@@ -839,17 +852,21 @@
+ 		  cur = mid;
+ 		  mid = NULL;
+ 		}
+-	      fwrite (cur, sizeof (char), b - cur, stdout);
++	      if (b - cur) {
++		MATCH_COLOR_END();
++		fwrite (cur, sizeof (char), b - cur, stdout);
++              }
+ 	    }
+ 
+-	  PR_SGR_START_IF(match_color);
++	  MATCH_COLOR_START();
+ 	  fwrite (b, sizeof (char), match_size, stdout);
+-	  PR_SGR_END_IF(match_color);
+-	  if (only_matching)
++	  if (only_matching) {
+ 	    fputs("\n", stdout);
++	  }
+ 	}
+       cur = b + match_size;
+     }
++    MATCH_COLOR_END();
+ 
+   if (buf)
+     free(buf);	/* XXX */

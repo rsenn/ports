@@ -1,0 +1,27 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: rest2web is a simple tool that lets you build your website from
+# a single template (or as many as you want), and keep the contents in
+# ReStructured Text [1]. (You can still keep pages in HTML if needed.)
+# URL: http://www.voidspace.org.uk/python/rest2web/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=rest2web
+version=0.5.1
+release=1
+source=(http://www.voidspace.org.uk/cgi-bin/voidspace/downman.py?file=rest2web-$version.tar.gz)
+
+build()
+{
+  cd rest2web-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

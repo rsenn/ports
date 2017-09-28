@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A command line tool that provides useful ACPI information.
+#  Linux ACPI client is a command-line tool, similar to the "apm" command,
+#  that provides information on battery status, AC power, and thermal
+#  readings.
+#  .
+# URL: http://sourceforge.net/projects/acpiclient/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=acpi
+version=1.2
+release=1
+source=($mirror_sf/acpiclient/acpi-1.2.tar.gz)
+
+build()
+{
+  cd acpi-$version
+./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+make
+make DESTDIR="$PKG" install
+}
+
+# EOF

@@ -1,0 +1,36 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: Professional tools to control networking in Linux kernels.
+#  This is `iproute', the professional set of tools to control the networking
+#  behavior in kernels 2.2.x and later.
+# URL: http://linux-net.osdl.org/index.php/Iproute2
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=iproute2
+version=2.6.26
+release=1
+source=(http://devresources.linux-foundation.org/dev/iproute2/download/iproute2-$version.tar.bz2
+        proute2-2.6.26-htons.patch)
+
+build()
+{
+  cd iproute2-$version
+
+  patch -N -p1 -i $SRC/iproute2-2.6.26-htons.patch
+
+  make \
+      CC="${CC-cc}" \
+      CCOPTS="$CFLAGS" \
+      DESTDIR="$PKG" \
+      SBINDIR="$prefix/sbin" \
+      LIBDIR="$prefix/lib" \
+      CONFDIR="$prefix/etc/iproute2" \
+      DOCDIR="$prefix/share/doc/iproute2" \
+      MANDIR="$prefix/share/man" \
+      DBM_INCLUDE="$prefix/include" \
+    all install
+
+  install -d $ROOT/lib
+  mv -vf $PKG/usr/lib $ROOT/lib
+}

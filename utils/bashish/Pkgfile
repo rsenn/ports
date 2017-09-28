@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A theme environment for text terminals.
+#  Bashish is a theme enviroment for text terminals. It can change
+#  colors, font, transparency, and background image on a per-application
+#  basis. Additionally Bashish supports prompt changing on common shells
+#  such as bash, zsh, and tcsh.
+# URL: http://bashish.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=bashish
+version=2.0.7
+release=1
+source=($mirror_sf/bashish/bashish-$version.tar.gz)
+
+build()
+{
+  cd bashish-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

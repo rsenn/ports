@@ -1,0 +1,83 @@
+
+nextools_pkgdb="/usr/local/var/lib/pkg/db"
+nextools_root="nexbyte/"
+
+# nexadd(1) completion
+#
+have nexadd &&
+_nexadd()
+{
+  local cur prev xspec
+
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  prev=${COMP_WORDS[COMP_CWORD-1]}
+
+  # complete arguments
+  if [[ "$cur" == -* ]]; then
+    COMPREPLY=( $( compgen -W '-u -f -r -n -v -h \
+      --upgrade --force --root --noscripts --version --help' -- $cur ) )
+    return 0
+  fi
+
+  xspec="!*.pkg.tar.*"
+  
+  # --root resp. -r expects a directory
+  if [[ "$prev" == --root ]] || [[ "$prev" == -r ]]; then
+    COMPREPLY=( $(compgen -d -- $cur) )
+    return 0
+  fi
+
+  _expand || return 0
+
+  COMPREPLY=( $( compgen -f -X "$xspec" -- $cur ) \
+              $( compgen -d -- $cur ) )
+} &&
+complete -F _nexadd $filenames nexadd
+
+# nexinfo(1) completion
+#
+have nexinfo &&
+_nexinfo()
+{
+  local cur prev xspec 
+
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  prev=${COMP_WORDS[COMP_CWORD-1]}
+
+  # complete arguments
+  if [[ "$cur" == -* ]] || [[ "$cur" == "" && $COMP_CWORD == 1 ]]; then
+    COMPREPLY=( $( compgen -W '-i -l -o -f -r -v -h \
+      --installed --list --owner --footprint --root --version --help' -- $cur ) )
+    return 0
+  fi
+
+  xspec="!*.pkg.tar.*"
+  
+  # --list resp. -l expects a package name or the filename of a package
+  if [[ "$prev" == --list ]] || [[ "$prev" == -l ]]; then
+    COMPREPLY=( $(compgen -C 'grep "^[-_0-9A-Za-z]\+$" $nextools_pkgdb' -- $cur) 
+                $(compgen -f -X "$xspec" -- $cur) )
+    return 0
+  fi
+
+  # --owner resp. -o expects an expression matching a path entry in the package db
+  if [[ "$prev" == --owner ]] || [[ "$prev" == -o ]]; then
+  
+    local root=${cur%%/*}
+    local pre=${nextools_root#$root}
+  
+    COMPREPLY=( $(compgen -C "grep '^${pre}${cur}' $nextools_pkgdb" -- $cur) 
+                $(compgen -f -X "$xspec" -- $cur) )
+    return 0
+  fi
+
+  _expand || return 0
+
+  COMPREPLY=( $( compgen -f -X "$xspec" -- $cur ) \
+              $( compgen -d -- $cur ) )
+} &&
+complete -F _nexinfo $filenames nexinfo
+
+

@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Group Communications Toolkit for Reliable Multicast
+# URL: http://www.spread.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=spread-src
+version=4.0.0
+release=1
+source=(http://clusteredserver.googlecode.com/files/spread-src-$version.tar.gz)
+
+build() 
+{
+  cd spread-src-$version
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --mandir="$prefix/share/man"
+
+  make
+  make DESTDIR="$PKG" install
+      
+}
+
+# EOF

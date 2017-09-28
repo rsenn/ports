@@ -1,0 +1,52 @@
+# $Id: Pkgfile,v 1.14 2007/05/09 21:03:01 roman Exp $
+#
+# Description: GNU Sed
+#  Takes text input, performs some operation (or set of operations) on it
+#  and outputs the modified text. Sed is typically used for extracting part
+#  of a file using pattern matching or substituting multiple occurances of
+#  a string within a file.
+# URL: http://www.gnu.org/software/sed//sed.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=sed
+version=4.1.5
+release=1
+source=($mirror_gnu/sed/sed-$version.tar.gz
+        sed-4.1.4-static.patch
+        sed-4.1.5-cygwin.patch)
+
+build()
+{
+  cd sed-$version
+
+  patch -N -p1 -i $SRC/sed-4.1.4-static.patch
+  patch -N -p1 -i $SRC/sed-4.1.5-cygwin.patch
+
+  aclocal --force -I config
+  automake --force --copy --foreign --add-missing
+  aclocal --force -I config
+  autoconf --force
+
+  (echo "#!/bin/sh" && echo 'echo "$@"') >config/config.sub
+
+  if set -- $prefix/lib/libcompat.* && test -e $1
+  then
+    export LIBS="${LIBS:+$LIBS }-lcompat"
+  fi
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --without-included-regex \
+       --without-included-gettext
+
+  make
+  make DESTDIR="$PKG" install
+
+  rm -f $ROOT/info/dir
+  ln -s sed $ROOT/bin/gsed
+
+  ${CC-cc} -static $CFLAGS -o $ROOT/bin/sed.static sed/{sed,compile,execute,regexp,fmt,mbcs}.o lib/libsed.a || true
+}

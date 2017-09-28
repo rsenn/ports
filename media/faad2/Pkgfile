@@ -1,0 +1,37 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: freeware Advanced Audio Decoder - dummy package
+#  FAAD2 is the fastest ISO AAC audio decoder available. FAAD2 correctly
+#  decodes all MPEG-4 and MPEG-2 MAIN, LOW, LTP, LD and ER object type
+#  AAC files.
+#  This package is a dummy package that satisfies dependencies on libfaad
+#  for most third-party packages
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=faad2
+version=2.6.1
+release=1
+source=($mirror_sf/faac/faad2-$version.tar.gz
+        faad2-2.6.1-fixes.patch)
+
+build()
+{
+  cd faad2
+
+  patch -N -p1 -i $SRC/faad2-2.6.1-fixes.patch
+
+  sh autogen.sh
+
+  ./configure \
+      --build="$build" \
+      --target="$target" \
+      --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/faad2
+  install -m 644 AUTHORS ChangeLog COPYING NEWS README TODO $ROOT/share/doc/faad2
+}

@@ -1,0 +1,51 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:52 roman Exp $
+#
+# Description: A multi-layer artificial neural network library.
+#  Fast Artificial Neural Network Library is a neural network library that
+#  implements multilayer artificial neural networks in C with support for
+#  both fully connected and sparsely connected networks. Cross-platform
+#  execution in both fixed and floating point are supported. It includes a
+#  framework for easy handling of training data sets. It is easy to use,
+#  versatile, well documented, and fast. C++, Perl, PHP, .NET, Python,
+#  Delphi, Octave, Pure Data, and Mathematica bindings are available. A
+#  reference manual accompanies the library with examples and recommendations
+#  on how to use the library. A graphical user interface is also available
+#  for the library.
+# URL: http://fann.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=fann
+version=1.2.1
+release=1
+source=($mirror_sf/fann/fann-${version}.zip
+        $mirror_sf/fann/fann_doc_complete_1.0.pdf
+        $mirror_sf/fann/fann_doc_theory_1.0.pdf
+        $mirror_sf/fann/fann_doc_users_guide_1.0.pdf
+        $mirror_sf/fann/fann_doc_benchmark_1.0.pdf)
+
+build()
+{
+  cd fann-$version
+
+  libtoolize --force
+  aclocal --force
+  autoconf --force
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --${shared:=enable}-shared \
+      --${static:=enable}-shared
+
+  make AM_LDFLAGS="-version-info ${version//./:} -no-undefined"
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc
+  rm -f doc/Makefile
+  cp -rvf doc $ROOT/share/doc/$name-$version
+  cp -rvf examples $ROOT/share/doc/$name-$version
+  mv $SRC/*.pdf $ROOT/share/doc/$name-$version
+}
+

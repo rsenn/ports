@@ -1,0 +1,69 @@
+# $Id: Pkgfile,v 1.5 2007/05/10 16:59:30 roman Exp $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=nspr
+version=4.7.1
+release=1
+source=(ftp://ftp.mozilla.org/pub/mozilla.org/nspr/releases/v$version/src/nspr-$version.tar.gz
+        nspr-4.6.3-libversion.patch
+        ftp://ftp.mozilla.org/pub/mozilla.org/nspr/doc/nspr-reference.tar.gz)
+
+build()
+{
+  cd nspr-$version/mozilla/nsprpub
+
+  patch -N -p3 -i $SRC/nspr-4.6.3-libversion.patch
+
+  set --
+
+  case $host in
+    *mingw32*)
+      set -- "$@" --enable-win32-target="WINNT"
+      ;;
+  esac
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --${static:=enable}-shared \
+      --${shared:=enable}-shared \
+      "$@"
+
+  make \
+      NSPR_VERSION="" \
+      MOD_MAJOR_VERSION="" \
+      LIBRARY_VERSION="${version%.*}" \
+      DESTDIR="$PKG" \
+      all install
+
+  install -d $ROOT
+  cp -rfL dist/* $ROOT
+  rm -rf $ROOT/bin
+
+
+  (cd $ROOT/lib
+   for lib in *.so*
+   do
+     ln -s $lib ${lib%.[0-9]*}
+     ln -s ${lib%.[0-9]*} ${lib%%.[0-9]*}
+   done)
+
+   ln -s libnspr.so.4 $ROOT/lib/libnspr4.so
+
+   install -d $ROOT/bin
+   install -m 755 config/nspr-config $ROOT/bin/
+
+   install -d $ROOT/share/doc
+   mv $SRC/nspr/reference/html $ROOT/share/doc/$name-$version
+
+   cd $ROOT/lib
+
+   for LIB in lib*[a-z].a lib*[a-z].so; do
+     ln -sf ${LIB} ${LIB%.*}${version%%.*}.${LIB##*.}
+   done
+}

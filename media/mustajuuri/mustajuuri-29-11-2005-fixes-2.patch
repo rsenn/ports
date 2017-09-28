@@ -1,0 +1,678 @@
+diff -ru mustajuuri-29-11-2005_orig/src/Makefile mustajuuri-29-11-2005/src/Makefile
+--- mustajuuri-29-11-2005_orig/src/Makefile	2009-02-28 03:40:04.000000000 +0100
++++ mustajuuri-29-11-2005/src/Makefile	2009-02-28 03:28:34.000000000 +0100
+@@ -65,7 +65,7 @@
+ dependoff \
+ dependon:;	@for DIR in $(DIRS); \
+ 		 do \
+-		   $(MAKE) MUSTAJUURI_PATH=$(MUSTAJUURI_PATH) -C $$DIR $@; \
++		   $(MAKE) MUSTAJUURI_PATH=$(MUSTAJUURI_PATH) -C $$DIR $@ || exit $$?; \
+ 		 done
+ 
+ don: dependon
+@@ -80,7 +80,7 @@
+ cleanlibs \
+ cleanest:;	@for DIR in $(DIRS); \
+ 		 do \
+-		   $(MAKE) MUSTAJUURI_PATH=$(MUSTAJUURI_PATH) -C $$DIR $@; \
++		   $(MAKE) MUSTAJUURI_PATH=$(MUSTAJUURI_PATH) -C $$DIR $@ || exit $$?; \
+ 		 done
+ 		@echo "Removing object files and core ..."
+ 		@-rm -f *.o core core*
+@@ -103,7 +103,7 @@
+ 		@echo "Creating local library directories ..."
+ 		@for DIR in $(DIRS); \
+ 		 do \
+-		   $(MAKE) MUSTAJUURI_PATH=$(MUSTAJUURI_PATH) -C $$DIR $@; \
++		   $(MAKE) MUSTAJUURI_PATH=$(MUSTAJUURI_PATH) -C $$DIR $@ || exit $$?; \
+ 		 done
+ 
+ # Generate Mustajuuri core API documentation
+diff -ru mustajuuri-29-11-2005_orig/src/config.log mustajuuri-29-11-2005/src/config.log
+Only in mustajuuri-29-11-2005/src/ladspaexport: Depends-Linux-i686
+Only in mustajuuri-29-11-2005/src/ladspaexport: Linux-i686
+diff -ru mustajuuri-29-11-2005_orig/src/mjdsp/mj_fpu.h mustajuuri-29-11-2005/src/mjdsp/mj_fpu.h
+--- mustajuuri-29-11-2005_orig/src/mjdsp/mj_fpu.h	2009-02-28 03:40:04.000000000 +0100
++++ mustajuuri-29-11-2005/src/mjdsp/mj_fpu.h	2009-02-28 03:28:34.000000000 +0100
+@@ -45,7 +45,7 @@
+ 
+ #ifdef __OS_LINUX__
+ 
+-#include <linux/config.h>
++//#include <linux/config.h>
+ 
+ #if defined(__x86__) || defined(__x86_64__)
+ 
+Only in mustajuuri-29-11-2005/src/mjeditor: Depends-Linux-i686
+Only in mustajuuri-29-11-2005/src/mjeditor: Linux-i686
+Only in mustajuuri-29-11-2005/src/mjeditor: mj_wave_editor_moc.C
+diff -ru mustajuuri-29-11-2005_orig/src/mjmodules/Depends-Linux-i686 mustajuuri-29-11-2005/src/mjmodules/Depends-Linux-i686
+Only in mustajuuri-29-11-2005/src/mjmodules/Linux-i686: libmjmodules.so
+Only in mustajuuri-29-11-2005/src/mjmodules/Linux-i686: mj_module_phase_display.o
+Binary files mustajuuri-29-11-2005_orig/src/mjmodules/Linux-i686/mj_multi_tracker.o and mustajuuri-29-11-2005/src/mjmodules/Linux-i686/mj_multi_tracker.o differ
+Only in mustajuuri-29-11-2005/src/mjmodules/Linux-i686: mj_multi_tracker_gui.o
+diff -ru mustajuuri-29-11-2005_orig/src/mjmodules/mj_multi_tracker.C mustajuuri-29-11-2005/src/mjmodules/mj_multi_tracker.C
+--- mustajuuri-29-11-2005_orig/src/mjmodules/mj_multi_tracker.C	2009-02-28 03:32:23.000000000 +0100
++++ mustajuuri-29-11-2005/src/mjmodules/mj_multi_tracker.C	2009-02-28 03:34:10.000000000 +0100
+@@ -28,6 +28,9 @@
+ #include <qfileinfo.h>
+ #include <qstringlist.h> 
+ 
++#define GL_GLEXT_PROTOTYPES 1
++#include <GL/glext.h>
++
+ #include <assert.h>
+ 
+ static bool m_debug = true;
+Only in mustajuuri-29-11-2005/src/mjutils: Depends-Linux-i686
+Only in mustajuuri-29-11-2005/src/mjutils: Linux-i686
+Only in mustajuuri-29-11-2005/src/mjutils: mj_freq_resp_gui_moc.C
+diff -ru mustajuuri-29-11-2005_orig/src/plugins/Makefile mustajuuri-29-11-2005/src/plugins/Makefile
+--- mustajuuri-29-11-2005_orig/src/plugins/Makefile	2009-02-28 03:32:23.000000000 +0100
++++ mustajuuri-29-11-2005/src/plugins/Makefile	2009-02-28 03:36:25.000000000 +0100
+@@ -58,5 +58,5 @@
+ dependoff \
+ dependon:;	@for DIR in $(DIRS); \
+ 		 do \
+-		   $(MAKE) MUSTAJUURI_PATH=$(MUSTAJUURI_PATH) -C $$DIR $@; \
++		   $(MAKE) MUSTAJUURI_PATH=$(MUSTAJUURI_PATH) -C $$DIR $@ || exit $$?; \
+ 		 done
+Only in mustajuuri-29-11-2005/src/plugins/aucontrol: Depends-Linux-i686
+Only in mustajuuri-29-11-2005/src/plugins/aucontrol: Linux-i686
+Only in mustajuuri-29-11-2005/src/plugins/divaio: Depends-Linux-i686
+Only in mustajuuri-29-11-2005/src/plugins/divaio: Linux-i686
+Only in mustajuuri-29-11-2005/src/plugins/dynamics: Depends-Linux-i686
+Only in mustajuuri-29-11-2005/src/plugins/dynamics: Linux-i686
+Only in mustajuuri-29-11-2005/src/plugins/eq1: Depends-Linux-i686
+Only in mustajuuri-29-11-2005/src/plugins/eq1: Linux-i686
+Only in mustajuuri-29-11-2005/src/plugins/eq1: mj_module_eq1_gui_moc.C
+Only in mustajuuri-29-11-2005/src/plugins/eq1: mj_module_eq2_gui_moc.C
+Only in mustajuuri-29-11-2005/src/plugins/eq1: mj_module_eq3_gui_moc.C
+Only in mustajuuri-29-11-2005/src/plugins/example0: Depends-Linux-i686
+Only in mustajuuri-29-11-2005/src/plugins/example0: Linux-i686
+Only in mustajuuri-29-11-2005/src/plugins/example1: Depends-Linux-i686
+Only in mustajuuri-29-11-2005/src/plugins/example1: Linux-i686
+Only in mustajuuri-29-11-2005/src/plugins/example2: Depends-Linux-i686
+Only in mustajuuri-29-11-2005/src/plugins/example2: Linux-i686
+Only in mustajuuri-29-11-2005/src/plugins/example2: mj_module_example2_gui_moc.C
+Only in mustajuuri-29-11-2005/src/plugins/graph: Depends-Linux-i686
+Only in mustajuuri-29-11-2005/src/plugins/graph: Linux-i686
+Only in mustajuuri-29-11-2005/src/plugins/ladspaloader: Depends-Linux-i686
+Only in mustajuuri-29-11-2005/src/plugins/ladspaloader: Linux-i686
+Only in mustajuuri-29-11-2005/src/plugins/latencytest: Depends-Linux-i686
+Only in mustajuuri-29-11-2005/src/plugins/latencytest: Linux-i686
+Only in mustajuuri-29-11-2005/src/plugins/latencytest: mj_module_latencytest_moc.C
+Only in mustajuuri-29-11-2005/src/plugins/multichan-iir: Depends-Linux-i686
+Only in mustajuuri-29-11-2005/src/plugins/multichan-iir: Linux-i686
+Only in mustajuuri-29-11-2005/src/plugins/mux: Depends-Linux-i686
+Only in mustajuuri-29-11-2005/src/plugins/mux: Linux-i686
+Only in mustajuuri-29-11-2005/src/plugins/overecho: Depends-Linux-i686
+Only in mustajuuri-29-11-2005/src/plugins/overecho: Linux-i686
+Only in mustajuuri-29-11-2005/src/plugins/overecho: mj_module_overecho_gui_moc.C
+Only in mustajuuri-29-11-2005/src/plugins/pitch: Depends-Linux-i686
+Only in mustajuuri-29-11-2005/src/plugins/pitch: Linux-i686
+Only in mustajuuri-29-11-2005/src/plugins/pitch: mj_module_pitch1_moc.C
+Only in mustajuuri-29-11-2005/src/plugins/pitch: mj_module_pitch2_moc.C
+Only in mustajuuri-29-11-2005/src/plugins/reverb: Depends-Linux-i686
+Only in mustajuuri-29-11-2005/src/plugins/reverb: Linux-i686
+Only in mustajuuri-29-11-2005/src/plugins/scope: Depends-Linux-i686
+Only in mustajuuri-29-11-2005/src/plugins/scope: Linux-i686
+Only in mustajuuri-29-11-2005/src/plugins/scope: mj_module_scope1_moc.C
+Only in mustajuuri-29-11-2005/src/plugins/spectral-analysis: Depends-Linux-i686
+Only in mustajuuri-29-11-2005/src/plugins/spectral-analysis: Linux-i686
+Only in mustajuuri-29-11-2005/src/plugins/spectral-analysis: mj_module_spectrometer_moc.C
+Only in mustajuuri-29-11-2005/src/plugins/synth: Depends-Linux-i686
+Only in mustajuuri-29-11-2005/src/plugins/synth: Linux-i686
+Only in mustajuuri-29-11-2005/src/plugins/uitest: Depends-Linux-i686
+Only in mustajuuri-29-11-2005/src/plugins/uitest: Linux-i686
+Only in mustajuuri-29-11-2005/src/plugins/vbap: Depends-Linux-i686
+Only in mustajuuri-29-11-2005/src/plugins/vbap: Linux-i686
+diff -ru mustajuuri-29-11-2005_orig/src/stk/BandedWG.cpp mustajuuri-29-11-2005/src/stk/BandedWG.cpp
+--- mustajuuri-29-11-2005_orig/src/stk/BandedWG.cpp	2009-02-28 03:40:04.000000000 +0100
++++ mustajuuri-29-11-2005/src/stk/BandedWG.cpp	2009-02-28 03:28:34.000000000 +0100
+@@ -34,6 +34,8 @@
+ #include "Noise.h"
+ #include <math.h>
+ 
++using namespace std;
++
+ BandedWG :: BandedWG()
+ {
+   doPluck = true;
+diff -ru mustajuuri-29-11-2005_orig/src/stk/BeeThree.cpp mustajuuri-29-11-2005/src/stk/BeeThree.cpp
+--- mustajuuri-29-11-2005_orig/src/stk/BeeThree.cpp	2009-02-28 03:40:04.000000000 +0100
++++ mustajuuri-29-11-2005/src/stk/BeeThree.cpp	2009-02-28 03:28:34.000000000 +0100
+@@ -35,6 +35,8 @@
+ #include "BeeThree.h"
+ #include <string.h>
+ 
++using namespace std;
++
+ BeeThree :: BeeThree()
+   : FM()
+ {
+diff -ru mustajuuri-29-11-2005_orig/src/stk/BlowBotl.cpp mustajuuri-29-11-2005/src/stk/BlowBotl.cpp
+--- mustajuuri-29-11-2005_orig/src/stk/BlowBotl.cpp	2009-02-28 03:40:04.000000000 +0100
++++ mustajuuri-29-11-2005/src/stk/BlowBotl.cpp	2009-02-28 03:28:34.000000000 +0100
+@@ -20,6 +20,8 @@
+ #include "SKINI.msg"
+ #include <string.h>
+ 
++using namespace std;
++
+ #define __BOTTLE_RADIUS_ 0.999
+ 
+ BlowBotl :: BlowBotl()
+diff -ru mustajuuri-29-11-2005_orig/src/stk/BlowHole.cpp mustajuuri-29-11-2005/src/stk/BlowHole.cpp
+--- mustajuuri-29-11-2005_orig/src/stk/BlowHole.cpp	2009-02-28 03:40:04.000000000 +0100
++++ mustajuuri-29-11-2005/src/stk/BlowHole.cpp	2009-02-28 03:28:34.000000000 +0100
+@@ -38,6 +38,8 @@
+ #include <math.h>
+ #include <string.h>
+ 
++using namespace std;
++
+ BlowHole :: BlowHole(MY_FLOAT lowestFrequency)
+ {
+   length = (long) (Stk::sampleRate() / lowestFrequency + 1);
+diff -ru mustajuuri-29-11-2005_orig/src/stk/Bowed.cpp mustajuuri-29-11-2005/src/stk/Bowed.cpp
+--- mustajuuri-29-11-2005_orig/src/stk/Bowed.cpp	2009-02-28 03:40:04.000000000 +0100
++++ mustajuuri-29-11-2005/src/stk/Bowed.cpp	2009-02-28 03:28:34.000000000 +0100
+@@ -25,6 +25,8 @@
+ #include "SKINI.msg"
+ #include <string.h>
+ 
++using namespace std;
++
+ Bowed :: Bowed(MY_FLOAT lowestFrequency)
+ {
+   long length;
+diff -ru mustajuuri-29-11-2005_orig/src/stk/Brass.cpp mustajuuri-29-11-2005/src/stk/Brass.cpp
+--- mustajuuri-29-11-2005_orig/src/stk/Brass.cpp	2009-02-28 03:40:04.000000000 +0100
++++ mustajuuri-29-11-2005/src/stk/Brass.cpp	2009-02-28 03:28:34.000000000 +0100
+@@ -25,6 +25,8 @@
+ #include <string.h>
+ #include <math.h>
+ 
++using namespace std;
++
+ Brass :: Brass(MY_FLOAT lowestFrequency)
+ {
+   length = (long) (Stk::sampleRate() / lowestFrequency + 1);
+diff -ru mustajuuri-29-11-2005_orig/src/stk/Chorus.cpp mustajuuri-29-11-2005/src/stk/Chorus.cpp
+--- mustajuuri-29-11-2005_orig/src/stk/Chorus.cpp	2009-02-28 03:40:04.000000000 +0100
++++ mustajuuri-29-11-2005/src/stk/Chorus.cpp	2009-02-28 03:28:34.000000000 +0100
+@@ -10,7 +10,9 @@
+ 
+ #include "Chorus.h"
+ #include <string.h>
+-#include <iostream.h>
++#include <iostream>
++
++using namespace std;
+ 
+ Chorus :: Chorus(MY_FLOAT baseDelay)
+ {
+diff -ru mustajuuri-29-11-2005_orig/src/stk/Clarinet.cpp mustajuuri-29-11-2005/src/stk/Clarinet.cpp
+--- mustajuuri-29-11-2005_orig/src/stk/Clarinet.cpp	2009-02-28 03:40:04.000000000 +0100
++++ mustajuuri-29-11-2005/src/stk/Clarinet.cpp	2009-02-28 03:28:34.000000000 +0100
+@@ -26,6 +26,8 @@
+ #include "SKINI.msg"
+ #include <string.h>
+ 
++using namespace std;
++
+ Clarinet :: Clarinet(MY_FLOAT lowestFrequency)
+ {
+   length = (long) (Stk::sampleRate() / lowestFrequency + 1);
+diff -ru mustajuuri-29-11-2005_orig/src/stk/Delay.cpp mustajuuri-29-11-2005/src/stk/Delay.cpp
+--- mustajuuri-29-11-2005_orig/src/stk/Delay.cpp	2009-02-28 03:40:04.000000000 +0100
++++ mustajuuri-29-11-2005/src/stk/Delay.cpp	2009-02-28 03:28:34.000000000 +0100
+@@ -19,7 +19,9 @@
+ /***************************************************/
+ 
+ #include "Delay.h"
+-#include <iostream.h>
++#include <iostream>
++
++using namespace std;
+ 
+ Delay :: Delay()
+ {
+diff -ru mustajuuri-29-11-2005_orig/src/stk/DelayA.cpp mustajuuri-29-11-2005/src/stk/DelayA.cpp
+--- mustajuuri-29-11-2005_orig/src/stk/DelayA.cpp	2009-02-28 03:40:04.000000000 +0100
++++ mustajuuri-29-11-2005/src/stk/DelayA.cpp	2009-02-28 03:28:34.000000000 +0100
+@@ -23,7 +23,9 @@
+ /***************************************************/
+ 
+ #include "DelayA.h"
+-#include <iostream.h>
++#include <iostream>
++
++using namespace std;
+ 
+ DelayA :: DelayA()
+ {
+diff -ru mustajuuri-29-11-2005_orig/src/stk/DelayL.cpp mustajuuri-29-11-2005/src/stk/DelayL.cpp
+--- mustajuuri-29-11-2005_orig/src/stk/DelayL.cpp	2009-02-28 03:40:04.000000000 +0100
++++ mustajuuri-29-11-2005/src/stk/DelayL.cpp	2009-02-28 03:28:34.000000000 +0100
+@@ -23,7 +23,9 @@
+ /***************************************************/
+ 
+ #include "DelayL.h"
+-#include <iostream.h>
++#include <iostream>
++
++using namespace std;
+ 
+ DelayL :: DelayL()
+ {
+Only in mustajuuri-29-11-2005/src/stk: Depends-Linux-i686
+diff -ru mustajuuri-29-11-2005_orig/src/stk/Drummer.cpp mustajuuri-29-11-2005/src/stk/Drummer.cpp
+--- mustajuuri-29-11-2005_orig/src/stk/Drummer.cpp	2009-02-28 03:40:04.000000000 +0100
++++ mustajuuri-29-11-2005/src/stk/Drummer.cpp	2009-02-28 03:28:34.000000000 +0100
+@@ -19,6 +19,8 @@
+ #include <string.h>
+ #include <math.h>
+ 
++using namespace std;
++
+ // Not really General MIDI yet.  Coming soon.
+ unsigned char genMIDIMap[128] =
+   { 0,0,0,0,0,0,0,0,		// 0-7
+diff -ru mustajuuri-29-11-2005_orig/src/stk/Echo.cpp mustajuuri-29-11-2005/src/stk/Echo.cpp
+--- mustajuuri-29-11-2005_orig/src/stk/Echo.cpp	2009-02-28 03:40:04.000000000 +0100
++++ mustajuuri-29-11-2005/src/stk/Echo.cpp	2009-02-28 03:28:34.000000000 +0100
+@@ -9,7 +9,9 @@
+ /***************************************************/
+ 
+ #include "Echo.h"
+-#include <iostream.h>
++#include <iostream>
++
++using namespace std;
+ 
+ Echo :: Echo(MY_FLOAT longestDelay)
+ {
+diff -ru mustajuuri-29-11-2005_orig/src/stk/FM.cpp mustajuuri-29-11-2005/src/stk/FM.cpp
+--- mustajuuri-29-11-2005_orig/src/stk/FM.cpp	2009-02-28 03:40:04.000000000 +0100
++++ mustajuuri-29-11-2005/src/stk/FM.cpp	2009-02-28 03:28:34.000000000 +0100
+@@ -28,6 +28,8 @@
+ #include <string.h>
+ #include <stdlib.h>
+ 
++using namespace std;
++
+ FM :: FM(int operators)
+   : nOperators(operators)
+ {
+diff -ru mustajuuri-29-11-2005_orig/src/stk/FMVoices.cpp mustajuuri-29-11-2005/src/stk/FMVoices.cpp
+--- mustajuuri-29-11-2005_orig/src/stk/FMVoices.cpp	2009-02-28 03:40:04.000000000 +0100
++++ mustajuuri-29-11-2005/src/stk/FMVoices.cpp	2009-02-28 03:28:34.000000000 +0100
+@@ -35,6 +35,8 @@
+ #include "phontabl.tbl"
+ #include <string.h>
+ 
++using namespace std;
++
+ FMVoices :: FMVoices()
+   : FM()
+ {
+diff -ru mustajuuri-29-11-2005_orig/src/stk/Flute.cpp mustajuuri-29-11-2005/src/stk/Flute.cpp
+--- mustajuuri-29-11-2005_orig/src/stk/Flute.cpp	2009-02-28 03:40:04.000000000 +0100
++++ mustajuuri-29-11-2005/src/stk/Flute.cpp	2009-02-28 03:28:34.000000000 +0100
+@@ -26,6 +26,8 @@
+ #include "SKINI.msg"
+ #include <string.h>
+ 
++using namespace std;
++
+ Flute :: Flute(MY_FLOAT lowestFrequency)
+ {
+   length = (long) (Stk::sampleRate() / lowestFrequency + 1);
+diff -ru mustajuuri-29-11-2005_orig/src/stk/HevyMetl.cpp mustajuuri-29-11-2005/src/stk/HevyMetl.cpp
+--- mustajuuri-29-11-2005_orig/src/stk/HevyMetl.cpp	2009-02-28 03:40:04.000000000 +0100
++++ mustajuuri-29-11-2005/src/stk/HevyMetl.cpp	2009-02-28 03:28:34.000000000 +0100
+@@ -29,6 +29,8 @@
+ #include "HevyMetl.h"
+ #include <string.h>
+ 
++using namespace std;
++
+ HevyMetl :: HevyMetl()
+   : FM()
+ {
+diff -ru mustajuuri-29-11-2005_orig/src/stk/Instrmnt.cpp mustajuuri-29-11-2005/src/stk/Instrmnt.cpp
+--- mustajuuri-29-11-2005_orig/src/stk/Instrmnt.cpp	2009-02-28 03:40:04.000000000 +0100
++++ mustajuuri-29-11-2005/src/stk/Instrmnt.cpp	2009-02-28 03:28:34.000000000 +0100
+@@ -11,6 +11,8 @@
+ 
+ #include "Instrmnt.h"
+ 
++using namespace std;
++
+ Instrmnt :: Instrmnt()
+ {
+ }
+diff -ru mustajuuri-29-11-2005_orig/src/stk/Instrmnt.h mustajuuri-29-11-2005/src/stk/Instrmnt.h
+--- mustajuuri-29-11-2005_orig/src/stk/Instrmnt.h	2009-02-28 03:40:04.000000000 +0100
++++ mustajuuri-29-11-2005/src/stk/Instrmnt.h	2009-02-28 03:28:34.000000000 +0100
+@@ -13,7 +13,7 @@
+ #define __INSTRMNT_H
+ 
+ #include "Stk.h"
+-#include <iostream.h>
++#include <iostream>
+ 
+ class Instrmnt : public Stk
+ {
+Only in mustajuuri-29-11-2005/src/stk: Linux-i686
+diff -ru mustajuuri-29-11-2005_orig/src/stk/Mandolin.cpp mustajuuri-29-11-2005/src/stk/Mandolin.cpp
+--- mustajuuri-29-11-2005_orig/src/stk/Mandolin.cpp	2009-02-28 03:40:04.000000000 +0100
++++ mustajuuri-29-11-2005/src/stk/Mandolin.cpp	2009-02-28 03:28:34.000000000 +0100
+@@ -32,6 +32,8 @@
+ 
+ #include <string.h>
+ 
++using namespace std;
++
+ Mandolin :: Mandolin(MY_FLOAT lowestFrequency)
+   : PluckTwo(lowestFrequency)
+ {
+diff -ru mustajuuri-29-11-2005_orig/src/stk/Mesh2D.cpp mustajuuri-29-11-2005/src/stk/Mesh2D.cpp
+--- mustajuuri-29-11-2005_orig/src/stk/Mesh2D.cpp	2009-02-28 03:40:04.000000000 +0100
++++ mustajuuri-29-11-2005/src/stk/Mesh2D.cpp	2009-02-28 03:28:34.000000000 +0100
+@@ -28,6 +28,8 @@
+ #include "SKINI.msg"
+ #include <stdlib.h>
+ 
++using namespace std;
++
+ Mesh2D :: Mesh2D(short nX, short nY)
+ {
+   this->setNX(nX);
+diff -ru mustajuuri-29-11-2005_orig/src/stk/Messager.cpp mustajuuri-29-11-2005/src/stk/Messager.cpp
+--- mustajuuri-29-11-2005_orig/src/stk/Messager.cpp	2009-02-28 03:40:04.000000000 +0100
++++ mustajuuri-29-11-2005/src/stk/Messager.cpp	2009-02-28 03:28:34.000000000 +0100
+@@ -35,7 +35,9 @@
+ 
+ #include "Messager.h"
+ #include <string.h>
+-#include <iostream.h>
++#include <iostream>
++
++using namespace std;
+ 
+ #define STK_MIDI        0x0001
+ #define STK_PIPE        0x0002
+diff -ru mustajuuri-29-11-2005_orig/src/stk/Modal.cpp mustajuuri-29-11-2005/src/stk/Modal.cpp
+--- mustajuuri-29-11-2005_orig/src/stk/Modal.cpp	2009-02-28 03:40:04.000000000 +0100
++++ mustajuuri-29-11-2005/src/stk/Modal.cpp	2009-02-28 03:28:34.000000000 +0100
+@@ -15,6 +15,8 @@
+ #include <string.h>
+ #include <stdlib.h>
+ 
++using namespace std;
++
+ Modal :: Modal(int modes)
+   : nModes(modes)
+ {
+diff -ru mustajuuri-29-11-2005_orig/src/stk/ModalBar.cpp mustajuuri-29-11-2005/src/stk/ModalBar.cpp
+--- mustajuuri-29-11-2005_orig/src/stk/ModalBar.cpp	2009-02-28 03:40:04.000000000 +0100
++++ mustajuuri-29-11-2005/src/stk/ModalBar.cpp	2009-02-28 03:28:34.000000000 +0100
+@@ -33,6 +33,8 @@
+ #include <string.h>
+ #include <math.h>
+ 
++using namespace std;
++
+ ModalBar :: ModalBar()
+   : Modal()
+ {
+diff -ru mustajuuri-29-11-2005_orig/src/stk/Moog.cpp mustajuuri-29-11-2005/src/stk/Moog.cpp
+--- mustajuuri-29-11-2005_orig/src/stk/Moog.cpp	2009-02-28 03:40:04.000000000 +0100
++++ mustajuuri-29-11-2005/src/stk/Moog.cpp	2009-02-28 03:28:34.000000000 +0100
+@@ -21,7 +21,9 @@
+ #include "Moog.h"
+ #include "SKINI.msg"
+ 
+-#include <string.h>
++#include <cstring>
++
++using namespace std;
+ 
+ Moog :: Moog()
+ {
+diff -ru mustajuuri-29-11-2005_orig/src/stk/PercFlut.cpp mustajuuri-29-11-2005/src/stk/PercFlut.cpp
+--- mustajuuri-29-11-2005_orig/src/stk/PercFlut.cpp	2009-02-28 03:40:04.000000000 +0100
++++ mustajuuri-29-11-2005/src/stk/PercFlut.cpp	2009-02-28 03:28:34.000000000 +0100
+@@ -29,6 +29,8 @@
+ #include "PercFlut.h"
+ #include <string.h>
+ 
++using namespace std;
++
+ PercFlut :: PercFlut()
+   : FM()
+ {
+diff -ru mustajuuri-29-11-2005_orig/src/stk/PitShift.cpp mustajuuri-29-11-2005/src/stk/PitShift.cpp
+--- mustajuuri-29-11-2005_orig/src/stk/PitShift.cpp	2009-02-28 03:40:04.000000000 +0100
++++ mustajuuri-29-11-2005/src/stk/PitShift.cpp	2009-02-28 03:28:34.000000000 +0100
+@@ -10,9 +10,11 @@
+ /***************************************************/
+ 
+ #include "PitShift.h"
+-#include <iostream.h>
++#include <iostream>
+ #include <math.h>
+ 
++using namespace std;
++
+ PitShift :: PitShift()
+ {
+   delay[0] = 12;
+diff -ru mustajuuri-29-11-2005_orig/src/stk/PluckTwo.cpp mustajuuri-29-11-2005/src/stk/PluckTwo.cpp
+--- mustajuuri-29-11-2005_orig/src/stk/PluckTwo.cpp	2009-02-28 03:40:04.000000000 +0100
++++ mustajuuri-29-11-2005/src/stk/PluckTwo.cpp	2009-02-28 03:28:34.000000000 +0100
+@@ -20,6 +20,8 @@
+ 
+ #include "PluckTwo.h"
+ 
++using namespace std;
++
+ PluckTwo :: PluckTwo(MY_FLOAT lowestFrequency)
+ {
+   length = (long) (Stk::sampleRate() / lowestFrequency + 1);
+diff -ru mustajuuri-29-11-2005_orig/src/stk/Plucked.cpp mustajuuri-29-11-2005/src/stk/Plucked.cpp
+--- mustajuuri-29-11-2005_orig/src/stk/Plucked.cpp	2009-02-28 03:40:04.000000000 +0100
++++ mustajuuri-29-11-2005/src/stk/Plucked.cpp	2009-02-28 03:28:34.000000000 +0100
+@@ -19,6 +19,8 @@
+ 
+ #include "Plucked.h"
+ 
++using namespace std;
++
+ Plucked :: Plucked(MY_FLOAT lowestFrequency)
+ {
+   length = (long) (Stk::sampleRate() / lowestFrequency + 1);
+diff -ru mustajuuri-29-11-2005_orig/src/stk/Resonate.cpp mustajuuri-29-11-2005/src/stk/Resonate.cpp
+--- mustajuuri-29-11-2005_orig/src/stk/Resonate.cpp	2009-02-28 03:40:04.000000000 +0100
++++ mustajuuri-29-11-2005/src/stk/Resonate.cpp	2009-02-28 03:28:34.000000000 +0100
+@@ -20,6 +20,8 @@
+ #include "Resonate.h"
+ #include "SKINI.msg"
+ 
++using namespace std;
++
+ Resonate :: Resonate()
+ {
+   adsr = new ADSR;
+diff -ru mustajuuri-29-11-2005_orig/src/stk/Rhodey.cpp mustajuuri-29-11-2005/src/stk/Rhodey.cpp
+--- mustajuuri-29-11-2005_orig/src/stk/Rhodey.cpp	2009-02-28 03:40:04.000000000 +0100
++++ mustajuuri-29-11-2005/src/stk/Rhodey.cpp	2009-02-28 03:28:34.000000000 +0100
+@@ -33,6 +33,8 @@
+ #include "Rhodey.h"
+ #include <string.h>
+ 
++using namespace std;
++
+ Rhodey :: Rhodey()
+   : FM()
+ {
+diff -ru mustajuuri-29-11-2005_orig/src/stk/Sampler.cpp mustajuuri-29-11-2005/src/stk/Sampler.cpp
+--- mustajuuri-29-11-2005_orig/src/stk/Sampler.cpp	2009-02-28 03:40:04.000000000 +0100
++++ mustajuuri-29-11-2005/src/stk/Sampler.cpp	2009-02-28 03:28:34.000000000 +0100
+@@ -11,6 +11,8 @@
+ 
+ #include "Sampler.h"
+ 
++using namespace std;
++
+ Sampler :: Sampler()
+ {
+   // We don't make the waves here yet, because
+diff -ru mustajuuri-29-11-2005_orig/src/stk/Saxofony.cpp mustajuuri-29-11-2005/src/stk/Saxofony.cpp
+--- mustajuuri-29-11-2005_orig/src/stk/Saxofony.cpp	2009-02-28 03:40:04.000000000 +0100
++++ mustajuuri-29-11-2005/src/stk/Saxofony.cpp	2009-02-28 03:28:34.000000000 +0100
+@@ -39,6 +39,8 @@
+ #include <string.h>
+ #include "SKINI.msg"
+ 
++using namespace std;
++
+ Saxofony :: Saxofony(MY_FLOAT lowestFrequency)
+ {
+   length = (long) (Stk::sampleRate() / lowestFrequency + 1);
+diff -ru mustajuuri-29-11-2005_orig/src/stk/Shakers.cpp mustajuuri-29-11-2005/src/stk/Shakers.cpp
+--- mustajuuri-29-11-2005_orig/src/stk/Shakers.cpp	2009-02-28 03:40:04.000000000 +0100
++++ mustajuuri-29-11-2005/src/stk/Shakers.cpp	2009-02-28 03:28:34.000000000 +0100
+@@ -57,6 +57,8 @@
+ #include <string.h>
+ #include <math.h>
+ 
++using namespace std;
++
+ int my_random(int max) //  Return Random Int Between 0 and max
+ {
+   int temp = (int) ((float)max * rand() / (RAND_MAX + 1.0) );
+diff -ru mustajuuri-29-11-2005_orig/src/stk/Simple.cpp mustajuuri-29-11-2005/src/stk/Simple.cpp
+--- mustajuuri-29-11-2005_orig/src/stk/Simple.cpp	2009-02-28 03:40:04.000000000 +0100
++++ mustajuuri-29-11-2005/src/stk/Simple.cpp	2009-02-28 03:28:34.000000000 +0100
+@@ -21,6 +21,8 @@
+ #include "SKINI.msg"
+ #include <string.h>
+ 
++using namespace std;
++
+ Simple :: Simple()
+ {
+   adsr = new ADSR;
+diff -ru mustajuuri-29-11-2005_orig/src/stk/Sitar.cpp mustajuuri-29-11-2005/src/stk/Sitar.cpp
+--- mustajuuri-29-11-2005_orig/src/stk/Sitar.cpp	2009-02-28 03:40:04.000000000 +0100
++++ mustajuuri-29-11-2005/src/stk/Sitar.cpp	2009-02-28 03:28:34.000000000 +0100
+@@ -10,6 +10,8 @@
+ #include "Sitar.h"
+ #include <math.h>
+ 
++using namespace std;
++
+ Sitar :: Sitar(MY_FLOAT lowestFrequency)
+ {
+   length = (long) (Stk::sampleRate() / lowestFrequency + 1);
+diff -ru mustajuuri-29-11-2005_orig/src/stk/StifKarp.cpp mustajuuri-29-11-2005/src/stk/StifKarp.cpp
+--- mustajuuri-29-11-2005_orig/src/stk/StifKarp.cpp	2009-02-28 03:40:04.000000000 +0100
++++ mustajuuri-29-11-2005/src/stk/StifKarp.cpp	2009-02-28 03:28:34.000000000 +0100
+@@ -26,6 +26,8 @@
+ #include <string.h>
+ #include <math.h>
+ 
++using namespace std;
++
+ StifKarp :: StifKarp(MY_FLOAT lowestFrequency)
+ {
+   length = (long) (Stk::sampleRate() / lowestFrequency + 1);
+diff -ru mustajuuri-29-11-2005_orig/src/stk/Stk.cpp mustajuuri-29-11-2005/src/stk/Stk.cpp
+--- mustajuuri-29-11-2005_orig/src/stk/Stk.cpp	2009-02-28 03:40:04.000000000 +0100
++++ mustajuuri-29-11-2005/src/stk/Stk.cpp	2009-02-28 03:28:34.000000000 +0100
+@@ -16,6 +16,7 @@
+ #include <stdio.h>
+ #include <string.h>
+ #include <string>
++#include <cstdlib>
+ 
+ MY_FLOAT Stk :: srate = (MY_FLOAT) SRATE;
+ const Stk::STK_FORMAT Stk :: STK_SINT8 = 1;
+diff -ru mustajuuri-29-11-2005_orig/src/stk/Table.cpp mustajuuri-29-11-2005/src/stk/Table.cpp
+--- mustajuuri-29-11-2005_orig/src/stk/Table.cpp	2009-02-28 03:40:04.000000000 +0100
++++ mustajuuri-29-11-2005/src/stk/Table.cpp	2009-02-28 03:28:34.000000000 +0100
+@@ -18,7 +18,9 @@
+ #include <stdio.h>
+ #include <sys/stat.h>
+ #include <sys/types.h>
+-#include <iostream.h>
++#include <iostream>
++
++using namespace std;
+ 
+ Table :: Table(char *fileName)
+ {
+diff -ru mustajuuri-29-11-2005_orig/src/stk/Thread.cpp mustajuuri-29-11-2005/src/stk/Thread.cpp
+--- mustajuuri-29-11-2005_orig/src/stk/Thread.cpp	2009-02-28 03:40:04.000000000 +0100
++++ mustajuuri-29-11-2005/src/stk/Thread.cpp	2009-02-28 03:28:34.000000000 +0100
+@@ -12,7 +12,7 @@
+ /***************************************************/
+ 
+ #include "Thread.h"
+-#include<iostream.h>
++#include<iostream>
+ 
+ Thread :: Thread()
+ {
+diff -ru mustajuuri-29-11-2005_orig/src/stk/TubeBell.cpp mustajuuri-29-11-2005/src/stk/TubeBell.cpp
+--- mustajuuri-29-11-2005_orig/src/stk/TubeBell.cpp	2009-02-28 03:40:04.000000000 +0100
++++ mustajuuri-29-11-2005/src/stk/TubeBell.cpp	2009-02-28 03:28:34.000000000 +0100
+@@ -33,6 +33,8 @@
+ #include "TubeBell.h"
+ #include <string.h>
+ 
++using namespace std;
++
+ TubeBell :: TubeBell()
+   : FM()
+ {
+diff -ru mustajuuri-29-11-2005_orig/src/stk/Wurley.cpp mustajuuri-29-11-2005/src/stk/Wurley.cpp
+--- mustajuuri-29-11-2005_orig/src/stk/Wurley.cpp	2009-02-28 03:40:04.000000000 +0100
++++ mustajuuri-29-11-2005/src/stk/Wurley.cpp	2009-02-28 03:28:34.000000000 +0100
+@@ -33,6 +33,8 @@
+ #include "Wurley.h"
+ #include <string.h>
+ 
++using namespace std;
++
+ Wurley :: Wurley()
+   : FM()
+ {
+diff -ru mustajuuri-29-11-2005_orig/src/stk/WvIn.cpp mustajuuri-29-11-2005/src/stk/WvIn.cpp
+--- mustajuuri-29-11-2005_orig/src/stk/WvIn.cpp	2009-02-28 03:40:04.000000000 +0100
++++ mustajuuri-29-11-2005/src/stk/WvIn.cpp	2009-02-28 03:28:34.000000000 +0100
+@@ -42,7 +42,7 @@
+ #include <math.h>
+ #include <string.h>
+ 
+-#include <iostream.h>
++#include <iostream>
+ 
+ WvIn :: WvIn()
+ {
+diff -ru mustajuuri-29-11-2005_orig/src/utils/Makefile mustajuuri-29-11-2005/src/utils/Makefile
+--- mustajuuri-29-11-2005_orig/src/utils/Makefile	2009-02-28 03:32:23.000000000 +0100
++++ mustajuuri-29-11-2005/src/utils/Makefile	2009-02-28 03:34:58.000000000 +0100
+@@ -34,5 +34,5 @@
+ dependoff \
+ dependon:;	@for DIR in $(DIRS); \
+ 		 do \
+-		   $(MAKE) MUSTAJUURI_PATH=$(MUSTAJUURI_PATH) -C $$DIR $@; \
++		   $(MAKE) MUSTAJUURI_PATH=$(MUSTAJUURI_PATH) -C $$DIR $@ || exit $$?; \
+ 		 done
+Only in mustajuuri-29-11-2005/src/utils/cdtrunc: Depends-Linux-i686
+Only in mustajuuri-29-11-2005/src/utils/cdtrunc: Linux-i686

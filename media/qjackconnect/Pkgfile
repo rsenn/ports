@@ -1,0 +1,26 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: QT based patchbay for jack.
+#  QJackConnect is a QT based patchbay for jack.
+# URL: http://www.suse.de/~mana/jack.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=qjackconnect
+version=0.0.3b
+release=1
+source=(ftp://ftp.suse.com/pub/people/mana/qjackconnect-$version.tar.bz2)
+
+build()
+{
+  cd qjackconnect-$version
+
+  make -f make_qjackconnect \
+      QT_BASE_DIR="$prefix/share/qt3"
+
+  install -d $ROOT/bin
+  install -m 755 qjackconnect $ROOT/bin
+
+  install -d $ROOT/share/doc/qjackconnect
+  install -m 644 LICENSE INSTALL $ROOT/share/doc/qjackconnect
+}

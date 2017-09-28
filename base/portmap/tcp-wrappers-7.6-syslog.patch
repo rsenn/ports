@@ -1,0 +1,356 @@
+diff -ru -ru tcp_wrappers_orig/diag.c tcp_wrappers_7.6/diag.c
+--- tcp_wrappers_orig/diag.c	2006-11-28 12:51:09.000000000 +0100
++++ tcp_wrappers_7.6/diag.c	2006-11-28 12:51:40.000000000 +0100
+@@ -42,7 +42,7 @@
+ 		tag, tcpd_context.file, tcpd_context.line, format);
+     else
+ 	sprintf(fmt, "%s: %s", tag, format);
+-    vsyslog(severity, fmt, ap);
++    vxsyslog(severity, fmt, ap);
+ }
+ 
+ /* tcpd_warn - report problem of some sort and proceed */
+diff -ru -ru tcp_wrappers_orig/fakelog.c tcp_wrappers_7.6/fakelog.c
+--- tcp_wrappers_orig/fakelog.c	2006-11-28 12:51:09.000000000 +0100
++++ tcp_wrappers_7.6/fakelog.c	2006-11-28 12:53:33.000000000 +0100
+@@ -1,5 +1,5 @@
+  /*
+-  * This module intercepts syslog() library calls and redirects their output
++  * This module intercepts xsyslog() library calls and redirects their output
+   * to the standard output stream. For interactive testing.
+   * 
+   * Author: Wietse Venema, Eindhoven University of Technology, The Netherlands.
+@@ -27,7 +27,7 @@
+ 
+ /* vsyslog - format one record */
+ 
+-vsyslog(severity, fmt, ap)
++vxsyslog(severity, fmt, ap)
+ int     severity;
+ char   *fmt;
+ va_list ap;
+@@ -43,14 +43,14 @@
+ 
+ /* VARARGS */
+ 
+-VARARGS(syslog, int, severity)
++VARARGS(xsyslog, int, severity)
+ {
+     va_list ap;
+     char   *fmt;
+ 
+     VASTART(ap, int, severity);
+     fmt = va_arg(ap, char *);
+-    vsyslog(severity, fmt, ap);
++    vxsyslog(severity, fmt, ap);
+     VAEND(ap);
+ }
+ 
+diff -ru -ru tcp_wrappers_orig/fix_options.c tcp_wrappers_7.6/fix_options.c
+--- tcp_wrappers_orig/fix_options.c	2006-11-28 12:51:09.000000000 +0100
++++ tcp_wrappers_7.6/fix_options.c	2006-11-28 12:51:40.000000000 +0100
+@@ -78,7 +78,7 @@
+ 	for (cp = optbuf + ADDR_LEN; cp < optbuf + optsize; cp += optlen) {
+ 	    opt = cp[IPOPT_OPTVAL];
+ 	    if (opt == IPOPT_LSRR || opt == IPOPT_SSRR) {
+-		syslog(LOG_WARNING,
++		xsyslog(LOG_WARNING,
+ 		   "refused connect from %s with IP source routing options",
+ 		       eval_client(request));
+ 		shutdown(fd, 2);
+@@ -97,11 +97,11 @@
+ 	lp = lbuf;
+ 	for (cp = optbuf; optsize > 0; cp++, optsize--, lp += 3)
+ 	    sprintf(lp, " %2.2x", *cp);
+-	syslog(LOG_NOTICE,
++	xsyslog(LOG_NOTICE,
+ 	       "connect from %s with IP options (ignored):%s",
+ 	       eval_client(request), lbuf);
+ 	if (setsockopt(fd, ipproto, IP_OPTIONS, (char *) 0, optsize) != 0) {
+-	    syslog(LOG_ERR, "setsockopt IP_OPTIONS NULL: %m");
++	    xsyslog(LOG_ERR, "setsockopt IP_OPTIONS NULL: %m");
+ 	    shutdown(fd, 2);
+ 	}
+     }
+diff -ru -ru tcp_wrappers_orig/fromhost.c tcp_wrappers_7.6/fromhost.c
+--- tcp_wrappers_orig/fromhost.c	2006-11-28 12:51:09.000000000 +0100
++++ tcp_wrappers_7.6/fromhost.c	2006-11-28 12:51:40.000000000 +0100
+@@ -5,7 +5,7 @@
+   * On systems with sockets and TLI, fromhost() determines the type of API
+   * (sockets, TLI), then invokes the appropriate API-specific routines.
+   * 
+-  * Diagnostics are reported through syslog(3).
++  * Diagnostics are reported through xsyslog(3).
+   * 
+   * Author: Wietse Venema, Eindhoven University of Technology, The Netherlands.
+   */
+diff -ru -ru tcp_wrappers_orig/hosts_access.c tcp_wrappers_7.6/hosts_access.c
+--- tcp_wrappers_orig/hosts_access.c	2006-11-28 12:51:09.000000000 +0100
++++ tcp_wrappers_7.6/hosts_access.c	2006-11-28 12:51:40.000000000 +0100
+@@ -10,7 +10,7 @@
+   * side effect, the pattern matching process may change the contents of
+   * request structure fields.
+   * 
+-  * Diagnostics are reported through syslog(3).
++  * Diagnostics are reported through xsyslog(3).
+   * 
+   * Compile with -DNETGROUP if your library provides support for netgroups.
+   * 
+@@ -165,7 +165,7 @@
+     }
+     if (match) {
+ 	if (hosts_access_verbose > 1)
+-	    syslog(LOG_DEBUG, "matched:  %s line %d",
++	    xsyslog(LOG_DEBUG, "matched:  %s line %d",
+ 		   tcpd_context.file, tcpd_context.line);
+ 	if (sh_cmd) {
+ #ifdef PROCESS_OPTIONS
+diff -ru -ru tcp_wrappers_orig/miscd.c tcp_wrappers_7.6/miscd.c
+--- tcp_wrappers_orig/miscd.c	2006-11-28 12:51:09.000000000 +0100
++++ tcp_wrappers_7.6/miscd.c	2006-11-28 12:51:40.000000000 +0100
+@@ -4,7 +4,7 @@
+   * after renaming the real miscd daemon to the name defined with the
+   * REAL_MISCD macro.
+   * 
+-  * Connections and diagnostics are logged through syslog(3).
++  * Connections and diagnostics are logged through xsyslog(3).
+   * 
+   * The Ultrix miscd program implements (among others) the systat service, which
+   * pipes the output from who(1) to stdout. This information is potentially
+@@ -110,11 +110,11 @@
+ 
+     /* Report request and invoke the real daemon program. */
+ 
+-    syslog(allow_severity, "connect from %s", eval_client(&request));
++    xsyslog(allow_severity, "connect from %s", eval_client(&request));
+     sprintf(path, "%s/miscd", REAL_DAEMON_DIR);
+     closelog();
+     (void) execv(path, argv);
+-    syslog(LOG_ERR, "error: cannot execute %s: %m", path);
++    xsyslog(LOG_ERR, "error: cannot execute %s: %m", path);
+     clean_exit(&request);
+     /* NOTREACHED */
+ }
+diff -ru -ru tcp_wrappers_orig/myvsyslog.c tcp_wrappers_7.6/myvsyslog.c
+--- tcp_wrappers_orig/myvsyslog.c	2006-11-28 12:51:09.000000000 +0100
++++ tcp_wrappers_7.6/myvsyslog.c	2006-11-28 12:55:00.000000000 +0100
+@@ -1,8 +1,8 @@
+  /*
+-  * vsyslog() for sites without. In order to enable this code, build with
++  * vxsyslog() for sites without. In order to enable this code, build with
+   * -Dvsyslog=myvsyslog. We use a different name so that no accidents will
+-  * happen when vsyslog() exists. On systems with vsyslog(), syslog() is
+-  * typically implemented in terms of vsyslog().
++  * happen when vxsyslog() exists. On systems with vxsyslog(), xsyslog() is
++  * typically implemented in terms of vxsyslog().
+   * 
+   * Author: Wietse Venema, Eindhoven University of Technology, The Netherlands.
+   */
+@@ -18,7 +18,7 @@
+ #include "tcpd.h"
+ #include "mystdarg.h"
+ 
+-myvsyslog(severity, format, ap)
++myvxsyslog(severity, format, ap)
+ int     severity;
+ char   *format;
+ va_list ap;
+@@ -27,7 +27,31 @@
+     char    obuf[3 * STRING_LENGTH];
+ 
+     vsprintf(obuf, percent_m(fbuf, format), ap);
+-    syslog(severity, "%s", obuf);
++    xsyslog(severity, "%s", obuf);
+ }
+ 
+ #endif
++
++void vxsyslog(int level, const char *fmt, va_list args)
++{
++  char format[4096];
++
++  strncpy(format, fmt, sizeof(format) - 1);
++  format[sizeof(format) - 2] = '\0';
++  
++  size_t len = strlen(format);
++  format[len] = '\n';
++  format[len+1] = '\0';
++  
++  vfprintf(stderr, format, args);
++}
++
++
++void xsyslog(int level, const char *fmt, ...)
++{
++  va_list args;
++  va_start(args, fmt);
++  vxsyslog(level, fmt, args);
++  va_end(args);
++}
++
+diff -ru -ru tcp_wrappers_orig/options.c tcp_wrappers_7.6/options.c
+--- tcp_wrappers_orig/options.c	2006-11-28 12:51:09.000000000 +0100
++++ tcp_wrappers_7.6/options.c	2006-11-28 12:51:40.000000000 +0100
+@@ -184,7 +184,7 @@
+ 	if (value && expand_arg(op))
+ 	    value = chop_string(percent_x(bf, sizeof(bf), value, request));
+ 	if (hosts_access_verbose)
+-	    syslog(LOG_DEBUG, "option:   %s %s", key, value ? value : "");
++	    xsyslog(LOG_DEBUG, "option:   %s %s", key, value ? value : "");
+ 	(*(op->func)) (value, request);
+     }
+ }
+@@ -378,7 +378,7 @@
+ 	if (resident > 0)
+ 	    tcpd_jump("twist option in resident process");
+ 
+-	syslog(deny_severity, "twist %s to %s", eval_client(request), value);
++	xsyslog(deny_severity, "twist %s to %s", eval_client(request), value);
+ 
+ 	/* Before switching to the shell, set up stdin, stdout and stderr. */
+ 
+diff -ru -ru tcp_wrappers_orig/percent_x.c tcp_wrappers_7.6/percent_x.c
+--- tcp_wrappers_orig/percent_x.c	2006-11-28 12:51:09.000000000 +0100
++++ tcp_wrappers_7.6/percent_x.c	2006-11-28 12:51:40.000000000 +0100
+@@ -5,7 +5,7 @@
+   * reason, characters with a special meaning to shells are replaced by
+   * underscores.
+   * 
+-  * Diagnostics are reported through syslog(3).
++  * Diagnostics are reported through xsyslog(3).
+   * 
+   * Author: Wietse Venema, Eindhoven University of Technology, The Netherlands.
+   */
+diff -ru -ru tcp_wrappers_orig/ptx.c tcp_wrappers_7.6/ptx.c
+--- tcp_wrappers_orig/ptx.c	2006-11-28 12:51:09.000000000 +0100
++++ tcp_wrappers_7.6/ptx.c	2006-11-28 12:51:40.000000000 +0100
+@@ -3,7 +3,7 @@
+   * Release 4. Some important functions are not present so we are limited to
+   * IP-based services.
+   * 
+-  * Diagnostics are reported through syslog(3).
++  * Diagnostics are reported through xsyslog(3).
+   * 
+   * Author: Wietse Venema, Eindhoven University of Technology, The Netherlands.
+   */
+diff -ru -ru tcp_wrappers_orig/refuse.c tcp_wrappers_7.6/refuse.c
+--- tcp_wrappers_orig/refuse.c	2006-11-28 12:51:09.000000000 +0100
++++ tcp_wrappers_7.6/refuse.c	2006-11-28 12:51:40.000000000 +0100
+@@ -25,7 +25,7 @@
+ void    refuse(request)
+ struct request_info *request;
+ {
+-    syslog(deny_severity, "refused connect from %s", eval_client(request));
++    xsyslog(deny_severity, "refused connect from %s", eval_client(request));
+     clean_exit(request);
+     /* NOTREACHED */
+ }
+diff -ru -ru tcp_wrappers_orig/rfc931.c tcp_wrappers_7.6/rfc931.c
+--- tcp_wrappers_orig/rfc931.c	2006-11-28 12:51:09.000000000 +0100
++++ tcp_wrappers_7.6/rfc931.c	2006-11-28 12:51:40.000000000 +0100
+@@ -4,7 +4,7 @@
+   * host to look up the owner of a connection. The information should not be
+   * used for authentication purposes. This routine intercepts alarm signals.
+   * 
+-  * Diagnostics are reported through syslog(3).
++  * Diagnostics are reported through xsyslog(3).
+   * 
+   * Author: Wietse Venema, Eindhoven University of Technology, The Netherlands.
+   */
+diff -ru -ru tcp_wrappers_orig/shell_cmd.c tcp_wrappers_7.6/shell_cmd.c
+--- tcp_wrappers_orig/shell_cmd.c	2006-11-28 12:51:09.000000000 +0100
++++ tcp_wrappers_7.6/shell_cmd.c	2006-11-28 12:51:40.000000000 +0100
+@@ -3,7 +3,7 @@
+   * command is executed by a /bin/sh child process, with standard input,
+   * standard output and standard error connected to /dev/null.
+   * 
+-  * Diagnostics are reported through syslog(3).
++  * Diagnostics are reported through xsyslog(3).
+   * 
+   * Author: Wietse Venema, Eindhoven University of Technology, The Netherlands.
+   */
+diff -ru -ru tcp_wrappers_orig/socket.c tcp_wrappers_7.6/socket.c
+--- tcp_wrappers_orig/socket.c	2006-11-28 12:51:09.000000000 +0100
++++ tcp_wrappers_7.6/socket.c	2006-11-28 12:51:40.000000000 +0100
+@@ -10,7 +10,7 @@
+   * 
+   * When lookup or conversion fails the result is set to STRING_UNKNOWN.
+   * 
+-  * Diagnostics are reported through syslog(3).
++  * Diagnostics are reported through xsyslog(3).
+   * 
+   * Author: Wietse Venema, Eindhoven University of Technology, The Netherlands.
+   */
+diff -ru -ru tcp_wrappers_orig/tcpd.c tcp_wrappers_7.6/tcpd.c
+--- tcp_wrappers_orig/tcpd.c	2006-11-28 12:51:09.000000000 +0100
++++ tcp_wrappers_7.6/tcpd.c	2006-11-28 12:51:40.000000000 +0100
+@@ -5,7 +5,7 @@
+   * after saving the real daemons in the directory specified with the
+   * REAL_DAEMON_DIR macro. This arrangement requires that the network daemons
+   * are started by inetd or something similar. Connections and diagnostics
+-  * are logged through syslog(3).
++  * are logged through xsyslog(3).
+   * 
+   * Author: Wietse Venema, Eindhoven University of Technology, The Netherlands.
+   */
+@@ -120,10 +120,10 @@
+ 
+     /* Report request and invoke the real daemon program. */
+ 
+-    syslog(allow_severity, "connect from %s", eval_client(&request));
++    xsyslog(allow_severity, "connect from %s", eval_client(&request));
+     closelog();
+     (void) execv(path, argv);
+-    syslog(LOG_ERR, "error: cannot execute %s: %m", path);
++    xsyslog(LOG_ERR, "error: cannot execute %s: %m", path);
+     clean_exit(&request);
+     /* NOTREACHED */
+ }
+diff -ru -ru tcp_wrappers_orig/tli.c tcp_wrappers_7.6/tli.c
+--- tcp_wrappers_orig/tli.c	2006-11-28 12:51:09.000000000 +0100
++++ tcp_wrappers_7.6/tli.c	2006-11-28 12:51:40.000000000 +0100
+@@ -9,7 +9,7 @@
+   * pretends to have someone elses name, or when a host name is available but
+   * could not be verified.
+   * 
+-  * Diagnostics are reported through syslog(3).
++  * Diagnostics are reported through xsyslog(3).
+   * 
+   * Author: Wietse Venema, Eindhoven University of Technology, The Netherlands.
+   */
+diff -ru -ru tcp_wrappers_orig/try-from.c tcp_wrappers_7.6/try-from.c
+--- tcp_wrappers_orig/try-from.c	2006-11-28 12:51:09.000000000 +0100
++++ tcp_wrappers_7.6/try-from.c	2006-11-28 12:51:40.000000000 +0100
+@@ -5,7 +5,7 @@
+   * 
+   * Example: "rsh host /some/where/try-from".
+   * 
+-  * Diagnostics are reported through syslog(3) and redirected to stderr.
++  * Diagnostics are reported through xsyslog(3) and redirected to stderr.
+   * 
+   * Author: Wietse Venema, Eindhoven University of Technology, The Netherlands.
+   */
+diff -ru -ru tcp_wrappers_orig/update.c tcp_wrappers_7.6/update.c
+--- tcp_wrappers_orig/update.c	2006-11-28 12:51:09.000000000 +0100
++++ tcp_wrappers_7.6/update.c	2006-11-28 12:51:40.000000000 +0100
+@@ -8,7 +8,7 @@
+   * 
+   * Both functions take a variable-length name-value list.
+   * 
+-  * Diagnostics are reported through syslog(3).
++  * Diagnostics are reported through xsyslog(3).
+   * 
+   * Author: Wietse Venema, Eindhoven University of Technology, The Netherlands.
+   */
+diff -r -u .src/tcp_wrappers_7.6_orig/myvsyslog.c .src/tcp_wrappers_7.6/myvsyslog.c
+--- tcp_wrappers_7.6_orig/myvsyslog.c	2007-08-01 09:11:15.000000000 +0200
++++ tcp_wrappers_7.6/myvsyslog.c	2007-08-01 09:11:57.000000000 +0200
+@@ -18,6 +18,8 @@
+ #include "tcpd.h"
+ #include "mystdarg.h"
+ 
++void xsyslog(int level, const char *fmt, ...);
++  
+ myvxsyslog(severity, format, ap)
+ int     severity;
+ char   *format;

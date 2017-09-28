@@ -1,0 +1,35 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A harddisk cloning utility.
+#  Partition Image is a Linux/UNIX utility similar to Symantec's Ghost. This
+#  uility saves partitions in the EXT2, Reiserfs, NTFS, HPFS, FAT16,
+#  and FAT32 file system formats to an image file. The image file can be
+#  compressed with gzip or bzip2 in order to save disk space, and it can be
+#  split in order to fit onto a series of floppy disks. This program can be
+#  useful for backup purposes. A boot/root disk is also provided, allowing
+#  you to run Partition Image without Linux installed on the hard disk.
+# URL: http://www.partimage.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=partimage
+version=0.6.7_beta2
+release=1
+source=($mirror_sf/partimage/partimage-$version.tar.bz2)
+
+build()
+{
+  cd partimage-$version
+
+  ./configure \
+       --program-prefix="" \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  sed -i 's,chown partimag:root,chown 0:0,g' Makefile
+
+  make
+  make DESTDIR="$PKG" install
+}

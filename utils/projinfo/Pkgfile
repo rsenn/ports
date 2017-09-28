@@ -1,0 +1,23 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Title: project information recuperator
+# Description: Description: Designed to retrieve a project's information from various
+# Web-based databases, such as freshmeat and SourceForge. It can be used
+# to monitor project status, the current release, rank, subscriptions,
+# and total number of downloads.
+# URL: http://projinfo.sourceforge.n
+# Maintainer: Roman L. Senn <rs@adfinis.com>
+# Depends on:
+
+name=projinfo
+version=0.2
+release=1
+source=($mirror_sf/projinfo/projinfo-$version.tar.gz)
+
+build()
+{
+  cd projinfo-$version
+
+  make
+  make DESTDIR="$PKG" DOCDIR='$(DESTDIR)/usr/share/doc/$(PACKAGE)' install
+}

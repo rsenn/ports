@@ -1,0 +1,31 @@
+# $Id: Pkgfile,v 1.9 2007/04/22 23:07:58 roman Exp $
+#
+# Description: X11 Session Management library
+#  This package provides the main interface to the X11 Session Management
+#  library, which allows for applications to both manage sessions, and make use
+#  of session managers to save and restore their state for later use.
+#  .
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=sm
+version=1.1.0
+release=1
+source=(ftp://ftp.x.org/pub/individual/lib/libSM-$version.tar.bz2)
+
+build()
+{
+  cd libSM-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --${static:=enable}-shared \
+       --${shared:=enable}-shared \
+       --without-libuuid
+
+  make
+  make DESTDIR="$PKG" install
+}

@@ -1,0 +1,34 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: Provides limited super user priviledges to specific users.
+#  Sudo (su "do") allows a system administrator to give certain users 
+#  (or groups of users) the ability to run some (or all) commands as 
+#  root while logging all commands and arguments. 
+#  Sudo operates on a per-command basis, it is not a replacement for 
+#  the shell. 
+# URL: http://www.sudo.ws/sudo/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=sudo
+version=1.7.0
+release=1
+source=(http://www.sudo.ws/sudo/dist/sudo-$version.tar.gz)
+
+build()
+{
+  cd sudo-$version
+
+  case "$prefix" in
+    "/usr") sysconfdir="/etc" ;;
+  esac
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix" \
+       --sysconfdir="${sysconfdir=$prefix/etc}"
+
+  make sudoersdir="$sysconfdir" DESTDIR="$PKG" all install
+}

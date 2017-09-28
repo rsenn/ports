@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A lightweight console inactivity detection program.
+#  lieabed is a lightweight console inactivity detection program, which can
+#  be used to find the time of the last key press on a local console. It
+#  is useful in scripts and other automated applications, and can display
+#  times in different ways.
+#  .
+# URL: http://konst.org.ua/lieabed/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=lieabed
+version=1.0
+release=1
+source=(http://konst.org.ua/download/lieabed-$version.tar.gz)
+
+build()
+{
+  cd lieabed-$version
+
+  ./configure \
+       --host="$host" \
+       --prefix="$prefix" \
+       --mandir="$prefix/share/man"
+
+  make DESTDIR="$PKG" install
+}
+
+# EOF

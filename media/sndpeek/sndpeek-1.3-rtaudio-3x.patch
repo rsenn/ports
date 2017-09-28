@@ -1,0 +1,473 @@
+diff -w -r -u -- sndpeek-1.3_orig/src/sndpeek/RtAudio.cpp sndpeek-1.3/src/sndpeek/RtAudio.cpp
+--- sndpeek-1.3_orig/src/sndpeek/RtAudio.cpp	2009-02-22 05:19:14.000000000 +0100
++++ sndpeek-1.3/src/sndpeek/RtAudio.cpp	2009-02-22 05:21:16.000000000 +0100
+@@ -51,7 +49,7 @@
+   32000, 44100, 48000, 88200, 96000, 176400, 192000
+ };
+ 
+-#if ( defined(__WINDOWS_DS__) || defined(__WINDOWS_ASIO__) ) && !defined(__WINDOWS_PTHREAD__)
++#if defined(__WINDOWS_DS__) || defined(__WINDOWS_ASIO__)
+   #define MUTEX_INITIALIZE(A) InitializeCriticalSection(A)
+   #define MUTEX_DESTROY(A)    DeleteCriticalSection(A);
+   #define MUTEX_LOCK(A)       EnterCriticalSection(A)
+@@ -420,6 +418,43 @@
+   return FAILURE;
+ }
+ 
++bool RtApi :: isStreamRunning()
++{
++  return stream_.state == STREAM_RUNNING;
++}
++
++void RtApi :: tickStream()
++{
++  // Subclasses which do not provide their own implementation of
++  // getStreamTime should call the inherited tickStream and a simple
++  // version here will be supported.
++
++  stream_.streamTime += (stream_.bufferSize * 1.0 / stream_.sampleRate);
++
++#if defined(HAVE_GETTIMEOFDAY)
++  gettimeofday(&stream_.lastTickTimestamp, NULL);
++#endif
++}
++
++double RtApi :: getStreamTime()
++{
++#if defined(HAVE_GETTIMEOFDAY)
++  // Return a very accurate estimate of the stream time by
++  // adding in the elapsed time since the last tick.
++  struct timeval then;
++  struct timeval now;
++
++  if (stream_.state != RUNNING || stream.streamTime == 0.0)
++    return stream.streamTime;
++  gettimeofday(&now, NULL);
++  then = stream_.lastTickTimestamp;
++  return stream_.streamTime +
++    ((now.tv_sec + 0.000001 * now.tv_usec) -
++     (then.tv_sec + 0.000001 * then.tv_usec));     
++#else
++  return stream_.streamTime;
++#endif
++}
+ 
+ // *************************************************** //
+ //
+@@ -1132,8 +1167,6 @@
+   else
+     stream_.mode = mode;
+   
+-  stream_.sub_mode = mode;
+-
+   return SUCCESS;
+ 
+  error:
+@@ -1196,7 +1229,6 @@
+   }
+ 
+   stream_.mode = UNINITIALIZED;
+-  stream_.sub_mode = UNINITIALIZED;
+ }
+ 
+ void RtApiOss :: startStream()
+@@ -1382,6 +1414,8 @@
+ 
+   if (stream_.callbackInfo.usingCallback && stopStream)
+     this->stopStream();
++
++  RtApi::tickStream();
+ }
+ 
+ void RtApiOss :: setStreamCallback(RtAudioCallback callback, void *userData)
+@@ -1405,8 +1439,8 @@
+   // program is run as root or suid.
+   pthread_attr_t attr;
+   pthread_attr_init(&attr);
+-  // pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
+-  // pthread_attr_setschedpolicy(&attr, SCHED_RR);
++  pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
++  pthread_attr_setschedpolicy(&attr, SCHED_RR);
+ 
+   int err = pthread_create(&(info->thread), &attr, ossCallbackHandler, &stream_.callbackInfo);
+   pthread_attr_destroy(&attr);
+@@ -2047,9 +2081,15 @@
+       return FAILURE;
+     }
+ 
++    // Only try to change it if the sample rate is not within 1.0 of
++    // the rate we want, or if the format is not Linear PCM.
++    if (fabs(description.mSampleRate - (double)sampleRate) > 1.0 ||
++        description.mFormatID != kAudioFormatLinearPCM) {
++
+     // Set the sample rate and data format id.
+     description.mSampleRate = (double) sampleRate;
+     description.mFormatID = kAudioFormatLinearPCM;
++      
+     err = AudioDeviceSetProperty( id, NULL, iChannel, isInput,
+                                   kAudioDevicePropertyStreamFormat,
+                                   dataSize, &description );
+@@ -2060,6 +2100,7 @@
+       return FAILURE;
+     }
+   }
++  }
+ 
+   // Check whether we need byte-swapping (assuming OS-X host is big-endian).
+   iChannel -= nStreams;
+@@ -2192,8 +2233,6 @@
+       stream_.mode = mode;
+   }
+ 
+-  stream_.sub_mode = mode;
+-
+   // Setup the device property listener for over/underload.
+   err = AudioDeviceAddPropertyListener( id, iChannel, isInput,
+                                         kAudioDeviceProcessorOverload,
+@@ -2262,7 +2301,6 @@
+   }
+ 
+   stream_.mode = UNINITIALIZED;
+-  stream_.sub_mode = UNINITIALIZED;
+ }
+ 
+ void RtApiCore :: startStream()
+@@ -2405,17 +2443,6 @@
+       return;
+     }
+   }
+-  else if( info->usingCallback && (stream_.mode == DUPLEX && deviceId != id) )
+-  {
+-      if( stream_.sub_mode == INPUT )
+-          memcpy(stream_.userBuffer,
+-                 inBufferList->mBuffers[handle->index[1]].mData,
+-                 inBufferList->mBuffers[handle->index[1]].mDataByteSize);
+-      else
+-          memcpy(outBufferList->mBuffers[handle->index[0]].mData,
+-                 stream_.userBuffer,
+-                 outBufferList->mBuffers[handle->index[0]].mDataByteSize);
+-   }
+   
+   if ( stream_.mode == OUTPUT || ( stream_.mode == DUPLEX && deviceId == id ) ) {
+ 
+@@ -2491,6 +2518,8 @@
+     pthread_cond_signal(&handle->condition);
+ 
+   MUTEX_UNLOCK(&stream_.mutex);
++
++  RtApi::tickStream();
+ }
+ 
+ void RtApiCore :: setStreamCallback(RtAudioCallback callback, void *userData)
+@@ -2558,6 +2587,8 @@
+ 
+ #include <jack/jack.h>
+ #include <unistd.h>
++#include <cstring>
++#include <cstdlib>
+ 
+ // A structure to hold various information related to the Jack API
+ // implementation.
+@@ -3084,6 +3115,8 @@
+   pthread_cond_wait(&handle->condition, &stream_.mutex);
+ 
+   MUTEX_UNLOCK(&stream_.mutex);
++
++  RtApi::tickStream();
+ }
+ 
+ void RtApiJack :: callbackEvent( unsigned long nframes )
+@@ -4278,6 +4311,8 @@
+ 
+   if (stream_.callbackInfo.usingCallback && stopStream)
+     this->stopStream();
++
++  RtApi::tickStream();
+ }
+ 
+ void RtApiAlsa :: setStreamCallback(RtAudioCallback callback, void *userData)
+@@ -4301,8 +4336,8 @@
+   // program is run as root or suid.
+   pthread_attr_t attr;
+   pthread_attr_init(&attr);
+-  // pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
+-  // pthread_attr_setschedpolicy(&attr, SCHED_RR);
++  pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
++  pthread_attr_setschedpolicy(&attr, SCHED_RR);
+ 
+   int err = pthread_create(&info->thread, &attr, alsaCallbackHandler, &stream_.callbackInfo);
+   pthread_attr_destroy(&attr);
+@@ -5092,6 +5127,8 @@
+   MUTEX_UNLOCK(&stream_.mutex);
+   WaitForMultipleObjects(1, &handle->condition, FALSE, INFINITE);
+   ResetEvent( handle->condition );
++
++  RtApi::tickStream();
+ }
+ 
+ void RtApiAsio :: callbackEvent(long bufferIndex)
+@@ -5240,11 +5277,7 @@
+ 
+ static char* getErrorString(int code);
+ 
+-#if defined(__WINDOWS_PTHREAD__)
+-extern "C" void * callbackHandler(void * ptr);
+-#else
+ extern "C" unsigned __stdcall callbackHandler(void *ptr);
+-#endif
+ 
+ struct enum_info {
+   char name[64];
+@@ -5975,20 +6008,6 @@
+   info->usingCallback = true;
+   info->object = (void *) this;
+ 
+-#if defined(__WINDOWS_PTHREAD__)
+-  pthread_attr_t attr;
+-  pthread_attr_init(&attr);
+-  // pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
+-  // pthread_attr_setschedpolicy(&attr, SCHED_RR);
+-
+-  int err = pthread_create(&info->thread, &attr, callbackHandler, &stream_.callbackInfo);
+-  pthread_attr_destroy(&attr);
+-  if (err) {
+-    info->usingCallback = false;
+-    sprintf(message_, "RtApiDs: error starting callback thread!");
+-    error(RtError::THREAD_ERROR);
+-  }
+-#else
+   unsigned thread_id;
+   info->thread = _beginthreadex(NULL, 0, &callbackHandler,
+                                 &stream_.callbackInfo, 0, &thread_id);
+@@ -5997,7 +6016,6 @@
+     sprintf(message_, "RtApiDs: error starting callback thread!");
+     error(RtError::THREAD_ERROR);
+   }
+-#endif
+ 
+   // When spawning multiple threads in quick succession, it appears to be
+   // necessary to wait a bit for each to initialize ... another windoism!
+@@ -6606,35 +6624,13 @@
+ 
+   if (stream_.callbackInfo.usingCallback && stopStream)
+     this->stopStream();
++
++  RtApi::tickStream();
+ }
+ 
+ // Definitions for utility functions and callbacks
+ // specific to the DirectSound implementation.
+ 
+-#if defined(__WINDOWS_PTHREAD__)
+-extern "C" void * callbackHandler( void * ptr )
+-{
+-  CallbackInfo *info = (CallbackInfo *) ptr;
+-  RtApiDs *object = (RtApiDs *) info->object;
+-  bool *usingCallback = &info->usingCallback;
+-
+-  while ( *usingCallback ) {
+-    pthread_testcancel();
+-    try {
+-      object->tickStream();
+-    }
+-    catch (RtError &exception) {
+-      fprintf(stderr, "\nRtApiDs: callback thread error (%s) ... closing thread.\n\n",
+-              exception.getMessageString());
+-      break;
+-    }
+-  }
+-
+-  return 0;
+-}
+-
+-#else
+-
+ extern "C" unsigned __stdcall callbackHandler(void *ptr)
+ {
+   CallbackInfo *info = (CallbackInfo *) ptr;
+@@ -6656,9 +6652,6 @@
+   return 0;
+ }
+ 
+-#endif
+-
+-
+ static bool CALLBACK deviceCountCallback(LPGUID lpguid,
+                                          LPCSTR lpcstrDescription,
+                                          LPCSTR lpcstrModule,
+@@ -7564,6 +7557,8 @@
+ 
+   if (stream_.callbackInfo.usingCallback && stopStream)
+     this->stopStream();
++
++  RtApi::tickStream();
+ }
+ 
+ void RtApiAl :: setStreamCallback(RtAudioCallback callback, void *userData)
+@@ -7587,8 +7582,8 @@
+   // program is run as root or suid.
+   pthread_attr_t attr;
+   pthread_attr_init(&attr);
+-  // pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
+-  // pthread_attr_setschedpolicy(&attr, SCHED_RR);
++  pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
++  pthread_attr_setschedpolicy(&attr, SCHED_RR);
+ 
+   int err = pthread_create(&info->thread, &attr, callbackHandler, &stream_.callbackInfo);
+   pthread_attr_destroy(&attr);
+@@ -7654,7 +7649,6 @@
+ // message reporting and throwing.
+ void RtApi :: error(RtError::Type type)
+ {
+-#if defined(__CHUCK_DEBUG__)
+   if (type == RtError::WARNING) {
+     fprintf(stderr, "\n%s\n\n", message_);
+   }
+@@ -7669,7 +7663,6 @@
+ #endif
+     throw RtError(std::string(message_), type);
+   }
+-#endif
+ }
+ 
+ void RtApi :: verifyStream()
+@@ -7704,6 +7697,7 @@
+   stream_.bufferSize = 0;
+   stream_.nBuffers = 0;
+   stream_.userFormat = 0;
++  stream_.streamTime = 0.0;
+   for ( int i=0; i<2; i++ ) {
+     stream_.device[i] = 0;
+     stream_.doConvertBuffer[i] = false;
+@@ -8268,3 +8262,13 @@
+     }
+   }
+ }
++
++// Indentation settings for Vim and Emacs
++//
++// Local Variables:
++// c-basic-offset: 2
++// indent-tabs-mode: nil
++// End:
++//
++// vim: et sts=2 sw=2
++
+diff -w -r -u -- sndpeek-1.3_orig/src/sndpeek/RtAudio.h sndpeek-1.3/src/sndpeek/RtAudio.h
+--- sndpeek-1.3_orig/src/sndpeek/RtAudio.h	2009-02-22 05:19:14.000000000 +0100
++++ sndpeek-1.3/src/sndpeek/RtAudio.h	2009-02-22 05:20:50.000000000 +0100
+@@ -45,21 +45,15 @@
+ #include "RtError.h"
+ #include <string>
+ #include <vector>
+-using namespace std;
+ 
+ // Operating system dependent thread functionality.
+ #if defined(__WINDOWS_DS__) || defined(__WINDOWS_ASIO__)
+   #include <windows.h>
+-
+-  #if defined(__WINDOWS_PTHREAD__)
+-    #include <pthread.h>
+-    typedef pthread_t ThreadHandle;
+-    typedef pthread_mutex_t StreamMutex;
+-  #else
+     #include <process.h>
++
+     typedef unsigned long ThreadHandle;
+     typedef CRITICAL_SECTION StreamMutex;
+-  #endif
++
+ #else // Various unix flavors with pthread support.
+   #include <pthread.h>
+ 
+@@ -68,6 +62,11 @@
+ 
+ #endif
+ 
++#if defined(LINUX_ALSA) || defined(LINUX_OSS) || defined(LINUX_JACK) || defined(MACOSX_CORE)
++#include <sys/time.h>
++#define HAVE_GETTIMEOFDAY 1
++#endif
++
+ // This global structure type is used to pass callback information
+ // between the private RtAudio stream structure and global callback
+ // handling functions.
+@@ -144,13 +143,15 @@
+   int getDeviceCount(void);
+   RtAudioDeviceInfo getDeviceInfo( int device );
+   char * const getStreamBuffer();
+-  virtual void tickStream() = 0;
++  virtual void tickStream();
+   virtual void closeStream();
+   virtual void startStream() = 0;
+   virtual void stopStream() = 0;
+   virtual void abortStream() = 0;
++  virtual bool isStreamRunning();
++  virtual double getStreamTime();
+ 
+-public:
++protected:
+ 
+   static const unsigned int MAX_SAMPLE_RATES;
+   static const unsigned int SAMPLE_RATES[];
+@@ -174,7 +175,6 @@
+     int device[2];          // Playback and record, respectively.
+     void *apiHandle;        // void pointer for API specific stream handle information
+     StreamMode mode;         // OUTPUT, INPUT, or DUPLEX.
+-    StreamMode sub_mode;
+     StreamState state;       // STOPPED or RUNNING
+     char *userBuffer;
+     char *deviceBuffer;
+@@ -190,9 +190,15 @@
+     RtAudioFormat deviceFormat[2]; // Playback and record, respectively.
+     StreamMutex mutex;
+     CallbackInfo callbackInfo;
++    double streamTime;      // Number of elapsed seconds since the
++               // stream started 
++
++#if defined(HAVE_GETTIMEOFDAY)
++    struct timeval lastTickTimestamp;
++#endif
+ 
+     RtApiStream()
+-      :apiHandle(0), userBuffer(0), deviceBuffer(0), sub_mode(UNINITIALIZED) {}
++      :apiHandle(0), userBuffer(0), deviceBuffer(0) {}
+     //      mode(UNINITIALIZED), state(STREAM_STOPPED),
+   };
+ 
+@@ -486,6 +492,21 @@
+   */
+   void abortStream() { rtapi_->abortStream(); };
+ 
++  //! Returns true is the stream is running, and false if it is stopped.
++  
++  /*!
++    An RtError will be thrown if a driver error occurs or if called
++    when no stream is open.
++  */
++  bool isStreamRunning() { return rtapi_->isStreamRunning(); };
++
++  //! Returns the number of elapsed seconds since the stream was started.
++
++  /*!
++    An RtError will be thrown if a driver error occurs or if called
++    when no stream is open.
++  */
++  double getStreamTime() { return rtapi_->getStreamTime(); };
+ 
+  protected:
+ 
+@@ -719,3 +740,13 @@
+ //#define __RTAUDIO_DEBUG__
+ 
+ #endif
++
++// Indentation settings for Vim and Emacs
++//
++// Local Variables:
++// c-basic-offset: 2
++// indent-tabs-mode: nil
++// End:
++//
++// vim: et sts=2 sw=2
++

@@ -1,0 +1,35 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A PAM module for chrooting.
+#  pam_chroot is a Linux PAM module that allows a user to be chrooted in
+#  auth, account, or session. Its configuration employs a flexible syntax
+#  that allows users to be selectively chrooted based upon usernames or
+#  group membership.
+#  .
+# URL: http://sourceforge.net/projects/pam-chroot/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=pam_chroot
+version=0.9.2
+release=1
+source=($mirror_sf/pam-chroot/pam_chroot-0.9.2.tar.bz2)
+
+build()
+{
+  cd pam_chroot-$version
+
+  make
+
+  case $prefix in
+    "/usr") libdir="/lib" ;;
+  esac
+
+  install -d $PKG${libdir}/security/
+  install -m 755 pam_chroot.so $PKG${libdir}/security/
+
+  install -d $ROOT/share/doc/pam_chroot
+  install -m 644 CREDITS LICENSE TROUBLESHOOTING $ROOT/share/doc/pam_chroot
+}
+
+# EOF

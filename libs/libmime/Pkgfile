@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A streaming event MIME message parser.
+#  libmime is a MIME parser in the same vein as Expat, the stream-oriented
+#  XML parser. As input is fed to the parser, events are generated which an
+#  application can catch by registering event handlers. Such events include
+#  the Unix From_ line, start of entity, end of entity, entity boundary,
+#  header, end of headers, and body. libmime supports MIME message editing
+#  through a delta mechanism. Edit contexts are instantiated and changes
+#  applied to specific contexts. Edit contexts can then be expressed in
+#  standard unified diff format which, when applied to the input source
+#  stream, will result in the new message.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libmime
+version=0.0.0
+release=1
+source=(http://www.25thandclement.com/~william/projects/releases/libmime-$version.tgz)
+
+build()
+{
+  cd libmime-$version
+
+  for sf in src/*.c; do
+    libtool --mode="compile" ${CC-cc} $CFLAGS -c $sf
+  done
+}

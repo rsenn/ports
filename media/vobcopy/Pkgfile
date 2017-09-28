@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Copies DVD .vob files to harddisk.
+#  Vobcopy copies DVD .vob files to hard disk (thanks to libdvdread), 
+#  decrypting them on the way (if libdvdcss is installed) and merges 
+#  them into 2 GB files (or larger) with the name extracted from the DVD. 
+#  It checks for enough free space on the destination drive and compares
+#  the copied size to the size on DVD (in case something went wrong during
+#  the copying). It can also mirror a whole DVD video part and copy single
+#  files.'
+#  .
+# URL: http://vobcopy.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=vobcopy
+version=1.1.2
+release=1
+source=(http://vobcopy.org/download/vobcopy-$version.tar.bz2)
+
+build() 
+{
+  cd vobcopy-$version
+  
+  make
+  make PREFIX="$ROOT" MANDIR="$ROOT/share/man" install
+
+  install -d $ROOT/share/doc/vobcopy
+  install -m 644 TODO COPYING Changelog README Release-Notes alternative_programs.txt $ROOT/share/doc/vobcopy
+}
+
+# EOF

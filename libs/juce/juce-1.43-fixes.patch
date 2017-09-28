@@ -1,0 +1,248 @@
+diff -r -u juce_orig/src/juce_appframework/audio/audio_sources/juce_ResamplingAudioSource.cpp juce/src/juce_appframework/audio/audio_sources/juce_ResamplingAudioSource.cpp
+--- juce_orig/src/juce_appframework/audio/audio_sources/juce_ResamplingAudioSource.cpp	2007-07-27 23:13:13.000000000 +0200
++++ juce/src/juce_appframework/audio/audio_sources/juce_ResamplingAudioSource.cpp	2007-07-27 23:24:14.000000000 +0200
+@@ -34,7 +34,7 @@
+ BEGIN_JUCE_NAMESPACE
+ 
+ #include "juce_ResamplingAudioSource.h"
+-
++#include <string.h>
+ 
+ //==============================================================================
+ ResamplingAudioSource::ResamplingAudioSource (AudioSource* const inputSource,
+diff -r -u juce_orig/src/juce_appframework/audio/dsp/juce_AudioDataConverters.cpp juce/src/juce_appframework/audio/dsp/juce_AudioDataConverters.cpp
+--- juce_orig/src/juce_appframework/audio/dsp/juce_AudioDataConverters.cpp	2007-07-27 23:13:13.000000000 +0200
++++ juce/src/juce_appframework/audio/dsp/juce_AudioDataConverters.cpp	2007-07-27 23:21:53.000000000 +0200
+@@ -34,7 +34,7 @@
+ BEGIN_JUCE_NAMESPACE
+ 
+ #include "juce_AudioDataConverters.h"
+-
++#include <string.h>
+ 
+ //==============================================================================
+ void AudioDataConverters::convertFloatToInt16LE (const float* source, void* dest, int numSamples)
+diff -r -u juce_orig/src/juce_appframework/audio/dsp/juce_IIRFilter.cpp juce/src/juce_appframework/audio/dsp/juce_IIRFilter.cpp
+--- juce_orig/src/juce_appframework/audio/dsp/juce_IIRFilter.cpp	2007-07-27 23:13:13.000000000 +0200
++++ juce/src/juce_appframework/audio/dsp/juce_IIRFilter.cpp	2007-07-27 23:22:09.000000000 +0200
+@@ -35,7 +35,7 @@
+ 
+ #include "juce_IIRFilter.h"
+ #include "../../../juce_core/threads/juce_ScopedLock.h"
+-
++#include <string.h>
+ 
+ //==============================================================================
+ IIRFilter::IIRFilter() throw()
+diff -r -u juce_orig/src/juce_appframework/audio/midi/juce_MidiBuffer.cpp juce/src/juce_appframework/audio/midi/juce_MidiBuffer.cpp
+--- juce_orig/src/juce_appframework/audio/midi/juce_MidiBuffer.cpp	2007-07-27 23:13:13.000000000 +0200
++++ juce/src/juce_appframework/audio/midi/juce_MidiBuffer.cpp	2007-07-27 23:22:28.000000000 +0200
+@@ -34,7 +34,7 @@
+ BEGIN_JUCE_NAMESPACE
+ 
+ #include "juce_MidiBuffer.h"
+-
++#include <string.h>
+ 
+ //==============================================================================
+ MidiBuffer::MidiBuffer()
+diff -r -u juce_orig/src/juce_appframework/audio/midi/juce_MidiMessage.cpp juce/src/juce_appframework/audio/midi/juce_MidiMessage.cpp
+--- juce_orig/src/juce_appframework/audio/midi/juce_MidiMessage.cpp	2007-07-27 23:13:13.000000000 +0200
++++ juce/src/juce_appframework/audio/midi/juce_MidiMessage.cpp	2007-07-27 23:22:52.000000000 +0200
+@@ -35,7 +35,7 @@
+ 
+ #include "juce_MidiMessage.h"
+ #include "../../../juce_core/containers/juce_MemoryBlock.h"
+-
++#include <string.h>
+ 
+ //==============================================================================
+ int MidiMessage::readVariableLengthVal (const uint8* data,
+diff -r -u juce_orig/src/juce_appframework/audio/synthesisers/juce_Synthesiser.cpp juce/src/juce_appframework/audio/synthesisers/juce_Synthesiser.cpp
+--- juce_orig/src/juce_appframework/audio/synthesisers/juce_Synthesiser.cpp	2007-07-27 23:13:13.000000000 +0200
++++ juce/src/juce_appframework/audio/synthesisers/juce_Synthesiser.cpp	2007-07-27 23:24:37.000000000 +0200
+@@ -35,7 +35,7 @@
+ 
+ #include "juce_Synthesiser.h"
+ #include "../../../juce_core/threads/juce_ScopedLock.h"
+-
++#include <string.h>
+ 
+ //==============================================================================
+ SynthesiserSound::SynthesiserSound()
+diff -r -u juce_orig/src/juce_core/containers/juce_Array.h juce/src/juce_core/containers/juce_Array.h
+--- juce_orig/src/juce_core/containers/juce_Array.h	2007-07-27 23:13:13.000000000 +0200
++++ juce/src/juce_core/containers/juce_Array.h	2007-07-27 23:20:46.000000000 +0200
+@@ -35,7 +35,7 @@
+ #include "juce_ArrayAllocationBase.h"
+ #include "juce_ElementComparator.h"
+ #include "../threads/juce_CriticalSection.h"
+-
++#include <string.h>
+ 
+ //==============================================================================
+ /**
+diff -r -u juce_orig/src/juce_core/containers/juce_BitArray.cpp juce/src/juce_core/containers/juce_BitArray.cpp
+--- juce_orig/src/juce_core/containers/juce_BitArray.cpp	2007-07-27 23:13:13.000000000 +0200
++++ juce/src/juce_core/containers/juce_BitArray.cpp	2007-07-27 23:14:00.000000000 +0200
+@@ -30,6 +30,7 @@
+ */
+ 
+ #include "../basics/juce_StandardHeader.h"
++#include <string.h>
+ 
+ BEGIN_JUCE_NAMESPACE
+ 
+diff -r -u juce_orig/src/juce_core/containers/juce_MemoryBlock.cpp juce/src/juce_core/containers/juce_MemoryBlock.cpp
+--- juce_orig/src/juce_core/containers/juce_MemoryBlock.cpp	2007-07-27 23:13:13.000000000 +0200
++++ juce/src/juce_core/containers/juce_MemoryBlock.cpp	2007-07-27 23:14:28.000000000 +0200
+@@ -30,6 +30,7 @@
+ */
+ 
+ #include "../basics/juce_StandardHeader.h"
++#include <string.h>
+ 
+ BEGIN_JUCE_NAMESPACE
+ 
+diff -r -u juce_orig/src/juce_core/containers/juce_SortedSet.h juce/src/juce_core/containers/juce_SortedSet.h
+--- juce_orig/src/juce_core/containers/juce_SortedSet.h	2007-07-27 23:13:13.000000000 +0200
++++ juce/src/juce_core/containers/juce_SortedSet.h	2007-07-27 23:25:22.000000000 +0200
+@@ -34,6 +34,7 @@
+ 
+ #include "juce_ArrayAllocationBase.h"
+ #include "../threads/juce_CriticalSection.h"
++#include <string.h>
+ 
+ #ifdef JUCE_MSVC
+   #pragma warning (push)
+diff -r -u juce_orig/src/juce_core/cryptography/juce_BlowFish.cpp juce/src/juce_core/cryptography/juce_BlowFish.cpp
+--- juce_orig/src/juce_core/cryptography/juce_BlowFish.cpp	2007-07-27 23:13:13.000000000 +0200
++++ juce/src/juce_core/cryptography/juce_BlowFish.cpp	2007-07-27 23:13:28.000000000 +0200
+@@ -31,6 +31,8 @@
+ 
+ #include "../basics/juce_StandardHeader.h"
+ 
++#include <string.h>
++
+ BEGIN_JUCE_NAMESPACE
+ 
+ 
+diff -r -u juce_orig/src/juce_core/cryptography/juce_MD5.cpp juce/src/juce_core/cryptography/juce_MD5.cpp
+--- juce_orig/src/juce_core/cryptography/juce_MD5.cpp	2007-07-27 23:13:13.000000000 +0200
++++ juce/src/juce_core/cryptography/juce_MD5.cpp	2007-07-27 23:13:42.000000000 +0200
+@@ -30,6 +30,7 @@
+ */
+ 
+ #include "../basics/juce_StandardHeader.h"
++#include <string.h>
+ 
+ BEGIN_JUCE_NAMESPACE
+ 
+diff -r -u juce_orig/src/juce_core/io/files/juce_FileOutputStream.cpp juce/src/juce_core/io/files/juce_FileOutputStream.cpp
+--- juce_orig/src/juce_core/io/files/juce_FileOutputStream.cpp	2007-07-27 23:13:13.000000000 +0200
++++ juce/src/juce_core/io/files/juce_FileOutputStream.cpp	2007-07-27 23:15:25.000000000 +0200
+@@ -30,6 +30,7 @@
+ */
+ 
+ #include "../../basics/juce_StandardHeader.h"
++#include <string.h>
+ 
+ BEGIN_JUCE_NAMESPACE
+ 
+diff -r -u juce_orig/src/juce_core/io/juce_OutputStream.cpp juce/src/juce_core/io/juce_OutputStream.cpp
+--- juce_orig/src/juce_core/io/juce_OutputStream.cpp	2007-07-27 23:13:13.000000000 +0200
++++ juce/src/juce_core/io/juce_OutputStream.cpp	2007-07-27 23:14:55.000000000 +0200
+@@ -30,6 +30,7 @@
+ */
+ 
+ #include "../basics/juce_StandardHeader.h"
++#include <string.h>
+ 
+ BEGIN_JUCE_NAMESPACE
+ 
+diff -r -u juce_orig/src/juce_core/io/network/juce_Socket.cpp juce/src/juce_core/io/network/juce_Socket.cpp
+--- juce_orig/src/juce_core/io/network/juce_Socket.cpp	2007-07-27 23:13:13.000000000 +0200
++++ juce/src/juce_core/io/network/juce_Socket.cpp	2007-07-27 23:15:44.000000000 +0200
+@@ -54,6 +54,7 @@
+ #endif
+ 
+ #include "../../basics/juce_StandardHeader.h"
++#include <string.h>
+ 
+ BEGIN_JUCE_NAMESPACE
+ 
+diff -r -u juce_orig/src/juce_core/io/streams/juce_BufferedInputStream.cpp juce/src/juce_core/io/streams/juce_BufferedInputStream.cpp
+--- juce_orig/src/juce_core/io/streams/juce_BufferedInputStream.cpp	2007-07-27 23:13:13.000000000 +0200
++++ juce/src/juce_core/io/streams/juce_BufferedInputStream.cpp	2007-07-27 23:15:59.000000000 +0200
+@@ -30,6 +30,7 @@
+ */
+ 
+ #include "../../basics/juce_StandardHeader.h"
++#include <string.h>
+ 
+ BEGIN_JUCE_NAMESPACE
+ 
+diff -r -u juce_orig/src/juce_core/io/streams/juce_MemoryInputStream.cpp juce/src/juce_core/io/streams/juce_MemoryInputStream.cpp
+--- juce_orig/src/juce_core/io/streams/juce_MemoryInputStream.cpp	2007-07-27 23:13:13.000000000 +0200
++++ juce/src/juce_core/io/streams/juce_MemoryInputStream.cpp	2007-07-27 23:16:14.000000000 +0200
+@@ -30,6 +30,7 @@
+ */
+ 
+ #include "../../basics/juce_StandardHeader.h"
++#include <string.h>
+ 
+ BEGIN_JUCE_NAMESPACE
+ 
+diff -r -u juce_orig/src/juce_core/misc/juce_Uuid.cpp juce/src/juce_core/misc/juce_Uuid.cpp
+--- juce_orig/src/juce_core/misc/juce_Uuid.cpp	2007-07-27 23:13:13.000000000 +0200
++++ juce/src/juce_core/misc/juce_Uuid.cpp	2007-07-27 23:16:38.000000000 +0200
+@@ -30,6 +30,7 @@
+ */
+ 
+ #include "../basics/juce_StandardHeader.h"
++#include <string.h>
+ 
+ BEGIN_JUCE_NAMESPACE
+ 
+diff -r -u juce_orig/src/juce_core/misc/juce_ZipFile.cpp juce/src/juce_core/misc/juce_ZipFile.cpp
+--- juce_orig/src/juce_core/misc/juce_ZipFile.cpp	2007-07-27 23:13:13.000000000 +0200
++++ juce/src/juce_core/misc/juce_ZipFile.cpp	2007-07-27 23:16:49.000000000 +0200
+@@ -30,6 +30,7 @@
+ */
+ 
+ #include "../basics/juce_StandardHeader.h"
++#include <string.h>
+ 
+ BEGIN_JUCE_NAMESPACE
+ 
+diff -r -u juce_orig/src/juce_core/text/juce_CharacterFunctions.cpp juce/src/juce_core/text/juce_CharacterFunctions.cpp
+--- juce_orig/src/juce_core/text/juce_CharacterFunctions.cpp	2007-07-27 23:13:13.000000000 +0200
++++ juce/src/juce_core/text/juce_CharacterFunctions.cpp	2007-07-27 23:17:11.000000000 +0200
+@@ -43,11 +43,13 @@
+   #pragma warning (pop)
+ #endif
+ 
++#include <string.h>
++
+ BEGIN_JUCE_NAMESPACE
+ 
+ #include "juce_CharacterFunctions.h"
+ #include "juce_String.h"
+-
++  
+ //==============================================================================
+ int CharacterFunctions::length (const char* const s) throw()
+ {
+diff -r -u juce_orig/src/juce_core/text/juce_String.cpp juce/src/juce_core/text/juce_String.cpp
+--- juce_orig/src/juce_core/text/juce_String.cpp	2007-07-27 23:13:13.000000000 +0200
++++ juce/src/juce_core/text/juce_String.cpp	2007-07-27 23:19:56.000000000 +0200
+@@ -44,7 +44,8 @@
+ 
+ #include "juce_String.h"
+ #include "../basics/juce_Atomic.h"
+-
++#include <string.h>
++  
+ #ifdef _MSC_VER
+   #pragma warning (pop)
+ #endif

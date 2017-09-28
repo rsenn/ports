@@ -1,0 +1,31 @@
+diff -ru auch_orig/Makefile auch/Makefile
+--- auch_orig/Makefile	2008-07-17 14:19:26.000000000 +0200
++++ auch/Makefile	2008-07-17 14:20:40.000000000 +0200
+@@ -7,7 +7,7 @@
+ all: auch 
+ 
+ auch:  ./lib/glt/zpr2.c $(SRC) $(HDR)
+-	c++ -g  -o auch -DLINUX  $(SRC) ./lib/libresample/libresample.a -I src -I ./lib/glt -I ./lib/portaudio/include -I ./lib/libresample/include ./lib/glt/zpr2.c  -L /usr/X11R6/lib -lGL -lGLU -lglut -lm -lfftw3 -lpthread -lportaudio -lreadline -ltermcap 
++	$(CXX) $(CXXFLAGS)  -o auch -DLINUX  $(SRC) ./lib/libresample/libresample.a -I src -I ./lib/glt -I ./lib/portaudio/include -I ./lib/libresample/include ./lib/glt/zpr2.c  -L /usr/X11R6/lib -lGL -lGLU -lglut -lm -lfftw3 -lpthread -lportaudio -lreadline -ltermcap 
+ 
+ backup:
+ 	tar  zcf /backup/cronbackup/auch-LATEST.tgz src Makefile test.wav WARRANTY auch  BUILDING --ignore-failed-read 
+@@ -18,7 +18,7 @@
+ 	rm -f *~ *.o *.do auch src/*~ doc/*~ 
+ 
+ release: clean ./lib/glt/zpr2.c $(SRC) $(HDR)
+-	c++ -O3   -o prebuild/auch.linux -DLINUX  $(SRC) ./lib/libresample/libresample.a -I src -I ./lib/glt -I ./lib/libresample/include -I ./lib/portaudio/include ./lib/glt/zpr2.c  -L /usr/X11R6/lib -lGL -lGLU -lglut -lm -lfftw3 -lpthread -lportaudio -lreadline -ltermcap
++	$(CXX) -O3   -o prebuild/auch.linux -DLINUX  $(SRC) ./lib/libresample/libresample.a -I src -I ./lib/glt -I ./lib/libresample/include -I ./lib/portaudio/include ./lib/glt/zpr2.c  -L /usr/X11R6/lib -lGL -lGLU -lglut -lm -lfftw3 -lpthread -lportaudio -lreadline -ltermcap
+ 	cd .. ; tar zcvf $(RLS) auch --exclude '.svn*' 
+ 	echo "TODO: (1) make .auchrc and copy to prebuild (2) ZIP and TEST"
+ 	ls -l $(RLS)
+@@ -27,7 +27,7 @@
+ 	valgrind --leak-check=full --log-file=valgrind.log ./auch
+ 
+ reconstruct:
+-	c++ src/reconstruct.cpp -o reconstruct -DSTANDALONE -lm -lfftw3
++	$(CXX) $(CXXFLAGS) src/reconstruct.cpp -o reconstruct -DSTANDALONE -lm -lfftw3
+ 
+ fold:
+-	c++ src/fold.cpp -o fold -DSTANDALONE -lm -lfftw3
++	$(CXX) $(CXXFLAGS) src/fold.cpp -o fold -DSTANDALONE -lm -lfftw3

@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: support for getting/setting POSIX.1e capabilities
+#  This library implements the user-space interfaces to the POSIX 1003.1e
+#  capabilities available in Linux kernels. These capabilities are a
+#  partitioning of the all powerful root privilege into a set of distinct
+#  privileges. Note that it will not provide any functionality with kernels
+#  below 2.2
+# URL: http://sourceforge.net/projects/linux-privs/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=libcap2
+version=2.16
+release=1
+source=(http://www.kernel.org/pub/linux/libs/security/linux-privs/libcap2/libcap-$version.tar.bz2)
+
+build() 
+{
+  cd libcap-$version
+  
+  make
+  make FAKEROOT="$PKG" install 
+
+  install -d $ROOT/share/doc/libcap2
+  install -m 644 CHANGELOG License README $ROOT/share/doc/libcap2
+}
+
+# EOF

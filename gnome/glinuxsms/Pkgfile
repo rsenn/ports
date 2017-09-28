@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A GNOME2 front-end for sending SMS messages.
+#  glinuxsms is a GNOME2 front-end for linuxsms that lets you send SMS
+#  messages to cell phones all over the world.
+#  .
+# URL: http://glinuxsms.sourceforge.net/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=glinuxsms
+version=0.1
+release=1
+source=($mirror_sf/glinuxsms/glinuxsms-$version.tar.gz)
+
+build()
+{
+  cd glinuxsms-$version
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

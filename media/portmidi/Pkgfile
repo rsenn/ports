@@ -1,0 +1,34 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:52 roman Exp $
+#
+# Description: library for real-time MIDI input/output
+#  PortMidi is a platform independent library for MIDI input/output. This
+#  package provide the PortMidi and PortTime libraries.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=portmidi
+version=20041117
+release=1
+source=(http://debian.mirror.inra.fr/debian/pool/main/p/portmidi/portmidi_$version.orig.tar.gz
+        portmidi-20041117-libtool.patch)
+
+build()
+{
+  cd portmidi
+
+  patch -N -p1 -i $SRC/portmidi-20041117-libtool.patch
+
+#  sed -i \
+#    -e "/^CC =/ s/ gcc / ${CC-cc} \$(PICFLAGS) /g" \
+#    Makefile
+  [ -f Makefile.libtool ] && MAKEFILE=Makefile.libtool
+
+  make \
+      ${MAKEFILE+-f "$MAKEFILE"} \
+      DESTDIR="$PKG" \
+    install
+
+  install -d $ROOT/share/doc/portmidi
+  install -m 644 pm_linux/README_LINUX.txt pm_win/debugging_dlls.txt pm_win/README_WIN.txt README.txt $ROOT/share/doc/portmidi
+}

@@ -1,0 +1,26 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=dlib
+version=16.5
+release=1
+source=($mirror_sf/dclib/dlib-$version.tar.bz2)
+
+build()
+{
+  cd dlib-$version/dlib
+
+  cmake -DCMAKE_INSTALL_PREFIX="$prefix" \
+      .
+
+  libtool --mode="compile" $CXX $CXXFLAGS -c -o dlib-all.lo all/source.cpp
+  libtool --mode="link" $CXX $LDFLAGS -rpath $prefix/lib -no-undefined -version-info ${version//./:}:${version%%.*} -o libdlib.la dlib-all.lo
+
+  install -d $ROOT/lib
+
+  libtool --mode="install" install -m 644 libdlib.la $ROOT/lib
+}

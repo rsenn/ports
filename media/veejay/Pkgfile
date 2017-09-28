@@ -1,0 +1,67 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A visual 'music' instrument and realtime video sampler.
+#  Veejay is a visual instrument and real-time video sampler. It allows you
+#  to "play" the video like you would play a piano. While playing, you can
+#  record the resulting video directly to disk (video sampling). Veejay
+#  can be operated live by using the keyboard (which is completely user
+#  definable) or remotely over TCP/IP. Veejay can be used to manipulate
+#  video in a realtime environment such as visual performances or for
+#  (automated) interactive video installations.
+#  .
+# URL: http://www.veejayhq.net
+# Maintainer:  Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=veejay
+version=1.4.5
+release=1
+source=($mirror_sf/veejay/veejay-$version.tar.bz2
+        veejay-1.4.5-o_creat.patch)
+
+build()
+{
+  cd veejay-$version
+
+  patch -p1 -i $SRC/veejay-1.4.5-o_creat.patch
+
+  PKG_CONFIG_PATH="$prefix/lib/pkgconfig"
+
+  export PKG_CONFIG_PATH
+
+  for subdir in veejay-{server,client,utils}; do
+   (set -e
+    
+    cd $subdir
+
+    ./configure \
+       --build="$build" \
+       --host="$host" \
+       --program-prefix="" \
+       --prefix="$prefix"
+
+    make
+    make DESTDIR="$PKG" install) || exit $?
+  done
+
+  install -d $ROOT/share/doc/veejay
+  install -m 644 README NEWS $ROOT/share/doc/veejay
+
+  install -d $ROOT/share/doc/veejay/veejay-client
+  install -m 644 veejay-client/AUTHORS veejay-client/README veejay-client/NEWS veejay-client/COPYING veejay-client/ChangeLog veejay-client/INSTALL $ROOT/share/doc/veejay/veejay-client
+
+  install -d $ROOT/share/doc/veejay/veejay-server
+  install -m 644 veejay-server/AUTHORS veejay-server/README veejay-server/NEWS veejay-server/COPYING veejay-server/ChangeLog veejay-server/INSTALL veejay-server/PKGBUILD $ROOT/share/doc/veejay/veejay-server
+  install -m 644 veejay-server/doc/VIMS.txt veejay-server/doc/COPYING veejay-server/doc/HowtoPlugins.txt veejay-server/doc/HowtoCache.txt veejay-server/doc/YCbCr.txt veejay-server/doc/NET.txt veejay-server/doc/HowtoUbuntu.txt veejay-server/doc/HowtoVideoCodecs.txt veejay-server/doc/HowtoCompile.txt veejay-server/doc/INSTALL $ROOT/share/doc/veejay/veejay-server
+
+  install -d $ROOT/share/doc/veejay/veejay-server/bio2jack
+  install -m 644 veejay-server/bio2jack/AUTHORS veejay-server/bio2jack/README veejay-server/bio2jack/NEWS veejay-server/bio2jack/COPYING veejay-server/bio2jack/INSTALL $ROOT/share/doc/veejay/veejay-server/bio2jack
+
+  install -d $ROOT/share/doc/veejay/veejay-server/libOSC
+  install -m 644 veejay-server/libOSC/AUTHORS veejay-server/libOSC/NEWS $ROOT/share/doc/veejay/veejay-server/libOSC
+
+  install -d $ROOT/share/doc/veejay/veejay-utils
+  install -m 644 veejay-utils/AUTHORS veejay-utils/README veejay-utils/NEWS veejay-utils/COPYING veejay-utils/ChangeLog veejay-utils/INSTALL $ROOT/share/doc/veejay/veejay-utils
+}
+
+# EOF

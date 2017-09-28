@@ -1,0 +1,116 @@
+diff -ru phpMyAdmin-3.0.1-all-languages_orig/changelog.php phpMyAdmin-3.0.1-all-languages/changelog.php
+--- phpMyAdmin-3.0.1-all-languages_orig/changelog.php	2008-11-21 14:05:39.000000000 +0100
++++ phpMyAdmin-3.0.1-all-languages/changelog.php	2008-11-21 14:06:24.000000000 +0100
+@@ -6,7 +6,7 @@
+  * @version $Id: changelog.php 10815 2007-10-17 08:02:56Z cybot_tm $
+  */
+ 
+-$changelog = htmlspecialchars(file_get_contents('ChangeLog'));
++/*$changelog = htmlspecialchars(file_get_contents('ChangeLog'));
+ 
+ $replaces = array(
+     '@(http://[./a-zA-Z0-9.-]*[/a-zA-Z0-9])@'
+@@ -63,7 +63,7 @@
+     => '\\1<b>\\2</b>',
+ 
+ );
+-
++*/
+ header('Content-type: text/html; charset=utf-8');
+ echo '<?xml version="1.0" encoding="utf-8"?'.'>';
+ ?>
+@@ -80,7 +80,7 @@
+ <h1>phpMyAdmin - ChangeLog</h1>
+ <?php
+ echo '<pre>';
+-echo preg_replace(array_keys($replaces), $replaces, $changelog);
++readgzfile('/usr/share/doc/phpmyadmin/changelog.gz');
+ echo '</pre>';
+ ?>
+ </body>
+diff -ru phpMyAdmin-3.0.1-all-languages_orig/libraries/Config.class.php phpMyAdmin-3.0.1-all-languages/libraries/Config.class.php
+--- phpMyAdmin-3.0.1-all-languages_orig/libraries/Config.class.php	2008-11-21 14:05:39.000000000 +0100
++++ phpMyAdmin-3.0.1-all-languages/libraries/Config.class.php	2008-11-21 14:06:53.000000000 +0100
+@@ -301,15 +301,20 @@
+      */
+     function __wakeup()
+     {
++        /* Disable in Debian: we're including a couple of other files
++         * in config.inc.php, and their changes will never be picked up
++         * if we leave this check in.
+         if (! $this->checkConfigSource()
+           || $this->source_mtime !== filemtime($this->getSource())
+           || $this->default_source_mtime !== filemtime($this->default_source)
+           || $this->error_config_file
+           || $this->error_config_default_file) {
++         */
+             $this->settings = array();
+             $this->load();
+             $this->checkSystem();
+-        }
++         /*
++        } */
+ 
+         // check for https needs to be done everytime,
+         // as https and http uses same session so this info can not be stored
+diff -ru phpMyAdmin-3.0.1-all-languages_orig/license.php phpMyAdmin-3.0.1-all-languages/license.php
+--- phpMyAdmin-3.0.1-all-languages_orig/license.php	2008-11-21 14:05:39.000000000 +0100
++++ phpMyAdmin-3.0.1-all-languages/license.php	2008-11-21 14:06:53.000000000 +0100
+@@ -13,5 +13,5 @@
+  *
+  */
+ header('Content-type: text/plain; charset=iso-8859-1');
+-readfile('LICENSE');
++readfile('/usr/share/doc/phpmyadmin/copyright');
+ ?>
+diff -ru phpMyAdmin-3.0.1-all-languages_orig/scripts/setup.php phpMyAdmin-3.0.1-all-languages/scripts/setup.php
+--- phpMyAdmin-3.0.1-all-languages_orig/scripts/setup.php	2008-11-21 14:05:39.000000000 +0100
++++ phpMyAdmin-3.0.1-all-languages/scripts/setup.php	2008-11-21 14:06:53.000000000 +0100
+@@ -1260,13 +1260,16 @@
+     return FALSE;
+ }
+ 
++define('WEBCONFIG_DIR', '/var/lib/phpmyadmin/');
++define('WEBCONFIG_FILE', WEBCONFIG_DIR . 'config.inc.php');
++
+ if ($action != 'download') {
+     // Check whether we can write to configuration
+     $fail_dir = FALSE;
+-    $fail_dir = $fail_dir || !is_dir('./config/');
+-    $fail_dir = $fail_dir || !is_writable('./config/');
+-    $fail_dir = $fail_dir || (file_exists('./config/config.inc.php') && !is_writable('./config/config.inc.php'));
+-    $config = @fopen('./config/config.inc.php', 'a');
++    $fail_dir = $fail_dir || !is_dir(WEBCONFIG_DIR);
++    //$fail_dir = $fail_dir || !is_writable(WEBCONFIG_DIR);
++    $fail_dir = $fail_dir || (file_exists(WEBCONFIG_FILE) && !is_writable(WEBCONFIG_FILE));
++    $config = @fopen(WEBCONFIG_FILE, 'a');
+     $fail_dir = $fail_dir || ($config === FALSE);
+     @fclose($config);
+ }
+@@ -1313,7 +1316,7 @@
+         <?php
+         break;
+     case 'save':
+-        $config = @fopen('./config/config.inc.php', 'w');
++        $config = @fopen(WEBCONFIG_FILE, 'w');
+         if ($config === FALSE) {
+             message('error', 'Could not open config file for writing! Bad permissions?');
+             break;
+@@ -1324,7 +1327,7 @@
+             message('error', 'Could not write to config file! Not enough space?');
+             break;
+         } else {
+-            message('notice', 'Configuration saved to file config/config.inc.php in phpMyAdmin top level directory, copy it to top level one and delete directory config to use it.', 'File saved');
++            message('notice', 'Configuration saved.', 'File saved');
+         }
+         unset($r, $s);
+         fclose($config);
+@@ -1334,7 +1337,7 @@
+             message('error', 'Reading of configuration disabled because of permissions.');
+             break;
+         }
+-        $new_cfg = load_config('./config/config.inc.php');
++        $new_cfg = load_config(WEBCONFIG_FILE);
+         if (!($new_cfg === FALSE)) {
+             $configuration = $new_cfg;
+         }

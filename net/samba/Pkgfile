@@ -1,0 +1,61 @@
+# $Id: Pkgfile,v 1.27 2007/05/09 21:02:54 roman Exp $
+#
+# Description: samba
+# URL: http://www.samba.org
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=samba
+version=3.3.0
+release=1
+source=(http://us1.samba.org/samba/ftp/stable/samba-$version.tar.gz
+        smb.conf)
+
+build()
+{
+  cd samba-$version/source
+
+  case $prefix in
+    /usr) sysconfdir="/etc" localstatedir="/var" ;;
+  esac
+
+  ./configure \
+        --build="$build" \
+        --host="$host" \
+        --prefix="$prefix" \
+        --sysconfdir="${sysconfdir=$prefix/etc}" \
+        --libdir="$prefix/lib" \
+        --localstatedir="${localstatedir=$prefix/var}" \
+        --with-privatedir="${sysconfdir=$prefix/etc}" \
+        --with-lockdir="${localstatedir=$prefix/var}/lock/samba" \
+        --with-piddir="${localstatedir=$prefix/var}/run/samba" \
+        --with-swatdir="$prefix/share/samba/swat" \
+        --with-rootsbindir="/sbin" \
+        --with-pammodulesdir="/lib/security" \
+        --with-fhs \
+        --with-pam \
+        --with-syslog \
+        --with-utmp \
+        --with-readline="$prefix" \
+        --with-libiconv="$prefix" \
+        --with-pam_smbpass \
+        --with-libsmbclient \
+        --with-winbind \
+        --with-shared-modules=idmap_rid,idmap_ad \
+        --with-automount \
+        --with-ldap \
+        --with-ads \
+        --with-dnsupdate \
+        --without-libtdb \
+        --without-libnetapi \
+        --without-quotas \
+        --without-cifsmount
+
+  make everything nsswitch/libnss_wins.so
+  make DESTDIR="$PKG" install
+
+  pkgsysconfdir="$sysconfdir/samba"
+
+  install -d $PKG/$pkgsysconfdir
+  install -m 644 $SRC/smb.conf $PKG/$pkgsysconfdir/
+}

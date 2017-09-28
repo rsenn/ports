@@ -1,0 +1,22 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Convert Outlook .msg files to mbox format
+# URL: http://www.matijs.net/software/msgconv/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libemail-localdelivery-perl, libemail-outlook-message-perl, perl-base, perl-modules
+
+name=msgconvert
+version=1.0
+release=1
+source=(http://www.matijs.net/software/msgconv/msgconvert.pl)
+
+build()
+{
+  sed -i 's,msgconvert\.pl,msgconvert,g' msgconvert.pl
+
+  install -d $ROOT/bin
+  install -m 755 $SRC/msgconvert.pl $ROOT/bin/msgconvert
+
+  install -d $ROOT/share/man/man1
+  pod2man $ROOT/bin/msgconvert >$ROOT/share/man/man1/msgconvert.1
+}

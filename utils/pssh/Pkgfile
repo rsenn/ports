@@ -1,0 +1,27 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description:  pssh provides parallel versions of the OpenSSH tools that are useful for controlling large numbers of machines simultaneously
+# It includes parallel versions of ssh, scp, and rsync, as well as a
+# parallel kill command.
+#
+# URL: http://www.theether.org/pssh/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=pssh
+version=1.3.1
+release=1
+source=(http://www.theether.org/pssh/pssh-$version.tar.gz)
+
+build()
+{
+  cd pssh-$version
+
+  python_version=$(set -- $(python --version 2>&1) && echo $2)
+
+  install -d ${PYTHONPATH=$ROOT/lib/python${python_version%.*}/site-packages}
+
+  export PYTHONPATH
+
+  python setup.py install --prefix="$ROOT"
+}

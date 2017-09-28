@@ -1,0 +1,58 @@
+# $Id: Pkgfile,v 1.2 2007/05/09 21:02:48 roman Exp $
+#
+# Description: A portable and well documented C++ crypto library.
+#  Botan is a C++ library of cryptographic algorithms, including AES, DES,
+#  SHA-1, RSA, DSA, Diffie-Hellman, and many others. It also supports
+#  X.509 certificates and CRLs, and PKCS #10 certificate requests, and
+#  has a high level filter/pipe message processing system. The library is
+#  easily portable to most systems and compilers, and includes a substantial
+#  tutorial and API reference.
+# URL: http://botan.randombit.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=botan
+version=1.6.3
+release=1
+source=(http://files.randombit.net/botan/Botan-$version.tgz
+        botan-1.6.3-longlong.patch)
+
+build()
+{
+  cd Botan-$version
+
+  patch -N -p1 -i $SRC/botan-1.6.3-longlong.patch
+
+  case $host in
+    *-linux*)
+      module_set=unix
+      OS=linux
+      ;;
+
+    *-cygwin* | *-mingw32*)
+      module_set=win32
+      ;;
+
+    *-cygwin*)
+      OS=cygwin
+      ;;
+
+    *-mingw32*)
+      OS=windows
+      ;;
+
+    i[3-7]86-*)
+      CPU=ia32
+      ;;
+  esac
+
+  perl configure.pl \
+       --prefix="$prefix" \
+       --libdir="lib" \
+       --docdir="share/doc" \
+       ${module_set:+--module-set="$module_set"} \
+     gcc-${OS:-generic}-${CPU:-generic}
+
+  make
+  make INSTALLROOT="$ROOT" install
+}

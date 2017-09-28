@@ -1,0 +1,52 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: WebVZ: OpenVZ Web Management Tool. Create, destroy, start, stop,
+# restart, migrate, change the configurations and executing linux commands in
+# container. Configuration files management, OS-Template managment, user access,
+# monitor resources.
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=webvz
+version=1.5
+release=1
+source=($mirror_sf/webvz/webvz.$version.tar.gz
+        webvz-1.5-adfinis.patch
+        webvz-1.5-fixes.patch
+        webvz_small.jpg)
+
+build()
+{
+  cd webvz.$version
+
+  case $prefix in
+    "/usr") sysconfdir="/etc" ;;
+  esac
+
+  patch -N -p1 -i $SRC/webvz-1.5-adfinis.patch
+  patch -N -p1 -i $SRC/webvz-1.5-fixes.patch
+
+  cp $SRC/webvz_small.jpg public/images
+
+  install -d $ROOT/share/webvz
+
+  cp -rf * $ROOT/share/webvz/
+
+  install -d $PKG${sysconfdir=$prefix/etc}/webvz/log
+
+  ln -sf $prefix/share/webvz $PKG$sysconfdir/webvz/root
+
+  echo "#!/bin/sh
+cd root
+exec 2>&1
+exec $prefix/bin/ruby script/server" >$PKG$sysconfdir/webvz/run
+  chmod 755 $PKG$sysconfdir/webvz/run
+
+  echo "#!/bin/sh
+exec multilog t ./main" >$PKG$sysconfdir/webvz/log/run
+  chmod 755 $PKG$sysconfdir/webvz/log/run
+
+  mkdir -p $PKG$sysconfdir/webvz/log/main
+  mkdir -p $PKG$sysconfdir/sysconfig/vz-scripts
+}

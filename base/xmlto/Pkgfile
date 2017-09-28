@@ -1,0 +1,28 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: An XSL-T tool-chain wrapper.
+#  xmlto converts an XML file (DocBook or XSL-FO) into a specified format
+#  (PS, PDF, HTML, man, ASCII, XSL-FO, etc.) by applying an appropriate XSL-T
+#  stylesheet and then performing whatever post-processing is necessary.
+# URL: http://cyberelk.net/tim/xmlto/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=xmlto
+version=0.0.20
+release=1
+source=(http://cyberelk.net/tim/data/xmlto/stable/xmlto-$version.tar.bz2)
+
+build()
+{
+  cd xmlto-$version
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --disable-dependency-tracking
+
+  make
+  make DESTDIR="$PKG" install
+}

@@ -1,0 +1,37 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: XLS to HTML converter
+#  xlHtml converts an Excel spreadsheet file (.xls) into highly-optimized
+#  HTML. It includes scripts to allow it to be used as a Netscape or mutt
+#  plugin and as a xls handler for Apache. The program currently supports
+#  string, blank, boolean, error, integer, floating point, hyperlinks,
+#  and formula cells. It can also output in XML, tab delimited, or comma
+#  separated values (CSV).
+# URL: http://chicago.sourceforge.net/xlhtml
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=xlhtml
+version=0.5
+release=1
+source=(http://prdownloads.sf.net/chicago/xlhtml-$version.tgz)
+
+build()
+{
+  cd xlhtml-$version
+
+  libtoolize --force
+  aclocal --force
+  automake --force --copy --foreign --add-missing
+  aclocal --force
+  autoconf --force
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

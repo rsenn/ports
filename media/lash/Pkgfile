@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Linux Audio Session Handler (LASH).
+#  LASH is a session management system for JACK and ALSA audio applications
+#  on GNU/Linux.
+#  LASH client applications, the collection includes the lash_panel,
+#  a graphical user interface to control LASH sessions.
+# URL: http://www.nongnu.org/lash/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=lash
+version=0.6.0~rc2
+release=1
+source=(http://download.savannah.gnu.org/releases/lash/lash-$version.tar.bz2)
+
+build()
+{
+  cd lash-${version%~*}.[0-9]*
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

@@ -1,0 +1,36 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: The telnet client
+#  The telnet command is used for interactive communication with another
+#  host using the TELNET protocol.
+# URL: 
+# Maintainer: 
+# Depends on: 
+
+name=netkit-telnet
+version=0.18-pre1a
+release=1
+source=(ftp://ftp.uk.linux.org/pub/linux/Networking/netkit-devel/netkit-telnet-0.18-pre1a.tar.gz
+        netkit-telnet-0.18-pre1a-fixes.patch)
+
+build() 
+{
+  cd netkit-telnet-$version
+
+  patch -p1 -i $SRC/netkit-telnet-0.18-pre1a-fixes.patch
+  
+  ./configure \
+       --prefix="$prefix"
+  
+  make
+
+  install -d $ROOT/bin
+  install -d $ROOT/share/man/man1
+
+  make INSTALLROOT="$PKG" MANDIR="$prefix/share/man" install
+
+  install -d $ROOT/share/doc/netkit-telnet
+  install -m 644 BUGS ChangeLog README $ROOT/share/doc/netkit-telnet
+}
+
+# EOF

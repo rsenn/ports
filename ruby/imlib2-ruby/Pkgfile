@@ -1,0 +1,27 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Imlib2 bindings for Ruby.
+# URL:
+# Maintainer:  Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=imlib2-ruby
+version=0.5.1
+release=1
+source=(http://pablotron.org/files/imlib2-ruby-$version.tar.gz)
+
+build()
+{
+  cd imlib2-ruby-$version
+
+  ruby extconf.rb
+
+  make sitelibdir='$(RUBYLIBDIR)' DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/imlib2-ruby
+  install -m 644 AUTHORS COPYING README ChangeLog $ROOT/share/doc/imlib2-ruby
+
+  cp -rf examples $ROOT/share/doc/imlib2-ruby
+}
+
+# EOF

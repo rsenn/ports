@@ -1,0 +1,701 @@
+diff -ru v004release_orig/Makefile v004release/Makefile
+--- v004release_orig/Makefile	2009-02-28 13:45:55.000000000 +0100
++++ v004release/Makefile	2009-02-28 14:04:51.000000000 +0100
+@@ -10,8 +10,8 @@
+ TCL_INCLUDE	=-I/proj/mmdc_cad/li_32/tools/swig1.3.19/lib/swig1.3/tcl
+ 
+ LIBS		=-lstdc++
+-CPPFLAGS	=-g
+-CFLAGS 		=-g
++CPPFLAGS	= -g -O2
++CFLAGS 		= -g -O2
+ 
+ CXX		= gcc
+ CC		= gcc
+@@ -47,7 +47,7 @@
+ 	mv libsimted_tcl.so $(SIMTED_LIB)
+ 
+ $(OBJ_DIR)/simted_wrap.o: $(OBJ_DIR)/simted_wrap.cxx
+-	$(CXX) -c -fpic -DUSE_NON_CONST $(CPPFLAGS) $(INCLUDE) $^ -o $@
++	$(CXX) -c -fpic -DUSE_NON_CONST $(CPPFLAGS) $(INCLUDE) $(TCL_INCLUDE) $^ -o $@
+ 	
+ $(OBJ_DIR)/simted_wrap.cxx: $(TCL_DIR)/simted.i	
+ 	$(SWIG) -v -tcl -c++ $(INCLUDE) $(TCL_INCLUDE) $(TCL_DIR)/simted.i
+diff -ru v004release_orig/include/VectorEnvelope.h v004release/include/VectorEnvelope.h
+--- v004release_orig/include/VectorEnvelope.h	2009-02-28 13:45:55.000000000 +0100
++++ v004release/include/VectorEnvelope.h	2009-02-28 13:53:39.000000000 +0100
+@@ -69,10 +69,10 @@
+     {
+       size = aobj.m_size;
+       unsigned int i;
+-      V = (Value *) malloc(aobj.m_size * sizeof(Value));
++      m_V = (Value *) malloc(aobj.m_size * sizeof(Value));
+ 
+       for (i = 0; i < aobj.m_size; i++)
+-          V[i] = aobj.V[i];
++          m_V[i] = aobj.V[i];
+     }
+ 
+     VectorEnvelope & operator += (const VectorEnvelope & aobj)
+diff -ru v004release_orig/include/smatrix/base_matrix.h v004release/include/smatrix/base_matrix.h
+--- v004release_orig/include/smatrix/base_matrix.h	2009-02-28 13:45:55.000000000 +0100
++++ v004release/include/smatrix/base_matrix.h	2009-02-28 13:46:54.000000000 +0100
+@@ -30,6 +30,8 @@
+ #include <iomanip>
+ #include <math.h>
+ #include <complex>
++#include <cstdlib>
++#include <cstring>
+ 
+ // #define BASEMATRIX_DEBUG  // will print warnings if defined
+ 
+diff -ru v004release_orig/include/smatrix/smatrix.h v004release/include/smatrix/smatrix.h
+--- v004release_orig/include/smatrix/smatrix.h	2009-02-28 13:45:55.000000000 +0100
++++ v004release/include/smatrix/smatrix.h	2009-02-28 13:52:46.000000000 +0100
+@@ -202,15 +202,15 @@
+   
+   _cells = ( Cell **)calloc( nrow, sizeof( Cell * ) );
+   if ( _cells == NULL )
+-    error( "in init: allocation failed" );
++    SMatrix<SV,CT,is_complex>::error( "in init: allocation failed" );
+ 
+   _cellcount = (Counter *) calloc( nrow, sizeof( Counter ) );
+   if ( _cellcount == NULL )
+-    error( "in init: allocation failed" );
++    SMatrix<SV,CT,is_complex>::error( "in init: allocation failed" );
+ 
+   _memcount = (Counter *) calloc( nrow, sizeof( Counter ) );
+   if ( _memcount == NULL )
+-    error( "in init: allocation failed" );
++    SMatrix<SV,CT,is_complex>::error( "in init: allocation failed" );
+ 
+   for ( Counter u = 0; u < nrow; u++ )
+     _cells[u] = NULL;
+@@ -221,7 +221,7 @@
+ {
+   if (_cells)
+   {
+-    for (Counter u = 0; u < _nrow; u ++)
++    for (Counter u = 0; u < SMatrix<SV,CT,is_complex>::_nrow; u ++)
+     {
+       if (_cells[u])
+         free(_cells[u]);
+@@ -269,13 +269,13 @@
+ void
+ SMatrix<SV,CT,is_complex>::reserve( Counter buffer_items )
+ {
+-  for ( Counter i = 0; i < _nrow; i++ )
++  for ( Counter i = 0; i < SMatrix<SV,CT,is_complex>::_nrow; i++ )
+     if ( _cellcount[i] < buffer_items )
+     {
+       _cells[i] = ( Cell *) realloc( _cells[i],
+                                   buffer_items * sizeof( Cell ) );
+       if ( _cells[i] == NULL )
+-        error( "in smatrix_reserve: allocation failed" );
++        SMatrix<SV,CT,is_complex>::error( "in smatrix_reserve: allocation failed" );
+ 
+       _memcount[i] = buffer_items;
+     }
+@@ -288,7 +288,7 @@
+ SMatrix<SV,CT,is_complex>::free_reserved_memory()
+ {
+   Counter i;
+-  for ( i = 0; i < _nrow; i++ )
++  for ( i = 0; i < SMatrix<SV,CT,is_complex>::_nrow; i++ )
+   {
+     _memcount[i] = _cellcount[i];
+     if ( _memcount[i] )
+@@ -316,7 +316,7 @@
+ {
+   Value res = 0.0;
+ 
+-  if ( ( row < _nrow ) && ( col < _ncol ) )
++  if ( ( row < SMatrix<SV,CT,is_complex>::_nrow ) && ( col < SMatrix<SV,CT,is_complex>::_ncol ) )
+   {
+     Counter v;
+     Cell* cur_row = _cells[row];
+@@ -348,7 +348,7 @@
+         }
+   }
+   else
+-    warning( "in SMatrix::get(): element index out of bounds" );
++    SMatrix<SV,CT,is_complex>::warning( "in SMatrix::get(): element index out of bounds" );
+ 
+   return res;
+ }
+@@ -359,7 +359,7 @@
+                                 Counter col,
+                                 Value value )
+ {
+-  if ( ( row < _nrow ) && ( col < _ncol ) )
++  if ( ( row < SMatrix<SV,CT,is_complex>::_nrow ) && ( col < SMatrix<SV,CT,is_complex>::_ncol ) )
+   {
+     if ( _cellcount[row] == 0 )
+     {
+@@ -370,7 +370,7 @@
+         {
+           _cells[row] = ( Cell *) malloc( sizeof( Cell ) );
+           if ( _cells[row] == NULL )
+-            error( "in set: allocation failed" );
++            SMatrix<SV,CT,is_complex>::error( "in set: allocation failed" );
+           _memcount[row]++;
+         }
+         _cells[row][0].col = col;
+@@ -389,7 +389,7 @@
+       set_in_second_half( row, col, value );
+   }
+   else
+-    warning( "int SMatrix::set(): element index out of bounds" );
++    SMatrix<SV,CT,is_complex>::warning( "int SMatrix::set(): element index out of bounds" );
+ }
+ 
+ template<class SV, class CT, bool is_complex>
+@@ -459,7 +459,7 @@
+                                        _buffer_increment,
+                                        sizeof( Cell ) );
+           if ( temp == NULL )
+-            error( "in smatrix_set: allocation failed" );
++            SMatrix<SV,CT,is_complex>::error( "in smatrix_set: allocation failed" );
+           // if it's not the beginning of line copy first half to the new storage
+           if ( v )
+             memcpy( temp, _cells[row], v * sizeof( Cell ) );
+@@ -564,7 +564,7 @@
+                                        _buffer_increment,
+                                        sizeof( Cell ) );
+           if ( temp == NULL )
+-            error( "in smatrix_set: allocation failed" );
++            SMatrix<SV,CT,is_complex>::error( "in smatrix_set: allocation failed" );
+           // if it's not the beginning of line copy first half to the new storage
+           if ( v )
+             memcpy( temp, _cells[row], v * sizeof( Cell ) );
+@@ -610,20 +610,20 @@
+   int error_status = 0;
+   Value sum, pivot;
+ 
+-  if ( _decomposed )
+-    warning("in SMatrix<SV,CT,is_complex>::LU(): matrix already decomposed");
++  if ( SMatrix<SV,CT,is_complex>::_decomposed )
++    SMatrix<SV,CT,is_complex>::warning("in SMatrix<SV,CT,is_complex>::LU(): matrix already decomposed");
+ 
+   if ( use_markovitz_reordering )
+   {
+     markovitz_reordering();
+   }
+ 
+-  for ( s = 0; s < _ncol; s++ )
++  for ( s = 0; s < SMatrix<SV,CT,is_complex>::_ncol; s++ )
+   {
+     // calculate pivot
+     pivot = 0.0;
+     pivot_row = s;
+-    while( module( pivot ) < BASEMATRIX_SMALL && pivot_row < _nrow )
++    while( module( pivot ) < SMatrix<SV,CT,is_complex>::BASEMATRIX_SMALL && pivot_row < SMatrix<SV,CT,is_complex>::_nrow )
+     {
+       pivot = get( pivot_row, s );
+       cellcount = _cellcount[pivot_row];
+@@ -633,7 +633,7 @@
+         pivot -= _cells[pivot_row][k].value *
+                  get( _cells[pivot_row][k].col, s );
+ 
+-      if ( module( pivot ) > BASEMATRIX_SMALL && pivot_row != s )
++      if ( module( pivot ) > SMatrix<SV,CT,is_complex>::BASEMATRIX_SMALL && pivot_row != s )
+       {
+         Cell* tmp;
+         Counter tmp2;
+@@ -654,13 +654,13 @@
+                                             sizeof(Counter)*
+                                             (_change_place_size+1) );
+         if ( _change_place_from == NULL )
+-          error( "in smatrix_lu_decomp: allocation failed" );
++          SMatrix<SV,CT,is_complex>::error( "in smatrix_lu_decomp: allocation failed" );
+ 
+         _change_place_to = (Counter*) realloc(_change_place_to,
+                                             sizeof(Counter)*
+                                             (_change_place_size+1) );
+         if ( _change_place_to == NULL )
+-          error( "in smatrix_lu_decomp: allocation failed" );
++          SMatrix<SV,CT,is_complex>::error( "in smatrix_lu_decomp: allocation failed" );
+ 
+         _change_place_size ++;
+ 
+@@ -670,18 +670,18 @@
+       else pivot_row ++;
+     }
+ 
+-    if ( module( pivot ) < BASEMATRIX_SMALL )
++    if ( module( pivot ) < SMatrix<SV,CT,is_complex>::BASEMATRIX_SMALL )
+     {
+       _diag = (Counter *) realloc( _diag,
+                        sizeof( Counter ) * ( _diag_length + 1 ) );
+       _diag[ _diag_length ] = s;
+       _diag_length ++;
+-      pivot += BASEMATRIX_DIAG_MOD;
++      pivot += SMatrix<SV,CT,is_complex>::BASEMATRIX_DIAG_MOD;
+     }
+ 
+     set( s, s, pivot );
+ 
+-    for ( i = s+1; i < _ncol; i++ ) // calculate U elements
++    for ( i = s+1; i < SMatrix<SV,CT,is_complex>::_ncol; i++ ) // calculate U elements
+     {
+       sum = get( s, i );
+       cellcount = _cellcount[s];
+@@ -690,7 +690,7 @@
+       set( s, i, sum );
+     }
+ 
+-    for ( i = ( s + 1 ); i < _nrow; i++ ) // calculate L elements
++    for ( i = ( s + 1 ); i < SMatrix<SV,CT,is_complex>::_nrow; i++ ) // calculate L elements
+     {
+       sum = get( i, s );
+       cellcount = _cellcount[i];
+@@ -700,7 +700,7 @@
+     }
+   }
+ 
+-  _decomposed = true;
++  SMatrix<SV,CT,is_complex>::_decomposed = true;
+ 
+   return error_status;
+ }
+@@ -713,13 +713,13 @@
+ {
+   //  important!
+   //  it's programmer's responsibility to make sure
+-  //  that length of vec is equal to _nrow
++  //  that length of vec is equal to SMatrix<SV,CT,is_complex>::_nrow
+ 
+   Value* x = NULL;
+   Value* solution = NULL;
+ 
+-  if ( !_decomposed )
+-    warning("in SMatrix::solve(): matrix not decomposed");
++  if ( !SMatrix<SV,CT,is_complex>::_decomposed )
++    SMatrix<SV,CT,is_complex>::warning("in SMatrix::solve(): matrix not decomposed");
+ 
+   if ( start == _diag_length )
+   {
+@@ -730,11 +730,11 @@
+     if ( _reord )  // if some type of reordering was applied (Markovitz etc.)
+                    // make a copy of the RHS vector reordered correspondingly
+     {
+-      reordered_vec = (Value*) calloc( _nrow, sizeof(Value) );
++      reordered_vec = (Value*) calloc( SMatrix<SV,CT,is_complex>::_nrow, sizeof(Value) );
+       if ( reordered_vec == NULL )
+-        error( "in SMatrix::solve(): allocation failed" );
++        SMatrix<SV,CT,is_complex>::error( "in SMatrix::solve(): allocation failed" );
+ 
+-      for ( i=0; i<_nrow; i++)
++      for ( i=0; i<SMatrix<SV,CT,is_complex>::_nrow; i++)
+       {
+         reordered_vec[i] = vec[ _reord[i] ];
+       }    
+@@ -747,10 +747,10 @@
+ 
+       if ( !reordered_vec )
+       {    
+-        reordered_vec = (Value*) calloc( _nrow, sizeof(Value) );
++        reordered_vec = (Value*) calloc( SMatrix<SV,CT,is_complex>::_nrow, sizeof(Value) );
+           if ( reordered_vec == NULL )
+-            error( "in SMatrix::solve(): allocation failed" );
+-        memcpy( reordered_vec, vec, _nrow * sizeof(Value) );
++            SMatrix<SV,CT,is_complex>::error( "in SMatrix::solve(): allocation failed" );
++        memcpy( reordered_vec, vec, SMatrix<SV,CT,is_complex>::_nrow * sizeof(Value) );
+       }
+ 
+       for ( i=0; i<_change_place_size; i++)
+@@ -767,11 +767,11 @@
+       if ( !_reord )
+         reordered_vec = vec;
+ 
+-    x = (Value *) calloc( _nrow, sizeof( Value ) );
++    x = (Value *) calloc( SMatrix<SV,CT,is_complex>::_nrow, sizeof( Value ) );
+     if ( x == NULL )
+-      error( "in smatrix_lu_solve: allocation failed" );
++      SMatrix<SV,CT,is_complex>::error( "in smatrix_lu_solve: allocation failed" );
+ 
+-    for ( i = 0; i < _nrow; i++ )
++    for ( i = 0; i < SMatrix<SV,CT,is_complex>::_nrow; i++ )
+     {
+       sum = reordered_vec[i];
+       for ( k = 0;
+@@ -781,7 +781,7 @@
+       x[i] = sum;
+     }
+ 
+-    for ( i = _nrow - 1; i < _nrow; i-- )
++    for ( i = SMatrix<SV,CT,is_complex>::_nrow - 1; i < SMatrix<SV,CT,is_complex>::_nrow; i-- )
+     {
+       for ( k = _cellcount[i] - 1;
+             k <_cellcount[i] && _cells[i][k].col> i;
+@@ -800,24 +800,24 @@
+ 
+     Counter i = _diag[start];
+ 
+-    e = (Value *)malloc( sizeof( Value ) * _nrow );
+-    memset( e, 0, sizeof( Value ) * _nrow );
++    e = (Value *)malloc( sizeof( Value ) * SMatrix<SV,CT,is_complex>::_nrow );
++    memset( e, 0, sizeof( Value ) * SMatrix<SV,CT,is_complex>::_nrow );
+     e[i] = 1;
+ 
+     x1 = solve( vec, start + 1 );
+     if ( x1 == NULL )
+-      error("in smatrix_lu_solve: diagonal modification failed");
++      SMatrix<SV,CT,is_complex>::error("in smatrix_lu_solve: diagonal modification failed");
+     z  = solve( e, start + 1 );
+     if ( z == NULL )
+-      error("in smatrix_lu_solve: diagonal modification failed");
++      SMatrix<SV,CT,is_complex>::error("in smatrix_lu_solve: diagonal modification failed");
+ 
+-    x = (Value*) calloc( _nrow, sizeof( Value ) );
++    x = (Value*) calloc( SMatrix<SV,CT,is_complex>::_nrow, sizeof( Value ) );
+ 
+-    if ( equal(( z[i] - 1.0 / BASEMATRIX_DIAG_MOD ),0) )
++    if ( equal(( z[i] - 1.0 / SMatrix<SV,CT,is_complex>::BASEMATRIX_DIAG_MOD ),0) )
+       failed = 1;
+     else
+-      for ( k = 0; k < _nrow && !failed; k++ )
+-        x[k] = x1[k] - z[k] * x1[i] / ( z[i] - 1.0 / BASEMATRIX_DIAG_MOD );
++      for ( k = 0; k < SMatrix<SV,CT,is_complex>::_nrow && !failed; k++ )
++        x[k] = x1[k] - z[k] * x1[i] / ( z[i] - 1.0 / SMatrix<SV,CT,is_complex>::BASEMATRIX_DIAG_MOD );
+ 
+     free( x1 );
+     free( z );
+@@ -830,17 +830,17 @@
+     free (e);
+     
+     if (failed)
+-      error("in SMatrix::solve(): diagonal modification failed");
++      SMatrix<SV,CT,is_complex>::error("in SMatrix::solve(): diagonal modification failed");
+   }
+ 
+   
+   if ( _reord )
+   {
+-    solution = (Value*) calloc( _nrow, sizeof(Value) );
++    solution = (Value*) calloc( SMatrix<SV,CT,is_complex>::_nrow, sizeof(Value) );
+     if ( solution == NULL )
+-      error( "in SMatrix::solve(): allocation failed" );
++      SMatrix<SV,CT,is_complex>::error( "in SMatrix::solve(): allocation failed" );
+       
+-    for ( Counter i = 0; i < _nrow; i++ )
++    for ( Counter i = 0; i < SMatrix<SV,CT,is_complex>::_nrow; i++ )
+       solution[ _reord[i] ] = x[i];
+   }
+   else
+@@ -881,9 +881,9 @@
+   Counter i_col;
+   
+   // "res" is transposed. it is more efficient to use it in matrix multiplication later on.
+-  // should be: res.init( _ncol, rhs_matrix.get_num_cols() );
++  // should be: res.init( SMatrix<SV,CT,is_complex>::_ncol, rhs_matrix.get_num_cols() );
+   // but, since it is transposed:
+-  res.init( rhs_matrix.get_num_cols(), _ncol );
++  res.init( rhs_matrix.get_num_cols(), SMatrix<SV,CT,is_complex>::_ncol );
+     
+   for ( i_col=0; i_col<rhs_matrix.get_num_cols(); i_col++ )
+     solve_single_column( rhs_matrix, i_col, res );
+@@ -922,19 +922,19 @@
+ {
+   Value * x = 0;
+ 
+-  if ( !_decomposed )
+-    warning("in SMatrix::solve_single_column(): matrix not decomposed");
++  if ( !SMatrix<SV,CT,is_complex>::_decomposed )
++    SMatrix<SV,CT,is_complex>::warning("in SMatrix::solve_single_column(): matrix not decomposed");
+ 
+   if ( start == _diag_length )
+   {
+     Counter i,k;
+     Value sum;
+ 
+-    x = (Value *) calloc( _ncol, sizeof( Value ) );
++    x = (Value *) calloc( SMatrix<SV,CT,is_complex>::_ncol, sizeof( Value ) );
+     if ( x == NULL )
+-      error( "in SMatrix::solve_single_column: allocation failed" );
++      SMatrix<SV,CT,is_complex>::error( "in SMatrix::solve_single_column: allocation failed" );
+ 
+-    for ( i = 0; i < _nrow; i++ )
++    for ( i = 0; i < SMatrix<SV,CT,is_complex>::_nrow; i++ )
+     {
+       sum = rhs_matrix.get( i, rhs_col );
+       for ( k = 0;
+@@ -944,7 +944,7 @@
+       x[i] = sum;
+     }
+ 
+-    for ( i = _nrow - 1; i < _nrow; i-- )
++    for ( i = SMatrix<SV,CT,is_complex>::_nrow - 1; i < SMatrix<SV,CT,is_complex>::_nrow; i-- )
+     {
+       for ( k = _cellcount[i] - 1;
+             k < _cellcount[i] && _cells[i][k].col > i;
+@@ -964,24 +964,24 @@
+ 
+     Counter i = _diag[start];
+ 
+-    e = (Value *)malloc( sizeof( Value ) * _nrow );
+-    memset( e, 0, sizeof( Value ) * _nrow );
++    e = (Value *)malloc( sizeof( Value ) * SMatrix<SV,CT,is_complex>::_nrow );
++    memset( e, 0, sizeof( Value ) * SMatrix<SV,CT,is_complex>::_nrow );
+     e[i] = 1.0;
+ 
+     x1 = solve_single_column( rhs_matrix, rhs_col, res, start + 1);
+     if ( x1 == NULL )
+-      error("in SMatrix::solve_single_column(): diagonal modification failed");
++      SMatrix<SV,CT,is_complex>::error("in SMatrix::solve_single_column(): diagonal modification failed");
+     z  = solve( e, start + 1, true);
+     if ( z == NULL )
+-      error("in SMatrix::solve_single_column(): diagonal modification failed");
++      SMatrix<SV,CT,is_complex>::error("in SMatrix::solve_single_column(): diagonal modification failed");
+ 
+-    x = (Value*) calloc( _nrow, sizeof( Value ) );
++    x = (Value*) calloc( SMatrix<SV,CT,is_complex>::_nrow, sizeof( Value ) );
+ 
+-    if ( equal(( z[i] - 1.0 / BASEMATRIX_DIAG_MOD ),0) )
++    if ( equal(( z[i] - 1.0 / SMatrix<SV,CT,is_complex>::BASEMATRIX_DIAG_MOD ),0) )
+       failed = 1;
+     else
+-      for ( k = 0; k < _nrow && !failed; k++ )
+-        x[k] = x1[k] - z[k] * x1[i] / ( z[i] - 1.0 / BASEMATRIX_DIAG_MOD );
++      for ( k = 0; k < SMatrix<SV,CT,is_complex>::_nrow && !failed; k++ )
++        x[k] = x1[k] - z[k] * x1[i] / ( z[i] - 1.0 / SMatrix<SV,CT,is_complex>::BASEMATRIX_DIAG_MOD );
+ 
+     free( x1 );
+     free( z );
+@@ -994,10 +994,10 @@
+     free (e);
+     
+     if (failed)
+-      error("in SMatrix::solve_single_column(): diagonal modification failed");
++      SMatrix<SV,CT,is_complex>::error("in SMatrix::solve_single_column(): diagonal modification failed");
+   }
+ 
+-  for ( Counter i=0; i < _ncol; i++ )
++  for ( Counter i=0; i < SMatrix<SV,CT,is_complex>::_ncol; i++ )
+     if ( x[i] )
+     // "res" is transposed. it is more efficient to use it in matrix multiplication later on.
+     // should be: res.set( i, rhs_col, x[i] );
+@@ -1015,12 +1015,12 @@
+ {
+   //  important!
+   //  it's programmer's responsibility to make sure
+-  //  that length of vec is equal to _nrow
++  //  that length of vec is equal to SMatrix<SV,CT,is_complex>::_nrow
+ 
+   Value* y = NULL;
+ 
+-  if ( !_decomposed )
+-    warning("in SMatrix::solve_LY(): matrix not decomposed");
++  if ( !SMatrix<SV,CT,is_complex>::_decomposed )
++    SMatrix<SV,CT,is_complex>::warning("in SMatrix::solve_LY(): matrix not decomposed");
+ 
+   Counter i,k;
+   Value sum, tmp;
+@@ -1031,10 +1031,10 @@
+     // handle pivoting - if the rows were reordered, then
+     //                   make a copy of the RHS vector reordered correspondingly
+ 
+-    reordered_vec = (Value*) calloc( _nrow, sizeof(Value) );
++    reordered_vec = (Value*) calloc( SMatrix<SV,CT,is_complex>::_nrow, sizeof(Value) );
+     if ( reordered_vec == NULL )
+-      error( "in SMatrix::solve_LY(): allocation failed" );
+-    memcpy( reordered_vec, vec, _nrow * sizeof(Value) );
++      SMatrix<SV,CT,is_complex>::error( "in SMatrix::solve_LY(): allocation failed" );
++    memcpy( reordered_vec, vec, SMatrix<SV,CT,is_complex>::_nrow * sizeof(Value) );
+     
+     for ( i=0; i<_change_place_size; i++)
+     {
+@@ -1049,11 +1049,11 @@
+   else
+     reordered_vec = vec;
+ 
+-  y = (Value *) calloc( _nrow, sizeof( Value ) );
++  y = (Value *) calloc( SMatrix<SV,CT,is_complex>::_nrow, sizeof( Value ) );
+   if ( y == NULL )
+-    error( "in SMatrix::solve_LY(): allocation failed" );
++    SMatrix<SV,CT,is_complex>::error( "in SMatrix::solve_LY(): allocation failed" );
+ 
+-  for ( i = 0; i < _nrow; i++ )
++  for ( i = 0; i < SMatrix<SV,CT,is_complex>::_nrow; i++ )
+   {
+     sum = reordered_vec[i];
+     for ( k = 0;
+@@ -1074,20 +1074,20 @@
+ {
+   //  important!
+   //  it's programmer's responsibility to make sure
+-  //  that length of vec is equal to _nrow
++  //  that length of vec is equal to SMatrix<SV,CT,is_complex>::_nrow
+ 
+   Value* x = NULL;
+ 
+-  if ( !_decomposed )
+-    warning("in SMatrix::solve_UX(): matrix not decomposed");
++  if ( !SMatrix<SV,CT,is_complex>::_decomposed )
++    SMatrix<SV,CT,is_complex>::warning("in SMatrix::solve_UX(): matrix not decomposed");
+ 
+   Counter i,k;
+ 
+-  x = (Value *) calloc( _nrow, sizeof( Value ) );
++  x = (Value *) calloc( SMatrix<SV,CT,is_complex>::_nrow, sizeof( Value ) );
+   if ( x == NULL )
+-    error( "in SMatrix::solve_UX(): allocation failed" );
++    SMatrix<SV,CT,is_complex>::error( "in SMatrix::solve_UX(): allocation failed" );
+ 
+-  for ( i = _nrow - 1; i < _nrow; i-- )
++  for ( i = SMatrix<SV,CT,is_complex>::_nrow - 1; i < SMatrix<SV,CT,is_complex>::_nrow; i-- )
+   {
+     x[i] = y[i];
+     for ( k = _cellcount[i] - 1;
+@@ -1146,11 +1146,11 @@
+   Value sum;
+   Counter u,v,k,first_cell_iterator;
+ 
+-  // should be res.init( _nrow, second._ncol );
++  // should be res.init( SMatrix<SV,CT,is_complex>::_nrow, second._ncol );
+   // but since the "second" matrix is transposed:
+-  res.init( _nrow, second._nrow );
++  res.init( SMatrix<SV,CT,is_complex>::_nrow, second._nrow );
+ 
+-  for ( u = 0; u < _nrow; u++ )
++  for ( u = 0; u < SMatrix<SV,CT,is_complex>::_nrow; u++ )
+   {
+     // should be     k < second._ncol
+     // but since the "second" matrix is transposed:
+@@ -1181,7 +1181,7 @@
+ {
+   Counter i_row, i_col, cellcount;
+   Cell* cur_row;
+-  for( i_row=0; i_row < _nrow; i_row++ )
++  for( i_row=0; i_row < SMatrix<SV,CT,is_complex>::_nrow; i_row++ )
+   {
+     cellcount = _cellcount[i_row];
+     cur_row = _cells[i_row];
+@@ -1194,8 +1194,8 @@
+ SMatrix<SV,CT,is_complex> &
+ SMatrix<SV,CT,is_complex>::operator-=( const SMatrix<SV,CT,is_complex> & second )
+ {
+-  if ( _nrow != second._nrow  ||  _ncol != second._ncol )
+-    warning("in SMatrix::operator-=(): sizes of the matrices are not equal");
++  if ( SMatrix<SV,CT,is_complex>::_nrow != second._nrow  ||  SMatrix<SV,CT,is_complex>::_ncol != second._ncol )
++    SMatrix<SV,CT,is_complex>::warning("in SMatrix::operator-=(): sizes of the matrices are not equal");
+ 
+   Counter u,v,first_cell_iterator;
+   for ( u = 0; u < second._nrow; u++ )
+@@ -1224,18 +1224,18 @@
+ typename SMatrix<SV,CT,is_complex>::Value *
+ SMatrix<SV,CT,is_complex>::multiply( Value * vec )
+ {
+-  // length of "vec" must be equal to _ncol
++  // length of "vec" must be equal to SMatrix<SV,CT,is_complex>::_ncol
+   
+   Value* res = NULL;
+   Counter row, col;
+ 
+-  res = ( Value * ) calloc( _nrow, sizeof( Value ) );
++  res = ( Value * ) calloc( SMatrix<SV,CT,is_complex>::_nrow, sizeof( Value ) );
+   if ( res == NULL )
+-    error( "in SMatrix::multiply(): allocation of <res> failed" );
++    SMatrix<SV,CT,is_complex>::error( "in SMatrix::multiply(): allocation of <res> failed" );
+ 
+-  memset( ( void * ) res, 0, _nrow * sizeof( Value ) );
++  memset( ( void * ) res, 0, SMatrix<SV,CT,is_complex>::_nrow * sizeof( Value ) );
+ 
+-  for ( row = 0; row < _nrow; row ++ )
++  for ( row = 0; row < SMatrix<SV,CT,is_complex>::_nrow; row ++ )
+   {
+     for ( col = 0; col < _cellcount[row]; col ++ )
+       res[row] += _cells[row][col].value * vec[ _cells[row][col].col ];
+@@ -1255,13 +1255,13 @@
+   // afterwards these reorderings must be applied to the main 'reord' vector
+   Counter* anc_reorder;
+   Counter temp, u;
+-  anc_reorder = ( Counter * ) malloc( sizeof( Counter ) * _nrow );
+-  for ( u = 0; u < _nrow; u++ )
++  anc_reorder = ( Counter * ) malloc( sizeof( Counter ) * SMatrix<SV,CT,is_complex>::_nrow );
++  for ( u = 0; u < SMatrix<SV,CT,is_complex>::_nrow; u++ )
+     anc_reorder[u] = u;
+ 
+-  sort( reord, adjacent_nodes_count, anc_reorder, 0, _nrow );
++  sort( reord, adjacent_nodes_count, anc_reorder, 0, SMatrix<SV,CT,is_complex>::_nrow );
+ 
+-  for ( u = 0; u < _nrow; u++ )
++  for ( u = 0; u < SMatrix<SV,CT,is_complex>::_nrow; u++ )
+     if ( anc_reorder[u] > u )
+     {
+       temp = reord[u];
+@@ -1335,10 +1335,10 @@
+ SMatrix<SV,CT,is_complex>::count_adjacent_nodes( Counter** adjacent_nodes_count )
+ {
+   Counter u,v;
+-  *adjacent_nodes_count = ( Counter * ) malloc( sizeof( Counter ) * _nrow );
+-  memset( *adjacent_nodes_count, 0, _nrow * sizeof( Counter ) );  
++  *adjacent_nodes_count = ( Counter * ) malloc( sizeof( Counter ) * SMatrix<SV,CT,is_complex>::_nrow );
++  memset( *adjacent_nodes_count, 0, SMatrix<SV,CT,is_complex>::_nrow * sizeof( Counter ) );  
+ 
+-  for ( u = 0; u < _nrow; u++ )
++  for ( u = 0; u < SMatrix<SV,CT,is_complex>::_nrow; u++ )
+   {
+     ( *adjacent_nodes_count )[u] += _cellcount[u];
+     for ( v = 0; v < _cellcount[u]; v++ )
+@@ -1351,13 +1351,13 @@
+ SMatrix<SV,CT,is_complex>::build_adjacent_nodes_list( Counter* adjacent_nodes_count,
+                                                       Counter*** adjacent_nodes )
+ {
+-  *adjacent_nodes = ( Counter ** ) malloc( sizeof( Counter* ) * _nrow );
++  *adjacent_nodes = ( Counter ** ) malloc( sizeof( Counter* ) * SMatrix<SV,CT,is_complex>::_nrow );
+ 
+   Counter u, v;
+-  for ( u = 0; u < _nrow; u++ )
++  for ( u = 0; u < SMatrix<SV,CT,is_complex>::_nrow; u++ )
+     ( *adjacent_nodes )[u] = ( Counter * ) malloc( sizeof( Counter ) * adjacent_nodes_count[u] );
+ 
+-  for ( u = 0; u < _nrow; u++ )
++  for ( u = 0; u < SMatrix<SV,CT,is_complex>::_nrow; u++ )
+     for ( v = 0; v < _cellcount[u]; v++ )
+     {  
+       *( *adjacent_nodes )[u] = _cells[u][v].col;
+@@ -1367,7 +1367,7 @@
+       ( *adjacent_nodes )[_cells[u][v].col] ++;   
+ 
+     }
+-    for ( u = 0; u < _nrow; u++ )
++    for ( u = 0; u < SMatrix<SV,CT,is_complex>::_nrow; u++ )
+       ( *adjacent_nodes )[u] -= adjacent_nodes_count[u];
+ }
+ 
+@@ -1377,8 +1377,8 @@
+ {
+   Counter i;
+   
+-  _reord = ( Counter * ) malloc( sizeof( Counter ) * _nrow );
+-  for ( i=0; i < _nrow; i++ )
++  _reord = ( Counter * ) malloc( sizeof( Counter ) * SMatrix<SV,CT,is_complex>::_nrow );
++  for ( i=0; i < SMatrix<SV,CT,is_complex>::_nrow; i++ )
+   {
+     _reord[i] = i;
+   }
+@@ -1387,14 +1387,14 @@
+   count_adjacent_nodes( & adjacent_nodes_count );    
+   apply_markovitz_reordering_to_vector( _reord, adjacent_nodes_count );    
+ 
+-  _backreord = get_backreorder_vector( _reord, _nrow );
++  _backreord = get_backreorder_vector( _reord, SMatrix<SV,CT,is_complex>::_nrow );
+ 
+   SMatrix<SV,CT,is_complex> temporary_matrix;
+-  submatrix( temporary_matrix, _reord, _backreord, 0, 0, _nrow, _ncol );
++  submatrix( temporary_matrix, _reord, _backreord, 0, 0, SMatrix<SV,CT,is_complex>::_nrow, SMatrix<SV,CT,is_complex>::_ncol );
+ 
+   if (_cells)
+   {
+-    for (Counter u = 0; u < _nrow; u ++)
++    for (Counter u = 0; u < SMatrix<SV,CT,is_complex>::_nrow; u ++)
+     {
+       if (_cells[u])
+         free(_cells[u]);
+Only in v004release: la
+Only in v004release/lib: libsimted.so
+Only in v004release/lib: libsimted_tcl.so
+Only in v004release/obj: Circuit.o
+Only in v004release/obj: ResultsContainer.o
+Only in v004release/obj: simted_wrap.o

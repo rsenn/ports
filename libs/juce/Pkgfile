@@ -1,0 +1,99 @@
+# $Id: Pkgfile,v 1.2 2007/05/09 21:02:48 roman Exp $
+#
+# Description: A complete class library for developing graphical/audio applications.
+#  JUCE is an all-encompassing C++ class library for developing
+#  highly-specialised user interfaces and for handling graphics and
+#  applications in C++ and who would like to use just one clean, high-level
+#  or platforms. Its features include fully lightweight components with
+#  file handling, messaging, and event queues, vector graphics, a custom
+#  using CoreAudio, DSound and ASIO, audio buffers and nodes, MIDI file
+#  and event manipulation, Internet streams, undo/redo support, and more.
+# URL: http://www.rawmaterialsoftware.com/juce
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libflac8, libfreetype6, libgcc1, libogg0, libstdc++6, libx11-6, libxau6, libxdmcp6, libxext6, libxinerama1, libgl1-mesa-glx | libgl1, zlib1g
+
+name=juce
+version=1.46
+release=3
+source=($mirror_sf/juce/juce_${version//./_}.zip
+        GNUmakefile
+        juce-1.43-fixes.patch
+        juce-1.45-cmake.patch
+        juce-1.45-fixes.patch
+        juce-1.46-libtool.patch.bz2
+        juce-1.46-libtool-jucer.patch
+        juce-1.46-header-install.patch)
+
+build()
+{
+  cd juce
+
+  find -type f -exec dos2unix '{}' ';'
+
+  mv extras/"the jucer" extras/the_jucer
+
+#  patch -N -p1 -i $SRC/juce-1.43-fixes.patch
+  patch -N -p1 -i $SRC/juce-1.45-cmake.patch
+  bzcat $SRC/juce-1.46-libtool.patch.bz2 | patch -N -p1
+  patch -N -p1 -i $SRC/juce-1.46-libtool-jucer.patch
+  patch -N -p1 -i $SRC/juce-1.46-header-install.patch
+
+#  cp $SRC/GNUmakefile .
+
+  patch -N -p1 -i $SRC/juce-1.45-fixes.patch
+
+  # Try real cross-platform build using GNU and libtool
+  for dir in . extras/the_jucer; do
+   (cd $dir
+    if test -d build/gnu; then
+      (cd build/gnu && sh ./autogen.sh)
+
+      build/gnu/configure \
+          --prefix="$prefix"
+
+      make -f Makefile DESTDIR="$PKG" install
+    fi)
+  done
+
+  install -d $ROOT/share/doc/juce
+
+  cd docs
+
+  for file in *; do
+    cp -rf "$file" $ROOT/share/doc/juce/`echo "$file" | sed "s/ /_/g"`
+  done
+ # install -m 644 JUCE.txt Licence.txt changelist.txt for.txt framework.txt juce/docs/gpl.txt list.txt readme.html $ROOT/share/doc/juce
+
+  cd ..
+
+#  cp -rf demo host plugins projects $ROOT/share/doc/juce
+
+  return 0
+
+  # System specific build
+  case $host in
+    *-mingw32*)
+      mkdir -p bin/intermediate_devcpp
+      make CXX="$CXX" DEFS="-DLINUX" -f GNUmakefile
+      ;;
+
+    *-linux*)
+
+      make -C build/linux CXX="$CXX" CFLAGS="$CXXFLAGS -MMD -DLINUX=1 -DNDEBUG=1 -I../../ -I$prefix/include -I$prefix/include/freetype2" CONFIG="Release"
+      make -C build/linux CXX="$CXX" CFLAGS="$CXXFLAGS -MMD -DLINUX=1 -DDEBUG=1 -D_DEBUG=1 -I../../ -I$prefix/include -I$prefix/include/freetype2" CONFIG="Debug"
+
+      sed -i "s,/usr/,$prefix/,g" build/linux/*.lua
+
+      install -d $ROOT/lib
+      install -m 644 bin/*.a $ROOT/lib/
+
+      install -d $ROOT/include
+     (cd ../juce &&
+      find * -type f -name "juce*.h" >files.txt &&
+      tar -c --files-from files.txt | tar -C $ROOT/include -xv)
+      ;;
+  esac
+
+
+
+}

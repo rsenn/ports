@@ -1,0 +1,31 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:53 roman Exp $
+#
+# Description: 
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=wxwidgets-2.4
+version=2.4.2
+release=1
+source=($mirror_sf/wxwindows/wxAll-$version.tar.gz
+        wxWindows-2.4.2-m4.patch)
+
+build()
+{
+  cd wxWindows-$version
+
+  patch -N -p1 -i $SRC/wxWindows-2.4.2-m4.patch
+
+  sed -i "s,/usr/local,$prefix,g" configure
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --${static:=enable}-shared \
+       --${shared:=enable}-shared
+
+  make
+  make prefix="$ROOT" install
+}

@@ -1,0 +1,15 @@
+--- gmp-4.2.2_orig/gmp-h.in	2008-05-30 12:00:25.000000000 +0200
++++ gmp-4.2.2/gmp-h.in	2008-05-30 12:20:17.000000000 +0200
+@@ -420,10 +420,10 @@
+     GCC 4.3 and above with -std=c99 or -std=gnu99 implements ISO C99
+     inline semantics, unless -fgnu89-inline is used.  */
+ #ifdef __GNUC__
+-#ifdef __GNUC_STDC_INLINE__
++#if defined(__GNUC_STDC_INLINE__) || defined(__GNUC_GNU_INLINE__)
+ #define __GMP_EXTERN_INLINE extern __inline__ __attribute__ ((__gnu_inline__))
+ #else
+-#define __GMP_EXTERN_INLINE      extern __inline__
++#define __GMP_EXTERN_INLINE extern __inline__
+ #endif
+ #define __GMP_INLINE_PROTOTYPES  1
+ #endif

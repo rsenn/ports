@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A simple JACK Mixer with OSC control.
+#  JackMiniMix is a simple mixer for the Jack Audio Connection Kit with an
+#  OSC-based control interface. It supports a user configurable number of
+#  stereo inputs, which can then be queried and controlled by sending it
+#  OSC messages.
+#  .
+# URL: http://www.ecs.soton.ac.uk/~njh/jackminimix/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=jackminimix
+version=0.2
+release=1
+source=(http://www.ecs.soton.ac.uk/~njh/jackminimix/jackminimix-0.2.tar.gz)
+
+build()
+{
+  cd jackminimix-0.2
+./autogen.sh
+./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+make
+make DESTDIR="$PKG" install
+}
+
+# EOF

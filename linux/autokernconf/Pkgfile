@@ -1,0 +1,34 @@
+# $Id: Pkgfile,v 1.5 2007/04/22 23:07:52 roman Exp $
+#
+# Description: Automagical Kernel Configuration
+#  AutoKernConf is an attempt to help user to find an optimal configuration
+#  of Linux kernels. It can help you to find what configuration option
+#  (and what driver) you need for your hardware.
+#  Nowaday it is not easy to have such information, either because kernel
+#  drivers tend to have the name of the first (and now obsolete) supported
+#  device of a class, and the vendors sell cloned devices, without telling
+#  the user what chips (and compatibility) are build in the pieces of
+#  hardware.
+#  The actual AutoKernConf is not so powerfull as the older version:
+#  the earlier versions (in 2000 and 2001) were more powerfull (but with
+#  newer hardware), so I'll forward-port some of the old (and non so driver
+#  database driven) feature, it need some new euristics to find what people
+#  want to configure, and probably should take information about previous
+#  udev runs.
+#  AutoKernConf is an direct application of the LKDDb: Linux Kernel Driver
+#  DataBase.
+# URL: http://cateee.net/autokernconf/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=autokernconf
+version=20071111
+release=1
+source=(autokernconf.sh kdetect.sh)
+
+build()
+{
+  install -d $ROOT/bin
+  install -m 755 autokernconf.sh $ROOT/bin/autokernconf
+  install -m 755 kdetect.sh $ROOT/bin/kdetect
+}

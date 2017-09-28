@@ -1,0 +1,37 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:50 roman Exp $
+#
+# Description: A high dynamic range (HDR) image file format developed by ILM.
+#  OpenEXR is a high dynamic range (HDR) image file format developed by
+#  Industrial Light & Magic for use in computer imaging applications. It
+#  includes support for 16-bit floating-point pixels (compatible with
+#  NVIDIA's Cg shader language "half" datatype), several lossless compression
+#  algorithms, and extensible image metadata attributes.
+# URL: http://www.openexr.com
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=openexr
+version=1.4.0a
+release=1
+source=(http://download.savannah.nongnu.org/releases/openexr/openexr-$version.tar.gz)
+
+build()
+{
+  cd openexr-${version%[a-z]}
+
+  libtoolize --force --copy
+  aclocal --force
+  autoconf --force
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --${shared:=enable}-shared \
+       --${static:=enable}-shared \
+       --enable-threading
+
+  make
+  make DESTDIR="$PKG" install
+}
+

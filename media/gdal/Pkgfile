@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A translator library for raster geospatial data formats.
+#  The Geospatial Data Abstraction Library (GDAL) is a unifying C/C++ API
+#  for accessing raster geospatial data, and currently includes formats
+#  like GeoTIFF, Erdas Imagine, Arc/Info Binary, CEOS, DTED, GXF, and
+#  SDTS. It is intended to provide efficient access, suitable for use in
+#  viewer applications, and also attempts to preserve coordinate systems
+#  and metadata. Python, C, and C++ interfaces are available.
+# URL: http://www.gdal.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=gdal
+version=1.5.1
+release=1
+source=(ftp://ftp.remotesensing.org/gdal/gdal-$version.tar.gz)
+
+build()
+{
+  cd gdal-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

@@ -1,0 +1,137 @@
+# $Id: Pkgfile,v 1.2 2007/04/22 23:07:53 roman Exp $
+#
+# Description: gcc
+# URL: http://gcc.gnu.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=diet-gcc
+version=3.4.6
+release=1
+os_system=${build%-gnu}
+target=${build%%-*}-diet-${os_system##*-}
+
+source=($mirror_gnu/gcc/gcc-$version/gcc-core-$version.tar.bz2
+        $mirror_gnu/gcc/gcc-$version/gcc-g++-$version.tar.bz2
+        gcc-3.4.6-extdeps.patch
+        gcc-3.4.6-diet.patch
+        gcc-3.3.3-ro_nofixincludes-1.patch)
+
+build()
+{
+  cd gcc-$version
+
+  rm -f libtool.m4
+  cp intl/aclocal.m4 intl.m4
+
+#  patch -N -p1 -i $SRC/gcc-3.4.6-extdeps.patch
+  patch -N -p1 -i $SRC/gcc-3.4.6-diet.patch
+  patch -N -p1 -i $SRC/gcc-3.3.3-ro_nofixincludes-1.patch
+
+#  sed -e ':cont; /\\$/ { N; b cont }' \
+#      -e '/^[_A-Za-z][_0-9A-Za-z]*="/ {
+#           s:\(build-|host-|target-\)\?libiberty::g
+#           s:\(build-|host-|target-\)\?intl::g
+#         }' \
+#      -i configure.in
+
+#  autoconf --force
+
+#     libtoolize --force --copy
+#  for subdir in gcc; do
+#    (cd $subdir
+#     aclocal --force -I ../config -I ..
+#     autoconf --force) || return $?
+#  done
+
+  if test "$host" != "$target"
+  then
+    sysroot="${prefix%/$target}/$target"
+  else
+    sysroot="${prefix%/$target}"
+  fi
+
+  case $prefix in
+    /usr) rootlibdir="$prefix/lib/diet/lib" ;;
+       *) rootlibdir="$sysroot/lib" ;;
+  esac
+
+  # change runtime linker
+  case $target in
+    *diet*)
+      sed -i -e "s,/lib/ld-linux.so.2,$ROOTlibdir/libdl.so," \
+        gcc/config/i386/linux.h
+      ;;
+    *linux*)
+      sed -i -e "s,/lib/ld-linux.so.2,$ROOTlibdir/ld-linux.so.2," \
+        gcc/config/i386/linux.h
+      ;;
+    *freebsd*)
+      sed -i -e '/FBSD_DYNAMIC_LINKER/ s,".*","'$ROOTlibdir/ld-elf.so.1'",' \
+        gcc/config/freebsd-spec.h
+      ;;
+  esac
+
+  if test "$host" != "$target"
+  then
+    libs="--with-libs=$sysroot/lib"
+    headers="--with-headers=$sysroot/include"
+  else
+    unset libs headers
+  fi
+
+  (echo "#!/bin/sh" && echo 'echo "$@"') >config.sub
+  (echo "#!/bin/sh" && echo '${CC-gcc} -dumpmachine') >config.guess
+
+  sed -i '/=/! s,dietlibc,diet*,g' \
+       config.sub
+
+  # now configure in a separate build tree
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       ${target+--target="$target"} \
+       --prefix="$prefix" \
+       --mandir="$prefix/share/man" \
+       --infodir="$prefix/share/info" \
+       --libexecdir="$prefix/lib" \
+       --enable-nls \
+       --without-included-gettext \
+       --enable-threads="posix" \
+       --with-tls \
+       --disable-rpath \
+       --disable-shared \
+       --${static:=enable}-shared \
+       --enable-languages="c,c++" \
+       --with-system-zlib \
+       --with-system-libunwind \
+       --with-ld="$target-ld" \
+       --with-as="$target-as" \
+      $libs $headers
+
+  make
+  make DESTDIR="$PKG" install
+
+  if test ! -e $ROOT/lib/libiberty.a
+  then
+    rm -f $ROOT/lib/libiberty.a
+  fi
+  rm -f $ROOT/info/dir
+
+#  (cd $ROOT/bin
+#   for bin in *; do
+#     case $bin in
+#       *-${version%%.*} | *-${version%.*} | *-$version) ;;
+#       *) mv -vf $bin $bin-${version%.*} ;;
+#     esac
+#   done)
+}
+
+
+postmerge()
+{
+  cd ${bindir} && for bin in *-${version%.*}
+  do
+    test -e ${bin%-*} || ln -svf ${bin} ${bin%-*}
+  done
+}

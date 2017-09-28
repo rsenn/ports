@@ -1,0 +1,91 @@
+Only in js-1.6.20070208_orig: js
+diff -r -u -- js-1.6.20070208_orig/src/js.c js-1.6.20070208/src/js.c
+--- js-1.6.20070208_orig/src/js.c	2007-05-08 17:28:51.000000000 +0200
++++ js-1.6.20070208/src/js.c	2007-05-08 17:43:27.000000000 +0200
+@@ -2606,6 +2606,38 @@
+ 
+ #endif /* NARCISSUS */
+ 
++static JSBool
++js_stdout_fn(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval *rval)
++{ 
++  JSString *str;
++  str = JS_ValueToString(cx, argv[0]);
++
++  if(str == NULL)
++  {
++    JS_ReportError(cx, "unable to convert argument to string.");
++    return JS_FALSE;
++  }
++
++  fwrite(JS_GetStringBytes(str), 1, JS_GetStringLength(str), stdout);
++  return JS_TRUE;
++}
++
++static JSBool
++js_stderr_fn(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval *rval)
++{
++  JSString *str;
++  str = JS_ValueToString(cx, argv[0]);
++
++  if(str == NULL)
++  {
++    JS_ReportError(cx, "unable to convert argument to string.");
++    return JS_FALSE;
++  }
++
++  fwrite(JS_GetStringBytes(str), 1, JS_GetStringLength(str), stderr);
++  return JS_TRUE;
++}
++
+ int
+ main(int argc, char **argv, char **envp)
+ {
+@@ -2669,6 +2701,19 @@
+ #endif
+ #endif
+ #endif
++    JSObject *configuration = JS_NewObject(cx, NULL, NULL, NULL);
++    JSObject *stdout_fn = JS_GetFunctionObject(JS_NewFunction(cx, js_stdout_fn, 1, 0, NULL, NULL));
++    JSObject *stderr_fn = JS_GetFunctionObject(JS_NewFunction(cx, js_stderr_fn, 1, 0, NULL, NULL));
++  
++    jsval v = OBJECT_TO_JSVAL(configuration);
++    JS_SetProperty(cx, glob, "configuration", &v);
++
++    v = OBJECT_TO_JSVAL(stdout_fn);
++    JS_SetProperty(cx, configuration, "stdout", &v);
++
++    v = OBJECT_TO_JSVAL(stderr_fn);
++    JS_SetProperty(cx, configuration, "stderr", &v);
++
+     if (!JS_DefineFunctions(cx, glob, shell_functions))
+         return 1;
+ 
+Only in js-1.6.20070208: test.js
+diff -r -u -- js-1.6.20070208_orig/Makefile.in js-1.6.20070208/Makefile.in
+--- js-1.6.20070208_orig/Makefile.in	2007-05-18 21:24:32.000000000 +0200
++++ js-1.6.20070208/Makefile.in	2007-05-18 21:24:48.000000000 +0200
+@@ -155,7 +155,7 @@
+ 	@$(LIBTOOL) --mode=compile $(CC) $(CPPFLAGS) $(CFLAGS) -o $@ -c $<
+ 
+ $(LIB_NAME): $(LIB_OBJS)
+-	@$(LIBTOOL) --mode=link $(CC) -o $(LIB_NAME) $(LIB_OBJS) -rpath $(libdir) -version-info 1:6
++	@$(LIBTOOL) --mode=link $(CC) -o $(LIB_NAME) $(LIB_OBJS) -rpath $(libdir) -version-number 1:6:0 $(LIBS)
+ 
+ $(CLI_NAME): $(CLI_OBJS) $(LIB_NAME)
+ 	@$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) $(CLI_LDFLAGS) -o $(CLI_NAME) $(CLI_OBJS) $(LIB_NAME) $(LIBS) $(CLI_LIBS)
+diff -r -u -- js-1.6.20070208_orig/src/jsfile.c js-1.6.20070208/src/jsfile.c
+--- js-1.6.20070208_orig/src/jsfile.c	2007-05-18 21:36:31.000000000 +0200
++++ js-1.6.20070208/src/jsfile.c	2007-05-18 21:36:58.000000000 +0200
+@@ -2399,10 +2399,7 @@
+ }
+ 
+ /* Internal function, used for cases which NSPR file support doesn't cover */
+-#ifdef OSSP /* CLEANUP */
+-static
+-#endif
+-JSObject*
++JS_PUBLIC_API(JSObject *)
+ js_NewFileObjectFromFILE(JSContext *cx, FILE *nativehandle, char *filename,
+     int32 mode, JSBool open, JSBool randomAccess)
+ {

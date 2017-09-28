@@ -1,0 +1,42 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: Linux Pluggable Authentication Modules
+#  Linux-PAM provides a flexible mechanism for authenticating users. It
+#  consists of a set of libraries that handle the authentication tasks
+#  of applications on the system. The library provides a stable general
+#  interface to which privilege-granting programs (such as login and su)
+#  defer to perform standard authentication tasks. PAM was invented by
+#  SUN Microsystems.
+#  .
+# URL: http://www.kernel.org/pub/linux/libs/pam/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=linux-pam
+version=1.0.3
+release=1
+source=(http://www.kernel.org/pub/linux/libs/pam/library/Linux-PAM-$version.tar.bz2
+        linux-pam-0.99.3.0-yylex.patch
+        linux-pam-0.99.3.0-paths.patch)
+
+build()
+{
+  cd Linux-PAM-$version
+
+  patch -N -p1 -i $SRC/linux-pam-0.99.3.0-paths.patch
+
+# CPPFLAGS="-DHOST_NAME_MAX=256 -DLINE_MAX=4096 -DPATH_MAX=4096"
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      ${target+--target="$target"} \
+      --prefix="$prefix" \
+      --disable-static \
+      --disable-nls \
+      --disable-selinux \
+      --enable-docdir="$prefix/share/doc/pam" \
+      --includedir="$prefix/include/security"
+
+  make
+  make DESTDIR="$PKG" install
+}

@@ -1,0 +1,1393 @@
+diff -r -u vee-0.1.7_orig/include/BglApp.hpp vee-0.1.7/include/BglApp.hpp
+--- vee-0.1.7_orig/include/BglApp.hpp	2007-07-27 03:00:48.000000000 +0200
++++ vee-0.1.7/include/BglApp.hpp	2007-07-27 03:03:34.000000000 +0200
+@@ -0,0 +1,80 @@
++/* COPYRIGHT
++ *
++ * This file is part of the Geometry Engine - GEE
++ *
++ * Read the "GEE-LICENSE" file for the license.
++ *
++ * Authors & Copyright:   
++ *
++ * Tommi Ilmonen 2003
++ *
++ * firstname.lastname@hut.fi
++ *
++ */
++
++#ifndef _FLUID_BGL_APP_HPP_
++#define _FLUID_BGL_APP_HPP_
++
++#include <BglProjections.hpp>
++
++namespace Fluid {
++  class Tracker;
++}
++
++class BglApp
++{
++public:
++  BglApp();
++  virtual ~BglApp();
++
++  bool loadConfigs(const char * caveProjFile,
++		   const char * bglConfigFile);
++  virtual bool exec();
++  bool quit();
++
++protected:
++  virtual void childLoop();
++
++  /// Should be overridden if you want to initialize things
++  virtual void contextInit();
++
++  /// Should be overridden if you need to clean up things
++  virtual void contextCleanup();
++
++  /// Should be overridden to draw something. 
++  virtual void draw();
++
++  /// Should be overridden to do per-frame calculations
++  virtual void preFrame();
++
++  virtual void setHeadPosition();
++
++  BglProjections   m_projections;
++
++  int  m_renderers;
++  bool m_run;
++};
++
++/////////////////////////////////////////////////////////////////////////////
++/////////////////////////////////////////////////////////////////////////////
++
++class BglFluidApp : public BglApp
++{
++public:
++  BglFluidApp();
++  virtual ~BglFluidApp();
++
++  virtual bool exec();
++
++protected:
++
++  virtual void setHeadPosition();
++
++private:
++
++  Fluid::Tracker * m_tracker;
++  int              m_headSensor;
++
++};
++
++#endif
+diff -r -u vee-0.1.7_orig/include/Fluid/Quaternion.hpp vee-0.1.7/include/Fluid/Quaternion.hpp
+--- vee-0.1.7_orig/include/Fluid/Quaternion.hpp	2007-07-27 02:32:57.000000000 +0200
++++ vee-0.1.7/include/Fluid/Quaternion.hpp	2007-07-27 02:32:40.000000000 +0200
+@@ -0,0 +1,796 @@
++/* COPYRIGHT
++ *
++ * This file is part of FLUID
++ *
++ * Author: Tommi Ilmonen, Janne Kontkanen 1999-2002.
++ * Tommi.Ilmonen@hut.fi, Janne.Kontkanen@hut.fi
++ *
++ * This file is licensed under the Lesser General Public License
++ * (LGPL) - version 2.1. 
++ *    
++ */
++
++#ifndef FLUID_QUATERNION_HPP
++#define FLUID_QUATERNION_HPP
++
++/** This file contains a quaternions implementation. The source code
++ * was taken from WmlQuaternion in Wild Magic library (by David
++ * Eberly) 
++
++ @author Tommi Ilmonen.
++*/
++
++#include <iostream>
++
++#include <Fluid/Matrix3.hpp>
++
++namespace Fluid {
++
++  template <class T>
++  class QuaternionT
++  {
++  public:
++    // A quaternion is q = w + x*i + y*j + z*k where (w,x,y,z) is not
++    // necessarily a unit length vector in 4D.
++
++    // construction
++    QuaternionT () {}  // uninitialized
++    QuaternionT (T fW, T fX, T fY, T fZ);
++    QuaternionT (const QuaternionT& rkQ);
++
++    // quaternion for the input rotation matrix
++    QuaternionT (const Matrix3T<T>& rkRot);
++
++    // quaternion for the rotation of the axis-angle pair
++    QuaternionT (const Vector3T<T>& rkAxis, T fAngle);
++
++    // quaternion for the rotation matrix with specified columns
++    QuaternionT (const Vector3T<T> akRotColumn[3]);
++
++    // member access:  0 = w, 1 = x, 2 = y, 3 = z
++    operator const T* () const;
++    operator T* ();
++    T operator[] (int i) const { return m_afTuple[i]; }
++    T& operator[] (int i) { return m_afTuple[i]; }
++    T W () const { return m_afTuple[0]; }
++    T& W () { return m_afTuple[0]; }
++    T X () const { return m_afTuple[1]; }
++    T& X () { return m_afTuple[1]; }
++    T Y () const { return m_afTuple[2]; }
++    T& Y () { return m_afTuple[2]; }
++    T Z () const { return m_afTuple[3]; }
++    T& Z () { return m_afTuple[3]; }
++
++    // assignment and comparison
++    QuaternionT& operator= (const QuaternionT& rkQ);
++    bool operator== (const QuaternionT& rkQ) const;
++    bool operator!= (const QuaternionT& rkQ) const;
++    bool operator<  (const QuaternionT& rkQ) const;
++    bool operator<= (const QuaternionT& rkQ) const;
++    bool operator>  (const QuaternionT& rkQ) const;
++    bool operator>= (const QuaternionT& rkQ) const;
++
++    // arithmetic operations
++    QuaternionT operator+ (const QuaternionT& rkQ) const;
++    QuaternionT operator- (const QuaternionT& rkQ) const;
++    QuaternionT operator* (const QuaternionT& rkQ) const;
++    QuaternionT operator* (T fScalar) const;
++    QuaternionT operator/ (T fScalar) const;
++    QuaternionT operator- () const;
++
++    // arithmetic updates
++    QuaternionT& operator+= (const QuaternionT& rkQ);
++    QuaternionT& operator-= (const QuaternionT& rkQ);
++    QuaternionT& operator*= (T fScalar);
++    QuaternionT& operator/= (T fScalar);
++
++    // conversion between quaternions, matrices, and axis-angle
++    void fromRotationMatrix (const Matrix3T<T>& rkRot);
++    void toRotationMatrix (Matrix3T<T>& rkRot) const;
++    void fromRotationMatrix (const Vector3T<T> akRotColumn[3]);
++    void toRotationMatrix (Vector3T<T> akRotColumn[3]) const;
++    void fromAxisAngle (const Vector3T<T>& rkAxis,T fAngle);
++    void toAxisAngle (Vector3T<T>& rkAxis, T& rfAngle) const;
++
++    // functions of a quaternion
++    T dot (const QuaternionT& rkQ) const;  // dot product
++    QuaternionT inverse () const;  // apply to non-zero quaternion
++    QuaternionT conjugate () const;
++    QuaternionT exp () const;  // apply to quaternion with w = 0
++    QuaternionT log () const;  // apply to unit-length quaternion
++
++    // rotation of a vector by a quaternion
++    Vector3T<T> operator* (const Vector3T<T>& rkVector) const;
++
++    // spherical linear interpolation
++    static QuaternionT slerp (T fT, const QuaternionT& rkP,
++			      const QuaternionT& rkQ);
++
++    static QuaternionT slerpExtraSpins (T fT, const QuaternionT& rkP,
++					const QuaternionT& rkQ, int iExtraSpins);
++
++    // intermediate terms for spherical quadratic interpolation
++    static QuaternionT getIntermediate (const QuaternionT& rkQ0,
++					const QuaternionT& rkQ1,
++					const QuaternionT& rkQ2);
++
++    // spherical quadratic interpolation
++    static QuaternionT squad (T fT, const QuaternionT& rkQ0,
++			      const QuaternionT& rkA0, const QuaternionT& rkA1,
++			      const QuaternionT& rkQ1);
++
++    // Compute a quaternion that rotates unit-length vector V1 to unit-length
++    // vector V2.  The rotation is about the axis perpendicular to both V1 and
++    // V2, with angle of that between V1 and V2.  If V1 and V2 are parallel,
++    // any axis of rotation will do, such as the permutation (z2,x2,y2), where
++    // V2 = (x2,y2,z2).
++    static QuaternionT align (const Vector3T<T>& rkV1,
++			      const Vector3T<T>& rkV2);
++
++    // Decompose a quaternion into q = q_twist * q_no_twist, where q is 'this'
++    // quaternion.  If V1 is the input axis and V2 is the rotation of V1 by
++    // q, q_no_twist represents the rotation about the axis perpendicular to
++    // V1 and V2 (see QuaternionT::Align), and q_twist is a rotation about V1.
++    void decomposeTwistTimesNoTwist (const Vector3T<T>& rkAxis,
++				     QuaternionT& rkTwist, 
++				     QuaternionT& rkNoTwist);
++
++    // Decompose a quaternion into q = q_no_twist * q_twist, where q is 'this'
++    // quaternion.  If V1 is the input axis and V2 is the rotation of V1 by
++    // q, q_no_twist represents the rotation about the axis perpendicular to
++    // V1 and V2 (see QuaternionT::Align), and q_twist is a rotation about V1.
++    void decomposeNoTwistTimesTwist (const Vector3T<T>& rkAxis,
++				     QuaternionT& rkTwist, 
++				     QuaternionT& rkNoTwist);
++
++  protected:
++    // support for comparisons
++    int compareArrays (const QuaternionT& rkQ) const;
++
++    T m_afTuple[4];
++  };
++//----------------------------------------------------------------------------
++  template <class T>
++  QuaternionT<T>::QuaternionT (T fW, T fX, T fY, T fZ)
++  {
++    m_afTuple[0] = fW;
++    m_afTuple[1] = fX;
++    m_afTuple[2] = fY;
++    m_afTuple[3] = fZ;
++  }
++//----------------------------------------------------------------------------
++  template <class T>
++  QuaternionT<T>::QuaternionT (const QuaternionT& rkQ)
++  {
++    memcpy(m_afTuple,rkQ.m_afTuple,4*sizeof(T));
++  }
++//----------------------------------------------------------------------------
++  template <class T>
++  QuaternionT<T>::QuaternionT (const Matrix3T<T>& rkRot)
++  {
++    FromRotationMatrix(rkRot);
++  }
++//----------------------------------------------------------------------------
++  template <class T>
++  QuaternionT<T>::QuaternionT (const Vector3T<T>& rkAxis, T fAngle)
++  {
++    FromAxisAngle(rkAxis,fAngle);
++  }
++//----------------------------------------------------------------------------
++  template <class T>
++  QuaternionT<T>::QuaternionT (const Vector3T<T> akRotColumn[3])
++  {
++    FromRotationMatrix(akRotColumn);
++  }
++//----------------------------------------------------------------------------
++  template <class T>
++  QuaternionT<T>::operator const T* () const
++  {
++    return m_afTuple;
++  }
++//----------------------------------------------------------------------------
++  template <class T>
++  QuaternionT<T>::operator T* ()
++  {
++    return m_afTuple;
++  }
++//----------------------------------------------------------------------------
++  template <class T>
++  QuaternionT<T>& QuaternionT<T>::operator= (const QuaternionT& rkQ)
++  {
++    memcpy(m_afTuple,rkQ.m_afTuple,4*sizeof(T));
++    return *this;
++  }
++//----------------------------------------------------------------------------
++  template <class T>
++  bool QuaternionT<T>::operator== (const QuaternionT& rkQ) const
++  {
++    for (int i = 0; i < 4; i++)
++    {
++      if ( m_afTuple[i] != rkQ.m_afTuple[i] )
++	return false;
++    }
++    return true;
++  }
++//----------------------------------------------------------------------------
++  template <class T>
++  bool QuaternionT<T>::operator!= (const QuaternionT& rkQ) const
++  {
++    return !operator==(rkQ);
++  }
++//----------------------------------------------------------------------------
++  template <class T>
++  int QuaternionT<T>::compareArrays (const QuaternionT& rkQ) const
++  {
++    return memcmp(m_afTuple,rkQ.m_afTuple,4*sizeof(T));
++  }
++//----------------------------------------------------------------------------
++  template <class T>
++  bool QuaternionT<T>::operator< (const QuaternionT& rkQ) const
++  {
++    return CompareArrays(rkQ) < 0;
++  }
++//----------------------------------------------------------------------------
++  template <class T>
++  bool QuaternionT<T>::operator<= (const QuaternionT& rkQ) const
++  {
++    return CompareArrays(rkQ) <= 0;
++  }
++//----------------------------------------------------------------------------
++  template <class T>
++  bool QuaternionT<T>::operator> (const QuaternionT& rkQ) const
++  {
++    return CompareArrays(rkQ) > 0;
++  }
++//----------------------------------------------------------------------------
++  template <class T>
++  bool QuaternionT<T>::operator>= (const QuaternionT& rkQ) const
++  {
++    return CompareArrays(rkQ) >= 0;
++  }
++//----------------------------------------------------------------------------
++  template <class T>
++  QuaternionT<T> QuaternionT<T>::operator+ (const QuaternionT& rkQ) const
++  {
++    QuaternionT<T> kSum;
++    for (int i = 0; i < 4; i++)
++      kSum.m_afTuple[i] = m_afTuple[i] + rkQ.m_afTuple[i];
++    return kSum;
++  }
++//----------------------------------------------------------------------------
++  template <class T>
++  QuaternionT<T> QuaternionT<T>::operator- (const QuaternionT& rkQ) const
++  {
++    QuaternionT<T> kDiff;
++    for (int i = 0; i < 4; i++)
++      kDiff.m_afTuple[i] = m_afTuple[i] - rkQ.m_afTuple[i];
++    return kDiff;
++  }
++//----------------------------------------------------------------------------
++  template <class T>
++  QuaternionT<T> QuaternionT<T>::operator* (const QuaternionT& rkQ) const
++  {
++    // NOTE:  Multiplication is not generally commutative, so in most
++    // cases p*q != q*p.
++
++    QuaternionT kProd;
++
++    kProd.m_afTuple[0] =
++      m_afTuple[0]*rkQ.m_afTuple[0] -
++      m_afTuple[1]*rkQ.m_afTuple[1] -
++      m_afTuple[2]*rkQ.m_afTuple[2] -
++      m_afTuple[3]*rkQ.m_afTuple[3];
++
++    kProd.m_afTuple[1] =
++      m_afTuple[0]*rkQ.m_afTuple[1] +
++      m_afTuple[1]*rkQ.m_afTuple[0] +
++      m_afTuple[2]*rkQ.m_afTuple[3] -
++      m_afTuple[3]*rkQ.m_afTuple[2];
++
++    kProd.m_afTuple[2] =
++      m_afTuple[0]*rkQ.m_afTuple[2] +
++      m_afTuple[2]*rkQ.m_afTuple[0] +
++      m_afTuple[3]*rkQ.m_afTuple[1] -
++      m_afTuple[1]*rkQ.m_afTuple[3];
++
++    kProd.m_afTuple[3] =
++      m_afTuple[0]*rkQ.m_afTuple[3] +
++      m_afTuple[3]*rkQ.m_afTuple[0] +
++      m_afTuple[1]*rkQ.m_afTuple[2] -
++      m_afTuple[2]*rkQ.m_afTuple[1];
++
++    return kProd;
++  }
++//----------------------------------------------------------------------------
++  template <class T>
++  QuaternionT<T> QuaternionT<T>::operator* (T fScalar) const
++  {
++    QuaternionT<T> kProd;
++    for (int i = 0; i < 4; i++)
++      kProd.m_afTuple[i] = fScalar*m_afTuple[i];
++    return kProd;
++  }
++//----------------------------------------------------------------------------
++  template <class T>
++  QuaternionT<T> QuaternionT<T>::operator/ (T fScalar) const
++  {
++    QuaternionT<T> kQuot;
++    int i;
++
++    if ( fScalar != (T)0.0 )
++    {
++      T fInvScalar = ((T)1.0)/fScalar;
++      for (i = 0; i < 4; i++)
++	kQuot.m_afTuple[i] = fInvScalar*m_afTuple[i];
++    }
++    else
++    {
++      for (i = 0; i < 4; i++)
++	kQuot.m_afTuple[i] = 1.0e+10;
++    }
++
++    return kQuot;
++  }
++//----------------------------------------------------------------------------
++  template <class T>
++  QuaternionT<T> QuaternionT<T>::operator- () const
++  {
++    QuaternionT<T> kNeg;
++    for (int i = 0; i < 4; i++)
++      kNeg.m_afTuple[i] = -m_afTuple[i];
++    return kNeg;
++  }
++//----------------------------------------------------------------------------
++  template <class T>
++  QuaternionT<T> operator* (T fScalar, const QuaternionT<T>& rkQ)
++  {
++    QuaternionT<T> kProd;
++    for (int i = 0; i < 4; i++)
++      kProd[i] = fScalar*rkQ[i];
++    return kProd;
++  }
++//----------------------------------------------------------------------------
++  template <class T>
++  QuaternionT<T>& QuaternionT<T>::operator+= (const QuaternionT& rkQ)
++  {
++    for (int i = 0; i < 4; i++)
++      m_afTuple[i] += rkQ.m_afTuple[i];
++    return *this;
++  }
++//----------------------------------------------------------------------------
++  template <class T>
++  QuaternionT<T>& QuaternionT<T>::operator-= (const QuaternionT& rkQ)
++  {
++    for (int i = 0; i < 4; i++)
++      m_afTuple[i] -= rkQ.m_afTuple[i];
++    return *this;
++  }
++//----------------------------------------------------------------------------
++  template <class T>
++  QuaternionT<T>& QuaternionT<T>::operator*= (T fScalar)
++  {
++    for (int i = 0; i < 4; i++)
++      m_afTuple[i] *= fScalar;
++    return *this;
++  }
++//----------------------------------------------------------------------------
++  template <class T>
++  QuaternionT<T>& QuaternionT<T>::operator/= (T fScalar)
++  {
++    int i;
++
++    if ( fScalar != (T)0.0 )
++    {
++      T fInvScalar = ((T)1.0)/fScalar;
++      for (i = 0; i < 4; i++)
++	m_afTuple[i] *= fInvScalar;
++    }
++    else
++    {
++      for (i = 0; i < 4; i++)
++	m_afTuple[i] = 1.0e+10;
++    }
++
++    return *this;
++  }
++//----------------------------------------------------------------------------
++  template <class T>
++  void QuaternionT<T>::fromRotationMatrix (const Matrix3T<T>& rkRot)
++  {
++    // Algorithm in Ken Shoemake's article in 1987 SIGGRAPH course notes
++    // article "QuaternionT Calculus and Fast Animation".
++
++    T fTrace = rkRot[0][0] + rkRot[1][1] + rkRot[2][2];
++    T fRoot;
++
++    if ( fTrace > (T)0.0 )
++    {
++      // |w| > 1/2, may as well choose w > 1/2
++      fRoot = Math::Sqrt(fTrace + (T)1.0);  // 2w
++      m_afTuple[0] = ((T)0.5)*fRoot;
++      fRoot = ((T)0.5)/fRoot;  // 1/(4w)
++      m_afTuple[1] = (rkRot.get(2,1)-rkRot.get(1,2))*fRoot;
++      m_afTuple[2] = (rkRot.get(0,2)-rkRot.get(2,0))*fRoot;
++      m_afTuple[3] = (rkRot.get(1,0)-rkRot.get(0,1))*fRoot;
++    }
++    else
++    {
++      // |w| <= 1/2
++      int i = 0;
++      if ( rkRot.get(1,1) > rkRot.get(0,0) )
++	i = 1;
++      if ( rkRot.get(2,2) > rkRot.get(i,i) )
++	i = 2;
++      // int j = ms_iNext[i];
++      // int k = ms_iNext[j];
++      int j = (i + 1) % 3;
++      int k = (j + 1) % 3;
++
++      fRoot = Math::Sqrt(rkRot.get(i,i)-rkRot.get(j,j)-rkRot.get(k,k)+(T)1.0);
++      T* apfQuat[3] = { &m_afTuple[1], &m_afTuple[2], &m_afTuple[3] };
++      *apfQuat[i] = ((T)0.5)*fRoot;
++      fRoot = ((T)0.5)/fRoot;
++      m_afTuple[0] = (rkRot.get(k,j)-rkRot.get(j,k))*fRoot;
++      *apfQuat[j] = (rkRot.get(j,i)+rkRot.get(i,j))*fRoot;
++      *apfQuat[k] = (rkRot.get(k,i)+rkRot.get(i,k))*fRoot;
++    }
++  }
++//----------------------------------------------------------------------------
++  template <class T>
++  void QuaternionT<T>::toRotationMatrix (Matrix3T<T>& rkRot) const
++  {
++    T fTx  = ((T)2.0)*m_afTuple[1];
++    T fTy  = ((T)2.0)*m_afTuple[2];
++    T fTz  = ((T)2.0)*m_afTuple[3];
++    T fTwx = fTx*m_afTuple[0];
++    T fTwy = fTy*m_afTuple[0];
++    T fTwz = fTz*m_afTuple[0];
++    T fTxx = fTx*m_afTuple[1];
++    T fTxy = fTy*m_afTuple[1];
++    T fTxz = fTz*m_afTuple[1];
++    T fTyy = fTy*m_afTuple[2];
++    T fTyz = fTz*m_afTuple[2];
++    T fTzz = fTz*m_afTuple[3];
++
++    rkRot.get(0,0) = ((T)1.0)-(fTyy+fTzz);
++    rkRot.get(0,1) = fTxy-fTwz;
++    rkRot.get(0,2) = fTxz+fTwy;
++    rkRot.get(1,0) = fTxy+fTwz;
++    rkRot.get(1,1) = ((T)1.0)-(fTxx+fTzz);
++    rkRot.get(1,2) = fTyz-fTwx;
++    rkRot.get(2,0) = fTxz-fTwy;
++    rkRot.get(2,1) = fTyz+fTwx;
++    rkRot.get(2,2) = ((T)1.0)-(fTxx+fTyy);
++  }
++//----------------------------------------------------------------------------
++  template <class T>
++  void QuaternionT<T>::fromRotationMatrix (const Vector3T<T> akRotColumn[3])
++  {
++    Matrix3T<T> kRot;
++    for (int iCol = 0; iCol < 3; iCol++)
++    {
++      kRot(0,iCol) = akRotColumn[iCol][0];
++      kRot(1,iCol) = akRotColumn[iCol][1];
++      kRot(2,iCol) = akRotColumn[iCol][2];
++    }
++    FromRotationMatrix(kRot);
++  }
++//----------------------------------------------------------------------------
++  template <class T>
++  void QuaternionT<T>::toRotationMatrix (Vector3T<T> akRotColumn[3]) const
++  {
++    Matrix3T<T> kRot;
++    ToRotationMatrix(kRot);
++    for (int iCol = 0; iCol < 3; iCol++)
++    {
++      akRotColumn[iCol][0] = kRot(0,iCol);
++      akRotColumn[iCol][1] = kRot(1,iCol);
++      akRotColumn[iCol][2] = kRot(2,iCol);
++    }
++  }
++//----------------------------------------------------------------------------
++  template <class T>
++  void QuaternionT<T>::fromAxisAngle (const Vector3T<T>& rkAxis,
++				      T fAngle)
++  {
++    // assert:  axis[] is unit length
++    //
++    // The quaternion representing the rotation is
++    //   q = cos(A/2)+sin(A/2)*(x*i+y*j+z*k)
++
++    T fHalfAngle = ((T)0.5)*fAngle;
++    T fSin = Math::Sin(fHalfAngle);
++    m_afTuple[0] = Math::Cos(fHalfAngle);
++    m_afTuple[1] = fSin*rkAxis[0];
++    m_afTuple[2] = fSin*rkAxis[1];
++    m_afTuple[3] = fSin*rkAxis[2];
++  }
++//----------------------------------------------------------------------------
++  template <class T>
++  void QuaternionT<T>::toAxisAngle (Vector3T<T>& rkAxis, T& rfAngle)
++    const
++  {
++    // The quaternion representing the rotation is
++    //   q = cos(A/2)+sin(A/2)*(x*i+y*j+z*k)
++
++    T fSqrLength = m_afTuple[1]*m_afTuple[1] + m_afTuple[2]*m_afTuple[2]
++      + m_afTuple[3]*m_afTuple[3];
++    if ( fSqrLength > Math::EPSILON )
++    {
++      rfAngle = ((T)2.0)*Math::ACos(m_afTuple[0]);
++      T fInvLength = Math::InvSqrt(fSqrLength);
++      rkAxis[0] = m_afTuple[1]*fInvLength;
++      rkAxis[1] = m_afTuple[2]*fInvLength;
++      rkAxis[2] = m_afTuple[3]*fInvLength;
++    }
++    else
++    {
++      // angle is 0 (mod 2*pi), so any axis will do
++      rfAngle = (T)0.0;
++      rkAxis[0] = (T)1.0;
++      rkAxis[1] = (T)0.0;
++      rkAxis[2] = (T)0.0;
++    }
++  }
++//----------------------------------------------------------------------------
++  template <class T>
++  T QuaternionT<T>::dot (const QuaternionT& rkQ) const
++  {
++    T fDot = (T)0.0;
++    for (int i = 0; i < 4; i++)
++      fDot += m_afTuple[i]*rkQ.m_afTuple[i];
++    return fDot;
++  }
++//----------------------------------------------------------------------------
++  template <class T>
++  QuaternionT<T> QuaternionT<T>::inverse () const
++  {
++    QuaternionT<T> kInverse;
++
++    T fNorm = (T)0.0;
++    int i;
++    for (i = 0; i < 4; i++)
++      fNorm += m_afTuple[i]*m_afTuple[i];
++
++    if ( fNorm > (T)0.0 )
++    {
++      T fInvNorm = ((T)1.0)/fNorm;
++      kInverse.m_afTuple[0] = m_afTuple[0]*fInvNorm;
++      kInverse.m_afTuple[1] = -m_afTuple[1]*fInvNorm;
++      kInverse.m_afTuple[2] = -m_afTuple[2]*fInvNorm;
++      kInverse.m_afTuple[3] = -m_afTuple[3]*fInvNorm;
++    }
++    else
++    {
++      // return an invalid result to flag the error
++      for (i = 0; i < 4; i++)
++	kInverse.m_afTuple[i] = (T)0.0;
++    }
++
++    return kInverse;
++  }
++//----------------------------------------------------------------------------
++  template <class T>
++  QuaternionT<T> QuaternionT<T>::conjugate () const
++  {
++    // assert:  'this' is unit length
++    return QuaternionT<T>(m_afTuple[0],-m_afTuple[1],-m_afTuple[2],
++			  -m_afTuple[3]);
++  }
++//----------------------------------------------------------------------------
++  template <class T>
++  QuaternionT<T> QuaternionT<T>::exp () const
++  {
++    // If q = A*(x*i+y*j+z*k) where (x,y,z) is unit length, then
++    // exp(q) = cos(A)+sin(A)*(x*i+y*j+z*k).  If sin(A) is near zero,
++    // use exp(q) = cos(A)+A*(x*i+y*j+z*k) since A/sin(A) has limit 1.
++
++    QuaternionT<T> kResult;
++
++    T fAngle = Math::Sqrt(m_afTuple[1]*m_afTuple[1] +
++			     m_afTuple[2]*m_afTuple[2] + 
++			  m_afTuple[3]*m_afTuple[3]);
++
++    T fSin = Math::Sin(fAngle);
++    kResult.m_afTuple[0] = Math::Cos(fAngle);
++
++    int i;
++
++    if ( Math::Abs(fSin) >= Math::EPSILON )
++    {
++      T fCoeff = fSin/fAngle;
++      for (i = 1; i <= 3; i++)
++	kResult.m_afTuple[i] = fCoeff*m_afTuple[i];
++    }
++    else
++    {
++      for (i = 1; i <= 3; i++)
++	kResult.m_afTuple[i] = m_afTuple[i];
++    }
++
++    return kResult;
++  }
++//----------------------------------------------------------------------------
++  template <class T>
++  QuaternionT<T> QuaternionT<T>::log () const
++  {
++    // If q = cos(A)+sin(A)*(x*i+y*j+z*k) where (x,y,z) is unit length, then
++    // log(q) = A*(x*i+y*j+z*k).  If sin(A) is near zero, use log(q) =
++    // sin(A)*(x*i+y*j+z*k) since sin(A)/A has limit 1.
++
++    QuaternionT<T> kResult;
++    kResult.m_afTuple[0] = (T)0.0;
++
++    int i;
++
++    if ( Math::Abs(m_afTuple[0]) < (T)1.0 )
++    {
++      T fAngle = Math::ACos(m_afTuple[0]);
++      T fSin = Math::Sin(fAngle);
++      if ( Math::Abs(fSin) >= Math::EPSILON )
++      {
++	T fCoeff = fAngle/fSin;
++	for (i = 1; i <= 3; i++)
++	  kResult.m_afTuple[i] = fCoeff*m_afTuple[i];
++	return kResult;
++      }
++    }
++
++    for (i = 1; i <= 3; i++)
++      kResult.m_afTuple[i] = m_afTuple[i];
++    return kResult;
++  }
++//----------------------------------------------------------------------------
++  template <class T>
++  Vector3T<T> QuaternionT<T>::operator* (const Vector3T<T>& rkVector)
++    const
++  {
++    // Given a vector u = (x0,y0,z0) and a unit length quaternion
++    // q = <w,x,y,z>, the vector v = (x1,y1,z1) which represents the
++    // rotation of u by q is v = q*u*q^{-1} where * indicates quaternion
++    // multiplication and where u is treated as the quaternion <0,x0,y0,z0>.
++    // Note that q^{-1} = <w,-x,-y,-z>, so no real work is required to
++    // invert q.  Now
++    //
++    //   q*u*q^{-1} = q*<0,x0,y0,z0>*q^{-1}
++    //     = q*(x0*i+y0*j+z0*k)*q^{-1}
++    //     = x0*(q*i*q^{-1})+y0*(q*j*q^{-1})+z0*(q*k*q^{-1})
++    //
++    // As 3-vectors, q*i*q^{-1}, q*j*q^{-1}, and 2*k*q^{-1} are the columns
++    // of the rotation matrix computed in QuaternionT::ToRotationMatrix.
++    // The vector v is obtained as the product of that rotation matrix with
++    // vector u.  As such, the quaternion representation of a rotation
++    // matrix requires less space than the matrix and more time to compute
++    // the rotated vector.  Typical space-time tradeoff...
++
++    Matrix3T<T> kRot;
++    toRotationMatrix(kRot);
++    return kRot*rkVector;
++  }
++//----------------------------------------------------------------------------
++  template <class T>
++  QuaternionT<T> QuaternionT<T>::slerp (T fT, const QuaternionT& rkP,
++					const QuaternionT& rkQ)
++  {
++    T fCos = rkP.dot(rkQ);
++    T fAngle = Math::ACos(fCos);
++
++    if ( Math::Abs(fAngle) < 1.0e-6 )
++      return rkP;
++
++    T fSin = Math::Sin(fAngle);
++    T fInvSin = ((T)1.0)/fSin;
++    T fCoeff0 = Math::Sin((((T)1.0)-fT)*fAngle)*fInvSin;
++    T fCoeff1 = Math::Sin(fT*fAngle)*fInvSin;
++    return fCoeff0*rkP + fCoeff1*rkQ;
++  }
++//----------------------------------------------------------------------------
++  template <class T>
++  QuaternionT<T> QuaternionT<T>::slerpExtraSpins (T fT,
++						  const QuaternionT& rkP, 
++						  const QuaternionT& rkQ, 
++						  int iExtraSpins)
++  {
++    T fCos = rkP.Dot(rkQ);
++    T fAngle = Math::ACos(fCos);
++
++    if ( Math::Abs(fAngle) < Math::EPSILON )
++      return rkP;
++
++    T fSin = Math::Sin(fAngle);
++    T fPhase = Math::PI*iExtraSpins*fT;
++    T fInvSin = ((T)1.0)/fSin;
++    T fCoeff0 = Math::Sin((((T)1.0)-fT)*fAngle-fPhase)*fInvSin;
++    T fCoeff1 = Math::Sin(fT*fAngle + fPhase)*fInvSin;
++    return fCoeff0*rkP + fCoeff1*rkQ;
++  }
++//----------------------------------------------------------------------------
++  template <class T>
++  QuaternionT<T> QuaternionT<T>::getIntermediate (const QuaternionT& rkQ0,
++						  const QuaternionT& rkQ1, 
++						  const QuaternionT& rkQ2)
++  {
++    // assert:  Q0, Q1, Q2 all unit-length
++    QuaternionT<T> kQ1Inv = rkQ1.Conjugate();
++    QuaternionT<T> kP0 = kQ1Inv*rkQ0;
++    QuaternionT<T> kP2 = kQ1Inv*rkQ2;
++    QuaternionT<T> kArg = -((T)0.25)*(kP0.Log()+kP2.Log());
++    QuaternionT<T> kA = rkQ1*kArg.Exp();
++    return kA;
++  }
++//----------------------------------------------------------------------------
++  template <class T>
++  QuaternionT<T> QuaternionT<T>::squad (T fT, const QuaternionT& rkQ0,
++					const QuaternionT& rkA0, 
++					const QuaternionT& rkA1, 
++					const QuaternionT& rkQ1)
++  {
++    T fSlerpT = ((T)2.0)*fT*(((T)1.0)-fT);
++    QuaternionT<T> kSlerpP = Slerp(fT,rkQ0,rkQ1);
++    QuaternionT<T> kSlerpQ = Slerp(fT,rkA0,rkA1);
++    return Slerp(fSlerpT,kSlerpP,kSlerpQ);
++  }
++//----------------------------------------------------------------------------
++  template <class T>
++  QuaternionT<T> QuaternionT<T>::align (const Vector3T<T>& rkV1,
++					const Vector3T<T>& rkV2)
++  {
++    // If V1 and V2 are not parallel, the axis of rotation is the unit-length
++    // vector U = Cross(V1,V2)/Length(Cross(V1,V2)).  The angle of rotation,
++    // A, is the angle between V1 and V2.  The quaternion for the rotation is
++    // q = cos(A/2) + sin(A/2)*(ux*i+uy*j+uz*k) where U = (ux,uy,uz).
++    //
++    // (1) Rather than extract A = acos(Dot(V1,V2)), multiply by 1/2, then
++    //     compute sin(A/2) and cos(A/2), we reduce the computational costs by
++    //     computing the bisector B = (V1+V2)/Length(V1+V2), so cos(A/2) =
++    //     Dot(V1,B).
++    //
++    // (2) The rotation axis is U = Cross(V1,B)/Length(Cross(V1,B)), but
++    //     Length(Cross(V1,B)) = Length(V1)*Length(B)*sin(A/2) = sin(A/2), in
++    //     which case sin(A/2)*(ux*i+uy*j+uz*k) = (cx*i+cy*j+cz*k) where
++    //     C = Cross(V1,B).
++    //
++    // If V1 and V2 are parallel, or nearly parallel as far as the floating
++    // point calculations are concerned, the calculation of B will produce
++    // the zero vector: Vector3T::Normalize checks for closeness to zero and
++    // returns the zero vector accordingly.  Thus, we test for parallelism
++    // by checking if cos(A/2) is zero.  The test for exactly zero is usually
++    // not recommend for floating point arithmetic, but the implementation of
++    // Vector3T::Normalize guarantees the comparison is robust.
++
++    Vector3T<T> kBisector = rkV1 + rkV2;
++    kBisector.Normalize();
++
++    T fCosHalfAngle = rkV1.dot(kBisector);
++    Vector3T<T> kCross;
++
++    if ( fCosHalfAngle != (T)0.0 )
++      kCross = rkV1.cross(kBisector);
++    else
++      kCross = rkV1.unitCross(Vector3T<T>(rkV2.Z(),rkV2.X(),rkV2.Y()));
++
++    return QuaternionT(fCosHalfAngle,kCross.X(),kCross.Y(),kCross.Z());
++  }
++//----------------------------------------------------------------------------
++  template <class T>
++  void QuaternionT<T>::decomposeTwistTimesNoTwist (
++    const Vector3T<T>& rkAxis, QuaternionT& rkTwist, QuaternionT& rkNoTwist)
++  {
++    Vector3T<T> kRotatedAxis = (*this)*rkAxis;
++    rkNoTwist = Align(rkAxis,kRotatedAxis);
++    rkTwist = (*this)*rkNoTwist.Conjugate();
++  }
++//----------------------------------------------------------------------------
++  template <class T>
++  void QuaternionT<T>::decomposeNoTwistTimesTwist (
++    const Vector3T<T>& rkAxis, QuaternionT& rkTwist, QuaternionT& rkNoTwist)
++  {
++    Vector3T<T> kRotatedAxis = (*this)*rkAxis;
++    rkNoTwist = align(rkAxis,kRotatedAxis);
++    rkTwist = rkNoTwist.conjugate()*(*this);
++  }
++//----------------------------------------------------------------------------
++  
++}
++
++#endif
+diff -r -u vee-0.1.7_orig/include/VrSmuggler.hpp vee-0.1.7/include/VrSmuggler.hpp
+--- vee-0.1.7_orig/include/VrSmuggler.hpp	2007-07-27 03:01:23.000000000 +0200
++++ vee-0.1.7/include/VrSmuggler.hpp	2007-07-27 03:03:16.000000000 +0200
+@@ -0,0 +1,185 @@
++/* COPYRIGHT
++ *
++ * This file is part of FLUID
++ *
++ * Author: Tommi Ilmonen, Janne Kontkanen 1999-2002.
++ * Tommi.Ilmonen@hut.fi, Janne.Kontkanen@hut.fi
++ *
++ * This file is licensed under the Lesser General Public License
++ * (LGPL) - version 2.1. 
++ *    
++ */
++
++#ifndef _VRSMUGGLER_HPP_
++#define _VRSMUGGLER_HPP_
++
++#include <CaveProj.hpp>
++#include <glx_wrapper.h>
++
++#include <di_thread.h>
++#include <di_condition.h>
++
++#include <GL/gl.h>
++
++#include <vector>
++
++#include <strings.h>
++
++namespace Fluid {
++  class Tracker;
++}
++
++class VRS_GlApp;
++
++class VRS_Sync
++{
++public:
++  VRS_Sync();
++  ~VRS_Sync();
++
++  void oneWasDrawn();
++  void oneWasSwapped();
++
++  void waitDrawEnd();
++  void waitSwapEnd();
++  void waitSwaps();
++
++  void setThreadNum(uint threads) { m_threads = threads; }
++
++protected:
++
++  volatile uint m_threads;
++  volatile uint m_drawn;
++  volatile uint m_drawnCleared;
++  volatile uint m_swapped;
++  volatile uint m_swappedCleared;
++
++  volatile bool m_allowDrawExit;
++  volatile bool m_allowSwapExit;
++
++  DI_MutexAuto m_mutex;
++  DI_Condition m_cond;
++};
++
++
++/////////////////////////////////////////////////////////////////////////////
++/////////////////////////////////////////////////////////////////////////////
++
++
++class VRS_Window
++{
++public:
++
++  VRS_Window() : m_wall(0), m_glx(GLX_Create()) { }
++  ~VRS_Window() {  GLX_Free(m_glx); }
++
++  CaveProj::Wall * wall() { return m_wall; }
++
++
++  CaveProj::Wall * m_wall;
++
++  GLX  * m_glx;
++};
++
++/////////////////////////////////////////////////////////////////////////////
++/////////////////////////////////////////////////////////////////////////////
++
++
++class VRS_RenderThread : public DI_Thread
++{
++public:
++  VRS_RenderThread(VRS_Sync *, VRS_GlApp *);
++  virtual ~VRS_RenderThread();
++
++  void addWindow(VRS_Window * w) { m_windows.push_back(w); }
++
++  void quit() { m_run = false; }
++
++protected:
++
++  virtual void childLoop();
++
++  void renderWithMatrix(GLenum buffer, int eye,
++			VRS_Window *window);
++
++  void renderDemo(VRS_Window *window);
++  
++  std::vector<VRS_Window *> m_windows;
++
++  VRS_Sync  * m_sync;
++  VRS_GlApp * m_app;
++
++  bool m_run;
++};
++
++
++/////////////////////////////////////////////////////////////////////////////
++/////////////////////////////////////////////////////////////////////////////
++
++class VRS_GlApp : public DI_Thread
++{
++public:
++  friend class VRS_RenderThread;
++
++  VRS_GlApp();
++  virtual ~VRS_GlApp();
++
++  bool loadVrConfig(const char * filename);
++  virtual bool exec(bool threaded = true);
++  virtual bool quit(bool inThread = false);
++  void escPressed() { quit(true); }
++
++  CaveProj::Cave & cave() { return m_cave; }
++
++  uint windowCount() { return m_cave.wallCount(); }
++
++protected:
++
++  virtual void childLoop();
++
++  /// Should be overridden if you want to initialize things
++  virtual void contextInit(VRS_Window * context);
++
++  /// Should be overridden if you need to clean up things
++  virtual void contextCleanup(VRS_Window * context);
++
++  /// Should be overridden to draw something. 
++  virtual void draw(VRS_Window * context, int eye);
++
++  /// Should be overridden to do per-frame calculations
++  virtual void preFrame();
++
++  /// Should be overridden to define the head position
++  virtual void setHeadPosition();
++
++private:
++  VRS_Sync      m_sync;
++
++  CaveProj::Cave m_cave;
++
++  bool m_run;
++};
++
++/////////////////////////////////////////////////////////////////////////////
++/////////////////////////////////////////////////////////////////////////////
++
++class VRS_FluidGlApp : public VRS_GlApp
++{
++public:
++  VRS_FluidGlApp();
++  virtual ~VRS_FluidGlApp();
++
++  virtual bool exec(bool threaded = true);
++  
++protected:
++
++  virtual void setHeadPosition();
++
++private:
++  Fluid::Tracker * m_tracker;
++  int              m_headSensor;
++};
++
++
++
++#endif
+diff -r -u vee-0.1.7_orig/src/magic/WmlMultipleCurve3.cpp vee-0.1.7/src/magic/WmlMultipleCurve3.cpp
+--- vee-0.1.7_orig/src/magic/WmlMultipleCurve3.cpp	2007-07-27 02:22:40.000000000 +0200
++++ vee-0.1.7/src/magic/WmlMultipleCurve3.cpp	2007-07-27 02:47:04.000000000 +0200
+@@ -102,8 +102,8 @@
+ template <class Real>
+ Real MultipleCurve3<Real>::GetLength (Real fT0, Real fT1) const
+ {
+-    assert( m_fTMin <= fT0 && fT0 <= m_fTMax );
+-    assert( m_fTMin <= fT1 && fT1 <= m_fTMax );
++    assert( Curve3<Real>::m_fTMin <= fT0 && fT0 <= Curve3<Real>::m_fTMax );
++    assert( Curve3<Real>::m_fTMin <= fT1 && fT1 <= Curve3<Real>::m_fTMax );
+     assert( fT0 <= fT1 );
+ 
+     if ( !m_afLength )
+@@ -144,10 +144,10 @@
+         InitializeLength();
+ 
+     if ( fLength <= (Real)0.0 )
+-        return m_fTMin;
++        return Curve3<Real>::m_fTMin;
+ 
+     if ( fLength >= m_afAccumLength[m_iSegments-1] )
+-        return m_fTMax;
++        return Curve3<Real>::m_fTMax;
+ 
+     int iKey;
+     for (iKey = 0; iKey < m_iSegments; iKey++)
+@@ -192,8 +192,8 @@
+ Real MultipleCurve3<Real>::GetVariation (Real fT0, Real fT1,
+     const Vector3<Real>* pkP0, const Vector3<Real>* pkP1) const
+ {
+-    assert( m_fTMin <= fT0 && fT0 <= m_fTMax );
+-    assert( m_fTMin <= fT1 && fT1 <= m_fTMax );
++    assert( Curve3<Real>::m_fTMin <= fT0 && fT0 <= Curve3<Real>::m_fTMax );
++    assert( Curve3<Real>::m_fTMin <= fT1 && fT1 <= Curve3<Real>::m_fTMax );
+     assert( fT0 <= fT1 );
+ 
+     // construct line segment, A + (t-t0)*B
+diff -r -u vee-0.1.7_orig/src/magic/WmlTCBSpline3.cpp vee-0.1.7/src/magic/WmlTCBSpline3.cpp
+--- vee-0.1.7_orig/src/magic/WmlTCBSpline3.cpp	2007-07-27 02:22:40.000000000 +0200
++++ vee-0.1.7/src/magic/WmlTCBSpline3.cpp	2007-07-27 02:48:59.000000000 +0200
+@@ -21,7 +21,7 @@
+     MultipleCurve3<Real>(iSegments,afTime)
+ {
+     // TO DO.  Add 'boundary type' just as in natural splines.
+-    assert( m_iSegments >= 3 );
++    assert( MultipleCurve3<Real>::m_iSegments >= 3 );
+ 
+     // all four of these arrays have m_iSegments+1 elements
+     m_akPoint = akPoint;
+@@ -29,19 +29,19 @@
+     m_afContinuity = afContinuity;
+     m_afBias = afBias;
+ 
+-    m_akA = new Vector3<Real>[m_iSegments];
+-    m_akB = new Vector3<Real>[m_iSegments];
+-    m_akC = new Vector3<Real>[m_iSegments];
+-    m_akD = new Vector3<Real>[m_iSegments];
++    m_akA = new Vector3<Real>[MultipleCurve3<Real>::m_iSegments];
++    m_akB = new Vector3<Real>[MultipleCurve3<Real>::m_iSegments];
++    m_akC = new Vector3<Real>[MultipleCurve3<Real>::m_iSegments];
++    m_akD = new Vector3<Real>[MultipleCurve3<Real>::m_iSegments];
+ 
+     // For now, treat the first point as if it occurred twice.
+     ComputePoly(0,0,1,2);
+ 
+-    for (int i = 1; i < m_iSegments-1; i++)
++    for (int i = 1; i < MultipleCurve3<Real>::m_iSegments-1; i++)
+         ComputePoly(i-1,i,i+1,i+2);
+ 
+     // For now, treat the last point as if it occurred twice.
+-    ComputePoly(m_iSegments-2,m_iSegments-1,m_iSegments,m_iSegments);
++    ComputePoly(MultipleCurve3<Real>::m_iSegments-2,MultipleCurve3<Real>::m_iSegments-1,MultipleCurve3<Real>::m_iSegments,MultipleCurve3<Real>::m_iSegments);
+ 
+ }
+ //----------------------------------------------------------------------------
+@@ -86,7 +86,7 @@
+ void TCBSpline3<Real>::ComputePoly (int i0, int i1, int i2, int i3)
+ {
+     Vector3<Real> kDiff = m_akPoint[i2] - m_akPoint[i1];
+-    Real fDt = m_afTime[i2] - m_afTime[i1];
++    Real fDt = MultipleCurve3<Real>::m_afTime[i2] - MultipleCurve3<Real>::m_afTime[i1];
+ 
+     // build multipliers at P1
+     Real fOmt0 = (Real)1.0 - m_afTension[i1];
+@@ -94,7 +94,7 @@
+     Real fOpc0 = (Real)1.0 + m_afContinuity[i1];
+     Real fOmb0 = (Real)1.0 - m_afBias[i1];
+     Real fOpb0 = (Real)1.0 + m_afBias[i1];
+-    Real fAdj0 = ((Real)2.0)*fDt/(m_afTime[i2]-m_afTime[i0]);
++    Real fAdj0 = ((Real)2.0)*fDt/(MultipleCurve3<Real>::m_afTime[i2]-MultipleCurve3<Real>::m_afTime[i0]);
+     Real fOut0 = ((Real)0.5)*fAdj0*fOmt0*fOpc0*fOpb0;
+     Real fOut1 = ((Real)0.5)*fAdj0*fOmt0*fOmc0*fOmb0;
+ 
+@@ -107,7 +107,7 @@
+     Real fOpc1 = (Real)1.0 + m_afContinuity[i2];
+     Real fOmb1 = (Real)1.0 - m_afBias[i2];
+     Real fOpb1 = (Real)1.0 + m_afBias[i2];
+-    Real fAdj1 = ((Real)2.0)*fDt/(m_afTime[i3] - m_afTime[i1]);
++    Real fAdj1 = ((Real)2.0)*fDt/(MultipleCurve3<Real>::m_afTime[i3] - MultipleCurve3<Real>::m_afTime[i1]);
+     Real fIn0 = ((Real)0.5)*fAdj1*fOmt1*fOmc1*fOpb1;
+     Real fIn1 = ((Real)0.5)*fAdj1*fOmt1*fOpc1*fOmb1;
+ 
+@@ -127,7 +127,7 @@
+     Real fDt;
+     GetKeyInfo(fTime,iKey,fDt);
+ 
+-    fDt /= (m_afTime[iKey+1] - m_afTime[iKey]);
++    fDt /= (MultipleCurve3<Real>::m_afTime[iKey+1] - MultipleCurve3<Real>::m_afTime[iKey]);
+ 
+     Vector3<Real> kResult = m_akA[iKey] + fDt*(m_akB[iKey] + fDt*(m_akC[iKey]
+         + fDt*m_akD[iKey]));
+@@ -142,7 +142,7 @@
+     Real fDt;
+     GetKeyInfo(fTime,iKey,fDt);
+ 
+-    fDt /= (m_afTime[iKey+1] - m_afTime[iKey]);
++    fDt /= (MultipleCurve3<Real>::m_afTime[iKey+1] - MultipleCurve3<Real>::m_afTime[iKey]);
+ 
+     Vector3<Real> kResult = m_akB[iKey] + fDt*(((Real)2.0)*m_akC[iKey] +
+         ((Real)3.0)*fDt*m_akD[iKey]);
+@@ -157,7 +157,7 @@
+     Real fDt;
+     GetKeyInfo(fTime,iKey,fDt);
+ 
+-    fDt /= (m_afTime[iKey+1] - m_afTime[iKey]);
++    fDt /= (MultipleCurve3<Real>::m_afTime[iKey+1] - MultipleCurve3<Real>::m_afTime[iKey]);
+ 
+     Vector3<Real> kResult = ((Real)2.0)*m_akC[iKey] +
+         ((Real)6.0)*fDt*m_akD[iKey];
+@@ -172,7 +172,7 @@
+     Real fDt;
+     GetKeyInfo(fTime,iKey,fDt);
+ 
+-    fDt /= (m_afTime[iKey+1] - m_afTime[iKey]);
++    fDt /= (MultipleCurve3<Real>::m_afTime[iKey+1] - MultipleCurve3<Real>::m_afTime[iKey]);
+ 
+     Vector3<Real> kResult = ((Real)6.0)*m_akD[iKey];
+ 
+@@ -191,7 +191,7 @@
+ Real TCBSpline3<Real>::GetLengthKey (int iKey, Real fT0, Real fT1) const
+ {
+     ThisPlusKey kData(this,iKey);
+-    return Integrate1<Real>::RombergIntegral(fT0,fT1,GetSpeedWithData,
++    return Integrate1<Real>::RombergIntegral(fT0,fT1,MultipleCurve3<Real>::GetSpeedWithData,
+         (void*)&kData);
+ }
+ //----------------------------------------------------------------------------
+diff -r -u vee-0.1.7_orig/src/magic/WmlVector3.cpp vee-0.1.7/src/magic/WmlVector3.cpp
+--- vee-0.1.7_orig/src/magic/WmlVector3.cpp	2007-07-27 02:22:40.000000000 +0200
++++ vee-0.1.7/src/magic/WmlVector3.cpp	2007-07-27 02:50:18.000000000 +0200
+@@ -25,89 +25,89 @@
+ template <class Real>
+ Vector3<Real>::Vector3 (Real fX, Real fY, Real fZ)
+ {
+-    m_afTuple[0] = fX;
+-    m_afTuple[1] = fY;
+-    m_afTuple[2] = fZ;
++    Vector<3, Real>::m_afTuple[0] = fX;
++    Vector<3, Real>::m_afTuple[1] = fY;
++    Vector<3, Real>::m_afTuple[2] = fZ;
+ }
+ //----------------------------------------------------------------------------
+ template <class Real>
+ Vector3<Real>::Vector3 (const Vector3& rkV)
+ {
+-    memcpy(m_afTuple,rkV.m_afTuple,3*sizeof(Real));
++    memcpy(Vector<3, Real>::m_afTuple,Vector<3, Real>::m_afTuple,3*sizeof(Real));
+ }
+ //----------------------------------------------------------------------------
+ template <class Real>
+ Vector3<Real>::Vector3 (const Vector<3,Real>& rkV)
+ {
+-    memcpy(m_afTuple,(const Real*)rkV,3*sizeof(Real));
++    memcpy(Vector<3, Real>::m_afTuple,(const Real*)rkV,3*sizeof(Real));
+ }
+ //----------------------------------------------------------------------------
+ template <class Real>
+ Vector3<Real>& Vector3<Real>::operator= (const Vector3& rkV)
+ {
+-    memcpy(m_afTuple,rkV.m_afTuple,3*sizeof(Real));
++    memcpy(Vector<3, Real>::m_afTuple,rkV.m_afTuple,3*sizeof(Real));
+     return *this;
+ }
+ //----------------------------------------------------------------------------
+ template <class Real>
+ Vector3<Real>& Vector3<Real>::operator= (const Vector<3,Real>& rkV)
+ {
+-    memcpy(m_afTuple,(const Real*)rkV,3*sizeof(Real));
++    memcpy(Vector<3, Real>::m_afTuple,(const Real*)rkV,3*sizeof(Real));
+     return *this;
+ }
+ //----------------------------------------------------------------------------
+ template <class Real>
+ Real Vector3<Real>::X () const
+ {
+-    return m_afTuple[0];
++    return Vector<3, Real>::m_afTuple[0];
+ }
+ //----------------------------------------------------------------------------
+ template <class Real>
+ Real& Vector3<Real>::X ()
+ {
+-    return m_afTuple[0];
++    return Vector<3, Real>::m_afTuple[0];
+ }
+ //----------------------------------------------------------------------------
+ template <class Real>
+ Real Vector3<Real>::Y () const
+ {
+-    return m_afTuple[1];
++    return Vector<3, Real>::m_afTuple[1];
+ }
+ //----------------------------------------------------------------------------
+ template <class Real>
+ Real& Vector3<Real>::Y ()
+ {
+-    return m_afTuple[1];
++    return Vector<3, Real>::m_afTuple[1];
+ }
+ //----------------------------------------------------------------------------
+ template <class Real>
+ Real Vector3<Real>::Z () const
+ {
+-    return m_afTuple[2];
++    return Vector<3, Real>::m_afTuple[2];
+ }
+ //----------------------------------------------------------------------------
+ template <class Real>
+ Real& Vector3<Real>::Z ()
+ {
+-    return m_afTuple[2];
++    return Vector<3, Real>::m_afTuple[2];
+ }
+ //----------------------------------------------------------------------------
+ template <class Real>
+ Vector3<Real> Vector3<Real>::Cross (const Vector3& rkV) const
+ {
+     return Vector3(
+-        m_afTuple[1]*rkV.m_afTuple[2] - m_afTuple[2]*rkV.m_afTuple[1],
+-        m_afTuple[2]*rkV.m_afTuple[0] - m_afTuple[0]*rkV.m_afTuple[2],
+-        m_afTuple[0]*rkV.m_afTuple[1] - m_afTuple[1]*rkV.m_afTuple[0]);
++        Vector<3, Real>::m_afTuple[1]*rkV.m_afTuple[2] - Vector<3, Real>::m_afTuple[2]*rkV.m_afTuple[1],
++        Vector<3, Real>::m_afTuple[2]*rkV.m_afTuple[0] - Vector<3, Real>::m_afTuple[0]*rkV.m_afTuple[2],
++        Vector<3, Real>::m_afTuple[0]*rkV.m_afTuple[1] - Vector<3, Real>::m_afTuple[1]*rkV.m_afTuple[0]);
+ }
+ //----------------------------------------------------------------------------
+ template <class Real>
+ Vector3<Real> Vector3<Real>::UnitCross (const Vector3& rkV) const
+ {
+     Vector3 kCross(
+-        m_afTuple[1]*rkV.m_afTuple[2] - m_afTuple[2]*rkV.m_afTuple[1],
+-        m_afTuple[2]*rkV.m_afTuple[0] - m_afTuple[0]*rkV.m_afTuple[2],
+-        m_afTuple[0]*rkV.m_afTuple[1] - m_afTuple[1]*rkV.m_afTuple[0]);
++        Vector<3, Real>::m_afTuple[1]*rkV.m_afTuple[2] - Vector<3, Real>::m_afTuple[2]*rkV.m_afTuple[1],
++        Vector<3, Real>::m_afTuple[2]*rkV.m_afTuple[0] - Vector<3, Real>::m_afTuple[0]*rkV.m_afTuple[2],
++        Vector<3, Real>::m_afTuple[0]*rkV.m_afTuple[1] - Vector<3, Real>::m_afTuple[1]*rkV.m_afTuple[0]);
+     kCross.Normalize();
+     return kCross;
+ }
+@@ -194,14 +194,14 @@
+     const Vector<3,float>&);
+ #endif
+ 
+-  // RRR
++  // RRR
+   template <class Real> const Vector3<Real> Vector3<Real>::ZERO(0.0,0.0,0.0);
+-  template <class Real> const Vector3<Real> Vector3<Real>::UNIT_X(1.0f,0.0f,0.0f);
++  template <class Real> const Vector3<Real> Vector3<Real>::UNIT_X(1.0f,0.0f,0.0f);
+   template <class Real> const Vector3<Real> Vector3<Real>::UNIT_Y(0.0f,1.0f,0.0f);
+   template <class Real> const Vector3<Real> Vector3<Real>::UNIT_Z(0.0f,0.0f,1.0f);
+-
++
+ template class WML_ITEM Vector3<float>;
+-//const Vector3f 
++//const Vector3f 
+ //const Vector3f Vector3f::UNIT_X(1.0f,0.0f,0.0f);
+ //const Vector3f Vector3f::UNIT_Y(0.0f,1.0f,0.0f);
+ //const Vector3f Vector3f::UNIT_Z(0.0f,0.0f,1.0f);
+diff -r -u vee-0.1.7_orig/src/opengl/vee_gl_sl_renderer.C vee-0.1.7/src/opengl/vee_gl_sl_renderer.C
+--- vee-0.1.7_orig/src/opengl/vee_gl_sl_renderer.C	2007-07-27 02:22:41.000000000 +0200
++++ vee-0.1.7/src/opengl/vee_gl_sl_renderer.C	2007-07-27 02:25:16.000000000 +0200
+@@ -15,6 +15,7 @@
+  *
+  */
+ 
++#include <GL/glew.h>
+ 
+ #include <vee_gl_sl_renderer.h>
+ 
+@@ -22,6 +23,8 @@
+ 
+ #include <ConfigReader.hpp>
+ 
++#include <errno.h>
++
+ const char * VEE_SlParamNames[] = {
+   "particle_size",
+   "campos",
+diff -r -u vee-0.1.7_orig/src/base/vee_interpolators.h vee-0.1.7/src/base/vee_interpolators.h
+--- vee-0.1.7_orig/src/base/vee_interpolators.h	2007-07-27 01:49:50.000000000 +0200
++++ vee-0.1.7/src/base/vee_interpolators.h	2007-07-27 01:51:31.000000000 +0200
+@@ -225,14 +225,15 @@
+ 
+   void move(float dt) { m_time += dt; }
+   void reset(float time = 0.0) 
+-  { m_time = time; m_index = 0; seekInterval(time); }
++  { m_time = time; m_index = 0; VEE_LinearInterpolation<T>::seekInterval(time); }
+ 
+   float time() const { return m_time; }
+   
+-  T getValue2() { return getValue(m_time); }
++  T getValue2() { return VEE_LinearInterpolation<T>::getValue(m_time); }
+ 
+ protected:
+   float m_time;
++  int m_index;
+ };
+ 
+ #endif

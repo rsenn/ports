@@ -1,0 +1,39 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An efficient, object-oriented hardware accelerated 3D engine. It abstracts the differences between APIs and platforms and allows scene-oriented coding through an easy to use object model. Adaptable to multiple scene types (indoor, outdoor, whatever)
+# URL: http://www.ogre3d.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libatk1.0-0, libc6, libcairo-directfb2, libcairo2, libcegui-mk2-1, libfreeimage3, libfreetype6, libgcc1, libgl1-mesa-glx, libglib2.0-0, libglu1-mesa, libgtk2.0-0, libois1, libpango1.0-0, libstdc++6, libx11-6, libxaw7, libxext6, libxrandr2, libxxf86vm1, libzzip-0-13, nvidia-glx-new, zlib1g
+
+name=ogre
+version=1.4.8
+release=1
+source=($mirror_sf/ogre/ogre-v${version//./-}.tar.bz2)
+
+build()
+{
+  cd ogre
+
+  case $prefix in
+    "/usr") sysconfdir="/etc" ;;
+  esac
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix" \
+       --sysconfdir="${sysconfdir=$prefix/etc}" \
+       --program-prefix=""
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/ogre
+
+  cp -rf Docs/api/html $ROOT/share/doc/ogre
+
+  cp -rf \
+    Docs/{ChangeLog.html,CodingStandards.html,ContributorLicenseAgreement.html,README.linux,README_MacOSX.txt,ReadMe.html,Readme,licenses,manual,ogre-logo.gif,shadows,style.css,vbo-update} \
+    $ROOT/share/doc/ogre
+}

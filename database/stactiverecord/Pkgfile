@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A C++ library that makes simple database usage simple.
+#  StactiveRecord is a C++ library designed to make simple database use
+#  simple. It was inspired by Ruby on Rails' Active Record, however,
+#  no similar look, feel, or performance is guaranteed. It uses an
+#  object-relational mapping pattern to represent records as objects. It
+#  also provides persistent (basic) object relationships (one to many,
+#  many to many, one to one).
+#  .
+# URL: http://trac.butterfat.net/public/StactiveRecord
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=stactiverecord
+version=0.0
+release=1
+source=(http://butterfat.net/releases/StactiveRecord/StactiveRecord-0.0.tar.gz)
+
+build()
+{
+  cd StactiveRecord-0.0
+./autogen.sh
+./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+make
+make DESTDIR="$PKG" install
+}
+
+# EOF

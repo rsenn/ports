@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A serialization system.
+# URL: http://hadoop.apache.org/avro/
+# Maintainer: 
+# Depends on: 
+
+name=avro
+version=1.0.0
+release=1
+source=(http://mirror.switch.ch/mirror/apache/dist/hadoop/avro/avro-$version/avro-$version.tar.gz)
+
+build() 
+{
+  cd avro-$version
+
+  sh src/c/configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+  
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/avro
+  install -m 644 CHANGES.txt LICENSE.txt NOTICE.txt README.txt $ROOT/share/doc/avro
+}
+
+# EOF

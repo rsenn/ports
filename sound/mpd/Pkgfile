@@ -1,0 +1,36 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A jukebox server that controls music playback (MP3, Ogg, Flac, AAC, Mod, wave).
+#  Music Player Daemon (MPD) is a server that allows remote access for
+#  playing music (MP3, Ogg Vorbis, FLAC, AAC, Mod, and wave) and managing
+#  playlists. It makes a great desktop player with frontend options (Qt, GTK,
+#  ncurses, Windows, and Web clients are available). It is also appropriate
+#  as a console player that is scriptable, and is especially useful if X
+#  is restarted frequently. A set of rapid development tools for clients
+#  are being developed and include a C library, Python module, PHP class,
+#  Perl module, and Java Class. The goals are to be easy to install and
+#  use, to have minimal resource requirements, to be stable and flexible,
+#  and easy to interface.
+#  .
+# URL: http://www.musicpd.org/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=mpd
+version=0.12.1
+release=1
+source=(http://www.musicpd.org/uploads/files/mpd-0.12.1.tar.bz2)
+
+build()
+{
+  cd mpd-0.12.1
+./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+make
+make DESTDIR="$PKG" install
+}
+
+# EOF

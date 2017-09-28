@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=spiralmodular
+version=0.2.2
+release=1
+source=($mirror_sf/spiralmodular/spiralmodular-${version}a.tar.bz2
+        spiralmodular-0.2.2-c++0x.patch)
+
+build()
+{
+  cd spiralmodular-$version
+
+  patch -N -p1 -i $SRC/spiralmodular-0.2.2-c++0x.patch
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

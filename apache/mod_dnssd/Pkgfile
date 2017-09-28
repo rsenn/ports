@@ -1,0 +1,53 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A Zeroconf module for Apache 2.2.
+#  mod_dnssd adds DNS-SD Zeroconf support to Apache 2.2 using Avahi.
+#  .
+# URL: http://0pointer.de/lennart/projects/mod_dnssd/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=mod_dnssd
+version=0.5
+release=1
+source=(http://0pointer.de/lennart/projects/mod_dnssd/mod_dnssd-$version.tar.gz
+        mod_dnssd-0.5-apxs.patch)
+
+build()
+{
+  cd mod_dnssd-$version
+
+  patch -N -p1 -i $SRC/mod_dnssd-0.5-apxs.patch
+
+  #./bootstrap.sh
+
+  APXS=`ls $prefix/*bin/apxs*`
+
+  for apxs in $APXS; do
+   (rm -rf ${builddir=build-`$apxs -q progname`}
+    mkdir -p $builddir
+    cd $builddir
+
+
+    ../configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix" \
+       --with-apxs="$apxs"
+
+    make
+#    make DESTDIR="$PKG" install
+
+    libexecdir=`$apxs -q libexecdir`
+
+    install -d $PKG${libexecdir}
+    install -m 755 src/.libs/mod_dnssd.so $PKG${libexecdir}
+    )
+  done
+
+  install -d $ROOT/share/doc/mod_dnssd
+  install -m 644 doc/README doc/README.html LICENSE $ROOT/share/doc/mod_dnssd
+}
+
+# EOF

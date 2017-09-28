@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A graph-based image processing framework.
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=babl
+version=0.0.22
+release=1
+source=(ftp://ftp.gimp.org/pub/babl/0.0/babl-$version.tar.bz2)
+
+build()
+{
+  cd babl-$version
+
+  #./autogen.sh
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

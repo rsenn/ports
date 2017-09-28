@@ -1,0 +1,25 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A tool to install SSH public keys on remote servers.
+#  ssh-installkeys allows the user to export SSH public keys to a specified
+#  site. It will walk the user through generating key pairs if it cannot
+#  find any to export. It handles all the details like making sure local
+#  and remote permissions are correct.
+#  .
+# URL: http://www.catb.org/~esr/ssh-installkeys/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=ssh-installkeys
+version=1.4
+release=1
+source=(http://www.catb.org/~esr/ssh-installkeys/ssh-installkeys-1.4.tar.gz)
+
+build()
+{
+  cd ssh-installkeys-1.4
+make
+make PREFIX="$ROOT" install
+}
+
+# EOF

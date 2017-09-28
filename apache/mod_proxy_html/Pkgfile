@@ -1,0 +1,23 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: Apache2 filter module for HTML links rewriting
+#  mod_proxy_html is an output filter to rewrite HTML links in a proxy
+#  situation, to ensure that links work for users outside the proxy. It
+#  serves the same purpose as Apache's ProxyPassReverse directive does for
+#  HTTP headers, and is an essential component of a reverse proxy.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=mod_proxy_html
+version=2.5.2
+release=1
+source=(Makefile mod_proxy_html.c)
+
+build()
+{
+  make
+
+  install -d "$ROOT/lib/apache2"
+  install -m 755 .libs/mod_proxy_html.so "$ROOT/lib/apache2"
+}

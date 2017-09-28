@@ -1,0 +1,44 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Ygl is an X11 library that emulates the 2D routines of SGI's GL (sometimes called IRIS GL)
+# Please note that GL is different from OpenGL. Ygl is very simple to use,
+# and very fast. The 2D routines are built around the standard X11 libraries
+# and reported to be faster than GL itself. SGI's GL has 3D routines as
+# well and Ygl tries to emulate these using OpenGL. However this does'nt
+# work yet with Mesa and hence there is no 3D support in this release. This
+# release will also work with FORTRAN code. This package comes with a useful
+# set of examples. There is also a contributed widget (glwidget.h) included
+# with Ygl and this library too is included along with its examples.
+#
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6
+
+name=ygl
+version=3.1
+release=1
+source=(ftp://ftp.x.org/contrib/libraries/Ygl-$version.tar.gz)
+
+build()
+{
+  cd Ygl-$version
+
+  export PATH=".:$PATH"
+
+  sed -i '/COVERSLEEP/ s,define,undef,' config.h
+  sed -i 's,/usr,$(PREFIX),g' Makefile
+
+  install -d $ROOT/include/X11
+  install -d $ROOT/lib
+
+  make \
+      CC="libtool --mode=compile --tag=CC ${CC-cc} -include errno.h" \
+      CDEBUGFLAGS="$CFLAGS"
+
+  make PREFIX="$ROOT" install
+
+  rm -f *.a
+
+  libtool --mode="link" --tag="CC" ${CC-cc} -rpath "$prefix/lib" -no-undefined -o libYgl.la *.lo
+  libtool --mode="install" --tag="CC" install libYgl.la $ROOT/lib
+}

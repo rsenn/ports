@@ -1,0 +1,56 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: An interactive high-level object-oriented language (version 2.6)
+#   Version 2.6 of the high-level, interactive object oriented language,
+#   includes an extensive class library with lots of goodies for
+#   network programming, system administration, sounds and graphics.
+#   .
+# URL: http://www.python.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=python
+version=2.6
+release=1
+source=(http://www.python.org/ftp/python/${version%[a-z]*}/Python-$version.tar.bz2)
+
+build()
+{
+  cd Python-$version
+
+#  sed -i -e 's,\(libpython\)$(VERSION),\1,g' \
+#         -e 's,\(-lpython\)\\\?$(VERSION),\1,g' \
+#         -e 's,\.1\.0,.$(VERSION),g' \
+#         -e "s,\('-lpython'\)+pyver,\1,g" \
+#         -e 's,\(-lpython\)%s,\1,g' \
+#    configure \
+#    Makefile.pre.in \
+#    Misc/python-config.in \
+#    Lib/distutils/sysconfig.py \
+#    Modules/makesetup
+
+#  set | grep -iE '^(shared|static)='
+
+  case $prefix in
+    /usr) sysconfdir="/etc" ;;
+  esac
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --sysconfdir="${sysconfdir=$prefix/etc}" \
+       --${shared:=enable}-shared \
+       --${static:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+
+  cd $ROOT/bin
+
+  rm -f python
+  ln -sf python$version python
+
+  install -d $ROOT/share/doc/python
+  install -m 644 LICENSE README $ROOT/share/doc/python
+}

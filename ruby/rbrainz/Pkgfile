@@ -1,0 +1,37 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Ruby client library to query the MusicBrainz database.
+#  RBrainz is a Ruby client library to query the MusicBrainz
+#  database using the MusicBrainz XML web service. RBrainz follows the
+#  design of the MusicBrainz client library reference implementation and
+#  supports the MusicBrainz XML Metadata Schema Version 1.2.
+#  .
+# URL: http://rbrainz.rubyforge.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=rbrainz
+version=0.4.2
+release=1
+source=($mirror_rubyforge/rbrainz/rbrainz-$version.tar.gz)
+
+build()
+{
+  cd rbrainz-$version
+
+  set `ruby --version`
+
+  RUBYVERSION="$2"
+  RUBYLIBDIR="$prefix/lib/ruby/${RUBYVERSION%.*}"
+
+  ruby setup.rb config --siterubyver="$RUBYLIBDIR"
+  ruby setup.rb setup
+  ruby setup.rb install --prefix="$PKG"
+
+ #install -d $PKG/$RUBYLIBDIR
+ #cp -rf lib/* $PKG/$RUBYLIBDIR/
+
+  install -d $ROOT/share/doc/rbrainz
+  install -m 644 LICENSE README TODO CHANGES doc/README.rdoc $ROOT/share/doc/rbrainz
+  cp -rf examples $ROOT/share/doc/rbrainz/
+}

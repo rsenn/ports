@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Generic PCI access library for X
+#  Provides functionality for X to access the PCI bus and devices in a
+#  platform-independant way.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libpciaccess
+version=0.10.3
+release=1
+source=(ftp://ftp.x.org/pub/individual/lib/libpciaccess-$version.tar.bz2)
+
+build()
+{
+  cd libpciaccess-$version
+
+  ./autogen.sh
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/libpciaccess
+  install -m 644 COPYING NEWS AUTHORS INSTALL ChangeLog README $ROOT/share/doc/libpciaccess
+}

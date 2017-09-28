@@ -1,0 +1,39 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An Open Source RDF Schema-based repository and querying facility.
+#  Sesame is an Open Source RDF Schema-based repository and querying
+#  facility. It is a scalable, modular architecture for persistent storage
+#  and querying of RDF and RDF Schema. It supports two query languages
+#  (RQL and RDQL), and can use main memory or PostgreSQL, MySQL and Oracle
+#  9i databases for storage.
+# URL: http://sourceforge.net/projects/sesame/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=openrdf-sesame
+version=2.0.1
+release=1
+source=($mirror_sf/sesame/openrdf-sesame-$version-sdk.tar.gz)
+
+build()
+{
+  cd openrdf-sesame-$version
+
+  j2redir=$prefix/j2re
+  j2relibs=$j2redir/lib
+
+  if test ! -e $j2redir/bin/java && test -e /usr/share/java
+  then
+    j2redir=/usr
+    j2relibs=/usr/share/java
+  fi
+
+  install -d $PKG/$j2redir/bin
+  cp -rf bin/* $PKG/$j2redir/bin
+
+  install -d $PKG/$j2relibs
+  cp -rf lib/* $PKG/$j2relibs
+
+  install -d $ROOT/share/doc
+  cp -rf docs $ROOT/share/doc/$name-$version
+}

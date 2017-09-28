@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A library to assist in the integration of licenses into the desktop.
+#  Liblicense is a library to assist in the aggregation of license data
+#  and the embedding of license data within a file. It also provides the
+#  license data of common licenses, such as those by Creative Commons and
+#  GNU's GPL and LGPL.
+# URL: http://creativecommons.org/project/Liblicense
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=liblicense
+version=0.4
+release=1
+source=($mirror_sf/cctools/liblicense-$version.tar.bz2)
+
+build()
+{
+  cd liblicense-$version
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --target="$target" \
+      --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

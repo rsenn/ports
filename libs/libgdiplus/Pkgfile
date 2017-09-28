@@ -1,0 +1,25 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Libgdiplus is the Mono library that provide a GDI+ comptible API on non-Windows operating systems. Our implementation uses Cairo (http://www.cairographics.org) to do most of the heavy lifting.
+# URL: http://www.mono-project.com/Libgdiplus
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libgdiplus
+version=1.9
+release=1
+source=(http://ftp.novell.com/pub/mono/sources/libgdiplus/libgdiplus-1.9.tar.bz2)
+
+build()
+{
+  cd libgdiplus-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

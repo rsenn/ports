@@ -1,0 +1,36 @@
+# $Id: Pkgfile 424 2008-08-10 01:52:57Z enki $
+#
+# Description: A library for LV2 hosts intended to make using LV2 Plugins as simple as possible
+# SLV2 is written in standard C using the Redland RDF toolkit, and is
+# known to work on GNU/Linux and Mac OS X. Licensed under the GPL v2 or
+# later for now, but if this is a problem contact me and I may change it.
+#
+# URL: http://wiki.drobilla.net/SLV2
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libcomerr2, libcurl3, libdb4.6, libgmp3c2, libidn11, libjack0, libkrb53, libldap-2.4-2, libmysqlclient16, libpq5, libraptor1, librasqal0, librdf0, libsqlite3-0, libssl0.9.8, libxml2, libxslt1.1, xulrunner-1.9, zlib1g
+
+name=slv2
+version=0.6.0
+release=1
+source=(http://download.drobilla.net/slv2-$version.tar.gz)
+
+build()
+{
+  cd slv2-${version#*svn}
+
+  libtoolize --force --copy
+  aclocal --force
+  autoheader --force
+  automake --force --copy --foreign --add-missing
+  aclocal --force
+  autoconf --force
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

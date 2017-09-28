@@ -1,0 +1,44 @@
+--- encoder.php.orig	2006-08-18 15:40:12.000000000 +0200
++++ encoder.php	2006-08-18 15:39:46.000000000 +0200
+@@ -1,10 +1,11 @@
++#!/usr/local/bin/php -q
+ <?php
+ $web_error = "";
+ 
+ function eaccelerator_encoder_usage() {
+-  echo "Usage:\tphp -q encoder.php [options] source_file_name\n";
+-  echo       "\tphp -q encoder.php [options] source_file_name...\n";
+-  echo       "\tphp -q encoder.php [options] source_directory_name...\n\n";
++  echo "Usage:\tphpencoder [options] source_file_name\n";
++  echo       "\tphpencoder [options] source_file_name...\n";
++  echo       "\tphpencoder [options] source_directory_name...\n\n";
+   echo "Options:\n";
+   echo "\t-s suffix\n\t\tencode files only with following suffix (default is \"php\")\n";
+   echo "\t-a\n\t\tencode all files (no by default)\n";
+@@ -17,10 +18,10 @@
+   echo               "\t\tfile name. If you encode directory or several files at once\n";
+   echo               "\t\tthen 'target' specifyes an output directory name.\n";
+   echo "\nExamples:\n";
+-  echo "\tphp -q encoder.php some_file.php\n";
+-  echo "\tphp -q encoder.php some_file.php -o some_encoded_file.php\n";
+-  echo "\tphp -q encoder.php *.php -o some_dir\n";
+-  echo "\tphp -q encoder.php ~/public_html/x -rcf -sphp -sinc -o ~/public_html/y\n";
++  echo "\tphpencoder some_file.php\n";
++  echo "\tphpencoder some_file.php -o some_encoded_file.php\n";
++  echo "\tphpencoder *.php -o some_dir\n";
++  echo "\tphpencoder ~/public_html/x -rcf -sphp -sinc -o ~/public_html/y\n";
+   echo "\n";
+   exit();
+ }
+@@ -35,9 +36,9 @@
+ }
+ 
+ function eaccelerator_encode_file($src, $out, $f, $c, $w, $web) {
+-  if (empty($out)) {
++/*  if (empty($out)) {
+     echo "\n// $src\n";
+-  }
++  }*/
+   $prefix = "";
+   $cmp = eaccelerator_encode($src, $prefix);
+   if (empty($cmp)) {

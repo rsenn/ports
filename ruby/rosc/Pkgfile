@@ -1,0 +1,34 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Ruby OSC implementation
+# URL: http://hans.fugal.net/src/rosc/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: ruby
+
+name=rosc
+version=0.1.2
+release=1
+source=(http://hans.fugal.net/src/rosc/rosc-$version.tar.gz)
+
+build()
+{
+  cd rosc-$version
+
+#  rake
+#  ruby setup.rb config
+#  ruby setup.rb setup
+#  ruby setup.rb install --prefix="$PKG"
+  set -- $(ruby --version)
+
+  RUBYVERSION="$2"
+  RUBYLIBDIR="$prefix/lib/ruby/${RUBYVERSION%.*}"
+
+  install -d $PKG$RUBYLIBDIR
+  cp -rf lib/* $PKG$RUBYLIBDIR
+
+  install -d $ROOT/share/doc/rosc
+  install -m 644 [A-Z]*[A-Z]* $ROOT/share/doc/rosc
+
+  cp -rf doc $ROOT/share/doc/rosc/html
+  cp -rf test examples $ROOT/share/doc/rosc
+}

@@ -1,0 +1,26 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: The prc-tools project currently consists of patches to binutils, gdb, and GCC to support Palm OS, along with several post-linker tools.
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=prc-tools
+version=2.3
+release=1
+source=($mirror_sf/prc-tools/prc-tools-$version.tar.gz)
+
+build()
+{
+  cd prc-tools-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix" \
+       --enable-languages="c,c++"
+
+  make
+  make DESTDIR="$PKG" install
+}

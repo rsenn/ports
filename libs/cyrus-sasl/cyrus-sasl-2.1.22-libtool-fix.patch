@@ -1,0 +1,133 @@
+diff --git a/Makefile.am b/Makefile.am
+index d6005fb..53c8c8a 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -1,4 +1,3 @@
+-AUTOMAKE_OPTIONS = 1.7
+ # Top-level Makefile.am for SASL
+ # Rob Earhart
+ #
+@@ -43,6 +42,8 @@
+ #
+ ################################################################
+ 
++ACLOCAL_AMFLAGS = -I config -I cmulocal
++
+ if SASLAUTHD
+ SAD = saslauthd
+ else
+diff --git a/autogen.sh b/autogen.sh
+new file mode 100644
+--- /dev/null
++++ b/autogen.sh
+@@ -0,0 +1,10 @@
++#!/bin/sh
++#
++# 20081205
++
++libtoolize --force --copy --recursive --install
++aclocal --force -I config -I cmulocal
++autoheader --force
++automake --force --copy --foreign --add-missing --add-missing
++aclocal --force -I config -I cmulocal
++autoconf --force
+diff --git a/configure.in b/configure.in
+--- a/configure.in
++++ b/configure.in
+@@ -52,6 +52,7 @@
+ fi
+ 
+ AC_CONFIG_AUX_DIR(config)
++AC_CONFIG_MACRO_DIR(config)
+ AC_CANONICAL_HOST
+ AC_CANONICAL_TARGET
+ 
+--- a/plugins/Makefile.am
++++ b/plugins/Makefile.am
+@@ -82,73 +82,72 @@
+ 	libntlm.la libpassdss.la libsasldb.la libsql.la libldapdb.la
+ 
+ libplain_la_SOURCES = plain.c plain_init.c $(common_sources)
+-libplain_la_LDFLAGS = -version-info $(plain_version)
+ libplain_la_DEPENDENCIES = $(COMPAT_OBJS)
+ libplain_la_LIBADD = $(PLAIN_LIBS) $(COMPAT_OBJS)
+ 
+ libanonymous_la_SOURCES = anonymous.c anonymous_init.c $(common_sources)
+-libanonymous_la_LDFLAGS = -version-info $(anonymous_version)
++libanonymous_la_LDFLAGS = -rpath $(sasldir)
+ libanonymous_la_DEPENDENCIES = $(COMPAT_OBJS)
+ libanonymous_la_LIBADD = $(COMPAT_OBJS)
+ 
+ libkerberos4_la_SOURCES = kerberos4.c kerberos4_init.c $(common_sources)
+-libkerberos4_la_LDFLAGS = -version-info $(kerberos4_version)
++libkerberos4_la_LDFLAGS = -rpath $(sasldir)
+ libkerberos4_la_DEPENDENCIES = $(COMPAT_OBJS)
+ libkerberos4_la_LIBADD = $(SASL_KRB_LIB) $(LIB_SOCKET) $(COMPAT_OBJS)
+ 
+ libgssapiv2_la_SOURCES = gssapi.c gssapiv2_init.c $(common_sources)
+-libgssapiv2_la_LDFLAGS = -version-info $(gssapiv2_version)
++libgssapiv2_la_LDFLAGS = -rpath $(sasldir)
+ libgssapiv2_la_DEPENDENCIES = $(COMPAT_OBJS)
+ libgssapiv2_la_LIBADD = $(GSSAPIBASE_LIBS) $(GSSAPI_LIBS) $(LIB_SOCKET) $(COMPAT_OBJS)
+ 
+ libcrammd5_la_SOURCES = cram.c crammd5_init.c $(common_sources)
+-libcrammd5_la_LDFLAGS = -version-info $(crammd5_version)
++libcrammd5_la_LDFLAGS = -rpath $(sasldir)
+ libcrammd5_la_DEPENDENCIES = $(COMPAT_OBJS)
+ libcrammd5_la_LIBADD = $(COMPAT_OBJS)
+ 
+ libdigestmd5_la_SOURCES = digestmd5.c digestmd5_init.c $(common_sources)
+-libdigestmd5_la_LDFLAGS = -version-info $(digestmd5_version)
++libdigestmd5_la_LDFLAGS = -rpath $(sasldir)
+ libdigestmd5_la_DEPENDENCIES = $(COMPAT_OBJS)
+ libdigestmd5_la_LIBADD = $(LIB_DES) $(LIB_SOCKET) $(COMPAT_OBJS)
+ 
+ liblogin_la_SOURCES = login.c login_init.c $(common_sources)
+-liblogin_la_LDFLAGS = -version-info $(login_version)
++liblogin_la_LDFLAGS = -rpath $(sasldir)
+ liblogin_la_DEPENDENCIES = $(COMPAT_OBJS)
+ liblogin_la_LIBADD = $(PLAIN_LIBS) $(COMPAT_OBJS)
+ 
+ libsrp_la_SOURCES = srp.c srp_init.c $(common_sources)
+-libsrp_la_LDFLAGS = -version-info $(srp_version)
++libsrp_la_LDFLAGS = -rpath $(sasldir)
+ libsrp_la_DEPENDENCIES = $(COMPAT_OBJS)
+ libsrp_la_LIBADD = $(SRP_LIBS) $(COMPAT_OBJS)
+ 
+ libotp_la_SOURCES = otp.c otp_init.c otp.h $(common_sources)
+-libotp_la_LDFLAGS = -version-info $(otp_version)
++libotp_la_LDFLAGS = -rpath $(sasldir)
+ libotp_la_DEPENDENCIES = $(COMPAT_OBJS)
+ libotp_la_LIBADD = $(OTP_LIBS) $(COMPAT_OBJS)
+ 
+ libntlm_la_SOURCES = ntlm.c ntlm_init.c $(common_sources)
+-libntlm_la_LDFLAGS = -version-info $(ntlm_version)
++libntlm_la_LDFLAGS = -rpath $(sasldir)
+ libntlm_la_DEPENDENCIES = $(COMPAT_OBJS)
+ libntlm_la_LIBADD = $(NTLM_LIBS) $(COMPAT_OBJS)
+ 
+ libpassdss_la_SOURCES = passdss.c passdss_init.c $(common_sources)
+-libpassdss_la_LDFLAGS = -version-info $(passdss_version)
++libpassdss_la_LDFLAGS = -rpath $(sasldir)
+ libpassdss_la_DEPENDENCIES = $(COMPAT_OBJS)
+ libpassdss_la_LIBADD = $(PASSDSS_LIBS) $(COMPAT_OBJS)
+ 
+ # Auxprop Plugins
+ libsasldb_la_SOURCES = sasldb.c sasldb_init.c $(common_sources)
+-libsasldb_la_LDFLAGS = -version-info $(sasldb_version)
++libsasldb_la_LDFLAGS = -rpath $(sasldir)
+ libsasldb_la_DEPENDENCIES = $(COMPAT_OBJS)
+ libsasldb_la_LIBADD = ../sasldb/libsasldb.la $(SASL_DB_LIB) $(COMPAT_OBJS)
+ 
+ libldapdb_la_SOURCES = ldapdb.c ldapdb_init.c $(common_sources)
+-libldapdb_la_LDFLAGS = $(LIB_LDAP) -version-info $(ldapdb_version)
++libldapdb_la_LDFLAGS = $(LIB_LDAP) -rpath $(sasldir)
+ libldapdb_la_DEPENDENCIES = $(COMPAT_OBJS)
+ libldapdb_la_LIBADD = $(COMPAT_OBJS)
+ 
+ libsql_la_SOURCES = sql.c sql_init.c $(common_sources)
+-libsql_la_LDFLAGS = $(LIB_MYSQL) $(LIB_PGSQL) $(LIB_SQLITE) -version-info $(sql_version)
++libsql_la_LDFLAGS = $(LIB_MYSQL) $(LIB_PGSQL) $(LIB_SQLITE) -rpath $(sasldir)
+ libsql_la_DEPENDENCIES = $(COMPAT_OBJS)
+ libsql_la_LIBADD = $(COMPAT_OBJS)
+ 

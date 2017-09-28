@@ -1,0 +1,35 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Constructs an approximation of one sound out of small pieces of other sounds.
+#  Soundmosaic constructs an approximation of one sound out of small pieces
+#  of other sounds. The soundmosaic algorithm is: split the target file up
+#  into equal-sized segments, or "tiles". For each tile in the target file,
+#  find the closest match in the source files, and replace the target tile
+#  with the tile from the source files.
+#  .
+# URL: http://awesame.org/soundmosaic/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=soundmosaic
+version=1.2
+release=1
+source=(http://awesame.org/soundmosaic/soundmosaic-$version.tar.gz)
+
+build()
+{
+  cd soundmosaic-$version
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/soundmosaic
+  install -m 644 getopt/COPYING README ChangeLog TODO $ROOT/share/doc/soundmosaic
+}
+
+# EOF

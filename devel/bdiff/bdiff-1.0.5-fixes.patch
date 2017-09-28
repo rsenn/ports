@@ -1,0 +1,24 @@
+diff -r -u -- bdiff-1.0.5_orig/Makefile bdiff-1.0.5/Makefile
+--- bdiff-1.0.5_orig/Makefile	2007-05-08 18:59:54.000000000 +0200
++++ bdiff-1.0.5/Makefile	2007-05-08 19:00:45.000000000 +0200
+@@ -3,18 +3,15 @@
+ 
+ bdiff: bdiff.c lib/md5.o
+ 	cc -O2 -Wno-parentheses lib/md5.o bdiff.c -o bdiff
+-	strip bdiff
+ 
+ ppc: search.s bdiff.c lib/md5.o
+ 	cc -O2 -Wno-parentheses -DPPCASM lib/md5.o search.s bdiff.c -o bdiff
+-	strip bdiff
+ 
+ nommap: bdiff.c lib/md5.o
+ 	cc -O2 -Wno-parentheses -DNOMMAP lib/md5.o bdiff.c -o bdiff
+-	strip bdiff
+ 
+ lib/md5.o:
+-	cc -O2 -D_LIBC -c lib/md5.c -o lib/md5.o
++	cc -O2 -DSTDC_HEADERS -c lib/md5.c -o lib/md5.o
+ 
+ clean:
+ 	rm -f bdiff search.o lib/md5.o
+Only in bdiff-1.0.5: bdiff

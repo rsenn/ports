@@ -1,0 +1,45 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: create new files from templates
+# URL: http://newfile.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=newfile
+version=1.0.14
+release=2
+source=($mirror_sf/newfile/newfile-$version.tar.gz
+        newfile-1.0.14-sh-bash.patch
+        newfile-1.0.14-automake-man1dir.patch)
+
+build()
+{
+  cd newfile-$version
+
+  patch -N -p1 -i $SRC/newfile-1.0.14-sh-bash.patch
+  patch -N -p1 -i $SRC/newfile-1.0.14-automake-man1dir.patch
+
+  sed -i \
+      -e "s:/usr:$prefix:g" \
+      src/newfile.rb.in \
+      data/templates/tmpl@*
+
+  aclocal --force
+  automake --force --copy --foreign
+  aclocal --force
+  autoconf --force
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make prefix="$ROOT" install
+
+  ln -sf $prefix/share/newfile/newfile.rb $ROOT/bin/newfile
+
+  install -d $ROOT/share/doc/newfile
+  install -m 644 [A-Z]*[A-Z]* $ROOT/share/doc/newfile
+}

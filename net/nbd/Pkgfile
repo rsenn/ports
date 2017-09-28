@@ -1,0 +1,56 @@
+# $Id: Pkgfile,v 1.5 2007/05/09 21:02:56 roman Exp $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=nbd
+version=2.9.6
+release=1
+source=($mirror_sf/nbd/nbd-$version.tar.bz2
+        nbd-2.9.6-config-error.patch)
+
+# --------------------------------------------------------------------------------
+build()
+{
+  cd nbd-$version
+
+  patch -N -p1 -i $SRC/nbd-2.9.6-config-error.patch
+
+  case ${prefix="/usr"} in
+    /usr) sysconfdir="/etc" localstatedir="/var" ;;
+  esac
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --sysconfdir="${sysconfdir=$prefix/etc}" \
+       --localstatedir="${localstatedir=$prefix/var}" \
+       --enable-lfs \
+       --enable-syslog
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# --------------------------------------------------------------------------------
+services()
+{
+  config_branch 'nbd'
+
+    config_branch 'client'
+      config_set  'TITLE' 'NBD client'
+      config_set  'START' ''
+      config_set  'STOP'  ''
+    config_end
+
+    config_branch 'server'
+      config_set  'TITLE' 'NBD server'
+      config_set  'START' ''
+      config_set  'STOP'  ''
+    config_end
+
+  config_end
+}

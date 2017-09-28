@@ -1,0 +1,62 @@
+# $Id: Pkgfile,v 1.13 2007/05/09 21:02:51 roman Exp $
+#
+# Description: GNOME XML library
+#  XML is a metalanguage to let you design your own markup language. A
+#  regular markup language defines a way to describe information in a certain
+#  class of documents (eg HTML). XML lets you define your own customized
+#  markup languages for many classes of document. It can do this because
+#  it's written in SGML, the international standard metalanguage for markup
+#  languages.
+#  This package provides a library providing an extensive API to handle
+#  such XML data files. GNOME XML library XML is a metalanguage to let you
+#  design your own markup language. A regular markup language defines a way
+#  to describe information in a certain class of documents (eg HTML). XML
+#  lets you define your own customized markup languages for many classes of
+#  document. It can do this because it's written in SGML, the international
+#  standard metalanguage for markup languages.
+#  This package provides a library providing an extensive API to handle
+#  such XML data files.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libxml2
+version=2.6.32
+release=1
+source=(ftp://xmlsoft.org/libxml2/libxml2-$version.tar.gz
+        libxml2-2.6.21-no-bsd-ints.patch
+        libxml2-2.6.31-implicit-progs.patch)
+
+build()
+{
+  cd libxml2-$version
+
+  patch -N -p1 -i $SRC/libxml2-2.6.21-no-bsd-ints.patch
+  patch -N -p1 -i $SRC/libxml2-2.6.31-implicit-progs.patch
+
+  rm -f aclocal.m4 ltmain.sh config.{guess,sub} {*,*/*}/Makefile.in
+
+  libtoolize --force --copy
+  aclocal --force -I .
+  automake --force --copy --foreign --add-missing
+  aclocal --force -I .
+  autoconf --force
+
+  [ "$host" != "$build" ] && python=without
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --${shared:=enable}-shared \
+      --${static:=enable}-shared \
+      --${python:=with}-python \
+      --with-fexceptions \
+      --with-iconv="$prefix" \
+      --with-zlib="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+#  cd $ROOT/include && ln -sf libxml2/libxml libxml
+}

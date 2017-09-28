@@ -1,0 +1,27 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A flexible panorama toolkit.
+#  Hugin is a toolkit for stitching photographs and assembling panoramas,
+#  together with an easy to use graphical front end.
+# URL: http://hugin.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=hugin
+version=0.7_beta4
+release=1
+source=($mirror_sf/hugin/hugin-$version.tar.bz2)
+
+build()
+{
+  cd hugin-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

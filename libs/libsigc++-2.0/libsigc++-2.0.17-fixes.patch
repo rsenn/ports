@@ -1,0 +1,91 @@
+diff -r -u libsigc++-2.0.17_orig/sigc++/signal.h libsigc++-2.0.17/sigc++/signal.h
+--- libsigc++-2.0.17_orig/sigc++/signal.h	2007-08-01 11:07:02.000000000 +0200
++++ libsigc++-2.0.17/sigc++/signal.h	2007-08-01 11:09:57.000000000 +0200
+@@ -1667,12 +1667,12 @@
+   typedef typename slot_list_type::reverse_iterator       reverse_iterator;
+   typedef typename slot_list_type::const_reverse_iterator const_reverse_iterator;
+ 
+-#ifdef SIGC_TYPEDEF_REDEFINE_ALLOWED
++#if defined(SIGC_TYPEDEF_REDEFINE_ALLOWED) && !defined(__GNUC__)
+   /** This typedef is only for backwards-compatibility.
+    * It is not available when using the SUN Forte compiler.
+    * @deprecated slot_list_type;
+    */
+-  typedef slot_list_type slot_list;
++  typedef slot_list_type slot_list_type;
+ #endif
+ 
+   /** Add a slot to the list of slots.
+@@ -1776,7 +1776,7 @@
+   typedef typename slot_list_type::reverse_iterator       reverse_iterator;
+   typedef typename slot_list_type::const_reverse_iterator const_reverse_iterator;
+ 
+-#ifdef SIGC_TYPEDEF_REDEFINE_ALLOWED
++#if defined(SIGC_TYPEDEF_REDEFINE_ALLOWED) && !defined(__GNUC__)
+   /** This typedef is only for backwards-compatibility.
+    * It is not available when using the SUN Forte compiler.
+    * @deprecated slot_list_type;
+@@ -1887,7 +1887,7 @@
+   typedef typename slot_list_type::reverse_iterator       reverse_iterator;
+   typedef typename slot_list_type::const_reverse_iterator const_reverse_iterator;
+ 
+-#ifdef SIGC_TYPEDEF_REDEFINE_ALLOWED
++#if defined(SIGC_TYPEDEF_REDEFINE_ALLOWED) && !defined(__GNUC__)
+   /** This typedef is only for backwards-compatibility.
+    * It is not available when using the SUN Forte compiler.
+    * @deprecated slot_list_type;
+@@ -2000,7 +2000,7 @@
+   typedef typename slot_list_type::reverse_iterator       reverse_iterator;
+   typedef typename slot_list_type::const_reverse_iterator const_reverse_iterator;
+ 
+-#ifdef SIGC_TYPEDEF_REDEFINE_ALLOWED
++#if defined(SIGC_TYPEDEF_REDEFINE_ALLOWED) && !defined(__GNUC__)
+   /** This typedef is only for backwards-compatibility.
+    * It is not available when using the SUN Forte compiler.
+    * @deprecated slot_list_type;
+@@ -2115,7 +2115,7 @@
+   typedef typename slot_list_type::reverse_iterator       reverse_iterator;
+   typedef typename slot_list_type::const_reverse_iterator const_reverse_iterator;
+ 
+-#ifdef SIGC_TYPEDEF_REDEFINE_ALLOWED
++#if defined(SIGC_TYPEDEF_REDEFINE_ALLOWED) && !defined(__GNUC__)
+   /** This typedef is only for backwards-compatibility.
+    * It is not available when using the SUN Forte compiler.
+    * @deprecated slot_list_type;
+@@ -2232,7 +2232,7 @@
+   typedef typename slot_list_type::reverse_iterator       reverse_iterator;
+   typedef typename slot_list_type::const_reverse_iterator const_reverse_iterator;
+ 
+-#ifdef SIGC_TYPEDEF_REDEFINE_ALLOWED
++#if defined(SIGC_TYPEDEF_REDEFINE_ALLOWED) && !defined(__GNUC__)
+   /** This typedef is only for backwards-compatibility.
+    * It is not available when using the SUN Forte compiler.
+    * @deprecated slot_list_type;
+@@ -2351,7 +2351,7 @@
+   typedef typename slot_list_type::reverse_iterator       reverse_iterator;
+   typedef typename slot_list_type::const_reverse_iterator const_reverse_iterator;
+ 
+-#ifdef SIGC_TYPEDEF_REDEFINE_ALLOWED
++#if defined(SIGC_TYPEDEF_REDEFINE_ALLOWED) && !defined(__GNUC__)
+   /** This typedef is only for backwards-compatibility.
+    * It is not available when using the SUN Forte compiler.
+    * @deprecated slot_list_type;
+@@ -2472,7 +2472,7 @@
+   typedef typename slot_list_type::reverse_iterator       reverse_iterator;
+   typedef typename slot_list_type::const_reverse_iterator const_reverse_iterator;
+ 
+-#ifdef SIGC_TYPEDEF_REDEFINE_ALLOWED
++#if defined(SIGC_TYPEDEF_REDEFINE_ALLOWED) && !defined(__GNUC__)
+   /** This typedef is only for backwards-compatibility.
+    * It is not available when using the SUN Forte compiler.
+    * @deprecated slot_list_type;
+diff -r -u libsigc++-2.0.17_orig/tests/test_copy_invalid_slot.cc libsigc++-2.0.17/tests/test_copy_invalid_slot.cc
+--- libsigc++-2.0.17_orig/tests/test_copy_invalid_slot.cc	2007-08-01 11:07:02.000000000 +0200
++++ libsigc++-2.0.17/tests/test_copy_invalid_slot.cc	2007-08-01 11:11:31.000000000 +0200
+@@ -1,4 +1,6 @@
+ #include <iostream>
++#include <cstdlib>
++#include <cstring>
+ #include <sigc++/sigc++.h>
+ 
+ void Foo(sigc::trackable &t) {}

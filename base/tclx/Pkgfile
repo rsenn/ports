@@ -1,0 +1,42 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: An extension to Tcl.
+#  Extended Tcl (TclX) is an extension to Tcl, the Tool Command Language
+#  invented by Dr. John Ousterhout. Tcl is a simple and powerful embeddable
+#  programming language. Extended Tcl is oriented toward system programming
+#  tasks and large application development. TclX provides additional
+#  interfaces to the operating system. It also adds many new programming
+#  constructs, text manipulation tools, and debugging tools.
+# URL: http://tclx.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=tclx
+version=8.4.0
+release=1
+source=($mirror_sf/tclx/tclx${version%.*}.tar.bz2)
+
+build()
+{
+  cd tclx${version%.*}
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --mandir="$prefix/share/man" \
+      --${shared:=enable}-shared \
+      --${static:=enable}-shared \
+      --enable-threads \
+      --with-tcl="$libdir"
+
+  make 
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/bin
+
+  ln -sf tcl${version%.*} $ROOT/bin/tcl
+
+  install -d $ROOT/man/man3
+  install -m 644 doc/*.3 $ROOT/man/man3
+}

@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: MidiShare is a real-time musical MIDI operating system. Result of many years of research and development undertaken by Computer Music Research Laboratory of Grame, MidiShare provides high level services to the field of computer music and MIDI applications
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=midishare
+version=1.91
+release=1
+source=($mirror_sf/midishare/midishare-1.91-src.tgz
+        midishare-1.91-fixes.patch)
+
+build()
+{
+  cd midishare-$version-src
+
+  patch -N -p1 -i $SRC/midishare-1.91-fixes.patch
+
+  cd src/linux
+
+  bash configure
+
+  make -i
+  make
+
+#  make DESTDIR="$PKG" install
+}

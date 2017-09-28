@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: X11 Composite extension wire protocol
+#  This package provides development headers describing the wire protocol
+#  for the Composite extension, used to let arbitrary client programs
+#  control drawing of the final image.
+# URL: http://www.X.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=compositeproto
+version=0.4
+release=1
+source=(ftp://ftp.x.org/pub/individual/proto/compositeproto-$version.tar.bz2)
+
+build()
+{
+  cd compositeproto-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/compositeproto
+  install -m 644 README AUTHORS COPYING ChangeLog INSTALL compositeproto.txt $ROOT/share/doc/compositeproto
+}

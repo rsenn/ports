@@ -1,0 +1,25 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A FUSE based filesystem that implements replication at the filesystem level like RAID 1 does at the device level.
+# The replicated filesystem may be of any kind you want; the only requisite is that you mount it. There is no need for special configuration files; the setup is as simple as one mount command (or one line in fstab).
+# URL: http://www.furquim.org/chironfs/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libfuse2
+
+name=chironfs
+version=1.0.0
+release=1
+source=(http://chironfs.googlecode.com/files/chironfs-$version.tar.gz)
+
+build()
+{
+  cd chironfs-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

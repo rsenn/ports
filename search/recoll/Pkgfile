@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A personal full text desktop search package.
+#  Recoll is a personal full text desktop search tool based on Xapian. It
+#  provides an easy to use, feature-rich, easy administration interface
+#  with a Qt-based GUI. Text, HTML, PDF, PostScript, MS Word, OpenOffice,
+#  Wordperfect, KWord, Abiword, maildir, and mailbox mail folder formats
+#  are supported, along with their compressed versions. Powerful query
+#  facilities are provided. Multiple character sets are supported, and
+#  internal processing and storage uses Unicode UTF-8. Stemming is performed
+#  at query time and the stemming language can be switched after indexing.
+# URL: http://www.recoll.org
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=recoll
+version=1.10.1
+release=1
+source=(http://www.lesbonscomptes.com/recoll/recoll-$version.tar.gz)
+
+build()
+{
+  cd recoll-$version
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

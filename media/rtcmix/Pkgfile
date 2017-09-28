@@ -1,0 +1,51 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Open-Source, Digital Signal Processing and Sound Synthesis Language
+#  RTcmix is a real-time software "language" for doing digital sound
+#  synthesis and signal-processing. It is written in C/C++, and is
+#  distributed open-source, free of charge. In certain respects, it is
+#  similar in function to other extant unit-generator-based software
+#  languages such as CSOUND, SuperCollider and (to a lesser extent) JSyn
+#  and Max/MSP -- they do share a common heritage, after all. There are
+#  some differences, however, between all these languages... and variety
+#  is of course the spice of life
+# URL: http://rtcmix.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=rtcmix
+version=4.0.1
+release=1
+source=(http://music.columbia.edu/cmc/RTcmix/install/RTcmix-$version.tar.gz
+        rtcmix-4.0.1-fixes.patch)
+
+build()
+{
+  cd RTcmix-$version
+
+  patch -N -p1 -i $SRC/rtcmix-4.0.1-fixes.patch
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  sed -i "s,^include .*,include $SRC/RTcmix-$version/makefile.conf," */*/package.conf
+
+  make
+
+  install -d $ROOT/bin
+
+  make DESTDIR="$ROOT/bin" install
+
+  install -d $ROOT/share/doc/rtcmix
+  install -m 644 AUTHORS ChangeLog DO INSTALL LICENSE NEWS README THANKS $ROOT/share/doc/rtcmix
+  install -m 644 docs/BUGS docs/README2.1.Linux $ROOT/share/doc/rtcmix
+
+  install -d $ROOT/share/doc/rtcmix/docs/historical
+  install -m 644 docs/historical/README docs/historical/README1.0.Linux docs/historical/README2.0.Linux $ROOT/share/doc/rtcmix/docs/historical
+
+  find docs -name CVS -exec rm -r "{}" ";"
+
+  cp -rf docs/sample_code $ROOT/share/doc/rtcmix
+}

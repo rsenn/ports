@@ -1,0 +1,47 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Package: intel-icc10-ia32
+# Section: restricted/devel
+#
+# Description: Intel C++ Compiler 10.1
+#  Intel C++ Compiler Professional Edition offers the best support for
+#  creating multi-threaded applications. Only the Professional Edition offers
+#  the breadth of advanced optimization, multi-threading, and processor
+#  support that includes automatic processor dispatch, vectorization,
+#  auto-parallelization, OpenMP*, data prefetching, and loop unrolling, along
+#  with highly optimized C++ templates for parallelism, math processing,
+#  and multimedia libraries.
+#  .
+# URL: http://www.intel.com/cd/software/products/asmo-na/eng/compilers/clin/index.htm
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=icc10-ia32
+version=10.1.012
+release=1
+source=(l_cc_p_10.1.012_ia32.tar.gz
+        intel_TBE.lic)
+
+build()
+{
+  cd l_cc_p_${version}_ia32
+
+  sed -i \
+      -e 's,=reject,=accept,' \
+      -e 's,^\(NON_SUPPORTED_OS_INSTALL\)=No,\1=Yes,' \
+      -e "s,^\([A-Z_]\+\)=\(/opt/intel\),\1=$PKG\2," \
+    data/SilentInstallConfigFile.ini
+
+  sed -i \
+      -e 's,^\(license_dir\)=.*,\1=$PKG/opt/intel/licenses,' \
+    install.sh
+
+  mkdir -p "$PKG/opt/intel/licenses"
+
+  ./install.sh --silent --licensepath $SRC/intel_TBE.lic
+
+#  install -d $ROOT/share/doc
+#  mv -f $PKG/opt/intel/cc/10.1.012/doc
+}
+
+# EOF

@@ -1,0 +1,25 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:50 roman Exp $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=clucene
+version=0.9.16a
+release=1
+source=($mirror_sf/clucene/clucene-contrib-$version.tar.bz2)
+
+build()
+{
+  cd $SRC/clucene-contrib*
+
+  export CXX=g++-3.4
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make DESTDIR="$PKG" install
+}

@@ -1,0 +1,55 @@
+# $Id: Pkgfile,v 1.1 2007/04/16 10:04:34 roman Exp $
+#
+# Description: GNU gmp
+#  GMP is a free library for arbitrary precision arithmetic, operating
+#  on signed integers, rational numbers and floating point numbers. There
+#  is no practical limit on the precision except the ones implied by the
+#  available memory in the machine GMP runs on.
+# URL: http://www.gnu.org/software/gmp
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=gmp
+version=4.3.1
+release=1
+source=($mirror_gnu/gmp/gmp-$version.tar.bz2
+        gmp-4.2.2-diet.patch
+        gmp-4.2.2-c99inline.patch)
+
+build()
+{
+  srcdir="$SRC/gmp-$version"
+  builddir="$srcdir/build/$host"
+
+  cd $srcdir
+
+  rm -f config/config.sub
+
+  autoreconf --force --verbose --install
+  
+  patch -N -p1 -i $SRC/gmp-4.2.2-diet.patch
+#  patch -N -p1 -i $SRC/gmp-4.2.2-c99inline.patch
+
+  rm -rf $builddir && mkdir -p $builddir && cd $builddir
+
+  $srcdir/configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --mandir="$prefix/share/man" \
+       --infodir="$prefix/share/info" \
+       --${shared:=enable}-shared \
+       --${static:=enable}-static \
+       --with-mpfr="$prefix" \
+       --enable-cxx
+
+  make
+  make DESTDIR="$PKG" install
+
+  cd $srcdir
+
+  install -d $ROOT/share/doc/gmp
+  install -m 644 ChangeLog NEWS COPYING AUTHORS README COPYING.LIB INSTALL $ROOT/share/doc/gmp
+
+  rm -f $ROOT/share/info/dir
+}

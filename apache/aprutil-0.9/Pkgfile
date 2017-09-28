@@ -1,0 +1,43 @@
+# $Id: Pkgfile 570 2008-10-02 05:42:22Z root $
+#
+# Description: The Apache Portable Runtime Utility Library
+#  APR is Apache's Portable Runtime Library, designed to be a support library
+#  that provides a predictable and consistent interface to underlying
+#  platform-specific implementations.
+#  .
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=aprutil-0
+version=0.9.15
+release=1
+source=(http://www.apache.org/dist/apr/apr-util-$version.tar.bz2
+        apr-util-0.9.15-libdeps.patch
+        apr-util-0.9.15-layout.patch)
+
+build()
+{
+  cd apr-util-$version
+
+  patch -N -p1 -i $SRC/apr-util-0.9.15-libdeps.patch
+  patch -N -p1 -i $SRC/apr-util-0.9.15-layout.patch
+
+  export CFLAGS CPPFLAGS
+
+  ./configure \
+      --host="$host" \
+      --build="$build" \
+      --prefix="$prefix" \
+      --enable-layout="epiphyte" \
+      --with-apr="$prefix/bin/apr-config" \
+      --with-dbm="db44" \
+      --with-berkeley-db="$prefix" \
+      --with-expat="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  rm -f $ROOT/lib/aprutil.exp
+
+  chown -R 0:0 "$PKG"
+}

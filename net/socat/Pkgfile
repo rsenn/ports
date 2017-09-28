@@ -1,0 +1,37 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: multipurpose relay for bidirectional data transfer.
+#  Socat is a relay for bidirectional data transfer between two independent
+#  data channels. Each of these data channels may be a file, pipe, device
+#  (terminal or modem, etc.), socket (Unix, IP4, IP6 - raw, UDP, TCP),
+#  SSL, a client for SOCKS4, or proxy CONNECT. It supports broadcasts
+#  and multicasts, abstract Unix sockets, Linux tun/tap, GNU readline,
+#  and PTYs. It provides forking, logging, and dumping and different modes
+#  for interprocess communication. Many options are available for tuning
+#  socat and its channels. Socat can be used, for example, as a TCP relay
+#  (one-shot or daemon), as a daemon-based socksifier, as a shell interface
+#  to Unix sockets, as an IP6 relay, or for redirecting TCP-oriented programs
+#  to a serial line.
+# URL: 
+# Maintainer: 
+# Depends on: 
+
+name=socat
+version=2.0.0-b3
+release=1
+source=(http://www.dest-unreach.org/socat/download/socat-$version.tar.gz)
+
+build() 
+{
+  cd socat-$version
+  
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+  
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

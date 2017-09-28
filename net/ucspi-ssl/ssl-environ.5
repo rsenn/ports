@@ -1,0 +1,239 @@
+.TH tcp-environ 5 "" "" ucspi-ssl
+.SH NAME
+ssl-environ \- SSL/TLS-related environment variables
+.SH DESCRIPTION
+
+When invoked with the argument -s, 
+.B sslserver
+and 
+.B sslhandle
+servers set the following SSL-related environment variables, similar to
+those set by mod_ssl.
+Note that 
+.B sslserver 
+etc. do not set the $HTTPS environment
+variable.
+
+.LP
+.I Standard environment variables
+.LP
+The ucspi-ssl servers and clients set the following environment variables:
+
+.TP 5
+PROTO
+The string SSL.
+
+.TP 5
+SSLLOCALHOST
+is the name listed in DNS for the local host.  If no name
+is available, $SSLLOCALHOST is not set. Beware that $SSLLOCALHOST
+can contain arbitrary characters.
+
+.TP 5
+SSLLOCALIP
+is the IP address of the local host, in dotted-decimal format.
+
+.TP 5
+SSLLOCALPORT 
+is the local TCP port number, in decimal.
+
+.TP 5
+SSLREMOTEHOST 
+is the name listed in DNS for the remote host.  If
+no name is available, $SSLREMOTEHOST is not set. Beware that
+
+.TP 5
+SSLREMOTEHOST 
+can contain arbitrary characters.
+
+.TP 5
+SSLREMOTEINFO 
+is a connection-specific string supplied by the remote
+host via the 931/1413/IDENT/TAP protocol.  If no information is available,
+
+.TP 5
+SSLREMOTEINFO 
+is not set.  Beware that $SSLREMOTEINFO can
+contain arbitrary characters.
+
+.TP 5
+SSLREMOTEIP 
+is the IP address of the remote host, in
+dotted-decimal format.
+
+.TP 5
+SSLREMOTEPORT 
+is the remote TCP port number, in decimal.
+
+.LP 
+.I Environment for compatibility with ucspi-tcp
+.LP 
+When invoked with the argument -e, sslserver and sslhandle servers set the following ucspi-tcp environment variables to their corresponding ucspi-ssl values: 
+
+.TP 5
+TCPLOCALHOST 
+
+
+.TP 5
+TCPLOCALIP 
+
+
+.TP 5
+TCPLOCALPORT 
+
+
+.TP 5
+TCPREMOTEHOST 
+
+
+.TP 5
+TCPREMOTEINFO 
+
+
+.TP 5
+TCPREMOTEIP 
+
+
+.TP 5
+TCPREMOTEPORT
+
+
+.LP
+.I SSL environment variables
+.LP
+When invoked with the argument -s, sslserver and sslhandle servers set the following SSL-related environment variables, similar to those set by mod_ssl. Note that sslserver etc. do not set the $HTTPS environment variable. 
+
+.TP 5
+SSL_PROTOCOL
+The SSL protocol version in use. 
+
+.TP 5
+SSL_SESSION_ID
+The current SSL session ID, hex encoded. 
+
+.TP 5
+SSL_CIPHER
+The cipher in use. 
+
+.TP 5
+SSL_CIPHER_ALGKEYSIZE
+The number of bits permitted in the cipher. 
+
+.TP 5
+SSL_CIPHER_USEKEYSIZE
+The number of bits used in the cipher. 
+
+.TP 5
+SSL_CIPHER_EXPORT
+The string "true" if $SSL_CIPHER_USEKEYSIZE is less than 56, otherwise "false". 
+
+.TP 5
+SSL_VERSION_INTERFACE
+The string "ucspi-ssl". 
+
+.TP 5
+SSL_VERSION_LIBRARY
+The OpenSSL library version in use. 
+
+.TP 5
+SSL_SERVER_A_KEY
+The signature algorithm used in the server key, if available, or "UNKNOWN". 
+
+.TP 5
+SSL_SERVER_A_SIG
+The signature algorithm used in the server certificate, if available, or "UNKNOWN". 
+
+.TP 5
+SSL_SERVER_CERT
+The server certificate. 
+
+.TP 5
+SSL_SERVER_CERT_CHAIN_N
+The list of certificates in the server verification chain. 
+
+.TP 5
+SSL_SERVER_M_VERSION
+The server certificate version. 
+
+.TP 5
+SSL_SERVER_M_SERIAL
+The server certificate serial number. 
+
+.TP 5
+SSL_SERVER_V_START
+The server certificate validity start time. 
+
+.TP 5
+SSL_SERVER_V_END
+The server certificate validity end time. 
+
+.TP 5
+SSL_SERVER_S_DN
+The server certificate distinguished name subject. 
+
+.TP 5
+SSL_SERVER_S_DN_X
+The server certificate distinguished name component X, where X is one of C, CN, D, Email, G, I, L, O, OU, S, ST, T, and UID. 
+
+.TP 5
+SSL_SERVER_I_DN
+The server certificate issuer distinguished name subject. 
+
+.TP 5
+SSL_SERVER_I_DN_X
+The server certificate issuer distinguished name component X, where X is one of C, CN, D, Email, G, I, L, O, OU, S, ST, T, and UID. 
+
+.TP 5
+SSL_CLIENT_A_KEY
+The signature algorithm used in the client key, if available, or "UNKNOWN". 
+
+.TP 5
+SSL_CLIENT_A_SIG
+The signature algorithm used in the client certificate, if available, or "UNKNOWN". 
+
+.TP 5
+SSL_CLIENT_CERT
+The client certificate. 
+
+.TP 5
+SSL_CLIENT_CERT_CHAIN_N
+The list of certificates in the client verification chain. 
+
+.TP 5
+SSL_CLIENT_M_VERSION
+The certificate version. 
+
+.TP 5
+SSL_CLIENT_M_SERIAL
+The certificate serial number. 
+
+.TP 5
+SSL_CLIENT_V_END
+The client certificate validity start time. 
+
+.TP 5
+SSL_CLIENT_V_START
+The client certificate validity end time. 
+
+.TP 5
+SSL_CLIENT_S_DN
+The client certificate distinguished name subject. 
+
+.TP 5
+SSL_CLIENT_S_DN_X
+The client certificate distinguished name component X, where X is one of C, CN, D, Email, G, I, L, O, OU, S, ST, T, and UID. 
+
+.TP 5
+SSL_CLIENT_I_DN
+The client certificate issuer distinguished name subject. 
+
+.TP 5
+SSL_CLIENT_I_DN_X
+The client certificate issuer distinguished name component X, where X is one of C, CN, D, Email, G, I, L, O, OU, S, ST, T, and UID.
+
+
+.SH "SEE ALSO"
+
+sslclient(1),
+sslserver(1),
+tcp-environ(5)

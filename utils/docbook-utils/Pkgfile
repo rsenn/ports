@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A collection of shell scripts for managing DocBook SGML documents.
+#  docbook-utils contains scripts for easy conversion from DocBook SGML
+#  files to other formats (for example, HTML, RTF, and PostScript), and
+#  for comparing SGML files.
+#  .
+# URL: http://sources.redhat.com/docbook-tools/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=docbook-utils
+version=0.6.14
+release=1
+source=(ftp://sources.redhat.com/pub/docbook-tools/new-trials/SOURCES/docbook-utils-$version.tar.gz)
+
+build()
+{
+  cd docbook-utils-$version
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

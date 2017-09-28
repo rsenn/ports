@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Adaptive multi-rate narrow band (AMR-NB) codecs.
+# URL: http://www.penguin.cz/~utx/amr
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=amrwb
+version=7.0.0.3
+release=1
+source=(http://ftp.penguin.cz/pub/users/utx/amr/amrwb-$version.tar.bz2)
+
+build() 
+{
+  cd amrwb-$version
+  
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+  
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/amrnb
+  install -m 644 COPYING INSTALL TODO ChangeLog NEWS README AUTHORS $ROOT/share/doc/amrnb
+}
+
+# EOF

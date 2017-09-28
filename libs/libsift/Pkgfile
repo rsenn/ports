@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+# Package: libsift1.8-cil
+# Description: Scale-Invariant Feature Transform implementation
+# The scale-invariant feature transform is an algorithm to identify
+# and locate interesting points within an image. For all such points,
+# a descriptive signature is extracted. The signatures can be stored and
+# matched among multiple images, allowing for a large number of interesting
+# applications, such as aligning overlapping images and identifying objects
+# or motion within image sequences. libsift is used by the autopano-sift
+# program to create panorama images.
+#
+# URL: http://user.cs.tu-berlin.de/~nowozin/libsift/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libsift
+version=1.8
+release=1
+source=(http://user.cs.tu-berlin.de/~nowozin/libsift/libsift-$version.tar.gz
+        libsift-1.8-makefile.patch)
+
+build()
+{
+  cd libsift-$version
+
+  patch -N -p1 -i $SRC/libsift-1.8-makefile.patch
+
+  make -C src
+
+  install -d $ROOT/lib/cli/libsift-$version
+  install -m 644 src/libsift.dll{,.mdb} $ROOT/lib/cli/libsift-$version
+}

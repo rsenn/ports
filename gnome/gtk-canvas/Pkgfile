@@ -1,0 +1,40 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Gtk Canvas Widget
+# GtkCanvas is a straight port of the GNOME Canvas from the stable gnome-libs 1.2.4 back
+# to gtk+. This widget behaves identically to the GnomeCanvas widget, with the same APIs,
+# except the names are changed from gnome_canvas to gtk_canvas. Since the next version of
+# gtk+ will drop GdkImLib and intgrate with gdk-pixbuf, it is expected that future versions
+# of this widget will depend upon gtk+ only. It is intended that GtkCanvas will follow
+# GnomeCanvas closely, merging new code whenever a stable release of the latter is made.
+# Thus this is not really a fork but rather a "re-packaging" of the same code.
+# URL: http://www.atai.org/gtk-canvas
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: gdk-imlib11, libc6, libdb4.6, libglib1.2ldbl, libgtk1.2, libx11-6, libxext6, libxi6, zlib1g
+
+name=gtk-canvas
+version=0.1.1
+release=1
+source=(http://www.atai.org/gtk-canvas/gtk-canvas-$version.tar.gz
+        gtk-canvas-0.1.1-m4.patch)
+
+build()
+{
+  cd gtk-canvas-$version
+
+  patch -N -p1 -i $SRC/gtk-canvas-0.1.1-m4.patch
+
+  if set -- $prefix/lib/libart_lgpl.* && test -e $1
+  then
+    export LIBS="${LIBS:+$LIBS }-lart_lgpl -lm"
+  fi
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

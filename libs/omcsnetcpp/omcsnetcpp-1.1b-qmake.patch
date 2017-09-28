@@ -1,0 +1,88 @@
+diff -ruN omcsnetcpp-1.1b_orig/Makefile omcsnetcpp-1.1b/Makefile
+diff -ruN omcsnetcpp-1.1b_orig/lib/Makefile omcsnetcpp-1.1b/lib/Makefile
+diff -ruN omcsnetcpp-1.1b_orig/lib/concept.h omcsnetcpp-1.1b/lib/concept.h
+--- omcsnetcpp-1.1b_orig/lib/concept.h	2008-07-14 16:29:16.000000000 +0200
++++ omcsnetcpp-1.1b/lib/concept.h	2008-07-14 16:30:15.000000000 +0200
+@@ -236,7 +236,7 @@
+ 		//!Initializes the forward links data structure
+ 		void p_InitForwardLinks()
+ 		{
+-			m_forwardLinks = new (CLinkMap *)[MAX_RELATIONS];
++			m_forwardLinks = new CLinkMap *[MAX_RELATIONS];
+ 
+ 			for (u_int i = 0;i < MAX_RELATIONS;++i)
+ 			{
+@@ -247,7 +247,7 @@
+ 		//!Initializes the backward links data structure
+ 		void p_InitBackwardLinks()
+ 		{
+-			m_backwardLinks = new (CLinkMap *)[MAX_RELATIONS];
++			m_backwardLinks = new CLinkMap *[MAX_RELATIONS];
+ 
+ 			for (u_int i = 0;i < MAX_RELATIONS;++i)
+ 			{
+diff -ruN omcsnetcpp-1.1b_orig/lib/lib.pro omcsnetcpp-1.1b/lib/lib.pro
+--- omcsnetcpp-1.1b_orig/lib/lib.pro	1970-01-01 01:00:00.000000000 +0100
++++ omcsnetcpp-1.1b/lib/lib.pro	2003-09-19 06:56:41.000000000 +0200
+@@ -0,0 +1,15 @@
++
++#QMAKE_LIBDIR = /root/omcsnetcpp
++TEMPLATE=lib
++CONFIG += staticlib stl release
++TARGET=omcsnetcpp
++#INCLUDEPATH += /root/omcsnetcpp/src
++#LIBS += 
++LANGUAGE = C++
++SOURCES += concept.cpp omcsnet.cpp link.cpp link_map.cpp concept_map.cpp
++HEADERS += pred_fileio.h pred_decoder.h semantic_id.h id_generator.h omcsnet.h id_generator.h concept_map.h concept.h link.h link_map.h link_list.h find_cfg.h id_vector.h concept_list.h findc_cfg.h finda_cfg.h
++#unix{
++#  UI_DIR = .ui
++#  MOC_DIR = .moc
++#  OBJECTS_DIR = .obj
++#}
+diff -ruN omcsnetcpp-1.1b_orig/lib/omcsnetcpp.pro omcsnetcpp-1.1b/lib/omcsnetcpp.pro
+--- omcsnetcpp-1.1b_orig/lib/omcsnetcpp.pro	2008-07-14 16:29:16.000000000 +0200
++++ omcsnetcpp-1.1b/lib/omcsnetcpp.pro	1970-01-01 01:00:00.000000000 +0100
+@@ -1,15 +0,0 @@
+-
+-#QMAKE_LIBDIR = /root/omcsnetcpp
+-TEMPLATE=lib
+-CONFIG += staticlib stl release
+-TARGET=omcsnetcpp
+-#INCLUDEPATH += /root/omcsnetcpp/src
+-#LIBS += 
+-LANGUAGE = C++
+-SOURCES += concept.cpp omcsnet.cpp link.cpp link_map.cpp concept_map.cpp
+-HEADERS += pred_fileio.h pred_decoder.h semantic_id.h id_generator.h omcsnet.h id_generator.h concept_map.h concept.h link.h link_map.h link_list.h find_cfg.h id_vector.h concept_list.h findc_cfg.h finda_cfg.h
+-#unix{
+-#  UI_DIR = .ui
+-#  MOC_DIR = .moc
+-#  OBJECTS_DIR = .obj
+-#}
+diff -ruN omcsnetcpp-1.1b_orig/test/Makefile omcsnetcpp-1.1b/test/Makefile
+diff -ruN omcsnetcpp-1.1b_orig/test/omcsnet.pro omcsnetcpp-1.1b/test/omcsnet.pro
+--- omcsnetcpp-1.1b_orig/test/omcsnet.pro	2008-07-14 16:29:17.000000000 +0200
++++ omcsnetcpp-1.1b/test/omcsnet.pro	1970-01-01 01:00:00.000000000 +0100
+@@ -1,9 +0,0 @@
+-
+-QMAKE_LIBDIR = ../lib
+-TEMPLATE =app
+-CONFIG += release stl qt
+-INCLUDEPATH += ../lib
+-LIBS += -lomcsnetcpp
+-LANGUAGE = C++
+-SOURCES += main.cpp
+-#HEADERS += pred_fileio.h pred_decoder.h semantic_id.h id_generator.h omcsnet.h id_generator.h concept_map.h concept.h link.h link_map.h link_list.h find_cfg.h id_vector.h concept_list.h findc_cfg.h finda_cfg.h
+diff -ruN omcsnetcpp-1.1b_orig/test/test.pro omcsnetcpp-1.1b/test/test.pro
+--- omcsnetcpp-1.1b_orig/test/test.pro	1970-01-01 01:00:00.000000000 +0100
++++ omcsnetcpp-1.1b/test/test.pro	2003-09-19 06:57:13.000000000 +0200
+@@ -0,0 +1,9 @@
++
++QMAKE_LIBDIR = ../lib
++TEMPLATE =app
++CONFIG += release stl qt
++INCLUDEPATH += ../lib
++LIBS += -lomcsnetcpp
++LANGUAGE = C++
++SOURCES += main.cpp
++#HEADERS += pred_fileio.h pred_decoder.h semantic_id.h id_generator.h omcsnet.h id_generator.h concept_map.h concept.h link.h link_map.h link_list.h find_cfg.h id_vector.h concept_list.h findc_cfg.h finda_cfg.h

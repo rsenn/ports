@@ -1,0 +1,483 @@
+diff -ruN wikipediafs-0.3/ChangeLog wikipediafs-trunk/ChangeLog
+--- wikipediafs-0.3/ChangeLog	2007-05-26 18:02:19.000000000 +0200
++++ wikipediafs-trunk/ChangeLog	2008-09-05 14:32:43.000000000 +0200
+@@ -1,8 +1,24 @@
++2007-05-30 Mathieu Blondel <mblondel@users.sourceforge.net>
++
++- Set default cache time if article-cache-time is not present in config.
++
++2007-05-27 Mathieu Blondel <mblondel@users.sourceforge.net>
++
++- Fixed the problem with articles having special characters like & (article.py).
++
++- Made the man page optional in the install process (setup.py).
++
++- Check invalid characters in article name. (fs.py)
++
++=== WikipediaFS 0.3 ===
++
+ 2007-05-26 Mathieu Blondel <mblondel@users.sourceforge.net>
+ 
+ - Fixed a little problem in article.py. Spaces in article name must be replaced
+ with underscores.
+ 
++- Section of manpage should be 1, not 8. gzip man page with -9 option.
++
+ 2007-05-24 Csaba Henk <csaba.henk@creo.hu>
+ 
+ - Fixed misindentation and left the '-s' option unhandled in mount.wikipediafs.
+diff -ruN wikipediafs-0.3/VERSION wikipediafs-trunk/VERSION
+--- wikipediafs-0.3/VERSION	2007-05-26 18:02:29.000000000 +0200
++++ wikipediafs-trunk/VERSION	1970-01-01 01:00:00.000000000 +0100
+@@ -1 +0,0 @@
+-0.3
++0.3svn20080905
+diff -ruN wikipediafs-0.3/doc/mount.wikipediafs.sgml wikipediafs-trunk/doc/mount.wikipediafs.sgml
+--- wikipediafs-0.3/doc/mount.wikipediafs.sgml	2007-05-26 18:02:20.000000000 +0200
++++ wikipediafs-trunk/doc/mount.wikipediafs.sgml	2008-09-05 14:32:42.000000000 +0200
+@@ -16,7 +16,7 @@
+   <!ENTITY mandate      "<date>Thu, 20 Jun 2006 13:16:17 -0700</date>">
+   <!-- SECTION should be 1-8, maybe with subsection. Other parameters are
+        allowed: see man(7), man(1). -->
+-  <!ENTITY mansection   "<manvolnum>8</manvolnum>">
++  <!ENTITY mansection   "<manvolnum>1</manvolnum>">
+   <!ENTITY manemail     "<email>mblondel@users.sourceforge.net</email>">
+   <!ENTITY manusername  "sdffsd">
+   <!ENTITY manucpackage "<refentrytitle>MOUNT.WIKIPEDIAFS</refentrytitle>">
+@@ -65,7 +65,7 @@
+ filesystem.
+     </para>
+     
+-    <para>To connect through an HTTP proxy, it possible to use
++    <para>To connect through an HTTP proxy, it is possible to use
+ the $http_proxy environment variable.</para>
+     
+   </refsect1>
+@@ -93,7 +93,8 @@
+               <term>host*</term>
+               <listitem>
+                   <para>
+-                      Is the host of the site.
++                      Is the host of the site. For Wikipedia, it will be
++                      lang.wikipedia.org
+                   </para>
+               </listitem>
+           </varlistentry>   
+diff -ruN wikipediafs-0.3/make_release.sh wikipediafs-trunk/make_release.sh
+--- wikipediafs-0.3/make_release.sh	1970-01-01 01:00:00.000000000 +0100
++++ wikipediafs-trunk/make_release.sh	2008-09-05 14:32:43.000000000 +0200
+@@ -0,0 +1,57 @@
++#!/bin/sh
++
++RM="`which rm` -vrf"
++MKDIR="`which mkdir` -p"
++
++if [ "$1foo" = "foo" ]; then
++        echo "usage: `basename $0` X.Y.Z"
++        exit 1
++fi
++
++PKG="wikipediafs-$1"
++TAR_PKG="$PKG.tar.gz"
++ZIP_PKG="$PKG.zip"
++TMP_DIR="/tmp/$PKG"
++
++echo "Creating temporary directory..."
++$RM $TMP_DIR
++$MKDIR $TMP_DIR
++cp -r * $TMP_DIR
++cd $TMP_DIR
++
++echo "Creating man page"
++docbook-to-man doc/mount.wikipediafs.sgml > doc/mount.wikipediafs.1
++man2html -r doc/mount.wikipediafs.1 | sed -e "s/Content-type: text\/html//" \
++    > doc/mount.wikipediafs.htm
++gzip -9 doc/mount.wikipediafs.1
++
++echo "Uploading site..."
++cp README README.txt
++scp site/*.htm site/*.png doc/mount.wikipediafs.htm README.txt \
++mblondel@shell.sourceforge.net:/home/groups/w/wi/wikipediafs/htdocs/
++$RM README.txt
++
++echo "Removing unnecessary files..."
++$RM `find . -name "*.pyc" -or -name ".*" -or -name "*~" -or -name "*.orig"`
++$RM "make_release.sh"
++$RM site/
++
++echo "Updating version number..."
++echo "VERSION = '"$1"'" > src/wikipediafs/version.py
++echo $1 > VERSION
++
++cd ..
++
++echo "Generating tarball..."
++$RM $TAR_PKG 
++tar -czf $TAR_PKG $PKG
++
++echo "Generating zip..."
++$RM $ZIP_PKG 
++zip -r $ZIP_PKG $PKG
++
++echo "Generated archives:"
++du -h "`dirname $TMP_DIR`/$TAR_PKG"
++du -h "`dirname $TMP_DIR`/$ZIP_PKG"
++
++exit 0
+diff -ruN wikipediafs-0.3/setup.py wikipediafs-trunk/setup.py
+--- wikipediafs-0.3/setup.py	2007-05-26 18:02:20.000000000 +0200
++++ wikipediafs-trunk/setup.py	2008-09-05 14:32:43.000000000 +0200
+@@ -1,16 +1,21 @@
+ from distutils.core import setup
++import os
+ 
+ # Please run
+ # python setup.py install
+ 
++if os.path.exists('doc/mount.wikipediafs.1.gz'):
++    df = [('/usr/share/man/man1/', ['doc/mount.wikipediafs.1.gz'])]
++else:
++    df = []    
++
+ setup(
+     name = 'wikipediafs',
+-    version = '0.1',
+     author = 'Mathieu Blondel',
+     author_email = 'mblondel@users.sourceforge.net',
+     url = 'http://wikipediafs.sourceforge.net',
+     packages = ['wikipediafs'],
+     package_dir = {'wikipediafs':'src/wikipediafs/'},
+     scripts = ['src/mount.wikipediafs'],
+-    data_files = [('/usr/share/man/man1/', ['doc/mount.wikipediafs.1.gz'])],
++    data_files = df,
+ )
+\ No newline at end of file
+diff -ruN wikipediafs-0.3/site/index.htm wikipediafs-trunk/site/index.htm
+--- wikipediafs-0.3/site/index.htm	1970-01-01 01:00:00.000000000 +0100
++++ wikipediafs-trunk/site/index.htm	2008-09-05 14:32:42.000000000 +0200
+@@ -0,0 +1,96 @@
++<html>
++<head>
++<meta http-equiv="content-type" content="text/html; charset=UTF-8;"/>
++<title>WikipediaFS, view and edit Wikipedia articles as if they were real
++files</title>
++<style>
++body { background-color: white; }
++h1, h2, h3 { font-family: sans; color: #000000; }
++</style>
++</head>
++<body>
++
++<p><a href="index_fr.htm" title="Page française">Français</a> - <a href="index_ja.htm" title="日本語">日本語</a></p>
++
++<h1>WikipediaFS</h1>
++
++<p><strong>View and edit Wikipedia articles as if they were real files !
++</strong></p>
++
++<hr />
++
++<p><span style="color:red; font-weight:bold">Warning!</span> WikipediaFS is
++currently unmaintained. We are looking for a new maintainer to take over the
++development of the project. If you are interested, please tell us on the
++project's mailing-list.</p>
++
++<hr />
++
++<p>WikipediaFS is a mountable Linux virtual file system that allows to read 
++and edit articles from <a href="http://www.wikipedia.org">Wikipedia</a> (or
++any <a href="http://www.mediawiki.org/wiki/MediaWiki">Mediawiki</a>-based
++site) as if they were real files.</p>
++
++<p>It is thus possible to <strong>view and edit articles using your favourite
++text-editor</strong>. Text-editors tend to be more convenient  than a simple
++browser form when it comes to editing large texts and they generally include
++useful features such as Mediawiki syntax highlighting and spell checking.</p>
++
++<p><img src="screenshot.png" alt="WikipediaFS using Kate" /><br />
++<em>Open your article, perform your modifications and save ! That's it, Wikipedia
++has been updated for you!</em></p>
++
++<p><strong>Advance usage</strong> of WikipediaFS includes easy development of
++scripts and <em>bots</em>. Programs simply have to deal with normal files
++because this is WikipediaFS which takes care of the HTTP layer. For example, it
++would be possible to use WikipediaFS to perform a massive content migration from
++an existing site to a Mediawiki.</p>
++
++<p>WikipediaFS is <a href="http://www.gnu.org/philosophy/free-sw.html">free
++software</a>, covered by the <a href="http://www.gnu.org/copyleft/gpl.html">GNU
++General Public License</a> and provided without any warranty of any kind.</p>
++
++<h2>Features</h2>
++
++<ul>
++<li>Reading and editing articles, including subpages.</li>
++<li>User configuration : add your own Mediawiki.</li>
++<li>Editing with your login.</li>
++<li>HTTPS, HTTP authentication, proxy.</li>
++</ul>
++
++<p>WikipediaFS is expected to work with Linux, FreeBSD and Mac OS X.</p>
++
++<h2>Download</h2>
++
++<p><strong>Latest version:</strong> 0.3</p>
++
++<p><a
++href="http://sourceforge.net/project/showfiles.php?group_id=133079">Download
++area</a></p>
++
++<p>See the <a href="README.txt">README</a> file and the <a
++href="mount.wikipediafs.htm">manual page</a>.</p>
++
++
++
++<h2>Related links</h2>
++
++<ul>
++<li><a href="http://sourceforge.net/projects/wikipediafs/">WikipediaFS project
++homepage at Sourceforge</a> (mailing-lists, bug tracker...).</li>
++<li><a href="http://sourceforge.net/svn/?group_id=133079">Subversion
++repository</a>.</li>
++<li><a
++href="http://wikipediafs.svn.sourceforge.net/viewvc/wikipediafs/">Subversion
++web interface</a>.</li>
++<li>fuse-python <a href="http://fuse.sourceforge.net/wiki/index.php/FusePython">web site</a></li>
++</ul>
++
++<hr />
++<p>Copyrigth 2005 - 2007 Mathieu Blondel (mblondel !AT! users *DOT*
++sourceforge *DOT* net). Hosting graciously offered by <a
++href="http://www.sourceforge.net">Sourceforge</a>.</p>
++
++</body>
++</html>
+diff -ruN wikipediafs-0.3/site/index_fr.htm wikipediafs-trunk/site/index_fr.htm
+--- wikipediafs-0.3/site/index_fr.htm	1970-01-01 01:00:00.000000000 +0100
++++ wikipediafs-trunk/site/index_fr.htm	2008-09-05 14:32:42.000000000 +0200
+@@ -0,0 +1,88 @@
++<html>
++<head>
++<meta http-equiv="content-type" content="text/html; charset=UTF-8;"/>
++<title>WikipediaFS, lire et modifier les articles de Wikipédia comme s'ils étaient de véritables fichiers files</title>
++<style>
++body { background-color: white; }
++h1, h2, h3 { font-family: sans; color: #000000; }
++</style>
++</head>
++<body>
++
++<p><a href="index.htm" title="English page">English</a> - <a href="index_ja.htm" title="日本語">日本語</a></p>
++
++<h1>WikipediaFS</h1>
++
++<p><strong>Lire et modifier les articles de Wikipédia comme s'ils
++étaient de véritables fichiers !</strong></p>
++
++<p>WikipediaFS est un système de fichiers montable qui permet de lire et
++éditer des articles de <a href="http://www.wikipedia.org">Wikipedia</a> (ou
++de tout <a
++href="http://www.mediawiki.org/wiki/MediaWiki">Mediawiki</a>) comme s'ils
++étaient de vrais fichiers.</p>
++
++<p>Il est donc possible de <strong>lire et modifier des articles avec
++son éditeur de texte favori</strong>. Les éditeurs sont plus
++pratiques qu'un simple navigateur pour modifier des gros textes et ont des
++fonctions intéressantes comme la coloration syntaxique et la correction
++orthographique.</p>
++
++<p><img src="screenshot.png" alt="WikipediaFS using Kate" /><br />
++<em>Ouvrez un fichier, modifiez-le, sauvegardez-le ! C'est bon, Wikipedia a
++été mis à jour pour vous !</em></p>
++
++<p>Une <strong>utilisation avancée</strong> de WikipediaFS inclut notamment le
++développement facilité de scripts et de <em>bots</em>. En effet, les programmes
++ont simplement à se soucier des fichiers : c'est WikipediaFS qui prend en
++charge la couche HTTP. Par exemple, il serait possible d'utiliser WikipediaFS
++pour réaliser une migration de contenu massive entre un site existant et un
++Mediawiki.</p>
++
++<p>WikipediaFS est un <a
++href="http://www.gnu.org/philosophy/free-sw.html">logiciel libre</a>,
++publié sous licence <a
++href="http://www.gnu.org/copyleft/gpl.html">GNU
++General Public License</a> et fourni sans garantie de toute sorte.</p>
++
++<h2>Fonctionnalités</h2>
++
++<ul>
++<li>Lire et éditer des articles, sous-pages inclues.</li>
++<li>Configuration : ajoutez votre propre Mediawiki.</li>
++<li>Édition avec son login.</li>
++<li>HTTPS, authentification HTTP, proxy.</li>
++</ul>
++
++<p>WikipediaFS devrait fonctionner avec Linux, FreeBSD et Mac OS X.</p>
++
++<h2>Téléchargement</h2>
++
++<p><strong>Dernière version :</strong> 0.3</p>
++
++<p><a
++href="http://sourceforge.net/project/showfiles.php?group_id=133079">Zone
++de téléchargement</a></p>
++
++<p>Voir aussi le fichier <a href="README.txt">README</a> ainsi que la <a
++href="mount.wikipediafs.htm">page de manuel</a>.</p>
++
++<h2>Liens connexes</h2>
++
++<ul>
++<li><a href="http://sourceforge.net/projects/wikipediafs/">WikipediaFS project
++homepage at Sourceforge</a> (mailing-lists, bug tracker...).</li>
++<li><a href="http://sourceforge.net/svn/?group_id=133079">Subversion
++repository</a>.</li>
++<li><a href="http://svn.sourceforge.net/viewcvs.cgi/wikipediafs/">Subversion
++web interface</a>.</li>
++<li>fuse-python <a href="http://fuse.sourceforge.net/wiki/index.php/FusePython">web site</a></li>
++</ul>
++
++<hr />
++<p>Copyrigth 2005 - 2007 Mathieu Blondel (mblondel !AT! users *DOT*
++sourceforge *DOT* net). Hébergement du projet par <a
++href="http://www.sourceforge.net">Sourceforge</a>.</p>
++
++</body>
++</html>
+diff -ruN wikipediafs-0.3/site/index_ja.htm wikipediafs-trunk/site/index_ja.htm
+--- wikipediafs-0.3/site/index_ja.htm	1970-01-01 01:00:00.000000000 +0100
++++ wikipediafs-trunk/site/index_ja.htm	2008-09-05 14:32:42.000000000 +0200
+@@ -0,0 +1,67 @@
++<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja" lang="ja">
++<head>
++<meta http-equiv="content-type" content="text/html; charset=UTF-8;"/>
++<title>WikipediaFSで、まるで本物のファイルと同じようなWikipediaの閲覧、記事作成</title>
++<style>
++body { background-color: white; }
++h1, h2, h3 { font-family: sans; color: #000000; }
++</style>
++</head>
++<body>
++
++<p><a href="index_fr.htm" title="Page française">Français</a> - <a href="index.htm" title="English page">English</a></p>
++
++<h1>WikipediaFS</h1>
++
++<p><strong>まるで本物のファイルと同じようなWikipediaの閲覧、記事作成</strong></p>
++
++<p>WikipediaFSは、マウント可能なヴァーチャルファイルシステムで、<a href="http://www.wikipedia.org">Wikipedia</a> (また<a href="http://www.mediawiki.org/wiki/MediaWiki">Mediawiki</a>)の記事を本物のファイルのように作成することができます。</p>
++
++<p>また、記事を作成する際、普通のテキストエディタを使用することができます。テキストエディタはブラウザより大きいテキストだと使いやすくてスペルチェックやシンタックスハイライトがなされます。</p>
++
++<p><img src="screenshot.png" alt="WikipediaFS using Kate" /><br />
++ファイルを開いて、書いて、保存して、はい！Wikipediaがアップデートされました。</p>
++
++<p><strong>上級ユーザーは</strong>かんたんにロボットやスクリプトを書くためにWikipediaFSが使えます。たとえばまた、一つのサイトのたくさんのコンテンツをMediawikiのサイトに一度に移動することができます。</p>
++
++<p>WikipediaFSは、<a href="http://www.gnu.org/philosophy/free-sw.html">フリーソフトウェア</a>です。<a href="http://www.gnu.org/copyleft/gpl.html">GNUジェネラルパブリックライセンス</a> にもとづいて公開されています。あらゆる保証も請け負いかねます。</p>
++
++<h2>特性</h2>
++
++<ul>
++<li>記事の閲覧、作成ができる</li>
++<li>コンフィギュレーションで、自分のMediawikiのサイトが使える</li>
++<li>自分のユーザーネームを使って記事作成ができる</li>
++<li>HTTPS, HTTP authentication, proxy.</li>
++</ul>
++
++<p>WikipediaFSは Linux、FreeBSD、Mac OS Xで使える可能性があります。</p>
++
++<h2>ダウンロード</h2>
++
++<p><strong>最新版</strong> : 0.3</p>
++
++<a href="http://sourceforge.net/project/showfiles.php?group_id=133079">ダウンロード</a></p>
++
++<p>詳しくは、<a href="README.txt">README</a>と<a
++href="mount.wikipediafs.htm">man page</a>を参照してください。</p>
++
++<h2>関連ページ</h2>
++
++<ul>
++<li><a href="http://sourceforge.net/projects/wikipediafs/">WikipediaFS project
++homepage at Sourceforge</a> (mailing-lists, bug tracker...).</li>
++<li><a href="http://sourceforge.net/svn/?group_id=133079">Subversion
++repository</a>.</li>
++<li><a href="http://svn.sourceforge.net/viewcvs.cgi/wikipediafs/">Subversion
++web interface</a>.</li>
++<li>fuse-python　<a href="http://fuse.sourceforge.net/wiki/index.php/FusePython">web site</a></li>
++</ul>
++
++<hr />
++<p>Copyrigth 2005 - 2007 Mathieu Blondel (mblondel !AT! users *DOT*
++sourceforge *DOT* net). Hosting graciously offered by <a
++href="http://www.sourceforge.net">Sourceforge</a>.</p>
++
++</body>
++</html>
+diff -ruN wikipediafs-0.3/src/wikipediafs/article.py wikipediafs-trunk/src/wikipediafs/article.py
+--- wikipediafs-0.3/src/wikipediafs/article.py	2007-05-26 18:02:21.000000000 +0200
++++ wikipediafs-trunk/src/wikipediafs/article.py	2008-09-05 14:32:42.000000000 +0200
+@@ -66,13 +66,15 @@
+         self.wpEditToken = None
+         self.last_get = 0
+ 
+-        # url patterns        
+-        self.edit_page = "%s?title=%s&action=edit" % \
+-                            (self.basename, self.name)
++        # url patterns
++        title = urllib.urlencode({"title" : self.name})
++                
++        self.edit_page = "%s?%s&action=edit" % \
++                            (self.basename, title)
+                             # basename must include a leading /
+         
+-        self.submit_page = "%s?title=%s&action=submit" % \
+-                            (self.basename, self.name)                          
++        self.submit_page = "%s?%s&action=submit" % \
++                            (self.basename, title)                          
+ 
+     def start_textarea(self,attrs):
+         """
+diff -ruN wikipediafs-0.3/src/wikipediafs/config.py wikipediafs-trunk/src/wikipediafs/config.py
+--- wikipediafs-0.3/src/wikipediafs/config.py	2007-05-26 18:02:21.000000000 +0200
++++ wikipediafs-trunk/src/wikipediafs/config.py	2008-09-05 14:32:42.000000000 +0200
+@@ -123,13 +123,11 @@
+ 
+ 
+     def __setCacheTime(self):
+-        element = self.__config.getElementsByTagName("article-cache-time")[0]
+-        first_child = element.firstChild
+-        val = int(str(first_child.nodeValue))
+-        try:
+-            self.cache_time = val
+-        except:
++        element = self.__config.getElementsByTagName("article-cache-time")
++        if element.length == 0:
+             self.cache_time = 30
++        else:
++            self.cache_time = int(str(element[0].firstChild.nodeValue))
+ 
+     def __setDebug(self):
+         element = self.__config.getElementsByTagName("debug")
+diff -ruN wikipediafs-0.3/src/wikipediafs/fs.py wikipediafs-trunk/src/wikipediafs/fs.py
+--- wikipediafs-0.3/src/wikipediafs/fs.py	2007-05-26 18:02:21.000000000 +0200
++++ wikipediafs-trunk/src/wikipediafs/fs.py	2008-09-05 14:32:42.000000000 +0200
+@@ -42,6 +42,11 @@
+ 
+     def is_valid_file(self, path):
+         file_name = self.get_article_file_name(path)
++
++        for forbidden_char in ('#', '<', '>', '[', ']', '|', '{', '}'):
++            if file_name.count(forbidden_char) > 0:
++                return False
++        
+         if file_name[-3:] == ".mw":
+             return True
+         else:
+diff -ruN wikipediafs-0.3/src/wikipediafs/version.py wikipediafs-trunk/src/wikipediafs/version.py
+--- wikipediafs-0.3/src/wikipediafs/version.py	2007-05-26 18:02:29.000000000 +0200
++++ wikipediafs-trunk/src/wikipediafs/version.py	1970-01-01 01:00:00.000000000 +0100
+@@ -1 +0,1 @@
+-VERSION = '0.3'
++VERSION = '0.3svn20080905'

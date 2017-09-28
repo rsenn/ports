@@ -1,0 +1,38 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libxpm-nox
+version=3.5.6
+release=1
+source=(http://www-uxsup.csx.cam.ac.uk/pub/windows/cygwin/release/libXpm-noX/libXpm-noX-$version-1-src.tar.bz2)
+
+build()
+{
+  rm -rf libXpm
+  tar -xvjf libXpm-$version.tar.bz2
+
+  rm -rf libXpm_orig && cp -rf libXpm{,_orig}
+  cd libXpm
+
+  patch -N -p2 -i $SRC/libXpm-noX-3.5.6-1.src.patch
+
+  libtoolize --force --copy
+  aclocal --force
+  autoheader --force
+  automake --force --copy --foreign --add-missing
+  aclocal --force
+  autoconf --force
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+}

@@ -1,0 +1,55 @@
+diff -r -u -- opencv-1.1.0_orig/Makefile.am opencv-1.1.0/Makefile.am
+--- opencv-1.1.0_orig/Makefile.am	2009-02-07 23:08:34.000000000 +0100
++++ opencv-1.1.0/Makefile.am	2009-02-07 23:15:00.000000000 +0100
+@@ -4,7 +4,7 @@
+ AM_CXXFLAGS=@DEF_CXXFLAGS@
+ 
+ # tell make where aclocal finds its files in Maintainer Mode 
+-ACLOCAL_AMFLAGS = -I ./autotools/aclocal
++ACLOCAL_AMFLAGS = -I autotools/aclocal
+ 
+ ## Any directories that you want built and installed should go here.
+ if BUILD_APPS
+diff -r -u -- opencv-1.1.0_orig/configure.in opencv-1.1.0/configure.in
+--- opencv-1.1.0_orig/configure.in	2009-02-07 23:08:16.000000000 +0100
++++ opencv-1.1.0/configure.in	2009-02-07 23:12:35.000000000 +0100
+@@ -631,6 +631,12 @@
+ 					   AC_DEFINE(HAVE_FFMPEG_SWSCALE,,[ffmpeg's libswscale])
+                                            FFMPEG_SWSCALE_LIBS="-lswscale"
+                                          ]))
++
++        AC_CHECK_HEADER([ffmpeg/imgconvert.h],
++                            AC_CHECK_LIB(avcodec,img_convert,
++                                         [
++             AC_DEFINE(HAVE_FFMPEG_IMGCONVERT,,[ffmpeg's img_convert()])
++                                         ]))
+         FFMPEGLIBS="$FFMPEGLIBS $FFMPEG_SWSCALE_LIBS"
+     else
+         # if we get here then --with-ffmpeg was not called with 'yes','no' or 'auto'
+diff -r -u -- opencv-1.1.0_orig/otherlibs/highgui/cvcap_ffmpeg.cpp opencv-1.1.0/otherlibs/highgui/cvcap_ffmpeg.cpp
+--- opencv-1.1.0_orig/otherlibs/highgui/cvcap_ffmpeg.cpp	2009-02-07 23:08:34.000000000 +0100
++++ opencv-1.1.0/otherlibs/highgui/cvcap_ffmpeg.cpp	2009-02-07 23:21:10.000000000 +0100
+@@ -58,6 +58,9 @@
+ #if defined(HAVE_FFMPEG_SWSCALE)
+ #include <ffmpeg/swscale.h>
+ #endif
++#if defined(HAVE_FFMPEG_IMGCONVERT)
++#include <ffmpeg/imgconvert.h>
++#endif
+ }
+ 
+ #if defined _MSC_VER && _MSC_VER >= 1200
+--- opencv-1.1.0_orig/autogen.sh	2009-02-07 23:28:50.000000000 +0100
++++ opencv-1.1.0/autogen.sh	2009-02-07 23:15:40.000000000 +0100
+@@ -0,0 +1,11 @@
++#!/bin/sh
++#
++# 20090207
++
++
++libtoolize --force --copy --automake
++aclocal --force -I autotools/aclocal
++autoheader --force
++automake --force --copy --foreign --add-missing --add-missing
++aclocal --force -I autotools/aclocal
++autoconf --force

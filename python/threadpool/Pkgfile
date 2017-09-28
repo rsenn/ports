@@ -1,0 +1,38 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Package: python-threadpool
+#
+# Description: Easy to use object-oriented thread pool framework
+#  A thread pool is an object that maintains a pool of worker threads to
+#  perform time consuming operations in parallel. It assigns jobs to the
+#  threads by putting them in a work request queue, where they are picked up
+#  by the next available thread. This then performs the requested operation
+#  in the background and puts the results in a another queue. The thread pool
+#  object can then collect the results from all threads from this queue as
+#  soon as they become available or after all threads have finished their
+#  work. It's also possible, to define callbacks to handle each result as
+#  it comes in.
+#  .
+# URL: http://pypi.python.org/pypi/threadpool/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=threadpool
+version=1.2.4
+release=1
+source=(http://pypi.python.org/packages/source/t/threadpool/threadpool-$version.tar.bz2)
+
+build()
+{
+  cd threadpool-$version
+
+  set -- $(IFS=". " && echo $(python --version 2>&1)) && shift
+
+  export PYTHONPATH="$ROOT/lib/python$1.$2/site-packages"
+
+  install -d "$PYTHONPATH"
+
+  python setup.py install --prefix="$ROOT"
+}
+
+# EOF

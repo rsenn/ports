@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A "locate" command that is always up-to-date.
+#  rlocate is an implementation of the "locate" command that is always
+#  up-to-date. The database that the original locate uses is usually updated
+#  only once a day, so newer files cannot be located right away. The behavior
+#  of rlocate is the same as slocate, but it also maintains a diff database
+#  that gets updated whenever a file is created or a directory is moved. The
+#  rlocate kernel module can be compiled only with Linux 2.6 kernels.
+# URL: http://sourceforge.net/projects/rlocate/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=rlocate
+version=
+release=1
+source=()
+
+build()
+{
+  cd rlocate-0.5.6
+  ./autogen.sh
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

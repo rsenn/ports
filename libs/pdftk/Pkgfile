@@ -1,0 +1,56 @@
+# $Id: Pkgfile,v 1.10 2007/04/22 23:07:53 roman Exp $
+#
+# Description: A simple tool for doing everyday things with PDF documents.
+#  Pdftk is a simple command line tool for doing everyday things with
+#  PDF documents. Use it to merge PDF documents, split PDF pages into a
+#  new document, decrypt input as necessary (password required), encrypt
+#  output as desired, fill PDF forms with FDF data and/or flatten forms,
+#  apply a background watermark, report on PDF metrics, update PDF metadata,
+#  attach files to PDF pages or the PDF document, unpack PDF attachments,
+#  burst a PDF document into single pages, decompress and re-compress page
+#  streams, and repair corrupted PDF files (where possible).
+# URL: http://www.pdfhacks.com/pdftk/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=pdftk
+version=1.12
+release=1
+source=(http://www.pdfhacks.com/pdftk/pdftk-$version.tar.gz
+  pdftk-$version-imgraw.patch
+  pdftk-1.12-convert.patch)
+
+build()
+{
+  cd pdftk-$version
+
+  patch -N -p1 -i $SRC/pdftk-$version-imgraw.patch
+  patch -N -p1 -i $SRC/pdftk-1.12-convert.patch
+
+  case $target in
+    *freebsd*)
+      LIBS="-lgcj -lpthread -liconv"
+      ;;
+    *)
+      LIBS="-lgcj -lpthread -ldl -lz -liconv"
+      ;;
+  esac
+
+  cd pdftk
+  sed "s,/usr/bin,$prefix/bin,g
+       s,/usr/local,$prefix,g" Makefile.*
+  make -f Makefile.RedHat CXXFLAGS="$LIBS"
+
+  make -f Makefile.RedHat install
+
+  cd ..
+  install -d $ROOT/bin
+  install -m 755 pdftk/pdftk $ROOT/bin
+
+  install -d $ROOT/man/man1
+  install -m 644 pdftk.1.txt $ROOT/man/man1/pdftk.1
+
+  install -d $ROOT/share/doc/pdftk-$version
+  install -m 644 pdftk.1.html $ROOT/share/doc/pdftk-$version
+  install -m 644 pdftk.1.notes $ROOT/share/doc/pdftk-$version
+}

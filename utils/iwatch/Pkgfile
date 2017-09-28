@@ -1,0 +1,46 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A real-time filesystem monitoring program.
+#  iWatch is a real-time filesystem monitoring program. It is a tool for
+#  detecting any changes on your filesystem and reporting it to the system
+#  administrator immediately. It uses a simple configuration file in XML
+#  format and is based on inotify, a file change notification system in
+#  the Linux kernel.
+# URL: http://iwatch.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libevent-perl
+
+name=iwatch
+category=utils
+version=0.2.1
+release=1
+source=($mirror_sf/iwatch/iwatch-$version.tgz
+        iwatch.init
+        iwatch.default)
+
+build()
+{
+  cd iwatch-$version
+
+  case $prefix in
+    "/usr") sysconfdir="/etc" localstatedir="/var" ;;
+  esac
+
+  install -d $ROOT/bin
+  install -m 755 iwatch $ROOT/bin
+
+  install -d $ROOT/share/doc/iwatch
+  install -m 644  AUTHORS COPYING README ChangeLog $ROOT/share/doc/iwatch
+
+  install -d $PKG${sysconfdir="$prefix/etc"}/init.d
+  install -m 755 $SRC/iwatch.init $PKG${sysconfdir}/init.d/iwatch
+
+  install -d $PKG${sysconfdir="$prefix/etc"}/default
+  install -m 644 $SRC/iwatch.default $PKG${sysconfdir}/default/iwatch
+
+  install -d $PKG${sysconfdir="$prefix/etc"}/iwatch
+  install -m 644 iwatch.xml ${PKG}${sysconfdir}/iwatch
+  install -m 644 iwatch.dtd ${PKG}${sysconfdir}/iwatch
+
+  install -d $PKG${localstatedir="$prefix/var"}/run
+}

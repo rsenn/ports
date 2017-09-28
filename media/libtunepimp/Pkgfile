@@ -1,0 +1,35 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A MusicBrainz-enabled audio file tagging library.
+#  The TunePimp library is an audio file tagging library that uses
+#  MusicBrainz for track identification/lookup. It will attempt to
+#  automatically identify the files, and will present the user with possible
+#  matches for files that are not automatically identified. Once the files
+#  are identified, it writes new metadata tags to the music files and writes
+#  the files to a user-defined directory hierarchy. It supports WAV, MP3,
+#  Ogg Vorbis, and FLAC files.
+#  .
+# URL: http://musicbrainz.org/products/tunepimp/index.html
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=libtunepimp
+version=0.5.3
+release=1
+source=(ftp://ftp.musicbrainz.org/pub/musicbrainz/libtunepimp-$version.tar.gz)
+
+build()
+{
+  cd libtunepimp-$version
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

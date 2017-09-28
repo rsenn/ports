@@ -1,0 +1,50 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: XML Parser Toolkit
+#  Expat is a fast, non-validating, stream-oriented XML parsing library.
+#  .
+# URL: http://www.libexpat.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=expat
+version=2.0.1
+release=2
+source=($mirror_sf/expat/expat-$version.tar.gz
+        expat-2.0.1-automake.patch
+        expat-config.in)
+
+build()
+{
+  cd expat-$version
+
+  case $prefix in
+    "/usr") bindir="/bin" ;;
+  esac
+
+  patch -N -p1 -i $SRC/expat-2.0.1-automake.patch
+
+  rm -f conftools/libtool.m4
+
+  sh autogen.sh
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --${shared:=enable}-shared \
+      --${static:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/bin
+
+  sed -e "s,@bindir@,${bindir=$prefix/bin},g" \
+      $SRC/expat-config.in >$ROOT/bin/expat-config
+
+  chmod 755 $ROOT/bin/expat-config
+
+  install -d $ROOT/share/doc/expat
+  install -m 644 Changes MANIFEST README COPYING $ROOT/share/doc/expat
+}

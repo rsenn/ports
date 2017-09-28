@@ -1,0 +1,60 @@
+# $Id: Pkgfile,v 1.2 2007/05/09 21:02:48 roman Exp $
+#
+# Description: A C/C++ computer vision and image processing library.
+#  The Open Computer Vision Library is a collection of algorithms and sample
+#  with IPL (Intel Image Processing Library) and utilizes Intel Integrated
+#  Performance Primitives for better performance.
+#  .
+# URL: http://www.intel.com/technology/computing/opencv/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=opencv
+version=1.0.0
+release=1
+source=($mirror_sf/opencvlibrary/opencv-$version.tar.gz
+        $mirror_sf/opencvlibrary/opencv_introduction_2007June9.pdf
+        $mirror_sf/opencvlibrary/opencv_objectdetection_2007june10.pdf
+        opencv-1.0.0-cvcap-ffmpeg.patch)
+
+build()
+{
+  cd opencv-$version
+
+  patch -N -p1 -i $SRC/opencv-1.0.0-cvcap-ffmpeg.patch
+#  libtoolize --force
+#  aclocal --force -I autotools/aclocal
+#  autoconf --force
+
+#  case $host in
+#     *-mingw32*)
+#       args="${args:+$args }--disable-alsa --disable-esd"
+#       ;;
+#  esac
+
+  #export CFLAGS=${CFLAGS//-g[! ]*}
+  #
+  #sed -i s/png12/png/g configure
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --without-quicktime \
+      --with-1394libs \
+      --with-swig \
+      --with-python \
+      --with-ffmpeg \
+      --with-v4l \
+      --with-gtk \
+      $args
+
+  make
+  make DESTDIR="$PKG" install
+
+  ln -s opencv $ROOT/include/cv
+
+  install -d $ROOT/share/doc/opencv
+  install -m 644 $SRC/opencv_introduction_2007June9.pdf $ROOT/share/doc/opencv
+  install -m 644 $SRC/opencv_objectdetection_2007june10.pdf $ROOT/share/doc/opencv
+}

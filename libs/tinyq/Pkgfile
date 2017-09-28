@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An extremely compact C++ console development library derived from Qt 3.
+#  Since version 3, Qt has become more than a GUI toolkit. It now is a
+#  complete programming platform that offers solutions to the most commonly
+#  used back-end functionalities. TinyQ contains only these classes and
+#  thus finally provides a very easy to use, fast, and stable API for C++
+#  without having to depend on X11. It provides the following features in
+#  an extremely compact library: UTF8 and ASCII strings, type optimized
+#  collections (dictionary, map, cache, vector, list), regular expressions,
+#  filesystem access, URL processing, threads, shared library handling,
+#  storing and retrieving user settings, date and time handling, DOM &
+#  SAX XML parsers, optimized data and text streams, and abstract IO devices.
+# URL: http://www.uwyn.com/projects/tinyq/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=tinyq
+version=3.0.6
+release=1
+source=(http://www.uwyn.com/download/tinyq/tinyq-$version.tar.bz2)
+
+build()
+{
+  cd ${srcdir=$SRC/tinyq-$version}
+
+  export QTDIR="$srcdir"
+
+  ./configure -prefix "$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

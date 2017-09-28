@@ -1,0 +1,131 @@
+# $Id: Pkgfile,v 1.22 2007/05/09 21:02:55 roman Exp $
+#
+# Description: A patch for Bash with features from Awk, Python, Zsh, Ksh, and others.
+# Bash.Diff is a patch against Bash shell.
+# In the main core, it adds the following syntax:
+# {a..b}; ${var|...}; then-else-fi to for/while/until/case statements;
+# try-block with string exception; <&lt+; and, <<<<.
+# As builtin, it adds the following: sscanf(3), <string.h>, <ctype.h> wrappers;
+# array, regex(3), stack, queue operations;
+# GDBM, SQLite, PostgreSQL, MySQL database interfaces;
+# HTML template engine (BASP); Expat XML parser interface; x-y char plot;
+# DOS, CSV, Awk support; Libwebserver interface; RPN calculator with
+# <math.h> functions; and, GTK+2 interface for GUI dialog.
+# URL: http://www.gnu.org/software/bash
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=bashdiff
+bashdiff_version=1.44
+bash_version=3.2
+version=${bashdiff_version}-${bash_version}
+release=5
+source=($mirror_gnu/bash/bash-{doc-,}${bash_version}.tar.gz
+        $mirror_gnu/bash/bash-${bash_version}-patches/bash${bash_version//./}-0{01,02,03,04,05,06,07,08,09,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39}
+        bashdiff-1.44-bash-3.2-pl1.patch
+#        bash-3.2-bashdiff-2.patch
+#        http://home.eol.ca/~parkw/bashdiff/bashdiff-${bashdiff_version}.tar.gz
+        )
+
+build()
+{
+
+  cd ${srcdir=$SRC/bash-$bash_version}
+
+  mv -f aclocal.m4 bash.m4
+
+#  fs_duplicate "$srcdir"
+
+  patch -N -p1 -i $SRC/bashdiff-1.44-bash-3.2-pl1.patch
+
+  # bash - die gesammelten werke - jetzt neu, auf DVD
+  for p in bash32-0{01,02,03,04,05,06,07,08,09,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39}; do
+    patch -N -p0 -i $SRC/$p || break #return 1
+  done
+
+  aclocal --force -I .
+  autoconf --force
+
+  for lib in terminfo tinfo ncurses curses iconv intl; do
+    if set -- $prefix/lib/lib$lib.* && test -e "$1"; then
+      case $lib in
+        terminfo|tinfo|ncurses) TERMCAP_LIB="-l$lib" ;;
+        iconv) LIBICONV="-liconv" ;;
+        intl) INTLLIBS="-lintl" ;;
+      esac
+    fi
+  done
+
+  case $prefix in
+    "/usr") bindir="/bin" sysconfdir="/etc" localstatedir="/var" ;;
+  esac
+
+  LIBS="$TERMCAP_LIB" \
+  ./configure \
+       --build="$target" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --bindir="${bindir=$prefix/bin}" \
+       --sysconfdir="${sysconfdir=$prefix/etc}" \
+       --localstatedir="${localstatedir=$prefix/var}" \
+       --mandir="$prefix/share/man" \
+       --infodir="$prefix/share/info" \
+       --program-suffix="diff" \
+       --${nls:-enable}-nls \
+       --without-bash-malloc \
+       --with-curses \
+       --with-installed-readline \
+       --enable-alias \
+       --enable-arith-for-command \
+       --enable-array-variables \
+       --enable-brace-expansion \
+       --enable-command-timing \
+       --enable-cond-command \
+       --enable-directory-stack \
+       --enable-dparen-arithmetic \
+       --enable-extended-glob \
+       --enable-help-builtin \
+       --enable-history \
+       --enable-job-control \
+       --enable-net-redirections \
+       --enable-process-substitution \
+       --enable-progcomp \
+       --enable-prompt-string-decoding \
+       --enable-readline \
+       --enable-debugger \
+       --disable-bang-history \
+       --disable-select \
+       --enable-glib2 \
+       --enable-gtk2
+
+  make \
+       ${TERMCAP_LIB:+TERMCAP_LIB="$TERMCAP_LIB"} \
+       ${LOCAL_LIBS:+LOCAL_LIBS="$LOCAL_LIBS"} \
+       DESTDIR="$PKG" \
+       all \
+       install
+
+  # Install documentation and examples...
+  install -d $ROOT/share/doc/bashdiff
+  install -m 644 $SRC/bashdiff/{MANIFEST,doc/*} \
+      $ROOT/share/doc/bashdiff
+
+  cp -rvf examples $ROOT/share/doc/bashdiff
+
+  find $ROOT/share/doc/bashdiff \
+      -name Makefile.in \
+      -exec rm -f '{}' ';'
+
+  rm -f $ROOT/share/info/dir
+
+#  cd $SRC/bash-$version
+
+#  make -C examples/loadables
+#  make -C examples/loadables/william
+
+#  install -d $ROOT/lib/bash
+#  install -m 755 \
+#      examples/loadables/*.so \
+#      examples/loadables/william/*.so \
+#      $ROOT/lib/bash || true
+}

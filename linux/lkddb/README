@@ -1,0 +1,116 @@
+LKDDb: Linux Kernel Driver DataBase
+
+what Linux drivers are for me?
+
+About LKDDb
+
+   LKDDb is an attempt to build a comprensive database of hardware and
+   protocols know by Linux kernels. The driver database includes numeric
+   identifiers of hardware, the kernel configuration menu needed to build
+   the driver and the driver filename. The database is build automagically
+   from kernel sources, so it is very easy to have always the database
+   updated.
+
+Automagical Kernel Configuration
+
+   The automatic kernel configuration is an obvious application of the
+   driver database. It combines an hardware detection, that could be easy
+   performed checking buses in /sys/bus.
+
+   The Automagical Kernel Configuration has an own AutoKernConf project
+   page.
+
+News
+
+     * 8 November 2007: code clean-up, better detections, finished the
+       format page. Renamed the database to lkddb.data
+     * 1st November 2007: add module name, configuration as virtual data
+     * 29 October 2007: created this page
+     * 28 October 2007: annonced the project in the lkml
+
+Getting the database
+
+   The database is a text file, which contains: sub system, sub system
+   specific hardware data, kernel configurations and kernel driver file
+   that contain such probe. Usually the system specific hardware data is
+   in form of mask, and list only fields that are really checked by the
+   kernel.
+
+   The latest versions is in file lkddb.data on source/lkddb directory.
+   There is also a document about the file format.
+
+   Actually the LKDDb contains probes for the subsytems:
+
+     * PCI bus devices
+     * USB bus devices
+     * IEEE1394 devices
+     * s390 CCW devices
+     * s390 AP bus devices
+     * ACPI devices
+     * Plug N Play (PnP) devices (on ISA bus)
+     * Plug N Play (PnP) devices (on ISA bus) alternate kernel detection
+     * SERIO
+     * OF
+     * VIO
+     * PCMCIA bus devices
+     * input
+     * EISA bus devices
+     * parisc specific devices
+     * SDIO
+     * SBB
+     * virtio
+     * I2C
+     * Filesystem (only the names, no harddisk detection)
+     * modules (virtual probes): map module name with configuration
+
+   There also some statistics on total probes, and probes per subsystem.
+
+Getting the database generator
+
+   The program (build-lkddb.py and for short modules: devicetables.py
+   (definition of probes), lkddb.py (main support routines),
+   kbuildparser.py (support for configuration and makefiles), srcparser.py
+   (expand macro)) is a python script, distributed with the GNU GPL v2. It
+   was designed with a lot of euristic on how the hardware is coded in
+   Linux kernel, but it should be pretty accurate, and designed to be
+   quite fast (it take nearly 2 minutes, with warm cache on my computer).
+
+   The sources are placed in the directory /sources/lkddb/.
+
+Usage:
+
+   ./build-lkddb.py /home/cate/kernel/6,v2.6/linux-2.6/
+
+   The first argument is the top directory of kernel source tree.
+   Eventually you can restrict the subdirectories to be parsed, adding as
+   extra arguments these directories (Note: anyway it will parse the whole
+   include/).
+
+   The program will write the database to lkddb.data, and a lot of
+   diagnostic message to the console (which I use to improve euristic
+   detection).
+
+History
+
+   A long time ago (in 2000), to remove some Empire code, the former
+   kbuild team designed a new way to build and configure the kernel. The
+   third (and minor) task was to add an autoconfig target to the build
+   system. I took the autoconfiguration part. Then was flames, flames and
+   flame (maybe someone remember about CML2 and the Aunt Tillie. So the
+   new make and the new CML2 was rejected, and because my part was
+   dependent to the other two sub project (and to have a simpler life), I
+   hibernate the project.
+
+   In late 2007, I restored the project, rewriting and publishing some
+   part that was never finished. Atually I works more on the driver
+   database, because I find that automatic configuration is a more
+   problematic field: what should be the target configuration? In
+   direction of perfection, so minimal, or in direction of optimal, so
+   removing only surelly unneeded drivers?.
+
+   So I split the project in two, allowing external programs to use the
+   database.
+
+Contact
+
+   You can contact me using cate (at) cateee.net

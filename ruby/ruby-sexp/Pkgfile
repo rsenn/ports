@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: S-Expression is a pure Ruby library to parse strings of Lisp style s-expressions into native Ruby style s-expressions and back again.
+# URL: http://rubyforge.org/projects/sexp/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=ruby-sexp
+version=0.2.1
+release=1
+source=($mirror_rubyforge/sexp/sexp-0.2.1.tar.gz)
+
+build() 
+{
+  cd sexp-$version
+
+  IFS="$IFS[]"
+  set -- `ruby --version`
+
+  RUBYVERSION="$2"
+
+  RUBYLIBDIR="$prefix/lib/ruby/${RUBYVERSION%.*}"
+
+  install -d $PKG/$RUBYLIBDIR
+  cp -r sexp.rb sexpressions.rb $PKG/$RUBYLIBDIR
+}
+
+# EOF

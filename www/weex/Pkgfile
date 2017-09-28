@@ -1,0 +1,25 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Weex is an utility designed to automate the task of remotely maintaining a web site or other FTP archive. It will synchronize a set of local files to a remote server by performing uploads and remote deletes as required.
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=weex
+version=2.6.1.5
+release=1
+source=($mirror_sf/weex/weex-$version.tar.gz)
+
+build()
+{
+  cd weex-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

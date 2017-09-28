@@ -1,0 +1,33 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: jed
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libgdbm3, slang
+
+name=jedstate
+version=0.5.4
+release=1
+source=(jedstate-$version.tar.gz)
+
+build()
+{
+  cd jedstate-$version
+
+  sed -i '/alloca.h/ s,^,//,' jedstate.h
+  sed -i 's,\-[go] root,,g' Makefile
+
+  make LIBDIR="$LDFLAGS"
+
+  install -d $ROOT/bin
+
+  make INSTALLDIR="$ROOT/bin" install
+  ln -s jedstate $ROOT/bin/setjedstate
+  ln -s jedstate $ROOT/bin/getjedstate
+
+  install -d $ROOT/share/man/man1
+  install -m644 jedstate.1 $ROOT/share/man/man1
+
+  mkdir -p $ROOT/share/doc/jedstate
+  cp README INSTALL BUGS LSM $ROOT/share/doc/jedstate
+}

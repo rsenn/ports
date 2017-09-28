@@ -1,0 +1,37 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A cluster administration tool.
+#  synctool is a cluster administration tool that keeps configuration
+#  files synchronized across all nodes in a cluster. Nodes may be part of
+#  a logical group or class, in which case they need a particular subset
+#  of configuration files. synctool can restart daemons when needed, if
+#  their relevant configuration files have been changed. synctool can also
+#  be used to do patch management or other system administrative tasks.
+# URL: http://www.ka.sara.nl/home/walter/synctool/
+# Maintainer: 
+# Depends on: 
+
+name=synctool
+version=3.0
+release=1
+source=(http://www.ka.sara.nl/home/walter/synctool/synctool-$version.tar.gz)
+
+build() 
+{
+  cd synctool-$version
+
+  case $prefix in
+    "/usr") sysconfdir="/etc" ;;
+  esac
+
+  install -d $ROOT/bin
+  cp bin/* $ROOT/bin
+
+  install -d $PKG/$sysconfdir
+  install -m 644 synctool.conf.example $PKG/$sysconfdir
+  
+  install -d $ROOT/share/doc/synctool
+  install -m 644 FAQ DOCUMENTATION INSTALL GPL WHATSNEW README Changelog $ROOT/share/doc/synctool
+}
+
+# EOF

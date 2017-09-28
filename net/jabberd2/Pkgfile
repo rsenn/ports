@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Jabber/XMPP server with support for virtual hosts with
+# mass-virtual-hosts creation feature and host based ACLs and packet filtering.
+# URL: http://jabberd2.xiaoka.com/
+# Maintainer: Christian Schläppi <cs@adfinis.com>
+# Depends on: libgsasl7 (>= 0.2.26-1)
+
+name=jabberd2
+version=2.2.0
+release=1
+source=(http://ftp.xiaoka.com/jabberd2/releases/jabberd-$version.tar.bz2)
+
+build()
+{
+  cd jabberd-$version
+
+  case $prefix in
+    "/usr") sysconfdir="/etc" localstatedir="/var" ;;
+  esac
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix" \
+       --sysconfdir="${sysconfdir=$prefix/etc}/jabberd2" \
+       --localstatedir="${localstatedir=$prefix/var}"
+
+  make
+  make DESTDIR="$PKG" install
+}

@@ -1,0 +1,140 @@
+diff -ru mod_python-3.3.1_orig/build-httpd-2.0/config.log mod_python-3.3.1/build-httpd-2.0/config.log
+diff -ru mod_python-3.3.1_orig/build-httpd-2.0/dist/Makefile mod_python-3.3.1/build-httpd-2.0/dist/Makefile
+diff -ru mod_python-3.3.1_orig/build-httpd-2.0/src/Makefile mod_python-3.3.1/build-httpd-2.0/src/Makefile
+diff -ru mod_python-3.3.1_orig/dist/Makefile.in mod_python-3.3.1/dist/Makefile.in
+--- mod_python-3.3.1_orig/dist/Makefile.in	2008-11-20 16:49:44.000000000 +0000
++++ mod_python-3.3.1/dist/Makefile.in	2008-11-20 16:58:48.000000000 +0000
+@@ -20,6 +20,8 @@
+ PYTHON_BIN=@PYTHON_BIN@
+ MP_VERSION=@MP_VERSION@
+ 
++.PHONY: build windist install mod_python src clean distclean
++
+ build: mod_python src
+ 	@cd src; $(MAKE) psp_parser.c
+ 	$(PYTHON_BIN) setup.py build
+@@ -44,7 +46,7 @@
+ 	exit 1
+ 
+ mod_python:
+-	ln -s ../lib/python/mod_python mod_python
++#	ln -s ../lib/python/mod_python mod_python
+ 
+ src:
+ 	ln -s ../src src
+diff -ru mod_python-3.3.1_orig/src/Makefile.in mod_python-3.3.1/src/Makefile.in
+--- mod_python-3.3.1_orig/src/Makefile.in	2008-11-20 16:49:44.000000000 +0000
++++ mod_python-3.3.1/src/Makefile.in	2008-11-20 16:59:07.000000000 +0000
+@@ -29,15 +29,17 @@
+ CFLAGS=$(OPT) $(INCLUDES) 
+ srcdir=.
+ 
+-SRCS=	mod_python.c _apachemodule.c requestobject.c tableobject.c util.c \
+-		serverobject.c connobject.c filterobject.c hlist.c \
+-		hlistobject.c finfoobject.c
++SRCS=	@srcdir@/mod_python.c @srcdir@/_apachemodule.c @srcdir@/requestobject.c @srcdir@/tableobject.c @srcdir@/util.c \
++		@srcdir@/serverobject.c @srcdir@/connobject.c @srcdir@/filterobject.c @srcdir@/hlist.c \
++		@srcdir@/hlistobject.c @srcdir@/finfoobject.c
++
++.PHONY: all dso clean distclean
+ 
+ all:	@ALL@
+ 
+-psp_parser.c: psp_parser.l
++psp_parser.c: @srcdir@/psp_parser.l
+ 	@rm -f psp_parser.c
+-	$(LEX) -R -opsp_parser.c --header-file=include/psp_flex.h psp_parser.l
++	$(LEX) -R -opsp_parser.c --header-file=include/psp_flex.h @srcdir@/psp_parser.l
+ 
+ dso:	mod_python.so
+ 	@echo dso > .install
+@@ -46,7 +48,7 @@
+ 	@echo
+ 	@echo 'Compiling for DSO.'
+ 	@echo
+-	$(APXS) $(INCLUDES) -c $(SRCS) $(LDFLAGS) $(LIBS) @SOLARIS_HACKS@
++	$(APXS) $(INCLUDES) -c $(CFLAGS) -I@top_srcdir@/src/include $(SRCS) $(LDFLAGS) $(LIBS) @SOLARIS_HACKS@
+ 	@rm -f mod_python.so
+ 	@ln -s .libs/mod_python.so mod_python.so
+ clean:
+diff -ru mod_python-3.3.1_orig/build-httpd/config.log mod_python-3.3.1/build-httpd/config.log
+diff -ru mod_python-3.3.1_orig/build-httpd/dist/Makefile mod_python-3.3.1/build-httpd/dist/Makefile
+diff -ru mod_python-3.3.1_orig/build-httpd/dist/setup.py mod_python-3.3.1/build-httpd/dist/setup.py
+diff -ru mod_python-3.3.1_orig/dist/Makefile.in mod_python-3.3.1/dist/Makefile.in
+--- mod_python-3.3.1_orig/dist/Makefile.in	2008-11-20 17:07:11.000000000 +0000
++++ mod_python-3.3.1/dist/Makefile.in	2008-11-20 17:31:02.000000000 +0000
+@@ -24,6 +24,7 @@
+ 
+ build: mod_python src
+ 	@cd src; $(MAKE) psp_parser.c
++	mkdir -p build/temp.linux-i686-2.6  
+ 	$(PYTHON_BIN) setup.py build
+ 
+ # this one requires at least python 2.3
+@@ -49,7 +50,7 @@
+ #	ln -s ../lib/python/mod_python mod_python
+ 
+ src:
+-	ln -s ../src src
++#	ln -s ../src src
+ 
+ clean:
+ 	rm -rf mod_python build dist
+diff -ru mod_python-3.3.1_orig/dist/setup.py.in mod_python-3.3.1/dist/setup.py.in
+--- mod_python-3.3.1_orig/dist/setup.py.in	2008-11-20 17:07:11.000000000 +0000
++++ mod_python-3.3.1/dist/setup.py.in	2008-11-20 17:29:58.000000000 +0000
+@@ -28,11 +28,12 @@
+ 
+ def getmp_rootdir():
+     """gets the root directory of the mod_python source tree..."""
+-    return os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
++    return '@top_srcdir@'
++    # return os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+ 
+ def getmp_srcdir():
+     """gets the src subdirectory of the mod_python source tree..."""
+-    return os.path.join(getmp_rootdir(), 'src')
++    return '@top_srcdir@/src'
+ 
+ def getmp_includedir():
+     """gets the src subdirectory of the mod_python source tree..."""
+@@ -183,6 +184,7 @@
+                 string.replace(sysconfig.get_config_var("BLDSHARED"), \
+                 " -bundle "," -bundle -flat_namespace -undefined suppress ")
+ 
++
+ setup(name="mod_python",
+       version=VER,
+       description="Apache/Python Integration",
+diff -ru mod_python-3.3.1_orig/src/.libs/mod_python.la mod_python-3.3.1/src/.libs/mod_python.la
+diff -ru mod_python-3.3.1_orig/src/.libs/mod_python.lai mod_python-3.3.1/src/.libs/mod_python.lai
+diff -ru mod_python-3.3.1_orig/src/mod_python.la mod_python-3.3.1/src/mod_python.la
+diff -ru mod_python-3.3.1_orig/build-apache2/config.log mod_python-3.3.1/build-apache2/config.log
+diff -ru mod_python-3.3.1_orig/build-apache2/dist/Makefile mod_python-3.3.1/build-apache2/dist/Makefile
+diff -ru mod_python-3.3.1_orig/dist/Makefile.in mod_python-3.3.1/dist/Makefile.in
+--- mod_python-3.3.1_orig/dist/Makefile.in	2008-11-20 17:38:45.000000000 +0000
++++ mod_python-3.3.1/dist/Makefile.in	2008-11-20 17:39:58.000000000 +0000
+@@ -50,7 +50,7 @@
+ #	ln -s ../lib/python/mod_python mod_python
+ 
+ src:
+-#	ln -s ../src src
++	rm -f src && ln -s @top_srcdir@/src src
+ 
+ clean:
+ 	rm -rf mod_python build dist
+--- mod_python-3.3.1_orig/src/Makefile.in	2008-11-20 21:45:24.000000000 +0000
++++ mod_python-3.3.1/src/Makefile.in	2008-11-20 21:53:09.000000000 +0000
+@@ -48,9 +48,9 @@
+ 	@echo
+ 	@echo 'Compiling for DSO.'
+ 	@echo
+-	$(APXS) $(INCLUDES) -c $(CFLAGS) -I@top_srcdir@/src/include $(SRCS) $(LDFLAGS) $(LIBS) @SOLARIS_HACKS@
+-	@rm -f mod_python.so
+-	@ln -s .libs/mod_python.so mod_python.so
++	$(APXS) $(INCLUDES) -c $(CFLAGS) -I@top_srcdir@/src/include -o mod_python.so $(SRCS) $(LDFLAGS) $(LIBS) @SOLARIS_HACKS@
++#	@rm -f mod_python.so
++#	@ln -s .libs/mod_python.so mod_python.so
+ clean:
+ 	rm -rf $(OBJS) core libpython.a mod_python.so *~ .libs *.o *.slo *.lo *.la 
+ 

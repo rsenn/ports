@@ -1,0 +1,53 @@
+Only in teem-1.0/enkiviewer: NeuralNetworkDrawer.o
+Only in teem-1.0/enkiviewer: libenkiviewer.a
+diff -ru teem-1.0_orig/enkiviewer/videorec.cpp teem-1.0/enkiviewer/videorec.cpp
+--- teem-1.0_orig/enkiviewer/videorec.cpp	2009-02-25 23:52:00.000000000 +0100
++++ teem-1.0/enkiviewer/videorec.cpp	2009-02-25 23:53:30.000000000 +0100
+@@ -83,14 +84,14 @@
+ 		std::cerr << "VideoRecorder::openFile : could not allocate video stream" << std::endl;
+ 		return;
+ 	}
+-	AVCodecContext *c = &__vid.vs->codec;
++	AVCodecContext *c = __vid.vs->codec;
+ 	c->codec_id = fmt->video_codec;
+ 	c->codec_type = CODEC_TYPE_VIDEO;
+ 	c->bit_rate = rate;
+ 	c->width = width;
+ 	c->height = height;
+-	c->frame_rate = 25;
+-	c->frame_rate_base = 1;
++	//c->frame_rate = 25;
++	//c->frame_rate_base = 1;
+ 	c->gop_size = 12;
+ 	if (c->codec_id == CODEC_ID_MPEG2VIDEO)
+ 	{
+@@ -152,7 +153,7 @@
+ {
+ 	if (__vid.ok)
+ 	{
+-		AVCodecContext *c = &__vid.vs->codec;
++		AVCodecContext *c = __vid.vs->codec;
+ 		
+ 		AVPicture inputPict;
+ 		avpicture_fill(&inputPict, data, PIX_FMT_RGBA32, c->width, c->height);
+@@ -199,7 +200,7 @@
+ 	{
+ 		// TODO : free remaining data in codec
+ 		// Close codec
+-		avcodec_close(&__vid.vs->codec);
++		avcodec_close(__vid.vs->codec);
+ 		
+ 		// Free temp picture memory
+ 		av_free(__vid.toEncodeFrame->data[0]);
+@@ -215,7 +216,7 @@
+ 			
+ 		// Free files
+ 		if (!(__vid.oc.oformat->flags & AVFMT_NOFILE))
+-			url_fclose(&__vid.oc.pb);
++			url_fclose(__vid.oc.pb);
+ 		
+ 		__vid.ok = false;
+ 	}
+Only in teem-1.0/enkiviewer: videorec.o
+Only in teem-1.0/experiment: KheperaNavigation.o
+Only in teem-1.0/experiment: SingleRobotExperiment.o

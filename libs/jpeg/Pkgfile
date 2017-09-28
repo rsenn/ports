@@ -1,0 +1,59 @@
+# $Id: Pkgfile,v 1.5 2006/05/11 16:10:05 roman Exp $
+#
+# Description: A JPEG optimizer / compressor.
+#  JPEG Disk Optimizer is a JPEG optimizer / compressor. It can remove spots,
+#  or dead pixels, and gaussian noise from the image, significantly improving
+#  both the appearance and file size.
+# URL: http://www.xat.com/jdo/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=jpeg
+version=6b
+release=1
+source=(ftp://ftp.uu.net/graphics/jpeg/jpegsrc.v$version.tar.gz
+        jpeg-6b-no-undefined.patch
+        jpeg-6b-autotools.patch)
+
+build()
+{
+  cd jpeg-$version
+
+  patch -N -p1 -i $SRC/jpeg-6b-no-undefined.patch
+  patch -N -p1 -i $SRC/jpeg-6b-autotools.patch
+
+  mkdir -p config
+
+  libtoolize --force --copy
+  aclocal --force
+  automake -a --foreign --force --copy
+  aclocal --force
+  autoconf --force
+#  if test -e $prefix/bin/libtool
+#  then
+#    LIBTOOL="$prefix/bin/libtool"
+#  fi
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --${shared:=enable}-shared \
+      --${static:=enable}-shared
+
+#  set -- ${LIBTOOL:+LIBTOOL="$LIBTOOL --tag=CC"}
+
+  make #"$@"
+  make DESTDIR="$PKG" install
+
+  return 0
+
+  install -d $ROOT/{bin,lib,man/man1,include}
+
+  make \
+       "$@" \
+       prefix="$ROOT" \
+       libdir="$ROOT/lib" \
+       includedir="$ROOT/include" \
+    install
+}

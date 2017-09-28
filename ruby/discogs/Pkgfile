@@ -1,0 +1,37 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Full Ruby API Implementation of Discogs.
+# URL: http://discogs.rubyforge.org/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=discogs
+version=1.1.0
+release=1
+source=($mirror_rubyforge/discogs/discogs-$version.tgz)
+
+build()
+{
+  cd discogs-$version
+
+  set -- `ruby --version`
+
+  RUBYVERSION=${2%.*}
+  RUBYLIBDIR=$prefix/lib/ruby/$RUBYVERSION
+
+  mkdir -p $PKG/$RUBYLIBDIR
+
+  install -d $PKG/$RUBYLIBDIR
+  cp -rf lib/* $PKG/$RUBYLIBDIR
+
+  install -d $ROOT/bin
+
+  sed "s,/lib,&/ruby/$RUBYVERSION," bin/discogs >$ROOT/bin/discogs
+  chmod +x $ROOT/bin/discogs
+
+  install -d $ROOT/share/doc/discogs
+  install -m 644 *.txt $ROOT/share/doc/discogs/
+
+}
+
+# EOF

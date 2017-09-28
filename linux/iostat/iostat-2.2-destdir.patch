@@ -1,0 +1,25 @@
+diff -ru iostat-2.2_orig/Makefile iostat-2.2/Makefile
+--- iostat-2.2_orig/Makefile	2009-03-10 06:13:10.000000000 +0100
++++ iostat-2.2/Makefile	2009-03-10 06:15:33.000000000 +0100
+@@ -1,6 +1,8 @@
+ # Makefile for iostat, Linux I/O performance monitoring utility
+ # (C) 2002-2005 by Zlatko Calusic <zlatko@iskon.hr>
+ 
++PREFIX ?= /usr/local
++
+ CC = gcc
+ CFLAGS = -g -O2 -Wall -fomit-frame-pointer
+ LDFLAGS =
+@@ -14,9 +16,9 @@
+ 	$(CC) $(CFLAGS) $(SRC) -o $@ $(LDFLAGS)
+ 
+ install: $(BIN)
+-	install -d /usr/local/bin /usr/local/man/man8
+-	install -o root -g root -m 755 -s iostat /usr/local/bin
+-	install -o root -g root -m 644 iostat.8 /usr/local/man/man8
++	install -d $(PREFIX)/bin $(PREFIX)/share/man/man8
++	install -o root -g root -m 755 -s iostat $(PREFIX)/bin
++	install -o root -g root -m 644 iostat.8 $(PREFIX)/share/man/man8
+ 
+ clean:
+ 	rm -f $(BIN) core

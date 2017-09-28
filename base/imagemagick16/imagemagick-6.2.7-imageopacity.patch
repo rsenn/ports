@@ -1,0 +1,205 @@
+diff -ru -ru ImageMagick-6.2.6_orig/magick/image.c ImageMagick-6.2.6/magick/image.c
+--- ImageMagick-6.2.6_orig/magick/image.c	2006-03-20 01:22:10.000000000 +0100
++++ ImageMagick-6.2.6/magick/image.c	2006-04-03 12:03:39.000000000 +0200
+@@ -3044,6 +3044,83 @@
+ %                                                                             %
+ %                                                                             %
+ %                                                                             %
++%     S e t I m a g e T r a n s p a r e n c y                                 %
++%                                                                             %
++%                                                                             %
++%                                                                             %
++%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
++%
++%  SetImageTransparency() attenuates the opacity channel of an image.  If the
++%  image pixels are opaque, they are set to the specified opacity level.
++%  Otherwise, the pixel oapcity values are blended with the supplied
++%  transparency value.
++%
++%  The format of the SetImageTransparency method is:
++%
++%      void SetImageTransparency(Image *image,const Quantum transparency)
++%
++%  A description of each parameter follows:
++%
++%    o image: The image.
++%
++%    o transparency: The level of transparency: 0 is fully opaque and QuantumRange is
++%      fully transparent.
++%
++%
++*/
++MagickExport void SetImageTransparency(Image *image,const Quantum opacity)
++{
++  long
++    y;
++
++  register long
++    x;
++
++  register PixelPacket
++    *q;
++
++  assert(image != (Image *) NULL);
++  if (image->debug != MagickFalse)
++    (void) LogMagickEvent(TraceEvent,GetMagickModule(),"...");
++  assert(image->signature == MagickSignature);
++  if (image->matte != MagickFalse)
++    {
++      for (y=0; y < (long) image->rows; y++)
++      {
++        q=GetImagePixels(image,0,y,image->columns,1);
++        if (q == (PixelPacket *) NULL)
++          break;
++        for (x=0; x < (long) image->columns; x++)
++        {
++          q->opacity=(Quantum)(QuantumRange-(QuantumScale*opacity*(QuantumRange-q->opacity)+0.5));
++          q++;
++        }
++        if (SyncImagePixels(image) == MagickFalse)
++          break;
++      }
++      return;
++    }
++  image->matte=MagickTrue;
++  for (y=0; y < (long) image->rows; y++)
++  {
++    q=GetImagePixels(image,0,y,image->columns,1);
++    if (q == (PixelPacket *) NULL)
++      break;
++    for (x=0; x < (long) image->columns; x++)
++    {
++      q->opacity=opacity;
++      q++;
++    }
++    if (SyncImagePixels(image) == MagickFalse)
++      break;
++  }
++}
++
++/*
++%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
++%                                                                             %
++%                                                                             %
++%                                                                             %
+ %   S e t I m a g e T y p e                                                   %
+ %                                                                             %
+ %                                                                             %
+diff -ru -ru ImageMagick-6.2.6_orig/magick/image.h ImageMagick-6.2.6/magick/image.h
+--- ImageMagick-6.2.6_orig/magick/image.h	2006-01-26 19:57:05.000000000 +0100
++++ ImageMagick-6.2.6/magick/image.h	2006-04-03 12:02:26.000000000 +0200
+@@ -109,7 +109,8 @@
+   SetImageBackgroundColor(Image *),
+   SetImageInfoBlob(ImageInfo *,const void *,const size_t),
+   SetImageInfoFile(ImageInfo *,FILE *),
+-  SetImageOpacity(Image *,const Quantum);
++  SetImageOpacity(Image *,const Quantum),
++  SetImageTransparency(Image *,const Quantum);
+ 
+ #if defined(__cplusplus) || defined(c_plusplus)
+ }
+diff -ru -ru ImageMagick-6.2.6_orig/wand/magick-image.c ImageMagick-6.2.6/wand/magick-image.c
+--- ImageMagick-6.2.6_orig/wand/magick-image.c	2006-03-25 03:06:24.000000000 +0100
++++ ImageMagick-6.2.6/wand/magick-image.c	2006-04-03 12:09:21.000000000 +0200
+@@ -8654,6 +8654,82 @@
+ %                                                                             %
+ %                                                                             %
+ %                                                                             %
++%   M a g i c k S e t I m a g e O p a c i t y                                 %
++%                                                                             %
++%                                                                             %
++%                                                                             %
++%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
++%
++%  MagickSetImageOpacity() sets the image opacity.
++%
++%  The format of the MagickSetImageOpacity method is:
++%
++%      MagickBooleanType MagickSetImageOpacity(MagickWand *wand,
++%        const Quantum *opacity)
++%
++%  A description of each parameter follows:
++%
++%    o wand: The magick wand.
++%
++%    o opacity: Opacity quantum.
++%
++*/
++WandExport MagickBooleanType MagickSetImageOpacity(MagickWand *wand,
++  const Quantum opacity)
++{
++  assert(wand != (MagickWand *) NULL);
++  assert(wand->signature == WandSignature);
++  if (wand->debug != MagickFalse)
++    (void) LogMagickEvent(WandEvent,GetMagickModule(),"%s",wand->name);
++  if (wand->images == (Image *) NULL)
++    ThrowWandException(WandError,"ContainsNoImages",wand->name);
++  SetImageOpacity(wand->images, opacity);
++  return(MagickTrue);
++}
++
++/*
++%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
++%                                                                             %
++%                                                                             %
++%                                                                             %
++%   M a g i c k S e t I m a g e T r a n s p a r e n c y                       %
++%                                                                             %
++%                                                                             %
++%                                                                             %
++%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
++%
++%  MagickSetImageTransparency() sets the image transparency.
++%
++%  The format of the MagickSetImageTransparency method is:
++%
++%      MagickBooleanType MagickSetImageTransparency(MagickWand *wand,
++%        const Quantum *opacity)
++%
++%  A description of each parameter follows:
++%
++%    o wand: The magick wand.
++%
++%    o transparency: Opacity quantum.
++%
++*/
++WandExport MagickBooleanType MagickSetImageTransparency(MagickWand *wand,
++  const Quantum opacity)
++{
++  assert(wand != (MagickWand *) NULL);
++  assert(wand->signature == WandSignature);
++  if (wand->debug != MagickFalse)
++    (void) LogMagickEvent(WandEvent,GetMagickModule(),"%s",wand->name);
++  if (wand->images == (Image *) NULL)
++    ThrowWandException(WandError,"ContainsNoImages",wand->name);
++  SetImageTransparency(wand->images, opacity);
++  return(MagickTrue);
++}
++
++/*
++%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
++%                                                                             %
++%                                                                             %
++%                                                                             %
+ +   M a g i c k S e t I m a g e O p t i o n                                   %
+ %                                                                             %
+ %                                                                             %
+diff -ru -ru ImageMagick-6.2.6_orig/wand/magick-image.h ImageMagick-6.2.6/wand/magick-image.h
+--- ImageMagick-6.2.6_orig/wand/magick-image.h	2006-02-24 06:17:42.000000000 +0100
++++ ImageMagick-6.2.6/wand/magick-image.h	2006-04-03 12:12:45.000000000 +0200
+@@ -229,6 +229,7 @@
+   MagickSetImageIterations(MagickWand *,const unsigned long),
+   MagickSetImageMatte(MagickWand *,const MagickBooleanType),
+   MagickSetImageMatteColor(MagickWand *,const PixelWand *),
++  MagickSetImageOpacity(MagickWand *,const Quantum),
+   MagickSetImagePage(MagickWand *,const unsigned long,const unsigned long,
+     const long,const long),
+   MagickSetImagePixels(MagickWand *,const long,const long,const unsigned long,
+@@ -240,6 +241,7 @@
+   MagickSetImageResolution(MagickWand *,const double,const double),
+   MagickSetImageScene(MagickWand *,const unsigned long),
+   MagickSetImageTicksPerSecond(MagickWand *,const unsigned long),
++  MagickSetImageTransparency(MagickWand *,const Quantum),
+   MagickSetImageType(MagickWand *,const ImageType),
+   MagickSetImageUnits(MagickWand *,const ResolutionType),
+   MagickSetImageVirtualPixelMethod(MagickWand *,const VirtualPixelMethod),

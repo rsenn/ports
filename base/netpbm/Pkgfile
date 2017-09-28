@@ -1,0 +1,78 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: The classic image manipulation/conversion graphics utilities.
+#  NetPBM (formerly PBMplus) is a package of over 220 programs that convert
+#  from one graphics format to another and do simple editing and analysis
+#  of images. There are no interactive tools in this package, and nothing
+#  that displays graphics of any kind. It is like a non-GUI equivalent of
+#  ImageMagick, GIMP, and Adobe Photoshop, etc. Over 100 graphics formats are
+#  handled, including JPEG, MPEG, PNG, GIF, TIFF, BMP, XWD, XBM, G3 fax, and
+#  special formats used by digital cameras and handheld computers. Over 40
+#  editing functions include scaling, cropping, quantization and dithering,
+#  colorizing and uncolorizing, blurring, and dimming. Netpbm programs
+#  are often invoked by other programs, for example in CGI scripts that
+#  manage web site graphics. It also includes a C function library which
+#  helps you write programs to process graphics at a lower level than the
+#  Netpbm utilities.
+# URL: http://netpbm.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=netpbm
+version=10.26.51
+release=1
+source=($mirror_sf/netpbm/netpbm-$version.tgz
+        netpbm-10.31-fixes.patch)
+
+build()
+{
+  cd netpbm-$version
+
+  sed -i 's:\s$(STRIPFLAG)\s*: :g' \
+      Makefile.common \
+      lib/Makefile
+
+#  patch -N -p1 -i $SRC/netpbm-10.31-fixes.patch
+
+  { echo y && yes ""; } | ./configure
+
+  case ${CC-cc} in
+    *-gcc | *-cc) CC_FOR_BUILD="gcc" ;;
+  esac
+
+  if set -- $prefix/lib/libncurses.* && test -e "$1"
+  then
+    LD_FOR_BUILD="${CC_FOR_BUILD:-gcc} -lncurses"
+  fi
+
+  # Set make arguments
+  set -- \
+       CC="${CC-cc}" AR="$AR" RANLIB="$RANLIB" \
+       ${CC_FOR_BUILD:+CC_FOR_BUILD="${CC-cc}_FOR_BUILD"} \
+       ${LD_FOR_BUILD:+LD_FOR_BUILD="$LD_FOR_BUILD"}
+
+  # Re-generate pm_config.h
+  rm -vf pm_config.h && make "$@" pm_config.h
+
+#  PATH="$prefix/bin:$PATH" \
+  make \
+       "$@" \
+       ${CADD:+CADD="$CADD"} \
+       LDSHLIB='-shared -Wl,-soname,$(SONAME)' \
+       MATHLIB="-lm"
+
+  mkdir -p "$(dirname $ROOT)"
+  make package pkgdir="$ROOT"
+
+  ln -s libnetpbm.so.10 $ROOT/lib/libnetpbm.so
+
+#  copy_license "doc/GPL_LICENSE.txt"
+
+  mv $ROOT/link/*.a $ROOT/lib
+  rm -rf $ROOT/link
+
+  rm -f $ROOT/{README,VERSION,pkginfo,config_template}
+
+  mkdir -p $ROOT/share
+  mv -vf $ROOT/misc $ROOT/share/$name
+}

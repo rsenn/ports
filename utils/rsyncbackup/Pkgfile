@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A complete remote incremental backup solution built on top of rsync.
+#  rsyncbackup is a handy tool for scheduled backups using rsync. rsyncbackup
+#  lets you easily setup multiple source folders and destinations,
+#  both locally, on your iPod or external firewire disk, or at a remote
+#  destination using ssh. rsyncbackup has no GUI, but is based on editing
+#  configuration files. The script is meant to be run in a crontab, so user
+#  interaction is not neccesary. Basic terminal skills are required to use
+#  the program.
+# URL: http://rsyncbackup.erlang.no/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=xlhtml
+version=rsyncbackup.zip
+release=1
+source=(http://rsync-backup.googlecode.com/files/$version)
+
+build()
+{
+  cd /tmp/bash.t26090
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

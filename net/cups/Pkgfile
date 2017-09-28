@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An Internet printing system for Unix.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=cups
+version=1.4svn-r8055
+release=1
+source=(http://ftp.easysw.com/pub/cups/snapshots/cups-$version-source.tar.bz2
+        cups-1.4svn-libtool.patch)
+
+build() 
+{
+  cd cups-$version
+
+  patch -p1 -i $SRC/cups-1.4svn-libtool.patch
+ 
+  sh autogen.sh
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --enable-libtool-unsupported="yes"
+  
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

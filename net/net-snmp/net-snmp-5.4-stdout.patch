@@ -1,0 +1,4034 @@
+diff -ru -ru net-snmp-5.4_orig/agent/mibgroup/disman/expression/expValueTable.c net-snmp-5.4/agent/mibgroup/disman/expression/expValueTable.c
+--- net-snmp-5.4_orig/agent/mibgroup/disman/expression/expValueTable.c	2007-01-18 14:49:52.000000000 +0100
++++ net-snmp-5.4/agent/mibgroup/disman/expression/expValueTable.c	2007-01-18 14:55:56.000000000 +0100
+@@ -374,7 +374,7 @@
+                  */
+ 
+                 if (status == STAT_SUCCESS)
+-                    fprintf(stderr, "Error in packet\nReason: %s\n",
++                    fprintf(stdout, "Error in packet\nReason: %s\n",
+                             snmp_errstring(response->errstat));
+                 else
+                     snmp_sess_perror("snmpget", ss);
+@@ -618,7 +618,7 @@
+                      * FAILURE: print what went wrong!
+                      */
+                     if (status == STAT_SUCCESS)
+-                        fprintf(stderr, "Error in packet\nReason: %s\n",
++                        fprintf(stdout, "Error in packet\nReason: %s\n",
+                                 snmp_errstring(response->errstat));
+                     else
+                         snmp_sess_perror("snmpget", ss);
+diff -ru -ru net-snmp-5.4_orig/agent/mibgroup/disman/mteTriggerBooleanTable.c net-snmp-5.4/agent/mibgroup/disman/mteTriggerBooleanTable.c
+--- net-snmp-5.4_orig/agent/mibgroup/disman/mteTriggerBooleanTable.c	2007-01-18 14:49:52.000000000 +0100
++++ net-snmp-5.4/agent/mibgroup/disman/mteTriggerBooleanTable.c	2007-01-18 14:55:56.000000000 +0100
+@@ -218,7 +218,7 @@
+     switch (action) {
+     case RESERVE1:
+         if (var_val_type != ASN_INTEGER) {
+-            fprintf(stderr,
++            fprintf(stdout,
+                     "write to mteTriggerBooleanComparison not ASN_INTEGER\n");
+             return SNMP_ERR_WRONGTYPE;
+         }
+@@ -302,7 +302,7 @@
+     switch (action) {
+     case RESERVE1:
+         if (var_val_type != ASN_INTEGER) {
+-            fprintf(stderr,
++            fprintf(stdout,
+                     "write to mteTriggerBooleanValue not ASN_INTEGER\n");
+             return SNMP_ERR_WRONGTYPE;
+         }
+@@ -386,7 +386,7 @@
+     switch (action) {
+     case RESERVE1:
+         if (var_val_type != ASN_INTEGER) {
+-            fprintf(stderr,
++            fprintf(stdout,
+                     "write to mteTriggerBooleanStartup not ASN_INTEGER\n");
+             return SNMP_ERR_WRONGTYPE;
+         }
+@@ -472,7 +472,7 @@
+     switch (action) {
+     case RESERVE1:
+         if (var_val_type != ASN_OCTET_STR) {
+-            fprintf(stderr,
++            fprintf(stdout,
+                     "write to mteTriggerBooleanObjectsOwner not ASN_OCTET_STR\n");
+             return SNMP_ERR_WRONGTYPE;
+         }
+@@ -562,7 +562,7 @@
+     switch (action) {
+     case RESERVE1:
+         if (var_val_type != ASN_OCTET_STR) {
+-            fprintf(stderr,
++            fprintf(stdout,
+                     "write to mteTriggerBooleanObjects not ASN_OCTET_STR\n");
+             return SNMP_ERR_WRONGTYPE;
+         }
+@@ -653,7 +653,7 @@
+     switch (action) {
+     case RESERVE1:
+         if (var_val_type != ASN_OCTET_STR) {
+-            fprintf(stderr,
++            fprintf(stdout,
+                     "write to mteTriggerBooleanEventOwner not ASN_OCTET_STR\n");
+             return SNMP_ERR_WRONGTYPE;
+         }
+@@ -743,7 +743,7 @@
+     switch (action) {
+     case RESERVE1:
+         if (var_val_type != ASN_OCTET_STR) {
+-            fprintf(stderr,
++            fprintf(stdout,
+                     "write to mteTriggerBooleanEvent not ASN_OCTET_STR\n");
+             return SNMP_ERR_WRONGTYPE;
+         }
+diff -ru -ru net-snmp-5.4_orig/agent/mibgroup/disman/mteTriggerDeltaTable.c net-snmp-5.4/agent/mibgroup/disman/mteTriggerDeltaTable.c
+--- net-snmp-5.4_orig/agent/mibgroup/disman/mteTriggerDeltaTable.c	2007-01-18 14:49:52.000000000 +0100
++++ net-snmp-5.4/agent/mibgroup/disman/mteTriggerDeltaTable.c	2007-01-18 14:55:56.000000000 +0100
+@@ -186,7 +186,7 @@
+     switch (action) {
+     case RESERVE1:
+         if (var_val_type != ASN_OBJECT_ID) {
+-            fprintf(stderr,
++            fprintf(stdout,
+                     "write to mteTriggerDeltaDiscontinuityID not ASN_OBJECT_ID\n");
+             return SNMP_ERR_WRONGTYPE;
+         }
+@@ -276,7 +276,7 @@
+     switch (action) {
+     case RESERVE1:
+         if (var_val_type != ASN_INTEGER) {
+-            fprintf(stderr,
++            fprintf(stdout,
+                     "write to mteTriggerDeltaDiscontinuityIDWildcard not ASN_INTEGER\n");
+             return SNMP_ERR_WRONGTYPE;
+         }
+@@ -361,7 +361,7 @@
+     switch (action) {
+     case RESERVE1:
+         if (var_val_type != ASN_INTEGER) {
+-            fprintf(stderr,
++            fprintf(stdout,
+                     "write to mteTriggerDeltaDiscontinuityIDType not ASN_INTEGER\n");
+             return SNMP_ERR_WRONGTYPE;
+         }
+diff -ru -ru net-snmp-5.4_orig/agent/mibgroup/disman/mteTriggerExistenceTable.c net-snmp-5.4/agent/mibgroup/disman/mteTriggerExistenceTable.c
+--- net-snmp-5.4_orig/agent/mibgroup/disman/mteTriggerExistenceTable.c	2007-01-18 14:49:52.000000000 +0100
++++ net-snmp-5.4/agent/mibgroup/disman/mteTriggerExistenceTable.c	2007-01-18 14:55:56.000000000 +0100
+@@ -219,7 +219,7 @@
+     switch (action) {
+     case RESERVE1:
+         if (var_val_type != ASN_OCTET_STR) {
+-            fprintf(stderr,
++            fprintf(stdout,
+                     "write to mteTriggerExistenceTest not ASN_OCTET_STR\n");
+             return SNMP_ERR_WRONGTYPE;
+         }
+@@ -311,7 +311,7 @@
+     switch (action) {
+     case RESERVE1:
+         if (var_val_type != ASN_OCTET_STR) {
+-            fprintf(stderr,
++            fprintf(stdout,
+                     "write to mteTriggerExistenceStartup not ASN_OCTET_STR\n");
+             return SNMP_ERR_WRONGTYPE;
+         }
+@@ -403,7 +403,7 @@
+     switch (action) {
+     case RESERVE1:
+         if (var_val_type != ASN_OCTET_STR) {
+-            fprintf(stderr,
++            fprintf(stdout,
+                     "write to mteTriggerExistenceObjectsOwner not ASN_OCTET_STR\n");
+             return SNMP_ERR_WRONGTYPE;
+         }
+@@ -495,7 +495,7 @@
+     switch (action) {
+     case RESERVE1:
+         if (var_val_type != ASN_OCTET_STR) {
+-            fprintf(stderr,
++            fprintf(stdout,
+                     "write to mteTriggerExistenceObjects not ASN_OCTET_STR\n");
+             return SNMP_ERR_WRONGTYPE;
+         }
+@@ -587,7 +587,7 @@
+     switch (action) {
+     case RESERVE1:
+         if (var_val_type != ASN_OCTET_STR) {
+-            fprintf(stderr,
++            fprintf(stdout,
+                     "write to mteTriggerExistenceEventOwner not ASN_OCTET_STR\n");
+             return SNMP_ERR_WRONGTYPE;
+         }
+@@ -678,7 +678,7 @@
+     switch (action) {
+     case RESERVE1:
+         if (var_val_type != ASN_OCTET_STR) {
+-            fprintf(stderr,
++            fprintf(stdout,
+                     "write to mteTriggerExistenceEvent not ASN_OCTET_STR\n");
+             return SNMP_ERR_WRONGTYPE;
+         }
+diff -ru -ru net-snmp-5.4_orig/agent/mibgroup/disman/mteTriggerThresholdTable.c net-snmp-5.4/agent/mibgroup/disman/mteTriggerThresholdTable.c
+--- net-snmp-5.4_orig/agent/mibgroup/disman/mteTriggerThresholdTable.c	2007-01-18 14:49:52.000000000 +0100
++++ net-snmp-5.4/agent/mibgroup/disman/mteTriggerThresholdTable.c	2007-01-18 14:55:56.000000000 +0100
+@@ -288,7 +288,7 @@
+     switch (action) {
+     case RESERVE1:
+         if (var_val_type != ASN_INTEGER) {
+-            fprintf(stderr,
++            fprintf(stdout,
+                     "write to mteTriggerThresholdStartup not ASN_INTEGER\n");
+             return SNMP_ERR_WRONGTYPE;
+         }
+@@ -374,7 +374,7 @@
+     switch (action) {
+     case RESERVE1:
+         if (var_val_type != ASN_INTEGER) {
+-            fprintf(stderr,
++            fprintf(stdout,
+                     "write to mteTriggerThresholdRising not ASN_INTEGER\n");
+             return SNMP_ERR_WRONGTYPE;
+         }
+@@ -460,7 +460,7 @@
+     switch (action) {
+     case RESERVE1:
+         if (var_val_type != ASN_INTEGER) {
+-            fprintf(stderr,
++            fprintf(stdout,
+                     "write to mteTriggerThresholdFalling not ASN_INTEGER\n");
+             return SNMP_ERR_WRONGTYPE;
+         }
+@@ -546,7 +546,7 @@
+     switch (action) {
+     case RESERVE1:
+         if (var_val_type != ASN_INTEGER) {
+-            fprintf(stderr,
++            fprintf(stdout,
+                     "write to mteTriggerThresholdDeltaRising not ASN_INTEGER\n");
+             return SNMP_ERR_WRONGTYPE;
+         }
+@@ -632,7 +632,7 @@
+     switch (action) {
+     case RESERVE1:
+         if (var_val_type != ASN_INTEGER) {
+-            fprintf(stderr,
++            fprintf(stdout,
+                     "write to mteTriggerThresholdDeltaFalling not ASN_INTEGER\n");
+             return SNMP_ERR_WRONGTYPE;
+         }
+@@ -719,7 +719,7 @@
+     switch (action) {
+     case RESERVE1:
+         if (var_val_type != ASN_OCTET_STR) {
+-            fprintf(stderr,
++            fprintf(stdout,
+                     "write to mteTriggerThresholdObjectsOwner not ASN_OCTET_STR\n");
+             return SNMP_ERR_WRONGTYPE;
+         }
+@@ -811,7 +811,7 @@
+     switch (action) {
+     case RESERVE1:
+         if (var_val_type != ASN_OCTET_STR) {
+-            fprintf(stderr,
++            fprintf(stdout,
+                     "write to mteTriggerThresholdObjects not ASN_OCTET_STR\n");
+             return SNMP_ERR_WRONGTYPE;
+         }
+@@ -903,7 +903,7 @@
+     switch (action) {
+     case RESERVE1:
+         if (var_val_type != ASN_OCTET_STR) {
+-            fprintf(stderr,
++            fprintf(stdout,
+                     "write to mteTriggerThresholdRisingEventOwner not ASN_OCTET_STR\n");
+             return SNMP_ERR_WRONGTYPE;
+         }
+@@ -995,7 +995,7 @@
+     switch (action) {
+     case RESERVE1:
+         if (var_val_type != ASN_OCTET_STR) {
+-            fprintf(stderr,
++            fprintf(stdout,
+                     "write to mteTriggerThresholdRisingEvent not ASN_OCTET_STR\n");
+             return SNMP_ERR_WRONGTYPE;
+         }
+@@ -1087,7 +1087,7 @@
+     switch (action) {
+     case RESERVE1:
+         if (var_val_type != ASN_OCTET_STR) {
+-            fprintf(stderr,
++            fprintf(stdout,
+                     "write to mteTriggerThresholdFallingEventOwner not ASN_OCTET_STR\n");
+             return SNMP_ERR_WRONGTYPE;
+         }
+@@ -1179,7 +1179,7 @@
+     switch (action) {
+     case RESERVE1:
+         if (var_val_type != ASN_OCTET_STR) {
+-            fprintf(stderr,
++            fprintf(stdout,
+                     "write to mteTriggerThresholdFallingEvent not ASN_OCTET_STR\n");
+             return SNMP_ERR_WRONGTYPE;
+         }
+@@ -1271,7 +1271,7 @@
+     switch (action) {
+     case RESERVE1:
+         if (var_val_type != ASN_OCTET_STR) {
+-            fprintf(stderr,
++            fprintf(stdout,
+                     "write to mteTriggerThresholdDeltaRisingEventOwner not ASN_OCTET_STR\n");
+             return SNMP_ERR_WRONGTYPE;
+         }
+@@ -1365,7 +1365,7 @@
+     switch (action) {
+     case RESERVE1:
+         if (var_val_type != ASN_OCTET_STR) {
+-            fprintf(stderr,
++            fprintf(stdout,
+                     "write to mteTriggerThresholdDeltaRisingEvent not ASN_OCTET_STR\n");
+             return SNMP_ERR_WRONGTYPE;
+         }
+@@ -1458,7 +1458,7 @@
+     switch (action) {
+     case RESERVE1:
+         if (var_val_type != ASN_OCTET_STR) {
+-            fprintf(stderr,
++            fprintf(stdout,
+                     "write to mteTriggerThresholdDeltaFallingEventOwner not ASN_OCTET_STR\n");
+             return SNMP_ERR_WRONGTYPE;
+         }
+@@ -1552,7 +1552,7 @@
+     switch (action) {
+     case RESERVE1:
+         if (var_val_type != ASN_OCTET_STR) {
+-            fprintf(stderr,
++            fprintf(stdout,
+                     "write to mteTriggerThresholdDeltaFallingEvent not ASN_OCTET_STR\n");
+             return SNMP_ERR_WRONGTYPE;
+         }
+diff -ru -ru net-snmp-5.4_orig/agent/mibgroup/disman/ping/pingCtlTable.c net-snmp-5.4/agent/mibgroup/disman/ping/pingCtlTable.c
+--- net-snmp-5.4_orig/agent/mibgroup/disman/ping/pingCtlTable.c	2007-01-18 14:49:52.000000000 +0100
++++ net-snmp-5.4/agent/mibgroup/disman/ping/pingCtlTable.c	2007-01-18 14:55:56.000000000 +0100
+@@ -1737,7 +1737,7 @@
+             hp = gethostbyname2(target, AF_INET6);
+ 
+             if (hp == NULL) {
+-                fprintf(stderr, "unknown host\n");
++                fprintf(stdout, "unknown host\n");
+                 return;
+             }
+ 
+@@ -1774,7 +1774,7 @@
+                             s6_addr16[0] & htons(0xffff)) ==
+                         htons(0xff02)) {
+                         if (ioctl(probe_fd, SIOCGIFINDEX, &ifr) < 0) {
+-                            fprintf(stderr, "ping: unknown iface %s\n",
++                            fprintf(stdout, "ping: unknown iface %s\n",
+                                     device);
+                             return;
+                         }
+@@ -1810,12 +1810,12 @@
+             htons(0xff00)) {
+             if (uid) {
+                 if (interval < 1000) {
+-                    fprintf(stderr,
++                    fprintf(stdout,
+                             "ping: multicast ping with too short interval.\n");
+                     return;
+                 }
+                 if (pmtudisc >= 0 && pmtudisc != IPV6_PMTUDISC_DO) {
+-                    fprintf(stderr,
++                    fprintf(stdout,
+                             "ping: multicast ping does not fragment.\n");
+                     return;
+                 }
+@@ -1841,7 +1841,7 @@
+             timing = 1;
+         packlen = datalen + 8 + 4096 + 40 + 8;  /* 4096 for rthdr */
+         if (!(packet = (u_char *) malloc((u_int) packlen))) {
+-            fprintf(stderr, "ping: out of memory.\n");
++            fprintf(stdout, "ping: out of memory.\n");
+             return;
+         }
+ 
+@@ -1850,7 +1850,7 @@
+         if (setsockopt
+             (icmp_sock, SOL_IPV6, IPV6_RECVERR, (char *) &hold,
+              sizeof(hold))) {
+-            fprintf(stderr,
++            fprintf(stdout,
+                     "WARNING: your kernel is veeery old. No problems.\n");
+             working_recverr = 0;
+         }
+@@ -2027,7 +2027,7 @@
+                 StorageTmp->pingResultsIpTargetAddressLen =
+                     strlen(hostname);
+             } else {
+-                (void) fprintf(stderr,
++                (void) fprintf(stdout,
+                                "traceroute: unknown host %s\n", host);
+                 StorageTmp->pingResultsIpTargetAddressType = 0;
+                 StorageTmp->pingResultsIpTargetAddress = strdup("");
+@@ -4642,7 +4642,7 @@
+     if (getsockopt
+         (icmp_sock, SOL_SOCKET, SO_RCVBUF, (char *) &hold, &tmplen) == 0) {
+         if (hold < rcvbuf)
+-            fprintf(stderr,
++            fprintf(stdout,
+                     "WARNING: probably, rcvbuf is not enough to hold preload.\n");
+     }
+ }
+@@ -4663,14 +4663,14 @@
+         interval = 0;
+ 
+     if (uid && interval < MINUSERINTERVAL) {
+-        fprintf(stderr,
++        fprintf(stdout,
+                 "ping: cannot flood; minimal interval, allowed for user, is %dms\n",
+                 MINUSERINTERVAL);
+         return;
+     }
+ 
+     if (interval >= INT_MAX / preload) {
+-        fprintf(stderr, "ping: illegal preload and/or interval\n");
++        fprintf(stdout, "ping: illegal preload and/or interval\n");
+         return;
+     }
+ 
+@@ -4687,7 +4687,7 @@
+         int             on = 1;
+         if (setsockopt
+             (icmp_sock, SOL_SOCKET, SO_TIMESTAMP, &on, sizeof(on)))
+-            fprintf(stderr,
++            fprintf(stdout,
+                     "Warning: no SO_TIMESTAMP support, falling back to SIOCGSTAMP\n");
+     }
+ #endif
+@@ -5166,7 +5166,7 @@
+         tvsub(tv, &tmp_tv);
+         triptime = tv->tv_sec * 1000000 + tv->tv_usec;
+         if (triptime < 0) {
+-            fprintf(stderr,
++            fprintf(stdout,
+                     "Warning: time of day goes back (%ldus), taking countermeasures.\n",
+                     triptime);
+             triptime = 0;
+@@ -5459,19 +5459,19 @@
+             (((long long) ((*ntransmitted) -
+                            (*nreceived))) * 100) / (*ntransmitted);
+ 
+-    fprintf(stderr, "\r%ld/%ld packets, %d%% loss", *ntransmitted,
++    fprintf(stdout, "\r%ld/%ld packets, %d%% loss", *ntransmitted,
+             *nreceived, loss);
+ 
+     if ((*nreceived) && timing) {
+         tavg = (*tsum) / ((*nreceived) + (*nrepeats));
+ 
+-        fprintf(stderr,
++        fprintf(stdout,
+                 ", min/avg/ewma/max = %ld.%03ld/%lu.%03ld/%d.%03d/%ld.%03ld ms",
+                 (*tmin) / 1000, (*tmin) % 1000, tavg / 1000, tavg % 1000,
+                 (*rtt) / 8000, ((*rtt) / 8) % 1000, (*tmax) / 1000,
+                 (*tmax) % 1000);
+     }
+-    fprintf(stderr, "\n");
++    fprintf(stdout, "\n");
+ }
+ 
+ 
+@@ -5529,10 +5529,10 @@
+         if (options & F_FLOOD)
+             write(STDOUT_FILENO, "E", 1);
+         else if (e->ee_errno != EMSGSIZE)
+-            fprintf(stderr, "ping: local error: %s\n",
++            fprintf(stdout, "ping: local error: %s\n",
+                     strerror(e->ee_errno));
+         else
+-            fprintf(stderr,
++            fprintf(stdout,
+                     "ping: local error: Message too long, mtu=%u\n",
+                     e->ee_info);
+         (*nerrors)++;
+@@ -5658,7 +5658,7 @@
+     icmph = (struct icmp6hdr *) buf;
+     if (cc < 8) {
+         if (options & F_VERBOSE)
+-            fprintf(stderr, "ping: packet too short (%d bytes)\n", cc);
++            fprintf(stdout, "ping: packet too short (%d bytes)\n", cc);
+         return 1;
+     }
+     if (icmph->icmp6_type == ICMPV6_ECHO_REPLY) {
+diff -ru -ru net-snmp-5.4_orig/agent/mibgroup/disman/traceroute/traceRouteCtlTable.c net-snmp-5.4/agent/mibgroup/disman/traceroute/traceRouteCtlTable.c
+--- net-snmp-5.4_orig/agent/mibgroup/disman/traceroute/traceRouteCtlTable.c	2007-01-18 14:49:52.000000000 +0100
++++ net-snmp-5.4/agent/mibgroup/disman/traceroute/traceRouteCtlTable.c	2007-01-18 14:55:56.000000000 +0100
+@@ -4425,7 +4425,7 @@
+         DEBUGMSGTL(("traceRouteCtlTable",
+                     ", %d hops max, %d byte packets\n",
+                     item->traceRouteCtlMaxTtl, packlen));
+-        (void) fflush(stderr);
++        (void) fflush(stdout);
+ 
+         struct traceRouteResultsTable_data *StorageResults = NULL;
+         netsnmp_variable_list *vars_results = NULL;
+@@ -5029,7 +5029,7 @@
+                 memmove((caddr_t) & to->sin6_addr, hp->h_addr, 16);
+                 hostname = (char *) hp->h_name;
+             } else {
+-                (void) fprintf(stderr,
++                (void) fprintf(stdout,
+                                "traceroute: unknown host %s\n", hostname);
+                 return;
+             }
+@@ -5039,7 +5039,7 @@
+         datalen = item->traceRouteCtlDataSize;
+         if (datalen < (int) sizeof(struct pkt_format)
+             || datalen >= MAXPACKET) {
+-            Fprintf(stderr,
++            Fprintf(stdout,
+                     "traceroute: packet size must be %d <= s < %d.\n",
+                     (int) sizeof(struct pkt_format), MAXPACKET);
+             datalen = 16;
+@@ -5049,7 +5049,7 @@
+ 
+         sendbuff = malloc(datalen);
+         if (sendbuff == NULL) {
+-            fprintf(stderr, "malloc failed\n");
++            fprintf(stdout, "malloc failed\n");
+             return;
+         }
+ 
+@@ -5132,14 +5132,14 @@
+             return;
+         }
+ 
+-        Fprintf(stderr, "traceroute to %s (%s)", hostname,
++        Fprintf(stdout, "traceroute to %s (%s)", hostname,
+                 inet_ntop(AF_INET6, &to->sin6_addr, pa, 64));
+ 
+-        Fprintf(stderr, " from %s",
++        Fprintf(stdout, " from %s",
+                 inet_ntop(AF_INET6, &saddr.sin6_addr, pa, 64));
+-        Fprintf(stderr, ", %d hops max, %d byte packets\n",
++        Fprintf(stdout, ", %d hops max, %d byte packets\n",
+                 item->traceRouteCtlMaxTtl, datalen);
+-        (void) fflush(stderr);
++        (void) fflush(stdout);
+ 
+ 
+         struct traceRouteResultsTable_data *StorageResults = NULL;
+@@ -5764,7 +5764,7 @@
+     printf("ttl\n");
+     if (setsockopt(sndsock, IPPROTO_IP, IP_TTL,
+                    (char *) &ttl, sizeof(ttl)) < 0) {
+-        Fprintf(stderr, "%s: setsockopt ttl %d: %s\n",
++        Fprintf(stdout, "%s: setsockopt ttl %d: %s\n",
+                 prog, ttl, strerror(errno));
+         exit(1);
+     }
+@@ -5786,7 +5786,7 @@
+ #endif
+     if (cc < 0 || cc != packlen) {
+         if (cc < 0)
+-            Fprintf(stderr, "%s: sendto: %s\n", prog, strerror(errno));
++            Fprintf(stdout, "%s: sendto: %s\n", prog, strerror(errno));
+         Printf("%s: wrote %s %d chars, ret=%d\n",
+                prog, hostname, packlen, cc);
+         (void) fflush(stdout);
+@@ -6008,13 +6008,13 @@
+     register u_int32_t addr, *ap = NULL;
+ 
+     if (strlen(hostname) > 64) {
+-        Fprintf(stderr, "%s: hostname \"%.32s...\" is too long\n",
++        Fprintf(stdout, "%s: hostname \"%.32s...\" is too long\n",
+                 prog, hostname);
+         exit(1);
+     }
+     hi = calloc(1, sizeof(*hi));
+     if (hi == NULL) {
+-        Fprintf(stderr, "%s: calloc %s\n", prog, strerror(errno));
++        Fprintf(stdout, "%s: calloc %s\n", prog, strerror(errno));
+         exit(1);
+     }
+     addr = inet_addr(hostname);
+@@ -6023,7 +6023,7 @@
+         hi->n = 1;
+         hi->addrs = calloc(1, sizeof(hi->addrs[0]));
+         if (hi->addrs == NULL) {
+-            Fprintf(stderr, "%s: calloc %s\n", prog, strerror(errno));
++            Fprintf(stdout, "%s: calloc %s\n", prog, strerror(errno));
+             exit(1);
+         }
+         hi->addrs[0] = addr;
+@@ -6032,12 +6032,12 @@
+ 
+     hp = gethostbyname(hostname);
+     if (hp == NULL) {
+-        Fprintf(stderr, "%s: unknown host %s\n", prog, hostname);
++        Fprintf(stdout, "%s: unknown host %s\n", prog, hostname);
+         printf("hp=NULL\n");
+         exit(1);
+     }
+     if (hp->h_addrtype != AF_INET || hp->h_length != 4) {
+-        Fprintf(stderr, "%s: bad host %s\n", prog, hostname);
++        Fprintf(stdout, "%s: bad host %s\n", prog, hostname);
+         exit(1);
+     }
+     hi->name = strdup(hp->h_name);
+@@ -6046,7 +6046,7 @@
+     hi->n = n;
+     hi->addrs = calloc(n, sizeof(hi->addrs[0]));
+     if (hi->addrs == NULL) {
+-        Fprintf(stderr, "%s: calloc %s\n", prog, strerror(errno));
++        Fprintf(stdout, "%s: calloc %s\n", prog, strerror(errno));
+         exit(1);
+     }
+     for (ap = hi->addrs, p = hp->h_addr_list; *p != NULL; ++ap, ++p)
+diff -ru -ru net-snmp-5.4_orig/agent/mibgroup/ip-mib/ipv4InterfaceTable/ipv4InterfaceTable_subagent.c net-snmp-5.4/agent/mibgroup/ip-mib/ipv4InterfaceTable/ipv4InterfaceTable_subagent.c
+--- net-snmp-5.4_orig/agent/mibgroup/ip-mib/ipv4InterfaceTable/ipv4InterfaceTable_subagent.c	2007-01-18 14:49:52.000000000 +0100
++++ net-snmp-5.4/agent/mibgroup/ip-mib/ipv4InterfaceTable/ipv4InterfaceTable_subagent.c	2007-01-18 14:55:56.000000000 +0100
+@@ -40,7 +40,7 @@
+          "\t\tunderstood by the agent and then exit.\n"
+          "\t-M\tRun as a normal SNMP Agent instead of an AgentX sub-agent.\n"
+          "\t-x ADDRESS\tconnect to master agent at ADDRESS (default NETSNMP_AGENTX_SOCKET).\n"
+-         "\t-L\tDo not open a log file; print all messages to stderr.\n");
++         "\t-L\tDo not open a log file; print all messages to stdout.\n");
+     exit(0);
+ }
+ 
+@@ -71,20 +71,20 @@
+             init_agent("ipv4InterfaceTable");   /* register our .conf handlers */
+             init_ipv4InterfaceTable();
+             init_snmp("ipv4InterfaceTable");
+-            fprintf(stderr, "Configuration directives understood:\n");
++            fprintf(stdout, "Configuration directives understood:\n");
+             read_config_print_usage("  ");
+             exit(0);
+         case 'M':
+             agentx_subagent = 0;
+             break;
+         case 'L':
+-            use_syslog = 0;     /* use stderr */
++            use_syslog = 0;     /* use stdout */
+             break;
+         case 'x':
+             agentx_socket = optarg;
+             break;
+         default:
+-            fprintf(stderr, "unknown option %c\n", ch);
++            fprintf(stdout, "unknown option %c\n", ch);
+             usage();
+         }
+ 
+@@ -100,7 +100,7 @@
+                                            NETSNMP_DS_AGENT_PORTS))) {
+                 astring = malloc(strlen(c) + 2 + strlen(argv[i]));
+                 if (astring == NULL) {
+-                    fprintf(stderr, "malloc failure processing argv[%d]\n",
++                    fprintf(stdout, "malloc failure processing argv[%d]\n",
+                             i);
+                     exit(1);
+                 }
+@@ -136,7 +136,7 @@
+     if (use_syslog)
+         snmp_enable_calllog();
+     else
+-        snmp_enable_stderrlog();
++        snmp_enable_stdoutlog();
+ 
+     /*
+      * daemonize 
+diff -ru -ru net-snmp-5.4_orig/agent/mibgroup/notification/snmpNotifyFilterProfileTable.c net-snmp-5.4/agent/mibgroup/notification/snmpNotifyFilterProfileTable.c
+--- net-snmp-5.4_orig/agent/mibgroup/notification/snmpNotifyFilterProfileTable.c	2007-01-18 14:49:52.000000000 +0100
++++ net-snmp-5.4/agent/mibgroup/notification/snmpNotifyFilterProfileTable.c	2007-01-18 14:55:56.000000000 +0100
+@@ -361,7 +361,7 @@
+     switch (action) {
+     case RESERVE1:
+         if (var_val_type != ASN_OCTET_STR) {
+-            fprintf(stderr,
++            fprintf(stdout,
+                     "write to snmpNotifyFilterProfileName not ASN_OCTET_STR\n");
+             return SNMP_ERR_WRONGTYPE;
+         }
+@@ -451,7 +451,7 @@
+     switch (action) {
+     case RESERVE1:
+         if (var_val_type != ASN_INTEGER) {
+-            fprintf(stderr,
++            fprintf(stdout,
+                     "write to snmpNotifyFilterProfileStorType not ASN_INTEGER\n");
+             return SNMP_ERR_WRONGTYPE;
+         }
+@@ -539,7 +539,7 @@
+ 
+ 
+     if (var_val_type != ASN_INTEGER || var_val == NULL) {
+-        fprintf(stderr,
++        fprintf(stdout,
+                 "write to snmpNotifyFilterProfileRowStatus not ASN_INTEGER\n");
+         return SNMP_ERR_WRONGTYPE;
+     }
+diff -ru -ru net-snmp-5.4_orig/agent/mibgroup/ucd-snmp/diskio.c net-snmp-5.4/agent/mibgroup/ucd-snmp/diskio.c
+--- net-snmp-5.4_orig/agent/mibgroup/ucd-snmp/diskio.c	2007-01-18 14:49:53.000000000 +0100
++++ net-snmp-5.4/agent/mibgroup/ucd-snmp/diskio.c	2007-01-18 14:55:56.000000000 +0100
+@@ -507,7 +507,7 @@
+                     busy_time = 0;   /* Account for possible FP loss of precision near zero */
+                 busy_percent = busy_time * 100 / DISKIO_SAMPLE_INTERVAL;
+                 devloads[i].la1 = devloads[i].la1 * expon1 + busy_percent * (1 - expon1);
+-/*		fprintf(stderr, "(%d) %s: update la1=%.2lf%%\n", i, devloads[i].name, expon1); */
++/*		fprintf(stdout, "(%d) %s: update la1=%.2lf%%\n", i, devloads[i].name, expon1); */
+                 devloads[i].la5 = devloads[i].la5 * expon5 + busy_percent * (1 - expon5);
+                 devloads[i].la15 = devloads[i].la15 * expon15 + busy_percent * (1 - expon15);
+                 memcpy(&devloads[i].prev, &lastat->dinfo->devices[i].busy_time, sizeof(devloads[i].prev));
+@@ -543,7 +543,7 @@
+     }
+ 
+     if (GETDEVS(stat) == -1) {
+-        fprintf(stderr, "Can't get devices:%s\n", devstat_errbuf);
++        fprintf(stdout, "Can't get devices:%s\n", devstat_errbuf);
+         return 1;
+     }
+     ndisk = stat->dinfo->numdevs;
+@@ -886,7 +886,7 @@
+ 					       kCFAllocatorDefault, kNilOptions);
+     if (status != KERN_SUCCESS) {
+ 	snmp_log(LOG_ERR, "diskio: device has no properties\n");
+-/*	fprintf(stderr, "device has no properties\n"); */
++/*	fprintf(stdout, "device has no properties\n"); */
+ 	return (1);
+     }
+ 
+@@ -941,7 +941,7 @@
+     status = IORegistryEntryGetParentEntry(drive, kIOServicePlane, &parent);
+     if (status != KERN_SUCCESS) {
+ 	snmp_log(LOG_ERR, "diskio: device has no parent\n");
+-/*	fprintf(stderr, "device has no parent\n"); */
++/*	fprintf(stdout, "device has no parent\n"); */
+ 	return(1);
+     }
+ 
+@@ -952,7 +952,7 @@
+ 					    kCFAllocatorDefault, kNilOptions);
+ 	if (status != KERN_SUCCESS) {
+ 	    snmp_log(LOG_ERR, "diskio: device has no properties\n");
+-/*	    fprintf(stderr, "device has no properties\n"); */
++/*	    fprintf(stdout, "device has no properties\n"); */
+ 	    return(1);
+ 	}
+ 
+@@ -1000,7 +1000,7 @@
+     status = IOServiceGetMatchingServices(masterPort, match, &drivelist);
+     if (status != KERN_SUCCESS) {
+ 	snmp_log(LOG_ERR, "diskio: couldn't match whole IOMedia devices\n");
+-/*	fprintf(stderr,"Couldn't match whole IOMedia devices\n"); */
++/*	fprintf(stdout,"Couldn't match whole IOMedia devices\n"); */
+ 	return(1);
+     }
+ 
+diff -ru -ru net-snmp-5.4_orig/agent/mibgroup/util_funcs.c net-snmp-5.4/agent/mibgroup/util_funcs.c
+--- net-snmp-5.4_orig/agent/mibgroup/util_funcs.c	2007-01-18 14:49:52.000000000 +0100
++++ net-snmp-5.4/agent/mibgroup/util_funcs.c	2007-01-18 14:55:56.000000000 +0100
+@@ -311,7 +311,7 @@
+       return -1;
+     }
+     
+-    /* Copy the stdout handle to the stderr handle in case the child closes one of 
++    /* Copy the stdout handle to the stdout handle in case the child closes one of 
+      * its stdout handles. */
+     if (!DuplicateHandle(GetCurrentProcess(),hOutputWrite, GetCurrentProcess(),
+           &hErrorWrite,0, TRUE,DUPLICATE_SAME_ACCESS)) {
+@@ -470,7 +470,7 @@
+          */
+         for (cnt = getdtablesize() - 1; cnt >= 2; --cnt)
+             (void) close(cnt);
+-        (void) dup(1);          /* stderr */
++        (void) dup(1);          /* stdout */
+ 
+         for (cnt = 1, cptr1 = cmd, cptr2 = argvs; *cptr1 != 0;
+              cptr2++, cptr1++) {
+@@ -545,7 +545,7 @@
+       return 0;
+     }
+     
+-    /* Copy the stdout handle to the stderr handle in case the child closes one of 
++    /* Copy the stdout handle to the stdout handle in case the child closes one of 
+      * its stdout handles. */
+     if (!DuplicateHandle(GetCurrentProcess(),hOutputWrite, GetCurrentProcess(),
+           &hErrorWrite,0, TRUE,DUPLICATE_SAME_ACCESS)) {
+diff -ru -ru net-snmp-5.4_orig/agent/snmpd.c net-snmp-5.4/agent/snmpd.c
+--- net-snmp-5.4_orig/agent/snmpd.c	2007-01-18 14:49:52.000000000 +0100
++++ net-snmp-5.4/agent/snmpd.c	2007-01-18 14:55:56.000000000 +0100
+@@ -605,7 +605,7 @@
+             printf("Warning: -l option is deprecated, use -Lf <file> instead\n");
+             if (optarg != NULL) {
+                 if (strlen(optarg) > PATH_MAX) {
+-                    fprintf(stderr,
++                    fprintf(stdout,
+                             "%s: logfile path too long (limit %d chars)\n",
+                             argv[0], PATH_MAX);
+                     exit(1);
+@@ -714,13 +714,13 @@
+                     Facility = LOG_LOCAL7;
+                     break;
+                 default:
+-                    fprintf(stderr, "invalid syslog facility: -S%c\n",*optarg);
++                    fprintf(stdout, "invalid syslog facility: -S%c\n",*optarg);
+                     usage(argv[0]);
+                 }
+                 snmp_enable_syslog_ident(snmp_log_syslogname(NULL), Facility);
+                 log_set = 1;
+             } else {
+-                fprintf(stderr, "no syslog facility specified\n");
++                fprintf(stdout, "no syslog facility specified\n");
+                 usage(argv[0]);
+             }
+             break;
+@@ -745,7 +745,7 @@
+                         uid = info->pw_uid;
+                     } else {
+ #endif
+-                        fprintf(stderr, "Bad user id: %s\n", optarg);
++                        fprintf(stdout, "Bad user id: %s\n", optarg);
+                         exit(1);
+ #if HAVE_GETPWNAM && HAVE_PWD_H
+                     }
+@@ -784,7 +784,7 @@
+ #if defined(USING_AGENTX_SUBAGENT_MODULE)
+             agent_mode = SUB_AGENT;
+ #else
+-            fprintf(stderr, "%s: Illegal argument -X:"
++            fprintf(stdout, "%s: Illegal argument -X:"
+ 		            "AgentX support not compiled in.\n", argv[0]);
+             usage(argv[0]);
+             exit(1);
+@@ -807,7 +807,7 @@
+         init_agent(app_name);        /* register our .conf handlers */
+         init_mib_modules();
+         init_snmp(app_name);
+-        fprintf(stderr, "Configuration directives understood:\n");
++        fprintf(stdout, "Configuration directives understood:\n");
+         read_config_print_usage("  ");
+         exit(0);
+     }
+@@ -823,7 +823,7 @@
+ 					   NETSNMP_DS_AGENT_PORTS))) {
+                 astring = malloc(strlen(c) + 2 + strlen(argv[i]));
+                 if (astring == NULL) {
+-                    fprintf(stderr, "malloc failure processing argv[%d]\n", i);
++                    fprintf(stdout, "malloc failure processing argv[%d]\n", i);
+                     exit(1);
+                 }
+                 sprintf(astring, "%s,%s", c, argv[i]);
+@@ -858,7 +858,7 @@
+     argvrestart = (char *) malloc(ret);
+     argvrestartname = (char *) malloc(strlen(argv[0]) + 1);
+     if (!argvrestartp || !argvrestart || !argvrestartname) {
+-        fprintf(stderr, "malloc failure processing argvrestart\n");
++        fprintf(stdout, "malloc failure processing argvrestart\n");
+         exit(1);
+     }
+     strcpy(argvrestartname, argv[0]);
+@@ -892,7 +892,7 @@
+     if(!dont_fork) {
+         int quit = ! netsnmp_ds_get_boolean(NETSNMP_DS_APPLICATION_ID,
+                                             NETSNMP_DS_AGENT_QUIT_IMMEDIATELY);
+-        ret = netsnmp_daemonize(quit, snmp_stderrlog_status());
++        ret = netsnmp_daemonize(quit, snmp_stdoutlog_status());
+         /*
+          * xxx-rks: do we care if fork fails? I think we should...
+          */
+diff -ru -ru net-snmp-5.4_orig/apps/encode_keychange.c net-snmp-5.4/apps/encode_keychange.c
+--- net-snmp-5.4_orig/apps/encode_keychange.c	2007-01-18 14:49:53.000000000 +0100
++++ net-snmp-5.4/apps/encode_keychange.c	2007-01-18 14:55:56.000000000 +0100
+@@ -78,7 +78,7 @@
+                 promptindicator = 1,    /* Output an indicator that input
+                                          *   is requested.                */
+                 visible = 0,    /* Echo passphrases to terminal.  */
+-                verbose = 0;    /* Output progress to stderr.     */
++                verbose = 0;    /* Output progress to stdout.     */
+ size_t          engineid_len = 0;
+ 
+ u_char         *engineid = NULL;        /* Both input & final binary form. */
+@@ -132,7 +132,7 @@
+                                                 sizeof(PASSPHRASE_FILE) +
+                                                 4);
+     if (!local_passphrase_filename) {
+-        fprintf(stderr, "%s: out of memory!", local_progname);
++        fprintf(stdout, "%s: out of memory!", local_progname);
+         exit(-1);
+     }
+     sprintf(local_passphrase_filename, "%s/%s", PASSPHRASE_DIR,
+@@ -181,7 +181,7 @@
+     }
+ 
+     if (!transform_type_input) {
+-        fprintf(stderr, "The -t option is mandatory.\n");
++        fprintf(stdout, "The -t option is mandatory.\n");
+         usage_synopsis(stdout);
+         exit(1000);
+     }
+@@ -201,15 +201,15 @@
+         transform_type = usmHMACSHA1AuthProtocol;
+ 
+     } else {
+-        fprintf(stderr,
++        fprintf(stdout,
+                 "Unrecognized hash transform: \"%s\".\n",
+                 transform_type_input);
+-        usage_synopsis(stderr);
++        usage_synopsis(stdout);
+         QUITFUN(rval = SNMPERR_GENERR, main_quit);
+     }
+ 
+     if (verbose) {
+-        fprintf(stderr, "Hash:\t\t%s\n",
++        fprintf(stdout, "Hash:\t\t%s\n",
+ #ifndef NETSNMP_DISABLE_MD5
+                 (transform_type == usmHMACMD5AuthProtocol)
+                 ? "usmHMACMD5AuthProtocol" :
+@@ -241,7 +241,7 @@
+ 
+ #ifdef NETSNMP_ENABLE_TESTING_CODE
+     if (verbose) {
+-        fprintf(stderr, "EngineID:\t%s\n",
++        fprintf(stdout, "EngineID:\t%s\n",
+                 /*
+                  * XXX = 
+                  */ dump_snmpEngineID(engineid, &engineid_len));
+@@ -256,18 +256,18 @@
+     QUITFUN(rval, main_quit);
+ 
+     if (strlen(oldpass) < USM_LENGTH_P_MIN) {
+-        fprintf(stderr, "Old passphrase must be greater than %d "
++        fprintf(stdout, "Old passphrase must be greater than %d "
+                 "characters in length.\n", USM_LENGTH_P_MIN);
+         QUITFUN(rval = SNMPERR_GENERR, main_quit);
+ 
+     } else if (strlen(newpass) < USM_LENGTH_P_MIN) {
+-        fprintf(stderr, "New passphrase must be greater than %d "
++        fprintf(stdout, "New passphrase must be greater than %d "
+                 "characters in length.\n", USM_LENGTH_P_MIN);
+         QUITFUN(rval = SNMPERR_GENERR, main_quit);
+     }
+ 
+     if (verbose) {
+-        fprintf(stderr,
++        fprintf(stdout,
+                 "Old passphrase:\t%s\nNew passphrase:\t%s\n",
+                 oldpass, newpass);
+     }
+@@ -506,11 +506,11 @@
+      * Test directory. 
+      */
+     if (stat(path, &statbuf) < 0) {
+-        fprintf(stderr, "Cannot access directory \"%s\".\n", path);
++        fprintf(stdout, "Cannot access directory \"%s\".\n", path);
+         QUITFUN(rval = SNMPERR_GENERR, get_user_passphrases_quit);
+ #ifndef WIN32
+     } else if (statbuf.st_mode & (S_IRWXG | S_IRWXO)) {
+-        fprintf(stderr,
++        fprintf(stdout,
+                 "Directory \"%s\" is accessible by group or world.\n",
+                 path);
+         QUITFUN(rval = SNMPERR_GENERR, get_user_passphrases_quit);
+@@ -523,11 +523,11 @@
+     snprintf(path, sizeof(path), "%s/%s", s, local_passphrase_filename);
+     path[ sizeof(path)-1 ] = 0;
+     if (stat(path, &statbuf) < 0) {
+-        fprintf(stderr, "Cannot access file \"%s\".\n", path);
++        fprintf(stdout, "Cannot access file \"%s\".\n", path);
+         QUITFUN(rval = SNMPERR_GENERR, get_user_passphrases_quit);
+ #ifndef WIN32
+     } else if (statbuf.st_mode & (S_IRWXG | S_IRWXO)) {
+-        fprintf(stderr,
++        fprintf(stdout,
+                 "File \"%s\" is accessible by group or world.\n", path);
+         QUITFUN(rval = SNMPERR_GENERR, get_user_passphrases_quit);
+ #endif                          /* !WIN32 */
+@@ -537,7 +537,7 @@
+      * Open the file. 
+      */
+     if ((fp = fopen(path, "r")) == NULL) {
+-        fprintf(stderr, "Cannot open \"%s\".", path);
++        fprintf(stdout, "Cannot open \"%s\".", path);
+         QUITFUN(rval = SNMPERR_GENERR, get_user_passphrases_quit);
+     }
+ 
+@@ -546,7 +546,7 @@
+      */
+     if (!fgets(buf, sizeof(buf), fp)) {
+         if (verbose) {
+-            fprintf(stderr, "Passphrase file \"%s\" is empty...\n", path);
++            fprintf(stdout, "Passphrase file \"%s\" is empty...\n", path);
+         }
+         goto get_user_passphrases_prompt;
+ 
+@@ -563,7 +563,7 @@
+      */
+     if (!fgets(buf, sizeof(buf), fp)) {
+         if (verbose) {
+-            fprintf(stderr, "Only one line in file \"%s\"...\n", path);
++            fprintf(stdout, "Only one line in file \"%s\"...\n", path);
+         }
+ 
+     } else if (!newpass) {
+diff -ru -ru net-snmp-5.4_orig/apps/snmpbulkget.c net-snmp-5.4/apps/snmpbulkget.c
+--- net-snmp-5.4_orig/apps/snmpbulkget.c	2007-01-18 14:49:53.000000000 +0100
++++ net-snmp-5.4/apps/snmpbulkget.c	2007-01-18 14:55:56.000000000 +0100
+@@ -84,14 +84,14 @@
+ void
+ usage(void)
+ {
+-    fprintf(stderr, "USAGE: snmpbulkget ");
+-    snmp_parse_args_usage(stderr);
+-    fprintf(stderr, " OID [OID]...\n\n");
+-    snmp_parse_args_descriptions(stderr);
+-    fprintf(stderr,
++    fprintf(stdout, "USAGE: snmpbulkget ");
++    snmp_parse_args_usage(stdout);
++    fprintf(stdout, " OID [OID]...\n\n");
++    snmp_parse_args_descriptions(stdout);
++    fprintf(stdout,
+             "  -C APPOPTS\t\tSet various application specific behaviours:\n");
+-    fprintf(stderr, "\t\t\t  n<NUM>:  set non-repeaters to <NUM>\n");
+-    fprintf(stderr, "\t\t\t  r<NUM>:  set max-repeaters to <NUM>\n");
++    fprintf(stdout, "\t\t\t  n<NUM>:  set non-repeaters to <NUM>\n");
++    fprintf(stdout, "\t\t\t  r<NUM>:  set max-repeaters to <NUM>\n");
+ }
+ 
+ static
+@@ -127,7 +127,7 @@
+                 break;
+ 
+             default:
+-                fprintf(stderr, "Unknown flag passed to -C: %c\n",
++                fprintf(stdout, "Unknown flag passed to -C: %c\n",
+                         optarg[-1]);
+                 exit(1);
+             }
+@@ -163,7 +163,7 @@
+ 
+     names = argc - arg;
+     if (names < non_repeaters) {
+-        fprintf(stderr, "snmpbulkget: need more objects than <nonrep>\n");
++        fprintf(stdout, "snmpbulkget: need more objects than <nonrep>\n");
+         exit(1);
+     }
+ 
+@@ -223,24 +223,24 @@
+             if (response->errstat == SNMP_ERR_NOSUCHNAME) {
+                 printf("End of MIB.\n");
+             } else {
+-                fprintf(stderr, "Error in packet.\nReason: %s\n",
++                fprintf(stdout, "Error in packet.\nReason: %s\n",
+                         snmp_errstring(response->errstat));
+                 if (response->errindex != 0) {
+-                    fprintf(stderr, "Failed object: ");
++                    fprintf(stdout, "Failed object: ");
+                     for (count = 1, vars = response->variables;
+                          vars && (count != response->errindex);
+                          vars = vars->next_variable, count++)
+                         /*EMPTY*/;
+                     if (vars)
+-                        fprint_objid(stderr, vars->name,
++                        fprint_objid(stdout, vars->name,
+                                      vars->name_length);
+-                    fprintf(stderr, "\n");
++                    fprintf(stdout, "\n");
+                 }
+                 exitval = 2;
+             }
+         }
+     } else if (status == STAT_TIMEOUT) {
+-        fprintf(stderr, "Timeout: No Response from %s\n",
++        fprintf(stdout, "Timeout: No Response from %s\n",
+                 session.peername);
+         running = 0;
+         exitval = 1;
+diff -ru -ru net-snmp-5.4_orig/apps/snmpbulkwalk.c net-snmp-5.4/apps/snmpbulkwalk.c
+--- net-snmp-5.4_orig/apps/snmpbulkwalk.c	2007-01-18 14:49:53.000000000 +0100
++++ net-snmp-5.4/apps/snmpbulkwalk.c	2007-01-18 14:55:56.000000000 +0100
+@@ -83,20 +83,20 @@
+ void
+ usage(void)
+ {
+-    fprintf(stderr, "USAGE: snmpbulkwalk ");
+-    snmp_parse_args_usage(stderr);
+-    fprintf(stderr, " [OID]\n\n");
+-    snmp_parse_args_descriptions(stderr);
+-    fprintf(stderr,
++    fprintf(stdout, "USAGE: snmpbulkwalk ");
++    snmp_parse_args_usage(stdout);
++    fprintf(stdout, " [OID]\n\n");
++    snmp_parse_args_descriptions(stdout);
++    fprintf(stdout,
+             "  -C APPOPTS\t\tSet various application specific behaviours:\n");
+-    fprintf(stderr,
++    fprintf(stdout,
+             "\t\t\t  c:       do not check returned OIDs are increasing\n");
+-    fprintf(stderr,
++    fprintf(stdout,
+             "\t\t\t  i:       include given OIDs in the search range\n");
+-    fprintf(stderr, "\t\t\t  n<NUM>:  set non-repeaters to <NUM>\n");
+-    fprintf(stderr,
++    fprintf(stdout, "\t\t\t  n<NUM>:  set non-repeaters to <NUM>\n");
++    fprintf(stdout,
+             "\t\t\t  p:       print the number of variables found\n");
+-    fprintf(stderr, "\t\t\t  r<NUM>:  set max-repeaters to <NUM>\n");
++    fprintf(stdout, "\t\t\t  r<NUM>:  set max-repeaters to <NUM>\n");
+ }
+ 
+ static void
+@@ -169,7 +169,7 @@
+                 break;
+ 
+             default:
+-                fprintf(stderr, "Unknown flag passed to -C: %c\n",
++                fprintf(stdout, "Unknown flag passed to -C: %c\n",
+                         optarg[-1]);
+                 exit(1);
+             }
+@@ -309,12 +309,12 @@
+                             && snmp_oid_compare(name, name_length,
+                                                 vars->name,
+                                                 vars->name_length) >= 0) {
+-                            fprintf(stderr, "Error: OID not increasing: ");
+-                            fprint_objid(stderr, name, name_length);
+-                            fprintf(stderr, " >= ");
+-                            fprint_objid(stderr, vars->name,
++                            fprintf(stdout, "Error: OID not increasing: ");
++                            fprint_objid(stdout, name, name_length);
++                            fprintf(stdout, " >= ");
++                            fprint_objid(stdout, vars->name,
+                                          vars->name_length);
+-                            fprintf(stderr, "\n");
++                            fprintf(stdout, "\n");
+                             running = 0;
+                             exitval = 1;
+                         }
+@@ -341,24 +341,24 @@
+                 if (response->errstat == SNMP_ERR_NOSUCHNAME) {
+                     printf("End of MIB\n");
+                 } else {
+-                    fprintf(stderr, "Error in packet.\nReason: %s\n",
++                    fprintf(stdout, "Error in packet.\nReason: %s\n",
+                             snmp_errstring(response->errstat));
+                     if (response->errindex != 0) {
+-                        fprintf(stderr, "Failed object: ");
++                        fprintf(stdout, "Failed object: ");
+                         for (count = 1, vars = response->variables;
+                              vars && count != response->errindex;
+                              vars = vars->next_variable, count++)
+                             /*EMPTY*/;
+                         if (vars)
+-                            fprint_objid(stderr, vars->name,
++                            fprint_objid(stdout, vars->name,
+                                          vars->name_length);
+-                        fprintf(stderr, "\n");
++                        fprintf(stdout, "\n");
+                     }
+                     exitval = 2;
+                 }
+             }
+         } else if (status == STAT_TIMEOUT) {
+-            fprintf(stderr, "Timeout: No Response from %s\n",
++            fprintf(stdout, "Timeout: No Response from %s\n",
+                     session.peername);
+             running = 0;
+             exitval = 1;
+diff -ru -ru net-snmp-5.4_orig/apps/snmpdelta.c net-snmp-5.4/apps/snmpdelta.c
+--- net-snmp-5.4_orig/apps/snmpdelta.c	2007-01-18 14:49:53.000000000 +0100
++++ net-snmp-5.4/apps/snmpdelta.c	2007-01-18 14:55:56.000000000 +0100
+@@ -112,25 +112,25 @@
+ void
+ usage(void)
+ {
+-    fprintf(stderr,
++    fprintf(stdout,
+             "Usage: snmpdelta [-Cf] [-CF commandFile] [-Cl] [-CL SumFileName]\n\t[-Cs] [-Ck] [-Ct] [-CS] [-Cv vars/pkt] [-Cp period]\n\t[-CP peaks] ");
+-    snmp_parse_args_usage(stderr);
+-    fprintf(stderr, " oid [oid ...]\n");
+-    snmp_parse_args_descriptions(stderr);
+-    fprintf(stderr, "snmpdelta specific options\n");
+-    fprintf(stderr, "  -Cf\t\tDon't fix errors and retry the request.\n");
+-    fprintf(stderr, "  -Cl\t\twrite configuration to file\n");
+-    fprintf(stderr, "  -CF config\tload configuration from file\n");
+-    fprintf(stderr, "  -Cp period\tspecifies the poll period\n");
+-    fprintf(stderr, "  -CP peaks\treporting period in poll periods\n");
+-    fprintf(stderr, "  -Cv vars/pkt\tnumber of variables per packet\n");
+-    fprintf(stderr, "  -Ck\t\tkeep seconds in output time\n");
+-    fprintf(stderr, "  -Cm\t\tshow max values\n");
+-    fprintf(stderr, "  -CS\t\tlog to a sum file\n");
+-    fprintf(stderr, "  -Cs\t\tshow timestamps\n");
+-    fprintf(stderr, "  -Ct\t\tget timing from agent\n");
+-    fprintf(stderr, "  -CT\t\tprint output in tabular form\n");
+-    fprintf(stderr, "  -CL sumfile\tspecifies the sum file name\n");
++    snmp_parse_args_usage(stdout);
++    fprintf(stdout, " oid [oid ...]\n");
++    snmp_parse_args_descriptions(stdout);
++    fprintf(stdout, "snmpdelta specific options\n");
++    fprintf(stdout, "  -Cf\t\tDon't fix errors and retry the request.\n");
++    fprintf(stdout, "  -Cl\t\twrite configuration to file\n");
++    fprintf(stdout, "  -CF config\tload configuration from file\n");
++    fprintf(stdout, "  -Cp period\tspecifies the poll period\n");
++    fprintf(stdout, "  -CP peaks\treporting period in poll periods\n");
++    fprintf(stdout, "  -Cv vars/pkt\tnumber of variables per packet\n");
++    fprintf(stdout, "  -Ck\t\tkeep seconds in output time\n");
++    fprintf(stdout, "  -Cm\t\tshow max values\n");
++    fprintf(stdout, "  -CS\t\tlog to a sum file\n");
++    fprintf(stdout, "  -Cs\t\tshow timestamps\n");
++    fprintf(stdout, "  -Ct\t\tget timing from agent\n");
++    fprintf(stdout, "  -CT\t\tprint output in tabular form\n");
++    fprintf(stdout, "  -CL sumfile\tspecifies the sum file name\n");
+ }
+ 
+ static void
+@@ -181,7 +181,7 @@
+                 tableForm = 1;
+                 break;
+             default:
+-                fprintf(stderr, "Bad -C options: %c\n", opt);
++                fprintf(stdout, "Bad -C options: %c\n", opt);
+                 exit(1);
+             }
+         }
+@@ -233,7 +233,7 @@
+ 
+     fp = fopen(file, "a");
+     if (fp == NULL) {
+-        fprintf(stderr, "Couldn't open %s\n", file);
++        fprintf(stdout, "Couldn't open %s\n", file);
+         return;
+     }
+     fprintf(fp, "%s\n", message);
+@@ -288,7 +288,7 @@
+     while (fgets(buf, sizeof(buf), fp)) {
+         linenumber++;
+         if (strlen(buf) > (sizeof(buf) - 2)) {
+-            fprintf(stderr, "Line too long on line %d of %s\n",
++            fprintf(stdout, "Line too long on line %d of %s\n",
+                     linenumber, fileName);
+             exit(1);
+         }
+@@ -304,7 +304,7 @@
+             continue;
+         buf[strlen(buf) - 1] = 0;
+ 	if (current_name >= MAX_ARGS) {
+-	    fprintf(stderr, "Too many variables read at line %d of %s (max %d)\n",
++	    fprintf(stdout, "Too many variables read at line %d of %s (max %d)\n",
+ 	    	linenumber, fileName, MAX_ARGS);
+ 	    exit(1);
+ 	}
+@@ -421,7 +421,7 @@
+ 
+     for (; optind < argc; optind++) {
+ 	if (current_name >= MAX_ARGS) {
+-	    fprintf(stderr, "%s: Too many variables specified (max %d)\n",
++	    fprintf(stdout, "%s: Too many variables specified (max %d)\n",
+ 	    	argv[optind], MAX_ARGS);
+ 	    exit(1);
+ 	}
+@@ -435,7 +435,7 @@
+ 
+     if (dosum) {
+ 	if (current_name >= MAX_ARGS) {
+-	    fprintf(stderr, "Too many variables specified (max %d)\n",
++	    fprintf(stdout, "Too many variables specified (max %d)\n",
+ 	    	MAX_ARGS);
+ 	    exit(1);
+ 	}
+@@ -536,7 +536,7 @@
+                 vars = response->variables;
+                 if (deltat) {
+                     if (!vars || !vars->val.integer) {
+-                        fprintf(stderr, "Missing variable in reply\n");
++                        fprintf(stdout, "Missing variable in reply\n");
+                         continue;
+                     } else {
+                         this_time = *(vars->val.integer);
+@@ -551,7 +551,7 @@
+ 
+                     if (vip->oidlen) {
+                         if (!vars || !vars->val.integer) {
+-                            fprintf(stderr, "Missing variable in reply\n");
++                            fprintf(stdout, "Missing variable in reply\n");
+                             break;
+                         }
+                         vip->type = vars->type;
+@@ -594,7 +594,7 @@
+ 
+                     if (deltat || tableForm) {
+                         if (vip->type == ASN_COUNTER64) {
+-                            fprintf(stderr,
++                            fprintf(stdout,
+                                     "time delta and table form not supported for counter64s\n");
+                             exit(1);
+                         } else {
+@@ -696,21 +696,21 @@
+                     end = last_end;
+                     continue;
+                 } else if (response->errindex != 0) {
+-                    fprintf(stderr, "Failed object: ");
++                    fprintf(stdout, "Failed object: ");
+                     for (count = 1, vars = response->variables;
+                          vars && count != response->errindex;
+                          vars = vars->next_variable, count++);
+                     if (vars)
+-                        fprint_objid(stderr, vars->name,
++                        fprint_objid(stdout, vars->name,
+                                      vars->name_length);
+-                    fprintf(stderr, "\n");
++                    fprintf(stdout, "\n");
+                     /*
+                      * Don't exit when OIDs from file are not found on agent
+                      * exit_code = 1;
+                      * break;
+                      */
+                 } else {
+-                    fprintf(stderr, "Error in packet: %s\n",
++                    fprintf(stdout, "Error in packet: %s\n",
+                             snmp_errstring(response->errstat));
+                     exit_code = 1;
+                     break;
+@@ -730,7 +730,7 @@
+             }
+ 
+         } else if (status == STAT_TIMEOUT) {
+-            fprintf(stderr, "Timeout: No Response from %s\n", gateway);
++            fprintf(stdout, "Timeout: No Response from %s\n", gateway);
+             response = 0;
+             exit_code = 1;
+             break;
+diff -ru -ru net-snmp-5.4_orig/apps/snmpdf.c net-snmp-5.4/apps/snmpdf.c
+--- net-snmp-5.4_orig/apps/snmpdf.c	2007-01-18 14:49:53.000000000 +0100
++++ net-snmp-5.4/apps/snmpdf.c	2007-01-18 14:55:56.000000000 +0100
+@@ -87,14 +87,14 @@
+ void
+ usage(void)
+ {
+-    fprintf(stderr, "Usage: snmpdf [-Cu] ");
+-    snmp_parse_args_usage(stderr);
+-    fprintf(stderr, "\n\n");
+-    snmp_parse_args_descriptions(stderr);
+-    fprintf(stderr, "\nsnmpdf options:\n");
+-    fprintf(stderr,
++    fprintf(stdout, "Usage: snmpdf [-Cu] ");
++    snmp_parse_args_usage(stdout);
++    fprintf(stdout, "\n\n");
++    snmp_parse_args_descriptions(stdout);
++    fprintf(stdout, "\nsnmpdf options:\n");
++    fprintf(stdout,
+             "\t-Cu\tUse UCD-SNMP dskTable to do the calculations.\n");
+-    fprintf(stderr,
++    fprintf(stdout,
+             "\t\t[Normally the HOST-RESOURCES-MIB is consulted first.]\n");
+ }
+ 
+@@ -111,7 +111,7 @@
+                 ucd_mib = 1;
+                 break;
+             default:
+-                fprintf(stderr,
++                fprintf(stdout,
+                         "Unknown flag passed to -C: %c\n", optarg[-1]);
+                 exit(1);
+             }
+@@ -139,7 +139,7 @@
+ 
+     if (!snmp_parse_oid(mibnodename, base, &base_length)) {
+         snmp_perror(mibnodename);
+-        fprintf(stderr, "couldn't find mib node %s, giving up\n",
++        fprintf(stdout, "couldn't find mib node %s, giving up\n",
+                 mibnodename);
+         exit(1);
+     }
+@@ -175,7 +175,7 @@
+             exit(1);
+         }
+         if (response->errstat != SNMP_ERR_NOERROR) {
+-	    fprintf(stderr, "snmpdf: Error in packet: %s\n",
++	    fprintf(stdout, "snmpdf: Error in packet: %s\n",
+                     snmp_errstring(response->errstat));
+             exit(1);
+         }
+@@ -245,7 +245,7 @@
+     }
+ 
+     if (arg != argc) {
+-	fprintf(stderr, "snmpdf: extra argument: %s\n", argv[arg]);
++	fprintf(stdout, "snmpdf: extra argument: %s\n", argv[arg]);
+ 	exit(1);
+     }
+ 
+@@ -385,7 +385,7 @@
+     }
+ 
+     if (count == 0) {
+-        fprintf(stderr, "Failed to locate any partitions.\n");
++        fprintf(stdout, "Failed to locate any partitions.\n");
+         exit(1);
+     }
+ 
+diff -ru -ru net-snmp-5.4_orig/apps/snmpget.c net-snmp-5.4/apps/snmpget.c
+--- net-snmp-5.4_orig/apps/snmpget.c	2007-01-18 14:49:53.000000000 +0100
++++ net-snmp-5.4/apps/snmpget.c	2007-01-18 14:55:56.000000000 +0100
+@@ -89,7 +89,7 @@
+ 					  NETSNMP_DS_APP_DONT_FIX_PDUS);
+                 break;
+             default:
+-                fprintf(stderr, "Unknown flag passed to -C: %c\n",
++                fprintf(stdout, "Unknown flag passed to -C: %c\n",
+                         optarg[-1]);
+                 exit(1);
+             }
+@@ -101,13 +101,13 @@
+ void
+ usage(void)
+ {
+-    fprintf(stderr, "USAGE: snmpget ");
+-    snmp_parse_args_usage(stderr);
+-    fprintf(stderr, " OID [OID]...\n\n");
+-    snmp_parse_args_descriptions(stderr);
+-    fprintf(stderr,
++    fprintf(stdout, "USAGE: snmpget ");
++    snmp_parse_args_usage(stdout);
++    fprintf(stdout, " OID [OID]...\n\n");
++    snmp_parse_args_descriptions(stdout);
++    fprintf(stdout,
+             "  -C APPOPTS\t\tSet various application specific behaviours:\n");
+-    fprintf(stderr,
++    fprintf(stdout,
+             "\t\t\t  f:  do not fix errors and retry the request\n");
+ }
+ 
+@@ -141,13 +141,13 @@
+     }
+ 
+     if (arg >= argc) {
+-        fprintf(stderr, "Missing object name\n");
++        fprintf(stdout, "Missing object name\n");
+         usage();
+         exit(1);
+     }
+     if ((argc - arg) > SNMP_MAX_CMDLINE_OIDS) {
+-        fprintf(stderr, "Too many object identifiers specified. ");
+-        fprintf(stderr, "Only %d allowed in one request.\n", SNMP_MAX_CMDLINE_OIDS);
++        fprintf(stdout, "Too many object identifiers specified. ");
++        fprintf(stdout, "Only %d allowed in one request.\n", SNMP_MAX_CMDLINE_OIDS);
+         usage();
+         exit(1);
+     }
+@@ -208,19 +208,19 @@
+                 print_variable(vars->name, vars->name_length, vars);
+ 
+         } else {
+-            fprintf(stderr, "Error in packet\nReason: %s\n",
++            fprintf(stdout, "Error in packet\nReason: %s\n",
+                     snmp_errstring(response->errstat));
+ 
+             if (response->errindex != 0) {
+-                fprintf(stderr, "Failed object: ");
++                fprintf(stdout, "Failed object: ");
+                 for (count = 1, vars = response->variables;
+                      vars && count != response->errindex;
+                      vars = vars->next_variable, count++)
+                     /*EMPTY*/;
+                 if (vars) {
+-                    fprint_objid(stderr, vars->name, vars->name_length);
++                    fprint_objid(stdout, vars->name, vars->name_length);
+ 		}
+-                fprintf(stderr, "\n");
++                fprintf(stdout, "\n");
+             }
+             exitval = 2;
+ 
+@@ -239,7 +239,7 @@
+         }                       /* endif -- SNMP_ERR_NOERROR */
+ 
+     } else if (status == STAT_TIMEOUT) {
+-        fprintf(stderr, "Timeout: No Response from %s.\n",
++        fprintf(stdout, "Timeout: No Response from %s.\n",
+                 session.peername);
+         exitval = 1;
+ 
+diff -ru -ru net-snmp-5.4_orig/apps/snmpgetnext.c net-snmp-5.4/apps/snmpgetnext.c
+--- net-snmp-5.4_orig/apps/snmpgetnext.c	2007-01-18 14:49:53.000000000 +0100
++++ net-snmp-5.4/apps/snmpgetnext.c	2007-01-18 14:55:56.000000000 +0100
+@@ -85,7 +85,7 @@
+ 					  NETSNMP_DS_APP_DONT_FIX_PDUS);
+                 break;
+             default:
+-                fprintf(stderr, "Unknown flag passed to -C: %c\n",
++                fprintf(stdout, "Unknown flag passed to -C: %c\n",
+                         optarg[-1]);
+                 exit(1);
+             }
+@@ -97,13 +97,13 @@
+ void
+ usage(void)
+ {
+-    fprintf(stderr, "USAGE: snmpgetnext ");
+-    snmp_parse_args_usage(stderr);
+-    fprintf(stderr, " OID [OID]...\n\n");
+-    snmp_parse_args_descriptions(stderr);
+-    fprintf(stderr,
++    fprintf(stdout, "USAGE: snmpgetnext ");
++    snmp_parse_args_usage(stdout);
++    fprintf(stdout, " OID [OID]...\n\n");
++    snmp_parse_args_descriptions(stdout);
++    fprintf(stdout,
+             "  -C APPOPTS\t\tSet various application specific behaviours:\n");
+-    fprintf(stderr,
++    fprintf(stdout,
+             "\t\t\t  f:  do not fix errors and retry the request\n");
+ }
+ 
+@@ -137,13 +137,13 @@
+     }
+ 
+     if (arg >= argc) {
+-        fprintf(stderr, "Missing object name\n");
++        fprintf(stdout, "Missing object name\n");
+         usage();
+         exit(1);
+     }
+     if ((argc - arg) > SNMP_MAX_CMDLINE_OIDS) {
+-        fprintf(stderr, "Too many object identifiers specified. ");
+-        fprintf(stderr, "Only %d allowed in one request.\n", SNMP_MAX_CMDLINE_OIDS);
++        fprintf(stdout, "Too many object identifiers specified. ");
++        fprintf(stdout, "Only %d allowed in one request.\n", SNMP_MAX_CMDLINE_OIDS);
+         usage();
+         exit(1);
+     }
+@@ -198,16 +198,16 @@
+                  vars = vars->next_variable)
+                 print_variable(vars->name, vars->name_length, vars);
+         } else {
+-            fprintf(stderr, "Error in packet.\nReason: %s\n",
++            fprintf(stdout, "Error in packet.\nReason: %s\n",
+                     snmp_errstring(response->errstat));
+             if (response->errindex != 0) {
+-                fprintf(stderr, "Failed object: ");
++                fprintf(stdout, "Failed object: ");
+                 for (count = 1, vars = response->variables;
+                      vars && count != response->errindex;
+                      vars = vars->next_variable, count++);
+                 if (vars)
+-                    fprint_objid(stderr, vars->name, vars->name_length);
+-                fprintf(stderr, "\n");
++                    fprint_objid(stdout, vars->name, vars->name_length);
++                fprintf(stdout, "\n");
+                 exitval = 2;
+             }
+ 
+@@ -224,7 +224,7 @@
+             }
+         }
+     } else if (status == STAT_TIMEOUT) {
+-        fprintf(stderr, "Timeout: No Response from %s.\n",
++        fprintf(stdout, "Timeout: No Response from %s.\n",
+                 session.peername);
+         exitval = 1;
+     } else {                    /* status == STAT_ERROR */
+diff -ru -ru net-snmp-5.4_orig/apps/snmpnetstat/if.c net-snmp-5.4/apps/snmpnetstat/if.c
+--- net-snmp-5.4_orig/apps/snmpnetstat/if.c	2007-01-18 14:49:53.000000000 +0100
++++ net-snmp-5.4/apps/snmpnetstat/if.c	2007-01-18 14:55:56.000000000 +0100
+@@ -536,7 +536,7 @@
+          * XXX - Might be worth searching ifName/ifAlias as well
+          */
+         if (!vp) {
+-            fprintf(stderr, "%s: unknown interface\n", intrface );
++            fprintf(stdout, "%s: unknown interface\n", intrface );
+             exit(1);
+         }
+ 
+@@ -547,7 +547,7 @@
+         ip     = SNMP_MALLOC_TYPEDEF( struct iftot );
+         cur_if = SNMP_MALLOC_TYPEDEF( struct iftot );
+         if (!ip || !cur_if) {
+-            fprintf(stderr, "internal error\n");
++            fprintf(stdout, "internal error\n");
+             exit(1);
+         }
+         ifcol_oid[ ifcol_len-1 ] = vp->name[ ifcol_len-1 ];
+@@ -561,7 +561,7 @@
+         sum   = SNMP_MALLOC_TYPEDEF( struct iftot );
+         total = SNMP_MALLOC_TYPEDEF( struct iftot );
+         if (!sum || !total) {
+-            fprintf(stderr, "internal error\n");
++            fprintf(stdout, "internal error\n");
+             exit(1);
+         }
+     }
+diff -ru -ru net-snmp-5.4_orig/apps/snmpnetstat/main.c net-snmp-5.4/apps/snmpnetstat/main.c
+--- net-snmp-5.4_orig/apps/snmpnetstat/main.c	2007-01-18 14:49:53.000000000 +0100
++++ net-snmp-5.4/apps/snmpnetstat/main.c	2007-01-18 14:55:56.000000000 +0100
+@@ -168,7 +168,7 @@
+ 				af = AF_APPLETALK;
+ 			*/
+ 			else {
+-				(void)fprintf(stderr,
++				(void)fprintf(stdout,
+ 				    "%s: %s: unknown address family\n",
+ 				    progname, optarg);
+ 				exit(1);
+@@ -216,7 +216,7 @@
+                         if (!*optarg)
+                             optarg = argv[optind++];
+ 			if ((tp = name2protox(optarg)) == NULL) {
+-				(void)fprintf(stderr,
++				(void)fprintf(stdout,
+ 				    "%s: %s: unknown protocol\n",
+ 				    progname, optarg);
+ 				exit(1);
+@@ -503,15 +503,15 @@
+ static void
+ usage(void)
+ {
+-	(void)fprintf(stderr,
++	(void)fprintf(stdout,
+ "usage: %s [snmp_opts] [-Can] [-Cf address_family]\n", progname);
+-	(void)fprintf(stderr,
++	(void)fprintf(stdout,
+ "       %s [snmp_opts] [-CbdgimnrSs] [-Cf address_family]\n", progname);
+-	(void)fprintf(stderr,
++	(void)fprintf(stdout,
+ "       %s [snmp_opts] [-Cbdn] [-CI interface] [-Cw wait]\n", progname);
+-	(void)fprintf(stderr,
++	(void)fprintf(stdout,
+ "       %s [snmp_opts] [-Cs] [-Cp protocol]\n", progname);
+-	(void)fprintf(stderr,
++	(void)fprintf(stdout,
+ "       %s [snmp_opts] [-Ca] [-Cf address_family] [-Ci | -CI interface]\n", progname);
+ 	exit(1);
+ }
+diff -ru -ru net-snmp-5.4_orig/apps/snmpnetstat/route.c net-snmp-5.4/apps/snmpnetstat/route.c
+--- net-snmp-5.4_orig/apps/snmpnetstat/route.c	2007-01-18 14:49:53.000000000 +0100
++++ net-snmp-5.4/apps/snmpnetstat/route.c	2007-01-18 14:55:56.000000000 +0100
+@@ -464,7 +464,7 @@
+ 		return("default");
+ 
+ 	if (illegal)
+-		fprintf(stderr, "illegal prefixlen\n");
++		fprintf(stdout, "illegal prefixlen\n");
+ 
+ 	if (nflag)
+ 		flag |= NI_NUMERICHOST;
+diff -ru -ru net-snmp-5.4_orig/apps/snmpset.c net-snmp-5.4/apps/snmpset.c
+--- net-snmp-5.4_orig/apps/snmpset.c	2007-01-18 14:49:53.000000000 +0100
++++ net-snmp-5.4/apps/snmpset.c	2007-01-18 14:55:56.000000000 +0100
+@@ -76,20 +76,20 @@
+ void
+ usage(void)
+ {
+-    fprintf(stderr, "USAGE: snmpset ");
+-    snmp_parse_args_usage(stderr);
+-    fprintf(stderr, " OID TYPE VALUE [OID TYPE VALUE]...\n\n");
+-    snmp_parse_args_descriptions(stderr);
+-    fprintf(stderr,
++    fprintf(stdout, "USAGE: snmpset ");
++    snmp_parse_args_usage(stdout);
++    fprintf(stdout, " OID TYPE VALUE [OID TYPE VALUE]...\n\n");
++    snmp_parse_args_descriptions(stdout);
++    fprintf(stdout,
+             "  -C APPOPTS\t\tSet various application specific behaviours:\n");
+-    fprintf(stderr, "\t\t\t  q:  don't print results on success\n");
+-    fprintf(stderr, "\n  TYPE: one of i, u, t, a, o, s, x, d, b, n\n");
+-    fprintf(stderr,
++    fprintf(stdout, "\t\t\t  q:  don't print results on success\n");
++    fprintf(stdout, "\n  TYPE: one of i, u, t, a, o, s, x, d, b, n\n");
++    fprintf(stdout,
+             "\ti: INTEGER, u: unsigned INTEGER, t: TIMETICKS, a: IPADDRESS\n");
+-    fprintf(stderr,
++    fprintf(stdout,
+             "\to: OBJID, s: STRING, x: HEX STRING, d: DECIMAL STRING, b: BITS\n");
+ #ifdef NETSNMP_WITH_OPAQUE_SPECIAL_TYPES
+-    fprintf(stderr,
++    fprintf(stdout,
+             "\tU: unsigned int64, I: signed int64, F: float, D: double\n");
+ #endif                          /* NETSNMP_WITH_OPAQUE_SPECIAL_TYPES */
+ 
+@@ -110,7 +110,7 @@
+                 break;
+ 
+             default:
+-                fprintf(stderr, "Unknown flag passed to -C: %c\n",
++                fprintf(stdout, "Unknown flag passed to -C: %c\n",
+                         optarg[-1]);
+                 exit(1);
+             }
+@@ -153,13 +153,13 @@
+     }
+ 
+     if (arg >= argc) {
+-        fprintf(stderr, "Missing object name\n");
++        fprintf(stdout, "Missing object name\n");
+         usage();
+         exit(1);
+     }
+     if ((argc - arg) > 3*SNMP_MAX_CMDLINE_OIDS) {
+-        fprintf(stderr, "Too many assignments specified. ");
+-        fprintf(stderr, "Only %d allowed in one request.\n", SNMP_MAX_CMDLINE_OIDS);
++        fprintf(stdout, "Too many assignments specified. ");
++        fprintf(stdout, "Only %d allowed in one request.\n", SNMP_MAX_CMDLINE_OIDS);
+         usage();
+         exit(1);
+     }
+@@ -193,18 +193,18 @@
+                 types[current_type++] = *argv[arg++];
+                 break;
+             default:
+-                fprintf(stderr, "%s: Bad object type: %c\n", argv[arg - 1],
++                fprintf(stdout, "%s: Bad object type: %c\n", argv[arg - 1],
+                         *argv[arg]);
+                 exit(1);
+             }
+         } else {
+-            fprintf(stderr, "%s: Needs type and value\n", argv[arg - 1]);
++            fprintf(stdout, "%s: Needs type and value\n", argv[arg - 1]);
+             exit(1);
+         }
+         if (arg < argc)
+             values[current_value++] = argv[arg];
+         else {
+-            fprintf(stderr, "%s: Needs value\n", argv[arg - 2]);
++            fprintf(stdout, "%s: Needs value\n", argv[arg - 2]);
+             exit(1);
+         }
+     }
+@@ -258,21 +258,21 @@
+                     print_variable(vars->name, vars->name_length, vars);
+             }
+         } else {
+-            fprintf(stderr, "Error in packet.\nReason: %s\n",
++            fprintf(stdout, "Error in packet.\nReason: %s\n",
+                     snmp_errstring(response->errstat));
+             if (response->errindex != 0) {
+-                fprintf(stderr, "Failed object: ");
++                fprintf(stdout, "Failed object: ");
+                 for (count = 1, vars = response->variables;
+                      vars && (count != response->errindex);
+                      vars = vars->next_variable, count++);
+                 if (vars)
+-                    fprint_objid(stderr, vars->name, vars->name_length);
+-                fprintf(stderr, "\n");
++                    fprint_objid(stdout, vars->name, vars->name_length);
++                fprintf(stdout, "\n");
+             }
+             exitval = 2;
+         }
+     } else if (status == STAT_TIMEOUT) {
+-        fprintf(stderr, "Timeout: No Response from %s\n",
++        fprintf(stdout, "Timeout: No Response from %s\n",
+                 session.peername);
+         exitval = 1;
+     } else {                    /* status == STAT_ERROR */
+diff -ru -ru net-snmp-5.4_orig/apps/snmpstatus.c net-snmp-5.4/apps/snmpstatus.c
+--- net-snmp-5.4_orig/apps/snmpstatus.c	2007-01-18 14:49:53.000000000 +0100
++++ net-snmp-5.4/apps/snmpstatus.c	2007-01-18 14:55:56.000000000 +0100
+@@ -114,7 +114,7 @@
+ 					  NETSNMP_DS_APP_DONT_FIX_PDUS);
+                 break;
+             default:
+-                fprintf(stderr, "Unknown flag passed to -C: %c\n",
++                fprintf(stdout, "Unknown flag passed to -C: %c\n",
+                         optarg[-1]);
+                 exit(1);
+             }
+@@ -126,13 +126,13 @@
+ void
+ usage(void)
+ {
+-    fprintf(stderr, "USAGE: snmpstatus ");
+-    snmp_parse_args_usage(stderr);
+-    fprintf(stderr, "\n\n");
+-    snmp_parse_args_descriptions(stderr);
+-    fprintf(stderr,
++    fprintf(stdout, "USAGE: snmpstatus ");
++    snmp_parse_args_usage(stdout);
++    fprintf(stdout, "\n\n");
++    snmp_parse_args_descriptions(stdout);
++    fprintf(stdout,
+             "  -C APPOPTS\t\tSet various application specific behaviours:\n");
+-    fprintf(stderr,
++    fprintf(stdout,
+             "\t\t\t  f:  do not fix errors and retry the request\n");
+ }
+ 
+@@ -228,16 +228,16 @@
+                 }
+             }
+         } else {
+-            fprintf(stderr, "Error in packet.\nReason: %s\n",
++            fprintf(stdout, "Error in packet.\nReason: %s\n",
+                     snmp_errstring(response->errstat));
+             if (response->errindex != 0) {
+-                fprintf(stderr, "Failed object: ");
++                fprintf(stdout, "Failed object: ");
+                 for (count = 1, vars = response->variables;
+                      vars && count != response->errindex;
+                      vars = vars->next_variable, count++);
+                 if (vars)
+-                    fprint_objid(stderr, vars->name, vars->name_length);
+-                fprintf(stderr, "\n");
++                    fprint_objid(stdout, vars->name, vars->name_length);
++                fprintf(stdout, "\n");
+             }
+ 
+             /*
+@@ -253,7 +253,7 @@
+             }
+         }
+     } else if (status == STAT_TIMEOUT) {
+-        fprintf(stderr, "Timeout: No Response from %s\n",
++        fprintf(stdout, "Timeout: No Response from %s\n",
+                 session.peername);
+         SOCK_CLEANUP;
+         exit(1);
+@@ -347,22 +347,22 @@
+                 if (good_var == 5)
+                     interfaces++;
+             } else {
+-                fprintf(stderr, "Error in packet.\nReason: %s\n",
++                fprintf(stdout, "Error in packet.\nReason: %s\n",
+                         snmp_errstring(response->errstat));
+                 if (response->errindex != 0) {
+-                    fprintf(stderr, "Failed object: ");
++                    fprintf(stdout, "Failed object: ");
+                     for (count = 1, vars = response->variables;
+                          vars && count != response->errindex;
+                          vars = vars->next_variable, count++);
+                     if (vars)
+-                        fprint_objid(stderr, vars->name,
++                        fprint_objid(stdout, vars->name,
+                                      vars->name_length);
+-                    fprintf(stderr, "\n");
++                    fprintf(stdout, "\n");
+                 }
+                 exitval = 2;
+             }
+         } else if (status == STAT_TIMEOUT) {
+-            fprintf(stderr, "Timeout: No Response from %s\n",
++            fprintf(stdout, "Timeout: No Response from %s\n",
+                     session.peername);
+             exitval = 1;
+         } else {                /* status == STAT_ERROR */
+diff -ru -ru net-snmp-5.4_orig/apps/snmptable.c net-snmp-5.4/apps/snmptable.c
+--- net-snmp-5.4_orig/apps/snmptable.c	2007-01-18 14:49:53.000000000 +0100
++++ net-snmp-5.4/apps/snmptable.c	2007-01-18 14:55:56.000000000 +0100
+@@ -126,14 +126,14 @@
+ 			max_width = atoi(argv[optind]);
+ 			if (max_width == 0) {
+ 			    usage();
+-			    fprintf(stderr, "Bad -Cw option: %s\n", 
++			    fprintf(stdout, "Bad -Cw option: %s\n", 
+ 				    argv[optind]);
+ 			    exit(1);
+ 			}
+ 		    }
+ 		} else {
+ 		    usage();
+-                    fprintf(stderr, "Bad -Cw option: no argument given\n");
++                    fprintf(stdout, "Bad -Cw option: no argument given\n");
+ 		    exit(1);
+ 		}
+ 		optind++;
+@@ -144,7 +144,7 @@
+ 			column_width = atoi(argv[optind]);
+ 			if (column_width <= 2) {
+ 			    usage();
+-			    fprintf(stderr, "Bad -Cc option: %s\n", 
++			    fprintf(stdout, "Bad -Cc option: %s\n", 
+ 				    argv[optind]);
+ 			    exit(1);
+ 			}
+@@ -153,7 +153,7 @@
+ 		    }
+ 		} else {
+ 		    usage();
+-                    fprintf(stderr, "Bad -Cc option: no argument given\n");
++                    fprintf(stdout, "Bad -Cc option: no argument given\n");
+ 		    exit(1);
+ 		}
+ 		optind++;
+@@ -166,7 +166,7 @@
+ 		    field_separator = argv[optind];
+ 		} else {
+                     usage();
+-		    fprintf(stderr, "Bad -Cf option: no argument given\n");
++		    fprintf(stdout, "Bad -Cf option: no argument given\n");
+ 		    exit(1);
+ 		}
+ 		optind++;
+@@ -192,20 +192,20 @@
+ 			max_getbulk = atoi(argv[optind]);
+ 			if (max_getbulk == 0) {
+ 			    usage();
+-			    fprintf(stderr, "Bad -Cr option: %s\n", 
++			    fprintf(stdout, "Bad -Cr option: %s\n", 
+ 				    argv[optind]);
+ 			    exit(1);
+ 			}
+ 		    }
+ 		} else {
+ 		    usage();
+-                    fprintf(stderr, "Bad -Cr option: no argument given\n");
++                    fprintf(stdout, "Bad -Cr option: no argument given\n");
+ 		    exit(1);
+ 		}
+ 		optind++;
+                 break;
+             default:
+-                fprintf(stderr, "Bad option after -C: %c\n", optarg[-1]);
++                fprintf(stdout, "Bad option after -C: %c\n", optarg[-1]);
+                 usage();
+             }
+         }
+@@ -216,23 +216,23 @@
+ void
+ usage(void)
+ {
+-    fprintf(stderr, "USAGE: snmptable ");
+-    snmp_parse_args_usage(stderr);
+-    fprintf(stderr, " TABLE-OID\n\n");
+-    snmp_parse_args_descriptions(stderr);
+-    fprintf(stderr,
++    fprintf(stdout, "USAGE: snmptable ");
++    snmp_parse_args_usage(stdout);
++    fprintf(stdout, " TABLE-OID\n\n");
++    snmp_parse_args_descriptions(stdout);
++    fprintf(stdout,
+ 	    "  -C APPOPTS\t\tSet various application specific behaviours:\n");
+-    fprintf(stderr, "\t\t\t  b:       brief field names\n");
+-    fprintf(stderr, "\t\t\t  B:       do not use GETBULK requests\n");
+-    fprintf(stderr, "\t\t\t  c<NUM>:  print table in columns of <NUM> chars width\n");
+-    fprintf(stderr, "\t\t\t  f<STR>:  print table delimitied with <STR>\n");
+-    fprintf(stderr, "\t\t\t  h:       print only the column headers\n");
+-    fprintf(stderr, "\t\t\t  H:       print no column headers\n");
+-    fprintf(stderr, "\t\t\t  i:       print index values\n");
+-    fprintf(stderr, "\t\t\t  l:       left justify output\n");
+-    fprintf(stderr, "\t\t\t  r<NUM>:  for GETBULK: set max-repeaters to <NUM>\n");
+-    fprintf(stderr, "\t\t\t           for GETNEXT: retrieve <NUM> entries at a time\n");
+-    fprintf(stderr, "\t\t\t  w<NUM>:  print table in parts of <NUM> chars width\n");
++    fprintf(stdout, "\t\t\t  b:       brief field names\n");
++    fprintf(stdout, "\t\t\t  B:       do not use GETBULK requests\n");
++    fprintf(stdout, "\t\t\t  c<NUM>:  print table in columns of <NUM> chars width\n");
++    fprintf(stdout, "\t\t\t  f<STR>:  print table delimitied with <STR>\n");
++    fprintf(stdout, "\t\t\t  h:       print only the column headers\n");
++    fprintf(stdout, "\t\t\t  H:       print no column headers\n");
++    fprintf(stdout, "\t\t\t  i:       print index values\n");
++    fprintf(stdout, "\t\t\t  l:       left justify output\n");
++    fprintf(stdout, "\t\t\t  r<NUM>:  for GETBULK: set max-repeaters to <NUM>\n");
++    fprintf(stdout, "\t\t\t           for GETNEXT: retrieve <NUM> entries at a time\n");
++    fprintf(stdout, "\t\t\t  w<NUM>:  print table in parts of <NUM> chars width\n");
+ }
+ 
+ void
+@@ -279,7 +279,7 @@
+      * specified on the command line 
+      */
+     if (optind + 1 != argc) {
+-        fprintf(stderr, "Must have exactly one table name\n");
++        fprintf(stdout, "Must have exactly one table name\n");
+         usage();
+         exit(1);
+     }
+@@ -543,7 +543,7 @@
+         column[fields - 1].subid = root[rootlen];
+     }
+     if (fields == 0) {
+-        fprintf(stderr, "Was that a table? %s\n", table_name);
++        fprintf(stdout, "Was that a table? %s\n", table_name);
+         exit(1);
+     }
+     if (name_p) {
+@@ -674,9 +674,9 @@
+                          * not part of this subtree 
+                          */
+                         if (localdebug) {
+-                            fprint_variable(stderr, vars->name,
++                            fprint_variable(stdout, vars->name,
+                                             vars->name_length, vars);
+-                            fprintf(stderr, " => ignored\n");
++                            fprintf(stdout, " => ignored\n");
+                         }
+                         continue;
+                     }
+@@ -718,7 +718,7 @@
+                                     name_p = strchr(name_p, '.')+1;
+                                     break;
+ 				default:
+-				    fprintf(stderr, "Unrecognized -O option: %d\n",
++				    fprintf(stdout, "Unrecognized -O option: %d\n",
+ 					    netsnmp_ds_get_int(NETSNMP_DS_LIBRARY_ID,
+ 							      NETSNMP_DS_LIB_OID_OUTPUT_FORMAT));
+ 				    exit(1);
+@@ -779,25 +779,25 @@
+                     printf("End of MIB\n");
+                     end_of_table = 1;
+                 } else {
+-                    fprintf(stderr, "Error in packet.\nReason: %s\n",
++                    fprintf(stdout, "Error in packet.\nReason: %s\n",
+                             snmp_errstring(response->errstat));
+                     if (response->errindex != 0) {
+-                        fprintf(stderr, "Failed object: ");
++                        fprintf(stdout, "Failed object: ");
+                         for (count = 1, vars = response->variables;
+                              vars && count != response->errindex;
+                              vars = vars->next_variable, count++)
+                             /*EMPTY*/;
+                         if (vars) {
+-                            fprint_objid(stderr, vars->name,
++                            fprint_objid(stdout, vars->name,
+                                          vars->name_length);
+                         }
+-                        fprintf(stderr, "\n");
++                        fprintf(stdout, "\n");
+                     }
+                     exitval = 2;
+                 }
+             }
+         } else if (status == STAT_TIMEOUT) {
+-            fprintf(stderr, "Timeout: No Response from %s\n",
++            fprintf(stdout, "Timeout: No Response from %s\n",
+                     ss->peername);
+             running = 0;
+             exitval = 1;
+@@ -885,7 +885,7 @@
+                             name_p = strchr(name_p, '.')+1;
+                             break;
+ 			default:
+-			    fprintf(stderr, "Unrecognized -O option: %d\n",
++			    fprintf(stdout, "Unrecognized -O option: %d\n",
+ 				    netsnmp_ds_get_int(NETSNMP_DS_LIBRARY_ID,
+ 					              NETSNMP_DS_LIB_OID_OUTPUT_FORMAT));
+ 			    exit(1);
+@@ -963,26 +963,26 @@
+                 if (response->errstat == SNMP_ERR_NOSUCHNAME) {
+                     printf("End of MIB\n");
+                 } else {
+-                    fprintf(stderr, "Error in packet.\nReason: %s\n",
++                    fprintf(stdout, "Error in packet.\nReason: %s\n",
+                             snmp_errstring(response->errstat));
+                     if (response->errstat == SNMP_ERR_NOSUCHNAME) {
+-                        fprintf(stderr,
++                        fprintf(stdout,
+                                 "The request for this object identifier failed: ");
+                         for (count = 1, vars = response->variables;
+                              vars && count != response->errindex;
+                              vars = vars->next_variable, count++)
+                             /*EMPTY*/;
+                         if (vars) {
+-                            fprint_objid(stderr, vars->name,
++                            fprint_objid(stdout, vars->name,
+                                          vars->name_length);
+                         }
+-                        fprintf(stderr, "\n");
++                        fprintf(stdout, "\n");
+                     }
+                     exitval = 2;
+                 }
+             }
+         } else if (status == STAT_TIMEOUT) {
+-            fprintf(stderr, "Timeout: No Response from %s\n",
++            fprintf(stdout, "Timeout: No Response from %s\n",
+                     ss->peername);
+             running = 0;
+             exitval = 1;
+diff -ru -ru net-snmp-5.4_orig/apps/snmptest.c net-snmp-5.4/apps/snmptest.c
+--- net-snmp-5.4_orig/apps/snmptest.c	2007-01-18 14:49:53.000000000 +0100
++++ net-snmp-5.4/apps/snmptest.c	2007-01-18 14:55:56.000000000 +0100
+@@ -80,10 +80,10 @@
+ void
+ usage(void)
+ {
+-    fprintf(stderr, "USAGE: snmptest ");
+-    snmp_parse_args_usage(stderr);
+-    fprintf(stderr, "\n\n");
+-    snmp_parse_args_descriptions(stderr);
++    fprintf(stdout, "USAGE: snmptest ");
++    snmp_parse_args_usage(stdout);
++    fprintf(stdout, "\n\n");
++    snmp_parse_args_descriptions(stdout);
+ }
+ 
+ int
+diff -ru -ru net-snmp-5.4_orig/apps/snmptranslate.c net-snmp-5.4/apps/snmptranslate.c
+--- net-snmp-5.4_orig/apps/snmptranslate.c	2007-01-18 14:49:53.000000000 +0100
++++ net-snmp-5.4/apps/snmptranslate.c	2007-01-18 14:55:56.000000000 +0100
+@@ -66,48 +66,48 @@
+ void
+ usage(void)
+ {
+-    fprintf(stderr, "USAGE: snmptranslate [OPTIONS] OID [OID]...\n\n");
+-    fprintf(stderr, "  Version:  %s\n", netsnmp_get_version());
+-    fprintf(stderr, "  Web:      http://www.net-snmp.org/\n");
+-    fprintf(stderr,
++    fprintf(stdout, "USAGE: snmptranslate [OPTIONS] OID [OID]...\n\n");
++    fprintf(stdout, "  Version:  %s\n", netsnmp_get_version());
++    fprintf(stdout, "  Web:      http://www.net-snmp.org/\n");
++    fprintf(stdout,
+             "  Email:    net-snmp-coders@lists.sourceforge.net\n\nOPTIONS:\n");
+ 
+-    fprintf(stderr, "  -h\t\t\tdisplay this help message\n");
+-    fprintf(stderr, "  -V\t\t\tdisplay package version number\n");
+-    fprintf(stderr,
++    fprintf(stdout, "  -h\t\t\tdisplay this help message\n");
++    fprintf(stdout, "  -V\t\t\tdisplay package version number\n");
++    fprintf(stdout,
+             "  -m MIB[:...]\t\tload given list of MIBs (ALL loads everything)\n");
+-    fprintf(stderr,
++    fprintf(stdout,
+             "  -M DIR[:...]\t\tlook in given list of directories for MIBs\n");
+-    fprintf(stderr,
++    fprintf(stdout,
+             "  -D TOKEN[,...]\tturn on debugging output for the specified TOKENs\n\t\t\t   (ALL gives extremely verbose debugging output)\n");
+-    fprintf(stderr, "  -w WIDTH\t\tset width of tree and detail output\n");
+-    fprintf(stderr,
++    fprintf(stdout, "  -w WIDTH\t\tset width of tree and detail output\n");
++    fprintf(stdout,
+             "  -T TRANSOPTS\t\tSet various options controlling report produced:\n");
+-    fprintf(stderr,
++    fprintf(stdout,
+             "\t\t\t  B:  print all matching objects for a regex search\n");
+-    fprintf(stderr, "\t\t\t  d:  print full details of the given OID\n");
+-    fprintf(stderr, "\t\t\t  p:  print tree format symbol table\n");
+-    fprintf(stderr, "\t\t\t  a:  print ASCII format symbol table\n");
+-    fprintf(stderr, "\t\t\t  l:  enable labeled OID report\n");
+-    fprintf(stderr, "\t\t\t  o:  enable OID report\n");
+-    fprintf(stderr, "\t\t\t  s:  enable dotted symbolic report\n");
+-    fprintf(stderr, "\t\t\t  z:  enable MIB child OID report\n");
+-    fprintf(stderr,
++    fprintf(stdout, "\t\t\t  d:  print full details of the given OID\n");
++    fprintf(stdout, "\t\t\t  p:  print tree format symbol table\n");
++    fprintf(stdout, "\t\t\t  a:  print ASCII format symbol table\n");
++    fprintf(stdout, "\t\t\t  l:  enable labeled OID report\n");
++    fprintf(stdout, "\t\t\t  o:  enable OID report\n");
++    fprintf(stdout, "\t\t\t  s:  enable dotted symbolic report\n");
++    fprintf(stdout, "\t\t\t  z:  enable MIB child OID report\n");
++    fprintf(stdout,
+             "\t\t\t  t:  enable alternate format symbolic suffix report\n");
+ #ifndef NETSNMP_DISABLE_MIB_LOADING
+-    fprintf(stderr,
++    fprintf(stdout,
+             "  -P MIBOPTS\t\tToggle various defaults controlling mib parsing:\n");
+-    snmp_mib_toggle_options_usage("\t\t\t  ", stderr);
++    snmp_mib_toggle_options_usage("\t\t\t  ", stdout);
+ #endif /* NETSNMP_DISABLE_MIB_LOADING */
+-    fprintf(stderr,
++    fprintf(stdout,
+             "  -O OUTOPTS\t\tToggle various defaults controlling output display:\n");
+-    snmp_out_toggle_options_usage("\t\t\t  ", stderr);
+-    fprintf(stderr,
++    snmp_out_toggle_options_usage("\t\t\t  ", stdout);
++    fprintf(stdout,
+             "  -I INOPTS\t\tToggle various defaults controlling input parsing:\n");
+-    snmp_in_toggle_options_usage("\t\t\t  ", stderr);
+-    fprintf(stderr,
++    snmp_in_toggle_options_usage("\t\t\t  ", stdout);
++    fprintf(stdout,
+             "  -L LOGOPTS\t\tToggle various defaults controlling logging:\n");
+-    snmp_log_options_usage("\t\t\t  ", stderr);
++    snmp_log_options_usage("\t\t\t  ", stdout);
+     exit(1);
+ }
+ 
+@@ -143,14 +143,14 @@
+             snmp_set_do_debugging(1);
+             break;
+         case 'V':
+-            fprintf(stderr, "NET-SNMP version: %s\n",
++            fprintf(stdout, "NET-SNMP version: %s\n",
+                     netsnmp_get_version());
+             exit(0);
+             break;
+         case 'w':
+ 	    width = atoi(optarg);
+ 	    if (width <= 0) {
+-		fprintf(stderr, "Invalid width specification: %s\n", optarg);
++		fprintf(stdout, "Invalid width specification: %s\n", optarg);
+ 		exit (1);
+ 	    }
+ 	    break;
+@@ -158,7 +158,7 @@
+         case 'P':
+             cp = snmp_mib_toggle_options(optarg);
+             if (cp != NULL) {
+-                fprintf(stderr, "Unknown parser option to -P: %c.\n", *cp);
++                fprintf(stdout, "Unknown parser option to -P: %c.\n", *cp);
+                 usage();
+                 exit(1);
+             }
+@@ -167,7 +167,7 @@
+         case 'O':
+             cp = snmp_out_toggle_options(optarg);
+             if (cp != NULL) {
+-                fprintf(stderr, "Unknown OID option to -O: %c.\n", *cp);
++                fprintf(stdout, "Unknown OID option to -O: %c.\n", *cp);
+                 usage();
+                 exit(1);
+             }
+@@ -175,7 +175,7 @@
+         case 'I':
+             cp = snmp_in_toggle_options(optarg);
+             if (cp != NULL) {
+-                fprintf(stderr, "Unknown OID option to -I: %c.\n", *cp);
++                fprintf(stdout, "Unknown OID option to -I: %c.\n", *cp);
+                 usage();
+                 exit(1);
+             }
+@@ -219,7 +219,7 @@
+                     print = 2;
+                     break;
+                 default:
+-                    fprintf(stderr, "Invalid -T<lostpad> character: %c\n",
++                    fprintf(stdout, "Invalid -T<lostpad> character: %c\n",
+                             *cp);
+                     usage();
+                     exit(1);
+@@ -233,7 +233,7 @@
+             }
+             break;
+         default:
+-            fprintf(stderr, "invalid option: -%c\n", arg);
++            fprintf(stdout, "invalid option: -%c\n", arg);
+             usage();
+             exit(1);
+             break;
+@@ -270,7 +270,7 @@
+ #ifndef NETSNMP_DISABLE_MIB_LOADING
+             if (!get_node(current_name, name, &name_length)) {
+ #endif /* NETSNMP_DISABLE_MIB_LOADING */
+-                fprintf(stderr, "Unknown object identifier: %s\n",
++                fprintf(stdout, "Unknown object identifier: %s\n",
+                         current_name);
+                 exit(2);
+ #ifndef NETSNMP_DISABLE_MIB_LOADING
+@@ -280,7 +280,7 @@
+             if (0 == show_all_matched_objects(stdout, current_name,
+                                               name, &name_length,
+                                               description, width)) {
+-                fprintf(stderr,
++                fprintf(stdout,
+                         "Unable to find a matching object identifier for \"%s\"\n",
+                         current_name);
+                 exit(1);
+@@ -291,7 +291,7 @@
+ #ifndef NETSNMP_DISABLE_MIB_LOADING
+             if (0 == get_wild_node(current_name, name, &name_length)) {
+ #endif /* NETSNMP_DISABLE_MIB_LOADING */
+-                fprintf(stderr,
++                fprintf(stdout,
+                         "Unable to find a matching object identifier for \"%s\"\n",
+                         current_name);
+                 exit(1);
+diff -ru -ru net-snmp-5.4_orig/apps/snmptrap.c net-snmp-5.4/apps/snmptrap.c
+--- net-snmp-5.4_orig/apps/snmptrap.c	2007-01-18 14:49:53.000000000 +0100
++++ net-snmp-5.4/apps/snmptrap.c	2007-01-18 14:55:56.000000000 +0100
+@@ -82,17 +82,17 @@
+ void
+ usage(void)
+ {
+-    fprintf(stderr, "USAGE: %s ", inform ? "snmpinform" : "snmptrap");
+-    snmp_parse_args_usage(stderr);
+-    fprintf(stderr, " TRAP-PARAMETERS\n\n");
+-    snmp_parse_args_descriptions(stderr);
+-    fprintf(stderr,
++    fprintf(stdout, "USAGE: %s ", inform ? "snmpinform" : "snmptrap");
++    snmp_parse_args_usage(stdout);
++    fprintf(stdout, " TRAP-PARAMETERS\n\n");
++    snmp_parse_args_descriptions(stdout);
++    fprintf(stdout,
+             "  -C APPOPTS\t\tSet various application specific behaviour:\n");
+-    fprintf(stderr, "\t\t\t  i:  send an INFORM instead of a TRAP\n");
+-    fprintf(stderr,
++    fprintf(stdout, "\t\t\t  i:  send an INFORM instead of a TRAP\n");
++    fprintf(stdout,
+             "\n  -v 1 TRAP-PARAMETERS:\n\t enterprise-oid agent trap-type specific-type uptime [OID TYPE VALUE]...\n");
+-    fprintf(stderr, "  or\n");
+-    fprintf(stderr,
++    fprintf(stdout, "  or\n");
++    fprintf(stdout,
+             "  -v 2 TRAP-PARAMETERS:\n\t uptime trapoid [OID TYPE VALUE] ...\n");
+ }
+ 
+@@ -115,7 +115,7 @@
+         return addr;
+     hp = gethostbyname(address);
+     if (hp == NULL) {
+-        fprintf(stderr, "unknown host: %s\n", address);
++        fprintf(stdout, "unknown host: %s\n", address);
+         exit(1);
+     } else {
+         memcpy(&saddr.sin_addr, hp->h_addr, hp->h_length);
+@@ -135,7 +135,7 @@
+                 inform = 1;
+                 break;
+             default:
+-                fprintf(stderr,
++                fprintf(stdout,
+                         "Unknown flag passed to -C: %c\n", optarg[-1]);
+                 exit(1);
+             }
+@@ -252,13 +252,13 @@
+ #ifndef NETSNMP_DISABLE_SNMPV1
+     if (session.version == SNMP_VERSION_1) {
+         if (inform) {
+-            fprintf(stderr, "Cannot send INFORM as SNMPv1 PDU\n");
++            fprintf(stdout, "Cannot send INFORM as SNMPv1 PDU\n");
+             exit(1);
+         }
+         pdu = snmp_pdu_create(SNMP_MSG_TRAP);
+         pdu_in_addr_t = (in_addr_t *) pdu->agent_addr;
+         if (arg == argc) {
+-            fprintf(stderr, "No enterprise oid\n");
++            fprintf(stdout, "No enterprise oid\n");
+             usage();
+             SOCK_CLEANUP;
+             exit(1);
+@@ -282,7 +282,7 @@
+             pdu->enterprise_length = name_length;
+         }
+         if (++arg >= argc) {
+-            fprintf(stderr, "Missing agent parameter\n");
++            fprintf(stdout, "Missing agent parameter\n");
+             usage();
+             SOCK_CLEANUP;
+             exit(1);
+@@ -294,7 +294,7 @@
+             *pdu_in_addr_t = get_myaddr();
+         }
+         if (++arg == argc) {
+-            fprintf(stderr, "Missing generic-trap parameter\n");
++            fprintf(stdout, "Missing generic-trap parameter\n");
+             usage();
+             SOCK_CLEANUP;
+             exit(1);
+@@ -302,7 +302,7 @@
+         trap = argv[arg];
+         pdu->trap_type = atoi(trap);
+         if (++arg == argc) {
+-            fprintf(stderr, "Missing specific-trap parameter\n");
++            fprintf(stdout, "Missing specific-trap parameter\n");
+             usage();
+             SOCK_CLEANUP;
+             exit(1);
+@@ -310,7 +310,7 @@
+         specific = argv[arg];
+         pdu->specific_type = atoi(specific);
+         if (++arg == argc) {
+-            fprintf(stderr, "Missing uptime parameter\n");
++            fprintf(stdout, "Missing uptime parameter\n");
+             usage();
+             SOCK_CLEANUP;
+             exit(1);
+@@ -328,7 +328,7 @@
+ 
+         pdu = snmp_pdu_create(inform ? SNMP_MSG_INFORM : SNMP_MSG_TRAP2);
+         if (arg == argc) {
+-            fprintf(stderr, "Missing up-time parameter\n");
++            fprintf(stdout, "Missing up-time parameter\n");
+             usage();
+             SOCK_CLEANUP;
+             exit(1);
+@@ -342,7 +342,7 @@
+         snmp_add_var(pdu, objid_sysuptime,
+                      sizeof(objid_sysuptime) / sizeof(oid), 't', trap);
+         if (++arg == argc) {
+-            fprintf(stderr, "Missing trap-oid parameter\n");
++            fprintf(stdout, "Missing trap-oid parameter\n");
+             usage();
+             SOCK_CLEANUP;
+             exit(1);
+@@ -360,7 +360,7 @@
+     while (arg < argc) {
+         arg += 3;
+         if (arg > argc) {
+-            fprintf(stderr, "%s: Missing type/value for variable\n",
++            fprintf(stdout, "%s: Missing type/value for variable\n",
+                     argv[arg - 3]);
+             SOCK_CLEANUP;
+             exit(1);
+diff -ru -ru net-snmp-5.4_orig/apps/snmptrapd.c net-snmp-5.4/apps/snmptrapd.c
+--- net-snmp-5.4_orig/apps/snmptrapd.c	2007-01-18 14:49:53.000000000 +0100
++++ net-snmp-5.4/apps/snmptrapd.c	2007-01-18 14:55:56.000000000 +0100
+@@ -267,7 +267,7 @@
+ 	  !memcmp(vp->val.objid, unavailableAlarm, sizeof(unavailableAlarm)))
+ 	eventid = 3;
+       else {
+-	fprintf(stderr, "unknown event\n");
++	fprintf(stdout, "unknown event\n");
+ 	eventid = 0;
+       }
+       
+@@ -299,73 +299,73 @@
+ usage(void)
+ {
+ #ifdef WIN32SERVICE
+-    fprintf(stderr, "\nUsage:  snmptrapd [-register] [-quiet] [OPTIONS] [LISTENING ADDRESSES]");
+-    fprintf(stderr, "\n        snmptrapd [-unregister] [-quiet]");
++    fprintf(stdout, "\nUsage:  snmptrapd [-register] [-quiet] [OPTIONS] [LISTENING ADDRESSES]");
++    fprintf(stdout, "\n        snmptrapd [-unregister] [-quiet]");
+ #else
+-    fprintf(stderr, "Usage: snmptrapd [OPTIONS] [LISTENING ADDRESSES]\n");
++    fprintf(stdout, "Usage: snmptrapd [OPTIONS] [LISTENING ADDRESSES]\n");
+ #endif
+-    fprintf(stderr, "\n\tNET-SNMP Version:  %s\n", netsnmp_get_version());
+-    fprintf(stderr, "\tWeb:      http://www.net-snmp.org/\n");
+-    fprintf(stderr, "\tEmail:    net-snmp-coders@lists.sourceforge.net\n");
+-    fprintf(stderr, "\n");
+-    fprintf(stderr, "  -a\t\t\tignore authentication failure traps\n");
+-    fprintf(stderr, "  -A\t\t\tappend to log file rather than truncating it\n");
+-    fprintf(stderr, "  -c FILE\t\tread FILE as a configuration file\n");
+-    fprintf(stderr,
++    fprintf(stdout, "\n\tNET-SNMP Version:  %s\n", netsnmp_get_version());
++    fprintf(stdout, "\tWeb:      http://www.net-snmp.org/\n");
++    fprintf(stdout, "\tEmail:    net-snmp-coders@lists.sourceforge.net\n");
++    fprintf(stdout, "\n");
++    fprintf(stdout, "  -a\t\t\tignore authentication failure traps\n");
++    fprintf(stdout, "  -A\t\t\tappend to log file rather than truncating it\n");
++    fprintf(stdout, "  -c FILE\t\tread FILE as a configuration file\n");
++    fprintf(stdout,
+             "  -C\t\t\tdo not read the default configuration files\n");
+-    fprintf(stderr, "  -d\t\t\tdump sent and received SNMP packets\n");
+-    fprintf(stderr, "  -D\t\t\tturn on debugging output\n");
+-    fprintf(stderr,
++    fprintf(stdout, "  -d\t\t\tdump sent and received SNMP packets\n");
++    fprintf(stdout, "  -D\t\t\tturn on debugging output\n");
++    fprintf(stdout,
+             "  -e\t\t\tprint event # (rising/falling alarm, etc.)\n");
+-    fprintf(stderr, "  -f\t\t\tdo not fork from the shell\n");
+-    fprintf(stderr,
++    fprintf(stdout, "  -f\t\t\tdo not fork from the shell\n");
++    fprintf(stdout,
+             "  -F FORMAT\t\tuse specified format for logging to standard error\n");
+ #if HAVE_UNISTD_H
+-    fprintf(stderr, "  -g GID\t\tchange to this numeric gid after opening\n"
++    fprintf(stdout, "  -g GID\t\tchange to this numeric gid after opening\n"
+ 	   "\t\t\t  transport endpoints\n");
+ #endif
+-    fprintf(stderr, "  -h, --help\t\tdisplay this usage message\n");
+-    fprintf(stderr,
++    fprintf(stdout, "  -h, --help\t\tdisplay this usage message\n");
++    fprintf(stdout,
+             "  -H\t\t\tdisplay configuration file directives understood\n");
+-    fprintf(stderr,
++    fprintf(stdout,
+             "  -m MIBLIST\t\tuse MIBLIST instead of the default MIB list\n");
+-    fprintf(stderr,
++    fprintf(stdout,
+             "  -M DIRLIST\t\tuse DIRLIST as the list of locations\n\t\t\t  to look for MIBs\n");
+-    fprintf(stderr,
++    fprintf(stdout,
+             "  -n\t\t\tuse numeric addresses instead of attempting\n\t\t\t  hostname lookups (no DNS)\n");
+ #if HAVE_GETPID
+-    fprintf(stderr, "  -p FILE\t\tstore process id in FILE\n");
++    fprintf(stdout, "  -p FILE\t\tstore process id in FILE\n");
+ #endif
+ #ifdef WIN32SERVICE
+-    fprintf(stderr, "  -register\t\tregister as a Windows service\n");
+-    fprintf(stderr, "  \t\t\t  (followed by -quiet to prevent message popups)\n");
+-    fprintf(stderr, "  \t\t\t  (followed by the startup parameter list)\n");
+-    fprintf(stderr, "  \t\t\t  Note that some parameters are not relevant when running as a service\n");
++    fprintf(stdout, "  -register\t\tregister as a Windows service\n");
++    fprintf(stdout, "  \t\t\t  (followed by -quiet to prevent message popups)\n");
++    fprintf(stdout, "  \t\t\t  (followed by the startup parameter list)\n");
++    fprintf(stdout, "  \t\t\t  Note that some parameters are not relevant when running as a service\n");
+ #endif
+-    fprintf(stderr, "  -t\t\t\tPrevent traps from being logged to syslog\n");
++    fprintf(stdout, "  -t\t\t\tPrevent traps from being logged to syslog\n");
+ #if HAVE_UNISTD_H
+-    fprintf(stderr, "  -u UID\t\tchange to this uid (numeric or textual) after\n"
++    fprintf(stdout, "  -u UID\t\tchange to this uid (numeric or textual) after\n"
+ 	   "\t\t\t  opening transport endpoints\n");
+ #endif
+ #ifdef WIN32SERVICE
+-    fprintf(stderr, "  -unregister\t\tunregister as a Windows service\n");
+-    fprintf(stderr, "  \t\t\t  (followed -quiet to prevent message popups)\n");
++    fprintf(stdout, "  -unregister\t\tunregister as a Windows service\n");
++    fprintf(stdout, "  \t\t\t  (followed -quiet to prevent message popups)\n");
+ #endif
+-    fprintf(stderr, "  -v, --version\t\tdisplay version information\n");
++    fprintf(stdout, "  -v, --version\t\tdisplay version information\n");
+ #if defined(USING_AGENTX_SUBAGENT_MODULE) && !defined(SNMPTRAPD_DISABLE_AGENTX)
+-    fprintf(stderr, "  -x ADDRESS\t\tuse ADDRESS as AgentX address\n");
++    fprintf(stdout, "  -x ADDRESS\t\tuse ADDRESS as AgentX address\n");
+ #endif
+-    fprintf(stderr,
++    fprintf(stdout,
+             "  -O <OUTOPTS>\t\ttoggle options controlling output display\n");
+-    snmp_out_toggle_options_usage("\t\t\t", stderr);
+-    fprintf(stderr,
++    snmp_out_toggle_options_usage("\t\t\t", stdout);
++    fprintf(stdout,
+             "  -L <LOGOPTS>\t\ttoggle options controlling where to log to\n");
+-    snmp_log_options_usage("\t\t\t", stderr);
+-    fprintf(stderr, "\n  Deprecated options:\n");
+-    fprintf(stderr, "  -o FILE\t\tuse -Lf <FILE> instead\n");
+-    fprintf(stderr, "  -P\t\t\tuse -f -Le  instead\n");
+-    fprintf(stderr, "  -s\t\t\tuse -Lsd instead\n");
+-    fprintf(stderr, "  -S d|i|0-7\t\tuse -Ls <facility> instead\n");
++    snmp_log_options_usage("\t\t\t", stdout);
++    fprintf(stdout, "\n  Deprecated options:\n");
++    fprintf(stdout, "  -o FILE\t\tuse -Lf <FILE> instead\n");
++    fprintf(stdout, "  -P\t\t\tuse -f -Le  instead\n");
++    fprintf(stdout, "  -s\t\t\tuse -Lsd instead\n");
++    fprintf(stdout, "  -S d|i|0-7\t\tuse -Ls <facility> instead\n");
+ }
+ 
+ static void
+@@ -628,7 +628,7 @@
+ 
+   cp = snmp_out_toggle_options(cptr);
+   if (cp != NULL) {
+-    fprintf(stderr, "Unknown output option passed to -O: %c\n",
++    fprintf(stdout, "Unknown output option passed to -O: %c\n",
+         *cp);
+   }
+ }
+@@ -836,7 +836,7 @@
+             init_perl();
+ #endif
+             init_snmp("snmptrapd");
+-            fprintf(stderr, "Configuration directives understood:\n");
++            fprintf(stdout, "Configuration directives understood:\n");
+             read_config_print_usage("  ");
+             exit(0);
+ 
+@@ -849,7 +849,7 @@
+             break;
+ 
+ 	case 'S':
+-            fprintf(stderr,
++            fprintf(stdout,
+                     "Warning: -S option is deprecated; use -Ls <facility> instead\n");
+             depmsg = 1;
+             if (optarg != NULL) {
+@@ -887,12 +887,12 @@
+                     Facility = LOG_LOCAL7;
+                     break;
+                 default:
+-                    fprintf(stderr, "invalid syslog facility: -S%c\n",*optarg);
++                    fprintf(stdout, "invalid syslog facility: -S%c\n",*optarg);
+                     usage();
+                     exit(1);
+                 }
+             } else {
+-                fprintf(stderr, "no syslog facility specified\n");
++                fprintf(stdout, "no syslog facility specified\n");
+                 usage();
+                 exit(1);
+             }
+@@ -922,7 +922,7 @@
+             break;
+ 
+         case 'o':
+-            fprintf(stderr,
++            fprintf(stdout,
+                     "Warning: -o option is deprecated; use -Lf <file> instead\n");
+             if (optarg != NULL) {
+                 logfile = optarg;
+@@ -938,7 +938,7 @@
+         case 'O':
+             cp = snmp_out_toggle_options(optarg);
+             if (cp != NULL) {
+-                fprintf(stderr, "Unknown output option passed to -O: %c\n",
++                fprintf(stdout, "Unknown output option passed to -O: %c\n",
+ 			*cp);
+                 usage();
+                 exit(1);
+@@ -964,14 +964,14 @@
+ #endif
+ 
+         case 'P':
+-            fprintf(stderr,
++            fprintf(stdout,
+                     "Warning: -P option is deprecated; use -f -Le instead\n");
+             dofork = 0;
+-            snmp_enable_stderrlog();
++            snmp_enable_stdoutlog();
+             break;
+ 
+         case 's':
+-            fprintf(stderr,
++            fprintf(stdout,
+                     "Warning: -s option is deprecated; use -Lsd instead\n");
+             depmsg = 1;
+ #ifdef WIN32
+@@ -999,7 +999,7 @@
+                         uid = info->pw_uid;
+                     } else {
+ #endif
+-                        fprintf(stderr, "Bad user id: %s\n", optarg);
++                        fprintf(stdout, "Bad user id: %s\n", optarg);
+                         exit(1);
+ #if HAVE_GETPWNAM && HAVE_PWD_H
+                     }
+@@ -1030,7 +1030,7 @@
+             break;
+ 
+         default:
+-            fprintf(stderr, "invalid option: -%c\n", arg);
++            fprintf(stdout, "invalid option: -%c\n", arg);
+             usage();
+             exit(1);
+             break;
+@@ -1046,7 +1046,7 @@
+             if (listen_ports != NULL) {
+                 astring = malloc(strlen(listen_ports) + 2 + strlen(argv[i]));
+                 if (astring == NULL) {
+-                    fprintf(stderr, "malloc failure processing argv[%d]\n", i);
++                    fprintf(stdout, "malloc failure processing argv[%d]\n", i);
+                     exit(1);
+                 }
+                 sprintf(astring, "%s,%s", listen_ports, argv[i]);
+@@ -1055,7 +1055,7 @@
+             } else {
+                 listen_ports = strdup(argv[i]);
+                 if (listen_ports == NULL) {
+-                    fprintf(stderr, "malloc failure processing argv[%d]\n", i);
++                    fprintf(stdout, "malloc failure processing argv[%d]\n", i);
+                     exit(1);
+                 }
+             }
+@@ -1223,14 +1223,14 @@
+ 
+ #ifndef WIN32
+     /*
+-     * fork the process to the background if we are not printing to stderr 
++     * fork the process to the background if we are not printing to stdout 
+      */
+     if (dofork && netsnmp_running) {
+         int             fd;
+ 
+         switch (fork()) {
+         case -1:
+-            fprintf(stderr, "bad fork - %s\n", strerror(errno));
++            fprintf(stdout, "bad fork - %s\n", strerror(errno));
+             _exit(1);
+ 
+         case 0:
+@@ -1238,12 +1238,12 @@
+              * become process group leader 
+              */
+             if (setsid() == -1) {
+-                fprintf(stderr, "bad setsid - %s\n", strerror(errno));
++                fprintf(stdout, "bad setsid - %s\n", strerror(errno));
+                 _exit(1);
+             }
+ 
+             /*
+-             * if we are forked, we don't want to print out to stdout or stderr 
++             * if we are forked, we don't want to print out to stdout or stdout 
+              */
+             fd = open("/dev/null", O_RDWR);
+             dup2(fd, STDIN_FILENO);
+@@ -1429,7 +1429,7 @@
+                 netsnmp_running = 0;
+                 break;
+             default:
+-                fprintf(stderr, "select returned %d\n", count);
++                fprintf(stdout, "select returned %d\n", count);
+                 netsnmp_running = 0;
+             }
+ 	run_alarms();
+diff -ru -ru net-snmp-5.4_orig/apps/snmptrapd_handlers.c net-snmp-5.4/apps/snmptrapd_handlers.c
+--- net-snmp-5.4_orig/apps/snmptrapd_handlers.c	2007-01-18 14:49:53.000000000 +0100
++++ net-snmp-5.4/apps/snmptrapd_handlers.c	2007-01-18 14:55:56.000000000 +0100
+@@ -844,7 +844,7 @@
+         tmpnam(file_buf);
+         file = fopen(file_buf, "w");
+         if (!file) {
+-            fprintf(stderr, "fopen: %s: %s\n", file_buf, strerror(errno));
++            fprintf(stdout, "fopen: %s: %s\n", file_buf, strerror(errno));
+         } else {
+             send_handler_data(file, host, pdu, transport);
+             fclose(file);
+@@ -853,10 +853,10 @@
+             command_buf[ sizeof(command_buf)-1 ] = 0;
+             result = system(command_buf);
+             if (result == -1)
+-                fprintf(stderr, "system: %s: %s\n", command_buf,
++                fprintf(stdout, "system: %s: %s\n", command_buf,
+                         strerror(errno));
+             else if (result)
+-                fprintf(stderr, "system: %s: %d\n", command_buf, result);
++                fprintf(stdout, "system: %s: %d\n", command_buf, result);
+             remove(file_buf);
+         }
+ #endif                          /* WIN32 */
+diff -ru -ru net-snmp-5.4_orig/apps/snmptrapd_log.c net-snmp-5.4/apps/snmptrapd_log.c
+--- net-snmp-5.4_orig/apps/snmptrapd_log.c	2007-01-18 14:49:53.000000000 +0100
++++ net-snmp-5.4/apps/snmptrapd_log.c	2007-01-18 14:55:56.000000000 +0100
+@@ -1063,7 +1063,7 @@
+         return 0;
+     }
+ 
+-    fprintf(stderr, "here\n\n");
++    fprintf(stdout, "here\n\n");
+     switch (pdu->command) {
+ 
+     case CHR_SNMP_VERSION:
+diff -ru -ru net-snmp-5.4_orig/apps/snmpusm.c net-snmp-5.4/apps/snmpusm.c
+--- net-snmp-5.4_orig/apps/snmpusm.c	2007-01-18 14:49:53.000000000 +0100
++++ net-snmp-5.4/apps/snmpusm.c	2007-01-18 14:55:56.000000000 +0100
+@@ -132,28 +132,28 @@
+ void
+ usage(void)
+ {
+-    fprintf(stderr, "Usage: snmpusm ");
+-    snmp_parse_args_usage(stderr);
+-    fprintf(stderr, " COMMAND\n\n");
+-    snmp_parse_args_descriptions(stderr);
+-    fprintf(stderr, "\nsnmpusm commands:\n");
+-    fprintf(stderr, "  [options] create     USER [CLONEFROM-USER]\n");
+-    fprintf(stderr, "  [options] delete     USER\n");
+-    fprintf(stderr, "  [options] cloneFrom  USER CLONEFROM-USER\n");
+-    fprintf(stderr, "  [options] activate   USER\n");
+-    fprintf(stderr, "  [options] deactivate USER\n");
+-    fprintf(stderr, "  [options] [-Ca] [-Cx] changekey [USER]\n");
+-    fprintf(stderr,
++    fprintf(stdout, "Usage: snmpusm ");
++    snmp_parse_args_usage(stdout);
++    fprintf(stdout, " COMMAND\n\n");
++    snmp_parse_args_descriptions(stdout);
++    fprintf(stdout, "\nsnmpusm commands:\n");
++    fprintf(stdout, "  [options] create     USER [CLONEFROM-USER]\n");
++    fprintf(stdout, "  [options] delete     USER\n");
++    fprintf(stdout, "  [options] cloneFrom  USER CLONEFROM-USER\n");
++    fprintf(stdout, "  [options] activate   USER\n");
++    fprintf(stdout, "  [options] deactivate USER\n");
++    fprintf(stdout, "  [options] [-Ca] [-Cx] changekey [USER]\n");
++    fprintf(stdout,
+             "  [options] [-Ca] [-Cx] passwd OLD-PASSPHRASE NEW-PASSPHRASE [USER]\n");
+-    fprintf(stderr,
++    fprintf(stdout,
+             "  [options] (-Ca|-Cx) -Ck passwd OLD-KEY-OR-PASSPHRASE NEW-KEY-OR-PASSPHRASE [USER]\n");
+-    fprintf(stderr, "\nsnmpusm options:\n");
+-    fprintf(stderr, "\t-CE ENGINE-ID\tSet usmUserEngineID (e.g. 800000020109840301).\n");
+-    fprintf(stderr, "\t-Cp STRING\tSet usmUserPublic value to STRING.\n");
+-    fprintf(stderr, "\t-Cx\t\tChange the privacy key.\n");
+-    fprintf(stderr, "\t-Ca\t\tChange the authentication key.\n");
+-    fprintf(stderr, "\t-Ck\t\tAllows to use localized key (must start with 0x)\n");
+-    fprintf(stderr, "\t\t\tinstead of passphrase.\n");
++    fprintf(stdout, "\nsnmpusm options:\n");
++    fprintf(stdout, "\t-CE ENGINE-ID\tSet usmUserEngineID (e.g. 800000020109840301).\n");
++    fprintf(stdout, "\t-Cp STRING\tSet usmUserPublic value to STRING.\n");
++    fprintf(stdout, "\t-Cx\t\tChange the privacy key.\n");
++    fprintf(stdout, "\t-Ca\t\tChange the authentication key.\n");
++    fprintf(stdout, "\t-Ck\t\tAllows to use localized key (must start with 0x)\n");
++    fprintf(stdout, "\t\t\tinstead of passphrase.\n");
+ }
+ 
+ /*
+@@ -220,7 +220,7 @@
+             
+     if (vars->val_len != BN_num_bytes(dh->pub_key)) {
+         SNMP_FREE(dhkeychange);
+-        fprintf(stderr,"incorrect diffie-helman lengths (%lu != %d)\n",
++        fprintf(stdout,"incorrect diffie-helman lengths (%lu != %d)\n",
+                 (unsigned long)vars->val_len, BN_num_bytes(dh->pub_key));
+         return SNMPERR_GENERR;
+     }
+@@ -292,7 +292,7 @@
+                 if (optind < argc) {
+ 		    usmUserPublic_val =  argv[optind];
+                 } else {
+-                    fprintf(stderr, "Bad -Cp option: no argument given\n");
++                    fprintf(stdout, "Bad -Cp option: no argument given\n");
+                     exit(1);
+                 }
+                 optind++;
+@@ -305,13 +305,13 @@
+                     if (argv[optind]) {
+                         ebuf = (u_char *)malloc(ebuf_len);
+                         if (ebuf == NULL) {
+-                            fprintf(stderr, 
++                            fprintf(stdout, 
+                                     "malloc failure processing -CE option.\n");
+                             exit(1);
+                         }
+ 		        if (!snmp_hex_to_binary(&ebuf, &ebuf_len,
+                                                 &usmUserEngineIDLen, 1, argv[optind])) {
+-                            fprintf(stderr, 
++                            fprintf(stdout, 
+                                     "Bad usmUserEngineID value after -CE option.\n");
+ 		            free(ebuf);
+ 		            exit(1);
+@@ -323,7 +323,7 @@
+ 
+                     }
+                 } else {
+-                    fprintf(stderr, "Bad -CE option: no argument given\n");
++                    fprintf(stdout, "Bad -CE option: no argument given\n");
+                     exit(1);
+                 }
+                 optind++;
+@@ -331,7 +331,7 @@
+             }
+ 
+             default:
+-                fprintf(stderr, "Unknown flag passed to -C: %c\n",
++                fprintf(stdout, "Unknown flag passed to -C: %c\n",
+                         optarg[-1]);
+                 exit(1);
+             }
+@@ -390,7 +390,7 @@
+     }
+ 
+     if (arg >= argc) {
+-        fprintf(stderr, "Please specify an operation to perform.\n");
++        fprintf(stdout, "Please specify an operation to perform.\n");
+         usage();
+         exit(1);
+     }
+@@ -447,14 +447,14 @@
+             doprivkey = doauthkey = 1;
+ 
+         if (newpass == NULL || strlen(newpass) < USM_LENGTH_P_MIN) {
+-            fprintf(stderr,
++            fprintf(stdout,
+                     "New passphrase must be greater than %d characters in length.\n",
+                     USM_LENGTH_P_MIN);
+             exit(1);
+         }
+ 
+         if (oldpass == NULL || strlen(oldpass) < USM_LENGTH_P_MIN) {
+-            fprintf(stderr,
++            fprintf(stdout,
+                     "Old passphrase must be greater than %d characters in length.\n",
+                     USM_LENGTH_P_MIN);
+             exit(1);
+@@ -525,7 +525,7 @@
+ 	    oldkul_len = 0; /* initialize the offset */
+ 	    if (!snmp_hex_to_binary((u_char **) (&buf), &buf_len, &oldkul_len, 0, oldpass)) {
+ 	      snmp_perror(argv[0]);
+-	      fprintf(stderr, "generating the old Kul from localized key failed\n");
++	      fprintf(stdout, "generating the old Kul from localized key failed\n");
+ 	      exit(1);
+ 	    }
+ 	    
+@@ -543,7 +543,7 @@
+ 	    
+ 	    if (rval != SNMPERR_SUCCESS) {
+ 	        snmp_perror(argv[0]);
+-	        fprintf(stderr, "generating the old Ku failed\n");
++	        fprintf(stdout, "generating the old Ku failed\n");
+ 	        exit(1);
+ 	    }
+ 
+@@ -557,7 +557,7 @@
+ 	    
+ 	    if (rval != SNMPERR_SUCCESS) {
+ 	        snmp_perror(argv[0]);
+-		fprintf(stderr, "generating the old Kul failed\n");
++		fprintf(stdout, "generating the old Kul failed\n");
+ 		exit(1);
+ 	    }
+ 	}
+@@ -572,7 +572,7 @@
+ 	    newkul_len = 0; /* initialize the offset */
+ 	    if (!snmp_hex_to_binary((u_char **) (&buf), &buf_len, &newkul_len, 0, newpass)) {
+ 	      snmp_perror(argv[0]);
+-	      fprintf(stderr, "generating the new Kul from localized key failed\n");
++	      fprintf(stdout, "generating the new Kul from localized key failed\n");
+ 	      exit(1);
+ 	    }
+ 	    
+@@ -586,7 +586,7 @@
+ 
+             if (rval != SNMPERR_SUCCESS) {
+                 snmp_perror(argv[0]);
+-                fprintf(stderr, "generating the new Ku failed\n");
++                fprintf(stdout, "generating the new Ku failed\n");
+                 exit(1);
+             }
+ 
+@@ -597,7 +597,7 @@
+ 
+ 	    if (rval != SNMPERR_SUCCESS) {
+ 	        snmp_perror(argv[0]);
+-		fprintf(stderr, "generating the new Kul failed\n");
++		fprintf(stdout, "generating the new Kul failed\n");
+ 		exit(1);
+ 	    }
+ 	}
+@@ -641,7 +641,7 @@
+ 
+ 	  if (rval != SNMPERR_SUCCESS) {
+ 	    snmp_perror(argv[0]);
+-            fprintf(stderr, "encoding the keychange failed\n");
++            fprintf(stdout, "encoding the keychange failed\n");
+             usage();
+             exit(1);
+ 	  }
+@@ -658,7 +658,7 @@
+ 
+ 	  if (rval != SNMPERR_SUCCESS) {
+             snmp_perror(argv[0]);
+-            fprintf(stderr, "encoding the keychange failed\n");
++            fprintf(stdout, "encoding the keychange failed\n");
+             usage();
+             exit(1);
+ 	  }
+@@ -690,7 +690,7 @@
+          * create USER [CLONEFROM]
+          */
+         if (++arg >= argc) {
+-            fprintf(stderr, "You must specify the user name to create\n");
++            fprintf(stdout, "You must specify the user name to create\n");
+             usage();
+             exit(1);
+         }
+@@ -740,7 +740,7 @@
+          * cloneFrom USER FROM
+          */
+         if (++arg >= argc) {
+-            fprintf(stderr,
++            fprintf(stdout,
+                     "You must specify the user name to operate on\n");
+             usage();
+             exit(1);
+@@ -758,7 +758,7 @@
+                   usmUserEngineID, usmUserEngineIDLen, argv[arg]);
+ 
+         if (++arg >= argc) {
+-            fprintf(stderr,
++            fprintf(stdout,
+                     "You must specify the user name to clone from\n");
+             usage();
+             exit(1);
+@@ -778,7 +778,7 @@
+          * delete USER
+          */
+         if (++arg >= argc) {
+-            fprintf(stderr, "You must specify the user name to delete\n");
++            fprintf(stdout, "You must specify the user name to delete\n");
+             exit(1);
+         }
+ 
+@@ -796,7 +796,7 @@
+          * activate USER
+          */
+         if (++arg >= argc) {
+-            fprintf(stderr, "You must specify the user name to activate\n");
++            fprintf(stdout, "You must specify the user name to activate\n");
+             exit(1);
+         }
+ 
+@@ -814,7 +814,7 @@
+          * deactivate USER
+          */
+         if (++arg >= argc) {
+-            fprintf(stderr, "You must specify the user name to deactivate\n");
++            fprintf(stdout, "You must specify the user name to deactivate\n");
+             exit(1);
+         }
+ 
+@@ -897,9 +897,9 @@
+             snmp_sess_perror("snmpusm", ss);
+             if (dhresponse && dhresponse->variables &&
+                 dhresponse->variables->type != ASN_OCTET_STR) {
+-                fprintf(stderr,
++                fprintf(stdout,
+                         "Can't get diffie-helman exchange from the agent\n");
+-                fprintf(stderr,
++                fprintf(stdout,
+                         "  (maybe it doesn't support the SNMP-USM-DH-OBJECTS-MIB MIB)\n");
+             }
+             exitval = 1;
+@@ -942,7 +942,7 @@
+         /* snmp_free_pdu(dhresponse); */ /* parts still in use somewhere */
+ #endif /* HAVE_OPENSSL_DH_H */
+     } else {
+-        fprintf(stderr, "Unknown command\n");
++        fprintf(stdout, "Unknown command\n");
+         usage();
+         exit(1);
+     }
+@@ -969,26 +969,26 @@
+             if (response->errstat == SNMP_ERR_NOERROR) {
+                 fprintf(stdout, "%s\n", successNotes[command - 1]);
+             } else {
+-                fprintf(stderr, "Error in packet.\nReason: %s\n",
++                fprintf(stdout, "Error in packet.\nReason: %s\n",
+                         snmp_errstring(response->errstat));
+                 if (response->errindex != 0) {
+                     int             count;
+                     netsnmp_variable_list *vars;
+-                    fprintf(stderr, "Failed object: ");
++                    fprintf(stdout, "Failed object: ");
+                     for (count = 1, vars = response->variables;
+                          vars && count != response->errindex;
+                          vars = vars->next_variable, count++)
+                         /*EMPTY*/;
+                     if (vars)
+-                        fprint_objid(stderr, vars->name,
++                        fprint_objid(stdout, vars->name,
+                                      vars->name_length);
+-                    fprintf(stderr, "\n");
++                    fprintf(stdout, "\n");
+                 }
+                 exitval = 2;
+             }
+         }
+     } else if (status == STAT_TIMEOUT) {
+-        fprintf(stderr, "Timeout: No Response from %s\n",
++        fprintf(stdout, "Timeout: No Response from %s\n",
+                 session.peername);
+         exitval = 1;
+     } else {                    /* status == STAT_ERROR */
+diff -ru -ru net-snmp-5.4_orig/apps/snmpvacm.c net-snmp-5.4/apps/snmpvacm.c
+--- net-snmp-5.4_orig/apps/snmpvacm.c	2007-01-18 14:49:53.000000000 +0100
++++ net-snmp-5.4/apps/snmpvacm.c	2007-01-18 14:55:56.000000000 +0100
+@@ -119,19 +119,19 @@
+ void
+ usage(void)
+ {
+-    fprintf(stderr, "Usage: snmpvacm ");
+-    snmp_parse_args_usage(stderr);
+-    fprintf(stderr, " COMMAND\n\n");
+-    snmp_parse_args_descriptions(stderr);
+-    fprintf(stderr, "\nsnmpvacm commands:\n");
+-    fprintf(stderr, "        createAccess     GROUPNAME [CONTEXTPREFIX] SECURITYMODEL SECURITYLEVEL CONTEXTMATCH READVIEWNAME WRITEVIEWNAME NOTIFYVIEWNAME\n");
+-    fprintf(stderr, "        deleteAccess     GROUPNAME [CONTEXTPREFIX] SECURITYMODEL SECURITYLEVEL\n");
+-    fprintf(stderr, "        createSec2Group  MODEL SECURITYNAME  GROUPNAME\n");
+-    fprintf(stderr, "        deleteSec2Group  MODEL SECURITYNAME\n");
+-    fprintf(stderr, "  [-Ce] createView       NAME SUBTREE [MASK]\n");
+-    fprintf(stderr, "        deleteView       NAME SUBTREE\n");
+-    fprintf(stderr, "        createAuth       GROUPNAME [CONTEXTPREFIX] SECURITYMODEL SECURITYLEVEL AUTHTYPE CONTEXTMATCH VIEWNAME\n");
+-    fprintf(stderr, "        deleteAuth       GROUPNAME [CONTEXTPREFIX] SECURITYMODEL SECURITYLEVEL AUTHTYPE\n");
++    fprintf(stdout, "Usage: snmpvacm ");
++    snmp_parse_args_usage(stdout);
++    fprintf(stdout, " COMMAND\n\n");
++    snmp_parse_args_descriptions(stdout);
++    fprintf(stdout, "\nsnmpvacm commands:\n");
++    fprintf(stdout, "        createAccess     GROUPNAME [CONTEXTPREFIX] SECURITYMODEL SECURITYLEVEL CONTEXTMATCH READVIEWNAME WRITEVIEWNAME NOTIFYVIEWNAME\n");
++    fprintf(stdout, "        deleteAccess     GROUPNAME [CONTEXTPREFIX] SECURITYMODEL SECURITYLEVEL\n");
++    fprintf(stdout, "        createSec2Group  MODEL SECURITYNAME  GROUPNAME\n");
++    fprintf(stdout, "        deleteSec2Group  MODEL SECURITYNAME\n");
++    fprintf(stdout, "  [-Ce] createView       NAME SUBTREE [MASK]\n");
++    fprintf(stdout, "        deleteView       NAME SUBTREE\n");
++    fprintf(stdout, "        createAuth       GROUPNAME [CONTEXTPREFIX] SECURITYMODEL SECURITYLEVEL AUTHTYPE CONTEXTMATCH VIEWNAME\n");
++    fprintf(stdout, "        deleteAuth       GROUPNAME [CONTEXTPREFIX] SECURITYMODEL SECURITYLEVEL AUTHTYPE\n");
+ }
+ 
+ 
+@@ -249,7 +249,7 @@
+                 break;
+ 
+             default:
+-                fprintf(stderr,
++                fprintf(stdout,
+                         "Unknown flag passed to -C: %c\n", optarg[-1]);
+                 exit(1);
+             }
+@@ -327,7 +327,7 @@
+     pdu = snmp_pdu_create(SNMP_MSG_SET);
+ 
+     if (arg >= argc) {
+-        fprintf(stderr, "Please specify a operation to perform.\n");
++        fprintf(stdout, "Please specify a operation to perform.\n");
+         usage();
+         exit(1);
+     }
+@@ -341,7 +341,7 @@
+          */
+     {
+         if (++arg + 2 != argc) {
+-            fprintf(stderr, "You must specify the view to delete\n");
++            fprintf(stdout, "You must specify the view to delete\n");
+             usage();
+             exit(1);
+         }
+@@ -363,7 +363,7 @@
+          */
+     {
+         if (++arg + 2 > argc) {
+-            fprintf(stderr, "You must specify name, subtree and mask\n");
++            fprintf(stdout, "You must specify name, subtree and mask\n");
+             usage();
+             exit(1);
+         }
+@@ -416,7 +416,7 @@
+          */
+     {
+         if (++arg + 2 != argc) {
+-            fprintf(stderr, "You must specify the sec2group to delete\n");
++            fprintf(stdout, "You must specify the sec2group to delete\n");
+             usage();
+             exit(1);
+         }
+@@ -443,7 +443,7 @@
+          */
+     {
+         if (++arg + 3 != argc) {
+-            fprintf(stderr,
++            fprintf(stdout,
+                     "You must specify model, security name and group name\n");
+             usage();
+             exit(1);
+@@ -476,7 +476,7 @@
+          */
+     {
+         if (++arg + 3 > argc) {
+-            fprintf(stderr,
++            fprintf(stdout,
+                     "You must specify the access entry to delete\n");
+             usage();
+             exit(1);
+@@ -515,7 +515,7 @@
+          */
+     {
+         if (++arg + 7 > argc) {
+-            fprintf(stderr,
++            fprintf(stdout,
+                     "You must specify the access entry to create\n");
+             usage();
+             exit(1);
+@@ -583,7 +583,7 @@
+          */
+     {
+         if (++arg + 4 > argc) {
+-            fprintf(stderr,
++            fprintf(stdout,
+                     "You must specify the authAccess entry to delete\n");
+             usage();
+             exit(1);
+@@ -623,7 +623,7 @@
+          */
+     {
+         if (++arg + 6 > argc) {
+-            fprintf(stderr,
++            fprintf(stdout,
+                     "You must specify the authAccess entry to create\n");
+             usage();
+             exit(1);
+@@ -684,26 +684,26 @@
+     if (status == STAT_SUCCESS) {
+         if (response) {
+             if (response->errstat == SNMP_ERR_NOERROR) {
+-                fprintf(stderr, "%s\n", successNotes[command - 1]);
++                fprintf(stdout, "%s\n", successNotes[command - 1]);
+             } else {
+-                fprintf(stderr, "Error in packet.\nReason: %s\n",
++                fprintf(stdout, "Error in packet.\nReason: %s\n",
+                         snmp_errstring(response->errstat));
+ 		if (response->errindex != 0){
+ 		    int count;
+ 		    struct variable_list *vars = response->variables;
+-		    fprintf(stderr, "Failed object: ");
++		    fprintf(stdout, "Failed object: ");
+ 		    for(count = 1; vars && (count != response->errindex);
+ 			    vars = vars->next_variable, count++)
+ 			;
+ 		    if (vars)
+-			fprint_objid(stderr, vars->name, vars->name_length);
+-		    fprintf(stderr, "\n");
++			fprint_objid(stdout, vars->name, vars->name_length);
++		    fprintf(stdout, "\n");
+ 		}
+                 exitval = 2;
+             }
+         }
+     } else if (status == STAT_TIMEOUT) {
+-        fprintf(stderr, "Timeout: No Response from %s\n",
++        fprintf(stdout, "Timeout: No Response from %s\n",
+                 session.peername);
+         exitval = 1;
+     } else {
+diff -ru -ru net-snmp-5.4_orig/apps/snmpwalk.c net-snmp-5.4/apps/snmpwalk.c
+--- net-snmp-5.4_orig/apps/snmpwalk.c	2007-01-18 14:49:53.000000000 +0100
++++ net-snmp-5.4/apps/snmpwalk.c	2007-01-18 14:55:56.000000000 +0100
+@@ -83,18 +83,18 @@
+ void
+ usage(void)
+ {
+-    fprintf(stderr, "USAGE: snmpwalk ");
+-    snmp_parse_args_usage(stderr);
+-    fprintf(stderr, " [OID]\n\n");
+-    snmp_parse_args_descriptions(stderr);
+-    fprintf(stderr,
++    fprintf(stdout, "USAGE: snmpwalk ");
++    snmp_parse_args_usage(stdout);
++    fprintf(stdout, " [OID]\n\n");
++    snmp_parse_args_descriptions(stdout);
++    fprintf(stdout,
+             "  -C APPOPTS\t\tSet various application specific behaviours:\n");
+-    fprintf(stderr, "\t\t\t  p:  print the number of variables found\n");
+-    fprintf(stderr, "\t\t\t  i:  include given OID in the search range\n");
+-    fprintf(stderr, "\t\t\t  I:  don't include the given OID, even if no results are returned\n");
+-    fprintf(stderr,
++    fprintf(stdout, "\t\t\t  p:  print the number of variables found\n");
++    fprintf(stdout, "\t\t\t  i:  include given OID in the search range\n");
++    fprintf(stdout, "\t\t\t  I:  don't include the given OID, even if no results are returned\n");
++    fprintf(stdout,
+             "\t\t\t  c:  do not check returned OIDs are increasing\n");
+-    fprintf(stderr,
++    fprintf(stdout,
+             "\t\t\t  t:  Display wall-clock time to complete the request\n");
+ }
+ 
+@@ -153,7 +153,7 @@
+                 break;
+                 
+             default:
+-                fprintf(stderr, "Unknown flag passed to -C: %c\n",
++                fprintf(stdout, "Unknown flag passed to -C: %c\n",
+                         optarg[-1]);
+                 exit(1);
+             }
+@@ -305,12 +305,12 @@
+                             && snmp_oid_compare(name, name_length,
+                                                 vars->name,
+                                                 vars->name_length) >= 0) {
+-                            fprintf(stderr, "Error: OID not increasing: ");
+-                            fprint_objid(stderr, name, name_length);
+-                            fprintf(stderr, " >= ");
+-                            fprint_objid(stderr, vars->name,
++                            fprintf(stdout, "Error: OID not increasing: ");
++                            fprint_objid(stdout, name, name_length);
++                            fprintf(stdout, " >= ");
++                            fprint_objid(stdout, vars->name,
+                                          vars->name_length);
+-                            fprintf(stderr, "\n");
++                            fprintf(stdout, "\n");
+                             running = 0;
+                             exitval = 1;
+                         }
+@@ -331,24 +331,24 @@
+                 if (response->errstat == SNMP_ERR_NOSUCHNAME) {
+                     printf("End of MIB\n");
+                 } else {
+-                    fprintf(stderr, "Error in packet.\nReason: %s\n",
++                    fprintf(stdout, "Error in packet.\nReason: %s\n",
+                             snmp_errstring(response->errstat));
+                     if (response->errindex != 0) {
+-                        fprintf(stderr, "Failed object: ");
++                        fprintf(stdout, "Failed object: ");
+                         for (count = 1, vars = response->variables;
+                              vars && count != response->errindex;
+                              vars = vars->next_variable, count++)
+                             /*EMPTY*/;
+                         if (vars)
+-                            fprint_objid(stderr, vars->name,
++                            fprint_objid(stdout, vars->name,
+                                          vars->name_length);
+-                        fprintf(stderr, "\n");
++                        fprintf(stdout, "\n");
+                     }
+                     exitval = 2;
+                 }
+             }
+         } else if (status == STAT_TIMEOUT) {
+-            fprintf(stderr, "Timeout: No Response from %s\n",
++            fprintf(stdout, "Timeout: No Response from %s\n",
+                     session.peername);
+             running = 0;
+             exitval = 1;
+@@ -382,7 +382,7 @@
+     }
+     if (netsnmp_ds_get_boolean(NETSNMP_DS_APPLICATION_ID,
+                                NETSNMP_DS_WALK_TIME_RESULTS)) {
+-        fprintf (stderr, "Total traversal time = %f seconds\n",
++        fprintf (stdout, "Total traversal time = %f seconds\n",
+                  (double) (tv2.tv_usec - tv1.tv_usec)/1000000 +
+                  (double) (tv2.tv_sec - tv1.tv_sec));
+     }
+diff -ru -ru net-snmp-5.4_orig/include/net-snmp/library/snmp_logging.h net-snmp-5.4/include/net-snmp/library/snmp_logging.h
+--- net-snmp-5.4_orig/include/net-snmp/library/snmp_logging.h	2007-01-18 14:49:53.000000000 +0100
++++ net-snmp-5.4/include/net-snmp/library/snmp_logging.h	2007-01-18 14:55:56.000000000 +0100
+@@ -39,7 +39,7 @@
+     int             snmp_get_do_logging(void);
+     void            snmp_disable_syslog(void);
+     void            snmp_disable_filelog(void);
+-    void            snmp_disable_stderrlog(void);
++    void            snmp_disable_stdoutlog(void);
+     void            snmp_disable_calllog(void);
+     void            snmp_disable_log(void);
+     void            snmp_enable_syslog(void);
+@@ -47,10 +47,10 @@
+                                              const int   facility);
+     void            snmp_enable_filelog(const char *logfilename,
+                                         int dont_zero_log);
+-    void            snmp_enable_stderrlog(void);
++    void            snmp_enable_stdoutlog(void);
+     void            snmp_enable_calllog(void);
+ 
+-    int             snmp_stderrlog_status(void);
++    int             snmp_stdoutlog_status(void);
+ 
+ #if HAVE_STDARG_H
+ # if !defined(__GNUC__) || __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 8)
+diff -ru -ru net-snmp-5.4_orig/include/net-snmp/library/system.h net-snmp-5.4/include/net-snmp/library/system.h
+--- net-snmp-5.4_orig/include/net-snmp/library/system.h	2007-01-18 14:49:53.000000000 +0100
++++ net-snmp-5.4/include/net-snmp/library/system.h	2007-01-18 14:55:56.000000000 +0100
+@@ -47,7 +47,7 @@
+      * Returns: -1 : fork failed
+      *           0 : No errors
+      */
+-    int netsnmp_daemonize(int quit_immediately, int stderr_log);
++    int netsnmp_daemonize(int quit_immediately, int stdout_log);
+ 
+     /*
+      * Definitions for the system dependent library file
+diff -ru -ru net-snmp-5.4_orig/python/netsnmp/client_intf.c net-snmp-5.4/python/netsnmp/client_intf.c
+--- net-snmp-5.4_orig/python/netsnmp/client_intf.c	2007-01-18 14:49:53.000000000 +0100
++++ net-snmp-5.4/python/netsnmp/client_intf.c	2007-01-18 14:55:56.000000000 +0100
+@@ -70,7 +70,7 @@
+ #define NO_FLAGS 0x00
+ 
+ 
+-/* Wrapper around fprintf(stderr, ...) for clean and easy debug output. */
++/* Wrapper around fprintf(stdout, ...) for clean and easy debug output. */
+ static int _debug_level = 0;
+ #ifdef	DEBUGGING
+ #define	DBPRT(severity, otherargs)					\
+@@ -95,7 +95,7 @@
+   have_inited = 1;
+ 
+   snmp_set_quick_print(1);
+-  snmp_enable_stderrlog();
++  snmp_enable_stdoutlog();
+   init_snmp(appname);
+     
+   netsnmp_ds_set_boolean(NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_DONT_BREAKDOWN_OIDS, 1);
+@@ -298,7 +298,7 @@
+ 	    break;
+ 	default:
+             return(TYPE_OTHER);
+-            fprintf(stderr, "translate_asn_type: unhandled asn type (%d)\n",type);
++            fprintf(stdout, "translate_asn_type: unhandled asn type (%d)\n",type);
+             break;
+         }
+ }
+@@ -415,7 +415,7 @@
+          
+         case ASN_NSAP:
+         default:
+-	  fprintf(stderr,"snprint_value: asn type not handled %d\n",var->type);
++	  fprintf(stdout,"snprint_value: asn type not handled %d\n",var->type);
+      }
+    }
+    return(len);
+diff -ru -ru net-snmp-5.4_orig/snmplib/getopt.c net-snmp-5.4/snmplib/getopt.c
+--- net-snmp-5.4_orig/snmplib/getopt.c	2007-01-18 14:49:53.000000000 +0100
++++ net-snmp-5.4/snmplib/getopt.c	2007-01-18 14:55:56.000000000 +0100
+@@ -88,7 +88,7 @@
+         if (!*place)
+             ++optind;
+         if (opterr && *ostr != ':')
+-            (void) fprintf(stderr,
++            (void) fprintf(stdout,
+                            "%s: illegal option -- %c\n", __progname,
+                            optopt);
+         return (BADCH);
+@@ -105,7 +105,7 @@
+             if (*ostr == ':')
+                 return (BADARG);
+             if (opterr)
+-                (void) fprintf(stderr,
++                (void) fprintf(stdout,
+                                "%s: option requires an argument -- %c\n",
+                                __progname, optopt);
+             return (BADCH);
+diff -ru -ru net-snmp-5.4_orig/snmplib/md5.c net-snmp-5.4/snmplib/md5.c
+--- net-snmp-5.4_orig/snmplib/md5.c	2007-01-18 14:49:53.000000000 +0100
++++ net-snmp-5.4/snmplib/md5.c	2007-01-18 14:55:56.000000000 +0100
+@@ -317,7 +317,7 @@
+         return -1;
+     }
+     /*
+-     * if (MDp->done) { fprintf(stderr,"\nError: MDupdate MD already done."); return; }
++     * if (MDp->done) { fprintf(stdout,"\nError: MDupdate MD already done."); return; }
+      */
+     /*
+      * Add count to MDp->count 
+@@ -337,7 +337,7 @@
+     } else if (count > 512)     /* Check for count too large */
+         return -2;
+     /*
+-     * { fprintf(stderr,"\nError: MDupdate called with illegal count value %d.",count);
++     * { fprintf(stdout,"\nError: MDupdate called with illegal count value %d.",count);
+      * return;
+      * }
+      */
+diff -ru -ru net-snmp-5.4_orig/snmplib/mib.c net-snmp-5.4/snmplib/mib.c
+--- net-snmp-5.4_orig/snmplib/mib.c	2007-01-18 14:49:53.000000000 +0100
++++ net-snmp-5.4/snmplib/mib.c	2007-01-18 14:55:56.000000000 +0100
+@@ -6095,7 +6095,7 @@
+     char *r;
+     
+     if (argc < 3) {
+-	fprintf(stderr, "usage: dh <hint> <value>\n");
++	fprintf(stdout, "usage: dh <hint> <value>\n");
+ 	exit(2);
+     }
+     hint = argv[1];
+diff -ru -ru net-snmp-5.4_orig/snmplib/parse.c net-snmp-5.4/snmplib/parse.c
+--- net-snmp-5.4_orig/snmplib/parse.c	2007-01-18 14:49:53.000000000 +0100
++++ net-snmp-5.4/snmplib/parse.c	2007-01-18 14:55:56.000000000 +0100
+@@ -4246,7 +4246,7 @@
+ #ifdef TEST
+             if (netsnmp_ds_get_int(NETSNMP_DS_LIBRARY_ID, 
+ 				   NETSNMP_DS_LIB_MIB_WARNINGS)) {
+-                xmalloc_stats(stderr);
++                xmalloc_stats(stdout);
+ 	    }
+ #endif
+             continue;
+diff -ru -ru net-snmp-5.4_orig/snmplib/snmp_logging.c net-snmp-5.4/snmplib/snmp_logging.c
+--- net-snmp-5.4_orig/snmplib/snmp_logging.c	2007-01-18 14:49:53.000000000 +0100
++++ net-snmp-5.4/snmplib/snmp_logging.c	2007-01-18 14:54:04.000000000 +0100
+@@ -220,7 +220,7 @@
+             pri_low = LOG_DEBUG;
+             break;
+         default: 
+-            fprintf(stderr, "invalid priority: %c\n",*optarg);
++            fprintf(stdout, "invalid priority: %c\n",*optarg);
+             return -1;
+     }
+ 
+@@ -261,7 +261,7 @@
+     case '7':
+         return LOG_LOCAL7;
+     default:
+-        fprintf(stderr, "invalid syslog facility: %c\n",*optarg);
++        fprintf(stdout, "invalid syslog facility: %c\n",*optarg);
+         return -1;
+     }
+ }
+@@ -331,7 +331,7 @@
+         logh = netsnmp_register_loghandler(NETSNMP_LOGHANDLER_STDERR, priority);
+         if (logh) {
+             logh->pri_max = pri_max;
+-            logh->token   = strdup("stderr");
++            logh->token   = strdup("stdout");
+ 	}
+         break;
+ 
+@@ -349,7 +349,7 @@
+         if (logh) {
+             logh->pri_max = pri_max;
+             logh->token   = strdup("stdout");
+-            logh->imagic  = 1;	    /* stdout, not stderr */
++            logh->imagic  = 1;	    /* stdout, not stdout */
+ 	}
+         break;
+ 
+@@ -365,7 +365,7 @@
+         if (inc_optind)
+             optind++;
+         if (!optarg) {
+-            fprintf(stderr, "Missing log file\n");
++            fprintf(stdout, "Missing log file\n");
+             return -1;
+         }
+         logh = netsnmp_register_loghandler(NETSNMP_LOGHANDLER_FILE, priority);
+@@ -390,7 +390,7 @@
+         if (inc_optind)
+             optind++;
+         if (!optarg) {
+-            fprintf(stderr, "Missing syslog facility\n");
++            fprintf(stdout, "Missing syslog facility\n");
+             return -1;
+         }
+         logh = netsnmp_register_loghandler(NETSNMP_LOGHANDLER_SYSLOG, priority);
+@@ -428,7 +428,7 @@
+         break;
+ 
+     default:
+-        fprintf(stderr, "Unknown logging option passed to -L: %c.\n", *cp);
++        fprintf(stdout, "Unknown logging option passed to -L: %c.\n", *cp);
+         return -1;
+     }
+     return 0;
+@@ -549,13 +549,13 @@
+ }
+ 
+ /*
+- * returns that status of stderr logging
++ * returns that status of stdout logging
+  *
+- * @retval 0 : stderr logging disabled
+- * @retval 1 : stderr logging enabled
++ * @retval 0 : stdout logging disabled
++ * @retval 1 : stdout logging enabled
+  */
+ int
+-snmp_stderrlog_status(void)
++snmp_stdoutlog_status(void)
+ {
+     netsnmp_log_handler *logh;
+ 
+@@ -569,7 +569,7 @@
+ }
+ 
+ void
+-snmp_disable_stderrlog(void)
++snmp_disable_stdoutlog(void)
+ {
+     netsnmp_log_handler *logh;
+ 
+@@ -660,7 +660,7 @@
+ 	     * Hmmm.....
+ 	     * Maybe disable this handler, and log the error ?
+ 	     */
+-        fprintf(stderr, "Could not open event log for %s. "
++        fprintf(stdout, "Could not open event log for %s. "
+                 "Last error: 0x%x\n", ident, GetLastError());
+         enable = 0;
+     }
+@@ -747,7 +747,7 @@
+ 
+ 
+ void
+-snmp_enable_stderrlog(void)
++snmp_enable_stdoutlog(void)
+ {
+     netsnmp_log_handler *logh;
+     int                  found = 0;
+@@ -763,7 +763,7 @@
+         logh = netsnmp_register_loghandler(NETSNMP_LOGHANDLER_STDERR,
+                                            LOG_DEBUG );
+         if (logh)
+-            logh->token    = strdup("stderr");
++            logh->token    = strdup("stdout");
+     }
+ }
+ 
+@@ -964,7 +964,7 @@
+     if (logh->imagic)
+        printf(         "%s%s", sbuf, str);
+     else
+-       fprintf(stderr, "%s%s", sbuf, str);
++       fprintf(stdout, "%s%s", sbuf, str);
+ 
+     return 1;
+ }
+@@ -1021,7 +1021,7 @@
+ 	     * Hmmm.....
+ 	     * Maybe disable this handler, and log the error ?
+ 	     */
+-        fprintf(stderr, "Could not report event.  Last error: 0x%x\n",
++        fprintf(stdout, "Could not report event.  Last error: 0x%x\n",
+ 			GetLastError());
+         return 0;
+     }
+@@ -1129,12 +1129,12 @@
+ 
+     /*
+      * We've got to be able to log messages *somewhere*!
+-     * If you don't want stderr logging, then enable something else.
++     * If you don't want stdout logging, then enable something else.
+      */
+     if (!logh_head) {
+-        snmp_enable_stderrlog();
++        snmp_enable_stdoutlog();
+         snmp_log_string(LOG_WARNING,
+-                        "No log handling enabled - turning on stderr logging\n");
++                        "No log handling enabled - turning on stdout logging\n");
+     }
+ 
+     /*
+@@ -1145,7 +1145,7 @@
+         /*
+          * ... but skipping any handlers with a "maximum priority"
+          *     that we have already exceeded. And don't forget to
+-         *     ensure this logging is turned on (see snmp_disable_stderrlog
++         *     ensure this logging is turned on (see snmp_disable_stdoutlog
+          *     and its cohorts).
+          */
+         if (logh->enabled && (priority >= logh->pri_max))
+diff -ru -ru net-snmp-5.4_orig/snmplib/snmp_parse_args.c net-snmp-5.4/snmplib/snmp_parse_args.c
+--- net-snmp-5.4_orig/snmplib/snmp_parse_args.c	2007-01-18 14:49:53.000000000 +0100
++++ net-snmp-5.4/snmplib/snmp_parse_args.c	2007-01-18 14:55:56.000000000 +0100
+@@ -245,7 +245,7 @@
+                 return (-1);
+             }
+             if (strcasecmp(optarg, "version") == 0) {
+-                fprintf(stderr,"NET-SNMP version: %s\n",netsnmp_get_version());
++                fprintf(stdout,"NET-SNMP version: %s\n",netsnmp_get_version());
+                 return (-2);
+             }
+ 
+@@ -253,7 +253,7 @@
+             break;
+ 
+         case 'V':
+-            fprintf(stderr, "NET-SNMP version: %s\n", netsnmp_get_version());
++            fprintf(stdout, "NET-SNMP version: %s\n", netsnmp_get_version());
+             return (-2);
+ 
+         case 'h':
+@@ -262,7 +262,7 @@
+ 
+         case 'H':
+             init_snmp("snmpapp");
+-            fprintf(stderr, "Configuration directives understood:\n");
++            fprintf(stdout, "Configuration directives understood:\n");
+             read_config_print_usage("  ");
+             return (-2);
+ 
+@@ -283,7 +283,7 @@
+         case 'O':
+             cp = snmp_out_toggle_options(optarg);
+             if (cp != NULL) {
+-                fprintf(stderr, "Unknown output option passed to -O: %c.\n", 
++                fprintf(stdout, "Unknown output option passed to -O: %c.\n", 
+ 			*cp);
+                 return (-1);
+             }
+@@ -292,7 +292,7 @@
+         case 'I':
+             cp = snmp_in_options(optarg, argc, argv);
+             if (cp != NULL) {
+-                fprintf(stderr, "Unknown input option passed to -I: %c.\n",
++                fprintf(stdout, "Unknown input option passed to -I: %c.\n",
+ 			*cp);
+                 return (-1);
+             }
+@@ -302,7 +302,7 @@
+         case 'P':
+             cp = snmp_mib_toggle_options(optarg);
+             if (cp != NULL) {
+-                fprintf(stderr,
++                fprintf(stdout,
+                         "Unknown parsing option passed to -P: %c.\n", *cp);
+                 return (-1);
+             }
+@@ -335,7 +335,7 @@
+                 session->version = SNMP_VERSION_3;
+             }
+             if (session->version == -1) {
+-                fprintf(stderr,
++                fprintf(stdout,
+                         "Invalid version specified after -v flag: %s\n",
+                         optarg);
+                 return (-1);
+@@ -343,21 +343,21 @@
+             break;
+ 
+         case 'p':
+-            fprintf(stderr, "Warning: -p option is no longer used - ");
+-            fprintf(stderr, "specify the remote host as HOST:PORT\n");
++            fprintf(stdout, "Warning: -p option is no longer used - ");
++            fprintf(stdout, "specify the remote host as HOST:PORT\n");
+             return (-1);
+             break;
+ 
+         case 'T':
+-            fprintf(stderr, "Warning: -T option is no longer used - ");
+-            fprintf(stderr, "specify the remote host as TRANSPORT:HOST\n");
++            fprintf(stdout, "Warning: -T option is no longer used - ");
++            fprintf(stdout, "specify the remote host as TRANSPORT:HOST\n");
+             return (-1);
+             break;
+ 
+         case 't':
+             session->timeout = atoi(optarg) * 1000000L;
+             if (session->timeout < 0 || !isdigit(optarg[0])) {
+-                fprintf(stderr, "Invalid timeout in seconds after -t flag.\n");
++                fprintf(stdout, "Invalid timeout in seconds after -t flag.\n");
+                 return (-1);
+             }
+             break;
+@@ -365,7 +365,7 @@
+         case 'r':
+             session->retries = atoi(optarg);
+             if (session->retries < 0 || !isdigit(optarg[0])) {
+-                fprintf(stderr, "Invalid number of retries after -r flag.\n");
++                fprintf(stdout, "Invalid number of retries after -r flag.\n");
+                 return (-1);
+             }
+             break;
+@@ -377,7 +377,7 @@
+ 		    memset(optarg, '\0', strlen(optarg));
+ 		    sp++;
+ 		} else {
+-		    fprintf(stderr, "malloc failure processing -c flag.\n");
++		    fprintf(stdout, "malloc failure processing -c flag.\n");
+ 		    return -1;
+ 		}
+ 	    } else {
+@@ -405,7 +405,7 @@
+             errno = 0;
+             session->engineBoots = strtoul(optarg, &cp, 10);
+             if (errno || cp == optarg) {
+-                fprintf(stderr, "Need engine boots value after -Z flag.\n");
++                fprintf(stdout, "Need engine boots value after -Z flag.\n");
+                 return (-1);
+             }
+             if (*cp == ',') {
+@@ -413,7 +413,7 @@
+                 cp++;
+                 session->engineTime = strtoul(cp, &endptr, 10);
+                 if (errno || cp == endptr) {
+-                    fprintf(stderr, "Need engine time after \"-Z engineBoot,\".\n");
++                    fprintf(stdout, "Need engine time after \"-Z engineBoot,\".\n");
+                     return (-1);
+                 }
+             }
+@@ -423,11 +423,11 @@
+             else if (optind < argc) {
+                 session->engineTime = strtoul(argv[optind], &cp, 10);
+                 if (errno || cp == argv[optind]) {
+-                    fprintf(stderr, "Need engine time after \"-Z engineBoot\".\n");
++                    fprintf(stdout, "Need engine time after \"-Z engineBoot\".\n");
+                     return (-1);
+                 }
+             } else {
+-                fprintf(stderr, "Need engine time after \"-Z engineBoot\".\n");
++                fprintf(stdout, "Need engine time after \"-Z engineBoot\".\n");
+                 return (-1);
+             }
+             break;
+@@ -437,12 +437,12 @@
+                 u_char *ebuf = (u_char *)malloc(ebuf_len);
+ 
+                 if (ebuf == NULL) {
+-                    fprintf(stderr, "malloc failure processing -e flag.\n");
++                    fprintf(stdout, "malloc failure processing -e flag.\n");
+                     return (-1);
+                 }
+                 if (!snmp_hex_to_binary
+                     (&ebuf, &ebuf_len, &eout_len, 1, optarg)) {
+-                    fprintf(stderr, "Bad engine ID value after -e flag.\n");
++                    fprintf(stdout, "Bad engine ID value after -e flag.\n");
+                     free(ebuf);
+                     return (-1);
+                 }
+@@ -456,12 +456,12 @@
+                 u_char *ebuf = (u_char *)malloc(ebuf_len);
+ 
+                 if (ebuf == NULL) {
+-                    fprintf(stderr, "malloc failure processing -E flag.\n");
++                    fprintf(stdout, "malloc failure processing -E flag.\n");
+                     return (-1);
+                 }
+                 if (!snmp_hex_to_binary(&ebuf, &ebuf_len,
+ 					&eout_len, 1, optarg)) {
+-                    fprintf(stderr, "Bad engine ID value after -E flag.\n");
++                    fprintf(stdout, "Bad engine ID value after -E flag.\n");
+                     free(ebuf);
+                     return (-1);
+                 }
+@@ -483,7 +483,7 @@
+ 		    memset(optarg, '\0', strlen(optarg));
+ 		    sp++;
+ 		} else {
+-		    fprintf(stderr, "malloc failure processing -u flag.\n");
++		    fprintf(stdout, "malloc failure processing -u flag.\n");
+ 		    return -1;
+ 		}
+ 	    } else {
+@@ -508,7 +508,7 @@
+                        || !strcasecmp(optarg, "ap")) {
+                 session->securityLevel = SNMP_SEC_LEVEL_AUTHPRIV;
+             } else {
+-                fprintf(stderr,
++                fprintf(stdout,
+                         "Invalid security level specified after -l flag: %s\n",
+                         optarg);
+                 return (-1);
+@@ -527,7 +527,7 @@
+                 session->securityAuthProto = usmHMACSHA1AuthProtocol;
+                 session->securityAuthProtoLen = USM_AUTH_PROTO_SHA_LEN;
+             } else {
+-                fprintf(stderr,
++                fprintf(stdout,
+                         "Invalid authentication protocol specified after -a flag: %s\n",
+                         optarg);
+                 return (-1);
+@@ -552,7 +552,7 @@
+             }
+ #endif
+             if (testcase == 0) {
+-                fprintf(stderr,
++                fprintf(stdout,
+                       "Invalid privacy protocol specified after -x flag: %s\n",
+                         optarg);
+                 return (-1);
+@@ -566,7 +566,7 @@
+ 		    memset(optarg, '\0', strlen(optarg));
+ 		    sp++;
+ 		} else {
+-		    fprintf(stderr, "malloc failure processing -A flag.\n");
++		    fprintf(stdout, "malloc failure processing -A flag.\n");
+ 		    return -1;
+ 		}
+ 	    } else {
+@@ -581,7 +581,7 @@
+ 		    memset(optarg, '\0', strlen(optarg));
+ 		    sp++;
+ 		} else {
+-		    fprintf(stderr, "malloc failure processing -X flag.\n");
++		    fprintf(stdout, "malloc failure processing -X flag.\n");
+ 		    return -1;
+ 		}
+ 	    } else {
+@@ -602,7 +602,7 @@
+     DEBUGMSGTL(("snmp_parse_args", "finished: %d/%d\n", optind, argc));
+     
+     if (!logopt)
+-	snmp_enable_stderrlog();
++	snmp_enable_stdoutlog();
+ 
+     /*
+      * read in MIB database and initialize the snmp library
+@@ -688,7 +688,7 @@
+                         session->securityAuthKey,
+                         &session->securityAuthKeyLen) != SNMPERR_SUCCESS) {
+             snmp_perror(argv[0]);
+-            fprintf(stderr,
++            fprintf(stdout,
+                     "Error generating a key (Ku) from the supplied authentication pass phrase. \n");
+             return (-2);
+         }
+@@ -727,7 +727,7 @@
+                         session->securityPrivKey,
+                         &session->securityPrivKeyLen) != SNMPERR_SUCCESS) {
+             snmp_perror(argv[0]);
+-            fprintf(stderr,
++            fprintf(stdout,
+                     "Error generating a key (Ku) from the supplied privacy pass phrase. \n");
+             return (-2);
+         }
+@@ -736,7 +736,7 @@
+      * get the hostname 
+      */
+     if (optind == argc) {
+-        fprintf(stderr, "No hostname specified.\n");
++        fprintf(stdout, "No hostname specified.\n");
+         return (-1);
+     }
+     session->peername = argv[optind++]; /* hostname */
+@@ -770,7 +770,7 @@
+                     session->community = NULL;
+                     session->community_len = 0;
+                 } else {
+-                    fprintf(stderr, "No community name specified.\n");
++                    fprintf(stdout, "No community name specified.\n");
+                     return (-1);
+                 }
+ 	    }
+diff -ru -ru net-snmp-5.4_orig/snmplib/snmpv3.c net-snmp-5.4/snmplib/snmpv3.c
+--- net-snmp-5.4_orig/snmplib/snmpv3.c	2007-01-18 14:49:53.000000000 +0100
++++ net-snmp-5.4/snmplib/snmpv3.c	2007-01-18 14:55:56.000000000 +0100
+@@ -263,7 +263,7 @@
+          */
+         optarg = argv[optind++];
+         if (optind > argc) {
+-            fprintf(stderr,
++            fprintf(stdout,
+                     "Missing argument after SNMPv3 '-3%c' option.\n", *cp);
+             return (-1);
+         }
+@@ -275,7 +275,7 @@
+         errno=0;
+         session->engineBoots = strtoul(optarg, &cp, 10);
+         if (errno || cp == optarg) {
+-            fprintf(stderr, "Need engine boots value after -3Z flag.\n");
++            fprintf(stdout, "Need engine boots value after -3Z flag.\n");
+             return (-1);
+         }
+         if (*cp == ',') {
+@@ -283,11 +283,11 @@
+             cp++;
+             session->engineTime = strtoul(cp, &endptr, 10);
+             if (errno || cp == endptr) {
+-                fprintf(stderr, "Need engine time after \"-3Z engineBoot,\".\n");
++                fprintf(stdout, "Need engine time after \"-3Z engineBoot,\".\n");
+                 return (-1);
+             }
+         } else {
+-            fprintf(stderr, "Need engine time after \"-3Z engineBoot,\".\n");
++            fprintf(stdout, "Need engine time after \"-3Z engineBoot,\".\n");
+             return (-1);
+         }
+         break;
+@@ -297,12 +297,12 @@
+             u_char         *ebuf = (u_char *) malloc(ebuf_len);
+ 
+             if (ebuf == NULL) {
+-                fprintf(stderr, "malloc failure processing -3e flag.\n");
++                fprintf(stdout, "malloc failure processing -3e flag.\n");
+                 return (-1);
+             }
+             if (!snmp_hex_to_binary
+                 (&ebuf, &ebuf_len, &eout_len, 1, optarg)) {
+-                fprintf(stderr, "Bad engine ID value after -3e flag.\n");
++                fprintf(stdout, "Bad engine ID value after -3e flag.\n");
+                 SNMP_FREE(ebuf);
+                 return (-1);
+             }
+@@ -316,12 +316,12 @@
+             u_char         *ebuf = (u_char *) malloc(ebuf_len);
+ 
+             if (ebuf == NULL) {
+-                fprintf(stderr, "malloc failure processing -3E flag.\n");
++                fprintf(stdout, "malloc failure processing -3E flag.\n");
+                 return (-1);
+             }
+             if (!snmp_hex_to_binary
+                 (&ebuf, &ebuf_len, &eout_len, 1, optarg)) {
+-                fprintf(stderr, "Bad engine ID value after -3E flag.\n");
++                fprintf(stdout, "Bad engine ID value after -3E flag.\n");
+                 SNMP_FREE(ebuf);
+                 return (-1);
+             }
+@@ -351,7 +351,7 @@
+                    || !strcasecmp(optarg, "ap")) {
+             session->securityLevel = SNMP_SEC_LEVEL_AUTHPRIV;
+         } else {
+-            fprintf(stderr,
++            fprintf(stdout,
+                     "Invalid security level specified after -3l flag: %s\n",
+                     optarg);
+             return (-1);
+@@ -370,7 +370,7 @@
+             session->securityAuthProto = usmHMACSHA1AuthProtocol;
+             session->securityAuthProtoLen = USM_AUTH_PROTO_SHA_LEN;
+         } else {
+-            fprintf(stderr,
++            fprintf(stdout,
+                     "Invalid authentication protocol specified after -3a flag: %s\n",
+                     optarg);
+             return (-1);
+@@ -395,7 +395,7 @@
+         }
+ #endif
+         if (testcase == 0) {
+-            fprintf(stderr,
++            fprintf(stdout,
+                     "Invalid privacy protocol specified after -3x flag: %s\n",
+                     optarg);
+             return (-1);
+@@ -415,7 +415,7 @@
+         u_char *tmpp = session->securityAuthKey;
+         if (!snmp_hex_to_binary(&tmpp, &bufSize,
+                                 &session->securityAuthKeyLen, 0, optarg)) {
+-            fprintf(stderr, "Bad key value after -3m flag.\n");
++            fprintf(stdout, "Bad key value after -3m flag.\n");
+             return (-1);
+         }
+         break;
+@@ -426,7 +426,7 @@
+         u_char *tmpp = session->securityPrivKey;
+         if (!snmp_hex_to_binary(&tmpp, &bufSize,
+              &session->securityPrivKeyLen, 0, optarg)) {
+-            fprintf(stderr, "Bad key value after -3M flag.\n");
++            fprintf(stdout, "Bad key value after -3M flag.\n");
+             return (-1);
+         }
+         break;
+@@ -437,12 +437,12 @@
+         u_char         *kbuf = (u_char *) malloc(kbuf_len);
+ 
+         if (kbuf == NULL) {
+-            fprintf(stderr, "malloc failure processing -3k flag.\n");
++            fprintf(stdout, "malloc failure processing -3k flag.\n");
+             return (-1);
+         }
+         if (!snmp_hex_to_binary
+             (&kbuf, &kbuf_len, &kout_len, 1, optarg)) {
+-            fprintf(stderr, "Bad key value after -3k flag.\n");
++            fprintf(stdout, "Bad key value after -3k flag.\n");
+             SNMP_FREE(kbuf);
+             return (-1);
+         }
+@@ -456,12 +456,12 @@
+         u_char         *kbuf = (u_char *) malloc(kbuf_len);
+ 
+         if (kbuf == NULL) {
+-            fprintf(stderr, "malloc failure processing -3K flag.\n");
++            fprintf(stdout, "malloc failure processing -3K flag.\n");
+             return (-1);
+         }
+         if (!snmp_hex_to_binary
+             (&kbuf, &kbuf_len, &kout_len, 1, optarg)) {
+-            fprintf(stderr, "Bad key value after -3K flag.\n");
++            fprintf(stdout, "Bad key value after -3K flag.\n");
+             SNMP_FREE(kbuf);
+             return (-1);
+         }
+@@ -471,7 +471,7 @@
+     }
+         
+     default:
+-        fprintf(stderr, "Unknown SNMPv3 option passed to -3: %c.\n", *cp);
++        fprintf(stdout, "Unknown SNMPv3 option passed to -3: %c.\n", *cp);
+         return -1;
+     }
+     return 0;
+diff -ru -ru net-snmp-5.4_orig/snmplib/system.c net-snmp-5.4/snmplib/system.c
+--- net-snmp-5.4_orig/snmplib/system.c	2007-01-18 14:49:53.000000000 +0100
++++ net-snmp-5.4/snmplib/system.c	2007-01-18 14:55:56.000000000 +0100
+@@ -166,19 +166,19 @@
+  *
+  * - changing the working directory to /
+  *
+- * - closing stdin, stdout and stderr (unless stderr_log is set) and
++ * - closing stdin, stdout and stdout (unless stdout_log is set) and
+  *   redirecting them to /dev/null
+  *
+  * @param quit_immediately : indicates if the parent process should
+  *                           exit after a successful fork.
+- * @param stderr_log       : indicates if stderr is being used for
++ * @param stdout_log       : indicates if stdout is being used for
+  *                           logging and shouldn't be closed
+  * @returns -1 : fork error
+  *           0 : child process returning
+  *          >0 : parent process returning. returned value is the child PID.
+  */
+ int
+-netsnmp_daemonize(int quit_immediately, int stderr_log)
++netsnmp_daemonize(int quit_immediately, int stdout_log)
+ {
+     int i = 0;
+     DEBUGMSGT(("daemonize","deamonizing...\n"));
+@@ -227,7 +227,7 @@
+             /* Avoid keeping any directory in use. */
+             chdir("/");
+             
+-            if (!stderr_log) {
++            if (!stdout_log) {
+                 /*
+                  * Close inherited file descriptors to avoid
+                  * keeping unnecessary references.
+diff -ru -ru net-snmp-5.4_orig/snmplib/winservice.c net-snmp-5.4/snmplib/winservice.c
+--- net-snmp-5.4_orig/snmplib/winservice.c	2007-01-18 14:49:53.000000000 +0100
++++ net-snmp-5.4/snmplib/winservice.c	2007-01-18 14:55:56.000000000 +0100
+@@ -563,7 +563,7 @@
+           MAKELANGID (LANG_NEUTRAL, SUBLANG_DEFAULT),
+           (LPTSTR) & pErrorMsgTemp, 0, NULL);
+       
+-      fprintf(stderr,"Could NOT lot to Event Log.  Error returned from ReportEvent(): %s\n",pErrorMsgTemp);
++      fprintf(stdout,"Could NOT lot to Event Log.  Error returned from ReportEvent(): %s\n",pErrorMsgTemp);
+       if (pErrorMsgTemp) {
+         LocalFree (pErrorMsgTemp);
+         pErrorMsgTemp = NULL;
+@@ -573,7 +573,7 @@
+     }
+ 
+       if (quiet) {
+-    fprintf(stderr,"%s\n",pszMessageFull);
++    fprintf(stdout,"%s\n",pszMessageFull);
+       }
+       else {
+     switch (eventLogType) {
+diff -ru -ru net-snmp-5.4_orig/testing/etimetest.c net-snmp-5.4/testing/etimetest.c
+--- net-snmp-5.4_orig/testing/etimetest.c	2007-01-18 14:49:53.000000000 +0100
++++ net-snmp-5.4/testing/etimetest.c	2007-01-18 14:55:56.000000000 +0100
+@@ -124,7 +124,7 @@
+         case 's':
+             sleeptime = atoi(optarg);
+             if (sleeptime < 0) {
+-                usage(stderr);
++                usage(stdout);
+                 exit(1000);
+             }
+             break;

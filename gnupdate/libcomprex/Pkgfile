@@ -1,0 +1,38 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A GNUpdate compression/decompression library.
+#  The libcomprex library transparently handles automatic compression and
+#  decompression of files and archives located locally, online, or even in
+#  other compressed archives. The API is similar to C's built-in file access
+#  functions, which provides a smooth transition to libcomprex. libcomprex
+#  can also open uncompressed files, making it a good replacement for the
+#  native file access functions.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libcomprex
+version=0.3.3
+release=1
+source=($mirror_sf/gnupdate/libcomprex-$version.tar.gz
+        libcomprex-0.3.3-zipmodule.patch
+        libcomprex-0.3.3-comprex-config.patch
+        libcomprex-0.3.3-m4.patch)
+
+build()
+{
+  cd libcomprex-$version
+
+  patch -N -p1 -i $SRC/libcomprex-0.3.3-zipmodule.patch
+  patch -N -p1 -i $SRC/libcomprex-0.3.3-comprex-config.patch
+  patch -N -p1 -i $SRC/libcomprex-0.3.3-m4.patch
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

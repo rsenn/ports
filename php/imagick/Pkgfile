@@ -1,0 +1,28 @@
+# $Id: Pkgfile,v 1.8 2007/05/09 21:02:53 roman Exp $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=imagick
+#version=0.9.11
+version=0.9.9
+release=1
+source=(http://pecl.php.net/get/imagick-$version.tgz
+  imagick-$version-nexbyte.patch)
+
+build() {
+  cd imagick-${version}
+  patch -N -p1 -i "../imagick-$version-nexbyte.patch"
+
+  # this will build the configure script
+  phpize
+
+  ./configure --prefix=$prefix \
+       --with-imagick="$prefix"
+  make
+  make EXTENSION_DIR="$ROOT/lib/php/extensions" install
+
+  copy_license "CREDITS"
+}

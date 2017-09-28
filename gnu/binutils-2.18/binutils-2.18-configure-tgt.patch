@@ -1,0 +1,268 @@
+diff -ru binutils-2.18_orig/bfd/config.bfd binutils-2.18/bfd/config.bfd
+--- binutils-2.18_orig/bfd/config.bfd	2008-11-20 14:41:12.000000000 +0000
++++ binutils-2.18/bfd/config.bfd	2008-11-20 14:41:23.000000000 +0000
+@@ -570,7 +570,9 @@
+     targ_selvecs=bfd_elf32_i386_vec
+     targ_underscore=yes
+     ;;
+-  i[3-7]86-*-linux-*)
++  i[3-7]86-*-linux* | pentium*-*-linux* | athlon*-*-linux* | \
++  winchip*-*-linux* | c3*-*-linux* | prescott-*-linux* | athlon*-*-linux* | \
++  k[6-8]-*-linux* | opteron-*-linux* | barcelona-*-linux | generic*-*-linux)
+     targ_defvec=bfd_elf32_i386_vec
+     targ_selvecs="i386linux_vec bfd_efi_app_ia32_vec"
+     targ64_selvecs=bfd_elf64_x86_64_vec
+diff -ru binutils-2.18_orig/bfd/config.bfd.rej binutils-2.18/bfd/config.bfd.rej
+diff -ru binutils-2.18_orig/config.sub.rej binutils-2.18/config.sub.rej
+diff -ru binutils-2.18_orig/gas/configure.tgt binutils-2.18/gas/configure.tgt
+--- binutils-2.18_orig/gas/configure.tgt	2008-11-20 14:42:23.000000000 +0000
++++ binutils-2.18/gas/configure.tgt	2008-11-20 14:42:30.000000000 +0000
+@@ -412,7 +412,7 @@
+ esac
+ 
+ case ${cpu_type} in
+-  alpha | arm | i386 | ia64 | mips | ns32k | pdp11 | ppc | sparc | z80 | z8k)
++  alpha | arm | i[3-7]86 | pentium* | athlon* | ia32 | ia64 | mips | ns32k | pdp11 | ppc | sparc | z80 | z8k)
+     bfd_gas=yes
+     ;;
+ esac
+diff -ru binutils-2.18_orig/gas/configure.tgt.orig binutils-2.18/gas/configure.tgt.orig
+diff -ru binutils-2.18_orig/gas/configure.tgt.rej binutils-2.18/gas/configure.tgt.rej
+diff -ru binutils-2.18_orig/ld/configure.tgt binutils-2.18/ld/configure.tgt
+--- binutils-2.18_orig/ld/configure.tgt	2008-11-20 14:41:17.000000000 +0000
++++ binutils-2.18/ld/configure.tgt	2008-11-20 14:41:23.000000000 +0000
+@@ -677,7 +677,7 @@
+   NATIVE_LIB_DIRS='/usr/lib /usr/lib/w32api'
+   ;;
+ 
+-*-*-linux*)
++*-linux*)
+   ;;
+ 
+ *-*-freebsd* | *-*-dragonfly*)
+diff -ru binutils-2.18_orig/ld/configure.tgt.rej binutils-2.18/ld/configure.tgt.rej
+diff -ru -w binutils-2.18_orig/gas/configure.tgt binutils-2.18/gas/configure.tgt
+--- binutils-2.18_orig/gas/configure.tgt	2008-11-20 14:47:44.000000000 +0000
++++ binutils-2.18/gas/configure.tgt	2008-11-20 14:49:58.000000000 +0000
+@@ -97,7 +97,7 @@
+   alpha-*-*vms*)			fmt=evax ;;
+   alpha-*-osf*)				fmt=ecoff ;;
+   alpha-*-linuxecoff*)			fmt=ecoff ;;
+-  alpha-*-linux-*)			fmt=elf em=linux ;;
++  alpha-*-linux*)			fmt=elf em=linux ;;
+   alpha-*-netbsd*)			fmt=elf em=nbsd ;;
+   alpha-*-openbsd*)			fmt=elf em=obsd ;;
+ 
+@@ -112,8 +112,8 @@
+   arm-*-kaos*)				fmt=elf ;;
+   arm-*-conix*)				fmt=elf ;;
+   arm-*-linux*aout*)			fmt=aout em=linux ;;
+-  arm-*-linux-*eabi*)			fmt=elf  em=armlinuxeabi ;;
+-  arm-*-linux-*)			fmt=elf  em=linux ;;
++  arm-*-linux*eabi*)			fmt=elf  em=armlinuxeabi ;;
++  arm-*-linux*)			fmt=elf  em=linux ;;
+   arm-*-uclinux*eabi*)			fmt=elf  em=armlinuxeabi ;;
+   arm-*-uclinux*)			fmt=elf  em=linux ;;
+   arm-*-netbsdelf*)                 	fmt=elf  em=nbsd ;;
+@@ -167,64 +167,64 @@
+ 
+   i370-*-elf* | i370-*-linux*)		fmt=elf ;;
+ 
+-  i386-ibm-aix*)			fmt=coff em=i386aix ;;
+-  i386-sequent-bsd*)			fmt=aout em=dynix ;;
+-  i386-*-beospe*)			fmt=coff em=pe ;;
+-  i386-*-beos*)				fmt=elf ;;
+-  i386-*-coff)				fmt=coff ;;
+-  i386-*-elf)				fmt=elf ;;
+-  i386-*-kaos*)				fmt=elf ;;
+-  i386-*-bsd*)				fmt=aout em=386bsd ;;
+-  i386-*-netbsd0.8)			fmt=aout em=386bsd ;;
+-  i386-*-netbsdpe*)			fmt=coff em=pe ;;
++  i[3-7]86-ibm-aix*)			fmt=coff em=i386aix ;;
++  i[3-7]86-sequent-bsd*)			fmt=aout em=dynix ;;
++  i[3-7]86-*-beospe*)			fmt=coff em=pe ;;
++  i[3-7]86-*-beos*)				fmt=elf ;;
++  i[3-7]86-*-coff)				fmt=coff ;;
++  i[3-7]86-*-elf)				fmt=elf ;;
++  i[3-7]86-*-kaos*)				fmt=elf ;;
++  i[3-7]86-*-bsd*)				fmt=aout em=386bsd ;;
++  i[3-7]86-*-netbsd0.8)			fmt=aout em=386bsd ;;
++  i[3-7]86-*-netbsdpe*)			fmt=coff em=pe ;;
+   i386-*-netbsd*-gnu* | \
+   i386-*-knetbsd*-gnu | \
+-  i386-*-netbsdelf*)			fmt=elf em=nbsd ;;
++  i[3-7]86-*-netbsdelf*)			fmt=elf em=nbsd ;;
+   i386-*-netbsd*)
+     case ${cpu} in
+       x86_64)				fmt=elf em=nbsd ;;
+       *)				fmt=aout em=nbsd ;;
+     esac ;;
+   i386-*-openbsd[0-2].* | \
+-  i386-*-openbsd3.[0-2])		fmt=aout em=nbsd ;;
+-  i386-*-openbsd*)			fmt=elf em=nbsd ;;
+-  i386-*-linux*aout*)			fmt=aout em=linux ;;
+-  i386-*-linux*oldld)			fmt=aout em=linux ;;
+-  i386-*-linux*coff*)			fmt=coff em=linux ;;
+-  i386-*-linux-*)			fmt=elf em=linux ;;
+-  i386-*-lynxos*)			fmt=elf em=lynx ;;
+-  i386-*-sysv[45]*)			fmt=elf ;;
+-  i386-*-solaris*)			fmt=elf ;;
+-  i386-*-freebsdaout*)			fmt=aout em=386bsd ;;
+-  i386-*-freebsd[12].*)			fmt=aout em=386bsd ;;
+-  i386-*-freebsd[12])			fmt=aout em=386bsd ;;
++  i[3-7]86-*-openbsd3.[0-2])		fmt=aout em=nbsd ;;
++  i[3-7]86-*-openbsd*)			fmt=elf em=nbsd ;;
++  i[3-7]86-*-linux*aout*)			fmt=aout em=linux ;;
++  i[3-7]86-*-linux*oldld)			fmt=aout em=linux ;;
++  i[3-7]86-*-linux*coff*)			fmt=coff em=linux ;;
++  i[3-7]86-*-linux*)			fmt=elf em=linux ;;
++  i[3-7]86-*-lynxos*)			fmt=elf em=lynx ;;
++  i[3-7]86-*-sysv[45]*)			fmt=elf ;;
++  i[3-7]86-*-solaris*)			fmt=elf ;;
++  i[3-7]86-*-freebsdaout*)			fmt=aout em=386bsd ;;
++  i[3-7]86-*-freebsd[12].*)			fmt=aout em=386bsd ;;
++  i[3-7]86-*-freebsd[12])			fmt=aout em=386bsd ;;
+   i386-*-freebsd* | i386-*-kfreebsd*-gnu | i386-*-dragonfly*)
+ 				    	fmt=elf em=freebsd ;;
+-  i386-*-sysv*)				fmt=coff ;;
+-  i386-*-sco3.2v5*coff)			fmt=coff ;;
+-  i386-*-isc*)				fmt=coff ;;
+-  i386-*-sco3.2v5*)			fmt=elf ;;
+-  i386-*-sco3.2*)			fmt=coff ;;
+-  i386-*-vsta)				fmt=aout ;;
++  i[3-7]86-*-sysv*)				fmt=coff ;;
++  i[3-7]86-*-sco3.2v5*coff)			fmt=coff ;;
++  i[3-7]86-*-isc*)				fmt=coff ;;
++  i[3-7]86-*-sco3.2v5*)			fmt=elf ;;
++  i[3-7]86-*-sco3.2*)			fmt=coff ;;
++  i[3-7]86-*-vsta)				fmt=aout ;;
+   i386-*-msdosdjgpp* \
+-  | i386-*-go32*)			fmt=coff em=go32 ;;
+-  i386-*-rtems*)			fmt=elf ;;
+-  i386-*-gnu*)				fmt=elf em=gnu ;;
+-  i386-*-mach*)				fmt=aout em=mach ;;
+-  i386-*-msdos*)			fmt=aout ;;
+-  i386-*-moss*)				fmt=elf ;;
+-  i386-*-pe)				fmt=coff em=pe ;;
+-  i386-*-cygwin*)			fmt=coff em=pe ;;
+-  i386-*-interix*)			fmt=coff em=interix ;;
++  | i[3-7]86-*-go32*)			fmt=coff em=go32 ;;
++  i[3-7]86-*-rtems*)			fmt=elf ;;
++  i[3-7]86-*-gnu*)				fmt=elf em=gnu ;;
++  i[3-7]86-*-mach*)				fmt=aout em=mach ;;
++  i[3-7]86-*-msdos*)			fmt=aout ;;
++  i[3-7]86-*-moss*)				fmt=elf ;;
++  i[3-7]86-*-pe)				fmt=coff em=pe ;;
++  i[3-7]86-*-cygwin*)			fmt=coff em=pe ;;
++  i[3-7]86-*-interix*)			fmt=coff em=interix ;;
+   i386-*-mingw*)
+     case ${cpu} in
+       x86_64*)				fmt=coff em=pep ;;
+       i*)				fmt=coff em=pe ;;
+     esac ;;
+-  i386-*-nto-qnx*)			fmt=elf ;;
+-  i386-*-*nt*)				fmt=coff em=pe ;;
+-  i386-*-chaos)				fmt=elf ;;
+-  i386-*-rdos*)				fmt=elf ;;
++  i[3-7]86-*-nto-qnx*)			fmt=elf ;;
++  i[3-7]86-*-*nt*)				fmt=coff em=pe ;;
++  i[3-7]86-*-chaos)				fmt=elf ;;
++  i[3-7]86-*-rdos*)				fmt=elf ;;
+ 
+   i860-*-*)				fmt=elf endian=little ;;
+ 
+@@ -232,7 +232,7 @@
+ 
+   ia64-*-elf*)				fmt=elf ;;
+   ia64-*-aix*)				fmt=elf em=ia64aix ;;
+-  ia64-*-linux-*)			fmt=elf em=linux ;;
++  ia64-*-linux*)			fmt=elf em=linux ;;
+   ia64-*-hpux*)				fmt=elf em=hpux ;;
+   ia64-*-netbsd*)			fmt=elf em=nbsd ;;
+ 
+@@ -251,7 +251,7 @@
+   m68k-*-elf*)				fmt=elf ;;
+   m68k-*-sysv4*)			fmt=elf em=svr4 ;;
+   m68k-*-rtems*)			fmt=elf ;;
+-  m68k-*-linux-*)			fmt=elf em=linux ;;
++  m68k-*-linux*)			fmt=elf em=linux ;;
+   m68k-*-uclinux*)			fmt=elf ;;
+   m68k-*-gnu*)				fmt=elf ;;
+   m68k-*-netbsdelf*)			fmt=elf em=nbsd ;;
+@@ -317,7 +317,7 @@
+   ppc-*-beos*)				fmt=coff ;;
+   ppc-*-*n*bsd* | ppc-*-elf*)		fmt=elf ;;
+   ppc-*-eabi* | ppc-*-sysv4*)		fmt=elf ;;
+-  ppc-*-linux-*)			fmt=elf em=linux ;;
++  ppc-*-linux*)			fmt=elf em=linux ;;
+   ppc-*-solaris*)			fmt=elf ;;
+   ppc-*-rtems*)				fmt=elf ;;
+   ppc-*-macos*)				fmt=coff em=macos ;;
+@@ -325,7 +325,7 @@
+   ppc-*-kaos*)				fmt=elf ;;
+   ppc-*-lynxos*)			fmt=elf em=lynx ;;
+ 
+-  s390-*-linux-*)			fmt=elf em=linux ;;
++  s390-*-linux*)			fmt=elf em=linux ;;
+   s390-*-tpf*)				fmt=elf ;;
+ 
+   score-*-elf)                          fmt=elf ;;
+@@ -354,7 +354,7 @@
+   sparc-*-aout)				fmt=aout em=sparcaout ;;
+   sparc-*-coff)				fmt=coff ;;
+   sparc-*-linux*aout*)			fmt=aout em=linux ;;
+-  sparc-*-linux-*)			fmt=elf em=linux ;;
++  sparc-*-linux*)			fmt=elf em=linux ;;
+   sparc-fujitsu-none)			fmt=aout ;;
+   sparc-*-elf)				fmt=elf ;;
+   sparc-*-sysv4*)			fmt=elf ;;
+@@ -385,7 +385,7 @@
+   v850ea-*-*)				fmt=elf ;;
+ 
+   vax-*-netbsdelf*)			fmt=elf em=nbsd ;;
+-  vax-*-linux-*)			fmt=elf em=linux ;;
++  vax-*-linux*)			fmt=elf em=linux ;;
+ 
+   xscale-*-coff)			fmt=coff ;;
+   xscale-*-elf)				fmt=elf ;;
+--- binutils-2.18_orig/ld/configure.tgt	2008-11-20 14:55:19.000000000 +0000
++++ binutils-2.18/ld/configure.tgt	2008-11-20 14:56:29.000000000 +0000
+@@ -93,7 +93,7 @@
+ 			;;
+ arm-*-vxworks)		targ_emul=armelf_vxworks ;;
+ arm*-*-conix*)		targ_emul=armelf ;;
+-thumb-*-linux-* | thumb-*-uclinux*)	targ_emul=armelf_linux; targ_extra_emuls=armelf ;;
++thumb-*-linux* | thumb-*-uclinux*)	targ_emul=armelf_linux; targ_extra_emuls=armelf ;;
+ strongarm-*-coff)	targ_emul=armcoff ;;
+ strongarm-*-elf)	targ_emul=armelf ;;
+ strongarm-*-kaos*)	targ_emul=armelf ;;
+@@ -161,9 +161,9 @@
+ 			targ_emul=h8500
+ 			targ_extra_emuls="h8500s h8500b h8500m h8500c"
+ 			;;
+-hppa*64*-*-linux-*)	targ_emul=hppa64linux ;;
++hppa*64*-*-linux*)	targ_emul=hppa64linux ;;
+ hppa*64*-*)		targ_emul=elf64hppa ;;
+-hppa*-*-linux-*)	targ_emul=hppalinux ;;
++hppa*-*-linux*)	targ_emul=hppalinux ;;
+ hppa*-*-*elf*)		targ_emul=hppaelf ;;
+ hppa*-*-lites*)		targ_emul=hppaelf ;;
+ hppa*-*-netbsd*)	targ_emul=hppanbsd ;;
+@@ -191,7 +191,7 @@
+ 			targ_extra_emuls=elf_i386
+ 			tdir_elf_i386=`echo ${targ_alias} | sed -e 's/aout//'` ;;
+ i[3-7]86-*-linux*oldld)	targ_emul=i386linux; targ_extra_emuls=elf_i386 ;;
+-i[3-7]86-*-linux-*)	targ_emul=elf_i386
++i[3-7]86-*-linux*)	targ_emul=elf_i386
+ 			targ_extra_emuls=i386linux
+ 			targ64_extra_emuls=elf_x86_64
+ 			targ64_extra_libpath=elf_x86_64
+@@ -300,7 +300,7 @@
+ 			;;
+ m32r*le-*-elf*)         targ_emul=m32rlelf ;;
+ m32r*-*-elf*)           targ_emul=m32relf ;;
+-m32r*le-*-linux-*)      targ_emul=m32rlelf_linux ;;
++m32r*le-*-linux*)      targ_emul=m32rlelf_linux ;;
+ m32r*-*-linux-*)        targ_emul=m32relf_linux
+ 			;;
+ m68hc11-*-*|m6811-*-*)	targ_emul=m68hc11elf 

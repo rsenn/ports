@@ -1,0 +1,37 @@
+# $Id: Pkgfile,v 1.6 2007/05/09 21:02:52 roman Exp $
+#
+# Description: A C++ plugin framework.
+#  The Yehia Framework provides plugin management for C++ programs. You can
+#  conveniently incorporate both compiled and interpreted-language plugins
+#  into C++ programs. The use of several scripting languages in a single
+#  program is possible, and each scripting language runs either in the main
+#  thread of the program or in a separate thread.
+# URL: http://ucxx.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=yehia
+version=0.5.4
+release=1
+source=($mirror_sf/ucxx/yehia-$version.tar.gz)
+
+build()
+{
+  cd yehia-$version
+
+#  libtoolize --force --copy
+#  aclocal --force
+#  automake -a --foreign --force
+#  autoconf --force
+
+  export CXX=g++-3.4
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      ${target+--target="$target"} \
+      --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

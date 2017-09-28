@@ -1,0 +1,37 @@
+diff -r -u anyfs-tools-0.84.11_orig/anyfs/inode.c anyfs-tools-0.84.11/anyfs/inode.c
+--- anyfs-tools-0.84.11_orig/anyfs/inode.c	2007-07-28 22:22:18.000000000 +0200
++++ anyfs-tools-0.84.11/anyfs/inode.c	2007-07-29 00:32:33.000000000 +0200
+@@ -181,7 +181,7 @@
+ 
+ 	inode->i_nlink = info->si_inode_table[inode->i_ino].i_links_count;
+ 
+-	inode->i_blksize = info->si_blocksize;
++//	inode->i_blocksize = info->si_blocksize;
+ 	inode->i_blocks = 0;
+ 	
+ 	if ( S_ISREG(inode->i_mode) )
+diff -r -u anyfs-tools-0.84.11_orig/anyfs/namei.c anyfs-tools-0.84.11/anyfs/namei.c
+--- anyfs-tools-0.84.11_orig/anyfs/namei.c	2007-07-28 22:22:18.000000000 +0200
++++ anyfs-tools-0.84.11/anyfs/namei.c	2007-07-29 00:33:40.000000000 +0200
+@@ -288,7 +288,8 @@
+ 	inode->i_uid = current->fsuid;
+ 	inode->i_gid = (dir->i_mode & S_ISGID) ? dir->i_gid : current->fsgid;
+ 	inode->i_mtime = inode->i_atime = inode->i_ctime = CURRENT_TIME_SEC;
+-	inode->i_blocks = inode->i_blksize = 0;
++	inode->i_blocks /*= inode->i_blksize*/ = 0;
++  inode->i_size = 0;
+ 	inode->i_mode = mode;
+ 	inode->i_ino = ino;
+ 	
+diff -r -u anyfs-tools-0.84.11_orig/src/anysurrect/Makefile.in anyfs-tools-0.84.11/src/anysurrect/Makefile.in
+--- anyfs-tools-0.84.11_orig/src/anysurrect/Makefile.in	2007-07-28 22:22:18.000000000 +0200
++++ anyfs-tools-0.84.11/src/anysurrect/Makefile.in	2007-07-28 22:24:17.000000000 +0200
+@@ -7,7 +7,7 @@
+ INCLUDE=$(SRCROOT)/include
+ LIBANYPATH=$(SRCROOT)/lib
+ CCFLAGS= -O3 -Wall -std=gnu99 -I$(INCLUDE) @MPEG2_CFLAGS@ @EXT2FS_CFLAGS@ @CFLAGS@
+-LDFLAGS= -rdynamic -L$(LIBANYPATH) -lany @BZ2LIB@ -ldl @MPEG2_LIBS@ @EXT2FS_LIBS@
++LDFLAGS= -rdynamic -L$(LIBANYPATH) -lany @BZ2LIB@ -ldl @MPEG2_LIBS@ @EXT2FS_LIBS@ -lintl
+ 
+ OBJS = anysurrect.o \
+        audio_files_descr.o \

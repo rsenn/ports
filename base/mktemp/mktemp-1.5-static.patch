@@ -1,0 +1,55 @@
+diff -ru mktemp-1.5_orig/Makefile.in mktemp-1.5/Makefile.in
+--- mktemp-1.5_orig/Makefile.in	2006-02-21 13:11:29.000000000 +0100
++++ mktemp-1.5/Makefile.in	2006-02-21 13:12:37.000000000 +0100
+@@ -77,6 +77,7 @@
+ SHELL = /bin/sh
+ 
+ PROG = mktemp$(EXEEXT)
++PROG_STATIC = mktemp.static$(EXEEXT)
+ 
+ OBJS = mktemp.$(OBJEXT) @LIBOBJS@
+ 
+@@ -87,7 +88,7 @@
+ 	    extern.h install-sh mkdtemp.c mkinstalldirs mktemp.c mktemp.man \
+ 	    mktemp.mdoc priv_mktemp.c random.c strdup.c strerror.c
+ 
+-all: $(PROG)
++all: $(PROG) $(PROG_STATIC)
+ 
+ .SUFFIXES: .o .obj .c .h
+ 
+@@ -100,6 +101,9 @@
+ $(PROG): $(OBJS)
+ 	$(CC) -o $@ $(OBJS) $(LIBS)
+ 
++$(PROG_STATIC): $(OBJS)
++	$(CC) -static -o $@ $(OBJS) $(LIBS)
++
+ $(OBJS): config.h
+ 
+ install: install-dirs install-binaries install-man
+@@ -107,8 +111,9 @@
+ install-dirs:
+ 	$(SHELL) $(srcdir)/mkinstalldirs $(bindir) $(mandir)/man1
+ 
+-install-binaries: $(PROG)
++install-binaries: $(PROG) $(PROG_STATIC)
+ 	$(INSTALL) -m 0555 -s $(PROG) $(bindir)/$(PROG)
++	$(INSTALL) -m 0555 -s $(PROG_STATIC) $(bindir)/$(PROG_STATIC)
+ 
+ install-man:
+ 	$(INSTALL) -m 0444 $(srcdir)/$(PROG).$(mantype) $(mandir)/man1/$(PROG).1
+diff -ru mktemp-1.5_orig/mktemp.c mktemp-1.5/mktemp.c
+--- mktemp-1.5_orig/mktemp.c	2006-02-21 13:27:31.000000000 +0100
++++ mktemp-1.5/mktemp.c	2006-02-21 13:27:48.000000000 +0100
+@@ -60,9 +60,8 @@
+ 
+ #include <extern.h>
+ 
+-#ifndef _PATH_TMP
++#undef _PATH_TMP
+ #define _PATH_TMP "/tmp"
+-#endif
+ 
+ #ifdef HAVE_PROGNAME
+ extern char *__progname;

@@ -1,0 +1,37 @@
+# $Id: Pkgfile,v 1.6 2007/05/09 21:02:52 roman Exp $
+#
+# Description: Extensions to the libSigC++ library.
+#  libSigC++ Extras is a library consisting of new features built on top of
+#  libSigC++ and features that formerly were in libSigC++ and were removed
+#  from it. The new features focus on thread support and provide type safe
+#  inter-thread communication.
+# URL: http://libsigcx.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libsigcx
+version=0.6.6
+release=1
+source=($mirror_sf/libsigcx/libsigcx-$version.tar.gz
+        libsigcx-0.6.6-c++0x.patch)
+
+build()
+{
+  cd libsigcx-$version
+
+  patch -N -p1 -i $SRC/libsigcx-0.6.6-c++0x.patch
+
+#  libtoolize --force --copy
+#  aclocal --force -I scripts
+#  automake -a --foreign --force
+#  autoconf --force
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      ${target+--target="$target"} \
+      --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

@@ -1,0 +1,24 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: multisort can merge multiple httpd logs from a single website distributed on multiple hosts (through round-robin DNS for example) into a single date-ordered log. It's useful for preprocessing logs before feeding them to analyzers. It's written in C and is quite fast.
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=multisort
+version=1.1
+release=1
+source=(http://www.xach.com/multisort/multisort-$version.tar.gz)
+
+build()
+{
+  cd multisort-$version
+
+  make CC="${CC-cc}" CFLAGS="$CFLAGS"
+
+  install -d $ROOT/bin
+  install -m 755 multisort $ROOT/bin
+
+  install -d $ROOT/share/doc/multisort-$version
+  install -m 644 README $ROOT/share/doc/multisort-$version
+}

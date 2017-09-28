@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Xml Serialization for Ruby
+#  Xml Serialization allows classes to be marshalled to and from XML.
+# URL: http://clabs.org/clxmlserial.htm
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=clxmlserial
+version=1.0.pre4
+release=1
+source=($mirror_sf/clxmlserial/clxmlserial.1.0.pre4.zip)
+
+build()
+{
+  cd clxmlserial
+
+  set -- `ruby --version`
+
+  RUBYVERSION="$2"
+  RUBYLIBDIR="$prefix/lib/ruby/${RUBYVERSION%.*}"
+
+  install -d $PKG/$RUBYLIBDIR
+  cp -rf cl $PKG/$RUBYLIBDIR
+
+  install -d $ROOT/share/doc/clxmlserial
+  install -m 644 License Readme $ROOT/share/doc/clxmlserial
+}
+
+# EOF

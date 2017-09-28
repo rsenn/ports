@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Package: libaterm2
+# Section: universe/devel
+# Description: Abstract Syntax Tree library
+# URL: http://www.stratego-language.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6
+
+name=aterm
+version=2.5pre21238
+release=1
+source=(http://releases.strategoxt.org/strategoxt-0.17/aterm/aterm-$version-26ra85lr/aterm-${version%pre*}.tar.gz)
+
+build()
+{
+  cd aterm-${version%pre*}
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --program-prefix=""
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

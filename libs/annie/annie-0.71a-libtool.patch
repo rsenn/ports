@@ -1,0 +1,217 @@
+args: -r -u -N -- annie_orig annie
+diff -r -u -N -- annie_orig/Makefile annie/Makefile
+diff -r -u -N -- annie_orig/Makefile.in annie/Makefile.in
+diff -r -u -N -- annie_orig/aclocal.m4 annie/aclocal.m4
+diff -r -u -N -- annie_orig/autom4te.cache/output.0 annie/autom4te.cache/output.0
+diff -r -u -N -- annie_orig/autom4te.cache/output.1 annie/autom4te.cache/output.1
+diff -r -u -N -- annie_orig/autom4te.cache/requests annie/autom4te.cache/requests
+diff -r -u -N -- annie_orig/autom4te.cache/traces.0 annie/autom4te.cache/traces.0
+diff -r -u -N -- annie_orig/autom4te.cache/traces.1 annie/autom4te.cache/traces.1
+diff -r -u -N -- annie_orig/config/config.guess annie/config/config.guess
+diff -r -u -N -- annie_orig/config/config.sub annie/config/config.sub
+diff -r -u -N -- annie_orig/config/ltmain.sh annie/config/ltmain.sh
+diff -r -u -N -- annie_orig/config.log annie/config.log
+diff -r -u -N -- annie_orig/config.status annie/config.status
+diff -r -u -N -- annie_orig/configure annie/configure
+diff -r -u -N -- annie_orig/configure.ac annie/configure.ac
+--- annie_orig/configure.ac	2008-06-24 00:14:09.000000000 +0200
++++ annie/configure.ac	2008-06-24 00:14:22.000000000 +0200
+@@ -21,8 +21,8 @@
+ AC_PROG_CC
+ AC_PROG_INSTALL
+ AC_PROG_LN_S
+-AC_PROG_RANLIB
+-dnl AM_PROG_LIBTOOL
++dnl AC_PROG_RANLIB
++AM_PROG_LIBTOOL
+ 
+ AC_PATH_PROG(DOXYGEN, doxygen, , $PATH)
+ if test "x$DOXYGEN" = x; then
+diff -r -u -N -- annie_orig/examples/Makefile annie/examples/Makefile
+diff -r -u -N -- annie_orig/examples/Makefile.am annie/examples/Makefile.am
+--- annie_orig/examples/Makefile.am	2008-06-24 00:14:10.000000000 +0200
++++ annie/examples/Makefile.am	2008-06-24 00:22:37.000000000 +0200
+@@ -14,59 +14,59 @@
+ IDIR=${top_srcdir}/include/
+ INCLUDES=-I${IDIR}
+ 
+-LDADD = -lannie -L$(top_srcdir)/src
++LDADD = $(top_srcdir)/src/libannie.la
+ 
+ xor_SOURCES=xor.cpp
+-xor_DEPENDENCIES=../src/libannie.a
++xor_DEPENDENCIES=$(top_srcdir)/src/libannie.la
+ 
+ recurrent_SOURCES=recurrent.cpp
+-recurrent_DEPENDENCIES=../src/libannie.a
++recurrent_DEPENDENCIES=$(top_srcdir)/src/libannie.la
+ 
+ add_SOURCES=add.cpp
+-add_DEPENDENCIES=../src/libannie.a
++add_DEPENDENCIES=$(top_srcdir)/src/libannie.la
+ 
+ 
+ gren_create_SOURCES=gren/create.cpp
+-gren_create_DEPENDENCIES=../src/libannie.a
++gren_create_DEPENDENCIES=$(top_srcdir)/src/libannie.la
+ 
+ gren_train_SOURCES=gren/train.cpp
+-gren_train_DEPENDENCIES=../src/libannie.a
++gren_train_DEPENDENCIES=$(top_srcdir)/src/libannie.la
+ 
+ analyze_SOURCES=analyze.cpp
+-analyze_DEPENDENCIES=../src/libannie.a
++analyze_DEPENDENCIES=$(top_srcdir)/src/libannie.la
+ 
+ 
+ hopfield01_SOURCES=hopfield01.cpp
+-hopfield01_DEPENDENCIES=../src/libannie.a
++hopfield01_DEPENDENCIES=$(top_srcdir)/src/libannie.la
+ 
+ search_automata_SOURCES=search_automata.cpp ../test/char_examples.cpp
+-search_automata_DEPENDENCIES=../src/libannie.a
++search_automata_DEPENDENCIES=$(top_srcdir)/src/libannie.la
+ 
+ if BUILD_IMAGE
+ tiles_compress_SOURCES=tiles_compress.cpp
+ tiles_compress_LDADD=$(IMAGE_LIBS) $(LDADD)
+-tiles_compress_DEPENDENCIES=../src/libannie.a
++tiles_compress_DEPENDENCIES=$(top_srcdir)/src/libannie.la
+ 
+ time_series_SOURCES=time_series.cpp
+ time_series_LDADD=$(IMAGE_LIBS) $(LDADD)
+-time_series_DEPENDENCIES=../src/libannie.a
++time_series_DEPENDENCIES=$(top_srcdir)/src/libannie.la
+ 
+ if HAVE_OPENGL
+ kohonen_SOURCES=kohonen.cpp
+ kohonen_LDADD=$(IMAGE_LIBS) $(LDADD)
+-kohonen_DEPENDENCIES=../src/libannie.a
++kohonen_DEPENDENCIES=$(top_srcdir)/src/libannie.la
+ 
+ ktiles_SOURCES=ktiles.cpp
+ ktiles_LDADD=$(IMAGE_LIBS) $(LDADD)
+-ktiles_DEPENDENCIES=../src/libannie.a
++ktiles_DEPENDENCIES=$(top_srcdir)/src/libannie.la
+ 
+ hdither_SOURCES=hdither.cpp
+ hdither_LDADD=$(IMAGE_LIBS) $(LDADD)
+-hdither_DEPENDENCIES=../src/libannie.a
++hdither_DEPENDENCIES=$(top_srcdir)/src/libannie.la
+ 
+ kanal_SOURCES=kanal.cpp
+ kanal_LDADD=$(IMAGE_LIBS) $(LDADD)
+-kanal_DEPENDENCIES=../src/libannie.a
++kanal_DEPENDENCIES=$(top_srcdir)/src/libannie.la
+ 
+ endif
+ 
+diff -r -u -N -- annie_orig/examples/Makefile.in annie/examples/Makefile.in
+diff -r -u -N -- annie_orig/include/Makefile annie/include/Makefile
+diff -r -u -N -- annie_orig/include/Makefile.in annie/include/Makefile.in
+diff -r -u -N -- annie_orig/libtool annie/libtool
+diff -r -u -N -- annie_orig/src/.deps/AbstractNeuron.Plo annie/src/.deps/AbstractNeuron.Plo
+diff -r -u -N -- annie_orig/src/.deps/CenterNeuron.Plo annie/src/.deps/CenterNeuron.Plo
+diff -r -u -N -- annie_orig/src/.deps/Control.Plo annie/src/.deps/Control.Plo
+diff -r -u -N -- annie_orig/src/.deps/Exception.Plo annie/src/.deps/Exception.Plo
+diff -r -u -N -- annie_orig/src/.deps/File.Plo annie/src/.deps/File.Plo
+diff -r -u -N -- annie_orig/src/.deps/GABNeuron.Plo annie/src/.deps/GABNeuron.Plo
+diff -r -u -N -- annie_orig/src/.deps/GREN.Plo annie/src/.deps/GREN.Plo
+diff -r -u -N -- annie_orig/src/.deps/HopfieldNetwork.Plo annie/src/.deps/HopfieldNetwork.Plo
+diff -r -u -N -- annie_orig/src/.deps/Image.Plo annie/src/.deps/Image.Plo
+diff -r -u -N -- annie_orig/src/.deps/ImageCompress.Plo annie/src/.deps/ImageCompress.Plo
+diff -r -u -N -- annie_orig/src/.deps/InputLayer.Plo annie/src/.deps/InputLayer.Plo
+diff -r -u -N -- annie_orig/src/.deps/InputNeuron.Plo annie/src/.deps/InputNeuron.Plo
+diff -r -u -N -- annie_orig/src/.deps/Kohonen.Plo annie/src/.deps/Kohonen.Plo
+diff -r -u -N -- annie_orig/src/.deps/KohonenAnalyzer.Plo annie/src/.deps/KohonenAnalyzer.Plo
+diff -r -u -N -- annie_orig/src/.deps/KohonenDraw.Plo annie/src/.deps/KohonenDraw.Plo
+diff -r -u -N -- annie_orig/src/.deps/Layer.Plo annie/src/.deps/Layer.Plo
+diff -r -u -N -- annie_orig/src/.deps/Link.Plo annie/src/.deps/Link.Plo
+diff -r -u -N -- annie_orig/src/.deps/Matrix.Plo annie/src/.deps/Matrix.Plo
+diff -r -u -N -- annie_orig/src/.deps/MultiLayerNetwork.Plo annie/src/.deps/MultiLayerNetwork.Plo
+diff -r -u -N -- annie_orig/src/.deps/Network.Plo annie/src/.deps/Network.Plo
+diff -r -u -N -- annie_orig/src/.deps/Neuron.Plo annie/src/.deps/Neuron.Plo
+diff -r -u -N -- annie_orig/src/.deps/RadialBasisNetwork.Plo annie/src/.deps/RadialBasisNetwork.Plo
+diff -r -u -N -- annie_orig/src/.deps/RecurrentNetwork.Plo annie/src/.deps/RecurrentNetwork.Plo
+diff -r -u -N -- annie_orig/src/.deps/RecurrentNeuron.Plo annie/src/.deps/RecurrentNeuron.Plo
+diff -r -u -N -- annie_orig/src/.deps/SimpleNeuron.Plo annie/src/.deps/SimpleNeuron.Plo
+diff -r -u -N -- annie_orig/src/.deps/TrainingSet.Plo annie/src/.deps/TrainingSet.Plo
+diff -r -u -N -- annie_orig/src/.deps/TwoLayerNetwork.Plo annie/src/.deps/TwoLayerNetwork.Plo
+diff -r -u -N -- annie_orig/src/.deps/Vector.Plo annie/src/.deps/Vector.Plo
+diff -r -u -N -- annie_orig/src/.deps/Video.Plo annie/src/.deps/Video.Plo
+diff -r -u -N -- annie_orig/src/.deps/args.Plo annie/src/.deps/args.Plo
+diff -r -u -N -- annie_orig/src/.deps/auxf.Plo annie/src/.deps/auxf.Plo
+diff -r -u -N -- annie_orig/src/.deps/cthread.Plo annie/src/.deps/cthread.Plo
+diff -r -u -N -- annie_orig/src/.deps/examples.Plo annie/src/.deps/examples.Plo
+diff -r -u -N -- annie_orig/src/.deps/examples_time.Plo annie/src/.deps/examples_time.Plo
+diff -r -u -N -- annie_orig/src/.deps/listeners.Plo annie/src/.deps/listeners.Plo
+diff -r -u -N -- annie_orig/src/.deps/random.Plo annie/src/.deps/random.Plo
+diff -r -u -N -- annie_orig/src/.deps/sys.Plo annie/src/.deps/sys.Plo
+diff -r -u -N -- annie_orig/src/.deps/tiles.Plo annie/src/.deps/tiles.Plo
+diff -r -u -N -- annie_orig/src/.libs/libannie.la annie/src/.libs/libannie.la
+diff -r -u -N -- annie_orig/src/.libs/libannie.lai annie/src/.libs/libannie.lai
+diff -r -u -N -- annie_orig/src/AbstractNeuron.lo annie/src/AbstractNeuron.lo
+diff -r -u -N -- annie_orig/src/CenterNeuron.lo annie/src/CenterNeuron.lo
+diff -r -u -N -- annie_orig/src/Control.lo annie/src/Control.lo
+diff -r -u -N -- annie_orig/src/Exception.lo annie/src/Exception.lo
+diff -r -u -N -- annie_orig/src/File.lo annie/src/File.lo
+diff -r -u -N -- annie_orig/src/GABNeuron.lo annie/src/GABNeuron.lo
+diff -r -u -N -- annie_orig/src/GREN.lo annie/src/GREN.lo
+diff -r -u -N -- annie_orig/src/HopfieldNetwork.lo annie/src/HopfieldNetwork.lo
+diff -r -u -N -- annie_orig/src/Image.lo annie/src/Image.lo
+diff -r -u -N -- annie_orig/src/ImageCompress.lo annie/src/ImageCompress.lo
+diff -r -u -N -- annie_orig/src/InputLayer.lo annie/src/InputLayer.lo
+diff -r -u -N -- annie_orig/src/InputNeuron.lo annie/src/InputNeuron.lo
+diff -r -u -N -- annie_orig/src/Kohonen.lo annie/src/Kohonen.lo
+diff -r -u -N -- annie_orig/src/KohonenAnalyzer.lo annie/src/KohonenAnalyzer.lo
+diff -r -u -N -- annie_orig/src/KohonenDraw.lo annie/src/KohonenDraw.lo
+diff -r -u -N -- annie_orig/src/Layer.lo annie/src/Layer.lo
+diff -r -u -N -- annie_orig/src/Link.lo annie/src/Link.lo
+diff -r -u -N -- annie_orig/src/Makefile annie/src/Makefile
+diff -r -u -N -- annie_orig/src/Makefile.am annie/src/Makefile.am
+--- annie_orig/src/Makefile.am	2008-06-24 00:14:09.000000000 +0200
++++ annie/src/Makefile.am	2008-06-24 00:23:46.000000000 +0200
+@@ -3,7 +3,7 @@
+ IMAGE_S = Video.cpp Image.cpp ${IDIR}/Image.h ${IDIR}/Video.h
+ endif
+ 
+-lib_LIBRARIES=libannie.a
++lib_LTLIBRARIES=libannie.la
+ bin_PROGRAMS=annie_bin2txt annie_txt2bin annie_trsetmerger
+ 
+ IDIR=${top_srcdir}/include/annie
+@@ -16,7 +16,8 @@
+ annie_trsetmerger_SOURCES=trsetmerger.cpp
+ 
+ ##KohonenMap.cpp KohonenMap1D.cpp KohonenMap3D.cpp
+-libannie_a_SOURCES= ${IMAGE_S} \
++libannie_la_LIBADD = $(IMAGE_LIBS)
++libannie_la_SOURCES = ${IMAGE_S} \
+ 	args.cpp \
+ 	auxf.cpp \
+ 	CenterNeuron.cpp \
+diff -r -u -N -- annie_orig/src/Makefile.in annie/src/Makefile.in
+diff -r -u -N -- annie_orig/src/Matrix.lo annie/src/Matrix.lo
+diff -r -u -N -- annie_orig/src/MultiLayerNetwork.lo annie/src/MultiLayerNetwork.lo
+diff -r -u -N -- annie_orig/src/Network.lo annie/src/Network.lo
+diff -r -u -N -- annie_orig/src/Neuron.lo annie/src/Neuron.lo
+diff -r -u -N -- annie_orig/src/RadialBasisNetwork.lo annie/src/RadialBasisNetwork.lo
+diff -r -u -N -- annie_orig/src/RecurrentNetwork.lo annie/src/RecurrentNetwork.lo
+diff -r -u -N -- annie_orig/src/RecurrentNeuron.lo annie/src/RecurrentNeuron.lo
+diff -r -u -N -- annie_orig/src/SimpleNeuron.lo annie/src/SimpleNeuron.lo
+diff -r -u -N -- annie_orig/src/TrainingSet.lo annie/src/TrainingSet.lo
+diff -r -u -N -- annie_orig/src/TwoLayerNetwork.lo annie/src/TwoLayerNetwork.lo
+diff -r -u -N -- annie_orig/src/Vector.lo annie/src/Vector.lo
+diff -r -u -N -- annie_orig/src/Video.lo annie/src/Video.lo
+diff -r -u -N -- annie_orig/src/args.lo annie/src/args.lo
+diff -r -u -N -- annie_orig/src/auxf.lo annie/src/auxf.lo
+diff -r -u -N -- annie_orig/src/cthread.lo annie/src/cthread.lo
+diff -r -u -N -- annie_orig/src/examples.lo annie/src/examples.lo
+diff -r -u -N -- annie_orig/src/examples_time.lo annie/src/examples_time.lo
+diff -r -u -N -- annie_orig/src/libannie.la annie/src/libannie.la
+diff -r -u -N -- annie_orig/src/listeners.lo annie/src/listeners.lo
+diff -r -u -N -- annie_orig/src/random.lo annie/src/random.lo
+diff -r -u -N -- annie_orig/src/sys.lo annie/src/sys.lo
+diff -r -u -N -- annie_orig/src/tiles.lo annie/src/tiles.lo
+diff -r -u -N -- annie_orig/test/Makefile annie/test/Makefile
+diff -r -u -N -- annie_orig/test/Makefile.in annie/test/Makefile.in

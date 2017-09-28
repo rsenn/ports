@@ -1,0 +1,36 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:48 roman Exp $
+#
+# Description: control IEEE 1394 audio/video devices
+#  libavc1394 is a programming interface for the 1394 Trade Association AV/C
+#  (Audio/Video Control) Digital Interface Command Set. It allows you to
+#  remote control camcorders and similar devices connected to your computer
+#  via an IEEE 1394 (aka Firewire) link.
+#  This package includes the libraries needed to run executables using
+#  libavc1394.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libavc1394
+version=0.5.3
+release=1
+source=($mirror_sf/libavc1394/libavc1394-$version.tar.gz)
+
+build()
+{
+  cd libavc1394-$version
+
+  libtoolize --force --copy --install
+  aclocal --force
+  autoconf --force
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+  install -d $ROOT/share/doc/libavc1394
+  install -m 644 README AUTHORS COPYING ChangeLog INSTALL NEWS TODO $ROOT/share/doc/libavc1394

@@ -1,0 +1,37 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Rparsec is a recursive descent parser combinator framework
+#  Intuitive and declarative API is provided instead of code generation
+#  or proprietary BNF-like syntax. A calculator parser can be built from
+#  scratch in 10 lines of simple code.
+#  .
+# URL: http://rubyforge.org/projects/rparsec/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=rparsec
+version=1.0
+release=1
+source=(http://files.rubyforge.vm.bytemark.co.uk/rparsec/rparsec-1.0.gem)
+
+build() 
+{
+  if gem unpack rparsec-$version.gem; then
+    cd rparsec-$version
+  else
+    gunzip -c data.tar.gz | tar -x
+  fi
+
+  IFS="$IFS[]"
+  set -- `ruby --version`
+
+  RUBYVERSION="$2"
+  RUBYLIBDIR="$prefix/lib/ruby/${RUBYVERSION%.*}"
+
+  install -d $PKG/$RUBYLIBDIR
+  cp -r rparsec* $PKG/$RUBYLIBDIR
+
+
+}
+
+# EOF

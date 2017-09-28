@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: cfv is a utility to both test and create .sfv, .csv,
+# .crc, .md5(sfv-like), md5sum, bsd md5, sha1sum, and .torrent files.
+# These files are commonly used to ensure the correct retrieval or storage
+# of data.
+# cfv is written in python, and as such should run on all platforms
+# python supports. Currently, it has been verified to work on linux, freebsd,
+# openbsd, netbsd, solaris, macosx, and windows.
+# URL: http://cfv.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=cfv
+version=1.18.1
+release=1
+source=($mirror_sf/cfv/cfv-$version.tar.gz)
+
+build()
+{
+  cd cfv-$version
+
+  make \
+      DESTDIR="$PKG" \
+      prefix="$prefix" \
+      mandir="$prefix/share/man" \
+    install
+
+  install -d $pkg${pkgdocdir=$prefix/share/doc/cfv-$version}
+  cp -rf README Changelog COPYING setup-py2exe.py test $pkg$pkgdocdir
+}

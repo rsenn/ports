@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A virtual file system that allows you to store logs in a database
+# loggerfs is a FUSE-based virtual file system that automatically
+# parses log files and sends that information to a MySQL or PostgreSQL
+# database. Existing log parsers usually run periodically and scan the entire
+# file for changes. loggerfs takes a different approach by providing a virtual
+# file system. Whenever data is appended to a virtual file by the logging daemon, the information is directly stored in the database. There is no need to poll the file and monitor for changes.
+# URL: http://portal.itauth.com/loggerfs
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libboost-regex1.34.1, libc6, libfuse2, libgcc1, libmysqlclient15off, libpq5, libstdc++6, libxml2
+
+name=loggerfs
+version=0.5
+release=1
+source=($mirror_sf/loggerfs/loggerfs-$version.tar.gz)
+
+build()
+{
+  cd loggerfs-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

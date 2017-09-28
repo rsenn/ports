@@ -1,0 +1,47 @@
+# $Id: Pkgfile,v 1.5 2007/05/12 01:09:23 roman Exp $
+#
+# Description: Tracks runtime library calls in dynamically-linked programs.
+#  ltrace is a debugging program which runs a specified command until it
+#  exits. While the command is executing, ltrace intercepts and records
+#  the dynamic library calls which are called by the executed process and
+#  the signals received by that process. It can also intercept and print
+#  the system calls executed by the program. The program to be traced need
+#  not be recompiled for this, so you can use it on binaries for which you
+#  don't have the source handy. You should install ltrace if you need a
+#  sysadmin tool for tracking the execution of processes.
+# URL: http://packages.debian.org/unstable/utils/ltrace.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=ltrace
+version=0.3.6
+release=1
+source=(http://utopia.knoware.nl/users/driehuis/ltrace-$version-fbsd.tar.gz
+        ltrace-0.3.6.patch)
+
+build()
+{
+  cd ltrace-$version-fbsd
+
+  patch -N -p1 -i $SRC/ltrace-0.3.6.patch
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix"
+
+  sed -i -e "s:/usr:$prefix:g" \
+        -e "s:/etc:$prefix/etc:g" \
+       Makefile
+
+  sed -i -e "s:\(/etc/ltrace.conf\):$prefix/\1:g" \
+       *.c
+
+  arch=${host%%-*}
+
+  make ARCH=${arch/i[3-7]86/i386}
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share
+  mv $ROOT/doc $ROOT/share
+}

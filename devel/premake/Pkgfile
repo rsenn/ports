@@ -1,0 +1,27 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A build configuration tool; generates files for Visual Studio, GMake, and more.
+#  Premake is a build configuration tool. Describe your C, C++, or C#
+#  generate the project files for Visual Studio, GNU Make, Code::Blocks,
+#  project configuration in one place and still support different build
+#  not own. It saves the time that would otherwise be spent manually keeping
+#  as new versions of your favorite tools are released.
+#  .
+# URL: http://premake.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=premake
+version=3.7
+release=1
+source=($mirror_sf/premake/premake-src-$version.zip)
+
+build()
+{
+  cd Premake-$version
+
+  make CC="${CC-gcc}" CFLAGS="${CFLAGS--g -O2}"
+
+  install -d $ROOT/bin
+  install -m 755 bin/premake $ROOT/bin
+}

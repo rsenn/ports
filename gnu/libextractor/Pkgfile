@@ -1,0 +1,63 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:52 roman Exp $
+#
+# Description: A meta-data extraction library.
+#  libextractor is a library used to extract meta-data from files of
+#  arbitrary type. It is designed to use helper-libraries to perform the
+#  actual extraction, and to be trivially extendable by linking against
+#  external extractors for additional file types. The goal is to provide
+#  developers of file-sharing networks, file managers, and WWW-indexing bots
+#  with a universal library to obtain meta-data about files. It includes
+#  a shell-command and bindings for Java (JNI) and Python.
+# URL: http://gnunet.org/libextractor/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libextractor
+version=0.5.22
+release=1
+source=(http://gnunet.org/libextractor/download/libextractor-$version.tar.gz
+        libextractor-0.5.18-libiconv.patch
+        libextractor-0.5.18-mingw32.patch)
+
+build()
+{
+  cd libextractor-$version
+
+  case $host in
+    *mingw32*)
+      patch -N -p1 -i $SRC/libextractor-0.5.18-mingw32.patch
+      export LIBS="-lplibc -liconv -lole32 -luuid"
+      ;;
+    *linux*)
+      patch -N -p1 -i $SRC/libextractor-0.5.18-libiconv.patch
+      ;;
+  esac
+
+  if [ "$host" != "$build" ]; then
+    DICTIONARY_BUILDER="dictionary-builder"
+  fi
+
+  libtoolize --force
+  aclocal --force -I m4
+  autoconf --force
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --${shared:=enable}-shared \
+      --${static:=enable}-shared \
+      --enable-xpdf \
+      --disable-glib
+
+  make ${DICTIONARY_BUILDER:+DICTIONARY_BUILDER="$DICTIONARY_BUILDER"}
+  make DESTDIR="$PKG" install
+
+  if [ "$host" = "$build" ]; then
+    install -m 755 src/plugins/printable/dictionary-builder $ROOT/bin
+  fi
+
+  install -d $ROOT/share/doc/$name-$version
+  install -m 644 ABOUT-NLS AUTHORS INSTALL NEWS PLATFORMS README README.debian TODO $ROOT/share/doc/$name-$version
+}
+

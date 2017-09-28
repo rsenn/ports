@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A high-quality fractal image renderer.
+#  Cracks of Reality is a fractal image rendering application. Its focus
+#  is on high quality rendering of images to be used as desktop background
+#  pictures. It is not designed for exploring fractal sets, but instead
+#  allows you to import parameters from other fractal programs.
+#  .
+# URL: http://cor.sourceforge.net/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=cor
+version=3
+release=1
+source=($mirror_sf/cor/cor-$version-src.tar.gz)
+
+build()
+{
+  cd cor-3-src
+
+  patch -N -p1 -i $SRC/cor-3-fixes.patch
+
+  make
+  make PREFIX="$ROOT" install
+}
+
+# EOF

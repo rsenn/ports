@@ -1,0 +1,68 @@
+# $Id: Pkgfile,v 1.13 2007/04/23 17:39:07 roman Exp $
+#
+# Package: automake
+# Section: devel
+# Description: GNU Automake
+#  'Automake' automatically generates make files compliant with the GNU
+#  coding standards. It was inspired by the 4.4 BSD make and include files,
+#  but aims to be portable and to conform to the GNU standards for Make
+#  file variables and targets.
+#  The input files are called Makefile.am; the output files are called
+#  Makefile.in. They are intended for use with autoconf. Automake requires
+#  certain things to be done in your configure.in.
+#  This package also includes the "aclocal' program, which generates an
+#  'aclocal.m4' based on the contents of 'configure.in.' It is useful as
+#  an extensible, maintainable mechanism for augmenting autoconf.
+# URL: http://www.gnu.org/software/automake/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: automake1.9, perl-base, perl-modules
+
+name=automake
+version=1.10.2
+release=1
+source=($mirror_gnu/automake/automake-$version.tar.bz2
+        automake-1.10-libdir.patch
+        automake-1.10-msys.patch
+        automake-1.10-fixes.patch
+        automake-1.10-diet.patch
+        automake-1.10-msvc.patch
+        automake-1.10.1-config-guess.patch
+        automake-1.10.1-config-sub.patch)
+
+build()
+{
+  cd automake-$version
+
+  patch -N -p1 -i $SRC/automake-1.10-libdir.patch
+  patch -N -p1 -i $SRC/automake-1.10-msys.patch
+#  patch -N -p1 -i $SRC/automake-1.10-fixes.patch
+  patch -N -p1 -i $SRC/automake-1.10-diet.patch
+  patch -N -p1 -i $SRC/automake-1.10-msvc.patch
+  patch -N -p1 -i $SRC/automake-1.10.1-config-guess.patch
+  patch -N -p1 -i $SRC/automake-1.10.1-config-sub.patch
+
+  pkgversion=${version%.*}
+  pkgdatadir="$prefix/share/automake"
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --infodir="$prefix/info"
+
+  make pkgdatadir="$pkgdatadir"
+  make pkgdatadir="$pkgdatadir" DESTDIR="$PKG" install
+
+  # link different
+  rm -f $ROOT/bin/{aclocal,automake}
+
+  sed -i "s,/[^ ]*\(bin/perl\),$prefix/\1,g" $ROOT/bin/*
+
+ (cd $ROOT/bin
+  ln -s aclocal-${version%.*}* aclocal
+  ln -s automake-${version%.*}* automake)
+
+  test -d $ROOT/share/aclocal-$pkgversion && mv -f $ROOT/share/aclocal-$pkgversion $ROOT/share/aclocal
+  test -d $ROOT/share/automake-$pkgversion && mv -f $ROOT/share/automake-$pkgversion $PKG/${pkgdatadir}
+  rm -f $ROOT/info/dir 
+}

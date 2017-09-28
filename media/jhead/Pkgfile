@@ -1,0 +1,37 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A command line driven Exif header parser and manipulator.
+#  Jhead is a command line driven utility for extracting digital camera
+#  settings from the Exif format files used by many digital cameras. It
+#  handles the various confusing ways these can be expressed, and displays
+#  them as F-stop, shutter speed, etc. It is also able to reduce the size
+#  of digital camera JPEGs without loss of information, by deleting integral
+#  thumbnails that digital cameras put into the Exif header. If you need to
+#  add Exif support to a program, this is a simple program to cut and paste
+#  from. Many projects, including PHP, have reused code from this utility.
+# URL: http://www.sentex.net/~mwandel/jhead/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=jhead
+version=2.84
+release=1
+source=(http://www.sentex.net/~mwandel/jhead/jhead-2.84.tar.gz)
+
+build()
+{
+  cd jhead-2.84
+
+  make
+
+  install -d $ROOT/bin
+  install -m 755 jhead $ROOT/bin
+
+  install -d $ROOT/share/man/man1
+  gzip -dc jhead.1.gz >$ROOT/share/man/man1/jhead.1
+
+  install -d $ROOT/share/doc/jhead
+  install -m 644 changes.txt readme.txt $ROOT/share/doc/jhead
+}
+
+# EOF

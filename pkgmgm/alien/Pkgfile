@@ -1,0 +1,28 @@
+# $Id: Pkgfile,v 1.22 2007/05/09 21:02:55 roman Exp $
+#
+# Description: Converts packages between different formats
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=alien
+version=8.74
+release=1
+source=($mirror_gentoo/alien_$version.tar.gz)
+
+build()
+{
+  cd alien
+
+  case $prefix in
+    /usr) VARPREFIX="$PKG" ;;
+  esac
+  
+  perl Makefile.PL installdirs=vendor
+
+  make
+  make DESTDIR="$PKG" VARPREFIX="$ROOT" install
+
+  sed -i "s:\(#!$prefix/bin/perl\)[.0-9]\+\(.*\)$:\1\2:" \
+      $PKG$prefix/bin/alien
+}

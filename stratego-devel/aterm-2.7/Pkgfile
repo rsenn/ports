@@ -1,0 +1,42 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Package: libaterm2
+# Section: universe/libs
+# Section: devel
+# Description: Data type (Tree) for exchange in distributed applications
+#  ATerm (short for Annotated Term) is an abstract data type designed
+#  for the exchange of tree-like data structures between distributed
+#  applications. . The ATerm library forms a comprehensive procedural
+#  interface which enables creation and manipulation of ATerms in
+#  C. The ATerm implementation is based on maximal subterm sharing and
+#  automatic garbage collection. . A binary exchange format for the concise
+#  representation of ATerms (sharing preserved) allows the fast exchange
+#  of ATerms between applications. In a typical application---parse trees
+#  which contain considerable redundant information---less than 2 bytes are
+#  needed to represent a node in memory, and less than 2 bits are needed
+#  to represent it in binary format. The implementation of ATerms scales
+#  up to the manipulation of ATerms in the giga-byte range.
+#  .
+# URL: http://www.program-transformation.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6
+
+name=aterm-2.7
+version=2.7
+release=1
+source=(http://homepages.cwi.nl/~daybuild/releases/aterm-$version.tar.gz)
+
+build()
+{
+  cd aterm-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

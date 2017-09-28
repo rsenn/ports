@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: LPSM is a C library with a simple interface that manages a segment of memory backed by a persistent file
+# It differs from ordinary mmap() in two ways: it can optionally offer heap
+# management (malloc/free/realloc) within the arena, and more importantly,
+# a transaction log is used to ensure the consistency of the persistent
+# representation. The application notifies LPSM whenever the arena is in a
+# consistent state, suitable for checkpointing. If the application or system
+# crashes, the arena will always be recovered to a consistent checkpoint.
+#
+# URL: ftp://ftp.zytor.com/pub/linux/lpsm/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6
+
+name=lpsm
+version=0.1.12
+release=1
+source=(ftp://ftp.zytor.com/pub/linux/lpsm/lpsm-$version.tar.gz)
+
+build()
+{
+  cd lpsm-$version
+
+  make CFLAGS="-I. -Wall -D_FILE_OFFSET_BITS=64 $CFLAGS"
+  make prefix="$ROOT" mandir="$ROOT/share/man" install
+
+  install -d $ROOT/share/doc/lpsm
+  install -m 644 [A-Z]*[A-Z]* $ROOT/share/doc/lpsm
+}

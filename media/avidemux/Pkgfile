@@ -1,0 +1,25 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A graphical tool to edit video (filter/re-encode/split).
+# URL: http://www.avidemux.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=avidemux
+version=2.4.4
+release=1
+source=($mirror_sf/avidemux/avidemux_$version.tar.gz)
+
+build() 
+{
+  cd avidemux_$version
+
+  cmake \
+      -D CMAKE_INSTALL_PREFIX="$prefix" \
+    .
+  
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

@@ -1,0 +1,218 @@
+--- Server.php	2006-03-03 22:43:09.000000000 +0100
++++ Server.php	2006-03-29 10:39:30.000000000 +0200
+@@ -124,58 +124,27 @@
+      */
+     function ServeRequest() 
+     {
+-        // prevent warning in litmus check 'delete_fragment'
+-        if (strstr($_SERVER["REQUEST_URI"], '#')) {
+-            $this->http_status("400 Bad Request");
+-            return;
+-        }
+-
+         // default uri is the complete request uri
+         $uri = (@$_SERVER["HTTPS"] === "on" ? "https:" : "http:");
+         $uri.= "//$_SERVER[HTTP_HOST]$_SERVER[SCRIPT_NAME]";
+         
+-        $path_info = empty($_SERVER["PATH_INFO"]) ? "/" : $_SERVER["PATH_INFO"];
+-
+         $this->base_uri = $uri;
+-        $this->uri      = $uri . $path_info;
++        $this->uri      = $uri . $_SERVER["PATH_INFO"];
+ 
+-        // set path
+-        $this->path = $this->_urldecode($path_info);
+-        if (!strlen($this->path)) {
+-            if ($_SERVER["REQUEST_METHOD"] == "GET") {
+-                // redirect clients that try to GET a collection
+-                // WebDAV clients should never try this while
+-                // regular HTTP clients might ...
+-                header("Location: ".$this->base_uri."/");
+-                return;
+-            } else {
+-                // if a WebDAV client didn't give a path we just assume '/'
+-                $this->path = "/";
+-            }
+-        } 
+-        
+-        if(ini_get("magic_quotes_gpc")) {
+-            $this->path = stripslashes($this->path);
+-        }
+-        
+-        
+         // identify ourselves
+-        if (empty($this->dav_powered_by)) {
+-            header("X-Dav-Powered-By: PHP class: ".get_class($this));
+-        } else {
++        if (!empty($this->dav_powered_by)) {
+             header("X-Dav-Powered-By: ".$this->dav_powered_by );
+         }
+ 
+         // check authentication
+-        // for the motivation for not checking OPTIONS requests on / see 
+-        // http://pear.php.net/bugs/bug.php?id=5363
+-        if ( (   !(($_SERVER['REQUEST_METHOD'] == 'OPTIONS') && ($this->path == "/")))
+-             && (!$this->_check_auth())) {
++        if (!$this->_check_auth()) {
+             // RFC2518 says we must use Digest instead of Basic
+             // but Microsoft Clients do not support Digest
+             // and we don't support NTLM and Kerberos
+             // so we are stuck with Basic here
+             header('WWW-Authenticate: Basic realm="'.($this->http_auth_realm).'"');
++            //header('WWW-Authenticate: Digest realm="'.$this->http_auth_realm.'", qop="auth", nonce="'.
++            //       uniqid("55").'", opaque="'.md5($this->http_auth_realm).'"');
+ 
+             // Windows seems to require this being the last header sent
+             // (changed according to PECL bug #3138)
+@@ -186,9 +155,30 @@
+         
+         // check 
+         if(! $this->_check_if_header_conditions()) {
++            $this->http_status("412 Precondition failed");
+             return;
+         }
+         
++        // set path
++        $this->path = $this->_urldecode($_SERVER["PATH_INFO"]);
++        if (!strlen($this->path)) {
++            if ($_SERVER["REQUEST_METHOD"] == "GET") {
++                // redirect clients that try to GET a collection
++                // WebDAV clients should never try this while
++                // regular HTTP clients might ...
++                header("Location: ".$this->base_uri."/");
++                exit;
++            } else {
++                // if a WebDAV client didn't give a path we just assume '/'
++                $this->path = "/";
++            }
++        } 
++        
++        if(ini_get("magic_quotes_gpc")) {
++            $this->path = stripslashes($this->path);
++        }
++        
++        
+         // detect requested method names
+         $method = strtolower($_SERVER["REQUEST_METHOD"]);
+         $wrapper = "http_".$method;
+@@ -568,7 +558,7 @@
+                     // search property name in requested properties 
+                     foreach((array)$options["props"] as $reqprop) {
+                         if (   $reqprop["name"]  == $prop["name"] 
+-                            && @$reqprop["xmlns"] == $prop["ns"]) {
++                            && $reqprop["xmlns"] == $prop["ns"]) {
+                             $found = true;
+                             break;
+                         }
+@@ -605,7 +595,7 @@
+                     // check if property exists in result
+                     foreach($file["props"] as $prop) {
+                         if (   $reqprop["name"]  == $prop["name"]
+-                            && @$reqprop["xmlns"] == $prop["ns"]) {
++                            && $reqprop["xmlns"] == $prop["ns"]) {
+                             $found = true;
+                             break;
+                         }
+@@ -651,10 +641,8 @@
+ 
+             echo " <D:response $ns_defs>\n";
+         
+-            /* TODO right now the user implementation has to make sure
+-             collections end in a slash, this should be done in here
+-             by checking the resource attribute */
+-            $href = $this->_mergePathes($_SERVER['SCRIPT_NAME'], $path);
++            // $href = $this->_slashify($this->_mergePathes($_SERVER['SCRIPT_NAME'], $path));
++            $href = $this->_urlencode($path);
+         
+             echo "  <D:href>$href</D:href>\n";
+         
+@@ -874,7 +862,7 @@
+                                 fseek($options['stream'], $range['start'], SEEK_SET);
+                                 if (feof($options['stream'])) {
+                                     $this->http_status("416 Requested range not satisfiable");
+-                                    return;
++                                    exit;
+                                 }
+ 
+                                 if (isset($range['end'])) {
+@@ -949,10 +937,10 @@
+         if (!headers_sent()) {
+             if (false === $status) {
+                 $this->http_status("404 not found");
+-            } else {
+-                // TODO: check setting of headers in various code pathes above
+-                $this->http_status("$status");
+             }
++
++            // TODO: check setting of headers in various code pathes above
++            $this->http_status("$status");
+         }
+     }
+ 
+@@ -969,7 +957,7 @@
+         if (isset($_SERVER['HTTP_RANGE'])) {
+ 
+             // we only support standard "bytes" range specifications for now
+-            if (preg_match('/bytes\s*=\s*(.+)/', $_SERVER['HTTP_RANGE'], $matches)) {
++            if (ereg("bytes[[:space:]]*=[[:space:]]*(.+)", $_SERVER['HTTP_RANGE'], $matches)) {
+                 $options["ranges"] = array();
+ 
+                 // ranges are comma separated
+@@ -1047,16 +1035,19 @@
+         } else if (method_exists($this, "GET")) {
+             ob_start();
+             $status = $this->GET($options);
+-            if (!isset($options['size'])) {
+-                $options['size'] = ob_get_length();
+-            }
+             ob_end_clean();
+         }
+-        
++
++        // Send Last-modified header
++        // Some Microsoft clients use this as a confirmation after PUT operations
++        if (isset($options['mtime'])) {
++            header("Last-modified:".gmdate("D, d M Y H:i:s ", $options['mtime'])."GMT");
++        }
++
+         if (isset($options['size'])) {
+             header("Content-length: ".$options['size']);
+         }
+-
++        
+         if($status===true)  $status = "200 OK";
+         if($status===false) $status = "404 Not found";
+         
+@@ -1419,7 +1410,7 @@
+         if (isset($port) && $port != 80)
+             $http_host.= ":$port";
+ 
+-        $http_header_host = preg_replace("/:80$/", "", $_SERVER["HTTP_HOST"]);
++        $http_header_host = ereg_replace(":80$", "", $_SERVER["HTTP_HOST"]);
+ 
+         if ($http_host == $http_header_host &&
+             !strncmp($_SERVER["SCRIPT_NAME"], $path,
+@@ -1747,13 +1738,11 @@
+                     // but if opaquelocktokens are used (RFC2518 6.4)
+                     // we have to check the format (litmus tests this)
+                     if (!strncmp($condition, "<opaquelocktoken:", strlen("<opaquelocktoken"))) {
+-                        if (!preg_match('/^<opaquelocktoken:[[:xdigit:]]{8}-[[:xdigit:]]{4}-[[:xdigit:]]{4}-[[:xdigit:]]{4}-[[:xdigit:]]{12}>$/', $condition)) {
+-                            $this->http_status("423 Locked");
++                        if (!ereg("^<opaquelocktoken:[[:xdigit:]]{8}-[[:xdigit:]]{4}-[[:xdigit:]]{4}-[[:xdigit:]]{4}-[[:xdigit:]]{12}>$", $condition)) {
+                             return false;
+                         }
+                     }
+                     if (!$this->_check_uri_condition($uri, $condition)) {
+-                        $this->http_status("412 Precondition failed");
+                         $state = false;
+                         break;
+                     }
+@@ -1803,7 +1792,7 @@
+             // ... and lock is not owned?
+             if (is_array($lock) && count($lock)) {
+                 // FIXME doesn't check uri restrictions yet
+-                if (!isset($_SERVER["HTTP_IF"]) || !strstr($_SERVER["HTTP_IF"], $lock["token"])) {
++                if (!strstr($_SERVER["HTTP_IF"], $lock["token"])) {
+                     if (!$exclusive_only || ($lock["scope"] !== "shared"))
+                         return false;
+                 }

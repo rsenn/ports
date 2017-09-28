@@ -1,0 +1,24 @@
+diff -ru gdb-6.4_orig/gdb/Makefile.in gdb-6.4/gdb/Makefile.in
+--- gdb-6.4_orig/gdb/Makefile.in	2006-02-02 17:29:13.000000000 +0000
++++ gdb-6.4/gdb/Makefile.in	2006-02-02 17:29:37.000000000 +0000
+@@ -103,7 +103,7 @@
+ # Set this up with gcc if you have gnu ld and the loader will print out
+ # line numbers for undefined references.
+ #CC_LD=gcc -static
+-CC_LD=$(CC)
++CC_LD=$(CC) -Wl,-rpath,$(prefix)/lib
+ 
+ # Where is our "include" directory?  Typically $(srcdir)/../include.
+ # This is essentially the header file directory for the library
+diff -ru gdb-6.4_orig/gdb/gdbserver/Makefile.in gdb-6.4/gdb/gdbserver/Makefile.in
+--- gdb-6.4_orig/gdb/gdbserver/Makefile.in	2006-02-02 17:29:13.000000000 +0000
++++ gdb-6.4/gdb/gdbserver/Makefile.in	2006-02-02 17:29:52.000000000 +0000
+@@ -62,7 +62,7 @@
+ # Set this up with gcc if you have gnu ld and the loader will print out
+ # line numbers for undefinded refs.
+ #CC-LD=gcc -static
+-CC-LD=${CC}
++CC-LD=${CC} -Wl,-rpath,$(prefix)/lib
+ 
+ # Where is the "include" directory?  Traditionally ../include or ./include
+ INCLUDE_DIR =  ${srcdir}/../../include

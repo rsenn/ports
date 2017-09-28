@@ -1,0 +1,45 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: A rapid, XML based development environment for structured, dynamic Web apps.
+#  Whitebeam is a frontend XML-centered rapid design environment which makes
+#  use of HTML/XML and JavaScript. It integrates two popular and robust Open
+#  Source platforms (Apache and Mozilla's SpiderMonkey JavaScript engine),
+#  with its own powerful XML environment and security architecture. Providing
+#  an extensible XML-based interface to backend objects on any platform,
+#  the client model securely segregates thousands of customer applications
+#  within a single server.
+# URL: http://www.whitebeam.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=whitebeam
+version=0.9.37
+release=1
+source=($mirror_sf/whitebeam/whitebeam_${version//./_}.tar.gz
+        whitebeam-0.9.37-fixes.patch)
+
+build()
+{
+  cd "whitebeam_${version//./_}"
+  patch -N -p1 -i "$SRC/whitebeam-0.9.37-fixes.patch"
+
+  sed -i -e "s,/usr/local,$prefix,g" \
+        -e "s,/usr/include,$prefix/include,g" configure
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --enable-pgsql \
+       --with-pgsql="$prefix/include/postgresql" \
+       --enable-mysql \
+       --with-apr_headers="$prefix/include/apr" \
+       --with-http_headers="$prefix/include/httpd/httpd.h"
+
+
+  sed -i '/INSTALL/ s,-C,,' js/Makefile
+
+  make
+  make DESTDIR=$PKG install
+
+}

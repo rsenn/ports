@@ -1,0 +1,36 @@
+diff -r -u binutils-2.17.50-20060824-1-src_orig/bfd/config.bfd binutils-2.17.50-20060824-1-src/bfd/config.bfd
+--- binutils-2.17.50-20060824-1-src_orig/bfd/config.bfd	2007-08-04 10:19:00.000000000 +0200
++++ binutils-2.17.50-20060824-1-src/bfd/config.bfd	2007-08-04 10:20:46.000000000 +0200
+@@ -620,7 +620,7 @@
+     targ_defvec=bfd_elf32_i386_vec
+     targ_selvecs=i386coff_vec
+     ;;
+-  i[3-7]86-*-mingw32* | i[3-7]86-*-cygwin* | i[3-7]86-*-winnt | i[3-7]86-*-pe)
++  i[3-7]86-*-mingw32* | i[3-7]86-*-msys* | i[3-7]86-*-cygwin* | i[3-7]86-*-winnt | i[3-7]86-*-pe)
+     targ_defvec=i386pe_vec
+     targ_selvecs="i386pe_vec i386pei_vec bfd_elf32_i386_vec"
+     targ_underscore=yes
+diff -r -u binutils-2.17.50-20060824-1-src_orig/gas/configure.tgt binutils-2.17.50-20060824-1-src/gas/configure.tgt
+--- binutils-2.17.50-20060824-1-src_orig/gas/configure.tgt	2007-08-04 10:19:14.000000000 +0200
++++ binutils-2.17.50-20060824-1-src/gas/configure.tgt	2007-08-04 10:24:09.000000000 +0200
+@@ -207,7 +207,7 @@
+   i386-*-msdos*)			fmt=aout ;;
+   i386-*-moss*)				fmt=elf ;;
+   i386-*-pe)				fmt=coff em=pe ;;
+-  i386-*-cygwin*)			fmt=coff em=pe ;;
++  i386-*-cygwin*|i386-*-msys)			fmt=coff em=pe ;;
+   i386-*-interix*)			fmt=coff em=interix ;;
+   i386-*-mingw32*)			fmt=coff em=pe ;;
+   i386-*-nto-qnx*)			fmt=elf ;;
+diff -r -u binutils-2.17.50-20060824-1-src_orig/ld/configure.tgt binutils-2.17.50-20060824-1-src/ld/configure.tgt
+--- binutils-2.17.50-20060824-1-src_orig/ld/configure.tgt	2007-08-04 10:18:59.000000000 +0200
++++ binutils-2.17.50-20060824-1-src/ld/configure.tgt	2007-08-04 10:26:12.000000000 +0200
+@@ -214,7 +214,7 @@
+ 			targ_extra_ofiles="deffilep.o pe-dll.o" ;;
+ i[3-7]86-*-pe)		targ_emul=i386pe ;
+ 			targ_extra_ofiles="deffilep.o pe-dll.o" ;;
+-i[3-7]86-*-cygwin*)	targ_emul=i386pe ;
++i[3-7]86-*-cygwin*|i[3-7]86-*-msys*)	targ_emul=i386pe ;
+ 			targ_extra_ofiles="deffilep.o pe-dll.o"
+ 			test "$targ" != "$host" && LIB_PATH='${tooldir}/lib/w32api' ;;
+ i[3-7]86-*-mingw32*)	targ_emul=i386pe ;

@@ -1,0 +1,211 @@
+diff -ru -ru udev-092_orig/Makefile udev-092/Makefile
+--- udev-092_orig/Makefile	2006-05-16 17:10:04.000000000 +0200
++++ udev-092/Makefile	2006-05-16 17:36:23.000000000 +0200
+@@ -104,6 +104,8 @@
+ mandir =	${prefix}/usr/share/man
+ configdir =	${etcdir}/udev
+ udevdir =	/dev
++procdir = /proc
++sysdir = /sys
+ DESTDIR =
+ 
+ INSTALL = /usr/bin/install -c
+@@ -118,7 +119,7 @@
+ AR = $(CROSS_COMPILE)ar
+ RANLIB = $(CROSS_COMPILE)ranlib
+ 
+-CFLAGS		= -g -Wall -pipe -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64
++CFLAGS		= -g -Wall -pipe -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64 -DDEVDIR=\"$(udevdir)\" -DPROCDIR=\"$(procdir)\" -DETCDIR=\"$(etcdir)\" -DSYSDIR=\"$(sysdir)\" -DLIBDIR=\"$(libdir)\"
+ WARNINGS	= -Wstrict-prototypes -Wsign-compare -Wshadow \
+ 		  -Wchar-subscripts -Wmissing-declarations -Wnested-externs \
+ 		  -Wpointer-arith -Wcast-align -Wsign-compare -Wmissing-prototypes
+diff -ru -ru udev-092_orig/udev.c udev-092/udev.c
+--- udev-092_orig/udev.c	2006-05-16 17:10:05.000000000 +0200
++++ udev-092/udev.c	2006-05-16 17:48:04.000000000 +0200
+@@ -76,8 +76,8 @@
+ 		exit(0);
+ 	}
+ 
+-	/* set std fd's to /dev/null, if the kernel forks us, we don't have them at all */
+-	devnull = open("/dev/null", O_RDWR);
++	/* set std fd's to "DEVDIR"/null, if the kernel forks us, we don't have them at all */
++	devnull = open(DEVDIR"/null", O_RDWR);
+ 	if (devnull >= 0)  {
+ 		if (devnull != STDIN_FILENO)
+ 			dup2(devnull, STDIN_FILENO);
+@@ -91,7 +91,7 @@
+ 
+ 	logging_init("udev");
+ 	if (devnull < 0)
+-		err("fatal, could not open /dev/null: %s", strerror(errno));
++		err("fatal, could not open "DEVDIR"/null: %s", strerror(errno));
+ 	udev_config_init();
+ 	dbg("version %s", UDEV_VERSION);
+ 
+diff -ru -ru udev-092_orig/udev_libc_wrapper.c udev-092/udev_libc_wrapper.c
+--- udev-092_orig/udev_libc_wrapper.c	2006-05-16 17:10:05.000000000 +0200
++++ udev-092/udev_libc_wrapper.c	2006-05-16 17:50:52.000000000 +0200
+@@ -123,8 +123,8 @@
+ 
+ #else /* __OWN_USERDB_PARSER__ */
+ 
+-#define PASSWD_FILE		"/etc/passwd"
+-#define GROUP_FILE		"/etc/group"
++#define PASSWD_FILE		ETCDIR"/passwd"
++#define GROUP_FILE		ETCDIR"/group"
+ 
+ /* return the id of a passwd style line, selected by the users name */
+ static unsigned long get_id_by_name(const char *uname, const char *dbfile)
+diff -ru -ru udev-092_orig/udev_rules_parse.c udev-092/udev_rules_parse.c
+--- udev-092_orig/udev_rules_parse.c	2006-05-16 17:10:05.000000000 +0200
++++ udev-092/udev_rules_parse.c	2006-05-16 17:51:16.000000000 +0200
+@@ -404,7 +404,7 @@
+ 
+ 				/* allow programs in /lib/udev called without the path */
+ 				if (strchr(file, '/') == NULL) {
+-					strlcpy(file, "/lib/udev/", sizeof(file));
++					strlcpy(file, LIBDIR"/udev/", sizeof(file));
+ 					strlcat(file, value, sizeof(file));
+ 					pos = strchr(file, ' ');
+ 					if (pos)
+diff -ru -ru udev-092_orig/udev_selinux.c udev-092/udev_selinux.c
+--- udev-092_orig/udev_selinux.c	2006-05-16 17:10:05.000000000 +0200
++++ udev-092/udev_selinux.c	2006-05-16 17:48:04.000000000 +0200
+@@ -57,7 +57,7 @@
+ 	if (!(mode & S_IFBLK))
+ 		return NULL;
+ 
+-	snprintf(procfile, PATH_MAX, "/proc/ide/%s/media", devname);
++	snprintf(procfile, PATH_MAX, PROCDIR"/ide/%s/media", devname);
+ 	procfile[PATH_MAX-1] = '\0';
+ 
+ 	fp = fopen(procfile, "r");
+diff -ru -ru udev-092_orig/udev_sysfs.c udev-092/udev_sysfs.c
+--- udev-092_orig/udev_sysfs.c	2006-05-16 17:10:05.000000000 +0200
++++ udev-092/udev_sysfs.c	2006-05-16 17:52:05.000000000 +0200
+@@ -53,7 +53,7 @@
+ 		strlcpy(sysfs_path, env, sizeof(sysfs_path));
+ 		remove_trailing_chars(sysfs_path, '/');
+ 	} else
+-		strlcpy(sysfs_path, "/sys", sizeof(sysfs_path));
++		strlcpy(sysfs_path, SYSDIR, sizeof(sysfs_path));
+ 	dbg("sysfs_path='%s'", sysfs_path);
+ 
+ 	INIT_LIST_HEAD(&dev_list);
+@@ -274,7 +274,7 @@
+ 		return NULL;
+ 	pos[0] = '\0';
+ 
+-	/* are we at the top level of /devices */
++	/* are we at the top level of "DEVDIR"ices */
+ 	if (strcmp(parent_devpath, "/devices") == 0) {
+ 		dbg("/devices top level");
+ 		return NULL;
+@@ -299,7 +299,7 @@
+ device_link:
+ 	strlcpy(device_link, sysfs_path, sizeof(device_link));
+ 	strlcat(device_link, dev->devpath, sizeof(device_link));
+-	strlcat(device_link, "/device", sizeof(device_link));
++	strlcat(device_link, "device", sizeof(device_link));
+ 	len = readlink(device_link, device_link_target, sizeof(device_link_target));
+ 	if (len < 0)
+ 		return NULL;
+diff -ru -ru udev-092_orig/udev_utils_run.c udev-092/udev_utils_run.c
+--- udev-092_orig/udev_utils_run.c	2006-05-16 17:10:05.000000000 +0200
++++ udev-092/udev_utils_run.c	2006-05-16 17:50:13.000000000 +0200
+@@ -126,7 +126,7 @@
+ 
+ 	/* allow programs in /lib/udev called without the path */
+ 	if (strchr(argv[0], '/') == NULL) {
+-		strlcpy(program, "/lib/udev/", sizeof(program));
++		strlcpy(program, LIBDIR"/udev/", sizeof(program));
+ 		strlcat(program, argv[0], sizeof(program));
+ 		argv[0] = program;
+ 	}
+@@ -141,7 +141,7 @@
+ 			close(errpipe[READ_END]);
+ 
+ 		/* discard child output or connect to pipe */
+-		devnull = open("/dev/null", O_RDWR);
++		devnull = open(DEVDIR"/null", O_RDWR);
+ 		if (devnull > 0) {
+ 			dup2(devnull, STDIN_FILENO);
+ 			if (outpipe[WRITE_END] < 0)
+@@ -150,7 +150,7 @@
+ 				dup2(devnull, STDERR_FILENO);
+ 			close(devnull);
+ 		} else
+-			err("open /dev/null failed: %s", strerror(errno));
++			err("open "DEVDIR"/null failed: %s", strerror(errno));
+ 		if (outpipe[WRITE_END] > 0)
+ 			dup2(outpipe[WRITE_END], STDOUT_FILENO);
+ 		if (errpipe[WRITE_END] > 0)
+diff -ru -ru udev-092_orig/udevd.c udev-092/udevd.c
+--- udev-092_orig/udevd.c	2006-05-16 17:10:05.000000000 +0200
++++ udev-092/udevd.c	2006-05-16 17:48:04.000000000 +0200
+@@ -318,7 +318,7 @@
+ 	int running;
+ 	const char *pos;
+ 
+-	f = open("/proc/stat", O_RDONLY);
++	f = open(PROCDIR"/stat", O_RDONLY);
+ 	if (f == -1)
+ 		return -1;
+ 
+@@ -347,7 +347,7 @@
+ 	struct dirent *dent;
+ 	int running = 0;
+ 
+-	dir = opendir("/proc");
++	dir = opendir(PROCDIR"");
+ 	if (!dir)
+ 		return -1;
+ 
+@@ -364,7 +364,7 @@
+ 		if (!isdigit(dent->d_name[0]))
+ 			continue;
+ 
+-		snprintf(procdir, sizeof(procdir), "/proc/%s/stat", dent->d_name);
++		snprintf(procdir, sizeof(procdir), PROCDIR"/%s/stat", dent->d_name);
+ 		procdir[sizeof(procdir)-1] = '\0';
+ 
+ 		f = open(procdir, O_RDONLY);
+@@ -862,7 +862,7 @@
+ 	int maxfd;
+ 
+ 	/* redirect std fd's, if the kernel forks us, we don't have them at all */
+-	fd = open("/dev/null", O_RDWR);
++	fd = open(DEVDIR"/null", O_RDWR);
+ 	if (fd >= 0) {
+ 		if (fd != STDIN_FILENO)
+ 			dup2(fd, STDIN_FILENO);
+@@ -876,7 +876,7 @@
+ 
+ 	logging_init("udevd");
+ 	if (fd < 0)
+-		err("fatal, could not open /dev/null: %s", strerror(errno));
++		err("fatal, could not open "DEVDIR"/null: %s", strerror(errno));
+ 
+ 	udev_config_init();
+ 	dbg("version %s", UDEV_VERSION);
+@@ -952,7 +952,7 @@
+ 	dbg("our session is %d", sid);
+ 
+ 	/* OOM_DISABLE == -17 */
+-	fd = open("/proc/self/oom_adj", O_RDWR);
++	fd = open(PROCDIR"/self/oom_adj", O_RDWR);
+ 	if (fd < 0)
+ 		err("error disabling OOM: %s", strerror(errno));
+ 	else {
+diff -ru -ru udev-092_orig/udevstart.c udev-092/udevstart.c
+--- udev-092_orig/udevstart.c	2006-05-16 17:10:05.000000000 +0200
++++ udev-092/udevstart.c	2006-05-16 17:48:04.000000000 +0200
+@@ -4,7 +4,7 @@
+  * Copyright (C) 2004 Greg Kroah-Hartman <greg@kroah.com>
+  * Copyright (C) 2004 Kay Sievers <kay@vrfy.org>
+  *
+- * Quick and dirty way to populate a /dev with udev if your system
++ * Quick and dirty way to populate a "DEVDIR" with udev if your system
+  * does not have access to a shell.  Based originally on a patch
+  * from:
+  *	Harald Hoyer <harald@redhat.com>

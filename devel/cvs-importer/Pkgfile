@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Import all existing versions of a program into CVS or Subversion.
+#  cvs-importer automates the task of importing all past versions of
+#  an existing project into CVS or Subversion, including automatically
+#  removing generated files, creating .cvsignore files/svn:ignore properties,
+#  and tagging each version. Thus, you can gain some of the advantages of
+#  scm for the older versions that weren't actually developed in cvs/svn,
+#  by having all the changes in the history.
+#  .
+# URL: http://users.dakotacom.net/~donut/programs/index_s.html#cvs-importer
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=cvs-importer
+version=0.3
+release=1
+source=(http://users.dakotacom.net/~donut/programs/cvs-importer/cvs-importer-$version.tar.gz
+        cvs-importer-0.3-mandir.patch)
+
+build()
+{
+  cd cvs-importer-$version
+
+  patch -N -p1 -i $SRC/cvs-importer-0.3-mandir.patch
+
+  python setup.py install --prefix="$ROOT"
+}
+
+# EOF

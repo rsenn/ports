@@ -1,0 +1,35 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A tool to bi-directionally synchronize IMAP/Maildir email boxes.
+#  OfflineIMAP is a tool to simplify email reading. It allows you to read
+#  the same mailbox from multiple computers and ensures that your changes
+#  will be automatically reflected on all computers. You can use various
+#  mail clients to read a single box or read mail while offline with full
+#  synchronization when you reconnect. You can read IMAP mail with readers
+#  that lack IMAP support (same goes for SSL). OfflineIMAP's multithreaded
+#  synchronization algorithm performs between 10 and 60 times faster than
+#  many mail readers' internal IMAP support, and it can be used even with
+#  mail readers that support IMAP already. There are five available user
+#  interface modules, including scripted execution, an interactive terminal
+#  interface, and GUI interfaces.
+#  .
+# URL: http://software.complete.org/offlineimap/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=offlineimap
+version=6.0.3
+release=1
+source=($mirror_gentoo/offlineimap_$version.tar.gz)
+
+build()
+{
+  cd offlineimap
+
+  python setup.py install --prefix="$ROOT"
+
+  install -d $ROOT/share/doc/offlineimap
+  install -m 644 COPYING COPYRIGHT FAQ.html README UPGRADING $ROOT/share/doc/offlineimap
+}
+
+# EOF

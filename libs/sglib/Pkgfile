@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A simple, generic library for C.
+#  Sglib is a generic library for C that was inspired by the Standard
+#  Template Library from C++. It consists of a single header file
+#  and no binary code. It defines useful macros for sorting arrays and
+#  manipulating lists, sorted lists, double linked lists, hashed containers,
+#  and red-black trees. Macros are parametrized by the type of the data
+#  structure. The library does not enforce its own data representation,
+#  but acts on user-defined types. It does not enforce any particular memory
+#  management system.
+# URL: http://sglib.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=sglib
+version=1.0.4
+release=1
+source=($mirror_sf/sglib/sglib-$version.tar.gz)
+
+build()
+{
+  cd sglib-$version
+
+  install -d $ROOT/include
+  install -m 644 sglib.h $ROOT/include/
+
+  install -d $ROOT/share/doc
+  cp -rvf doc $ROOT/share/doc/$name-$version
+  cp -rvf README samples $ROOT/share/doc/$name-$version/
+}

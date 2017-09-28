@@ -1,0 +1,36 @@
+# $Id: Pkgfile,v 1.4 2007/05/09 21:02:43 roman Exp $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libunwind
+version=0.99-alpha
+release=1
+source=(http://download.savannah.nongnu.org/releases/libunwind/libunwind-$version.tar.gz
+        libunwind-0.99-alpha-pthread-init.patch)
+
+build()
+{
+  cd libunwind-*
+
+  patch -N -p1 -i $SRC/libunwind-0.99-alpha-pthread-init.patch
+
+  cp -vf $datadir/automake/config.{guess,sub} config
+
+#  test -f $prefix/bin/gcc-2.95 && CC='gcc-2.95'
+
+  (echo "#!/bin/sh" && echo '${CC-cc} -dumpmachine') >config.guess
+  (echo "#!/bin/sh" && echo 'echo "$@"') >config.sub
+
+  ./configure \
+        --build="$build" \
+        --host="$host" \
+        --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  copy_license "COPYING"
+}

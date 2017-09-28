@@ -1,0 +1,21 @@
+diff -ru php-js-ext-0.1.2_orig/config.m4 php-js-ext-0.1.2/config.m4
+--- php-js-ext-0.1.2_orig/config.m4	2005-09-07 04:28:18.000000000 +0200
++++ php-js-ext-0.1.2/config.m4	2006-06-27 11:01:18.000000000 +0200
+@@ -5,7 +5,7 @@
+ 
+ if test "$PHP_JS" != "no"; then
+   for i in $PHP_JS /usr/local /usr; do
+-    if test -f $i/include/jsapi.h; then
++    if test -f $i/include/js/jsapi.h; then
+       JS_DIR=$i
+       break
+     fi
+@@ -15,7 +15,7 @@
+     AC_MSG_ERROR([Cannot find jsapi.h under $PHP_JS.])
+   fi
+ 
+-  EXTRA_CFLAGS="-DXP_UNIX=1 -I$JS_DIR/include"
++  EXTRA_CFLAGS="-DXP_UNIX=1 -I$JS_DIR/include/js"
+   EXTRA_LDFLAGS="-L$JS_DIR/lib64 -L$JS_DIR/lib -ljs"
+ 
+   PHP_SUBST(EXTRA_CFLAGS)

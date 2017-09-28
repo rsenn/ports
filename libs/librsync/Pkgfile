@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A library for generating network deltas.
+# librsync makes the network-delta functions of the popular rsync file
+# transfer tool available to other programs. librsync has a streaming
+# interface similar to zlib, and is designed to be embedded into diverse
+# network applications.
+#
+# URL: http://librsync.sourceforge.net/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=librsync
+version=0.9.6
+release=1
+source=($mirror_sf/librsync/librsync-$version.tar.gz)
+
+build()
+{
+  cd librsync-$version
+
+  ./autogen.sh
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

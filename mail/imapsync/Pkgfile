@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An IMAP mailbox synchronization tool.
+#  imapsync is a tool for facilitating incremental recursive IMAP transfers
+#  from one mailbox to another. It is useful for mailbox migration, and
+#  reduces the amount of data transferred by only copying messages that
+#  are not present on both servers. Read, unread, and deleted flags are
+#  preserved, and the process can be stopped and resumed. The original
+#  messages can optionally be deleted after a successful transfer.
+#  .
+# URL: http://www.linux-france.org/prj/imapsync/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=imapsync
+version=1.267
+release=1
+source=(http://www.linux-france.org/prj/imapsync/dist/imapsync-$version.tgz)
+
+build()
+{
+  cd imapsync-$version
+
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/imapsync
+  install -m 644 INSTALL FAQ CREDITS ChangeLog GPL README RECORD TODO VERSION $ROOT/share/doc/imapsync
+}
+
+# EOF

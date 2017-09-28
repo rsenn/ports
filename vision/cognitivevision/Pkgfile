@@ -1,0 +1,35 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A portable computer vision toolkit.
+#  The main goal of the Cognitive Vision project is to improve the results
+#  of artificial intelligence. The current scope is to equip the abilities
+#  of the AIBO (robot dog of the Sony) to explore its environment and to
+#  recognize the local position (e.g. navigation in a room). The first trial
+#  is to use and develop image processing methods with a single webcam and
+#  to apply these techniques with AIBO.
+# URL: http://aibo.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=cvision
+version=0.9
+release=1
+source=($mirror_sf/aibo/cognitivevision-$version-src.tgz
+        cognitivevision-0.9-no-werror.patch)
+
+build() 
+{
+  cd cognitivevision-$version
+
+  patch -p1 -i $SRC/cognitivevision-0.9-no-werror.patch
+
+  cmake \
+      -D CMAKE_INSTALL_PREFIX="$prefix" \
+      -D CMAKE_BUILD_TYPE="RelWithDebug" \
+    .
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

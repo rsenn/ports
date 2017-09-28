@@ -1,0 +1,42 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Section: universe/utils
+# Description: A logged filesystem.
+#  LoggedFS is a transparent fuse-filesystem which allows you to log
+#  every operation that happens in the backend filesystem. Logs can be
+#  written to syslog, to a file, or to standard output. It comes with an
+#  XML configuration file in which you can choose exactly what you want to
+#  log. You can add filters on users, operations (open, read, write, chown,
+#  chmod, etc.), filenames, and return codes. Filename's filters are regular
+#  expressions. Since it is fuse-based, you don't need to change anything
+#  in your kernel or hard disk partition to use it.
+#  .
+# URL: http://loggedfs.sourceforge.net/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=loggedfs
+version=0.5
+release=1
+source=($mirror_sf/loggedfs/loggedfs-$version.tar.bz2
+        loggedfs-0.5-static.patch)
+
+build()
+{
+#cd loggedfs-$version
+  patch -N -p0 -i $SRC/loggedfs-0.5-static.patch
+
+  make
+  #make PREFIX="$ROOT" install
+  #
+  install -d $ROOT/bin
+  install -m 755 loggedfs $ROOT/bin
+
+  install -d $ROOT/share/man/man1
+  zcat loggedfs.1.gz >$ROOT/share/man/man1/loggedfs.1
+
+  install -d $ROOT/share/doc/loggedfs
+  install -m 644 LICENSE $ROOT/share/doc/loggedfs
+}
+
+# EOF

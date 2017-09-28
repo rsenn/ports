@@ -1,0 +1,38 @@
+diff -ru quickie-1.1/lib/input/uudecode.h quickie-1.1_patched/lib/input/uudecode.h
+--- quickie-1.1/lib/input/uudecode.h	2006-05-20 22:56:52.000000000 +0000
++++ quickie-1.1_patched/lib/input/uudecode.h	2008-03-30 18:14:26.000000000 +0000
+@@ -45,7 +45,7 @@
+     input_uudecode(input *);
+ 
+     // See base class for documentation.
+-    size_t input_uudecode::read_inner(void *data, size_t nbytes);
++    size_t read_inner(void *data, size_t nbytes);
+ 
+     // See base class for documentation.
+     rcstring name();
+diff -ru quickie-1.1/lib/output/html_quote.h quickie-1.1_patched/lib/output/html_quote.h
+--- quickie-1.1/lib/output/html_quote.h	2006-05-20 22:56:52.000000000 +0000
++++ quickie-1.1_patched/lib/output/html_quote.h	2008-03-30 18:14:11.000000000 +0000
+@@ -49,7 +49,7 @@
+     output_html_quote(output &deeper);
+ 
+     // See base class for documentation.
+-    rcstring output_html_quote::name();
++    rcstring name();
+ 
+     // See base class for documentation.
+     void write_inner(const void *data, size_t nbytes);
+diff -ru quickie-1.1/lib/simple_version_tool/checkin.cc quickie-1.1_patched/lib/simple_version_tool/checkin.cc
+--- quickie-1.1/lib/simple_version_tool/checkin.cc	2006-05-20 22:56:52.000000000 +0000
++++ quickie-1.1_patched/lib/simple_version_tool/checkin.cc	2008-03-30 18:16:08.000000000 +0000
+@@ -38,6 +38,10 @@
+ #include <rfc822_functor/version_previous.h>
+ #include <simple_version_tool.h>
+ 
++#ifndef DO_NOT_USE_GETPWUID
++#include <pwd.h>
++#include <unistd.h>
++#endif
+ 
+ static rcstring
+ build_temp_file_name(const rcstring &path)

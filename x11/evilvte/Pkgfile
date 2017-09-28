@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A VTE-based, very lightweight terminal emulator.
+# evilvte is a terminal emulator. It supports almost everything VTE
+# provides. It also supports tabs, automatic hiding of the tab bar,
+# and the ability to switch encoding at runtime. Configuration is done
+# by editing the source code and recompiling it. The size of a standard
+# stripped binary of evilvte is less than 9 kilobytes.
+#
+# URL: http://www.calno.com/evilvte/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=evilvte
+version=0.4.4~pre2
+release=1
+source=(http://www.calno.com/evilvte/evilvte-$version.tar.gz)
+
+build()
+{
+  cd evilvte-$version
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

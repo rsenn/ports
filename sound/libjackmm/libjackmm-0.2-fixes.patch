@@ -1,0 +1,71 @@
+diff -ru libJackMM-0.2_orig/JackMM.cc libJackMM-0.2/JackMM.cc
+--- libJackMM-0.2_orig/JackMM.cc	2008-07-17 11:18:43.000000000 +0200
++++ libJackMM-0.2/JackMM.cc	2008-07-17 11:30:10.000000000 +0200
+@@ -581,28 +581,6 @@
+ }
+ 
+ 
+-void clJackPort::Lock ()
+-{
+-    int iE;
+-    
+-    if (jackPort == NULL)
+-        throw clXJack("clJackPort::Lock(): jackPort == NULL");
+-    if ((iE = jack_port_lock(jackClient, jackPort)) != 0)
+-        throw clXJack("clJackPort::Lock(): jack_port_lock()", iE);
+-}
+-
+-
+-void clJackPort::Unlock ()
+-{
+-    int iE;
+-    
+-    if (jackPort == NULL)
+-        throw clXJack("clJackPort::Unlock(): jackPort == NULL");
+-    if ((iE = jack_port_unlock(jackClient, jackPort)) != 0)
+-        throw clXJack("clJackPort::Unlock(): jack_port_unlock()", iE);
+-}
+-
+-
+ jack_nframes_t clJackPort::GetLatency ()
+ {
+     if (jackPort == NULL)
+diff -ru libJackMM-0.2_orig/JackMM.hh libJackMM-0.2/JackMM.hh
+--- libJackMM-0.2_orig/JackMM.hh	2008-07-17 11:18:43.000000000 +0200
++++ libJackMM-0.2/JackMM.hh	2008-07-17 11:30:29.000000000 +0200
+@@ -446,19 +446,6 @@
+             */
+             JACKMM_STRINGV GetAllConnections (clJackClient &);
+             /**
+-                Prevent other objects from changing the connection status of
+-                a port. The port must be owned by the calling client.
+-                
+-                \throw clXJack
+-            */
+-            void Lock ();
+-            /**
+-                Allows other objects to change the connection status of a port.
+-                
+-                \throw clXJack
+-            */
+-            void Unlock ();
+-            /**
+                 Get the latency (in frames) for a port.
+                 
+                 \return Latency in frames
+diff -ru libJackMM-0.2_orig/Makefile libJackMM-0.2/Makefile
+--- libJackMM-0.2_orig/Makefile	2008-07-17 11:18:43.000000000 +0200
++++ libJackMM-0.2/Makefile	2008-07-17 11:30:47.000000000 +0200
+@@ -19,10 +19,10 @@
+ #
+ 
+ CXX = g++
+-CXXFLAGS = -march=pentium2 -mtune=pentium4 -O3 -ffast-math -funroll-loops -fprefetch-loop-arrays -ftracer
++CXXFLAGS = -O2
+ CXXFLAGS += -Wall -Werror -g
+ DEFS =
+-INCS = `pkg-config --cflags jack`
++INCS = -I. `pkg-config --cflags jack`
+ 
+ PREFIX = /usr/local
+ 

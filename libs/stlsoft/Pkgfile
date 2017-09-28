@@ -1,0 +1,26 @@
+# $Id: Pkgfile,v 1.1 2007/04/19 21:21:04 roman Exp $
+#
+# Description: Provides freely available STL-like extensions, including STL-style wrappers for common operating system and framework APIs.
+# URL: http://synesis.com.au/software/stlsoft/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libstdc++6-4.3-dev, libc6-dev
+
+name=stlsoft
+version=1.9.77
+release=1
+source=($mirror_sf/stlsoft/stlsoft-$version-hdrs.zip
+        $mirror_sf/stlsoft/stlsoft-$version-doc.zip)
+
+build()
+{
+  cd stlsoft-$version
+
+  install -d $ROOT
+  cp -rvf include $ROOT
+
+  install -d $ROOT/share/doc/stlsoft
+  install -m 644 *.txt $ROOT/share/doc/stlsoft
+
+  install -m 644 $SRC/stlsoft-$version-doc.chm  $ROOT/share/doc/stlsoft
+#  chm2pdf --continuous $SRC/stlsoft-$version-doc.chm
+}

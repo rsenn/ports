@@ -1,0 +1,22 @@
+diff -ru sed-4.1.4_orig/sed/Makefile.in sed-4.1.4/sed/Makefile.in
+--- sed-4.1.4_orig/sed/Makefile.in	2006-02-21 13:14:17.000000000 +0100
++++ sed-4.1.4/sed/Makefile.in	2006-02-21 13:14:45.000000000 +0100
+@@ -39,7 +39,7 @@
+ POST_UNINSTALL = :
+ build_triplet = @build@
+ host_triplet = @host@
+-bin_PROGRAMS = sed$(EXEEXT)
++bin_PROGRAMS = sed$(EXEEXT) sed.static$(EXEEXT)
+ subdir = sed
+ DIST_COMMON = $(noinst_HEADERS) $(srcdir)/Makefile.am \
+ 	$(srcdir)/Makefile.in
+@@ -278,6 +278,9 @@
+ sed$(EXEEXT): $(sed_OBJECTS) $(sed_DEPENDENCIES) 
+ 	@rm -f sed$(EXEEXT)
+ 	$(LINK) $(sed_LDFLAGS) $(sed_OBJECTS) $(sed_LDADD) $(LIBS)
++sed.static$(EXEEXT): $(sed_OBJECTS) $(sed_DEPENDENCIES) 
++	@rm -f sed$(EXEEXT)
++	$(LINK) -static $(sed_LDFLAGS) $(sed_OBJECTS) $(sed_LDADD) $(LIBS)
+ 
+ mostlyclean-compile:
+ 	-rm -f *.$(OBJEXT)

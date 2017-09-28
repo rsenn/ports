@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Program to allow general users to do superuser things
+#  Super allows an admin to control access to files and functions for
+#  users. It is similar to sudo, but uses a different approach in the
+#  configuration file. Super acts as a SetUID wrapper around system commands
+#  to make sure the commands are executed safely, and only by authorized
+#  users.
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=super
+version=3.30.0
+release=1
+source=(ftp://ftp.ucolick.org/pub/users/will/super-$version-tar.gz)
+
+build()
+{
+  cd super-$version
+
+  sed -i "s/ -p755 / /g" Makefile.in
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --mandir="$prefix/share/man"
+
+  make
+  make DESTDIR="$PKG" install
+}

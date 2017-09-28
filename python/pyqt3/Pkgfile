@@ -1,0 +1,23 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=pyqt3
+version=3.17.3
+release=1
+source=(http://www.riverbankcomputing.com/Downloads/PyQt3/GPL/PyQt-x11-gpl-$version.tar.gz)
+
+build()
+{
+  cd PyQt-x11-gpl-$version
+
+  python configure.py -q "$prefix"
+
+  make CC="${CC-cc}" \
+       CFLAGS="$CFLAGS"
+
+  make DESTDIR="$PKG" install
+}

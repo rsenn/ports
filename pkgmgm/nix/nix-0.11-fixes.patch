@@ -1,0 +1,105 @@
+args: -r -u -- nix-0.11 nix-0.11_new
+diff -r -u -- nix-0.11/Makefile.in nix-0.11_new/Makefile.in
+diff -r -u -- nix-0.11/aclocal.m4 nix-0.11_new/aclocal.m4
+diff -r -u -- nix-0.11/config/ltmain.sh nix-0.11_new/config/ltmain.sh
+diff -r -u -- nix-0.11/config.h.in nix-0.11_new/config.h.in
+diff -r -u -- nix-0.11/configure nix-0.11_new/configure
+diff -r -u -- nix-0.11/corepkgs/Makefile.in nix-0.11_new/corepkgs/Makefile.in
+diff -r -u -- nix-0.11/corepkgs/buildenv/Makefile.in nix-0.11_new/corepkgs/buildenv/Makefile.in
+diff -r -u -- nix-0.11/corepkgs/channels/Makefile.in nix-0.11_new/corepkgs/channels/Makefile.in
+diff -r -u -- nix-0.11/corepkgs/nar/Makefile.in nix-0.11_new/corepkgs/nar/Makefile.in
+diff -r -u -- nix-0.11/doc/Makefile.in nix-0.11_new/doc/Makefile.in
+diff -r -u -- nix-0.11/doc/manual/Makefile.in nix-0.11_new/doc/manual/Makefile.in
+diff -r -u -- nix-0.11/externals/Makefile.in nix-0.11_new/externals/Makefile.in
+diff -r -u -- nix-0.11/misc/Makefile.in nix-0.11_new/misc/Makefile.in
+diff -r -u -- nix-0.11/misc/emacs/Makefile.in nix-0.11_new/misc/emacs/Makefile.in
+diff -r -u -- nix-0.11/scripts/Makefile.in nix-0.11_new/scripts/Makefile.in
+diff -r -u -- nix-0.11/src/Makefile.in nix-0.11_new/src/Makefile.in
+diff -r -u -- nix-0.11/src/bin2c/Makefile.in nix-0.11_new/src/bin2c/Makefile.in
+diff -r -u -- nix-0.11/src/boost/Makefile.in nix-0.11_new/src/boost/Makefile.in
+diff -r -u -- nix-0.11/src/boost/format/Makefile.in nix-0.11_new/src/boost/format/Makefile.in
+diff -r -u -- nix-0.11/src/bsdiff-4.3/Makefile.in nix-0.11_new/src/bsdiff-4.3/Makefile.in
+diff -r -u -- nix-0.11/src/libexpr/Makefile.in nix-0.11_new/src/libexpr/Makefile.in
+diff -r -u -- nix-0.11/src/libmain/Makefile.in nix-0.11_new/src/libmain/Makefile.in
+diff -r -u -- nix-0.11/src/libstore/Makefile.in nix-0.11_new/src/libstore/Makefile.in
+diff -r -u -- nix-0.11/src/libstore/pathlocks.cc nix-0.11_new/src/libstore/pathlocks.cc
+--- nix-0.11/src/libstore/pathlocks.cc	2007-12-31 18:30:13.000000000 +0100
++++ nix-0.11_new/src/libstore/pathlocks.cc	2008-09-13 04:24:12.000000000 +0200
+@@ -2,6 +2,7 @@
+ #include "util.hh"
+ 
+ #include <cerrno>
++#include <cstdlib>
+ 
+ #include <sys/types.h>
+ #include <sys/stat.h>
+diff -r -u -- nix-0.11/src/libstore/references.cc nix-0.11_new/src/libstore/references.cc
+--- nix-0.11/src/libstore/references.cc	2007-12-31 18:30:13.000000000 +0100
++++ nix-0.11_new/src/libstore/references.cc	2008-09-13 04:22:31.000000000 +0200
+@@ -3,6 +3,8 @@
+ #include "util.hh"
+ 
+ #include <cerrno>
++#include <cstring>
++#include <cstdlib>
+ #include <map>
+ 
+ #include <sys/types.h>
+diff -r -u -- nix-0.11/src/libutil/Makefile.in nix-0.11_new/src/libutil/Makefile.in
+diff -r -u -- nix-0.11/src/libutil/aterm.cc nix-0.11_new/src/libutil/aterm.cc
+--- nix-0.11/src/libutil/aterm.cc	2007-12-31 18:30:13.000000000 +0100
++++ nix-0.11_new/src/libutil/aterm.cc	2008-09-13 01:53:59.000000000 +0200
+@@ -1,3 +1,5 @@
++#include <cstring>
++
+ #include "aterm.hh"
+ 
+ using std::string;
+diff -r -u -- nix-0.11/src/libutil/hash.cc nix-0.11_new/src/libutil/hash.cc
+--- nix-0.11/src/libutil/hash.cc	2007-12-31 18:30:13.000000000 +0100
++++ nix-0.11_new/src/libutil/hash.cc	2008-09-13 01:53:23.000000000 +0200
+@@ -1,6 +1,7 @@
+ #include "config.h"
+ 
+ #include <iostream>
++#include <cstring>
+ 
+ #ifdef HAVE_OPENSSL
+ #include <openssl/md5.h>
+diff -r -u -- nix-0.11/src/libutil/serialise.cc nix-0.11_new/src/libutil/serialise.cc
+--- nix-0.11/src/libutil/serialise.cc	2007-12-31 18:30:13.000000000 +0100
++++ nix-0.11_new/src/libutil/serialise.cc	2008-09-13 01:53:39.000000000 +0200
+@@ -1,3 +1,5 @@
++#include <cstring>
++
+ #include "serialise.hh"
+ #include "util.hh"
+ 
+diff -r -u -- nix-0.11/src/libutil/util.cc nix-0.11_new/src/libutil/util.cc
+--- nix-0.11/src/libutil/util.cc	2007-12-31 18:30:13.000000000 +0100
++++ nix-0.11_new/src/libutil/util.cc	2008-09-13 01:53:02.000000000 +0200
+@@ -9,6 +9,7 @@
+ #include <cstdio>
+ #include <sstream>
+ #include <cstring>
++#include <cstdlib>
+ 
+ #include <sys/stat.h>
+ #include <sys/wait.h>
+@@ -46,7 +47,7 @@
+ 
+ string getEnv(const string & key, const string & def)
+ {
+-    char * value = getenv(key.c_str());
++    char * value = std::getenv(key.c_str());
+     return value ? string(value) : def;
+ }
+ 
+diff -r -u -- nix-0.11/src/nix-env/Makefile.in nix-0.11_new/src/nix-env/Makefile.in
+diff -r -u -- nix-0.11/src/nix-hash/Makefile.in nix-0.11_new/src/nix-hash/Makefile.in
+diff -r -u -- nix-0.11/src/nix-instantiate/Makefile.in nix-0.11_new/src/nix-instantiate/Makefile.in
+diff -r -u -- nix-0.11/src/nix-log2xml/Makefile.in nix-0.11_new/src/nix-log2xml/Makefile.in
+diff -r -u -- nix-0.11/src/nix-setuid-helper/Makefile.in nix-0.11_new/src/nix-setuid-helper/Makefile.in
+diff -r -u -- nix-0.11/src/nix-store/Makefile.in nix-0.11_new/src/nix-store/Makefile.in
+diff -r -u -- nix-0.11/src/nix-worker/Makefile.in nix-0.11_new/src/nix-worker/Makefile.in
+diff -r -u -- nix-0.11/tests/Makefile.in nix-0.11_new/tests/Makefile.in

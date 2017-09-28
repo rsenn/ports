@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A  C++ parsing and rewriting tool chain.
+#  Pork is a C++ parsing and rewriting tool chain. Its primary purpose is to
+#  perform automated refactoring of large C++ codebases. The core of Pork
+#  is a C++ parser that provides exact character positions for the start
+#  and end of every AST node, as well as the set of macro expansions that
+#  contain any location. This information allows C++ to be automatically
+#  rewritten in a precise way. It could be used as a backend to support
+#  Eclipse-style refactoring of C++ code.
+#  .
+# URL: http://developer.mozilla.org/en/docs/Pork
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=pork_cxx
+version=0.9
+release=1
+source=(http://ftp.mozilla.org/pub/mozilla.org/static-analysis/pork/pork-0.9.tar.gz)
+
+build()
+{
+  cd pork-0.9
+./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+make
+make DESTDIR="$PKG" install
+}
+
+# EOF

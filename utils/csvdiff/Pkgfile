@@ -1,0 +1,26 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: csvdiff is a Perl script to diff/compare two csv files
+# with the possibility to select the separator. Differences will be
+# shown like: "Column XYZ in record 999" is different. After this, the
+# actual and the expected result for this column will be shown.
+# URL: http://csvdiff.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: perl
+
+name=csvdiff
+version=1
+release=1
+source=($mirror_sf/csvdiff/csvdiff_$version-6.tar.gz)
+
+build()
+{
+  sed -i "1 s:/usr/bin:$prefix/bin:" \
+      csvdiff.pl
+
+  install -d $ROOT/bin
+  install -m 755 csvdiff.pl $ROOT/bin/csvdiff
+
+  install -d $PKG${pkgdocdir=$prefix/share/doc/csvdiff}
+  install -m 644 CHANGES COPYING README THANKS TODO $PKG${pkgdocdir}
+}

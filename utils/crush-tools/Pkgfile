@@ -1,0 +1,36 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Custom Reporting Utilities for Shell
+#
+# CRUSH (Custom Reporting Utilities for SHell) is a collection of tools for
+# processing delimited-text data from the command line or in shell scripts.
+#
+# For help getting started using CRUSH, or to see a demo of what it
+# can do, try the CrushTutorial. For a list of the utilities provided
+# in CRUSH and links to their documentation, see the UserDocs. Or
+# see ApplicationDevelopmentWithCrush for a detailed look at writing
+# applications using the CRUSH toolkit.
+#
+# Join the CRUSH discussion group at
+# http://groups.google.com/group/crush-tools
+#
+# URL: http://code.google.com/p/crush-tools/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=crush-tools
+version=0.1
+release=1
+source=(http://crush-tools.googlecode.com/files/crush-$version.tar.gz)
+
+build()
+{
+  cd crush-$version
+
+  ./configure \
+      --prefix="$prefix" \
+      --sysconfdir="$sysconfdir"
+
+  make
+  make DESTDIR="$PKG" install
+}

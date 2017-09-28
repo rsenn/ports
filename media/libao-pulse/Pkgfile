@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A libao driver for PulseAudio.
+#  libao-pulse is a libao driver for the PulseAudio sound server.
+#  .
+# URL: http://0pointer.de/lennart/projects/libao-pulse/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=libao-pulse
+version=0.9.3
+release=1
+source=(http://0pointer.de/lennart/projects/libao-pulse/libao-pulse-0.9.3.tar.gz)
+
+build()
+{
+  cd libao-pulse-0.9.3
+./bootstrap.sh
+./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+make
+make DESTDIR="$PKG" install
+}
+
+# EOF

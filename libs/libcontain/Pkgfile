@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A container library with fast thread-safe generic containers.
+#  libcontain is a C container library that aims to provide blindingly
+#  fast containers (hashes, lists, queues, etc.) that are thread-safe
+#  (and non-blocking most of the time).
+# URL: http://sourceforge.net/projects/jail-ust/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libcontain
+version=0.2-alpha1
+release=1
+source=($mirror_sf/jail-ust/libcontain-$version.tar.gz)
+
+build()
+{
+  cd libcontain-$version
+
+ ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --${shared:=enable}-shared \
+      --${static:=enable}-shared \
+      --disable-dependency-tracking
+
+  make
+  make DESTDIR="$PKG" install
+}

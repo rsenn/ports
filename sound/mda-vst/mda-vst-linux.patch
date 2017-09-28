@@ -1,0 +1,81 @@
+diff -ru src_orig/Makefile src/Makefile
+--- src_orig/Makefile	2008-11-27 17:24:22.000000000 +0100
++++ src/Makefile	2008-11-27 17:23:05.000000000 +0100
+@@ -0,0 +1,28 @@
++prefix ?= /usr
++libdir = ${prefix}/lib
++includedir = ${prefix}/include
++
++SOURCES = mdaAmbience.cpp mdaBandisto.cpp mdaBeatBox.cpp mdaCombo.cpp mdaDe-ess.cpp mdaDegrade.cpp mdaDelay.cpp mdaDetune.cpp mdaDither.cpp mdaDubDelay.cpp mdaDX10.cpp mdaDynamics.cpp mdaEPiano.cpp mdaImage.cpp mdaJX10.cpp mdaLeslie.cpp mdaLimiter.cpp mdaLoudness.cpp mdaMultiBand.cpp mdaOverdrive.cpp mdaPiano.cpp mdaRePsycho!.cpp mdaRezFilter.cpp mdaRingMod.cpp mdaRoundPan.cpp mdaShepard.cpp \
++mdaSplitter.cpp mdaStereo.cpp mdaSubSynth.cpp mdaTalkBox.cpp mdaTestTone.cpp mdaThruZero.cpp mdaTracker.cpp mdaTransient.cpp mdaVocInput.cpp mdaVocoder.cpp
++#SOURCES += mdaspecmeter.cpp mdaSpecMeterGUI.cpp 
++PLUGINS = $(patsubst %.cpp,%.la,$(SOURCES))
++
++VST_CFLAGS = `pkg-config vstsdk2.4 --cflags` -I$(includedir)/vstgui
++VST_LIBS = `pkg-config vstsdk2.4 --libs`
++
++CXXFLAGS = -g -O2 $(VST_CFLAGS) -I.
++LDFLAGS = -avoid-version -module -no-undefined -rpath $(libdir)
++LIBS = -Wl,$(VST_LIBS)
++
++LIBTOOL = libtool --tag=CXX 
++LTCOMPILE = $(LIBTOOL) --mode=compile $(CXX) $(CXXFLAGS) -c
++LTLINK = $(LIBTOOL) --mode=link $(CXX) $(LDFLAGS)
++
++all: $(PLUGINS)
++
++mdaspecmeter.lo: VST_CFLAGS = `pkg-config vstsdk2.3 --cflags` -I$(includedir)/vstgui
++
++%.lo: %.cpp
++	$(LTCOMPILE) -o $@ $<
++%.la: %.lo
++	$(LTLINK) -o $@ $^ $(LIBS)
+diff -ru src_orig/mdaAmbience.h src/mdaAmbience.h
+--- src_orig/mdaAmbience.h	2008-11-27 16:55:35.000000000 +0100
++++ src/mdaAmbience.h	2008-11-27 16:59:54.000000000 +0100
+@@ -1,7 +1,7 @@
+ #ifndef __mdaAmbience_H
+ #define __mdaAmbience_H
+ 
+-#include "audioeffectX.h"
++#include "audioeffectx.h"
+ 
+ class mdaAmbience : public AudioEffectX
+ {
+diff -ru src_orig/mdaSpecMeter.h src/mdaSpecMeter.h
+--- src_orig/mdaSpecMeter.h	2008-11-27 16:55:35.000000000 +0100
++++ src/mdaSpecMeter.h	2008-11-27 17:14:11.000000000 +0100
+@@ -7,7 +7,8 @@
+ #define NPROGS 4 //can hide decay settings in programs!  fast...slow...peak hold
+ #define SILENCE 0.00000001f
+ 
+-
++#define DECLARE_VST_DEPRECATED
++#define VstInt32 long
+ 
+ enum 
+ {
+diff -ru src_orig/mdaSpecMeterGUI.h src/mdaSpecMeterGUI.h
+--- src_orig/mdaSpecMeterGUI.h	2008-11-27 16:55:35.000000000 +0100
++++ src/mdaSpecMeterGUI.h	2008-11-27 17:14:00.000000000 +0100
+@@ -30,7 +30,7 @@
+   mdaSpecMeterGUI(AudioEffect *effect);
+  ~mdaSpecMeterGUI();
+  
+-  bool open(void *ptr);
++  long open(void *ptr);
+   void idle();
+   void close();
+ 
+diff -ru src_orig/mdaTalkBox.cpp src/mdaTalkBox.cpp
+--- src_orig/mdaTalkBox.cpp	2008-11-27 16:55:35.000000000 +0100
++++ src/mdaTalkBox.cpp	2008-11-27 17:16:01.000000000 +0100
+@@ -5,7 +5,7 @@
+ // Based on VST 1.0 SDK (c)1996 Steinberg Soft und Hardware GmbH, All Rights Reserved
+ //
+ 
+-#include "mdaTalkbox.h"
++#include "mdaTalkBox.h"
+ 
+ #include <stdlib.h>
+ #include <stdio.h>

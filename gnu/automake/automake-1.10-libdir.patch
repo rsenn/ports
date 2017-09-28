@@ -1,0 +1,158 @@
+diff -ru -ru automake-1.10_orig/Makefile.in automake-1.10/Makefile.in
+--- automake-1.10_orig/Makefile.in	2007-01-19 20:35:25.000000000 +0000
++++ automake-1.10/Makefile.in	2007-01-19 20:35:25.000000000 +0000
+@@ -231,8 +231,8 @@
+ 
+ $(top_srcdir)/configure:  $(am__configure_deps)
+ 	cd $(srcdir) && $(AUTOCONF)
+-$(ACLOCAL_M4):  $(am__aclocal_m4_deps)
+-	cd $(srcdir) && $(ACLOCAL) $(ACLOCAL_AMFLAGS)
++#$(ACLOCAL_M4):  $(am__aclocal_m4_deps)
++#	cd $(srcdir) && $(ACLOCAL) $(ACLOCAL_AMFLAGS)
+ install-binSCRIPTS: $(bin_SCRIPTS)
+ 	@$(NORMAL_INSTALL)
+ 	test -z "$(bindir)" || $(MKDIR_P) "$(DESTDIR)$(bindir)"
+diff -ru -ru automake-1.10_orig/aclocal.in automake-1.10/aclocal.in
+--- automake-1.10_orig/aclocal.in	2007-01-19 20:35:25.000000000 +0000
++++ automake-1.10/aclocal.in	2007-01-19 20:36:44.000000000 +0000
+@@ -30,7 +30,7 @@
+ 
+ BEGIN
+ {
+-  my $perllibdir = $ENV{'perllibdir'} || '@datadir@/@PACKAGE@-@APIVERSION@';
++  my $perllibdir = $ENV{'perllibdir'} || '@datadir@/@PACKAGE@';
+   unshift @INC, (split '@PATH_SEPARATOR@', $perllibdir);
+ }
+ 
+@@ -56,7 +56,7 @@
+ # @system_includes can be augmented with the `dirlist' file.  Also
+ # --acdir will reset both @automake_includes and @system_includes.
+ my @user_includes = ();
+-my @automake_includes = ("@datadir@/aclocal-$APIVERSION");
++my @automake_includes = ("@datadir@/aclocal");
+ my @system_includes = ('@datadir@/aclocal');
+ 
+ # Whether we should copy M4 file in $user_includes[0].
+diff -ru -ru automake-1.10_orig/automake.in automake-1.10/automake.in
+--- automake-1.10_orig/automake.in	2007-01-19 20:35:25.000000000 +0000
++++ automake-1.10/automake.in	2007-01-19 20:35:25.000000000 +0000
+@@ -32,7 +32,7 @@
+ 
+ BEGIN
+ {
+-  my $perllibdir = $ENV{'perllibdir'} || '@datadir@/@PACKAGE@-@APIVERSION@';
++  my $perllibdir = $ENV{'perllibdir'} || '@datadir@/@PACKAGE@';
+   unshift @INC, (split '@PATH_SEPARATOR@', $perllibdir);
+ 
+   # Override SHELL.  This is required on DJGPP so that system() uses
+diff -ru -ru automake-1.10_orig/configure.ac automake-1.10/configure.ac
+--- automake-1.10_orig/configure.ac	2007-01-19 20:35:25.000000000 +0000
++++ automake-1.10/configure.ac	2007-01-19 20:35:25.000000000 +0000
+@@ -45,7 +45,7 @@
+ AC_SUBST(APIVERSION)
+ 
+ # A versioned directory, defined here for convenience.
+-AC_SUBST([pkgvdatadir], ["\${datadir}/$PACKAGE-$APIVERSION"])
++AC_SUBST([pkgvdatadir], ["\${datadir}/$PACKAGE"])
+ 
+ # $AUTOMAKE and $ACLOCAL are always run after a `cd $top_srcdir',
+ # hence `.' is really what we want for perllibdir, libdir, and acdir.
+@@ -156,10 +156,10 @@
+   tests/Makefile
+   tests/defs
+ ])
+-AC_CONFIG_FILES([tests/aclocal-${APIVERSION}:tests/aclocal.in],
+-                [chmod +x tests/aclocal-${APIVERSION}],
++AC_CONFIG_FILES([tests/aclocal:tests/aclocal.in],
++                [chmod +x tests/aclocal],
+ 	        [APIVERSION=$APIVERSION])
+-AC_CONFIG_FILES([tests/automake-${APIVERSION}:tests/automake.in],
+-                [chmod +x tests/automake-${APIVERSION}])
++AC_CONFIG_FILES([tests/automake:tests/automake.in],
++                [chmod +x tests/automake])
+ 
+ AC_OUTPUT
+diff -ru -ru automake-1.10_orig/lib/Automake/Config.in automake-1.10/lib/Automake/Config.in
+--- automake-1.10_orig/lib/Automake/Config.in	2007-01-19 20:35:25.000000000 +0000
++++ automake-1.10/lib/Automake/Config.in	2007-01-19 20:36:16.000000000 +0000
+@@ -30,7 +30,7 @@
+ our $APIVERSION = '@APIVERSION@';
+ our $PACKAGE = '@PACKAGE@';
+ our $VERSION = '@VERSION@';
+-our $libdir = '@datadir@/@PACKAGE@-@APIVERSION@';
++our $libdir = '@datadir@/@PACKAGE@';
+ 
+ 1;;
+ 
+diff -ru -ru automake-1.10_orig/m4/Makefile.in automake-1.10/m4/Makefile.in
+--- automake-1.10_orig/m4/Makefile.in	2007-01-19 20:35:25.000000000 +0000
++++ automake-1.10/m4/Makefile.in	2007-01-19 20:35:56.000000000 +0000
+@@ -143,7 +143,7 @@
+ target_alias = @target_alias@
+ top_builddir = @top_builddir@
+ top_srcdir = @top_srcdir@
+-m4datadir = $(datadir)/aclocal-$(APIVERSION)
++m4datadir = $(datadir)/aclocal
+ dist_m4data_DATA = \
+ $(top_srcdir)/m4/amversion.m4 \
+ as.m4 \
+diff -ru -ru automake-1.10_orig/m4/init.m4 automake-1.10/m4/init.m4
+--- automake-1.10_orig/m4/init.m4	2007-01-19 20:35:25.000000000 +0000
++++ automake-1.10/m4/init.m4	2007-01-19 20:35:25.000000000 +0000
+@@ -70,9 +70,9 @@
+ # Some tools Automake needs.
+ AC_REQUIRE([AM_SANITY_CHECK])dnl
+ AC_REQUIRE([AC_ARG_PROGRAM])dnl
+-AM_MISSING_PROG(ACLOCAL, aclocal-${am__api_version})
++AM_MISSING_PROG(ACLOCAL, aclocal)
+ AM_MISSING_PROG(AUTOCONF, autoconf)
+-AM_MISSING_PROG(AUTOMAKE, automake-${am__api_version})
++AM_MISSING_PROG(AUTOMAKE, automake)
+ AM_MISSING_PROG(AUTOHEADER, autoheader)
+ AM_MISSING_PROG(MAKEINFO, makeinfo)
+ AM_PROG_INSTALL_SH
+diff -ru -ru automake-1.10_orig/tests/Makefile.am automake-1.10/tests/Makefile.am
+--- automake-1.10_orig/tests/Makefile.am	2007-01-19 20:35:25.000000000 +0000
++++ automake-1.10/tests/Makefile.am	2007-01-19 20:35:25.000000000 +0000
+@@ -611,7 +611,7 @@
+ EXTRA_DIST = ChangeLog-old $(TESTS)
+ 
+ # Each test case depends on defs, aclocal, and automake.
+-check_SCRIPTS = defs aclocal-$(APIVERSION) automake-$(APIVERSION)
++check_SCRIPTS = defs aclocal automake
+ 
+ distclean-local:
+ 	-rm -rf testSubDir
+diff -ru -ru automake-1.10_orig/tests/Makefile.in automake-1.10/tests/Makefile.in
+--- automake-1.10_orig/tests/Makefile.in	2007-01-19 20:35:25.000000000 +0000
++++ automake-1.10/tests/Makefile.in	2007-01-19 20:35:25.000000000 +0000
+@@ -45,7 +45,7 @@
+ am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
+ 	$(ACLOCAL_M4)
+ mkinstalldirs = $(SHELL) $(top_srcdir)/lib/mkinstalldirs
+-CONFIG_CLEAN_FILES = defs aclocal-${APIVERSION} automake-${APIVERSION}
++CONFIG_CLEAN_FILES = defs aclocal automake
+ SOURCES =
+ DIST_SOURCES =
+ DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
+@@ -743,7 +743,7 @@
+ EXTRA_DIST = ChangeLog-old $(TESTS)
+ 
+ # Each test case depends on defs, aclocal, and automake.
+-check_SCRIPTS = defs aclocal-$(APIVERSION) automake-$(APIVERSION)
++check_SCRIPTS = defs aclocal automake
+ all: all-am
+ 
+ .SUFFIXES:
+@@ -778,9 +778,9 @@
+ 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
+ defs: $(top_builddir)/config.status $(srcdir)/defs.in
+ 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
+-aclocal-${APIVERSION}: $(top_builddir)/config.status $(srcdir)/aclocal.in
++aclocal: $(top_builddir)/config.status $(srcdir)/aclocal.in
+ 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
+-automake-${APIVERSION}: $(top_builddir)/config.status $(srcdir)/automake.in
++automake: $(top_builddir)/config.status $(srcdir)/automake.in
+ 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
+ tags: TAGS
+ TAGS:

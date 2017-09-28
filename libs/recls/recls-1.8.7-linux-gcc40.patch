@@ -1,0 +1,66 @@
+Only in src/bin: recls.1.example_c_1.gcc40
+Only in src/bin: recls.1.example_c_1.gcc40.debug
+Only in src/bin: recls.1.example_c_2.gcc40
+Only in src/bin: recls.1.example_c_2.gcc40.debug
+Only in src/bin: recls.1.example_c_3.gcc40
+Only in src/bin: recls.1.example_c_3.gcc40.debug
+Only in src/bin: recls.1.example_c_4.gcc40
+Only in src/bin: recls.1.example_c_4.gcc40.debug
+Only in src/bin: recls.1.example_c_5.gcc40
+Only in src/bin: recls.1.example_c_5.gcc40.debug
+Only in src/bin: recls.1.example_c_6.gcc40
+Only in src/bin: recls.1.example_c_6.gcc40.debug
+Only in src/bin: recls.1.example_c_7.gcc40
+Only in src/bin: recls.1.example_c_7.gcc40.debug
+Only in src/bin: recls.1.example_c_8.gcc40
+Only in src/bin: recls.1.example_c_8.gcc40.debug
+Only in src/bin: recls.1.example_cpp_1.gcc40
+Only in src/bin: recls.1.example_cpp_1.gcc40.debug
+Only in src/bin: recls.1.example_cpp_2.gcc40
+Only in src/bin: recls.1.example_cpp_2.gcc40.debug
+Only in src/bin: recls.1.example_cpp_3.gcc40
+Only in src/bin: recls.1.example_cpp_3.gcc40.debug
+Only in src/bin: recls.1.example_stl_1.gcc40
+Only in src/bin: recls.1.example_stl_1.gcc40.debug
+Only in src/bin: recls.1.example_stl_2.gcc40
+Only in src/bin: recls.1.example_stl_2.gcc40.debug
+diff -r -u -- src_orig/build/gcc40/makefile.unix src/build/gcc40/makefile.unix
+--- src_orig/build/gcc40/makefile.unix	2007-05-18 17:18:40.000000000 +0200
++++ src/build/gcc40/makefile.unix	2007-05-18 17:26:31.000000000 +0200
+@@ -63,6 +63,7 @@
+  -I"$(STLSOFT)/include"\
+  \
+ 
++ifeq ($(word 2,$(subst -, ,$(shell $(CPPC) -dumpmachine))),mingw32)
+ 3PTY_LIBS__ST_DEBUG = \
+  -libuser32.a\
+  -libwininet.a\
+@@ -73,6 +74,10 @@
+  -libwininet.a\
+  \
+ 
++else
++3PTY_LIBS__ST_DEBUG = -lroken -lcrypt
++3PTY_LIBS__ST_RELEASE = -lroken -lcrypt
++endif
+ 
+ LIB_PATHS =\
+  \
+@@ -97,13 +102,13 @@
+ 
+ CC_F_NOLOGO             =   
+ CC_F_COMPILE_ONLY       =   -c
+-CC_F_WARNING_MAX        =   -Wall -pedantic -Wno-long-long -Wno-long-double -Wno-unused-value -Wundef -Wshadow
+-CC_F_WARNING_ERR        =   -Werror
++CC_F_WARNING_MAX        =   -Wall -Wno-unused-value -Wundef -Wshadow
++CC_F_WARNING_ERR        =   
+ 
+ CPPC_F_NOLOGO       =   
+ CPPC_F_COMPILE_ONLY =   -c
+-CPPC_F_WARNING_MAX  =   -Wall -pedantic -Wno-long-long -Wno-long-double -Wno-unused-value
+-CPPC_F_WARNING_ERR  =   -Werror
++CPPC_F_WARNING_MAX  =   -Wall -Wno-unused-value
++CPPC_F_WARNING_ERR  =   
+ CPPC_F_EXCEPTIONS   =   
+ CPPC_F_RTTI         =   
+ 

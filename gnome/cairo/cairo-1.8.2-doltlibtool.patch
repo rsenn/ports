@@ -1,0 +1,99 @@
+--- cairo-1.8.2_orig/configure	2008-11-26 00:04:32.000000000 +0100
++++ cairo-1.8.2/configure	2008-11-26 00:05:43.000000000 +0100
+@@ -20430,18 +20430,20 @@
+ #!$DOLT_BASH
+ __DOLTCOMPILE__EOF__
+     cat <<'__DOLTCOMPILE__EOF__' >>doltcompile
+-args=("$@")
+-for ((arg=0; arg<${#args[@]}; arg++)) ; do
+-    if test x"${args[$arg]}" = x-o ; then
+-        objarg=$((arg+1))
++args="$@"
++arg=0
++for a; do
++    if test x"$a" = x-o ; then
++        objarg=`expr $arg + 2`
+         break
+     fi
++    arg=`expr $arg + 1`
+ done
+ if test x$objarg = x ; then
+     echo 'Error: no -o on compiler command line' 1>&2
+     exit 1
+ fi
+-lo="${args[$objarg]}"
++eval lo="\${$objarg}"
+ obj="${lo%.lo}"
+ if test x"$lo" = x"$obj" ; then
+     echo "Error: libtool object file name \"$lo\" does not end in .lo" 1>&2
+@@ -20462,25 +20464,43 @@
+     fi
+ fi
+ pic_object="$libobjdir/$objbase.o"
+-args[$objarg]="$pic_object"
++arg=0
++set --
++for a in $args; do
++  if test "$objarg" = "`expr $arg + 1`"; then
++    a="$pic_object"
++  fi
++  set -- "$@" "$a"
++  arg=`expr $arg + 1`
++done
++args="$@"
+ __DOLTCOMPILE__EOF__
+     cat <<__DOLTCOMPILE__EOF__ >>doltcompile
+-"\${args[@]}" $pic_options -DPIC || exit \$?
++\$args $pic_options -DPIC || exit \$?
+ __DOLTCOMPILE__EOF__
+     fi
+ 
+     if test x$enable_static = xyes; then
+         cat <<'__DOLTCOMPILE__EOF__' >>doltcompile
+ non_pic_object="$obj.o"
+-args[$objarg]="$non_pic_object"
++arg=0
++set --
++for a in $args; do
++  if test "$objarg" = "`expr $arg + 1`"; then
++    a="$non_pic_object"
++  fi
++  set -- "$@" "$a"
++  arg=`expr $arg + 1`
++done
++args="$@"
+ __DOLTCOMPILE__EOF__
+         if test x$enable_shared = xyes; then
+             cat <<'__DOLTCOMPILE__EOF__' >>doltcompile
+-"${args[@]}" >/dev/null 2>&1 || exit $?
++$args >/dev/null 2>&1 || exit $?
+ __DOLTCOMPILE__EOF__
+         else
+             cat <<'__DOLTCOMPILE__EOF__' >>doltcompile
+-"${args[@]}" || exit $?
++$args || exit $?
+ __DOLTCOMPILE__EOF__
+         fi
+     fi
+@@ -20525,18 +20545,18 @@
+     cat <<'__DOLTLIBTOOL__EOF__' >>doltlibtool
+ top_builddir_slash="${0%%doltlibtool}"
+ : ${top_builddir_slash:=./}
+-args=()
++args=
+ modeok=false
+ tagok=false
+ for arg in "$@"; do
+     case "$arg" in
+         --mode=compile) modeok=true ;;
+         --tag=CC|--tag=CXX) tagok=true ;;
+-        *) args+=("$arg")
++        *) args="${args+$args }$arg" ;;
+     esac
+ done
+ if $modeok && $tagok ; then
+-    . ${top_builddir_slash}doltcompile "${args[@]}"
++    . ${top_builddir_slash}doltcompile $args
+ else
+     exec ${top_builddir_slash}libtool "$@"
+ fi

@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Retrieves a file in parallel from multiple mirrors.
+# Paraget is able to get a file in parallel from multiple mirrors, ideally
+# maximizing the local bandwidth, instead of being bottlenecked at the
+# server's end.
+#
+# URL: http://paraget.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libxml-simple-perl, perl, perl-base, perl-modules
+
+name=paraget
+version=0.3.0
+release=1
+source=($mirror_sf/paraget/paraget-$version.tar.gz)
+
+build()
+{
+  cd paraget-$version
+
+  perl Makefile.PL
+
+  make \
+       DESTDIR="$PKG" \
+       INSTALLDIRS="vendor" \
+       PREFIX="$prefix" \
+       install
+}

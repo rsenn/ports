@@ -1,0 +1,150 @@
+diff -ru stk-4.3.1_orig/src/FileRead.cpp stk-4.3.1/src/FileRead.cpp
+--- stk-4.3.1_orig/src/FileRead.cpp	2008-02-13 12:58:40.000000000 +0100
++++ stk-4.3.1/src/FileRead.cpp	2008-02-13 12:59:09.000000000 +0100
+@@ -33,6 +33,7 @@
+ #include <sys/stat.h>
+ #include <sys/types.h>
+ #include <cmath>
++#include <cstring>
+ 
+ FileRead :: FileRead()
+   : fd_(0)
+diff -ru stk-4.3.1_orig/src/FileWrite.cpp stk-4.3.1/src/FileWrite.cpp
+--- stk-4.3.1_orig/src/FileWrite.cpp	2008-02-13 12:58:40.000000000 +0100
++++ stk-4.3.1/src/FileWrite.cpp	2008-02-13 12:59:09.000000000 +0100
+@@ -23,6 +23,7 @@
+ 
+ #include "FileWrite.h"
+ #include <cmath>
++#include <cstring>
+ 
+ const FileWrite::FILE_TYPE FileWrite :: FILE_RAW = 1;
+ const FileWrite::FILE_TYPE FileWrite :: FILE_WAV = 2;
+diff -ru stk-4.3.1_orig/src/Messager.cpp stk-4.3.1/src/Messager.cpp
+--- stk-4.3.1_orig/src/Messager.cpp	2008-02-13 12:58:40.000000000 +0100
++++ stk-4.3.1/src/Messager.cpp	2008-02-13 12:59:09.000000000 +0100
+@@ -34,6 +34,7 @@
+ 
+ #include "Messager.h"
+ #include <iostream>
++#include <algorithm>
+ #include "SKINI.msg"
+ 
+ static const int STK_FILE   = 0x1;
+diff -ru stk-4.3.1_orig/src/MidiFileIn.cpp stk-4.3.1/src/MidiFileIn.cpp
+--- stk-4.3.1_orig/src/MidiFileIn.cpp	2008-02-13 12:58:40.000000000 +0100
++++ stk-4.3.1/src/MidiFileIn.cpp	2008-02-13 12:59:09.000000000 +0100
+@@ -17,6 +17,7 @@
+ 
+ #include "MidiFileIn.h"
+ #include <iostream>
++#include <cstring>
+ 
+ MidiFileIn :: MidiFileIn( std::string fileName )
+ {
+diff -ru stk-4.3.1_orig/src/Modal.cpp stk-4.3.1/src/Modal.cpp
+--- stk-4.3.1_orig/src/Modal.cpp	2008-02-13 12:58:40.000000000 +0100
++++ stk-4.3.1/src/Modal.cpp	2008-02-13 12:59:09.000000000 +0100
+@@ -13,6 +13,8 @@
+ 
+ #include "Modal.h"
+ 
++#include <cstdlib>
++
+ Modal :: Modal(unsigned int modes)
+   : nModes_(modes)
+ {
+diff -ru stk-4.3.1_orig/src/RtAudio.cpp stk-4.3.1/src/RtAudio.cpp
+--- stk-4.3.1_orig/src/RtAudio.cpp	2008-02-13 12:58:40.000000000 +0100
++++ stk-4.3.1/src/RtAudio.cpp	2008-02-13 13:27:26.000000000 +0100
+@@ -42,6 +42,7 @@
+ 
+ #include "RtAudio.h"
+ #include <iostream>
++#include <climits>
+ 
+ // Static variable definitions.
+ const unsigned int RtApi::MAX_SAMPLE_RATES = 14;
+diff -ru stk-4.3.1_orig/src/Shakers.cpp stk-4.3.1/src/Shakers.cpp
+--- stk-4.3.1_orig/src/Shakers.cpp	2008-02-13 12:58:40.000000000 +0100
++++ stk-4.3.1/src/Shakers.cpp	2008-02-13 12:59:09.000000000 +0100
+@@ -54,6 +54,8 @@
+ 
+ #include "Stk.h"
+ #include <cmath>
++#include <cstdlib>
++#include <cstring>
+ 
+ int my_random(int max) //  Return Random Int Between 0 and max
+ {
+diff -ru stk-4.3.1_orig/src/Skini.cpp stk-4.3.1/src/Skini.cpp
+--- stk-4.3.1_orig/src/Skini.cpp	2008-02-13 12:58:40.000000000 +0100
++++ stk-4.3.1/src/Skini.cpp	2008-02-13 12:59:09.000000000 +0100
+@@ -26,6 +26,8 @@
+ #include "Skini.h"
+ #include "SKINI.tbl"
+ 
++#include <cstdlib>
++
+ Skini :: Skini()
+ {
+ }
+diff -ru stk-4.3.1_orig/src/Stk.cpp stk-4.3.1/src/Stk.cpp
+--- stk-4.3.1_orig/src/Stk.cpp	2008-02-13 12:58:40.000000000 +0100
++++ stk-4.3.1/src/Stk.cpp	2008-02-13 12:59:09.000000000 +0100
+@@ -52,6 +52,8 @@
+ 
+ #include "Stk.h"
+ 
++#include <cstdlib>
++
+ StkFloat Stk :: srate_ = (StkFloat) SRATE;
+ std::string Stk :: rawwavepath_ = RAWWAVE_PATH;
+ const Stk::StkFormat Stk :: STK_SINT8   = 0x1;
+diff -ru stk-4.3.1_orig/src/TcpClient.cpp stk-4.3.1/src/TcpClient.cpp
+--- stk-4.3.1_orig/src/TcpClient.cpp	2008-02-13 12:58:40.000000000 +0100
++++ stk-4.3.1/src/TcpClient.cpp	2008-02-13 12:59:09.000000000 +0100
+@@ -25,6 +25,8 @@
+ 
+ #include "TcpClient.h"
+ 
++#include <cstring>
++
+ TcpClient :: TcpClient(int port, std::string hostname )
+ {
+ #if defined(__OS_WINDOWS__)  // windoze-only stuff
+diff -ru stk-4.3.1_orig/src/UdpSocket.cpp stk-4.3.1/src/UdpSocket.cpp
+--- stk-4.3.1_orig/src/UdpSocket.cpp	2008-02-13 12:58:40.000000000 +0100
++++ stk-4.3.1/src/UdpSocket.cpp	2008-02-13 12:59:09.000000000 +0100
+@@ -23,6 +23,8 @@
+ 
+ #include "UdpSocket.h"
+ 
++#include <cstring>
++
+ UdpSocket :: UdpSocket(int port )
+ {
+   validAddress_ = false;
+diff -ru stk-4.3.1_orig/src/VoicForm.cpp stk-4.3.1/src/VoicForm.cpp
+--- stk-4.3.1_orig/src/VoicForm.cpp	2008-02-13 12:58:40.000000000 +0100
++++ stk-4.3.1/src/VoicForm.cpp	2008-02-13 12:59:09.000000000 +0100
+@@ -30,6 +30,7 @@
+ #include "SKINI.msg"
+ 
+ #include <cmath>
++#include <cstring>
+ 
+ VoicForm :: VoicForm() : Instrmnt()
+ {
+diff -ru stk-4.3.1_orig/src/RtAudio.cpp stk-4.3.1/src/RtAudio.cpp
+--- stk-4.3.1_orig/src/RtAudio.cpp	2008-02-13 13:55:35.000000000 +0100
++++ stk-4.3.1/src/RtAudio.cpp	2008-02-13 13:58:34.000000000 +0100
+@@ -43,6 +43,8 @@
+ #include "RtAudio.h"
+ #include <iostream>
+ #include <climits>
++#include <cstdlib>
++#include <cstring>
+ 
+ // Static variable definitions.
+ const unsigned int RtApi::MAX_SAMPLE_RATES = 14;

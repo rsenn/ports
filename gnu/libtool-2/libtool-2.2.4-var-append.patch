@@ -1,0 +1,21 @@
+diff -ru libtool-2.2.4_orig/libltdl/m4/libtool.m4 libtool-2.2.4/libltdl/m4/libtool.m4
+--- libtool-2.2.4_orig/libltdl/m4/libtool.m4	2008-12-16 13:47:36.000000000 +0100
++++ libtool-2.2.4/libltdl/m4/libtool.m4	2008-12-16 13:50:58.000000000 +0100
+@@ -7176,7 +7176,7 @@
+ 
+ AC_MSG_CHECKING([whether the shell understands "+="])
+ lt_shell_append=no
+-( foo=bar; set foo baz; eval "$[1]+=\$[2]" && test "$foo" = barbaz ) \
++( foo=bar; set foo baz; eval "$[1]=\${$[1]+\$$[1] }\$[2]" && test "$foo" = barbaz ) \
+     >/dev/null 2>&1 \
+   && lt_shell_append=yes
+ AC_MSG_RESULT([$lt_shell_append])
+@@ -7393,7 +7393,7 @@
+ # Append VALUE to the end of shell variable VAR.
+ func_append ()
+ {
+-  eval "$[1]+=\$[2]"
++  eval "$[1]=\${$[1]+\$$[1] }\$[2]"
+ }
+ _LT_EOF
+     ;;

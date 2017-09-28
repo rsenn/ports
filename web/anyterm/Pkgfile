@@ -1,0 +1,40 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:54 roman Exp $
+#
+# Description: Provides a terminal emulator on a Web page using Javascript and an Apache module
+#  The module forks a shell and communicates with the script using XMLHTTP
+#  on port 80, or securely using SSL. This provides you with shell access
+#  to your machine from almost any Web browser, even when firewalls are in
+#  the way. Experimental features include support for standalone operation
+#  without Apache, and the my.anyterm.org service provides access without
+#  the need to install anything on your servers.
+#  .
+# URL: http://www.anyterm.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libboost-program-options1.34.1, libboost-thread1.34.1, libc6, libgcc1, libstdc++6
+
+name=anyterm
+version=1.1.29
+release=1
+source=(http://anyterm.org/download/anyterm-$version.tbz2)
+
+build()
+{
+  cd anyterm-$version
+
+  make -C build \
+    CXX="${CXX-g++}" \
+    OPTIMISE_FLAGS="${CXXFLAGS--g -O2}" \
+    prefix="$prefix"
+
+  install -d $ROOT/sbin
+  install -m 755 build/anytermd $ROOT/sbin
+
+  install -d $ROOT/share
+  cp -r browser $ROOT/share/anyterm
+
+  install -d $ROOT/share/man/man1
+  install -m 644 anytermd.1 $ROOT/share/man/man1
+
+  install -d $ROOT/share/doc/anyterm
+  install -m 644 README CHANGELOG LICENSE $ROOT/share/doc/anyterm
+}

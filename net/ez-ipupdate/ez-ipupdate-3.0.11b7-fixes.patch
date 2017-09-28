@@ -1,0 +1,123 @@
+args: -r -u -N -- ez-ipupdate-3.0.11b7_orig ez-ipupdate-3.0.11b7
+diff -r -u -N -- ez-ipupdate-3.0.11b7_orig/.deps/cache_file.Po ez-ipupdate-3.0.11b7/.deps/cache_file.Po
+diff -r -u -N -- ez-ipupdate-3.0.11b7_orig/.deps/conf_file.Po ez-ipupdate-3.0.11b7/.deps/conf_file.Po
+diff -r -u -N -- ez-ipupdate-3.0.11b7_orig/.deps/ez-ipupdate.Po ez-ipupdate-3.0.11b7/.deps/ez-ipupdate.Po
+diff -r -u -N -- ez-ipupdate-3.0.11b7_orig/.deps/md5.Po ez-ipupdate-3.0.11b7/.deps/md5.Po
+diff -r -u -N -- ez-ipupdate-3.0.11b7_orig/.deps/pid_file.Po ez-ipupdate-3.0.11b7/.deps/pid_file.Po
+diff -r -u -N -- ez-ipupdate-3.0.11b7_orig/Makefile ez-ipupdate-3.0.11b7/Makefile
+diff -r -u -N -- ez-ipupdate-3.0.11b7_orig/Makefile.am ez-ipupdate-3.0.11b7/Makefile.am
+--- ez-ipupdate-3.0.11b7_orig/Makefile.am	2008-11-14 21:58:14.000000000 +0100
++++ ez-ipupdate-3.0.11b7/Makefile.am	2008-11-14 22:00:12.000000000 +0100
+@@ -1,6 +1,6 @@
+ 
+ bin_PROGRAMS = ez-ipupdate
+-ez_ipupdate_SOURCES = ez-ipupdate.c conf_file.c conf_file.h md5.c md5.h cache_file.c cache_file.h error.h pid_file.c pid_file.h dprintf.h @EXTRASRC@
++ez_ipupdate_SOURCES = ez-ipupdate.c conf_file.c conf_file.h md5.c md5.h cache_file.c cache_file.h error.h pid_file.c pid_file.h dprintf.h 
+ ez_ipupdate_LDADD = @EXTRAOBJ@
+ 
+ EXTRA_DIST = getpass.c ez-ipupdate.lsm example.conf example-pgpow.conf example-dhs.conf example-dyndns.conf example-ods.conf example-tzo.conf example-gnudip.conf example-easydns.conf example-justlinux.conf example-dyns.conf CHANGELOG mkbinary example-heipv6tb.conf
+diff -r -u -N -- ez-ipupdate-3.0.11b7_orig/Makefile.in ez-ipupdate-3.0.11b7/Makefile.in
+diff -r -u -N -- ez-ipupdate-3.0.11b7_orig/acconfig.h ez-ipupdate-3.0.11b7/acconfig.h
+--- ez-ipupdate-3.0.11b7_orig/acconfig.h	2008-11-14 21:58:14.000000000 +0100
++++ ez-ipupdate-3.0.11b7/acconfig.h	1970-01-01 01:00:00.000000000 +0100
+@@ -1,9 +0,0 @@
+-
+-#undef PACKAGE
+-#undef VERSION
+-#undef DEBUG
+-#undef HAVE_GETPASS
+-#undef HAVE_SYS_ERRLIST
+-#undef OS
+-#undef USE_MD5
+-#undef DEF_SERVICE
+diff -r -u -N -- ez-ipupdate-3.0.11b7_orig/autogen.sh ez-ipupdate-3.0.11b7/autogen.sh
+--- ez-ipupdate-3.0.11b7_orig/autogen.sh	1970-01-01 01:00:00.000000000 +0100
++++ ez-ipupdate-3.0.11b7/autogen.sh	2008-11-14 22:04:40.000000000 +0100
+@@ -0,0 +1,10 @@
++#!/bin/sh
++#
++# 20081114
++
++
++aclocal --force
++autoheader --force
++automake --force --copy --foreign --add-missing --foreign
++aclocal --force
++autoconf --force
+diff -r -u -N -- ez-ipupdate-3.0.11b7_orig/autom4te.cache/output.0 ez-ipupdate-3.0.11b7/autom4te.cache/output.0
+diff -r -u -N -- ez-ipupdate-3.0.11b7_orig/autom4te.cache/output.1 ez-ipupdate-3.0.11b7/autom4te.cache/output.1
+diff -r -u -N -- ez-ipupdate-3.0.11b7_orig/autom4te.cache/traces.0 ez-ipupdate-3.0.11b7/autom4te.cache/traces.0
+diff -r -u -N -- ez-ipupdate-3.0.11b7_orig/autom4te.cache/traces.1 ez-ipupdate-3.0.11b7/autom4te.cache/traces.1
+diff -r -u -N -- ez-ipupdate-3.0.11b7_orig/config.h ez-ipupdate-3.0.11b7/config.h
+diff -r -u -N -- ez-ipupdate-3.0.11b7_orig/config.h.in ez-ipupdate-3.0.11b7/config.h.in
+diff -r -u -N -- ez-ipupdate-3.0.11b7_orig/config.h.in~ ez-ipupdate-3.0.11b7/config.h.in~
+diff -r -u -N -- ez-ipupdate-3.0.11b7_orig/config.log ez-ipupdate-3.0.11b7/config.log
+diff -r -u -N -- ez-ipupdate-3.0.11b7_orig/config.status ez-ipupdate-3.0.11b7/config.status
+diff -r -u -N -- ez-ipupdate-3.0.11b7_orig/configure ez-ipupdate-3.0.11b7/configure
+diff -r -u -N -- ez-ipupdate-3.0.11b7_orig/configure.in ez-ipupdate-3.0.11b7/configure.in
+--- ez-ipupdate-3.0.11b7_orig/configure.in	2008-11-14 21:58:14.000000000 +0100
++++ ez-ipupdate-3.0.11b7/configure.in	2008-11-14 22:07:18.000000000 +0100
+@@ -7,7 +7,7 @@
+ 
+ dnl Checks for programs.
+ 
+-AC_ARG_PROGRAM
++dnl AC_ARG_PROGRAM
+ AC_PROG_CC
+ AC_PROG_CPP
+ AC_PROG_INSTALL
+@@ -77,7 +77,7 @@
+                   ,,
+                   AC_MSG_ERROR(could not locate neccessary system header files) )
+ 
+-AC_CHECK_LIB(c, sys_errlist, AC_DEFINE(HAVE_SYS_ERRLIST))
++AC_CHECK_LIB(c, sys_errlist, AC_DEFINE_UNQUOTED([HAVE_SYS_ERRLIST], [1], [Have sys_errlist export]))
+ 
+ dnl you need at least to have getopt, but getopt_long will be used if it
+ dnl is present
+@@ -86,13 +86,13 @@
+   AC_MSG_ERROR(getopt is needed for this program to work)
+ fi
+ 
+-AC_CHECK_FUNC(getpass, AC_DEFINE(HAVE_GETPASS),
++AC_CHECK_FUNC(getpass, AC_DEFINE_UNQUOTED([HAVE_GETPASS], [1], [Have getpass function]),
+     [EXTRASRC="$EXTRASRC \$(srcdir)/getpass.c"]
+     [EXTRAOBJ="$EXTRAOBJ \$(srcdir)/getpass.o"] )
+ 
+ dnl Get system canonical name
+ AC_CANONICAL_HOST
+-AC_DEFINE_UNQUOTED(OS, "${host}")
++AC_DEFINE_UNQUOTED(OS, "${host}", [Define this to the canonical name of your operating system])
+ 
+ dnl allow selection of the default service
+ dnl the default is to use ez-ip
+@@ -108,7 +108,7 @@
+                 use_SERVICE=null
+                 AC_MSG_WARN(not setting default service) ]   )
+ case "$use_SERVICE" in
+-  ezip ) AC_DEFINE(DEF_SERVICE, "ezip");;
++  ezip ) AC_DEFINE(DEF_SERVICE, "ezip", [Default service]);;
+   ez-ip ) AC_DEFINE(DEF_SERVICE, "ezip");;
+   pgpow ) AC_DEFINE(DEF_SERVICE, "pgpow");;
+   penguinpowered ) AC_DEFINE(DEF_SERVICE, "pgpow");;
+@@ -136,16 +136,16 @@
+ AC_MSG_CHECKING(whether user wants debugging support)
+ AC_ARG_ENABLE(debug,
+ 	      [  --enable-debug          include support for debugging],
+-	      [ AC_DEFINE(DEBUG)
++	      [ AC_DEFINE_UNQUOTED([DEBUG], [1], [Debug mode])
+ 		AC_MSG_RESULT(yes) ],
+ 	      [ AC_MSG_RESULT(no) ]   )
+ 
+ dnl check weather we want to disable MD5 support
+-AC_MSG_CHECKING(whether user wants to dissable MD5 support)
++AC_MSG_CHECKING(whether user wants to disable MD5 support)
+ AC_ARG_ENABLE(md5,
+ 	      [  --disable-md5           disable MD5 support],
+ 	      [ AC_MSG_RESULT(yes) ],
+-	      [ AC_DEFINE(USE_MD5)
++	      [ AC_DEFINE_UNQUOTED([USE_MD5], [1], [MD5 support])
+                 AC_MSG_RESULT(no) ]   )
+ 
+ AC_SUBST(EXTRASRC)
+diff -r -u -N -- ez-ipupdate-3.0.11b7_orig/stamp-h1 ez-ipupdate-3.0.11b7/stamp-h1

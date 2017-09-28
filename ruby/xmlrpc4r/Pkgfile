@@ -1,0 +1,45 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: XML-RPC (remote procedure calls over HTTP using XML) for Ruby
+#  XML-RPC is remote procedure calls over HTTP-protocol with XML. 
+#  It's like SOAP, but much easier. New: supports xmlscan parser
+#  XMLStreamParser (on average 20 times faster than NQXML and around twice
+#  as fast as XMLParser)
+#  You need either XMLScan, XMLParser, NQXML or REXML. All four are available
+#  from RAA.
+#  .
+#  Some features:
+#  * asynchronous RPCs
+#  * introspection / multicall
+#  * HTTPS (SSL) and Basic HTTP authentification
+#  * Standalone/CGI-based (also FastCGI)/mod_ruby Server, WEBrickServlet
+# URL: http://www.ntecs.de/projects/xmlrpc4r/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=xmlrpc4r
+version=1.7.16
+release=1
+source=(http://www.fantasy-coders.de/ruby/xmlrpc4r/xmlrpc4r-${version//./_}.tar.gz)
+
+build()
+{
+  cd xmlrpc4r-${version//./_}
+
+  set -- `ruby --version`
+
+  RUBYVERSION="$2"
+  RUBYLIBDIR="$prefix/lib/ruby/${RUBYVERSION%.*}"
+
+  install -d $PKG/$RUBYLIBDIR
+  cp -r lib $PKG/$RUBYLIBDIR/xmlrpc
+
+  install -d $ROOT/share/doc/xmlrpc4r
+
+  cp -r samples $ROOT/share/doc/xmlrpc4r
+  cp -r doc $ROOT/share/doc/xmlrpc4r/html
+
+  install -m 644 ChangeLog README ToDo samples/tcptunnel/README $ROOT/share/doc/xmlrpc4r
+}
+
+# EOF

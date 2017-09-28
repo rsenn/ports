@@ -1,0 +1,56 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:50 roman Exp $
+#
+# Description: general-purpose utilities from the official KDE 4 release
+#  KDE is produced by an international technology team that creates free
+#  and open source software for desktop and portable computing. Among KDE's
+#  products are a modern desktop system for Linux and UNIX platforms,
+#  comprehensive office productivity and groupware suites and hundreds
+#  of software titles in many categories including Internet and web
+#  applications, multimedia, entertainment, educational, graphics and
+#  software development.
+#  This metapackage includes general-purpose utilities provided with the
+#  official release of KDE 4. general-purpose utilities from the official
+#  KDE 4 release KDE is produced by an international technology team
+#  that creates free and open source software for desktop and portable
+#  computing. Among KDE's products are a modern desktop system for Linux
+#  and UNIX platforms, comprehensive office productivity and groupware
+#  suites and hundreds of software titles in many categories including
+#  Internet and web applications, multimedia, entertainment, educational,
+#  graphics and software development.
+#  This metapackage includes general-purpose utilities provided with the
+#  official release of KDE 4.
+# URL: http://www.kde.org/
+#  http://www.kde.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=kdeutils4
+version=4.0.3
+release=1
+source=(ftp://ftp.kde.org/pub/kde/stable/$version/src/kdeutils-$version.tar.bz2)
+
+build()
+{
+  rm -rf ${builddir=$SRC/kdeutils4-build} && mkdir $builddir && cd $builddir
+
+  case $CXXFLAGS in
+    *-ggdb*) build_type="Debug" ;;
+       *-g*) build_type="RelWithDebInfo" CXXFLAGS="$CXXFLAGS -DNDEBUG" ;;
+         *) build_type="Release" CXXFLAGS="$CXXFLAGS -DNDEBUG" ;;
+  esac
+
+  export CXXFLAGS
+
+  cmake -DCMAKE_INSTALL_PREFIX="$prefix" \
+        -DCMAKE_BUILD_TYPE="$build_type" \
+        -DUPDATE_TYPE="svn" \
+        -DBUILD_EXAMPLES:BOOL="OFF" \
+        -DBUILD_TESTS:BOOL="OFF" \
+        -DESTCONFIG="" \
+    ${srcdir=$SRC/kdeutils-$version} \
+    -LA
+
+  make
+  make DESTDIR="$PKG" install
+}
+

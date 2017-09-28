@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: FUSE module to mount ISO filesystem images
+# This package provides a module to mount ISO filesystem images
+# using FUSE.
+# With FUSE it is possible to implement a fully functional
+# filesystem in a userspace program.
+# .
+# It can also mount single-tracks .BIN, .MDF, .IMG and .NRG.
+# .
+#
+# URL: http://fuse.sourceforge.net/wiki/index.php/FuseIso
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libfuse2, libglib2.0-0, zlib1g
+
+name=fuseiso
+version=20070708
+release=1
+source=(http://ubiz.ru/dm/fuseiso-$version.tar.bz2)
+
+build()
+{
+  cd fuseiso-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

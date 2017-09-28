@@ -1,0 +1,43 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Utilities for use with qmail: conditional forwarding, conditional Maildir writing, message filtering, and autorepliers.
+#  The qtools package comprises several utilities for use with qmail,
+#  typically as part of .qmail command processing. 822body extracts the
+#  body from a message. 822bodyfilter filters a message body, preserving
+#  the header. 822headerfilter filters a message header, preserving the
+#  body. 822headerok tests for a well-formed message header. 822fields
+#  extracts field values from a message header. 822headers extracts
+#  field copies from a message header. 822addr extracts addresses from
+#  a message header. checkaddr checks an address list for matching
+#  addresses. checkdomain checks an address list for matching
+#  domains. iftoccfrom tests for addresses in if, to, cc, and from
+#  header fields. filterto filters and forwards a message. condtomaildir
+#  conditionally writes a message to a maildir. tomaildir writes a message
+#  to a maildir. replier is a simple autoreplier. replier-config configures
+#  replier.
+#  .
+# URL: http://www.superscript.com/qtools/intro.html
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=qtools
+version=0.56
+release=1
+source=(http://www.superscript.com/qtools/qtools-$version.tar.gz)
+
+build()
+{
+  cd qtools-$version
+
+  echo ${CC-cc} ${CFLAGS-"-O2"} -include errno.h >conf-cc
+
+  make
+
+  install -d $ROOT/bin
+  install -m 755 822body 822bodyfilter 822headerfilter 822headerok 822fields 822headers 822addr checkaddr checkdomain iftoccfrom filterto condtomaildir tomaildir replier replier-config $ROOT/bin
+
+  install -d $ROOT/share/doc/qtools
+  install -m 644 CHANGES README TODO $ROOT/share/doc/qtools
+}
+
+# EOF

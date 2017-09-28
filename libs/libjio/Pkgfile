@@ -1,0 +1,24 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A library for journaled transaction-oriented I/O.
+#  libjio is a C library to do journaled, transaction-oriented I/O. It
+#  provides a UNIX-like set of file operation functions (such as open,
+#  read, and write), which are wrapped in a transaction framework, so that
+#  file operations can be committed or rolled back as necessary. It is
+#  non-intrusive, atomic, and thread-safe, with fast crash recovery.
+# URL: http://blitiri.com.ar/p/libjio/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libjio
+version=0.23
+release=1
+source=(http://users.auriga.wearlab.de/~alb/libjio/files/$version/libjio-$version.tar.bz2)
+
+build()
+{
+  cd libjio-$version
+
+  make CFLAGS="$CFLAGS -D_FILE_OFFSET_BITS=64 -DPTHREAD_MUTEX_NORMAL=0 -include pthread.h"
+  make PREFIX="$ROOT" install
+}

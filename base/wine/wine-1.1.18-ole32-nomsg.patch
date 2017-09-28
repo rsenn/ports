@@ -1,0 +1,62 @@
+diff -ru wine-1.1.18_orig/dlls/ole32/compobj.c wine-1.1.18/dlls/ole32/compobj.c
+--- wine-1.1.18_orig/dlls/ole32/compobj.c	2009-04-08 23:46:23.000000000 +0200
++++ wine-1.1.18/dlls/ole32/compobj.c	2009-04-08 23:59:57.000000000 +0200
+@@ -1231,7 +1231,9 @@
+   /* sanity check */
+   if (!info->inits)
+   {
++#ifdef DUMP_AUX_INFO 
+     ERR("Mismatched CoUninitialize\n");
++#endif
+ 
+     if (info->spy)
+         IInitializeSpy_PostUninitialize(info->spy, info->inits);
+@@ -2290,7 +2292,10 @@
+         if (FAILED(hres))
+         {
+             if (hres == REGDB_E_CLASSNOTREG)
+-                ERR("class %s not registered\n", debugstr_guid(rclsid));
++#ifdef DUMP_AUX_INFO
++                ERR("class %s not registered\n", debugstr_guid(rclsid))
++#endif
++                ;
+             else if (hres == REGDB_E_KEYMISSING)
+             {
+                 WARN("class %s not registered as in-proc server\n", debugstr_guid(rclsid));
+@@ -2321,7 +2326,10 @@
+         if (FAILED(hres))
+         {
+             if (hres == REGDB_E_CLASSNOTREG)
+-                ERR("class %s not registered\n", debugstr_guid(rclsid));
++#ifdef DUMP_AUX_INFO
++                ERR("class %s not registered\n", debugstr_guid(rclsid))
++#endif
++                ;
+             else if (hres == REGDB_E_KEYMISSING)
+             {
+                 WARN("class %s not registered in-proc handler\n", debugstr_guid(rclsid));
+@@ -2357,9 +2365,11 @@
+         hres = E_NOINTERFACE;
+     }
+ 
++#ifdef DUMP_AUX_INFO
+     if (FAILED(hres))
+         ERR("no class object %s could be created for context 0x%x\n",
+             debugstr_guid(rclsid), dwClsContext);
++#endif
+     return hres;
+ }
+ 
+diff -ru wine-1.1.18_orig/dlls/ole32/rpc.c wine-1.1.18/dlls/ole32/rpc.c
+--- wine-1.1.18_orig/dlls/ole32/rpc.c	2009-04-08 23:46:23.000000000 +0200
++++ wine-1.1.18/dlls/ole32/rpc.c	2009-04-08 23:51:26.000000000 +0200
+@@ -1628,7 +1628,9 @@
+ 
+     hres = COM_OpenKeyForCLSID(rclsid, wszLocalServer32, KEY_READ, &key);
+     if (FAILED(hres)) {
++#ifdef DUMP_AUX_INFO
+         ERR("class %s not registered\n", debugstr_guid(rclsid));
++#endif
+         return hres;
+     }
+ 

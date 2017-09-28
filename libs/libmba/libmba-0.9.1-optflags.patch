@@ -1,0 +1,56 @@
+diff -ru libmba-0.9.1_orig/Makefile libmba-0.9.1/Makefile
+--- libmba-0.9.1_orig/Makefile	2008-04-04 04:34:56.000000000 +0000
++++ libmba-0.9.1/Makefile	2008-04-04 04:35:49.000000000 +0000
+@@ -1,7 +1,7 @@
+ # Makefile for libmba
+ # Supported flags: -DVARRAY_INIT_SIZE=N -DUSE_WCHAR
+ 
+-MFLAGS     = -g -W1 -Isrc
++MFLAGS     = $(OPTFLAGS) -Isrc
+ MKTOOL     = ./mktool
+ 
+ prefix     = /usr/local
+diff -ru libmba-0.9.1_orig/examples/Makefile libmba-0.9.1/examples/Makefile
+--- libmba-0.9.1_orig/examples/Makefile	2008-04-04 04:34:56.000000000 +0000
++++ libmba-0.9.1/examples/Makefile	2008-04-04 04:35:54.000000000 +0000
+@@ -4,7 +4,7 @@
+ includedir = $(prefix)/include
+ libdir     = $(prefix)/lib
+ 
+-CFLAGS     = -c -g -W1 -I$(includedir) -L$(libdir) -lmba
++CFLAGS     = -c $(OPTFLAGS) -I$(includedir) -L$(libdir) -lmba
+ CC         = ../mktool
+ PROGS      = toupper csvprint hexd semc calc
+ 
+diff -ru libmba-0.9.1_orig/examples/diff/Makefile libmba-0.9.1/examples/diff/Makefile
+--- libmba-0.9.1_orig/examples/diff/Makefile	2008-04-04 04:34:56.000000000 +0000
++++ libmba-0.9.1/examples/diff/Makefile	2008-04-04 04:36:54.000000000 +0000
+@@ -1,7 +1,7 @@
+ all:
+-	gcc -Wall -W -g -lmba -o bindiff bindiff.c
+-	gcc -Wall -W -g -lmba -o hexdiff hexdiff.c
+-	gcc -Wall -W -g -lmba -o strdiff strdiff.c
+-	gcc -Wall -W -g -lmba -o spell spell.c
++	gcc $(OPTFLAGS) -lmba -o bindiff bindiff.c
++	gcc $(OPTFLAGS) -lmba -o hexdiff hexdiff.c
++	gcc $(OPTFLAGS) -lmba -o strdiff strdiff.c
++	gcc $(OPTFLAGS) -lmba -o spell spell.c
+ clean:
+ 	rm -f bindiff hexdiff strdiff spell
+diff -ru libmba-0.9.1_orig/examples/errcmp/Makefile libmba-0.9.1/examples/errcmp/Makefile
+--- libmba-0.9.1_orig/examples/errcmp/Makefile	2008-04-04 04:34:56.000000000 +0000
++++ libmba-0.9.1/examples/errcmp/Makefile	2008-04-04 04:37:00.000000000 +0000
+@@ -1,3 +1,3 @@
+ all:
+-	gcc -Wall -W -g -lmba -DMSGNO -o errcmp errcmp.c
++	gcc $(OPTFLAGS) -lmba -DMSGNO -o errcmp errcmp.c
+ 	./errcmp errno_SUSv3.tsv errno_aix51.tsv errno_hpux1122.tsv errno_sol9.tsv errno_linux2x.tsv errno_irix65.tsv errno_osf1.tsv errno_fbsd521.tsv errno_osx103.tsv errno_msvc6.tsv > /tmp/out.tsv
+diff -ru libmba-0.9.1_orig/tcase/Makefile libmba-0.9.1/tcase/Makefile
+--- libmba-0.9.1_orig/tcase/Makefile	2008-04-04 04:34:56.000000000 +0000
++++ libmba-0.9.1/tcase/Makefile	2008-04-04 04:36:40.000000000 +0000
+@@ -1,4 +1,4 @@
+-CFLAGS     = -Wall -W -I. -Isrc -I../src
++CFLAGS     = $(OPTFLAGS) -I. -Isrc -I../src
+ TESTS      = tests/CsvEol.o tests/OpenCre.o tests/DiffExamples.o tests/PoolExercise.o tests/PathCanonExamples.o tests/HashmapExercise.o tests/HashmapCount.o tests/LinkedlistExercise.o tests/CsvExamples.o tests/StackExercise.o tests/VarrayOps.o tests/CfgOps.o tests/TcharAll.o tests/TextTest.o tests/ShelloutSimple.o tests/EvalExamples.o tests/SvsemCounter.o tests/SubaExercise.o tests/AdtInit.o tests/SharedAdts.o tests/CfgQueryStringExamples.o tests/CfgSuba.o tests/BitsetOps.o tests/SvcondProdCons.o tests/HashmapCheck.o
+ VALGRIND   = -v --num-callers=20 --leak-check=yes --leak-resolution=high --show-reachable=yes
+ 

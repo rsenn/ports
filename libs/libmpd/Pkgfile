@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A high-level C library for accessing the Music Player Daemon (MPD).
+# URL: http://gmpcwiki.sarine.nl/index.php?title=Libmpd
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=libmpd
+version=0.17.96
+release=1
+source=(http://download.sarine.nl/download/Programs/gmpc/0.18.0-alpha1/libmpd-$version.tar.gz)
+
+build() 
+{
+  cd libmpd-$version
+  
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+  
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/libmpd
+  install -m 644 README AUTHORS COPYING ChangeLog INSTALL NEWS $ROOT/share/doc/libmpd
+
+  cp -rf example $ROOT/share/doc/libmpd
+}
+
+# EOF

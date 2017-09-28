@@ -1,0 +1,37 @@
+diff -ru nxlib-0.44_orig/StrKeysym.c nxlib-0.44/StrKeysym.c
+--- nxlib-0.44_orig/StrKeysym.c	2008-07-09 18:47:05.000000000 +0200
++++ nxlib-0.44/StrKeysym.c	2008-07-09 18:48:06.000000000 +0200
+@@ -104,7 +104,7 @@
+ 
+ /* translate keycode to KeySym, no control/shift processing*/
+ KeySym
+-XKeycodeToKeysym(Display *dpy, unsigned int kc, int index)
++XKeycodeToKeysym(Display *dpy, KeyCode kc, int index)
+ {
+ 	int	i;
+ 	MWKEY	mwkey;
+diff -ru nxlib-0.44_orig/Xlcint.h nxlib-0.44/Xlcint.h
+--- nxlib-0.44_orig/Xlcint.h	2008-07-09 18:47:05.000000000 +0200
++++ nxlib-0.44/Xlcint.h	2008-07-09 18:48:54.000000000 +0200
+@@ -71,7 +71,8 @@
+ #include <X11/Xresource.h>
+ #include <X11/Xutil.h>
+ //#include "Xvarargs.h"
+-#include "varargs.h"
++//#include "varargs.h"
++#include <stdarg.h>
+ 
+ typedef Bool (*XFilterEventProc)(
+ #if NeedFunctionPrototypes
+diff -ru nxlib-0.44_orig/Xrm.c nxlib-0.44/Xrm.c
+--- nxlib-0.44_orig/Xrm.c	2008-07-09 18:47:05.000000000 +0200
++++ nxlib-0.44/Xrm.c	2008-07-09 18:49:38.000000000 +0200
+@@ -2658,7 +2658,7 @@
+     Xfree((char *)table);
+ }
+ 
+-/*XCONST*/ char *
++const char *
+ XrmLocaleOfDatabase(db)
+     XrmDatabase db;
+ {

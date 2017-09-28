@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: TorrentSniff reports current status information on a BitTorrent torrent including what files it contains and the current number of seeds (machines sharing the complete torrent) and leeches (machines still downloading the torrent). It is useful for comparing multiple potential sources of a file to find the best-seeded torrent. 
+# URL: http://www.highprogrammer.com/alan/perl/torrentsniff.html
+# Maintainer: 
+# Depends on: 
+
+name=torrentsniff
+version=0.3.0
+release=1
+source=(http://www.highprogrammer.com/alan/perl/torrentsniff-$version.tar.gz)
+
+build() 
+{
+  cd torrentsniff-$version
+
+  install -d $ROOT/bin
+  install -m 755 torrentsniff $ROOT/bin
+
+  eval `perl -V:privlib`
+
+  install -d $PKG/$privlib
+  cp -r BitTorrent $PKG/$privlib/
+
+  install -d $ROOT/share/doc/torrentsniff
+  install -m 644 README TODO $ROOT/share/doc/torrentsniff
+  
+}
+
+# EOF

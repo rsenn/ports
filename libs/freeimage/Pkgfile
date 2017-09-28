@@ -1,0 +1,26 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:50 roman Exp $
+#
+# Description: A library for supporting a wide variety of common image formats.
+#  FreeImage is an Open Source library project for developers who would like
+#  to support popular graphics image formats in their software. The libraries
+#  are available in both binary and source distributions. FreeImage supports
+#  BMP, CUT, ICO, IFF, JBIG, JNG, JPEG, JFIF, KOALA, LBM, PCD, PBM, PGM,
+#  PNG, PPM, PSD, RAS, TARGA, TIFF, and WBMP.
+# URL: http://freeimage.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=freeimage
+version=3.9.3
+release=1
+source=($mirror_sf/freeimage/FreeImage${version//./}.zip)
+
+build()
+{
+  cd FreeImage
+
+  make
+  install -d $ROOT/include $ROOT/lib
+  make INCDIR="$ROOT/include" INSTALLDIR="$ROOT/lib" install
+}
+

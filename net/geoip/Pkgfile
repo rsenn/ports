@@ -1,0 +1,33 @@
+# $Id: Pkgfile,v 1.12 2007/05/10 16:59:30 roman Exp $
+#
+# Description: GeoIP
+# URL: http://www.maxmind.com/download/geoip/api/c/
+# Maintainer: Simon Josi <duke@yokto.net>
+# Depends on:
+
+name=geoip
+version=1.4.6
+release=1
+source=(http://www.maxmind.com/download/geoip/api/c/GeoIP-$version.tar.gz)
+
+build()
+{
+  cd GeoIP-$version
+
+  case $prefix in
+    "/usr") sysconfdir="/etc" ;;
+  esac
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --sysconfdir="${sysconfdir=$prefix/etc}"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/geoip
+  install -m 644 AUTHORS ChangeLog COPYING INSTALL README README.MinGW README.OSX READMEwin32.txt READMEwin32static.txt TODO $ROOT/share/doc/geoip
+}
+

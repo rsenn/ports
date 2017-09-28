@@ -1,0 +1,71 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: Collection of binary utilities
+# Longdescription:
+# Includes tools capable of linking and managing archives, including
+# handling object code, libraries, profile data, and symbol names.
+# URL: http://www.gnu.org/software/binutils
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=binutils
+version=45.1
+target=i386-apple-darwin8
+
+release=1
+source=(http://www.opensource.apple.com/darwinsource/tarballs/other/binutils-$version.tar.gz)
+
+build()
+{
+  cd binutils-$version/src
+
+  # configure the linker
+  case "$target" in
+    *linux*)
+      echo "HOSTING_CRT0='-dynamic-linker $prefix/lib/ld-linux.so.2 $prefix/lib/crt1.o $prefix/lib/crti.o $prefix/$target/lib/crtbegin.o'" > ld/configure.host
+      echo "HOSTING_LIBS='-L$prefix/lib --start-group $prefix/$target/lib/libgcc.a $prefix/$target/lib/libgcc_eh.a -lc --end-group $prefix/$target/lib/crtend.o $prefix/lib/crtn.o'" >> ld/configure.host
+      ;;
+    *)
+      ;;
+  esac
+
+  # do not set any rpath
+#  sed -i -e  "s/hardcode_libdir_flag_spec='.*'/hardcode_libdir_flag_spec=''/;;s/LD_RUN_PATH/LD_DUMMY_PATH/" *.sh
+
+  ./configure \
+      --host="$host" \
+      --build="$build" \
+      ${target+--target="$target"} \
+      --prefix="$prefix" \
+      --disable-nls \
+      --without-included-gettext \
+      --${static:=enable}-shared \
+      --disable-shared \
+      --with-mmap \
+      --enable-bfd-assembler \
+      --enable-64-bit-bfd \
+      --disable-commonbfdlib \
+      --disable-install-libbfd \
+      --disable-install-libiberty \
+      --with-lib-path="$prefix/$target/lib" \
+      --disable-werror
+
+  make RC_ARCHS="i386 ppc" RC_OS="macos" RC_RELEASE="darwin" TARGET_CC="i386-apple-darwin8-gcc"
+  make DESTDIR="$PKG" all install
+
+  copy_license "COPYING"
+
+  for prog in ar nm ranlib size strings strip dlltool nlmconv windres
+  do
+    rm -f $ROOT/bin/$target-$prog
+    rm -f $ROOT/$target/bin/$prog
+    rm -f $ROOT/man/man1/$target-$prog.1
+  done
+
+  for prog in $(cd $ROOT/bin && ls)
+  do
+    ln -sf ../../bin/$prog $ROOT/$target/bin/${prog#$target-}
+  done
+
+  rm -rf $ROOT/{info,lib}
+}

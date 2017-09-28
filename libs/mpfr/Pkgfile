@@ -1,0 +1,58 @@
+# $Id: Pkgfile,v 1.3 2007/05/09 21:02:51 roman Exp $
+#
+# Description: The MPFR library is a C library for multiple-precision floating-
+# point computations with correct rounding. MPFR has continuously been
+# supported by the INRIA and the current main authors come from the CACAO and
+# Arénaire project-teams at Loria (Nancy, France) and LIP (Lyon, France)
+# respectively; see more on the credit page. MPFR is based on the GMP
+# multiple-precision library.
+# URL: http://www.mpfr.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=mpfr
+version=2.4.1
+release=1
+source=(http://www.mpfr.org/mpfr-current/mpfr-$version.tar.bz2
+        mpfr-2.3.1-diet.patch)
+
+build()
+{
+  srcdir="$SRC/mpfr-$version"
+  builddir="$srcdir/build/$host"
+
+  cd $srcdir
+
+  patch -N -p1 -i $SRC/mpfr-2.3.1-diet.patch
+
+  rm -f config.sub
+  autoreconf --force --verbose --install
+  #libtoolize --force --copy
+  #aclocal --force
+  #automake --force --copy --foreign --add-missing
+  #aclocal --force
+  #autoconf --force
+  #
+  #(echo "#!/bin/sh" && echo 'echo "$@"') >config.sub
+
+  rm -rf $builddir && mkdir -p $builddir && cd $builddir
+
+  $srcdir/configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --mandir="$prefix/share/man" \
+      --infodir="$prefix/share/info" \
+      --${shared:=enable}-shared \
+      --${static:=enable}-static
+
+  make
+  make DESTDIR="$PKG" install
+
+  cd $srcdir
+
+  install -d $ROOT/share/doc/mpfr
+  install -m 644 COPYING.LIB INSTALL BUGS ChangeLog TODO NEWS README AUTHORS COPYING VERSION $ROOT/share/doc/mpfr
+  
+  rm -f $ROOT/share/info/dir
+}

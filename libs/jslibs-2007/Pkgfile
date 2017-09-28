@@ -1,0 +1,56 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:48 roman Exp $
+#
+# Package: jslibs
+# Description: standalone JavaScript development runtime environment with general purpose native libraries
+#  jslibs is a standalone JavaScript development runtime environment for
+#  using JavaScript as a general-purpose scripting language.
+#  .
+#  jslibs uses SpiderMonkey library that is Gecko's JavaScript engine
+#  (SpiderMonkey is used in various Mozilla products, including Firefox).
+#  .
+#  jslibs provides a set of native modules that contains various general
+#  purpose classes and functions.
+#  .
+#  Some of these modules are simple wrappers for familiar libraries such as:
+#  zlib, SQLite, FastCGI, NSPR [(Netscape Portable Runtime)] , ODE [(Open
+#  Dynamics Engine)] , libpng, libjpeg, librsvg, SDL, libiconv, OpenGL,
+#  OpenAL, ogg vorbis, libTomCrypt, libffi [(Foreign function interface)] ,
+#  ...
+#  .
+#  Other modules provide tools for enhancing JavaScript programming : Print(),
+#  Load(), Exec(), Seal(), Expand(), Buffer class, Blob class, Sandbox class,
+#  ...
+#  .
+#  The jslibs distribution comes with a small standalone command line access
+#  program (jshost) that can be used to run JavaScript files. Note that the
+#  modules are quite independent from jshost and can be used in any project
+#  that embeds SpiderMonkey. A Windows binary (without console) is also
+#  available (jswinhost).
+#  .
+# URL: http://code.google.com/p/jslibs/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=jslibs
+version=20070508
+release=1
+source=(jslibs-$version.tar.bz2
+        jslibs-20070508-gnu.patch
+        jslibs-20070508-gnu-2.patch
+        )
+
+build()
+{
+  cd jslibs-$version
+
+  fs_duplicate $SRC/jslibs-$version
+
+  patch -N -p1 -i $SRC/jslibs-20070508-gnu.patch
+  patch -N -p1 -i $SRC/jslibs-20070508-gnu-2.patch
+
+  make
+  make DESTDIR="$PKG" install
+
+  rm -f $ROOT/lib/js/*.la
+  rm -f $ROOT/lib/js/*.a
+}

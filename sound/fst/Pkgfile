@@ -1,0 +1,20 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Uses Wine, Jack and Steinberg's VST Audio Plug-Ins SDK to enable the use of many VST audio plugins under Gnu/Linux.
+# URL: http://www.joebutton.co.uk/fst/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=fst
+version=1.9
+release=1
+source=(http://galan.sf.net/fst-$version.tar.gz)
+
+build()
+{
+  cd fst-$version
+
+  VST_CFLAGS=`pkg-config vstsdk2.3 --cflags`
+
+  make SDKDIR=${VST_CFLAGS#-I}
+}

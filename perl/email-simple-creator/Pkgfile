@@ -1,0 +1,24 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Build an Email::Simple object from scratch
+# URL: http://search.cpan.org/dist/Email-Simple-Creator/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=email-simple-creator
+version=1.424
+release=1
+source=(http://www.ring.gr.jp/archives/lang/perl/CPAN/modules/by-module/Email/Email-Simple-Creator-$version.tar.gz)
+
+build()
+{
+  cd Email-Simple-Creator-$version
+
+  perl Makefile.PL
+
+  make \
+       DESTDIR="$PKG" \
+       INSTALLDIRS="vendor" \
+       PREFIX="$prefix" \
+       install
+}

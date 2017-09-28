@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Tool to manipulate and generate authentication data for ICE, the X Inter-Client.
+# URL: http://www.x.org/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=iceauth
+version=1.0.2
+release=1
+source=(ftp://ftp.x.org/pub/individual/app/iceauth-$version.tar.bz2)
+
+build()
+{
+  cd iceauth-$version
+
+  sh autogen.sh
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

@@ -1,0 +1,33 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:03:14 roman Exp $
+#
+# Description: An open source evolution of the GLUT API.
+#  OpenGLUT is an open source project to evolve the GLUT API. It uses the
+#  FreeGLUT code base as a foundation for extending, enhancing, and refining
+#  the library interface. The initial goal is to define and implement
+#  OpenGLUT API Version 1.0, which is intended to supercede the GLUT 3.x API.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=openglut
+pkgname=libopenglut
+version=0.6.3
+release=1
+source=($mirror_sf/openglut/openglut-$version.tar.bz2)
+
+build()
+{
+  cd openglut-$version
+
+#  LIBS="-lstdc++ -lpthread" \
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --${static:=enable}-shared \
+      --${shared:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+}

@@ -1,0 +1,25 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A pattern-based MIDI sequencer
+# URL: http://dino.nongnu.org/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=dino
+version=0.2.2
+release=1
+source=(http://download.savannah.nongnu.org/releases/dino/dino-0.2.2.tar.gz)
+
+build()
+{
+  cd dino-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

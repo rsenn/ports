@@ -1,0 +1,133 @@
+diff -r -u -N -- hypersonic-1.1.0_orig/autogen.sh hypersonic-1.1.0/autogen.sh
+--- hypersonic-1.1.0_orig/autogen.sh	1970-01-01 01:00:00.000000000 +0100
++++ hypersonic-1.1.0/autogen.sh	2008-11-11 04:38:55.000000000 +0100
+@@ -0,0 +1,8 @@
++#!/bin/sh
++#
++# 20081111
++
++
++aclocal --force
++autoheader --force
++autoconf --force
+--- hypersonic-1.1.0_orig/configure.in	2008-11-11 04:12:10.000000000 +0100
++++ hypersonic-1.1.0/configure.in	2008-11-11 04:38:51.000000000 +0100
+@@ -60,21 +60,21 @@
+ 
+ case "$host" in
+     *-*-linux*) 
+-        AC_DEFINE(LINUX)
++        AC_DEFINE_UNQUOTED([LINUX], [1], [Define this if you are running under Linux])
+         LFLAGS="-shared"
+         LIBS="-lm"
+         PAOBJS="pa_lib.o pa_convert.o pa_unix.o pa_unix_oss.o"
+-        LINKER="ld"
++        LINKER="gcc"
+         ;;
+     *-apple-*)
+-        AC_DEFINE(MAC_OSX)
++        AC_DEFINE_UNQUOTED([MAC_OSX], [1], [Define this if you are running under Mac OS X])
+         LFLAGS="-arch ppc -bundle -flat_namespace -undefined suppress -framework CoreAudio"
+         PAOBJS="pa_lib.o pa_convert.o pa_mac_core.o"
+         LINKER="gcc"
+         ;;
+ esac
+ 
+-AC_DEFINE(HAVE_PORTAUDIO)
++AC_DEFINE_UNQUOTED([HAVE_PORTAUDIO], [1], [Define this if you have the portaudio library])
+ 
+ AC_SUBST(LINKER)
+ AC_SUBST(LFLAGS)
+@@ -88,7 +88,7 @@
+ 
+ AC_MSG_NOTICE([looking for SDL])
+ AC_CHECK_FILE([/usr/include/SDL/SDL.h],
+-  AC_DEFINE(HAVE_SDL)
++  AC_DEFINE_UNQUOTED([HAVE_SDL], [1], [Define this if you have the SDL library])
+   SDLLIB="-lSDL"
+   AC_MSG_NOTICE([found SDL]),
+   AC_CHECK_FILE([/usr/local/include/SDL/SDL.h],
+@@ -108,7 +108,7 @@
+ AC_MSG_NOTICE([looking for OSS sound headers])
+ AC_CHECK_FILE([/usr/include/sys/ioctl.h],
+   AC_CHECK_FILE([/usr/include/sys/soundcard.h],
+-    [AC_DEFINE(HAVE_OSS)
++    [AC_DEFINE_UNQUOTED([HAVE_OSS], [1], [Define this if you have an OSS audio device])
+     AC_MSG_NOTICE([found OSS headers])],
+     AC_MSG_NOTICE([OSS headers not found])
+   ),
+@@ -121,20 +121,25 @@
+ IPYTHON=""
+ PYTHONSITE=""
+ 
++AC_MSG_CHECKING([for Python version])
++PYTHONVERSION=`python --version 2>&1`
++PYTHONVER=`IFS=" ." && set -- $PYTHONVERSION && echo "$2.$3"`
++AC_MSG_RESULT([$PYTHONVER])
++
+ AC_MSG_NOTICE([looking for python headers])
+-AC_CHECK_FILE([/usr/lib/python2.2/site-packages],
+-  [PYTHONSITE="/usr/lib/python2.2/site-packages"],
+-  AC_CHECK_FILE([/usr/local/lib/python2.2/site-packages],
+-    [PYTHONSITE="/usr/local/lib/python2.2/site-packages"],
+-    AC_MSG_ERROR( [can't find python2.2 installation] )
++AC_CHECK_FILE([/usr/lib/python$PYTHONVER/site-packages],
++  [PYTHONSITE="/usr/lib/python$PYTHONVER/site-packages"],
++  AC_CHECK_FILE([/usr/local/lib/python$PYTHONVER/site-packages],
++    [PYTHONSITE="/usr/local/lib/python$PYTHONVER/site-packages"],
++    AC_MSG_ERROR( [can't find python$PYTHONVER installation] )
+   )
+ )
+ 
+-AC_CHECK_FILE([/usr/include/python2.2/Python.h],
+-  [IPYTHON="/usr/include/python2.2"],
+-  AC_CHECK_FILE([/usr/local/include/python2.2/Python.h],
+-    [IPYTHON="/usr/local/include/python2.2"],
+-    AC_MSG_ERROR( [can't find python2.2 developer files] )
++AC_CHECK_FILE([/usr/include/python$PYTHONVER/Python.h],
++  [IPYTHON="/usr/include/python$PYTHONVER"],
++  AC_CHECK_FILE([/usr/local/include/python$PYTHONVER/Python.h],
++    [IPYTHON="/usr/local/include/python$PYTHONVER"],
++    AC_MSG_ERROR( [can't find python$PYTHONVER developer files] )
+   )
+ )
+ 
+--- hypersonic-1.1.0_orig/pa_unix.h	2008-11-11 04:12:10.000000000 +0100
++++ hypersonic-1.1.0/pa_unix.h	2008-11-11 04:34:08.000000000 +0100
+@@ -54,6 +54,7 @@
+ 
+ #include <stdio.h>
+ #include <stdlib.h>
++#include <string.h>
+ //#include <malloc.h>
+ #include <memory.h>
+ #include <math.h>
+--- hypersonic-1.1.0_orig/Makefile.in	2008-11-11 05:02:29.000000000 +0100
++++ hypersonic-1.1.0/Makefile.in	2008-11-11 05:02:42.000000000 +0100
+@@ -3,6 +3,7 @@
+ prefix=@prefix@
+ exec_prefix=@exec_prefix@
+ mandir=@mandir@
++bindir=@bindir@
+ INSTALL=@INSTALL@
+ 
+ CC=@CC@
+@@ -36,12 +37,14 @@
+ 	$(LINKER) $(LFLAGS) -o $@ $(OBJS) $(SO_LIBS) $(SDLLIB)
+ 
+ sonic_wrap.o : sonic_wrap.c
+-	$(CC) -O3 -Wall -c sonic_wrap.c -I$(IPYTHON)
++	$(CC) $(CFLAGS) -c sonic_wrap.c -I$(IPYTHON)
+ 
+ install : sonicmodule.so
+-	$(INSTALL) sonicmodule.so $(PYTHONSITE)
+-	$(INSTALL) Sonic.py $(PYTHONSITE)
+-	$(INSTALL) Play.py Rec.py Gen.py /usr/local/bin
++	$(INSTALL) -d $(DESTDIR)$(PYTHONSITE)
++	$(INSTALL) sonicmodule.so $(DESTDIR)$(PYTHONSITE)
++	$(INSTALL) Sonic.py $(DESTDIR)$(PYTHONSITE)
++	$(INSTALL) -d $(DESTDIR)$(bindir)
++	$(INSTALL) Play.py Rec.py Gen.py $(DESTDIR)$(bindir)
+ 
+ uninstall :
+ 	rm -f $(PYTHONSITE)/sonicmodule.so

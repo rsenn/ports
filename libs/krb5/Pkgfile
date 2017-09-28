@@ -1,0 +1,49 @@
+# $Id: Pkgfile,v 1.16 2007/05/09 21:02:48 roman Exp $
+#
+# Description: MIT Kerberos runtime libraries
+#  Kerberos is a system for authenticating users and services on a
+#  network. Kerberos is a trusted third-party service. That means that
+#  there is a third party (the Kerberos server) that is trusted by all the
+#  entities on the network (users and services, usually called "principals").
+#  This is the MIT reference implementation of Kerberos V5.
+#  This package contains the runtime libraries used by applications and
+#  Kerberos clients.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=krb5
+version=1.6.3
+release=1
+source=(http://web.mit.edu/kerberos/dist/krb5/1.6/krb5-1.6.3-signed.tar
+        krb5-1.6.3-have-setupterm.patch)
+
+build()
+{
+  tar -xvf krb5-$version.tar.gz
+
+  case ${prefix=/usr} in
+    /usr) sysconfdir="/etc" localstatedir="/var" ;;
+  esac
+
+  cd krb5-$version/src
+
+  if test -e $prefix/lib/libterminfo.so
+  then
+    export LIBS="-lterminfo"
+  fi
+
+  export DEFS="-DHAVE_SETUPTERM=1"
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --${shared:=enable}-shared \
+       --disable-static \
+       --sysconfdir="${sysconfdir=$prefix/etc}" \
+       --localstatedir="${localstatedir=$prefix/var}"
+
+  make
+  make DESTDIR="$PKG" install
+}

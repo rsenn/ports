@@ -1,0 +1,34 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: X11 Resource extension library
+#  libXRes provides an X Window System client interface to the
+#  Resource extension to the X protocol. . The Resource extension
+#  allows for X clients to see and monitor the X resource usage
+#  of various clients (pixmaps, et al). . More information about
+#  X.Org can be found at: <URL:http://xorg.freedesktop.org>
+#  <URL:http://lists.freedesktop.org/mailman/listinfo/xorg>
+#  .
+# URL:
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=xres
+version=1.0.3
+release=1
+source=(ftp://ftp.x.org/pub/individual/lib/libXres-$version.tar.bz2)
+
+build()
+{
+  cd libXres-$version
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

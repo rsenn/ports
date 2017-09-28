@@ -1,0 +1,43 @@
+# $Id: Pkgfile,v 1.5 2007/05/12 01:09:23 roman Exp $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=bsdmake
+version=6.2
+release=1
+source=(make-freebsd6.2.tar.gz
+        make-nexbyte.patch
+        make-20070512-compat.patch
+        mkcfg-freebsd6.2.tar.gz)
+
+build()
+{
+  cd make
+
+  patch -N -p1 -i $SRC/make-nexbyte.patch
+  patch -N -p1 -i $SRC/make-20070512-compat.patch
+
+  make OPTFLAGS="$CFLAGS" || gmake OPTFLAGS="$CFLAGS"
+
+  install -d $ROOT/bin
+  install -m 755 bsdmake $ROOT/bin
+
+  install -d $ROOT/man/man1
+  install -m 644 make.1 $ROOT/man/man1/bsdmake.1
+
+  sed -i -e '/^CFLAGS[ \t]*?=/ s,=.*,= ${OPT_FLAGS},' \
+        -e '/^INSTALL[ \t]*?=/ s,?=.*,= bsdinstall,' \
+        -e "/^INCLUDEDIR[ \t]*?=/ s,?=.*,= $prefix/include," \
+        $SRC/src/share/mk/sys.mk
+
+  sed -i -e "\,/usr, s,/usr,$prefix," $SRC/src/share/mk/*.mk
+
+  install -d $ROOT/share/mk
+  mv $SRC/src/share/mk/* $ROOT/share/mk
+  cp -rvf $SRC/src/* $ROOT/share/mk
+
+  chown -R 0:0 $ROOT || true
+}

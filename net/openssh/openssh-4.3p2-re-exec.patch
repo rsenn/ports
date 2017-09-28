@@ -1,0 +1,24 @@
+diff -ru openssh-4.3p2_orig/Makefile.in openssh-4.3p2/Makefile.in
+--- openssh-4.3p2_orig/Makefile.in	2006-03-20 17:54:01.000000000 +0100
++++ openssh-4.3p2/Makefile.in	2006-03-20 17:54:59.000000000 +0100
+@@ -30,6 +30,8 @@
+ STRIP_OPT=@STRIP_OPT@
+ 
+ PATHS= -DSSHDIR=\"$(sysconfdir)\" \
++	-DBINDIR=\"$(bindir)\" \
++	-DSBINDIR=\"$(sbindir)\" \
+ 	-D_PATH_SSH_PROGRAM=\"$(SSH_PROGRAM)\" \
+ 	-D_PATH_SSH_ASKPASS_DEFAULT=\"$(ASKPASS_PROGRAM)\" \
+ 	-D_PATH_SFTP_SERVER=\"$(SFTP_SERVER)\" \
+diff -ru openssh-4.3p2_orig/sshd.c openssh-4.3p2/sshd.c
+--- openssh-4.3p2_orig/sshd.c	2006-03-20 17:54:01.000000000 +0100
++++ openssh-4.3p2/sshd.c	2006-03-20 17:54:59.000000000 +0100
+@@ -1024,7 +1024,7 @@
+ 	if (rexeced_flag || inetd_flag)
+ 		rexec_flag = 0;
+ 	if (rexec_flag && (av[0] == NULL || *av[0] != '/'))
+-		fatal("sshd re-exec requires execution with an absolute path");
++		av[0] = SBINDIR"/sshd";
+ 	if (rexeced_flag)
+ 		closefrom(REEXEC_MIN_FREE_FD);
+ 	else

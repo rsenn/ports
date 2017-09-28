@@ -1,0 +1,46 @@
+# $Id: Pkgfile,v 1.10 2007/04/22 23:07:54 roman Exp $
+#
+# Description: gzip (GNU zip) is a compression utility designed to be a
+# replacement for compress. Its main advantages over compress are much
+# better compression and freedom from patented algorithms. It has been
+# adopted by the GNU project and is now relatively popular on the Internet.
+# URL: http://www.gnu.org/software/gzip
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=gzip
+version=1.3.12
+release=1
+source=($mirror_gnu/gzip/gzip-$version.tar.gz
+        gzip-1.3.12-no-futimens-workaround.patch)
+
+build()
+{
+  cd gzip-$version
+
+  patch -N -p1 -i $SRC/gzip-1.3.12-no-futimens-workaround.patch
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  ${CC-cc} -static $CFLAGS -o $ROOT/bin/gzip.static {bits,crypt,deflate,gzip,inflate,lzw,trees,unlzh,unlzw,unpack,unzip,util,zip}.o lib/libgzip.a
+
+  return 0
+
+  install -m 755 gzip $ROOT/bin
+  install -m 755 zgrep $ROOT/bin
+  install -m 755 zforce $ROOT/bin
+  install -m 755 zmore $ROOT/bin
+  install -m 755 znew $ROOT/bin
+  install -m 755 zdiff $ROOT/bin
+  install -m 755 gzexe $ROOT/bin
+
+  ln -s gzip $ROOT/bin/gunzip
+  ln -s gzip $ROOT/bin/zcat
+  ln -s gzip $ROOT/bin/zcmp
+}

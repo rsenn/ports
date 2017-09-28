@@ -1,0 +1,30 @@
+# $Id: Pkgfile 424 2008-08-10 01:52:57Z enki $
+#
+# Description: Amygdala is a C++ spiking neural network library
+#  It includes several neuron models, SMP support and facilities for
+#  developing SNNs with genetic algorithms. Support for running Amygdala
+#  neural networks on workstation clusters and MPPs is also under way.
+# URL: http://www.amygdala.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libgcc1, libltdl3, libstdc++6, libxml2
+
+name=amygdala
+version=0.4.0
+release=1
+source=($mirror_sf/amygdala/amygdala-$version.tar.gz
+        amygdala-0.4.0-c++0x.patch)
+
+build()
+{
+  cd amygdala-$version
+
+  patch -p1 -i $SRC/amygdala-0.4.0-c++0x.patch
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

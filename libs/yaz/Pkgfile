@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A programmer's toolkit for the development of Z39.50v3 applications.
+#  YAZ (yet another Z39.50 toolkit) is a portable C/C++ programmer's toolkit
+#  which supports the development of Z39.50v3 clients and servers. Sample
+#  clients and a server are included with the distribution.
+# URL: http://www.indexdata.dk/yaz/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=yaz
+version=3.0.14
+release=1
+source=(http://ftp.indexdata.dk/pub/yaz/yaz-$version.tar.gz)
+
+build()
+{
+  cd yaz-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

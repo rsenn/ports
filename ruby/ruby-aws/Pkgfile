@@ -1,0 +1,23 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Ruby/AWS is a high-level Ruby language interface to the
+# Amazon Associates Web Service API v4. It aims to automate and remove
+# the grunt work of interacting with the Amazon API and, in so doing,
+# make it much easier to use. Ruby/AWS is the successor to Ruby/Amazon.
+# URL: http://caliban.org/ruby/ruby-aws/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=ruby-aws
+version=0.0.1
+release=1
+source=(http://www.caliban.org/files/ruby/ruby-aws-$version.tar.gz)
+
+build()
+{
+  cd ruby-aws-$version
+
+  ruby setup.rb config
+  ruby setup.rb setup
+  ruby setup.rb install --prefix="$PKG"
+}

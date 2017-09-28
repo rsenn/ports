@@ -1,0 +1,26 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Section: universe/editors
+# Description: This package is simply to help people who want to look at alot
+# of color schemes
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=vim-colors
+version=1.0
+release=2
+source=(vim-colors.tgz)
+
+build()
+{
+  vimcurrent=$(readlink /usr/share/vim/vimcurrent 2>/dev/null)
+
+  if touch dummy && dos2unix dummy; then
+    dos2unix $SRC/colors/*.vim
+  fi
+
+  install -d $ROOT/share/vim/${vimcurrent:="vimcurrent"}/
+
+  cp -rf $SRC/colors $ROOT/share/vim/${vimcurrent:="vimcurrent"}/
+}

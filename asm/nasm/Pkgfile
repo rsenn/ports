@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: NASM is an 80x86 assembler designed for portability and modularity. It supports a range of object file formats including Linux a.out and ELF, COFF, Microsoft 16-bit OBJ, Win32/64, and Apple Mach-O. It will also output plain binary files. Its syntax is designed to be simple and easy to understand, similar to Intel's but less complex. It supports all currently known opcodes, and has advanced macro capability. It includes a disassembler as well.
+# URL: http://www.nasm.us/
+# Maintainer: 
+# Depends on: 
+
+name=nasm
+version=2.05.01
+release=1
+source=(http://www.nasm.us/pub/nasm/releasebuilds/2.05.01/nasm-$version.tar.gz)
+
+build() 
+{
+  cd nasm-$version
+  
+  #./autogen.sh
+  
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+  
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

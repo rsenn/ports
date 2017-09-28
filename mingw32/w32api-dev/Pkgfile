@@ -1,0 +1,26 @@
+# $Id: Pkgfile,v 1.5 2007/04/22 23:07:52 roman Exp $
+#
+# Description: Win32 API development headers for MinGW
+# URL: http://www.mingw.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=w32api-dev
+version=3.13
+release=1
+source=($mirror_sf/mingw/w32api-$version-mingw32-dev.tar.gz)
+
+build()
+{
+  host=i686-pc-mingw32
+
+  DIR="${ROOT%/}/$host"
+
+  install -d "$DIR"
+
+  for LIB in lib/*.a; do
+    $host-ranlib "$LIB"
+  done
+
+  cp -rf include lib "$DIR/"
+}

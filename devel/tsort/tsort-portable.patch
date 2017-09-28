@@ -1,0 +1,40 @@
+diff -ru -ru tsort.orig/GNUmakefile tsort/GNUmakefile
+--- tsort.orig/GNUmakefile	2006-10-09 17:44:56.000000000 +0200
++++ tsort/GNUmakefile	2006-10-09 17:42:11.000000000 +0200
+@@ -0,0 +1,11 @@
++#	@(#)Makefile	8.1 (Berkeley) 6/9/93
++# $FreeBSD: src/usr.bin/tsort/Makefile,v 1.4 2001/12/12 00:06:52 markm Exp $
++
++PROG=	tsort
++
++CFLAGS= -Wall
++
++all: $(PROG)
++
++$(PROG): tsort.o
++	$(CC) -o $@ $^ -ldb
+diff -ru -ru tsort.orig/tsort.c tsort/tsort.c
+--- tsort.orig/tsort.c	2006-10-09 17:37:44.000000000 +0200
++++ tsort/tsort.c	2006-10-09 17:44:43.000000000 +0200
+@@ -45,12 +45,20 @@
+ #endif /* not lint */
+ 
+ #include <sys/cdefs.h>
+-__FBSDID("$FreeBSD: src/usr.bin/tsort/tsort.c,v 1.17 2005/05/29 15:47:31 charnier Exp $");
+ 
+ #include <sys/types.h>
+ 
+ #include <ctype.h>
++#ifdef __linux__
++#include <db_185.h>
++#undef dbopen
++#define dbopen __db185_open
++#undef __db185_open
++extern DB *__db185_open(const char *, int, int, DBTYPE, const void *);
++
++#else
+ #include <db.h>
++#endif
+ #include <err.h>
+ #include <errno.h>
+ #include <fcntl.h>

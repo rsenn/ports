@@ -1,0 +1,41 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An extension that brings together the power of Perl and the Apache HTTP server.
+#  The Apache/Perl integration project brings together the full power of
+#  the Perl programming language and the Apache HTTP server. With mod_perl
+#  it is possible to write Apache modules entirely in Perl. In addition,
+#  the persistent interpreter embedded in the server avoids the overhead
+#  of starting an external interpreter and the penalty of Perl start-up time.
+#  .
+# URL: http://perl.apache.org/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=mod_perl
+version=2.0.4
+release=1
+source=(http://perl.apache.org/dist/mod_perl-$version.tar.gz)
+
+build()
+{
+  cd mod_perl-$version
+
+  APXS=`ls $prefix/*bin/apxs*`
+
+  for apxs in $APXS; do
+    perl Makefile.PL \
+      INSTALLDIRS=vendor \
+      MP_USE_GTOP=1 \
+      MP_TRACE=0 \
+      MP_USE_DSO=1 \
+      MP_USE_STATIC=0 \
+      MP_CCOPTS="-g -Wall" \
+      MP_APXS="$apxs"
+
+    make OPTIMIZE="${CFLAGS--g -O2}" LD_RUN_PATH=""
+    make DESTDIR="$PKG" install
+    make realclean
+  done
+}
+
+# EOF

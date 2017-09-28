@@ -1,0 +1,49 @@
+# $Id: Pkgfile: js 494 2008-08-26 12:23:37Z root $
+#
+# Package: libjs1.8
+# Provides: libjs
+# Replaces: js, js1.8
+# Section: universe/libs
+# Description: The Mozilla SpiderMonkey JavaScript library
+#  This library provides the embeddable JavaScript/ECMAScript engine from
+#  browsers as well as by the iPlanet WebServer).
+# URL: http://www.mozilla.org/js/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=js-central
+version=1.8-20090206
+release=1
+source=(js-central-20090206.tar.bz2
+        js-central-20090206-autoconf25-minimal.patch
+        js-central-20090207-autoconf2.13-minimal.patch)
+
+build()
+{
+  cd js/src
+
+  #patch -N -p2 -i $SRC/js-central-20090206-autoconf25-minimal.patch
+  patch -N -p3 -i $SRC/js-central-20090207-autoconf2.13-minimal.patch
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --disable-maintainer-mode \
+       --disable-dependency-tracking
+
+  make
+
+  BASE=smjs
+
+  rm -rf dist/include/system_wrappers_js
+
+  install -d $ROOT/bin
+  cp -fL dist/bin/js $ROOT/bin/$BASE
+
+  install -d $ROOT/lib
+  cp -rfL dist/lib/* $ROOT/lib/
+
+  install -d $ROOT/include
+  cp -rfL dist/include/js $ROOT/include/$BASE
+}

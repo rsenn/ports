@@ -1,0 +1,34 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:53 roman Exp $
+#
+# Description: An audio meta data (tag) reading and modification library.
+#  TagLib is a library for reading and editing the meta data of several
+#  popular audio formats. It supports both ID3v1 and ID3v2 for MP3 files,
+#  Ogg Vorbis comments and ID3 tags, and Vorbis comments in FLAC files.
+# URL: http://developer.kde.org/~wheeler/taglib/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=taglib
+version=1.5
+release=1
+source=(http://developer.kde.org/~wheeler/files/src/taglib-$version.tar.gz
+        taglib-1.4-version-info.patch)
+
+build()
+{
+  cd taglib-$version
+
+  patch -N -p1 -i $SRC/taglib-1.4-version-info.patch
+
+#  libtoolize --force --copy
+#  aclocal --force
+#  autoconf --force
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

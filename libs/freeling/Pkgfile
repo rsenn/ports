@@ -1,0 +1,71 @@
+# $Id: Pkgfile,v 1.1 2007/05/10 16:59:30 roman Exp $
+#
+# Description: Natural language analysis libraries
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libcfg+0, libdb4.6++, libfries0, libgcc1, libomlet0, libpcre3, libstdc++6
+
+name=freeling
+version=2.1alfa1
+release=1
+source=(https://lafarga.cpl.upc.edu/frs/download.php/164/FreeLing-${version%%[a-z]*}-${version#[0-9].[0-9]}.tar.gz
+        freeling-1.5-exec.patch
+        freeling-1.5-docs.patch
+        freeling-2.1-c++0x.patch)
+
+build()
+{
+  cd FreeLing-${version%%[a-z]*}-${version#[0-9].[0-9]}
+
+  case $host in
+    *-mingw32)
+       patch -N -p1 -i $SRC/freeling-1.5-exec.patch
+       ;;
+    *)
+       ;;
+  esac
+
+  patch -N -p1 -i $SRC/freeling-1.5-docs.patch
+  patch -N -p1 -i $SRC/freeling-2.1-c++0x.patch
+
+  libtoolize --force
+  aclocal --force
+  automake -a --foreign --force --copy
+  autoconf --force
+
+#  export LIBS="-ldb_cxx -lpcre"
+
+  case $host in
+    *-mingw32)
+      LIBS="$LIBS -lws2_32 -lmswsock"
+      exe="wine"
+      ;;
+    *)
+      exe=
+      ;;
+  esac
+
+  sed -i 's, -I/usr/include[^ "]*,,' configure
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --includedir="$prefix/include/freeling" \
+      --docdir="$prefix/share/doc/FreeLing-$version" \
+      --${shared:=enable}-shared \
+      --${static:=enable}-shared
+
+  make
+  make prefix="$ROOT" install
+
+  copy_license "COPYING" "AUTHORS"
+
+  sed -i -e "/FREELING_CFG_DIR/ s,FREELING_CFG_DIR,$prefix/share/FreeLing,g" \
+       $ROOT/share/FreeLing/config/*.cfg
+
+  install -d $ROOT/share/doc/
+  find doc -name "Makefile*" -or -name "CVS" -print0 | xargs -0 rm -rf
+  mkdir -p $ROOT/share/doc/FreeLing-$version/
+  mv doc/* $ROOT/share/doc/FreeLing-$version/
+}

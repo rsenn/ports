@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=kwifimanager
+version=1.0.2
+release=1
+prefix=/opt/kde3
+
+source=($mirror_sf/kwifimanager/kwifimanager-$version.tar.gz)
+
+build()
+{
+  cd kwifimanager-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix" \
+       --with-qt-dir="$prefix" \
+       --with-extra-includes="$prefix/include" \
+       --with-extra-libs="$prefix/lib"
+
+  make
+  make DESTDIR="$PKG" install
+}

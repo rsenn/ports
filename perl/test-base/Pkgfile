@@ -1,0 +1,27 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: 
+# URL: http://search.cpan.org/dist/Test-Base/
+# Maintainer: 
+# Depends on: 
+
+name=test-base
+version=0.58
+release=1
+source=(http://search.cpan.org/CPAN/authors/id/I/IN/INGY/Test-Base-$version.tar.gz)
+
+build() 
+{
+  cd Test-Base-$version
+  
+  perl Makefile.PL installdirs=vendor
+  
+  make \
+       DESTDIR="$PKG" \
+       install
+
+  install -d $ROOT/share/doc/test-base
+  install -m 644 Changes MANIFEST $ROOT/share/doc/test-base
+}
+
+# EOF

@@ -1,0 +1,281 @@
+# $Id: Pkgfile,v 1.47 2007/04/22 23:07:54 roman Exp $
+#
+# Description: apache
+# URL: http://www.apache.org
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+# package variables
+# --------------------------------------------------------------------------------
+
+# source infos from shared apache
+inherit=../apache-shared
+source $inherit/Pkgfile
+
+name=apache-ssl
+version=$apache_version #-${modsnmp_version#$apache_version.}
+release=1
+# sourcecode archives and additional files
+source=(http://mirror.switch.ch/mirror/apache/dist/httpd/apache_$apache_version.tar.gz
+  http://www.mod-snmp.com/distr/mod_snmp_$modsnmp_version.tar.gz
+  domains-ssl.conf
+  general-ssl.conf
+  httpsd.conf
+  $inherit/config.layout.in
+  $inherit/mod_snmp-$modsnmp_patchver-headers.patch
+  $inherit/mod_snmp-$modsnmp_patchver-sources.patch
+  $inherit/apache-$apache_version-multilog.patch
+  $inherit/apache-$apache_version-bsd-nosetsid.patch
+  $inherit/apache-$apache_version-nosetsid.patch
+  $inherit/apache-ssl-$apache_version-$apachessl_version-headers.patch
+  $inherit/apache-ssl-$apache_version-$apachessl_version-sources.patch)
+
+# apache needs a wwwroot variable
+wwwroot=$prefix/var/www
+
+# package build script
+# --------------------------------------------------------------------------------
+build()
+{
+  # enter source directory and apply patches
+  cd apache_${apache_version}
+
+  # add some customizing patches for daemontools
+  patch -N -p1 -i $SRC/apache-$apache_version-multilog.patch
+
+  case $target in
+    *freebsd*)
+      patch -N -p1 -i $SRC/apache-$apache_version-bsd-nosetsid.patch
+      ;;
+    *linux*)
+      patch -N -p1 -i $SRC/apache-$apache_version-nosetsid.patch
+      ;;
+  esac
+
+  # merge the mod_snmp patches
+  patch -N -p1 -i $SRC/mod_snmp-$modsnmp_patchver-headers.patch
+  patch -N -p1 -i $SRC/mod_snmp-$modsnmp_patchver-sources.patch
+
+  chmod 755 src/modules/snmp_agt/{remake_status,group_select}
+
+  # add apache-ssl to the source tree and apply the patch
+  patch -N -p1 -i $SRC/apache-ssl-$apache_version-$apachessl_version-sources.patch
+
+  # we need a installed apache-shared package:
+  cp $prefix/share/apache/Configuration.tmpl src
+
+  # remove the headers and configure the build
+  # tree to use the shared (installed) ones
+  headers={$ap_headers,$http_headers,$util_headers,$xml_headers,$other_headers}.h
+
+  program_headers=$( eval echo src/include/'{'$ap_headers,$http_headers,$util_headers,$other_headers'}'.h) 2>/dev/null
+  lib_headers=$( eval echo src/lib/expat-lite/'{'$xml_headers'}'.h) 2>/dev/null
+
+  rm $program_headers ${lib_headers}
+
+  # apply directory layout
+  sed -e "s,@prefix@,$prefix,g;;s,@wwwroot@,$wwwroot,g" $SRC/config.layout.in > config.layout
+
+  # change makefile dependencies so they point to installed headers rather than those in the source tree
+  sed -i "s,../lib/expat-lite/\(xmlparse.h\),$prefix/include/apache/xml/\1,g
+   s, include/, $prefix/include/apache/,g" \
+   src/Makefile.tmpl src/main/Makefile.tmpl
+
+  # configure the source tree
+  ./configure --prefix=$prefix \
+       --with-layoutbyte \
+       --with-perl=$prefix/bin/perl \
+       --without-execstrip \
+       $( (eval echo --enable-module='{'$apache_static','$apache_shared'}') 2>/dev/null ) \
+       $( (eval echo --${shared:=enable}-shared='{'$apache_shared'}') 2>/dev/null ) \
+       --activate-module=src/modules/snmp_agt/libsnmp_agt.a \
+       --enable-module=snmp_agt
+
+  export service=httpsd
+
+  make TARGET=$service \
+       INCDIR=$prefix/include/apache \
+       root=$PKG \
+       all \
+       install-mktree \
+       install-programs \
+       install-support \
+       install-config
+
+  # fix permissions
+  chown -R 0.0 ${pkg}
+
+  # add license to the package
+  copy_license "LICENSE"
+
+  # install the config files
+  install $SRC/httpsd.conf $ROOT/etc
+
+
+  install -d $ROOT/local/config
+
+  for file in {domains,general}-ssl.conf
+  do
+#    sed -i -e "s,@prefix@,$prefix,g" $file
+    install -m 644 $SRC/$file $ROOT/local/config
+  done
+
+#  install $SRC/apache-modules.sh $ROOT/bin/apache-modules
+  rm $ROOT/etc/{access.conf,magic,mime.types,srm.conf}
+
+  rm $ROOT/bin/{checkgid,dbmmanage,htdigest,htpasswd}
+  rm $ROOT/sbin/{ab,apxs,logresolve,rotatelogs}
+  rm $ROOT/lib/apache/*.{so,exp}
+
+  rm $ROOT/etc/*.default
+  rm -rf $ROOT/include
+  rm -rf $ROOT/var/www
+
+  rm -rf $ROOT/man/man1
+  rm -f $ROOT/man/man8/{ab,apxs,logresolve,rotatelogs}.*
+}
+
+# package cleanup
+# --------------------------------------------------------------------------------
+cleanup()
+{
+  # clean up unneeded files
+  rm $sysconfdir/{access.conf,httpsd.conf,magic,mime.types,srm.conf}.default
+  rm -r ${mandir}
+
+  rm -r $ROOT/include
+  rm -r $ROOT/lib/apache
+
+  rm -r $ROOT/bin
+  rm -r $ROOT/lib
+
+  rm $ROOT/sbin/{ab,apxs,gcache,logresolve,rotatelogs}
+  rm -r $ROOT/var
+}
+
+# package postmerge script
+# --------------------------------------------------------------------------------
+postmerge()
+{
+  source $libdir/nexshell/service
+
+  # substitute some essential values in the config files
+  sed -i -e "s,@prefix@,$prefix,g
+            s,@wwwroot@,$wwwroot,g
+            s,@httpsd_user@,$httpsd_user,g
+            s,@httpsd_group@,$httpsd_group,g
+            s,@httpsd_host@,$httpsd_host,g
+            s,@httpsd_port@,$httpsd_port,g" \
+    $sysconfdir/httpsd.conf \
+    $prefix/local/config/{domains,general}-ssl.conf
+
+  # enable the service if wanted
+  if [ "$services_run_httpsd" = "yes" ]; then
+    service_add "httpsd"
+  else
+    service_remove "httpsd"
+  fi
+}
+
+# package configuration
+# --------------------------------------------------------------------------------
+config()
+{
+  # add the main-menu entry "httpsd"
+  config_branch 'httpsd' 'Apache-SSL server configuration'
+
+    # lets choose a user
+    config_value 'user'  'Apache-SSL server user'
+
+      config_description 'Username the apache server will run under'
+      config_default     '$(user_find nobody apache http daemon)'
+      config_function    'choose --help-{button,label} Create $(user_table)'
+      config_extra       'input $choice'
+
+    config_end
+
+    # choose a group
+    config_value 'group' 'Apache-SSL server group'
+
+      config_description 'Group the apache server will run under'
+      config_default     '$(user_group $(config_getvalue httpsd_user) || group_find nogroup apache http daemon)'
+      config_function    'choose --help-{button,label} Create $(group_table)'
+      config_extra       'input $choice'
+
+    config_end
+
+    # choose a host
+    config_value 'host'  'Apache-SSL server host'
+
+      config_description 'Address the apache server will listen to'
+      config_default     '$(config_getvalue global_ipaddr)'
+
+    config_end
+
+    # apache port
+    config_value 'port'  'Apache-SSL server port'
+
+      config_description 'Port the apache server will listen to'
+      config_default     '443'
+
+    config_end
+
+  config_end
+
+  # enhance daemontools package configuration
+  config_enter 'services' 'run' 'httpsd'
+
+    config_label   'Run httpsd at boot'
+    config_default 'yes'
+    config_type    'value'
+
+  config_leave
+}
+
+# --------------------------------------------------------------------------------
+services()
+{
+  config_service 'httpsd' 'Apache SSL Server'
+
+    config_set 'PIDFILE' '$prefix/var/run/httpsd.pid'
+    config_set 'START'   'resuming normal operations'
+    config_set 'STOP'    'caught SIGTERM, shutting down'
+
+  config_leave
+}
+
+# script to start httpsd from supervise
+# --------------------------------------------------------------------------------
+httpsd()
+{
+  exec 2>&1
+  config_root 'httpsd'
+
+  # set default values
+  host=${httpsd_host:-0.0.0.0}
+  port=${httpsd_port:-80}
+  user=${httpsd_user:-nobody}
+
+  # check if the user is available to setuidgid
+  if ! user_avail $user; then
+    service_error "no such user:" ${user}
+  fi
+
+  # check if there's already an instance of httpsd
+  pid=$(config_eval 'PID')
+
+  if [ "$pid" ] && [ -d "$prefix/proc/$pid" ]; then
+    service_msg "httpsd already running, restarting..."
+    kill ${pid}
+    sleep 2
+    exit 1
+  fi
+
+  # check whether host:port is bindable
+  if proc=$(inet_conflict tcp $host:$port); then
+    service_error $host:$port "already bound"
+  fi
+
+  # finally execute httpsd
+  exec -a httpsd $sbindir/httpsd -F
+}

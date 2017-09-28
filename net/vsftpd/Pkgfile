@@ -1,0 +1,59 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Probably the most secure and fastest FTP server for UNIX-like systems.
+#  vsftpd is a GPL licensed FTP server for UNIX systems, including Linux. It
+#  is secure and extremely fast. It is stable. Don't take my word for it,
+#  though. Below, we will see evidence supporting all three assertions. We
+#  will also see a list of a few important sites which are happily using
+#  vsftpd. This demonstrates vsftpd is a mature and trusted solution.
+#  .
+# URL: http://vsftpd.beasts.org/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=vsftpd
+version=2.1.2
+release=1
+source=(ftp://vsftpd.beasts.org/users/cevans/vsftpd-$version.tar.gz
+        vsftpd.conf)
+
+build()
+{
+  cd vsftpd-${version%pre*}
+
+  case "$prefix" in
+    "/usr") sysconfdir="/etc" ;;
+  esac
+
+  sed -i \
+    -e '/VSF_BUILD_SSL/ s,undef,define,' \
+    builddefs.h
+
+  sed -i \
+    -e 's,/usr/local,$(PREFIX),g' \
+    -e 's,/usr/man,$(MANDIR),g' \
+    -e 's,/usr,$(PREFIX),g' \
+    -e 's,/etc,$(SYSCONFDIR),g' \
+    Makefile
+
+  install -d $ROOT/sbin
+  install -d $ROOT/share/man/man5
+  install -d $ROOT/share/man/man8
+
+  DEFS="-D_GNU_SOURCE=1 -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE=1 -D_LARGEFILE_SOURCE=1 -DVSF_DUMMYINC_UTMPX_H=1"
+
+  make CC="$CC" CFLAGS="${CFLAGS--g -O2 -Wall} $DEFS"
+  make \
+      PREFIX="$ROOT" \
+      MANDIR="$ROOT/share/man" \
+      SYSCONFDIR="$PKG${sysconfdir=$prefix/etc}" \
+    install
+
+  install -d $ROOT/share/doc/vsftpd
+  install -m 644  AUDIT BENCHMARKS BUGS COPYING COPYRIGHT Changelog FAQ INSTALL LICENSE README* REFS REWARD SIZE SPEED TODO TUNING $ROOT/share/doc/vsftpd
+
+  install -d $PKG${sysconfdir}
+  install -m 644 $SRC/vsftpd.conf $PKG${sysconfdir}/
+}
+
+# EOF

@@ -1,0 +1,27 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: The first portable POSIX.1-2001 compliant "find" implementation.
+#  sfind is a highly portable and fully POSIX.1-2001 compliant implementation
+#  of the "find" utility. It implements features like "-ls" and "-exec
+#  program [argument ...] {} +" (the latter is the POSIX built in
+#  "xargs"). It has no limitations on path length. Directory loops caused
+#  by hard-linked directories are handled gracefully.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=sfind
+version=1.2
+release=1
+source=(ftp://ftp.berlios.de/pub/sfind/sfind-$version.tar.bz2)
+
+build()
+{
+  cd sfind-$version
+
+  make \
+    CONFFLAGS="--build='$build' --host='$host' --target='$target' --prefix='$prefix'" \
+    DEST_DIR="$PKG" \
+    INS_BASE="$prefix" \
+    all install
+}

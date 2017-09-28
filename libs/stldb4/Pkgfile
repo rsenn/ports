@@ -1,0 +1,25 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: libstldb4 is a C++ wrapper for the sleepycat db4 database. It uses the STL in the API where sensible, allows standard IOStreams for data access where sensible, e.g. getting the value of a key should be able to use an istream interface to allow simple partial value retreival, and moves the transaction parameter to be the last optional parameter or provides two versions of the same method for trans/nontrans. The API has been modified to use more standard types. Operator overloading is used to allow quick and dirty coding (mydb[ key ] = value;) to set and cerr.
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=stldb4
+version=0.4.96
+release=1
+source=($mirror_sf/witme/stldb4-$version.tar.bz2)
+
+build()
+{
+  cd stldb4-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

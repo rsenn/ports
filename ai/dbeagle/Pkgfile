@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A distributed evolutionary computation system.
+# Distributed BEAGLE is a master-slave distribution extension of the
+# evolutionary computation framework, Open BEAGLE. Its key features are
+# robustness, fault tolerance, adaptability for heterogeneous networks,
+# and transparency for the user.
+#
+# URL: http://beagle.gel.ulaval.ca/distributed
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=dbeagle
+version=0.9.2
+release=1
+source=($mirror_sf/beagle/dbeagle-$version.tar.gz
+$mirror_sf/beagle/dbeagle-$version.zip)
+
+build()
+{
+  cd dbeagle-$version
+
+  ./bootstrap
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

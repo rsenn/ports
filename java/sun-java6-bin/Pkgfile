@@ -1,0 +1,43 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Java SE Development Kit
+# URL: http://java.sun.com/javase/
+# Maintainer: 
+# Depends on: 
+
+name=sun-java6-bin
+version=1.6.0.16
+release=1
+source=(http://software.mnidc.net/Java%20SE/jdk-6u${version##*.}-linux-i586.bin)
+
+build() 
+{
+  sh jdk-6u${version##*.}-linux-i586.bin <<EOF
+yes
+
+
+EOF
+  jvmdir="$prefix/lib/jvm/java-6-sun-$version"
+
+  install -d $PKG${jvmdir}
+  install -d $ROOT/share/sun-java6-bin
+  install -d $ROOT/share/doc/sun-java6-bin
+  install -d $ROOT/share/man
+
+  cd jdk${version%.*}_${version##*.}
+
+  mv -f bin include lib db jre $PKG${jvmdir}
+  mv -f COPYRIGHT LICENSE README.html README_ja.html README_zh_CN.html THIRDPARTYLICENSEREADME.txt register.html register_ja.html register_zh_CN.html src.zip \
+    $ROOT/share/doc/sun-java6-bin
+
+  mv -f man/man[0-9] $ROOT/share/man
+
+  mv -f demo sample $ROOT/share/sun-java6-bin
+
+  #mv -f bin $ROOT/
+  install -d $ROOT/bin
+  cd $ROOT/bin && ln -sf ../${jvmdir#$prefix/}/bin/* .
+
+}
+
+# EOF

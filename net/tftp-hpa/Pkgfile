@@ -1,0 +1,139 @@
+# $Id: Pkgfile,v 1.11 2007/04/22 23:07:54 roman Exp $
+#
+# Description: A fast and secure DNS server
+# URL: http://cr.yp.to/djbdns.html
+# Maintainer: Lukas Beeler <lukas.beeler@projectdream.org>
+# Depends on: dietlibc daemontools
+
+name=tftp-hpa
+version=0.48
+release=1
+source=(ftp://www.kernel.org/pub/software/network/tftp/tftp-hpa-$version.tar.bz2)
+
+build()
+{
+  cd tftp-hpa-$version
+
+  ls
+}
+
+#----------------------------------------------------------------------------
+postmerge()
+{
+  :
+}
+
+#----------------------------------------------------------------------------
+config()
+{
+  # add the main-menu entry 'tftp_hpa'
+  config_branch 'tftp_hpa'   'djbdns tftp_hpa (authorative) configuration'
+
+    config_value 'ipaddr'    'listen address'
+      config_description     'IP address the tftp_hpa server will listen to (TCP+UDP).'
+      config_default         '$(config_getvalue global_ipaddr)'
+    config_end
+
+    config_value 'cachesize' 'cache size'
+      config_description     'Number of responses which will be cached.'
+      config_default         '1000000'
+    config_end
+
+    config_value 'datalimit' 'data limit'
+      config_description     'UNKNOWN.'
+      config_default         '3000000'
+    config_end
+
+    config_value 'ipsend'    'ip outgoing address'
+      config_description     'Source address of UDP responses.'
+      config_default         '$(config_getvalue tftp_hpa_ipaddr)'
+    config_end
+
+    config_value 'user'      'tftp_hpa user'
+      config_description     'UNIX user the tftp_hpa daemon will run under'
+      config_default         '$(user_find dns daemon nobody)'
+      config_function        'choose --help-{button,label} Create $(user_list)'
+      config_extra           'input'
+    config_end
+
+    config_value 'group'     'tftp_hpa group'
+      config_description     'UNIX user the tftp_hpa daemon will run under'
+      config_default         '$(group_find dns daemon nobody nogroup)'
+      config_function        'choose --help-{button,label} Create $(group_list)'
+      config_extra           'input'
+    config_end
+
+    config_value 'allowed'   'allowed clients'
+      config_description     'Clients from these subnets will be allowed to query.'
+      config_default         '$(ipaddr=$(config_getvalue global_ipaddr); echo ${ipaddr%.*})'
+    config_end
+
+  config_end
+
+  # add the main-menu entry 'tinydns'
+  config_branch 'tinydns'  'djbdns tinydns (authorative) configuration'
+
+    config_value 'ipaddr'  'tinydns UDP address'
+      config_description   'IP address the tinydns server will listen to (UDP).'
+      config_default       '127.0.0.1'
+    config_end
+
+    config_value 'user'    'tinydns user'
+      config_description   'UNIX user the tinydns daemon will run under'
+      config_default       '$(user_find dns daemon nobody)'
+      config_function      'choose --help-{button,label} Create $(user_list)'
+      config_extra         'input'
+    config_end
+
+    config_value 'group'   'tinydns group'
+      config_description   'UNIX user the tinydns daemon will run under'
+      config_default       '$(group_find dns daemon nobody nogroup)'
+      config_function      'choose --help-{button,label} Create $(group_list)'
+      config_extra         'input'
+    config_end
+
+    config_value 'domains' 'initial NS entries).'
+      config_description   'The server will handle queries for these domains:'
+      config_default       '$(config_getvalue global_domain) $(ipaddr=$(config_getvalue global_ipaddr); inet_arpa ${ipaddr%.*})'
+    config_end
+
+  config_end
+
+  # enhance daemontools package configuration
+  config_enter 'services' 'run' 'tftp_hpa'
+    config_label   'Run tftp-hpa at boot'
+    config_default 'yes'
+    config_type    'value'
+  config_leave
+}
+
+# --------------------------------------------------------------------------------
+services()
+{
+
+  config_branch 'tftp_hpa'
+    config_branch 'log'
+    config_end
+    config_set 'TITLE' 'TFTP server'
+  config_end
+}
+
+# --------------------------------------------------------------------------------
+tftp_hpa()
+{
+  export tftp_hpa_user tftp_hpa_datalimit
+  exec 2>&1
+  exec envdir $prefix/local/tftp_hpa/env sh -c '
+    exec envuidgid $tftp_hpa_user softlimit -o250 -d "$tftp_hpa_datalimit" tftp_hpa
+  '
+}
+
+# --------------------------------------------------------------------------------
+tinydns()
+{
+  export tinydns_user
+  exec 2>&1
+  (cd $prefix/local/tinydns/data && $bindir/tinydns-data data)
+  exec envuidgid $tinydns_user envdir $prefix/local/tinydns/env softlimit -d300000 tinydns
+}
+

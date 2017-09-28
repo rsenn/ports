@@ -1,0 +1,46 @@
+diff -wru tar-1.15.1_orig/src/buffer.c tar-1.15.1/src/buffer.c
+--- tar-1.15.1_orig/src/buffer.c	2008-04-04 18:17:18.000000000 +0000
++++ tar-1.15.1/src/buffer.c	2008-04-04 18:17:18.000000000 +0000
+@@ -153,7 +153,8 @@
+   ct_none,
+   ct_compress,
+   ct_gzip,
+-  ct_bzip2
++  ct_bzip2,
++  ct_lzma
+ };
+ 
+ struct zip_magic
+@@ -170,6 +171,7 @@
+   { ct_compress, "\037\235", 2, "compress", "-Z" },
+   { ct_gzip,     "\037\213", 2, "gzip", "-z"  },
+   { ct_bzip2,    "BZh",      3, "bzip2", "-j" },
++  { ct_lzma,     "\xFFLZMA", 6, "lzma", "-a" },
+ };
+ 
+ #define NMAGIC (sizeof(magic)/sizeof(magic[0]))
+diff -wru tar-1.15.1_orig/src/tar.c tar-1.15.1/src/tar.c
+--- tar-1.15.1_orig/src/tar.c	2008-04-04 18:17:18.000000000 +0000
++++ tar-1.15.1/src/tar.c	2008-04-04 18:27:28.000000000 +0000
+@@ -429,6 +429,8 @@
+    N_("control pax keywords"), 68 },
+   {"label", 'V', N_("TEXT"), 0,
+    N_("create archive with volume name NAME. At list/extract time, use TEXT as a globbing pattern"), 68 },
++  {"lzma", 'a', 0, 0,
++   N_("filter the archive through lzma"), 68 },
+   {"bzip2", 'j', 0, 0,
+    N_("filter the archive through bzip2"), 68 },
+   {"gzip", 'z', 0, 0,
+--- tar-1.15.1_orig/src/tar.c	2008-04-04 20:34:24.000000000 +0000
++++ tar-1.15.1/src/tar.c	2008-04-04 23:01:26.000000000 +0000
+@@ -625,6 +625,10 @@
+ 	args->input_files++;
+ 	break;
+ 
++    case 'a':
++      set_use_compress_program_option ("lzma");
++      break;
++      
+     case 'A':
+       set_subcommand_option (CAT_SUBCOMMAND);
+       break;

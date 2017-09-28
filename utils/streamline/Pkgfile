@@ -1,0 +1,38 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A pipelined I/O subsystem for Linux.
+#  Streamline is a pipelined I/O subsystem for both kernel and application
+#  processing on Linux, with 40+ filters for pattern matching, stream
+#  reassembly, compression, etc. It exports the pipes, sockets, and pcap
+#  interfaces and uses shared memory to reduce I/O copy and context switch
+#  cost.
+#  .
+# URL: http://netstreamline.org/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=streamline
+version=1.7.4.5
+release=1
+source=(https://gforge.cs.vu.nl/frs/download.php/181/streamline-$version.tgz)
+
+build()
+{
+  cd streamline-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  sed -i -e "/^PREFIX=/ s,.*,: ${PREFIX=\"$prefix\"},g" \
+    scripts/support
+
+  install -d $ROOT/bin
+  install -d $ROOT/include
+  install -d $ROOT/lib
+
+  make PREFIX="$ROOT" install
+}
+
+# EOF

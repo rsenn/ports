@@ -1,0 +1,24 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Perl wrappers for the GLib utility and Object libraries
+# URL: http://search.cpan.org/dist/Glib/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libglib2.0-0, perl, perl-base
+
+name=perl-glib
+version=1.201
+release=1
+source=(http://search.cpan.org/CPAN/authors/id/T/TS/TSCH/Glib-$version.tar.gz)
+
+build()
+{
+  cd Glib-$version
+
+  perl Makefile.PL installdirs=vendor
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/perl-glib
+  install -m 644 MANIFEST TODO AUTHORS README LICENSE ChangeLog NEWS MANIFEST.SKIP $ROOT/share/doc/perl-glib
+}

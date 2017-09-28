@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Package: libclutter-gtk-0.8
+# Provides: libclutter-gtk
+# Section: universe/libs
+# Description: GTK+ Integration library for Clutter
+# Clutter-GTK is a library providing facilities to integrate Clutter into GTK+
+# applications. It provides a GTK+ widget, GtkClutterEmbed, for embedding the
+# default ClutterStage into any GtkContainer.
+# URL: http://clutter-project.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=clutter-gtk
+version=0.8.2
+release=1
+source=(http://www.clutter-project.org/sources/clutter-gtk/${version%.*}/clutter-gtk-$version.tar.bz2)
+
+build()
+{
+  cd clutter-gtk-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

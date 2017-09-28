@@ -1,0 +1,39 @@
+# $Id: Pkgfile,v 1.3 2007/05/09 21:02:48 roman Exp $
+#
+# Description: A graphic library for file loading, saving, rendering, and manipulation.
+#  Imlib 2 is the successor to Imlib. It is NOT a newer version -- it is
+#  a completely new library. Imlib 2 can be installed alongside Imlib 1.x
+#  without any problems since they are effectively different libraries
+#  which have very similar functionality. Please see the homepage for the
+#  long description of the differences.
+#  .
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=imlib2
+version=1.4.2
+release=1
+source=($mirror_sf/enlightenment/imlib2-$version.tar.gz
+        imlib2-1.4.2-no-std-gnu99.patch)
+
+build()
+{
+  cd imlib2-$version
+
+  patch -N -p1 -i $SRC/imlib2-1.4.2-no-std-gnu99.patch
+
+  sh autogen.sh
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --${static:=enable}-shared \
+      --${shared:=enable}-shared \
+      --without-x \
+      --enable-mmx
+
+  make
+  make DESTDIR="$PKG" install
+}

@@ -1,0 +1,37 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A CLI tool that converts media to DVD MPEG data.
+#   dvdspanky is a CLI tool for converting video files into DVD compatible 
+#   MPEG streams. 
+#  It is designed to be easy to use no matter the input source, to automate
+#  common transcoding tasks, and provide powerful features such as specifying
+#  the destination file size and calculated clipping and letter-boxing. It
+#  provides a front-end to transcode, MJPEG tools, mplayer, and feh. The
+#  output is ready to use in programs such as dvdauthor.'
+#  .
+# URL: http://www.nongnu.org/dvdspanky/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=dvdspanky
+version=1.0.10
+release=1
+source=(http://download.savannah.nongnu.org/releases/dvdspanky/dvdspanky-$version.tar.gz)
+
+build() 
+{
+  cd dvdspanky-$version
+  
+  ./configure \
+      --prefix="$prefix"
+
+  sed -i "s,\\(\$(PREFIX)\\)/man,\\1/share/man," Makefile
+  
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/dvdspanky
+  install -m 644 CHANGELOG COPYING README TODO VERSION $ROOT/share/doc/dvdspanky
+}
+
+# EOF

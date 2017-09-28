@@ -1,0 +1,217 @@
+diff -ru -ri libmpeg3-1.6_orig/a52dec-0.7.3/config.log libmpeg3-1.6/a52dec-0.7.3/config.log
+--- libmpeg3-1.6_orig/a52dec-0.7.3/config.log	2006-09-22 13:55:17.000000000 +0200
++++ libmpeg3-1.6/a52dec-0.7.3/config.log	2006-09-22 13:58:24.000000000 +0200
+@@ -555,3 +555,19 @@
+ 
+ 
+ configure: exit 0
++
++## ----------------------- ##
++## Running config.status.  ##
++## ----------------------- ##
++
++This file was extended by config.status 2.52, executed with
++  CONFIG_FILES    = 
++  CONFIG_HEADERS  = 
++  CONFIG_LINKS    = 
++  CONFIG_COMMANDS = 
++  > ./config.status 
++on bsd.nexbyte.com
++
++config.status:9513: creating Makefile
++config.status:9513: creating autotools/Makefile
++config.status:9544: error: cannot find input file: autotools/Makefile.in
+diff -ru -ri libmpeg3-1.6_orig/a52dec-0.7.3/include/config.h libmpeg3-1.6/a52dec-0.7.3/include/config.h
+--- libmpeg3-1.6_orig/a52dec-0.7.3/include/config.h	2006-09-22 13:55:17.000000000 +0200
++++ libmpeg3-1.6/a52dec-0.7.3/include/config.h	2006-09-22 14:04:27.000000000 +0200
+@@ -16,9 +16,6 @@
+ /* Define if you have the <io.h> header file. */
+ /* #undef HAVE_IO_H */
+ 
+-/* Define if you have the `memalign' function. */
+-#define HAVE_MEMALIGN 1
+-
+ /* Define if you have the <memory.h> header file. */
+ #define HAVE_MEMORY_H 1
+ 
+@@ -55,9 +52,6 @@
+ /* libao al support */
+ /* #undef LIBAO_AL */
+ 
+-/* libao OSS support */
+-#define LIBAO_OSS 
+-
+ /* libao solaris support */
+ /* #undef LIBAO_SOLARIS */
+ 
+diff -ru -ri libmpeg3-1.6_orig/a52dec-0.7.3/include/config.h.in libmpeg3-1.6/a52dec-0.7.3/include/config.h.in
+--- libmpeg3-1.6_orig/a52dec-0.7.3/include/config.h.in	2006-09-22 13:55:17.000000000 +0200
++++ libmpeg3-1.6/a52dec-0.7.3/include/config.h.in	2006-09-22 14:04:21.000000000 +0200
+@@ -15,9 +15,6 @@
+ /* Define if you have the <io.h> header file. */
+ #undef HAVE_IO_H
+ 
+-/* Define if you have the `memalign' function. */
+-#undef HAVE_MEMALIGN
+-
+ /* Define if you have the <memory.h> header file. */
+ #undef HAVE_MEMORY_H
+ 
+@@ -54,9 +51,6 @@
+ /* libao al support */
+ #undef LIBAO_AL
+ 
+-/* libao OSS support */
+-#undef LIBAO_OSS
+-
+ /* libao solaris support */
+ #undef LIBAO_SOLARIS
+ 
+diff -ru -ri libmpeg3-1.6_orig/ifo.h libmpeg3-1.6/ifo.h
+--- libmpeg3-1.6_orig/ifo.h	2006-09-22 13:55:18.000000000 +0200
++++ libmpeg3-1.6/ifo.h	2006-09-22 13:55:58.000000000 +0200
+@@ -193,7 +193,7 @@
+ 	u_char *data[10];
+ 	
+ 	int fd;		// file descriptor
+-	__off64_t pos;	// offset of ifo file on device 
++	long long pos;	// offset of ifo file on device 
+ } ifo_t;
+ 
+ 
+@@ -221,7 +221,7 @@
+  * Prototypes
+  */
+ 
+-ifo_t *ifoOpen (int fd, __off64_t pos);
++ifo_t *ifoOpen (int fd, long long pos);
+ int ifoClose (ifo_t *ifo);
+ 
+ u_int ifoGetVOBStart	(ifo_t *ifo);
+diff -ru -ri libmpeg3-1.6_orig/mpeg3ifo.c libmpeg3-1.6/mpeg3ifo.c
+--- libmpeg3-1.6_orig/mpeg3ifo.c	2006-09-22 13:55:18.000000000 +0200
++++ libmpeg3-1.6/mpeg3ifo.c	2006-09-22 14:03:29.000000000 +0200
+@@ -1,4 +1,3 @@
+-#include <byteswap.h>
+ #include <dirent.h>
+ #include <fcntl.h>
+ #include <stdlib.h>
+@@ -58,6 +57,24 @@
+ #define PGCI_COLOR_LEN 4
+ 
+ 
++static u_int bswap_32(u_int i)
++{
++  u_char a = (i >> 24) & 0xff;
++  u_char b = (i >> 16) & 0xff;
++  u_char c = (i >> 8) & 0xff;
++  u_char d = i & 0xff;
++  
++  return (d << 24) | (c << 16) | (b << 8) | a;
++}
++
++static u_short bswap_16(u_short s)
++{
++  u_char a = (s >> 8) & 0xff;
++  u_char b = s & 0xff;
++  
++  return (b << 8) | a;
++}
++
+ static u_int get4bytes(u_char *buf)
+ {
+ 	return bswap_32 (*((u_int32_t *)buf));
+diff -ru -ri libmpeg3-1.6_orig/mpeg3io.c libmpeg3-1.6/mpeg3io.c
+--- libmpeg3-1.6_orig/mpeg3io.c	2006-09-22 13:55:17.000000000 +0200
++++ libmpeg3-1.6/mpeg3io.c	2006-09-22 14:05:32.000000000 +0200
+@@ -1,7 +1,6 @@
+ #include "mpeg3private.h"
+ #include "mpeg3protos.h"
+ 
+-#include <mntent.h>
+ #include <stdint.h>
+ #include <stdlib.h>
+ #include <string.h>
+@@ -35,8 +34,8 @@
+ 
+ int64_t mpeg3io_get_total_bytes(mpeg3_fs_t *fs)
+ {
+-	struct stat64 ostat;
+-	stat64(fs->path, &ostat);
++	struct stat ostat;
++	stat(fs->path, &ostat);
+ 	fs->total_bytes = ostat.st_size;
+ 	return fs->total_bytes;
+ 	
+@@ -50,8 +49,8 @@
+ 
+ int64_t mpeg3io_path_total_bytes(char *path)
+ {
+-	struct stat64 st;
+-	if(stat64(path, &st) < 0) return 0;
++	struct stat st;
++	if(stat(path, &st) < 0) return 0;
+ 	return st.st_size;
+ }
+ 
+@@ -61,7 +60,7 @@
+ 	mpeg3_get_keys(fs->css, fs->path);
+ 
+ //printf("mpeg3io_open_file 1 %s\n", fs->path);
+-	if(!(fs->fd = fopen64(fs->path, "rb")))
++	if(!(fs->fd = fopen(fs->path, "rb")))
+ 	{
+ 		perror("mpeg3io_open_file");
+ 		return 1;
+@@ -161,7 +160,7 @@
+ 
+ 
+ 
+-		fseeko64(fs->fd, new_buffer_position, SEEK_SET);
++		fseek(fs->fd, new_buffer_position, SEEK_SET);
+ 		fread(fs->buffer, 1, remainder_start, fs->fd);
+ 
+ 
+@@ -176,7 +175,7 @@
+ 		fs->buffer_position = fs->current_byte;
+ 		fs->buffer_offset = 0;
+ 
+-		result = fseeko64(fs->fd, fs->buffer_position, SEEK_SET);
++		result = fseek(fs->fd, fs->buffer_position, SEEK_SET);
+ //printf("mpeg3io_read_buffer 2 %llx %llx\n", fs->buffer_position, ftell(fs->fd));
+ 		fs->buffer_size = fread(fs->buffer, 1, MPEG3_IO_SIZE, fs->fd);
+ 
+@@ -215,20 +214,20 @@
+ 
+ int mpeg3io_device(char *path, char *device)
+ {
+-	struct stat64 file_st, device_st;
++	struct stat file_st, device_st;
+     struct mntent *mnt;
+ 	FILE *fp;
+ 
+-	if(stat64(path, &file_st) < 0)
++	if(stat(path, &file_st) < 0)
+ 	{
+ 		perror("mpeg3io_device");
+ 		return 1;
+ 	}
+-
++#if 0
+ 	fp = setmntent(MOUNTED, "r");
+     while(fp && (mnt = getmntent(fp)))
+ 	{
+-		if(stat64(mnt->mnt_fsname, &device_st) < 0) continue;
++		if(stat(mnt->mnt_fsname, &device_st) < 0) continue;
+ 		if(device_st.st_rdev == file_st.st_dev)
+ 		{
+ 			strncpy(device, mnt->mnt_fsname, MPEG3_STRLEN);
+@@ -236,7 +235,7 @@
+ 		}
+ 	}
+ 	endmntent(fp);
+-
++#endif
+ 	return 0;
+ }
+ 

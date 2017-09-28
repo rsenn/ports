@@ -1,0 +1,27 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: X11 Big Fonts extension wire protocol
+#  This package provides development headers describing the wire protocol
+#  for the XF86BIGFONT extension, used to make larger font requests possible.
+#  This package is built from the X.org xf86bigfontproto proto module.
+# URL: http://www.X.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=xf86bigfontproto
+version=1.1.2
+release=1
+source=(ftp://ftp.x.org/pub/individual/proto/xf86bigfontproto-$version.tar.bz2)
+
+build()
+{
+  cd xf86bigfontproto-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

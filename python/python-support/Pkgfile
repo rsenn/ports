@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: automated rebuilding support for Python modules
+#  This package contains the 'update-python-modules' script, which takes
+#  care of byte-compilation of Python-only modules.
+#  Private modules are automatically rebuilt upon major Python upgrades,
+#  avoiding the need for strong dependencies.
+#  Public modules are automatically made available for all installed Python
+#  versions.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=python-support
+version=0.7.5
+release=1
+source=(http://ftp.debian.org/debian/pool/main/p/python-support/python-support_$version.tar.gz
+        python-support-0.7.5-debian.patch)
+
+build()
+{
+  cd python-support-$version
+
+  patch -N -p1 -i $SRC/python-support-0.7.5-debian.patch
+
+  ln -sf debian DEBIAN
+
+  chmod 755 DEBIAN/{pre,post}*
+
+
+#  dpkg --build .
+#  dpkg --extract ..deb "$PKG"
+}

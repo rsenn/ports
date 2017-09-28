@@ -1,0 +1,38 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+# Package: libapi-plesk-perl
+# Description: OOP interface to the Plesk XML API
+# At present the module provides interaction with Plesk 8.3.0 (API
+# 1.5.0.0). Complete support of operations with Accounts, partial support
+# of work with Templates (account and domains). Support of addition of
+# domains to user Accounts.
+#
+# API::Plesk module gives the convenient interface for addition of
+# new functions. Extensions represent modules in a folder Plesk with
+# definitions of demanded functions. Each demanded operation is described
+# by two functions: op and op_response_parse. The first sub generates
+# XML query to Plesk, the second is responsible for parse XML answer
+# and its representation in Perl Native Structures. As a template for
+# a writing of own expansions is better to use API/Plesk/Account.pm. In
+# module API::Plesk::Methods we can find service functions for a writing
+# our extensions.
+#
+# URL: http://search.cpan.org/~nrg/API-Plesk-1.05/lib/API/Plesk.pm
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libapi-plesk-perl, libwww-perl, perl
+
+name=api-plesk
+version=1.05
+release=1
+source=(http://search.cpan.org/CPAN/authors/id/N/NR/NRG/API-Plesk-$version.tar.gz)
+
+build()
+{
+  cd API-Plesk-$version
+
+  perl Makefile.PL installdirs="vendor"
+
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/libapi-plesk-perl
+  install -m 644 Changes MANIFEST README $ROOT/share/doc/libapi-plesk-perl
+}

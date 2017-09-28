@@ -1,0 +1,29 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Section: utils
+# Description: Bootloader for Linux/i386 using MS-DOS floppies
+#  SYSLINUX is a boot loader for the Linux/i386 operating system which
+#  operates off an MS-DOS/Windows FAT filesystem. It is intended to simplify
+#  first-time installation of Linux, and for creation of rescue and other
+#  special-purpose boot disks.
+#  It can also be used as a PXE bootloader during network boots.
+#  SYSLINUX is probably not suitable as a general purpose boot
+#  loader. However, SYSLINUX has shown itself to be quite useful in a number
+#  of special-purpose applications.
+# URL: http://syslinux.zytor.com/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=syslinux
+version=3.73
+release=1
+source=(http://www.kernel.org/pub/linux/utils/boot/syslinux/syslinux-$version.tar.bz2)
+
+build()
+{
+  cd syslinux-$version
+
+#  make -C com32/lib GCCOPT="$CFLAGS -DDEBUG=1"
+  make #CC="${CC-gcc}" CFLAGS="${CFLAGS--g -O2}"
+  make INSTALLROOT="$PKG" install
+}

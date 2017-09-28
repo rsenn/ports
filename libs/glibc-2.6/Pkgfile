@@ -1,0 +1,337 @@
+# $Id: Pkgfile,v 1.19 2007/05/09 21:02:47 roman Exp $
+#
+# Description: glibc
+# URL: http://glibc.gnu.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=glibc
+version=2.6.1
+release=1
+#case $host in
+#  *-linux*)
+    sources=($mirror_gnu/glibc/glibc-$version.tar.bz2
+            $mirror_gnu/glibc/glibc-libidn-$version.tar.bz2
+            $mirror_gnu/glibc/glibc-ports-$version.tar.bz2
+        #    glibc-2.6.1-pthread-kill.patch
+            http://distfiles.gentoo.org/distfiles/glibc-2.6.1-patches-1.1.tar.bz2)
+#    ;;
+#  *)
+#    sources=(rtld-elf-freebsd6.1.tar.gz
+#            ldd-freebsd6.1.tar.gz
+#            rtld-elf-nexbyte.patch
+#            ldd-nexbyte.patch
+#            libc-freebsd6.2.tar.gz
+#            libc-nexbyte.patch
+#            include-freebsd6.2.tar.gz
+#            include-nexbyte.patch
+#            sys-freebsd6.2.tar.gz
+#            contrib-gdtoa-freebsd6.2.tar.gz)
+#    ;;
+#esac
+
+build()
+{
+  case $host in
+    *-linux*)
+      mv glibc-libidn-$version $name-$version/libidn
+      mv glibc-ports-$version $name-$version/ports
+      #linuxthreads linuxthreads_db
+
+      cd glibc-2.6-$version
+
+      patch -N -p1 -i ../patches/1505_all_glibc-hppa-elf-relocs.patch
+      patch -N -p1 -i ../patches/1035_all_glibc-respect-build-programs.patch
+      patch -N -p1 -i ../patches/1075_all_glibc-section-comments.patch
+      patch -N -p1 -i ../patches/1530_all_glibc-m68k-sys-user.patch
+      patch -N -p0 -i ../patches/1100_all_glibc-2.3.3-china.patch
+      patch -N -p1 -i ../patches/1045_all_glibc-handle-long-kernel-versions.patch
+      patch -N -p1 -i ../patches/1055_all_glibc-resolv-dynamic.patch
+      patch -N -p0 -i ../patches/6415_all_sh-glibc-2.5-no-asm-user-header.patch
+      patch -N -p0 -i ../patches/6400_all_sh-glibc-2.3.2-fpscr_values.patch
+      patch -N -p1 -i ../patches/6016_all_alpha-glibc-2.5-no-asm-elf-header.patch
+      patch -N -p1 -i ../patches/1018_all_glibc-awk-in-C-locale.patch
+      patch -N -p1 -i ../patches/4010_all_2.3.5-hardened-iconvconfig-unnest.patch
+      patch -N -p0 -i ../patches/1130_all_glibc-2.4-undefine-__i686.patch
+      patch -N -p1 -i ../patches/1060_all_glibc-cvs-getcwd-path-max.patch
+      patch -N -p1 -i ../patches/1020_all_glibc-inet-headers.patch
+      patch -N -p1 -i ../patches/6645_all_glibc-mips_shn_undef-hack.patch
+      patch -N -p0 -i ../patches/1025_all_glibc-gcc-4.3-include-fixed.patch
+      patch -N -p1 -i ../patches/1040_all_2.3.3-localedef-fix-trampoline.patch
+      patch -N -p0 -i ../patches/6416_all_sh-glibc-2.5-no-asm-elf-header.patch
+      patch -N -p1 -i ../patches/1030_all_glibc-manual-no-perl.patch
+      patch -N -p0 -i ../patches/3010_all_2.3.3_pre20040117-pt_pax.patch
+      patch -N -p0 -i ../patches/6001_all_alpha-glibc-2.4-xstat.patch
+      patch -N -p0 -i ../patches/3000_all_2.3.6-dl_execstack-PaX-support.patch
+      patch -N -p1 -i ../patches/5070_all_cross-compile-nptl.patch
+      patch -N -p1 -i ../patches/5063_all_glibc-dont-build-timezone.patch
+      patch -N -p1 -i ../patches/0030_all_glibc-respect-env-CPPFLAGS.patch
+      patch -N -p1 -i ../patches/0010_all_glibc-ssp-compat.patch
+      patch -N -p1 -i ../patches/1090_all_glibc-2.3.6-fix-pr631.patch
+      patch -N -p0 -i ../patches/1103_all_glibc-new-valencian-locale.patch
+      patch -N -p1 -i ../patches/3020_all_glibc-tests-sandbox-libdl-paths.patch
+      patch -N -p0 -i ../patches/6015_all_alpha-glibc-2.5-no-page-header.patch
+
+#      patch -N -p1 -i ../patches/1120_all_glibc-2.5-strict-aliasing.patch
+
+      patch -N -p0 -i ../patches/1510_all_glibc-hppa-no-asm-elf-header.patch
+      patch -N -p0 -i ../patches/6235_all_arm-glibc-RTLD_SINGLE_THREAD_P.patch
+      patch -N -p1 -i ../patches/6650_all_glibc-mips_gnu-hash_support.patch
+      patch -N -p0 -i ../patches/6220_all_glibc-2.4-arm-cirrus-ep93xx-maverick-crunch-fpu.patch
+      patch -N -p0 -i ../patches/6605_all_glibc-2.4-fpu-cw-mips.patch
+      patch -N -p0 -i ../patches/6230_all_arm-glibc-2.5-no-page-header.patch
+
+#      patch -N -p1 -i $SRC/glibc-2.6.1-pthread-kill.patch
+      cd ..
+
+      # build in separate directory
+      rm -rf $name-build && mkdir -p $name-build && cd glibc-2.6-build
+
+      unset LD_LIBRARY_PATH LDFLAGS CFLAGS
+
+      CONFIG_SHELL="$prefix/bin/sh" \
+      ../$name-$version/configure \
+        --build="$build" \
+        --host="$host" \
+        ${target+--target="$target"} \
+        --prefix="$prefix" \
+        --sysconfdir="$prefix/etc" \
+        --${shared:=enable}-shared \
+        --${static:=enable}-shared \
+        --disable-profile \
+        --enable-add-ons="nptl,ports,libidn" \
+        --enable-kernel="2.6.0" \
+        --without-gd \
+        --with-binutils="$prefix/$host/bin" \
+        --with-elf \
+        --without-selinux \
+        --without-cvs \
+        --with-headers="$prefix/include" \
+        --disable-dev-erandom \
+        --with-tls \
+        --with-__thread \
+        --disable-sanity-checks \
+        --enable-versioning
+
+      make
+
+      # create an initial ld.so.conf
+      install -d "$ROOT/etc"
+
+      echo "$prefix/lib" >$ROOT/etc/ld.so.conf
+
+      # install the package into the pkg root
+      make install_root="$PKG" install
+
+      cd ../$name-$version
+      copy_license "COPYING" "COPYING.LIB"
+
+      ln -sf $prefix/share/zoneinfo/CET $prefix/etc/localtime
+
+      # move libs
+      (cd "$ROOT/lib"
+       movelib "ld-$version.so" ld-linux.so.*
+       movelib "libBrokenLocale-$version.so" libBrokenLocale.so.*
+       movelib "libc-$version.so" libc.so.*
+       movelib "libanl-$version.so" libanl.so.*
+       movelib "libcidn-$version.so" libcidn.so.*
+       movelib "libcrypt-$version.so" libcrypt.so.*
+       movelib "libdl-$version.so" libdl.so.*
+       movelib "libm-$version.so" libm.so.*
+       movelib "libnsl-$version.so" libnsl.so.*
+       movelib "libnss_compat-$version.so" libnss_compat.so.*
+       movelib "libnss_dns-$version.so" libnss_dns.so.*
+       movelib "libnss_files-$version.so" libnss_files.so.*
+       movelib "libnss_hesiod-$version.so" libnss_hesiod.so.*
+       movelib "libnss_nis-$version.so" libnss_nis.so.*
+       movelib "libnss_nisplus-$version.so" libnss_nisplus.so.*
+       movelib "libpthread-$version.so" libpthread.so.*
+       movelib "libresolv-$version.so" libresolv.so.*
+       movelib "librt-$version.so" librt.so.*
+       movelib "libutil-$version.so" libutil.so.*)
+
+
+      # replace paths
+      sed -i -e \
+       "s,SBINDIR[ \t]*\",\"$prefix/sbin,
+        s,\"SBINDIR,$prefix/sbin\",
+        s,BINDIR[ \t]*\",\"$prefix/bin,
+        s,DEVDIR[ \t]*\",\"$prefix/dev,
+        s,LOCALSTATEDIR[ \t]*\",\"$prefix/var,
+        s,MANDIR[ \t]*\",\"$prefix/man,
+        s,PROCDIR[ \t]*\",\"$prefix/proc,
+        s,SYSCONFDIR[ \t]*\",\"$prefix/etc,
+        s,TMPDIR[ \t]*\",\"$prefix/tmp," \
+        "$ROOT"/include/{paths,stdio}.h \
+        "$ROOT"/include/sys/{mtio,syslog}.h
+
+      rm -f "$ROOT/info/dir"
+
+      rm "$ROOT/bin/iconv"
+      rm "$ROOT/include/iconv.h"
+      ;;
+
+    *freebsd*)
+#      steallib /libexec/ld-elf.so
+       cd rtld-elf
+       patch -N -p1 -i "$SRC/rtld-elf-nexbyte.patch"
+
+       make PATH_RTLD="$prefix/lib/ld-elf.so.1" \
+           STANDARD_LIBRARY_PATH="$prefix/lib" \
+           PATH_ELF_HINTS="$prefix/var/run/ld-elf.so.hints" \
+           PATH_LIBMAP_CONF="$prefix/etc/libmap.conf"
+
+       install -d "$ROOT/lib"
+       install ld-elf.so.1 "$ROOT/lib"
+
+       ln -s ld-elf.so.1 "$ROOT/lib/ld-elf.so"
+
+
+       cd $SRC/ldd
+       patch -N -p1 -i $SRC/ldd-nexbyte.patch
+
+       make
+
+       install -d $ROOT/bin
+       install ldd $ROOT/bin
+
+       cd $SRC/lib/libc
+       patch -N -p1 -i $SRC/libc-nexbyte.patch
+
+       bsdmake COPTFLAGS="$CFLAGS" CWARNFLAGS=""
+
+       install -d $ROOT/lib
+       install -m 644 libc.a $ROOT/lib
+       install -m 755 libc.so.[0-9] $ROOT/lib
+       (cd $ROOT/lib; ln -s libc.so.[0-9] libc.so)
+
+       cd $SRC/include
+
+       patch -N -p1 -i $SRC/include-nexbyte.patch
+
+       sed -i -e "s,/usr/bin:/bin,$prefix/bin," \
+             -e "s,/usr/sbin:/sbin,$prefix/sbin," \
+             -e "s,/usr,$prefix," \
+             -e "\,$prefix,! s,/etc,$prefix/etc," \
+             -e "\,$prefix,! s,/bin,$prefix/bin," \
+             -e "\,$prefix,! s,/dev,$prefix/dev," \
+             -e "\,$prefix,! s,/sbin,$prefix/sbin," \
+             -e "\,$prefix,! s,/var,$prefix/var," \
+             -e "\,$prefix,! s,/tmp,$prefix/tmp," \
+        paths.h
+
+       bsdmake \
+        INSTALL="bsdinstall" \
+        INCLUDEDIR="$ROOT/include" \
+        prefix="$prefix"
+
+      steallib /lib/lib{m,util,crypt}.so
+      steallib /usr/lib/lib{c_pic,m,util,crypt}.a
+
+      steallib /usr/lib/libpthread.so
+      steallib /usr/lib/libpthread*.a
+      steallib /usr/lib/libthread_db.so
+
+      stealbin /usr/lib/libipx.so
+      steallib /usr/lib/libipx*.a
+
+      stealbin /lib/libkvm.so*
+      stealbin /usr/lib/libkvm.so
+      steallib /usr/lib/libkvm*.a
+
+      steallib /usr/lib/libmemstat.so
+      steallib /usr/lib/libmemstat*.a
+
+      steallib /usr/lib/libnetgraph.so
+      steallib /usr/lib/libnetgraph*.a
+
+      steallib /usr/lib/*crt*.o
+
+      steallib /usr/lib/pam_*.so
+
+      stealbin /sbin/ldconfig
+      stealbin /usr/bin/{gencat,getconf,locale,rpcgen}
+      stealbin /usr/sbin/{zdump,zic}
+      stealbin /usr/libexec/pt_chown
+
+#      stealheader /usr/include/{a.out,aio,ar,assert,complex,cpio,ctype,dirent,dlfcn,elf,err,errno,fcntl,fenv,fmtmsg,fnmatch,fstab,fts,ftw,getopt,glob,grp,ifaddrs,inttypes,langinfo,libgen,limits,link,locale,malloc,math,memory,monetary,netdb,nl_types,nss,paths,poll,pthread,pwd,regex,regexp,resolv,sched,search,semaphore,setjmp,sgtty,signal,stab,stdint,stdio,stdlib,string,strings,sysexits,syslog,tar,termios,tgmath,thread_db,time,ttyent,ucontext,ulimit,unistd,utime,utmp,wchar,wctype,wordexp}.h
+
+      stealdir /usr/include/net
+      stealdir /usr/include/netatalk
+      stealdir /usr/include/netipx
+      stealdir /usr/include/protocols
+      stealdir /usr/include/rpc
+      stealdir /usr/include/arpa
+      stealdir /usr/include/rpcsvc
+      stealdir /usr/include/sys
+      stealdir /usr/include/netinet
+      stealdir /usr/include/security
+      ;;
+  esac
+}
+
+movelib()
+{
+  rm "$2"
+  mv "$1" "$2"
+}
+
+steallib()
+{
+  mkdir -p $ROOT/lib
+
+  while [ -n "$1" ]; do
+    case $1 in
+      *.so)
+        local lib=$(ls -1 $1.[0-9]*)
+        local libname=${lib##*/}
+
+        cp $lib $ROOT/lib
+        ln -s $libname $ROOT/lib/${libname%.so*}.so
+        ;;
+
+      *.a|*.o)
+        cp $1 $ROOT/lib
+        ;;
+    esac
+    shift
+  done
+}
+
+stealbin()
+{
+  while [ -n "$1" ]; do
+    local dir=${1%/*}
+    local dirname=${dir##*/}
+
+    mkdir -p $ROOT/${dirname}
+    cp $1 $ROOT/${dirname}
+
+    shift
+  done
+}
+
+stealdir()
+{
+  while [ -n "$1" ]; do
+    local dir=${1#/usr}
+
+    mkdir -p $ROOT/${dir}
+    cp -rvf $1/* $ROOT/${dir}
+
+    shift
+  done
+}
+
+#stealheader()
+#{
+#  while [ -n "$1" ]; do
+#    local dir=${1%/*}
+#    local dir=${dir#/usr}
+##
+#    mkdir -p $ROOT/${dir}
+#    cp $1 $ROOT/${dir}
+#
+#    shift
+#  done
+#}

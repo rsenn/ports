@@ -1,0 +1,36 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:52 roman Exp $
+#
+# Description: Bandlimited wavetable-based oscillator plugins for LADSPA hosts
+#  BLOP comprises a set of LADSPA plugins that generate bandlimited sawtooth,
+#  square, variable pulse and slope-variable triangle waves, for use in
+#  LADSPA aware audio applications, principally as components of a modular
+#  synthesis network.
+#  They are wavetable based, and are designed to produce output with harmonic
+#  content as high as possible over a wide pitch range.
+#  Additionally, there are a few extra plugins to assist in building
+#  synthesis networks, like a analogue-type sequencer, sync-square and
+#  ADSR envelope.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=blop
+version=0.2.8
+release=1
+source=($mirror_sf/blop/blop-$version.tar.gz)
+
+build()
+{
+  cd blop-$version
+
+  sed -i "s,/usr\([^/]\),$prefix\1,g" configure
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --with-ladspa-prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

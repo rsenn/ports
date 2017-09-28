@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Section: devel
+# Description: A full-fledged content/user managment system.
+#  Pandora allows people to quickly and easily submit news to their Web
+#  site. It supports multiple user accounts, multiple pages of news, and
+#  short/full news/article viewing.
+# URL: http://shuteye.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=pandora
+version=1.5
+release=1
+source=(http://homepages.cwi.nl/~daybuild/releases/pandora-$version.tar.gz)
+
+build()
+{
+  cd pandora-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

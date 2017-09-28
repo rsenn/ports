@@ -1,0 +1,41 @@
+# $Id: Pkgfile,v 1.9 2007/04/22 23:07:54 roman Exp $
+#
+# Description: dialog
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=dialog
+version=1.1-20070604
+release=1
+source=(ftp://ftp.us.debian.org/debian/pool/main/d/dialog/dialog_$version.orig.tar.gz
+        dialog-1.0-20060126-libdir.patch
+        dialog-1.1-20070604-static.patch)
+
+build()
+{
+  cd dialog-$version
+
+  patch -N -p1 -i $SRC/dialog-1.0-20060126-libdir.patch
+  patch -N -p1 -i $SRC/dialog-1.1-20070604-static.patch
+
+  for libname in terminfo tinfo termcap
+  do
+    if set -- $prefix/lib/lib$libname.* && test -e "$1"
+    then
+      export LIBS="-l$libname${LIBS:+ $LIBS}"
+      break
+    fi
+  done
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --mandir="$prefix/share/man" \
+       --with-ncursesw \
+       --enable-widec
+
+  make
+  make DESTDIR="$PKG" install
+}

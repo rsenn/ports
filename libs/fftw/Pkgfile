@@ -1,0 +1,56 @@
+# $Id: Pkgfile,v 1.3 2007/05/09 21:02:47 roman Exp $
+#
+# Description: The Fastest Fourier Transform in the West
+#  FFTW is a fast C FFT library. It includes complex, real, symmetric,
+#  multidimensional, and parallel transforms, and can handle arbitrary array
+#  sizes efficiently.It is typically faster than other freely available
+#  FFT implementations, and is even competitive with vendor-tuned libraries
+#  (benchmarks are available at the homepage). To achieve this performance,
+#  it uses novel code generation and runtime self optimization techniques
+#  (along with many other tricks).
+# URL: http://www.fftw.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=fftw
+version=3.2.1
+release=1
+source=(ftp://www.fftw.org/pub/fftw/fftw-$version.tar.gz)
+
+build()
+{
+  cd ${srcdir=$SRC/fftw-$version}
+
+  libtoolize --force --copy
+  aclocal --force -I m4
+  automake --force --copy --foreign --add-missing &&
+  aclocal --force -I m4 || true
+  autoconf --force
+
+  mkdir -p $SRC/build/fftw-double && cd $SRC/build/fftw-double
+
+  $SRC/fftw-$version/configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --${shared:=enable}-shared \
+       --${static:=enable}-shared \
+       --disable-fortran
+
+  make
+  make DESTDIR="$PKG" install
+
+  mkdir -p $SRC/build/fftw-float && cd $SRC/build/fftw-float
+
+  $SRC/fftw-$version/configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --${shared:=enable}-shared \
+       --${static:=enable}-shared \
+       --enable-float \
+       --disable-fortran
+
+  make
+  make DESTDIR="$PKG" install
+}

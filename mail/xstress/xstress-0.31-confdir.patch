@@ -1,0 +1,24 @@
+Common subdirectories: xstress-src_orig/bin and xstress-src/bin
+Common subdirectories: xstress-src_orig/include and xstress-src/include
+diff -u xstress-src_orig/makefile xstress-src/makefile
+--- xstress-src_orig/makefile	2008-11-03 15:48:40.000000000 +0100
++++ xstress-src/makefile	2008-11-03 15:49:53.000000000 +0100
+@@ -12,6 +12,7 @@
+ SRC_DIR=./src
+ INCLUDE_DIR=./include
+ BIN_DIR=./bin
++ETC_DIR?=/etc
+ 
+ OBJS=$(OBJ_DIR)/xstress.o $(OBJ_DIR)/sendmail.o \
+      $(OBJ_DIR)/config.o \
+@@ -31,7 +32,7 @@
+ .PHONY: clean
+ 
+ all: $(OBJS)
+-	$(GPP) -o $(PROG) $(OBJS)
++	$(GPP) -DETC_DIR=\"$(ETC_DIR)\" -o $(PROG) $(OBJS)
+ 	cp xstress.conf $(BIN_DIR)
+ 
+ $(OBJS):
+Common subdirectories: xstress-src_orig/obj and xstress-src/obj
+Common subdirectories: xstress-src_orig/src and xstress-src/src

@@ -1,0 +1,93 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:40 roman Exp $
+#
+# Package: cmake-2.4
+# Provides: cmake
+# Replaces: cmake
+# Section: devel
+# Description: CMake is a cross-platform build system
+#  CMake is a cross-platform, open-source build system. It is used to
+#  compiler independent configuration files. It generates native makefiles
+#  choice. CMake is quite sophisticated: it is possible to support complex
+#  and code generation.
+# URL: http://www.cmake.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=cmake-2.4
+version=2.4.8
+release=1
+source=(http://www.cmake.org/files/v${version%.*}/cmake-$version.tar.gz)
+
+build()
+{
+  cd cmake-$version
+
+  find * -type f \
+         -name "*.cmake" \
+     -or -name "*.cmake.in" \
+     -or -name "*.txt" \
+     -or -name "*.cxx" \
+     -exec sed -i -e "s:/usr/local:$prefix:g" \
+                  -e "s:/usr/bin:$prefix/bin:g" \
+                  -e "s:/usr/sbin:$prefix/sbin:g" \
+                  -e "s:/usr/lib:$prefix/lib:g" \
+                  -e "s:/usr/include:$prefix/include:g" \
+                  '{}' \
+                  ';'
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  mkdir -p $ROOT/share
+  mv $ROOT/doc $ROOT/share
+
+ (for FILE in $ROOT/bin/*; do
+    mv -f $FILE $FILE-${name##*-}
+  done)
+
+ (mkdir -p $ROOT/share
+  mv -f $ROOT/man $ROOT/share
+
+  cd $ROOT/share/man
+
+  for FILE in $ROOT/share/man/*/*.[0-9]*; do
+
+    STEM=${FILE%.[0-9]*}
+    SECT=${FILE#$STEM.}
+
+    mv -f "$STEM.$SECT" "$STEM"`IFS='.-'; set $name; echo $2$3`.$SECT
+  done)
+}
+
+postinst()
+{
+  case "$1" in
+    configure)
+      update-alternatives --quiet --install /usr/bin/cmake cmake \
+        /usr/bin/cmake-2.4 30 \
+        --slave /usr/share/man/man1/cmake24.1.gz cmake.1.gz /usr/share/man/man1/cmake.1.gz \
+        --slave /usr/share/man/man1/ccmake24.1.gz ccmake.1.gz /usr/share/man/man1/ccmake.1.gz \
+        --slave /usr/share/man/man1/ctest24.1.gz ctest.1.gz /usr/share/man/man1/ctest.1.gz
+
+      # Purge the debconf database we no longer need.
+      if [ -e /usr/share/debconf/confmodule ]; then
+        . /usr/share/debconf/confmodule
+        db_version 2.0
+        db_purge
+      fi
+    ;;
+
+    abort-upgrade|abort-remove|abort-deconfigure)
+    ;;
+
+    *)
+      echo "postinst called with unknown argument \`$1'" >&2
+      exit 0
+    ;;
+  esac
+}

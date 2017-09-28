@@ -1,0 +1,70 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=dmd-2
+version=2.007
+release=1
+source=(http://ftp.digitalmars.com/dmd.$version.zip)
+
+build()
+{
+  cd ${srcdir=$SRC/dmd}/bin && install -d $ROOT/bin
+
+  case $prefix in
+    /usr) sysconfdir="/etc" ;;
+       *) sysconfdir="$prefix/bin" ;;
+  esac
+
+  install -d $PKG/$sysconfdir
+
+  case $host in
+    i[3-7]86*linux* | pentium*linux* | k7*linux*)
+
+      for bin in dmd obj2asm dumpobj rdmd
+      do
+        chmod 755 $bin && cp $bin $ROOT/bin/$bin-2
+      done
+
+      install -m 644 dmd.conf $PKG/$sysconfdir
+      ;;
+  esac
+
+  cd $srcdir/lib && install -d $PKG/${targetlibdir=$prefix/lib/dm/$target/$version}
+
+  case $host in
+    i[3-7]86*linux* | pentium*linux* | k7*linux*)
+      install -m 644 *.a $PKG/$targetlibdir
+      ;;
+  esac
+
+  cd $srcdir/man && install -d $ROOT/share/man
+
+  cp -rvf * $ROOT/share/man
+
+  cd $srcdir/html && install -d $ROOT/share/doc/${name%-[0-9]}-$version
+
+  cp -rvf * $srcdir/samples $ROOT/share/doc/${name%-[0-9]}-$version
+
+  cd $srcdir/src
+
+  case $host in
+    i[3-7]86*linux* | pentium*linux* | k7*linux*)
+
+      sed -i 's/ slist / /g' phobos/linux.mak
+
+      PATH="$srcdir/bin:$PATH" make -C phobos -f linux.mak
+
+      mv phobos $ROOT/lib/dm/$target/$version
+
+      sed -i \
+        -e "s,-I%@P%/\.\./src/phobos,-I$targetlibdir/phobos,g" \
+        -e "s,-L%@P%/\.\./lib,-L$targetlibdir,g" \
+        $PKG/$sysconfdir/dmd.conf
+      ;;
+  esac
+
+}

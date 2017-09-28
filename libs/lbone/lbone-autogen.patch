@@ -1,0 +1,258 @@
+--- lors-0.82.1_orig/autogen.sh	2009-02-20 19:06:06.000000000 +0100
++++ lors-0.82.1/autogen.sh	2009-02-20 19:08:47.000000000 +0100
+@@ -0,0 +1,37 @@
++#!/bin/sh
++#
++# 20090220
++
++FORCE="--force"
++
++for SUBDIR in . lbone/ibp lbone libe2e/aes libexnode libxml2 popt; do
++  if [ -d "$SUBDIR" ]; then
++   (set -e -x
++
++    cd $SUBDIR
++
++    if [ -f acconfig.h ]; then
++      rm -f acconfig.h
++    fi
++
++    if grep -q "A[CM]_PROG_LIBTOOL" configure.in; then
++      libtoolize $FORCE --copy --automake --install
++    fi
++
++    aclocal $FORCE
++
++    if grep -q "A[CM]_CONFIG_HEADER" configure.in; then
++      autoheader $FORCE
++    fi
++
++    automake $FORCE --copy --add-missing --foreign
++    aclocal $FORCE
++    autoconf $FORCE) || exit $?
++  fi
++done
++
++if [ "$?" != 0 ]; then
++  echo "error code: $?"
++else
++  echo "exit: success"
++fi
+--- lors-0.82.1_orig/lbone/configure.in	2009-02-20 18:51:12.000000000 +0100
++++ lors-0.82.1/lbone/configure.in	2009-02-20 18:46:58.000000000 +0100
+@@ -96,7 +96,7 @@
+ AC_CHECK_FUNCS(gethostname gettimeofday mkdir select socket strcspn strdup strerror strstr strtod strtol strtoul uname)
+ 
+ dnl new functions for finding files
+-AC_DEFUN(AC_FIND_FILE,
++AC_DEFUN([AC_FIND_FILE],
+ [AC_MSG_CHECKING( for $1)
+ if test -r $1; then
+     AC_MSG_RESULT(found)
+--- lors-0.82.1_orig/lbone/ibp/acinclude.m4	2009-02-20 18:51:12.000000000 +0100
++++ lors-0.82.1/lbone/ibp/acinclude.m4	2009-02-20 18:46:58.000000000 +0100
+@@ -9,7 +9,7 @@
+      ac_cv_type_socklen_t=no)
+ ])
+   if test $ac_cv_type_socklen_t != yes; then
+-     AC_DEFINE(socklen_t, int)
++     AC_DEFINE(socklen_t, int, [Substitute for socklen_t])
+   fi
+ ])
+ 
+@@ -23,7 +23,7 @@
+     $3
+ fi])
+ 
+-AC_DEFUN(AC_ENABLE_DEBUG,
++AC_DEFUN([AC_ENABLE_DEBUG],
+ [AC_ARG_ENABLE(debug,
+ changequote(<<, >>)
+ <<   --enable-debug[=no]     enable debug  [default=>>no],
+@@ -37,7 +37,7 @@
+ enable_debug=no)
+ ])
+ 
+-AC_DEFUN(AC_ENABLE_IBPCLIENT_ONLY,
++AC_DEFUN([AC_ENABLE_IBPCLIENT_ONLY],
+ [AC_ARG_ENABLE(clientonly,
+ changequote(<<,>>)
+ <<   --enable-clientonly[=no]     build ibp client library only [default=>>no],
+@@ -71,7 +71,7 @@
+ ])
+ 
+ if test "x$ac_cv_type_int64_t" = "xyes"; then
+-    AC_DEFINE(HAVE_INT64_T)
++    AC_DEFINE_UNQUOTED(HAVE_INT64_T, 1, [Define this if you have the int64_t type])
+ fi
+ ])
+        
+--- lors-0.82.1_orig/lbone/ibp/configure.in	2009-02-20 18:51:12.000000000 +0100
++++ lors-0.82.1/lbone/ibp/configure.in	2009-02-20 18:46:58.000000000 +0100
+@@ -126,7 +126,7 @@
+ AC_ENABLE_DEBUG
+ 
+ if test "x$enable_debug" = "xyes"; then
+-    AC_DEFINE(IBP_DEBUG)
++    AC_DEFINE_UNQUOTED(IBP_DEBUG, 1, [Define this if you want to build in debug mode])
+ fi
+ 
+ dnl build ibp client library only
+--- lors-0.82.1_orig/libxml2/acinclude.m4	2009-02-20 18:51:12.000000000 +0100
++++ lors-0.82.1/libxml2/acinclude.m4	2009-02-20 18:46:58.000000000 +0100
+@@ -1,12 +1,12 @@
+ dnl Like AC_TRY_EVAL but also errors out if the compiler generates
+ dnl _any_ output. Some compilers might issue warnings which we want
+ dnl to catch.
+-AC_DEFUN(AC_TRY_EVAL2,
++AC_DEFUN([AC_TRY_EVAL2],
+ [{ (eval echo configure:__oline__: \"[$]$1\") 1>&AC_FD_CC; dnl
+ (eval [$]$1) 2>&AC_FD_CC; _out=`eval [$]$1 2>&1` && test "x$_out" = x; }])
+ 
+ dnl Like AC_TRY_COMPILE but calls AC_TRY_EVAL2 instead of AC_TRY_EVAL
+-AC_DEFUN(AC_TRY_COMPILE2,
++AC_DEFUN([AC_TRY_COMPILE2],
+ [cat > conftest.$ac_ext <<EOF
+ [#]line __oline__ "configure"
+ #include "confdefs.h"
+--- lors-0.82.1_orig/libxml2/configure.in	2009-02-20 18:51:12.000000000 +0100
++++ lors-0.82.1/libxml2/configure.in	2009-02-20 18:46:58.000000000 +0100
+@@ -142,9 +142,9 @@
+ 
+ dnl Checks for isnan in libm if not in libc
+ AC_CHECK_FUNC(isnan, , AC_CHECK_LIB(m, isnan,
+-  [AC_DEFINE(HAVE_ISNAN)]))
++  [AC_DEFINE_UNQUOTED(HAVE_ISNAN, 1, [Define this if you have isnan()])]))
+ 
+-AC_CHECK_FUNC(isinf, AC_DEFINE(HAVE_ISINF) , AC_CHECK_LIB(m, isinf,
++AC_CHECK_FUNC(isinf, AC_DEFINE_UNQUOTED(HAVE_ISINF, 1, [Define this if you have isinf()]) , AC_CHECK_LIB(m, isinf,
+   [AC_DEFINE(HAVE_ISINF)]))
+ 
+ XML_LIBDIR='-L${libdir}'
+@@ -321,8 +321,8 @@
+     AC_CHECK_HEADER(pthread.h,
+ 	AC_CHECK_LIB(pthread, pthread_join,[
+ 	   THREAD_LIBS="-lpthread"
+-	   AC_DEFINE(HAVE_LIBPTHREAD)
+-	   AC_DEFINE(HAVE_PTHREAD_H)
++	   AC_DEFINE_UNQUOTED(HAVE_LIBPTHREAD, 1, [Define this if you have libpthread])
++	   AC_DEFINE_UNQUOTED(HAVE_PTHREAD_H, 1, [Define this if you have pthread.h])
+ 	   WITH_THREADS="1"]))
+ 
+     if test "$WITH_THREADS" = "1" ; then
+@@ -354,11 +354,11 @@
+     AC_CHECK_HEADER(readline/history.h,
+ 	AC_CHECK_LIB(history, append_history,[
+ 	   RDL_LIBS="-lhistory"
+-	   AC_DEFINE(HAVE_LIBHISTORY)]))
++	   AC_DEFINE_UNQUOTED(HAVE_LIBHISTORY, 1, [Define this if you have libhistory])]))
+     AC_CHECK_HEADER(readline/readline.h,
+ 	AC_CHECK_LIB(readline, readline,[
+ 	   RDL_LIBS="-lreadline $RDL_LIBS $tcap"
+-	   AC_DEFINE(HAVE_LIBREADLINE)], , $tcap))
++	   AC_DEFINE_UNQUOTED(HAVE_LIBREADLINE, 1, [Define if you have a readline compatible library])], , $tcap))
+     if test -n "$RDL_DIR" -a -n "$RDL_LIBS"; then
+ 	CPPFLAGS="$CPPFLAGS -I${RDL_DIR}/include"
+ 	RDL_LIBS="-L${RDL_DIR}/lib $RDL_LIBS"
+--- lors-0.82.1_orig/libxml2/libxml.m4	2009-02-20 18:51:12.000000000 +0100
++++ lors-0.82.1/libxml2/libxml.m4	2009-02-20 18:46:58.000000000 +0100
+@@ -7,7 +7,7 @@
+ dnl AM_PATH_XML([MINIMUM-VERSION, [ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND]]])
+ dnl Test for XML, and define XML_CFLAGS and XML_LIBS
+ dnl
+-AC_DEFUN(AM_PATH_XML,[ 
++AC_DEFUN([AM_PATH_XML],[ 
+ AC_ARG_WITH(xml-prefix,
+             [  --with-xml-prefix=PFX   Prefix where libxml is installed (optional)],
+             xml_config_prefix="$withval", xml_config_prefix="")
+--- lors-0.82.1_orig/configure.in	2009-02-20 14:03:49.000000000 +0100
++++ lors-0.82.1/configure.in	2009-02-20 14:08:19.000000000 +0100
+@@ -13,42 +13,42 @@
+ linux*)
+ 	OSTYPE="Linux" 
+     OSDEF="_LINUX"
+-    EXTRA_CFLAGS=-D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE 
++    EXTRA_CFLAGS="-D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE "
+     ;;
+ solaris*)
+ 	OSTYPE="SunOS"
+     OSDEF="_SUNOS"
+-    EXTRA_CFLAGS=-D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE 
++    EXTRA_CFLAGS="-D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE "
+     ;;
+ sunos*)
+ 	OSTYPE="SunOS"
+     OSDEF="_SUNOS"
+-    EXTRA_CFLAGS=-D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE 
++    EXTRA_CFLAGS="-D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE "
+     ;;
+ aix*)
+ 	OSTYPE="AIX"
+     OSDEF="_AIX"
+-    EXTRA_CFLAGS=-D_LARGE_FILES -DLARGE_FILE_API
++    EXTRA_CFLAGS="-D_LARGE_FILES -DLARGE_FILE_API"
+     ;;
+ macos*)
+ 	OSTYPE="Darwin"
+     OSDEF="_MACOS"
+-    EXTRA_CFLAGS=-D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE 
++    EXTRA_CFLAGS="-D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE "
+     ;;
+ darwin*)
+ 	OSTYPE="Darwin"
+     OSDEF="_DARWIN"
+-    EXTRA_CFLAGS=-D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE  -faltivec -no-cpp-precomp
++    EXTRA_CFLAGS="-D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE  -faltivec -no-cpp-precomp"
+     ;;
+ cygwin*)
+ 	OSTYPE="Cygwin" 
+     OSDEF="_CYGWIN"
+-    EXTRA_CFLAGS=-D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE 
++    EXTRA_CFLAGS="-D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE "
+     ;;
+ mingw*)
+ 	OSTYPE="Mingw" 
+     OSDEF="_MINGW"
+-    EXTRA_CFLAGS = -mconsole -lws2_32 -lpthreadGC
++    EXTRA_CFLAGS=" -mconsole -lws2_32 -lpthreadGC"
+     ;;
+ esac
+ 
+@@ -57,7 +57,7 @@
+ AC_SUBST(EXTRA_CFLAGS)
+ AC_SUBST(LIBS)
+ 
+-AC_DEFUN(AC_FIND_FILE,
++AC_DEFUN([AC_FIND_FILE],
+ [AC_MSG_CHECKING( for $1)
+ if test -r $1; then
+     AC_MSG_RESULT(found)
+@@ -234,4 +234,6 @@
+ AC_OUTPUT( Makefile lors_setup.sh pre-install.sh doc/doxygen.cfg \
+            doc/Makefile src/Makefile libe2e/Makefile cmdtools/Makefile \
+            include/Makefile visual/Makefile visual/command.tcl \
+-           visual/lat_display.tcl, [/bin/sh pre-install.sh] )
++           visual/lat_display.tcl
++dnl, [/bin/sh pre-install.sh] 
++)
+--- lors-0.82.1_orig/lbone/ibp/acinclude.m4	2009-02-20 14:03:48.000000000 +0100
++++ lors-0.82.1/lbone/ibp/acinclude.m4	2009-02-20 14:08:08.000000000 +0100
+@@ -13,7 +13,7 @@
+   fi
+ ])
+ 
+-AC_DEFUN(AC_FIND_FILE,
++AC_DEFUN([AC_FIND_FILE],
+ [AC_MSG_CHECKING( for $1)
+ if test -r $1; then
+     AC_MSG_RESULT(found)
+--- lors-0.82.1_orig/libexnode/Makefile.am	2009-02-20 21:39:11.000000000 +0100
++++ lors-0.82.1/libexnode/Makefile.am	2009-02-20 21:39:36.000000000 +0100
+@@ -3,5 +3,5 @@
+ EXTRA_DIST = include COPYRIGHT README
+ 
+ install-data-local:
+-	$(mkinstalldirs) $(prefix)/include/libexnode
+-	$(mkinstalldirs) $(prefix)/lib
++	$(mkinstalldirs) $(DESTDIR)$(prefix)/include/libexnode
++	$(mkinstalldirs) $(DESTDIR)$(prefix)/lib

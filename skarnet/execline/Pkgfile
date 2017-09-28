@@ -1,0 +1,34 @@
+# $Id: Pkgfile,v 1.13 2007/05/09 21:02:51 roman Exp $
+#
+# Description: A (non-interactive) scripting language, like sh; but its
+# syntax is quite different from a traditional shell syntax. The execlineb
+# program is meant to be used as an interpreter for a text file; the other
+# commands are essentially useful inside an execlineb script.
+# execline is now as powerful as a shell: it features conditional loops,
+# getopt-style option handling, filename globbing, and more. Meanwhile,
+# its syntax is far more logic and predictable than the shell's syntax,
+# and has no security issues.
+# URL: http://www.skarnet.org/software/execline/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=execline
+version=1.07
+release=1
+source=(http://www.skarnet.org/software/execline/execline-$version.tar.gz)
+
+build()
+{
+  cd admin/execline-$version
+
+#  echo "$prefix/include/skalibs" >conf-compile/import
+  echo "$prefix/include" >conf-compile/import
+
+  package/compile
+
+  echo "$ROOT" >compile/export/conf-home
+
+  package/upgrade
+  package/compat
+  package/run
+}

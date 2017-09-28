@@ -1,0 +1,44 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:50 roman Exp $
+#
+# Description: Personal Information Management apps from the official KDE release
+#  KDE (the K Desktop Environment) is a powerful Open Source graphical
+#  desktop environment for Unix workstations. It combines ease of use,
+#  contemporary functionality, and outstanding graphical design with the
+#  technological superiority of the Unix operating system.
+#  This metapackage includes a collection of Personal Information Management
+#  (PIM) applications provided with the official release of KDE. Personal
+#  Information Management apps from the official KDE release KDE (the
+#  K Desktop Environment) is a powerful Open Source graphical desktop
+#  environment for Unix workstations. It combines ease of use, contemporary
+#  functionality, and outstanding graphical design with the technological
+#  superiority of the Unix operating system.
+#  This metapackage includes a collection of Personal Information Management
+#  (PIM) applications provided with the official release of KDE.
+# URL: http://pim.kde.org/
+#  http://pim.kde.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=kdepim3
+version=3.5.9
+#prefix=/opt/kde3
+
+release=1
+source=(http://mirrors.dotsrc.org/kde/stable/3.5.9/src/kdepim-3.5.9.tar.bz2)
+
+build()
+{
+  cd kdepim-$version
+
+  (echo "#!/bin/sh" && echo 'echo "$@"') >config.sub
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+

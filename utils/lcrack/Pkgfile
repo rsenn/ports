@@ -1,0 +1,42 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A generic password cracker.
+# Lepton's Crack is a generic password cracker. It is easily-customizable
+# with a simple plugin system and allows system administrators to review
+# the quality of the passwords being used on their systems. It can perform a
+# dictionary-based (wordlist) attack as well as a brute force (incremental)
+# password scan, including the use of regular expressions. It supports
+# standard MD4 hash, standard MD5 hash, NT MD4/Unicode, Lotus Domino HTTP
+# password (R4), and SHA-1 hash formats. LM (LAN Manager) plus appending
+# and prepending of characters is available in the Development branch
+# (strongly recommended).
+#
+# URL: http://usuarios.lycos.es/reinob/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6
+
+name=lcrack
+version=20040914
+release=1
+source=(http://usuarios.lycos.es/reinob/lcrack/lcrack-$version.tar.gz)
+
+build()
+{
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+
+  install -d $ROOT/bin
+  install -m 755 lcrack $ROOT/bin
+  install -m 755 mktbl $ROOT/bin
+  install -m 755 mkword $ROOT/bin
+  install -m 755 regex $ROOT/bin
+
+  install -d $ROOT/share/doc/lcrack
+  install -m 644 [A-Z]*[A-Z]* *.txt \
+    $ROOT/share/doc/lcrack
+}

@@ -1,0 +1,27 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: HP Linux Printing and Imaging - gs IJS driver (hpijs)
+# URL: https://launchpad.net/hplip
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=hpijs
+version=2.1.4
+release=1
+source=(ftp://mirror.switch.ch/mirror/FreeBSD/ports/distfiles/hpijs-2.1.4.tar.gz)
+
+build() 
+{
+  cd hpijs-2.1.4
+  
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+  
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

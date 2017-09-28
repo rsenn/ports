@@ -1,0 +1,34 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Versioning filesystem for FUSE
+#  CopyFS keeps versioned copies of all changes done to files under its
+#  control and allows the user to revert back to any previous revision.
+# URL: http://n0x.org/copyfs/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=copyfs
+version=1.0.1
+release=1
+source=(http://invaders.mars-attacks.org/~boklm/copyfs/copyfs-$version.tar.bz2)
+
+build()
+{
+  cd copyfs-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+
+  install -d $ROOT/bin
+  install -m 755 copyfs-{daemon,mount,fversion} $ROOT/bin
+
+  install -d $ROOT/share/man/man1
+  install -m 644 *.1 $ROOT/share/man/man1
+
+  install -d $ROOT/share/doc/copyfs
+  install -m 644 [A-Z]*[A-Z]* $ROOT/share/doc/copyfs
+}

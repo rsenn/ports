@@ -1,0 +1,44 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Section: universe/net
+# Description:  Linux Rapidshare downloader
+# URL: 
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on: 
+
+name=slimrat
+version=1.0
+release=1
+source=(http://slimrat.googlecode.com/files/slimrat-$version.tar.bz2)
+
+build() 
+{
+  cd slimrat-${version%%-*}
+
+  #patch -N -p1 -i $SRC/slimrat-${version}.diff
+
+  install -d $ROOT/share/slimrat
+  install -m 755 src/slimrat src/slimrat-gui $ROOT/share/slimrat
+  cp -r src/plugins src/slimrat.glade $ROOT/share/slimrat
+
+  install -d $PKG/etc
+  install -m 644 slimrat.conf $PKG/etc
+
+  install -d $ROOT/bin
+  ln -sf $prefix/share/slimrat/slimrat $ROOT/bin
+  ln -sf $prefix/share/slimrat/slimrat-gui $ROOT/bin
+
+  eval `perl -V:privlib`
+  #eval `perl -V:vendorlib`
+
+  #perllib="$privlib"
+  perllib="$prefix/share/slimrat"
+
+  install -d $PKG/$perllib
+  cp -rf src/Clipboard src/*.pm $PKG/$perllib/
+  
+  install -d $ROOT/share/doc/slimrat
+  install -m 644 INSTALL $ROOT/share/doc/slimrat
+}
+
+# EOF

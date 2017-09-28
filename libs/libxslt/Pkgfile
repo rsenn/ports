@@ -1,0 +1,43 @@
+# $Id: Pkgfile,v 1.8 2007/04/22 23:07:53 roman Exp $
+#
+# Description: The XSLT C library developed for the GNOME project.
+#  Libxslt is a C library for GNOME which allows developers to work with
+#  XSLT. It is based on libxml for XML parsing, tree manipulation, and XPath
+#  support. Also included is 'xsltproc', a command line XSLT processor. The
+#  library is written in plain C, making as few assumptions as possible,
+#  and sticking closely to ANSI C/POSIX for easy embedding. It should work on
+#  Linux, Unix, and Windows. Though not designed primarily with performances
+#  in mind, libxslt seems to be a relatively fast processor. It also include
+#  full support for the EXSLT set of extension functions as well as some
+#  common extensions present in other XSLT engines.
+# URL: http://xmlsoft.org/XSLT/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libxslt
+version=1.1.24
+release=1
+source=(ftp://xmlsoft.org/libxslt/libxslt-$version.tar.gz)
+
+build()
+{
+  cd libxslt-$version
+
+  libtoolize --force --copy --automake
+  aclocal --force
+  automake --force --copy --foreign --add-missing
+  aclocal --force
+  autoconf --force
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --${shared:=enable}-shared \
+      --${static:=enable}-shared \
+      --with-python \
+      --with-zlib="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

@@ -1,0 +1,35 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A script that eases the installation of software into a user's home directory.
+#  Stash is a package manager for non-root users. It makes it easier for
+#  you to install, track, and maintain packages and modules in your home
+#  directory. It does this by detecting the type of package or module you
+#  are installing and passing all the correct command line arguments to
+#  the relevant configure scripts and/or makefiles. It is extensible via
+#  custom packages, and tracks both architecture dependent and independent
+#  packages in separate directories so that they can be shared across
+#  systems. Package tracking uses symlinks in a manner similar to GNU
+#  stow. It supports autoconf, Perl and Python modules, imake (xmkmf), PMK,
+#  and many custom packages.
+# URL: http://www.wyrick.org/source/perl/stash/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=stash
+version=0.4.11
+release=1
+source=(http://www.wyrick.org/source/perl/stash/stash-$version.tar.gz)
+
+build()
+{
+  cd stash-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

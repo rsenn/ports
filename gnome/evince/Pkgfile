@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: 
+# URL: 
+# Maintainer: 
+# Depends on: 
+
+name=evince
+version=2.27.4
+release=1
+source=(http://ftp.gnome.org/pub/gnome/sources/evince/2.27/evince-$version.tar.bz2)
+
+build() 
+{
+  cd evince-$version
+  
+  ./autogen.sh
+  
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+  
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

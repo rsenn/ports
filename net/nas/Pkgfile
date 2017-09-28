@@ -1,0 +1,34 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A network-transparent, client/server audio transport system.
+#  In a nutshell, the Network Audio System (NAS) is the audio equivalent
+#  of an X display server. It was developed by NCD for playing, recording,
+#  and manipulating audio data over a network. Like the X Window System, it
+#  uses the client/server model to separate applications from the specific
+#  drivers that control audio input and output devices.
+# URL: http://radscan.com/nas.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=nas
+version=1.9.1
+release=1
+source=($mirror_sf/nas/nas-$version.src.tar.gz
+        nas-1.9.1-build.patch)
+
+build() 
+{
+  cd nas-$version
+
+  patch -p1 -i $SRC/nas-1.9.1-build.patch
+  
+  config/configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+  
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

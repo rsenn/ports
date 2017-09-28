@@ -1,0 +1,38 @@
+diff -r -u -N -- mod_umask-0.1.0_orig/autogen.sh mod_umask-0.1.0/autogen.sh
+--- mod_umask-0.1.0_orig/autogen.sh	1970-01-01 01:00:00.000000000 +0100
++++ mod_umask-0.1.0/autogen.sh	2008-08-05 15:20:37.000000000 +0200
+@@ -0,0 +1,11 @@
++#!/bin/sh
++#
++# 20080805
++
++
++libtoolize --force --copy --automake
++aclocal --force -I m4
++automake --force --copy --foreign --add-missing --foreign
++aclocal --force -I m4
++autoheader --force
++autoconf --force
+diff -r -u -N -- mod_umask-0.1.0_orig/src/Makefile.am mod_umask-0.1.0/src/Makefile.am
+--- mod_umask-0.1.0_orig/src/Makefile.am	2008-08-05 15:15:51.000000000 +0200
++++ mod_umask-0.1.0/src/Makefile.am	2008-08-05 15:20:19.000000000 +0200
+@@ -1,13 +1,13 @@
+-CLEANFILES = .libs/libmod_umask *~
++CLEANFILES = .libs/mod_umask *~
+ 
+-libmod_umask_la_SOURCES = mod_umask.c
+-libmod_umask_la_CFLAGS = -Wall ${XSLT_CFLAGS} ${MODULE_CFLAGS}
+-libmod_umask_la_LDFLAGS = ${XSLT_LIBS}
++mod_umask_la_SOURCES = mod_umask.c
++mod_umask_la_CFLAGS = -Wall ${XSLT_CFLAGS} ${MODULE_CFLAGS}
++mod_umask_la_LDFLAGS = -rpath $(libdir) -module -avoid-version ${XSLT_LIBS}
+ 
+-lib_LTLIBRARIES = libmod_umask.la 
++lib_LTLIBRARIES = mod_umask.la 
+ 
+ make_so:
+-	@if test ! -L mod_umask.so ; then ln -s .libs/libmod_umask.so mod_umask.so ; fi
++	@if test ! -L mod_umask.so ; then ln -s .libs/mod_umask.so mod_umask.so ; fi
+ 
+ clean:
+ 	rm -fr .libs

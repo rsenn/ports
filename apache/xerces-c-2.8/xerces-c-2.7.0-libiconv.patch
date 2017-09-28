@@ -1,0 +1,147 @@
+diff -r -u -- xerces-c-src_2_7_0_orig/src/xercesc/util/Transcoders/IconvGNU/IconvGNUTransService.cpp xerces-c-src_2_7_0/src/xercesc/util/Transcoders/IconvGNU/IconvGNUTransService.cpp
+--- xerces-c-src_2_7_0_orig/src/xercesc/util/Transcoders/IconvGNU/IconvGNUTransService.cpp	2007-05-22 16:03:16.000000000 +0200
++++ xerces-c-src_2_7_0/src/xercesc/util/Transcoders/IconvGNU/IconvGNUTransService.cpp	2007-05-22 16:05:10.000000000 +0200
+@@ -249,7 +249,7 @@
+     size_t    bLen = 2;
+ 
+     ICONV_LOCK;
+-    if (::iconv (fCDTo, (const char **)&ptr, &len,
++    if (::libiconv (fCDTo, (const char **)&ptr, &len,
+          &pTmpArr, &bLen) == (size_t) -1)
+     return 0;
+     tmpArr[1] = toupper (*((unsigned char *)tmpArr));
+@@ -258,7 +258,7 @@
+     pTmpArr = wcbuf;
+     bLen = fUChSize;
+     ptr = tmpArr;
+-    if (::iconv (fCDFrom, (const char **)&ptr, &len,
++    if (::libiconv (fCDFrom, (const char **)&ptr, &len,
+          &pTmpArr, &bLen) == (size_t) -1)
+     return 0;
+     mbcToXMLCh (wcbuf, (XMLCh*) &ch);
+@@ -281,7 +281,7 @@
+     size_t    bLen = 2;
+ 
+     ICONV_LOCK;
+-    if (::iconv (fCDTo, (const char **)&ptr, &len,
++    if (::libiconv (fCDTo, (const char **)&ptr, &len,
+          &pTmpArr, &bLen) == (size_t) -1)
+     return 0;
+     tmpArr[1] = tolower (*((unsigned char*)tmpArr));
+@@ -290,7 +290,7 @@
+     pTmpArr = wcbuf;
+     bLen = fUChSize;
+     ptr = tmpArr;
+-    if (::iconv (fCDFrom, (const char **)&ptr, &len,
++    if (::libiconv (fCDFrom, (const char **)&ptr, &len,
+          &pTmpArr, &bLen) == (size_t) -1)
+     return 0;
+     mbcToXMLCh (wcbuf, (XMLCh*) &ch);
+@@ -314,7 +314,7 @@
+ 
+     {
+         ICONV_LOCK;
+-        if (::iconv (fCDTo, (const char **)&ptr, &len,
++        if (::libiconv (fCDTo, (const char **)&ptr, &len,
+                  &pTmpArr, &bLen) == (size_t) -1)
+             return 0;
+     }
+@@ -409,7 +409,7 @@
+ {
+     ICONV_LOCK;
+     char ** tmpPtr = (char**)&fromPtr;
+-    return ::iconv (fCDFrom, (const char **)tmpPtr, fromLen, toPtr, &toLen);
++    return ::libiconv (fCDFrom, (const char **)tmpPtr, fromLen, toPtr, &toLen);
+ }
+ 
+ size_t    IconvGNUWrapper::iconvTo ( const char    *fromPtr,
+@@ -419,7 +419,7 @@
+ {
+     ICONV_LOCK;
+     char ** tmpPtr = (char**)&fromPtr;
+-    return ::iconv (fCDTo, (const char **)tmpPtr, fromLen, toPtr, &toLen);
++    return ::libiconv (fCDTo, (const char **)tmpPtr, fromLen, toPtr, &toLen);
+ }
+ 
+ 
+@@ -466,12 +466,12 @@
+             continue;
+         ICONV_LOCK;
+         // try to create conversion descriptor
+-        iconv_t    cd_to = iconv_open(fLocalCP, eptr->fSchema);
++        iconv_t    cd_to = ::libiconv_open(fLocalCP, eptr->fSchema);
+         if (cd_to == (iconv_t)-1)
+             continue;
+-        iconv_t    cd_from = iconv_open(eptr->fSchema, fLocalCP);
++        iconv_t    cd_from = ::libiconv_open(eptr->fSchema, fLocalCP);
+         if (cd_to == (iconv_t)-1) {
+-            iconv_close (cd_to);
++            ::libiconv_close (cd_to);
+             continue;
+         }
+         // got it
+@@ -487,12 +487,12 @@
+         for (eptr = gIconvGNUEncodings; eptr->fSchema; eptr++) {
+             // try to create conversion descriptor
+             ICONV_LOCK;
+-            iconv_t    cd_to = iconv_open(fLocalCP, eptr->fSchema);
++            iconv_t    cd_to = ::libiconv_open(fLocalCP, eptr->fSchema);
+             if (cd_to == (iconv_t)-1)
+                 continue;
+-            iconv_t    cd_from = iconv_open(eptr->fSchema, fLocalCP);
++            iconv_t    cd_from = ::libiconv_open(eptr->fSchema, fLocalCP);
+             if (cd_to == (iconv_t)-1) {
+-                iconv_close (cd_to);
++                ::libiconv_close (cd_to);
+                 continue;
+             }
+             // got it
+@@ -511,11 +511,11 @@
+ IconvGNUTransService::~IconvGNUTransService()
+ {
+     if (cdTo() != (iconv_t) -1) {
+-        iconv_close (cdTo());
++        ::libiconv_close (cdTo());
+         setCDTo ((iconv_t)-1);
+     }
+     if (cdFrom() != (iconv_t) -1) {
+-        iconv_close (cdFrom());
++        ::libiconv_close (cdFrom());
+         setCDFrom ((iconv_t)-1);
+     }
+ }
+@@ -619,17 +619,17 @@
+ 
+     {
+         ICONV_LOCK;
+-        cd_from = iconv_open (fUnicodeCP, encLocal);
++        cd_from = ::libiconv_open (fUnicodeCP, encLocal);
+         if (cd_from == (iconv_t)-1) {
+             resValue = XMLTransService::SupportFilesNotFound;
+             if (encLocal)
+                 manager->deallocate(encLocal);//delete [] encLocal;
+             return NULL;
+         }
+-        cd_to = iconv_open (encLocal, fUnicodeCP);
++        cd_to = ::libiconv_open (encLocal, fUnicodeCP);
+         if (cd_to == (iconv_t)-1) {
+             resValue = XMLTransService::SupportFilesNotFound;
+-            iconv_close (cd_from);
++            ::libiconv_close (cd_from);
+             if (encLocal)
+                 manager->deallocate(encLocal);//delete [] encLocal;
+             return NULL;
+@@ -1142,11 +1142,11 @@
+ {
+     ICONV_LOCK;
+     if (cdTo() != (iconv_t)-1) {
+-        iconv_close (cdTo());
++        ::libiconv_close (cdTo());
+         setCDTo ((iconv_t)-1);
+     }
+     if (cdFrom() != (iconv_t)-1) {
+-        iconv_close (cdFrom());
++        ::libiconv_close (cdFrom());
+         setCDFrom ((iconv_t)-1);
+     }
+ }

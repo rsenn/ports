@@ -1,0 +1,14 @@
+diff -ru -ru zziplib-0.10.82_orig/bins/zziptest.c zziplib-0.10.82/bins/zziptest.c
+--- zziplib-0.10.82_orig/bins/zziptest.c	2006-10-30 08:38:10.000000000 +0100
++++ zziplib-0.10.82/bins/zziptest.c	2006-10-30 08:39:19.000000000 +0100
+@@ -73,7 +73,9 @@
+                 printf("filename: %s\n\n", hdr->d_name);
+     
+                 if (hdr->d_reclen == 0) break;
+-                (char *)hdr += hdr->d_reclen;
++                char *p = (char *)hdr;
++                p += hdr->d_reclen;
++                hdr = (struct zzip_dir_hdr *)p;
+                 sleep(1);
+             }
+         }

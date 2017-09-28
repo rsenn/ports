@@ -1,0 +1,66 @@
+diff -ru critsec-0.20_orig/Makefile.conf critsec-0.20/Makefile.conf
+--- critsec-0.20_orig/Makefile.conf	2008-07-14 17:29:59.000000000 +0200
++++ critsec-0.20/Makefile.conf	2008-07-14 17:30:50.000000000 +0200
+@@ -12,28 +12,28 @@
+ 
+ ### pod
+ 
+-A:=$(warning "finding pod2html")
+-cfg_pod2html:=$(shell spod2html --version 2>>config/log)
+-ifeq ("$(cfg_pod2html)","")
+-	cfg_pod2html:=$(shell pod2html --help 2>>config/log)
+-	ifeq ("$(cfg_pod2html)","")
+-		A:=$(warning "NO POD2HTML or SPOD2HTML found, cannot generate documentation")
+-		cfg_pod2html:=echo NO POD2HTML 
+-		cfg_pod2htmlout:=
+-	else
++#A:=$(warning "finding pod2html")
++#cfg_pod2html:=$(shell spod2html --version 2>>config/log)
++#ifeq ("$(cfg_pod2html)","")
++#	cfg_pod2html:=$(shell pod2html --help 2>>config/log)
++#	ifeq ("$(cfg_pod2html)","")
++#		A:=$(warning "NO POD2HTML or SPOD2HTML found, cannot generate documentation")
++#		cfg_pod2html:=echo NO POD2HTML
++#		cfg_pod2htmlout:=
++#	else
+ 		cfg_pod2html:=pod2html
+ 		cfg_pod2htmlout:=--outfile
+-		ifneq ("$(POD_CSS)","") 
+-		  cfg_pod2html+= --css=$(POD_CSS)
+-		endif
+-	endif
+-else
+-	cfg_pod2html:=spod2html --pod
+-	cfg_pod2htmlout:=
+-	ifneq ("$(POD_CSS)","") 
+-		cfg_pod2html+= --stylesheet=$(POD_CSS)
+-	endif
+-endif
++#		ifneq ("$(POD_CSS)","")
++#		  cfg_pod2html+= --css=$(POD_CSS)
++#		endif
++#	endif
++#else
++#	cfg_pod2html:=spod2html --pod
++#	cfg_pod2htmlout:=
++#	ifneq ("$(POD_CSS)","")
++#		cfg_pod2html+= --stylesheet=$(POD_CSS)
++#	endif
++#endif
+ 
+ 
+ ### Document uploading
+diff -ru critsec-0.20_orig/critsec_test.cxx critsec-0.20/critsec_test.cxx
+--- critsec-0.20_orig/critsec_test.cxx	2008-07-14 17:29:59.000000000 +0200
++++ critsec-0.20/critsec_test.cxx	2008-07-14 17:30:36.000000000 +0200
+@@ -1,6 +1,10 @@
+ #include <hcritsec.h>
+ #include <stdio.h>
+ 
++#ifndef _WIN32
++#define HAVE_PTHREADS 1
++#endif
++
+ #ifdef HAVE_PTHREADS
+ #include <pthread.h>
+ #else

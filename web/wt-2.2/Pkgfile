@@ -1,0 +1,69 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:52 roman Exp $
+#
+# Package: libwt
+# Description: Wt (wit-ty) is a Web Toolkit
+# It provides a C++ interface for building a web application, that resembles existing application user interface APIs.
+# URL: http://www.webtoolkit.eu/wt/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libboost-date-time, libboost-filesystem, libboost-program-options, libboost-regex, libboost-signals, libboost-system, libboost-thread, libc6, libfcgi0ldbl, libgcc1, libmxml1, libssl0.9.8, libstdc++6, zlib1g
+
+name=wt
+version=2.2.3
+release=1
+source=($mirror_sf/witty/wt-${version%-*}.tar.gz
+#        wt-2.1.3-c++0x.patch
+#        wt-2.1.3-fixes.patch
+#        wt-2.1.3-20080701.patch
+        wt-2.2.1-ext-headers.patch
+        wt-2.2.1-mysqlpp-cstring.patch)
+
+build()
+{
+  cd wt-${version%-*}
+
+  patch -N -p1 -i $SRC/wt-2.2.1-ext-headers.patch
+  patch -N -p1 -i $SRC/wt-2.2.1-mysqlpp-cstring.patch
+
+#  [ -d $prefix/include/boost ] && BOOST_DIR="$prefix"
+  [ -d $prefix/include/mysql ] && MYSQL_DIR="$prefix"
+
+  install -d $ROOT/include/Ext
+
+  cmake \
+      ${BOOST_DIR:+-D BOOST_DIR="$BOOST_DIR"} \
+      ${MYSQL_DIR:+-DMYSQL_INCLUDE="$MYSQL_DIR/include/mysql"} \
+      -D CMAKE_CXX_FLAGS="$CXXFLAGS" \
+      -D CMAKE_BUILD_TYPE="RelWithDebInfo" \
+      -D CMAKE_INSTALL_PREFIX:PATH="$prefix" \
+      -D CMAKE_SKIP_RPATH:BOOL="ON" \
+      -D SHARED_LIBS:BOOL="ON" \
+      -D WEBGROUP:STRING="apache" \
+      -D EXAMPLES_CONNECTOR:STRING="wt${connector-http}" \
+      -D CONNECTOR_FCGI:BOOL="ON" \
+      -D CONNECTOR_HTTP:BOOL="ON" \
+      -D MXML_SUPPLIED:BOOL="OFF" \
+      -D MXML_INCLUDE:PATH="$prefix/include" \
+      -D MXML_LIB:PATH="$prefix/lib/libmxml.so" \
+      -D BOOST_ASIO_INCLUDE_DIR:PATH="$prefix/include" \
+      -D DEPLOYROOT:PATH="/var/www/wt-examples" \
+    .
+
+  make
+  make DESTDIR="$PKG" install
+
+
+  if [ -d doc ]; then
+    install -d $ROOT/share/doc
+    cp -rf doc $ROOT/share/doc/wt
+  fi
+
+  cp -rf deploy.sh CMakeLists.txt examples $ROOT/share/doc/wt
+
+  sed "/SUBDIRS/ {
+    s,.*,SET(WT_SOURCE_DIR $prefix/share/doc/wt)\nSUBDIRS(examples),
+    n
+    n
+  }" \
+    CMakeLists.txt >$ROOT/share/doc/wt/CMakeLists.txt
+
+}

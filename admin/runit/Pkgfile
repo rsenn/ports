@@ -1,0 +1,40 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A UNIX init scheme with service supervision
+# URL: http://smarden.sunsite.dk/runit/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=runit
+version=2.0.0
+release=1
+source=(http://smarden.sunsite.dk/runit/runit-$version.tar.gz
+        runsvdir-start.sh)
+
+build()
+{
+  cd admin/runit-$version
+
+  case "$prefix" in
+    "/usr") localstatedir="/var" ;;
+  esac
+
+
+  package/upgrade
+
+  sed -i \
+    -e "/varservice\s*=/ s,\".*\",\"${localstatedir=/var}/service\"," \
+    */sv.c
+
+  package/compile
+
+  install -d $ROOT/bin
+  cp -L command/* $ROOT/bin
+
+  install -d $ROOT/share/man/man8
+  install -m 644 man/*.8 $ROOT/share/man/man8
+
+  install -m 755 $SRC/runsvdir-start.sh $ROOT/bin/runsvdir-start
+}
+
+# EOF

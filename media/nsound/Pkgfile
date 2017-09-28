@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A C++ framework for audio synthesis featuring dynamic FIR / IIR
+# filters, granular, AM and FM synthesis. Nsound aims to be as powerful as
+# Csound but with the features of C++. Nsound makes complex, interesting sound
+# as easy as possible.
+# URL: http://nsound.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=nsound
+version=0.5.0
+release=1
+source=($mirror_sf/nsound/nsound-$version.tar.gz
+        nsound-0.5.0-fixes.patch
+        nsound-0.5.0-cxxinc.patch)
+
+build()
+{
+  cd nsound-$version
+
+  patch -N -p1 -i $SRC/nsound-0.5.0-fixes.patch
+  patch -N -p1 -i $SRC/nsound-0.5.0-cxxinc.patch
+
+#  scons prefix="$prefix"
+  scons prefix="$ROOT" install
+
+  install -d $ROOT/include/Nsound
+  cp -rf src/Nsound/*.h $ROOT/include/Nsound
+}

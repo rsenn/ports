@@ -1,0 +1,65 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: image manipulation programs
+#  Imagemagick is a set of programs to manipulate various image formats
+#  (JPEG, TIFF, PhotoCD, PBM, XPM, etc...). All manipulations can be achieved
+#  through shell commands as well as through an X11 graphical interface
+#  (display).
+#  Possible effects: colormap manipulation, channel operations, thumbnail
+#  creation, image annotation, limited drawing, image distortion, etc...
+# URL: http://www.imagemagick.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libpng
+
+name=imagemagick16
+version=6.2.8
+release=6
+source=(http://ftp.surfnet.nl/pub/ImageMagick/ImageMagick-$version-$release.tar.bz2
+        #imagemagick-6.2.7-libdirversion.patch
+        imagemagick-6.2.7-nexbyte.patch
+        imagemagick-6.2.7-imageopacity.patch
+        imagemagick-6.2.8-atexit.patch)
+
+build()
+{
+  cd ImageMagick-$version
+
+#  patch -N -p1 -i $SRC/imagemagick-6.2.7-libdirversion.patch
+  patch -N -p1 -i $SRC/imagemagick-6.2.7-nexbyte.patch
+  patch -N -p1 -i $SRC/imagemagick-6.2.7-imageopacity.patch
+  patch -N -p1 -i $SRC/imagemagick-6.2.8-atexit.patch
+
+  ./configure --prefix="$prefix" \
+       --${shared:=enable}-shared \
+       --${static:=enable}-shared \
+       --with-threads \
+       --with-modules \
+       --with-perl="$prefix/bin/perl" \
+       --with-rsvg="$prefix" \
+       --with-x="$prefix" \
+       --with-bzlib="$prefix" \
+       --without-gslib \
+       --without-gvc \
+       --without-jbig \
+       --with-jpeg="$prefix" \
+       --without-jp2 \
+       --with-lcms="$prefix" \
+       --with-png="$prefix" \
+       --with-tiff="$prefix" \
+       --with-ttf="$prefix" \
+       --with-wmf="$prefix" \
+       --with-gs-font-dir="$prefix/share/fonts/default/Type1" \
+       --with-xml="$prefix" \
+       --with-zlib="$prefix" \
+       --with-fontconfig="$prefix" \
+       --without-x \
+       --with-magick-plus-plus \
+       --with-quantum-depth="16"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -m 644 config/magic.xml $ROOT/lib/ImageMagick-$version/config
+
+  chmod 644 $ROOT/lib/*.la $ROOT/lib/ImageMagick-$version/modules/{coders,filters}/*.la
+}

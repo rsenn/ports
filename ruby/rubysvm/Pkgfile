@@ -1,0 +1,36 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Ruby binding to the very popular and highly useful libsvm library
+# URL: http://rubysvm.cilibrar.com/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=rubysvm
+version=0.15
+release=1
+source=($mirror_sf/rubysvm/rubysvm-$version.tar.gz)
+
+build()
+{
+  cd rubysvm
+
+  FS="$IFS[]"
+  set `ruby --version`
+
+  RUBYVERSION=$2
+  eval RUBYARCH="\${$#}"
+
+  RUBYLIBDIR=$prefix/lib/ruby/${RUBYVERSION%.*}
+  ruby ext/extconf.rb
+
+  make
+  make DESTDIR="$PKG" RUBYLIBDIR="$PKG/$RUBYLIBDIR" sitedir='$(libdir)/ruby' install
+
+  install -d $ROOT/share/doc/rubysvm
+  install -m 644 doc/libsvm-COPYRIGHT.txt doc/libsvm-README.txt doc/README.txt doc/libsvm-FAQ.html $ROOT/share/doc/rubysvm
+
+  install -d $ROOT/share/rubysvm
+  cp -rf svmtoy $ROOT/share/rubysvm
+}
+
+# EOF

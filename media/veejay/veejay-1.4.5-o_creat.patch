@@ -1,0 +1,34 @@
+args: -r -u -- veejay-1.4.5_orig veejay-1.4.5
+diff -r -u -- veejay-1.4.5_orig/veejay-client/src/.deps/curve.Po veejay-1.4.5/veejay-client/src/.deps/curve.Po
+diff -r -u -- veejay-1.4.5_orig/veejay-client/src/.deps/gveejay.Po veejay-1.4.5/veejay-client/src/.deps/gveejay.Po
+diff -r -u -- veejay-1.4.5_orig/veejay-client/src/.deps/keyboard.Po veejay-1.4.5/veejay-client/src/.deps/keyboard.Po
+diff -r -u -- veejay-1.4.5_orig/veejay-client/src/.deps/multitrack.Po veejay-1.4.5/veejay-client/src/.deps/multitrack.Po
+diff -r -u -- veejay-1.4.5_orig/veejay-client/src/.deps/sequence.Po veejay-1.4.5/veejay-client/src/.deps/sequence.Po
+diff -r -u -- veejay-1.4.5_orig/veejay-client/src/.deps/tracksources.Po veejay-1.4.5/veejay-client/src/.deps/tracksources.Po
+diff -r -u -- veejay-1.4.5_orig/veejay-client/src/.deps/utils.Po veejay-1.4.5/veejay-client/src/.deps/utils.Po
+diff -r -u -- veejay-1.4.5_orig/veejay-client/src/.deps/vj-api.Po veejay-1.4.5/veejay-client/src/.deps/vj-api.Po
+diff -r -u -- veejay-1.4.5_orig/veejay-client/src/.deps/vj-midi.Po veejay-1.4.5/veejay-client/src/.deps/vj-midi.Po
+diff -r -u -- veejay-1.4.5_orig/veejay-client/src/vj-api.c veejay-1.4.5/veejay-client/src/vj-api.c
+--- veejay-1.4.5_orig/veejay-client/src/vj-api.c	2009-03-07 03:29:24.000000000 +0100
++++ veejay-1.4.5/veejay-client/src/vj-api.c	2009-03-07 03:32:26.000000000 +0100
+@@ -6355,7 +6355,7 @@
+ 	char theme_config[1024];
+ 	snprintf(theme_config,sizeof(theme_config), "%stheme.config", theme_dir );
+ 	snprintf(theme_file,sizeof(theme_file), "%s/%s/gveejay.rc", theme_dir, string );
+-	int fd = open( theme_config , O_WRONLY | O_CREAT | O_TRUNC);
++	int fd = open( theme_config , O_WRONLY | O_CREAT | O_TRUNC, 0644 );
+ 	if(fd > 0)
+ 	{
+ 		write( fd, string, strlen(string));
+diff -r -u -- veejay-1.4.5_orig/veejay-client/src/vj-midi.c veejay-1.4.5/veejay-client/src/vj-midi.c
+--- veejay-1.4.5_orig/veejay-client/src/vj-midi.c	2009-03-07 03:29:24.000000000 +0100
++++ veejay-1.4.5/veejay-client/src/vj-midi.c	2009-03-07 03:32:03.000000000 +0100
+@@ -227,7 +227,7 @@
+ 	vmidi_t *v = (vmidi_t*) vv;
+         if(!v->active) return;
+ 
+-	int fd = open( filename, O_TRUNC|O_CREAT|O_WRONLY );
++	int fd = open( filename, O_TRUNC|O_CREAT|O_WRONLY, 0643 );
+ 	if(!fd)
+ 	{
+ 		vj_msg(VEEJAY_MSG_ERROR, "Unable to save MIDI settings to %s",filename);

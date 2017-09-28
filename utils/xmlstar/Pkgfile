@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=xmlstar
+version=1.0.1
+release=1
+source=($mirror_sf/xmlstar/xmlstarlet-$version.tar.gz)
+
+build()
+{
+  cd xmlstarlet-$version
+
+  aclocal --force
+  automake --force --copy --foreign --add-missing
+  autoconf --force
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --mandir="$prefix/share/man"
+
+  make \
+      LIBXML2_LIBS="-lxml2" \
+      LIBXSLT_LIBS="-lxslt -lexslt" \
+      LDADDS="-lxslt -lexslt -lxml2"
+
+  make DESTDIR="$PKG" install
+}

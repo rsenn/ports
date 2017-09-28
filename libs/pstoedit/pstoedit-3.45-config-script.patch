@@ -1,0 +1,47 @@
+diff -ru pstoedit-3.45_orig/config/Makefile.am pstoedit-3.45/config/Makefile.am
+--- pstoedit-3.45_orig/config/Makefile.am	2008-03-24 14:40:53.000000000 +0000
++++ pstoedit-3.45/config/Makefile.am	2008-03-24 15:01:42.000000000 +0000
+@@ -3,5 +3,7 @@
+ pkgconfigdir = $(libdir)/pkgconfig
+ pkgconfig_DATA= pstoedit.pc
+ 
++bin_SCRIPTS=pstoedit-config
++
+ m4datadir = $(datadir)/aclocal
+ m4data_DATA = pstoedit.m4
+--- pstoedit-3.45_orig/config/pstoedit-config	2008-03-24 15:08:51.000000000 +0000
++++ pstoedit-3.45/config/pstoedit-config	2008-03-24 15:00:38.000000000 +0000
+@@ -0,0 +1,33 @@
++#!/bin/sh
++
++# get absolute path of the script
++scriptdir()
++{
++  local absdir reldir thisdir="$(pwd)"
++
++  # if $0 specified a pathname, then put that into reldir
++  if test "$0" != "${0%/*}"; then
++    reldir="${0%/*}"
++  fi
++
++  # change into the relative directory in a subshell
++  # and get the output of "pwd", which will lead
++  # to an absolute directory
++  if test "${reldir#/}" != "$reldir"; then
++    absdir=$(cd $reldir && pwd)
++  else
++    absdir=$(cd $thisdir/$reldir && pwd)
++  fi
++
++  echo $absdir
++}
++
++bindir="$(scriptdir)"
++pcdir="${bindir%/bin}/lib/pkgconfig"
++
++if test -d "$pcdir"
++then
++  export PKG_CONFIG_PATH="$pcdir:$PKG_CONFIG_PATH"
++fi
++
++${PKG_CONFIG-pkg-config} pstoedit "${@//--version/--modversion}"

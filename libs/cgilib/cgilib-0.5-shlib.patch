@@ -1,0 +1,57 @@
+diff -ru cgilib-0.5_orig/Makefile cgilib-0.5/Makefile
+--- cgilib-0.5_orig/Makefile	2006-02-13 11:40:44.000000000 +0000
++++ cgilib-0.5/Makefile	2006-02-13 11:47:42.000000000 +0000
+@@ -14,28 +14,42 @@
+ #   along with this program; if not, write to the Free Software
+ #   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111, USA.
+ 
+-CFLAGS = -I. -Wall -O2 -g -DLibrary=\"cgilib\"
++prefix = /usr
++
++CC = gcc
++CFLAGS = -fPIC -I. -Wall -O2 -g -DLibrary=\"cgilib\"
+ LDFLAGS = -L.
+ LIBS = -lcgi
++LIBTOOL = libtool
++
++.SUFFIXES: .c .h .lo .la
++
++OBJS = cgi.lo cookies.lo
+ 
+-OBJS = cgi.o cookies.o
++.c.lo:
++	$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) -c $<
+ 
+-libcgi.a: $(OBJS)
+-	ar rc $@ $^
++libcgi.la: $(OBJS)
++	$(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS) -shared -rpath $(prefix)/lib -version-number 0:5:0 -soname libcgi.so.0 -o $@ $^
+ 
+-cgitest: cgitest.o libcgi.a
+-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LIBS)
++cgitest: cgitest.lo libcgi.la
++	$(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LIBS)
+ 
+-jumpto: jumpto.o libcgi.a
+-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LIBS)
++jumpto: jumpto.lo libcgi.la
++	$(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LIBS)
+ 
+-all: libcgi.a cgitest jumpto
++all: libcgi.la cgitest jumpto
+ 
+ install: cgitest
+-	install -m 755 cgitest /usr/lib/cgi-bin
++	install -d $(DESTDIR)$(prefix)/var/www/cgi-bin
++	$(LIBTOOL) --mode=install install -m 755 cgitest $(DESTDIR)$(prefix)/var/www/cgi-bin
++	install -d $(DESTDIR)$(prefix)/lib
++	$(LIBTOOL) --mode=install install -m 755 libcgi.la $(DESTDIR)$(prefix)/lib
++	install -d $(DESTDIR)$(prefix)/include
++	$(LIBTOOL) --mode=install install -m 644 cgi.h $(DESTDIR)$(prefix)/include
+ 
+ clean:
+-	rm -f cgitest cgitest.o jumpto jumpto.o libcgi.a $(OBJS) *.[35].html
++	rm -f cgitest cgitest.lo jumpto jumpto.lo libcgi.la $(OBJS) *.[35].html
+ 
+ htmlman:
+ 	for f in *.[35]; do \

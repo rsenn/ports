@@ -1,0 +1,243 @@
+diff -r -u -- js-1.6.20070208_orig/Makefile.in js-1.6.20070208/Makefile.in
+--- js-1.6.20070208_orig/Makefile.in	2007-05-08 14:45:17.000000000 +0200
++++ js-1.6.20070208/Makefile.in	2007-05-08 14:47:59.000000000 +0200
+@@ -42,7 +42,7 @@
+ mandir       = @mandir@
+ 
+ CC           = @CC@
+-CPPFLAGS     = @CPPFLAGS@ @DEFS@ -Isrc
++CPPFLAGS     = @CPPFLAGS@ @DEFS@ -Isrc -DMODULEDIR=\"$(libdir)/js\"
+ CFLAGS       = @CFLAGS@
+ LDFLAGS      = @LDFLAGS@
+ LIBS         = @LIBS@
+diff -r -u -- js-1.6.20070208_orig/src/js.c js-1.6.20070208/src/js.c
+--- js-1.6.20070208_orig/src/js.c	2007-05-08 14:45:27.000000000 +0200
++++ js-1.6.20070208/src/js.c	2007-05-08 15:09:26.000000000 +0200
+@@ -46,6 +46,16 @@
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
++#include <limits.h>
++#include <dlfcn.h>
++#ifdef WIN32
++#include <dlfcn.h>
++#ifndef RTLD_NOW
++#define RTLD_NOW 2
++#endif /* RTLD_NOW */
++#else
++#include <libgen.h>
++#endif /* WIN32 */
+ #include "jstypes.h"
+ #include "jsarena.h"
+ #include "jsutil.h"
+@@ -111,7 +121,104 @@
+ FILE *gErrFile = NULL;
+ FILE *gOutFile = NULL;
+ 
+-#ifdef JSDEBUGGER
++struct module
++{
++  struct module *next;
++  void *handle;
++  void (*initFunc)(JSContext *, JSObject *);
++  void (*destroyFunc)(JSContext *, JSObject *);
++  char name[64];
++};
++
++struct module *modules = NULL;
++
++int LoadModule(JSContext *cx, JSObject *obj, const char *module)
++{
++  char buffer[PATH_MAX + 1];
++  char name[64];
++  
++  if(strchr(module, '/'))
++    strncpy(buffer, module, sizeof(buffer));
++  else
++  {
++    strncpy(buffer, MODULEDIR, sizeof(buffer));
++    strncat(buffer, "/", sizeof(buffer));
++    strncat(buffer, module, sizeof(buffer));
++  }
++  
++  size_t len = strlen(buffer);
++
++  if(len > 2)
++  {
++    char *ext = strrchr(buffer, '.');
++    
++    if(ext && !strcmp(ext, ".so"))
++      *ext = '\0';
++  }
++  
++  strncpy(name, basename(buffer), sizeof(name));
++  name[63] = '\0';
++  
++  strncat(buffer, ".so", sizeof(buffer));  
++  buffer[PATH_MAX] = '\0';
++  
++  void *handle = dlopen(buffer, RTLD_NOW);
++
++  if(!handle)
++  {
++    fprintf(stderr, "ERROR: loading module %s: %s\n", module, dlerror());
++    return JS_FALSE;
++  }
++  
++  struct module *mod = malloc(sizeof(struct module));
++
++  if(!mod)
++  {
++    fprintf(stderr, "ERROR: cannot allocate module struct: %s\n", 
++            strerror(errno));
++
++    return JS_FALSE;
++  }
++  
++  mod->next = modules;
++  mod->handle = handle;
++  
++  strncpy(mod->name, name, sizeof(mod->name));
++  mod->name[sizeof(mod->name) - 1] = '\0';
++  
++  snprintf(buffer, sizeof(buffer), "JS_Destroy%sClasses", name);
++  mod->destroyFunc = dlsym(handle, buffer);
++  
++  snprintf(buffer, sizeof(buffer), "JS_Init%sClasses", name);
++  mod->initFunc = dlsym(handle, buffer);
++  
++  snprintf(buffer, sizeof(buffer), "ModuleInit", name);
++  mod->initFunc = dlsym(handle, buffer);
++  
++  if(mod->initFunc)
++    mod->initFunc(cx, obj);
++  else
++    fprintf(stderr, "WARNING: Did not find module initialization function: %s\n",
++            buffer);
++  
++  modules = mod;
++  return JS_TRUE;
++}
++
++void UnloadModules(JSContext *cx, JSObject *obj)
++{
++  while(modules)
++  {
++    if(modules->destroyFunc)
++      modules->destroyFunc(cx, obj);
++    
++    dlclose(modules->handle);
++    
++    modules = modules->next;
++  }  
++}
++
++#ifdef DEBUGGER
+ static JSDContext *_jsdc;
+ #ifdef JSDEBUGGER_JAVA_UI
+ static JSDJContext *_jsdjc;
+@@ -598,6 +705,19 @@
+     return JS_TRUE;
+ }
+ 
++static JSBool
++Dl(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval *rval)
++{
++  JSString *str = JS_ValueToString(cx, argv[0]);
++  
++  if(!str)
++    return JS_FALSE;
++  
++  *rval = BOOLEAN_TO_JSVAL(LoadModule(cx, obj, JS_GetStringBytes(str)));
++  
++  return JS_TRUE;
++}
++
+ /*
+  * function readline()
+  * Provides a hook for scripts to read a line from stdin.
+@@ -1629,6 +1749,7 @@
+     {"version",         Version,        0},
+     {"options",         Options,        0},
+     {"load",            Load,           1},
++    {"dl",              Dl,             1},
+     {"readline",        ReadLine,       0},
+     {"print",           Print,          0},
+     {"help",            Help,           0},
+@@ -1670,6 +1791,7 @@
+     "version([number])      Get or set JavaScript version number",
+     "options([option ...])  Get or toggle JavaScript options",
+     "load(['foo.js' ...])   Load files named by string arguments",
++    "dl(['foo.so'])         Load module named by string argument",
+     "readline()             Read a single line from stdin",
+     "print([exp ...])       Evaluate and print expressions",
+     "help([name ...])       Display usage and help messages",
+Only in js-1.6.20070208_orig/src: js.c~
+diff -r -u -- js-1.6.20070208_orig/src/jsdso.c js-1.6.20070208/src/jsdso.c
+--- js-1.6.20070208_orig/src/jsdso.c	2007-05-08 14:45:17.000000000 +0200
++++ js-1.6.20070208/src/jsdso.c	2007-05-08 15:14:03.000000000 +0200
+@@ -55,7 +55,7 @@
+ static void *dso_handle[10000];
+ 
+ /* type of the DSO load/unload functions */
+-typedef JSBool (*dso_func_t)(JSContext *cx);
++typedef JSBool (*dso_func_t)(JSContext *cx, JSObject *obj);
+ 
+ /* ISO-C type coersion trick */
+ typedef union { void *vp; dso_func_t fp; } dso_func_ptr_t;
+@@ -84,12 +84,16 @@
+     }
+ 
+     /* resolve "js_DSO_load" function, call it and insist on a true return */
+-    if ((func.vp = dlsym(handle, "js_DSO_load")) == NULL) {
++    func.vp = dlsym(handle, "js_DSO_load");
++    if(func.vp == NULL)
++      func.vp = dlsym(handle, "ModuleInit");
++
++    if (func.vp == NULL) {
+         JS_ReportError(cx, "unable to resolve symbol \"js_DSO_load\" in DSO \"%s\"", filename);
+         dlclose(handle);
+         return JS_FALSE;
+     }
+-    rc = func.fp(cx);
++    rc = func.fp(cx, JS_GetGlobalObject(cx));
+     if (!rc) {
+         JS_ReportError(cx, "function \"js_DSO_load\" in DSO \"%s\" returned error", filename);
+         dlclose(handle);
+@@ -129,7 +133,11 @@
+ 
+     /* resolve "js_DSO_unload" function and (if available only)
+        call it and insist on a true return */
+-    if ((func.vp = dlsym(handle, "js_DSO_unload")) != NULL) {
++    func.vp = dlsym(handle, "js_DSO_unload");
++    if(func.vp == NULL)
++      func.vp = dlsym(handle, "ModuleRelease");
++  
++    if (func.vp != NULL) {
+         rc = func.fp(cx);
+         if (!rc) {
+             JS_ReportError(cx, "function \"js_DSO_unload\" in DSO with id #%d returned error", idx);
+Only in js-1.6.20070208: js
+diff -r -u -- js-1.6.20070208_orig/src/jsdso.c js-1.6.20070208/src/jsdso.c
+--- js-1.6.20070208_orig/src/jsdso.c	2007-05-08 15:23:11.000000000 +0200
++++ js-1.6.20070208/src/jsdso.c	2007-05-08 15:23:22.000000000 +0200
+@@ -138,7 +138,7 @@
+       func.vp = dlsym(handle, "ModuleRelease");
+   
+     if (func.vp != NULL) {
+-        rc = func.fp(cx);
++        rc = func.fp(cx, JS_GetGlobalObject(cx));
+         if (!rc) {
+             JS_ReportError(cx, "function \"js_DSO_unload\" in DSO with id #%d returned error", idx);
+             return JS_FALSE;
+diff -r -u -- js-1.6.20070208_orig/src/js.c js-1.6.20070208/src/js.c
+--- js-1.6.20070208_orig/src/js.c	2007-05-08 16:39:21.000000000 +0200
++++ js-1.6.20070208/src/js.c	2007-05-08 16:39:31.000000000 +0200
+@@ -1750,6 +1750,7 @@
+     {"options",         Options,        0},
+     {"load",            Load,           1},
+     {"dl",              Dl,             1},
++    {"LoadModule",      Dl,             1},
+     {"readline",        ReadLine,       0},
+     {"print",           Print,          0},
+     {"help",            Help,           0},

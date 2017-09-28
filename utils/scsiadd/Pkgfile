@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Lets you insert and remove SCSI devices on the fly.
+#  scsiadd lets you insert or remove SCSI devices from the Linux SCSI
+#  subsytem on the fly. This is especially useful for external devices like
+#  scanners or tapes, which can be powered on after system boot. Devices
+#  can be added or removed at any time.
+#  .
+# URL: http://llg.cubic.org/tools/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=scsiadd
+version=1.96
+release=1
+source=(http://llg.cubic.org/tools/scsiadd-1.96.tar.gz)
+
+build()
+{
+  cd scsiadd-1.96
+./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+make
+make DESTDIR="$PKG" install
+}
+
+# EOF

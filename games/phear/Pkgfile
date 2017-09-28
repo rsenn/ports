@@ -1,0 +1,24 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A Boulder Dash / Digger like game written for the console using ncurses.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=phear
+version=0.5
+release=1
+source=(http://www.x86.no/cavezofphear/phear-$version.tar.bz2)
+
+build() 
+{
+  cd phear-$version
+  
+  make
+  make DESTDIR_BIN="$ROOT/bin" DESTDIR_DATA="$ROOT/share" install
+
+  install -d $ROOT/share/doc/cavezofphear
+  install -m 644 VERSION TODO README-EDITOR LICENSE ChangeLog INSTALL README $ROOT/share/doc/cavezofphear
+}
+
+# EOF

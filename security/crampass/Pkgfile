@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A CRAM MD5 password file update tool.
+#  crampass is a CRAM MD5 password file update tool which is useful with the
+#  WU IMAP and POP3 daemons. It allows users to update the stored password
+#  without root intervention.
+#  .
+# URL: http://www.lysator.liu.se/~pen/crampass
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=crampass
+version=1.0.1
+release=1
+source=(ftp://ftp.lysator.liu.se/pub/unix/crampass/crampass-$version.tar.gz
+        crampass-1.0.1-fixes.patch)
+
+build()
+{
+  cd crampass-$version
+
+  patch -N -p1 -i $SRC/crampass-1.0.1-fixes.patch
+
+  make
+  make INSTROOT="$ROOT" install
+
+  install -d $ROOT/share/doc/crampass
+  install -m 644 ChangeLog README $ROOT/share/doc/crampass
+}
+
+# EOF

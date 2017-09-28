@@ -1,0 +1,37 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Package: libsnpfile
+# Section: universe/libs
+# Description: A file format for SNP marker data.
+#  SNPfile is a library and API for manipulating large SNP data sets with
+#  associated meta-data, such as marker names, marker locations, individuals'
+#  phenotypes, etc. in an I/O efficient binary file format. In its core,
+#  SNPfile assumes very little about the metadata associated with markers
+#  and individuals, but leaves this up to application program protocols.
+#  .
+# URL: http://www.daimi.au.dk/~mailund/SNPfile/index.html
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=snpfile
+version=2.0.0
+release=1
+source=(http://www.daimi.au.dk/~mailund/SNPfile/download/snpfile-$version.tar.gz)
+
+build()
+{
+  cd snpfile-$version
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix" \
+     --enable-shared \
+     --enable-static
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

@@ -1,0 +1,257 @@
+diff -r -u libtool-1.5.24_orig/ltmain.in libtool-1.5.24/ltmain.in
+--- libtool-1.5.24_orig/ltmain.in	2007-09-30 19:08:10.000000000 +0200
++++ libtool-1.5.24/ltmain.in	2007-09-30 19:10:11.000000000 +0200
+@@ -155,8 +155,8 @@
+ execute_dlfiles=
+ duplicate_deps=no
+ preserve_args=
+-lo2o="s/\\.lo\$/.${objext}/"
+-o2lo="s/\\.${objext}\$/.lo/"
++lo2o="s/\\.lo\$/.${objext:-o}/"
++o2lo="s/\\.${objext:-o}\$/.lo/"
+ extracted_archives=
+ extracted_serial=0
+ 
+@@ -419,7 +419,7 @@
+         func_extract_an_archive "$my_xdir" "$my_xabs"
+         ;;
+       esac
+-      my_oldobjs="$my_oldobjs "`find $my_xdir -name \*.$objext -print -o -name \*.lo -print | $NL2SP`
++      my_oldobjs="$my_oldobjs "`find $my_xdir -name \*.${objext:-o} -print -o -name \*.lo -print | $NL2SP`
+     done
+     func_extract_archives_result="$my_oldobjs"
+ }
+@@ -879,7 +879,7 @@
+     # Calculate the filename of the output object if compiler does
+     # not support -o with -c
+     if test "$compiler_c_o" = no; then
+-      output_obj=`$echo "X$srcfile" | $Xsed -e 's%^.*/%%' -e 's%\.[^.]*$%%'`.${objext}
++      output_obj=`$echo "X$srcfile" | $Xsed -e 's%^.*/%%' -e 's%\.[^.]*$%%'`.${objext:-o}
+       lockfile="$output_obj.lock"
+       removelist="$removelist $output_obj $lockfile"
+       trap "$run $rm $removelist; exit $EXIT_FAILURE" 1 2 15
+@@ -1862,7 +1862,7 @@
+ 	esac
+ 	;;
+ 
+-      *.$objext)
++      *.${objext:-o})
+ 	# A standard object.
+ 	objs="$objs $arg"
+ 	;;
+@@ -1965,7 +1965,7 @@
+ 	fi
+ 	;;
+ 
+-      *.$libext)
++      *.${libext:-a})
+ 	# An archive.
+ 	deplibs="$deplibs $arg"
+ 	old_deplibs="$old_deplibs $arg"
+@@ -2058,8 +2058,8 @@
+       $echo "$help" 1>&2
+       exit $EXIT_FAILURE
+       ;;
+-    *.$libext) linkmode=oldlib ;;
+-    *.lo | *.$objext) linkmode=obj ;;
++    *.${libext:-a}) linkmode=oldlib ;;
++    *.lo | *.${objext:-o}) linkmode=obj ;;
+     *.la) linkmode=lib ;;
+     *) linkmode=prog ;; # Anything else should be a program.
+     esac
+@@ -2273,7 +2273,7 @@
+ 	  continue
+ 	  ;;
+ 	*.la) lib="$deplib" ;;
+-	*.$libext)
++	*.${libext:-a})
+ 	  if test "$pass" = conv; then
+ 	    deplibs="$deplib $deplibs"
+ 	    continue
+@@ -2301,7 +2301,7 @@
+ 	      $echo "*** I have the capability to make that library automatically link in when"
+ 	      $echo "*** you link to this library.  But I can only do this if you have a"
+ 	      $echo "*** shared version of the library, which you do not appear to have"
+-	      $echo "*** because the file extensions .$libext of this argument makes me believe"
++	      $echo "*** because the file extensions .${libext:-a} of this argument makes me believe"
+ 	      $echo "*** that it is just a static archive that I should not used here."
+ 	    else
+ 	      $echo
+@@ -2321,8 +2321,8 @@
+ 	    continue
+ 	    ;;
+ 	  esac # linkmode
+-	  ;; # *.$libext
+-	*.lo | *.$objext)
++	  ;; # *.${libext:-a}
++	*.lo | *.${objext:-o})
+ 	  if test "$pass" = conv; then
+ 	    deplibs="$deplib $deplibs"
+ 	  elif test "$linkmode" = prog; then
+@@ -3209,7 +3209,7 @@
+ 	  # Some compilers have problems with a `.al' extension so
+ 	  # convenience libraries should have the same extension an
+ 	  # archive normally would.
+-	  oldlibs="$output_objdir/$libname.$libext $oldlibs"
++	  oldlibs="$output_objdir/$libname.${libext:-a} $oldlibs"
+ 	  build_libtool_libs=convenience
+ 	  build_old_libs=yes
+ 	fi
+@@ -3441,7 +3441,7 @@
+ 	tempremovelist=`$echo "$output_objdir/*"`
+ 	for p in $tempremovelist; do
+ 	  case $p in
+-	    *.$objext)
++	    *.${objext:-o})
+ 	       ;;
+ 	    $output_objdir/$outputname | $output_objdir/$libname.* | $output_objdir/${libname}${release}.*)
+ 	       if test "X$precious_files_regex" != "X"; then
+@@ -3463,10 +3463,10 @@
+ 
+       # Now set the variables for building old libraries.
+       if test "$build_old_libs" = yes && test "$build_libtool_libs" != convenience ; then
+-	oldlibs="$oldlibs $output_objdir/$libname.$libext"
++	oldlibs="$oldlibs $output_objdir/$libname.${libext:-a}"
+ 
+ 	# Transform .lo files to .o files.
+-	oldobjs="$objs "`$echo "X$libobjs" | $SP2NL | $Xsed -e '/\.'${libext}'$/d' -e "$lo2o" | $NL2SP`
++	oldobjs="$objs "`$echo "X$libobjs" | $SP2NL | $Xsed -e '/\.'${libext:-a}'$/d' -e "$lo2o" | $NL2SP`
+       fi
+ 
+       # Eliminate all temporary directories.
+@@ -3833,7 +3833,7 @@
+ 	      $echo "*** \`nm' from GNU binutils and a full rebuild may help."
+ 	    fi
+ 	    if test "$build_old_libs" = no; then
+-	      oldlibs="$output_objdir/$libname.$libext"
++	      oldlibs="$output_objdir/$libname.${libext:-a}"
+ 	      build_libtool_libs=module
+ 	      build_old_libs=yes
+ 	    else
+@@ -3851,7 +3851,7 @@
+ 	      $echo "*** it was explicitly requested with -no-undefined,"
+ 	      $echo "*** libtool will only create a static version of it."
+ 	      if test "$build_old_libs" = no; then
+-		oldlibs="$output_objdir/$libname.$libext"
++		oldlibs="$output_objdir/$libname.${libext:-a}"
+ 		build_libtool_libs=module
+ 		build_old_libs=yes
+ 	      else
+@@ -4111,7 +4111,7 @@
+ 	  delfiles=
+ 	  last_robj=
+ 	  k=1
+-	  output=$output_objdir/$output_la-${k}.$objext
++	  output=$output_objdir/$output_la-${k}.${objext:-o}
+ 	  # Loop over the list of objects to be linked.
+ 	  for obj in $save_libobjs
+ 	  do
+@@ -4131,9 +4131,9 @@
+ 		# the last one created.
+ 		eval concat_cmds=\"\$concat_cmds~$reload_cmds $objlist $last_robj\"
+ 	      fi
+-	      last_robj=$output_objdir/$output_la-${k}.$objext
++	      last_robj=$output_objdir/$output_la-${k}.${objext:-o}
+ 	      k=`gexpr $k + 1`
+-	      output=$output_objdir/$output_la-${k}.$objext
++	      output=$output_objdir/$output_la-${k}.${objext:-o}
+ 	      objlist=$obj
+ 	      len=1
+ 	    fi
+@@ -4159,7 +4159,7 @@
+ 	  while test "$i" -lt "$k"
+ 	  do
+ 	    i=`gexpr $i + 1`
+-	    delfiles="$delfiles $output_objdir/$output_la-${i}.$objext"
++	    delfiles="$delfiles $output_objdir/$output_la-${i}.${objext:-o}"
+ 	  done
+ 
+ 	  $echo "creating a temporary reloadable object file: $output"
+@@ -4318,7 +4318,7 @@
+       fi
+ 
+       # Create the old-style object.
+-      reload_objs="$objs$old_deplibs "`$echo "X$libobjs" | $SP2NL | $Xsed -e '/\.'${libext}$'/d' -e '/\.lib$/d' -e "$lo2o" | $NL2SP`" $reload_conv_objs" ### testsuite: skip nested quoting test
++      reload_objs="$objs$old_deplibs "`$echo "X$libobjs" | $SP2NL | $Xsed -e '/\.'${libext:-a}$'/d' -e '/\.lib$/d' -e "$lo2o" | $NL2SP`" $reload_conv_objs" ### testsuite: skip nested quoting test
+ 
+       output="$obj"
+       cmds=$reload_cmds
+@@ -4755,16 +4755,16 @@
+           case $host in
+           *cygwin* | *mingw* )
+             if test -f "$output_objdir/${outputname}.def" ; then
+-              compile_command=`$echo "X$compile_command" | $SP2NL | $Xsed -e "s%@SYMFILE@%$output_objdir/${outputname}.def $output_objdir/${outputname}S.${objext}%" | $NL2SP`
+-              finalize_command=`$echo "X$finalize_command" | $SP2NL | $Xsed -e "s%@SYMFILE@%$output_objdir/${outputname}.def $output_objdir/${outputname}S.${objext}%" | $NL2SP`
++              compile_command=`$echo "X$compile_command" | $SP2NL | $Xsed -e "s%@SYMFILE@%$output_objdir/${outputname}.def $output_objdir/${outputname}S.${objext:-o}%" | $NL2SP`
++              finalize_command=`$echo "X$finalize_command" | $SP2NL | $Xsed -e "s%@SYMFILE@%$output_objdir/${outputname}.def $output_objdir/${outputname}S.${objext:-o}%" | $NL2SP`
+             else
+-              compile_command=`$echo "X$compile_command" | $SP2NL | $Xsed -e "s%@SYMFILE@%$output_objdir/${outputname}S.${objext}%" | $NL2SP`
+-              finalize_command=`$echo "X$finalize_command" | $SP2NL | $Xsed -e "s%@SYMFILE@%$output_objdir/${outputname}S.${objext}%" | $NL2SP`
++              compile_command=`$echo "X$compile_command" | $SP2NL | $Xsed -e "s%@SYMFILE@%$output_objdir/${outputname}S.${objext:-o}%" | $NL2SP`
++              finalize_command=`$echo "X$finalize_command" | $SP2NL | $Xsed -e "s%@SYMFILE@%$output_objdir/${outputname}S.${objext:-o}%" | $NL2SP`
+              fi
+             ;;
+           * )
+-            compile_command=`$echo "X$compile_command" | $SP2NL | $Xsed -e "s%@SYMFILE@%$output_objdir/${outputname}S.${objext}%" | $NL2SP`
+-            finalize_command=`$echo "X$finalize_command" | $SP2NL | $Xsed -e "s%@SYMFILE@%$output_objdir/${outputname}S.${objext}%" | $NL2SP`
++            compile_command=`$echo "X$compile_command" | $SP2NL | $Xsed -e "s%@SYMFILE@%$output_objdir/${outputname}S.${objext:-o}%" | $NL2SP`
++            finalize_command=`$echo "X$finalize_command" | $SP2NL | $Xsed -e "s%@SYMFILE@%$output_objdir/${outputname}S.${objext:-o}%" | $NL2SP`
+             ;;
+           esac
+ 	  ;;
+@@ -4795,8 +4795,8 @@
+ 
+ 	# Delete the generated files.
+ 	if test -n "$dlsyms"; then
+-	  $show "$rm $output_objdir/${outputname}S.${objext}"
+-	  $run $rm "$output_objdir/${outputname}S.${objext}"
++	  $show "$rm $output_objdir/${outputname}S.${objext:-o}"
++	  $run $rm "$output_objdir/${outputname}S.${objext:-o}"
+ 	fi
+ 
+ 	exit $exit_status
+@@ -5642,7 +5642,7 @@
+     case $output in
+     *.la)
+       old_library=
+-      test "$build_old_libs" = yes && old_library="$libname.$libext"
++      test "$build_old_libs" = yes && old_library="$libname.${libext:-a}"
+       $show "creating $output"
+ 
+       # Preserve any variables that may affect compiler behavior
+@@ -5945,7 +5945,7 @@
+ 
+       # Do each installation.
+       case $file in
+-      *.$libext)
++      *.${libext:-a})
+ 	# Do the static libraries later.
+ 	staticlibs="$staticlibs $file"
+ 	;;
+@@ -6097,7 +6097,7 @@
+ 	*.lo)
+ 	  staticdest=`$echo "X$destfile" | $Xsed -e "$lo2o"`
+ 	  ;;
+-	*.$objext)
++	*.${objext:-o})
+ 	  staticdest="$destfile"
+ 	  destfile=
+ 	  ;;
+@@ -6674,7 +6674,7 @@
+ 
+ 	    # note $name still contains .exe if it was in $file originally
+ 	    # as does the version of $file that was added into $rmfiles
+-	    rmfiles="$rmfiles $objdir/$name $objdir/${name}S.${objext}"
++	    rmfiles="$rmfiles $objdir/$name $objdir/${name}S.${objext:-o}"
+ 	    if test "$fast_install" = yes && test -n "$relink_command"; then
+ 	      rmfiles="$rmfiles $objdir/lt-$name"
+ 	    fi
+@@ -6889,7 +6889,7 @@
+ If OUTPUT-FILE ends in \`.a' or \`.lib', then a standard library is created
+ using \`ar' and \`ranlib', or on Windows using \`lib'.
+ 
+-If OUTPUT-FILE ends in \`.lo' or \`.${objext}', then a reloadable object file
++If OUTPUT-FILE ends in \`.lo' or \`.${objext:-o}', then a reloadable object file
+ is created, otherwise an executable program is created."
+   ;;
+ 

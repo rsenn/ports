@@ -1,0 +1,25 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=gen
+version=1.6.3
+release=1
+source=(http://www.gradsoft.kiev.ua/common/ToolBox/Gen-$version.tar.gz)
+
+build()
+{
+  cd Gen
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make prefix="$ROOT" install
+}

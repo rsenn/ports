@@ -1,0 +1,52 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:51 roman Exp $
+#
+# Description: Comprehensive, modular, and portable cryptographic toolkit
+#  Provides developers with a vast array of well known published block ciphers,
+#  one-way hash functions, chaining modes, pseudo- random number generators,
+#  public key cryptography, and a plethora of other routines. It has been
+#  designed from the ground up to be very simple to use. It has a modular
+#  and standard API that allows new ciphers, hashes, and PRNGs to be added
+#  or removed without change to the overall end application. It features
+#  easy to use functions and a complete user manual which has many source
+#  snippet examples.
+# URL:  http://libtomcrypt.com/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6
+
+name=libtomcrypt
+version=1.17
+release=1
+source=(ftp://mirror.switch.ch/mirror/gentoo/distfiles/crypt-$version.tar.bz2
+#        libtomcrypt-1.16-version-info.patch
+#        libtomcrypt-1.17-lt-tag.patch
+#        libtomcrypt-1.17-lt-obj.patch
+        libtomcrypt-1.17-libtool.patch
+        libtomcrypt-1.17-libtool-2.patch)
+
+build()
+{
+  cd libtomcrypt-$version
+
+#  fs_duplicate $SRC/libtomcrypt-$version
+#  patch -N -p1 -i $SRC/libtomcrypt-1.16-version-info.patch
+#  patch -N -p1 -i $SRC/libtomcrypt-1.17-lt-tag.patch
+#  patch -N -p1 -i $SRC/libtomcrypt-1.17-lt-obj.patch
+  patch -N -p1 -i $SRC/libtomcrypt-1.17-libtool.patch
+  patch -N -p1 -i $SRC/libtomcrypt-1.17-libtool-2.patch
+
+#  exit 0
+
+  make -f makefile.shared \
+      CFLAGS="${CFLAGS--g -O2} -I. -Isrc/headers" \
+      DESTDIR="$PKG" \
+      LIBPATH="${libdir=$prefix/lib}" \
+      INCPATH="${includedir=$prefix/include}" \
+      DATAPATH="$prefix/share/doc/libtomcrypt/pdf" \
+      INSTALL_GROUP="root" \
+    default \
+    install
+
+  docdir=$ROOT/share/doc/libtomcrypt
+  install -d $docdir
+  cp -rf [A-Z]*[A-Z]* changes doc/* demos $docdir
+}

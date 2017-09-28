@@ -1,0 +1,936 @@
+diff -ru krb5-1.6.3_orig/src/appl/telnet/telnet/telnet.c krb5-1.6.3/src/appl/telnet/telnet/telnet.c
+--- krb5-1.6.3_orig/src/appl/telnet/telnet/telnet.c	2008-03-24 01:17:04.000000000 +0000
++++ krb5-1.6.3/src/appl/telnet/telnet/telnet.c	2008-03-24 02:27:04.000000000 +0000
+@@ -773,7 +773,7 @@
+ 	return (1);
+ }
+ 
+-#ifndef	HAVE_SETUPTERM
++#if 0 //ndef	HAVE_SETUPTERM
+ char termbuf[1024];
+ 
+ 	/*ARGSUSED*/
+diff -ru krb5-1.6.3_orig/src/plugins/preauth/cksum_body/Makefile krb5-1.6.3/src/plugins/preauth/cksum_body/Makefile
+--- krb5-1.6.3_orig/src/plugins/preauth/cksum_body/Makefile	2008-03-24 01:17:09.000000000 +0000
++++ krb5-1.6.3/src/plugins/preauth/cksum_body/Makefile	2008-03-24 02:20:43.000000000 +0000
+@@ -175,7 +175,7 @@
+ LD_UNRESOLVED_PREFIX = @LD_UNRESOLVED_PREFIX@
+ LD_SHLIBDIR_PREFIX = @LD_SHLIBDIR_PREFIX@
+ LDARGS = @LDARGS@
+-LIBS = -lresolv 
++LIBS = -lresolv -lresolv -lterminfo
+ SRVLIBS = @SRVLIBS@
+ SRVDEPLIBS = @SRVDEPLIBS@
+ CLNTLIBS = @CLNTLIBS@
+diff -ru krb5-1.6.3_orig/src/plugins/preauth/cksum_body/config.log krb5-1.6.3/src/plugins/preauth/cksum_body/config.log
+--- krb5-1.6.3_orig/src/plugins/preauth/cksum_body/config.log	2008-03-24 01:17:09.000000000 +0000
++++ krb5-1.6.3/src/plugins/preauth/cksum_body/config.log	2008-03-24 02:20:43.000000000 +0000
+@@ -56,7 +56,7 @@
+ gcc: '-V' option must have argument
+ configure:1748: $? = 1
+ configure:1771: checking for C compiler default output file name
+-configure:1774: gcc -g -O2   conftest.c  >&5
++configure:1774: gcc -g -O2   conftest.c -lresolv -lterminfo >&5
+ /opt/epiphyte/lib/gcc/i686-epiphyte-linux-gnu/4.3.0/../../../../i686-epiphyte-linux-gnu/bin/ld: warning: ld-linux.so.2, needed by /opt/epiphyte/lib/libc.so.6, not found (try using -rpath or -rpath-link)
+ configure:1777: $? = 0
+ configure:1823: result: a.out
+@@ -67,7 +67,7 @@
+ configure:1861: checking whether we are cross compiling
+ configure:1863: result: no
+ configure:1866: checking for suffix of executables
+-configure:1868: gcc -o conftest -g -O2   conftest.c  >&5
++configure:1868: gcc -o conftest -g -O2   conftest.c -lresolv -lterminfo >&5
+ /opt/epiphyte/lib/gcc/i686-epiphyte-linux-gnu/4.3.0/../../../../i686-epiphyte-linux-gnu/bin/ld: warning: ld-linux.so.2, needed by /opt/epiphyte/lib/libc.so.6, not found (try using -rpath or -rpath-link)
+ configure:1871: $? = 0
+ configure:1896: result: 
+@@ -167,7 +167,7 @@
+ configure:4848: result: yes,yes
+ configure:4897: enabling thread support
+ configure:5098: checking for the pthreads library -lpthreads
+-configure:5136: gcc -o conftest -g -O2    conftest.c -lpthreads -lresolv  >&5
++configure:5136: gcc -o conftest -g -O2    conftest.c -lpthreads -lresolv -lresolv -lterminfo >&5
+ /opt/epiphyte/lib/gcc/i686-epiphyte-linux-gnu/4.3.0/../../../../i686-epiphyte-linux-gnu/bin/ld: cannot find -lpthreads
+ collect2: ld returned 1 exit status
+ configure:5142: $? = 1
+@@ -217,9 +217,9 @@
+ | }
+ configure:5169: result: no
+ configure:5045: checking whether pthreads work without any flags
+-configure:5136: gcc -o conftest -g -O2    conftest.c  -lresolv  >&5
++configure:5136: gcc -o conftest -g -O2    conftest.c  -lresolv -lresolv -lterminfo >&5
+ /opt/epiphyte/lib/gcc/i686-epiphyte-linux-gnu/4.3.0/../../../../i686-epiphyte-linux-gnu/bin/ld: warning: ld-linux.so.2, needed by /opt/epiphyte/lib/libc.so.6, not found (try using -rpath or -rpath-link)
+-/tmp/ccSqMFdz.o: In function `main':
++/tmp/ccG9IESK.o: In function `main':
+ /opt/epiphyte/src/libs/krb5-1.6.3/src/plugins/preauth/cksum_body/conftest.c:38: undefined reference to `pthread_join'
+ /opt/epiphyte/src/libs/krb5-1.6.3/src/plugins/preauth/cksum_body/conftest.c:39: undefined reference to `__pthread_register_cancel'
+ /opt/epiphyte/src/libs/krb5-1.6.3/src/plugins/preauth/cksum_body/conftest.c:40: undefined reference to `pthread_create'
+@@ -272,10 +272,10 @@
+ | }
+ configure:5169: result: no
+ configure:5050: checking whether pthreads work with -Kthread
+-configure:5136: gcc -o conftest -g -O2 -Kthread   conftest.c  -lresolv  >&5
++configure:5136: gcc -o conftest -g -O2 -Kthread   conftest.c  -lresolv -lresolv -lterminfo >&5
+ gcc: unrecognized option '-Kthread'
+ /opt/epiphyte/lib/gcc/i686-epiphyte-linux-gnu/4.3.0/../../../../i686-epiphyte-linux-gnu/bin/ld: warning: ld-linux.so.2, needed by /opt/epiphyte/lib/libc.so.6, not found (try using -rpath or -rpath-link)
+-/tmp/ccOxT2n2.o: In function `main':
++/tmp/ccEFaVh4.o: In function `main':
+ /opt/epiphyte/src/libs/krb5-1.6.3/src/plugins/preauth/cksum_body/conftest.c:38: undefined reference to `pthread_join'
+ /opt/epiphyte/src/libs/krb5-1.6.3/src/plugins/preauth/cksum_body/conftest.c:39: undefined reference to `__pthread_register_cancel'
+ /opt/epiphyte/src/libs/krb5-1.6.3/src/plugins/preauth/cksum_body/conftest.c:40: undefined reference to `pthread_create'
+@@ -328,10 +328,10 @@
+ | }
+ configure:5169: result: no
+ configure:5050: checking whether pthreads work with -kthread
+-configure:5136: gcc -o conftest -g -O2 -kthread   conftest.c  -lresolv  >&5
++configure:5136: gcc -o conftest -g -O2 -kthread   conftest.c  -lresolv -lresolv -lterminfo >&5
+ gcc: unrecognized option '-kthread'
+ /opt/epiphyte/lib/gcc/i686-epiphyte-linux-gnu/4.3.0/../../../../i686-epiphyte-linux-gnu/bin/ld: warning: ld-linux.so.2, needed by /opt/epiphyte/lib/libc.so.6, not found (try using -rpath or -rpath-link)
+-/tmp/cck95Hcp.o: In function `main':
++/tmp/ccwosB5k.o: In function `main':
+ /opt/epiphyte/src/libs/krb5-1.6.3/src/plugins/preauth/cksum_body/conftest.c:38: undefined reference to `pthread_join'
+ /opt/epiphyte/src/libs/krb5-1.6.3/src/plugins/preauth/cksum_body/conftest.c:39: undefined reference to `__pthread_register_cancel'
+ /opt/epiphyte/src/libs/krb5-1.6.3/src/plugins/preauth/cksum_body/conftest.c:40: undefined reference to `pthread_create'
+@@ -384,7 +384,7 @@
+ | }
+ configure:5169: result: no
+ configure:5098: checking for the pthreads library -llthread
+-configure:5136: gcc -o conftest -g -O2    conftest.c -llthread -lresolv  >&5
++configure:5136: gcc -o conftest -g -O2    conftest.c -llthread -lresolv -lresolv -lterminfo >&5
+ /opt/epiphyte/lib/gcc/i686-epiphyte-linux-gnu/4.3.0/../../../../i686-epiphyte-linux-gnu/bin/ld: cannot find -llthread
+ collect2: ld returned 1 exit status
+ configure:5142: $? = 1
+@@ -434,7 +434,7 @@
+ | }
+ configure:5169: result: no
+ configure:5050: checking whether pthreads work with -pthread
+-configure:5136: gcc -o conftest -g -O2 -pthread   conftest.c  -lresolv  >&5
++configure:5136: gcc -o conftest -g -O2 -pthread   conftest.c  -lresolv -lresolv -lterminfo >&5
+ /opt/epiphyte/lib/gcc/i686-epiphyte-linux-gnu/4.3.0/../../../../i686-epiphyte-linux-gnu/bin/ld: warning: ld-linux.so.2, needed by /opt/epiphyte/lib/gcc/i686-epiphyte-linux-gnu/4.3.0/../../../libpthread.so, not found (try using -rpath or -rpath-link)
+ configure:5142: $? = 0
+ configure:5146: test -z 
+@@ -444,7 +444,7 @@
+ configure:5155: $? = 0
+ configure:5169: result: yes
+ configure:5189: checking for joinable pthread attribute
+-configure:5207: gcc -o conftest -g -O2 -pthread   conftest.c  -lresolv  >&5
++configure:5207: gcc -o conftest -g -O2 -pthread   conftest.c  -lresolv -lresolv -lterminfo >&5
+ /opt/epiphyte/lib/gcc/i686-epiphyte-linux-gnu/4.3.0/../../../../i686-epiphyte-linux-gnu/bin/ld: warning: ld-linux.so.2, needed by /opt/epiphyte/lib/gcc/i686-epiphyte-linux-gnu/4.3.0/../../../libpthread.so, not found (try using -rpath or -rpath-link)
+ configure:5213: $? = 0
+ configure:5217: test -z 
+@@ -514,6 +514,7 @@
+ 
+ config.status:731: creating ./Makefile
+ config.status:835: creating config.h
++config.status:981: config.h is unchanged
+ 
+ ## ---------------- ##
+ ## Cache variables. ##
+@@ -549,17 +550,26 @@
+ ac_cv_env_target_alias_set=
+ ac_cv_env_target_alias_value=
+ ac_cv_exeext=
++ac_cv_file__etc_TIMEZONE=no
++ac_cv_file__etc_environment=yes
++ac_cv_func__getpty=no
+ ac_cv_func_access=yes
+ ac_cv_func_bswap16=no
+ ac_cv_func_bswap64=no
++ac_cv_func_cfsetispeed=yes
++ac_cv_func_cgetent=no
+ ac_cv_func_chmod=yes
+ ac_cv_func_closelog=yes
+ ac_cv_func_daemon=yes
+ ac_cv_func_fchmod=yes
++ac_cv_func_fchown=yes
+ ac_cv_func_flock=yes
++ac_cv_func_fork=yes
++ac_cv_func_fork_works=yes
+ ac_cv_func_ftime=yes
+ ac_cv_func_getaddrinfo=yes
+ ac_cv_func_getcwd=yes
++ac_cv_func_getdtablesize=yes
+ ac_cv_func_getenv=yes
+ ac_cv_func_geteuid=yes
+ ac_cv_func_gethostbyaddr_r=yes
+@@ -568,39 +578,63 @@
+ ac_cv_func_gethostbyname_r=yes
+ ac_cv_func_getifaddrs=yes
+ ac_cv_func_getnameinfo=yes
++ac_cv_func_getopt=yes
+ ac_cv_func_getpwnam_r=yes
+ ac_cv_func_getpwuid_r=yes
+ ac_cv_func_getservbyname_r=yes
+ ac_cv_func_getservbyport_r=yes
++ac_cv_func_gettosbyname=no
+ ac_cv_func_getusershell=yes
++ac_cv_func_getutmp=yes
++ac_cv_func_getutmpx=yes
+ ac_cv_func_gmtime_r=yes
++ac_cv_func_grantpt=yes
++ac_cv_func_herror=yes
+ ac_cv_func_inet_aton=yes
+ ac_cv_func_inet_ntoa=yes
+ ac_cv_func_inet_ntop=yes
+ ac_cv_func_inet_pton=yes
++ac_cv_func_initgroups=yes
++ac_cv_func_isatty=yes
++ac_cv_func_killpg=yes
++ac_cv_func_line_push=no
+ ac_cv_func_localtime_r=yes
++ac_cv_func_logwtmp=yes
+ ac_cv_func_lstat=yes
+ ac_cv_func_memmove=yes
+ ac_cv_func_mkstemp=yes
+ ac_cv_func_openlog=yes
++ac_cv_func_openpty=yes
++ac_cv_func_parsetos=no
+ ac_cv_func_pthread_mutex_lock=yes
+ ac_cv_func_pthread_once=no
+ ac_cv_func_pthread_rwlock_init=no
++ac_cv_func_ptsname=yes
+ ac_cv_func_re_comp=yes
+ ac_cv_func_re_exec=yes
+ ac_cv_func_regcomp=yes
+ ac_cv_func_regexec=yes
++ac_cv_func_revoke=no
++ac_cv_func_rmufile=no
++ac_cv_func_rresvport_af=yes
+ ac_cv_func_sched_yield=yes
+ ac_cv_func_sem_init=no
+ ac_cv_func_sem_trywait=no
+ ac_cv_func_setegid=yes
+ ac_cv_func_setenv=yes
+ ac_cv_func_seteuid=yes
++ac_cv_func_setlogin=no
++ac_cv_func_setpgid=yes
++ac_cv_func_setpriority=yes
+ ac_cv_func_setregid=yes
+ ac_cv_func_setresgid=yes
+ ac_cv_func_setresuid=yes
+ ac_cv_func_setreuid=yes
+ ac_cv_func_setsid=yes
++ac_cv_func_setupterm=no
++ac_cv_func_setutent=yes
++ac_cv_func_setutsent=no
++ac_cv_func_setutxent=yes
+ ac_cv_func_setvbuf=yes
+ ac_cv_func_sigprocmask=yes
+ ac_cv_func_sigsetjmp=no
+@@ -609,25 +643,41 @@
+ ac_cv_func_srand48=yes
+ ac_cv_func_srandom=yes
+ ac_cv_func_stat=yes
++ac_cv_func_strcasecmp=yes
+ ac_cv_func_strchr=yes
+ ac_cv_func_strdup=yes
+ ac_cv_func_strerror=yes
+ ac_cv_func_strerror_r=yes
+ ac_cv_func_strftime=yes
+ ac_cv_func_strptime=yes
++ac_cv_func_strsave=no
+ ac_cv_func_strstr=yes
+ ac_cv_func_syslog=yes
++ac_cv_func_tcgetpgrp=yes
+ ac_cv_func_tcsetattr=yes
++ac_cv_func_tcsetpgrp=yes
++ac_cv_func_tgetent=yes
+ ac_cv_func_timezone=yes
++ac_cv_func_ttyname=yes
+ ac_cv_func_umask=yes
+ ac_cv_func_unsetenv=yes
++ac_cv_func_updwtmp=yes
++ac_cv_func_updwtmpx=yes
++ac_cv_func_utimes=yes
++ac_cv_func_utmpname=yes
++ac_cv_func_utmpxname=yes
+ ac_cv_func_vasprintf=yes
++ac_cv_func_vfork=yes
++ac_cv_func_vfork_works=yes
++ac_cv_func_vhangup=yes
+ ac_cv_func_vsnprintf=yes
+ ac_cv_func_vsprintf=yes
+ ac_cv_func_waitpid=yes
+ ac_cv_header_alloca_h=yes
+ ac_cv_header_arpa_inet_h=yes
++ac_cv_header_arpa_nameser_h=yes
+ ac_cv_header_byteswap_h=yes
++ac_cv_header_curses_h=yes
+ ac_cv_header_dirent_dirent_h=yes
+ ac_cv_header_dirent_h=yes
+ ac_cv_header_dlfcn_h=yes
+@@ -638,7 +688,10 @@
+ ac_cv_header_inttypes_h=yes
+ ac_cv_header_kdc_h=no
+ ac_cv_header_keyutils_h=yes
++ac_cv_header_krb4_proto_h=no
+ ac_cv_header_krb_db_h=no
++ac_cv_header_lastlog_h=yes
++ac_cv_header_libutil_h=no
+ ac_cv_header_limits_h=yes
+ ac_cv_header_machine_byte_order_h=no
+ ac_cv_header_machine_endian_h=no
+@@ -647,10 +700,12 @@
+ ac_cv_header_netinet_in_h=yes
+ ac_cv_header_paths_h=yes
+ ac_cv_header_pthread_h=yes
++ac_cv_header_pty_h=yes
+ ac_cv_header_pwd_h=yes
+ ac_cv_header_regex_h=yes
+ ac_cv_header_regexp_h=yes
+ ac_cv_header_regexpr_h=no
++ac_cv_header_sac_h=no
+ ac_cv_header_sched_h=yes
+ ac_cv_header_semaphore_h=yes
+ ac_cv_header_stdarg_h=yes
+@@ -663,40 +718,66 @@
+ ac_cv_header_sys_bswap_h=no
+ ac_cv_header_sys_file_h=yes
+ ac_cv_header_sys_filio_h=no
++ac_cv_header_sys_ioctl_compat_h=no
++ac_cv_header_sys_label_h=no
+ ac_cv_header_sys_param_h=yes
++ac_cv_header_sys_ptyvar_h=no
+ ac_cv_header_sys_select_h=yes
+ ac_cv_header_sys_socket_h=yes
+ ac_cv_header_sys_sockio_h=no
+ ac_cv_header_sys_stat_h=yes
++ac_cv_header_sys_stream_h=no
+ ac_cv_header_sys_time_h=yes
++ac_cv_header_sys_tty_h=no
+ ac_cv_header_sys_types_h=yes
+ ac_cv_header_sys_uio_h=yes
++ac_cv_header_sys_utsname_h=yes
++ac_cv_header_sys_wait_h=yes
+ ac_cv_header_syslog_h=yes
++ac_cv_header_term_h=yes
+ ac_cv_header_termios_h=yes
+ ac_cv_header_time=yes
+ ac_cv_header_time_h=yes
++ac_cv_header_ttyent_h=yes
+ ac_cv_header_unistd_h=yes
++ac_cv_header_util_h=no
++ac_cv_header_utmp_h=yes
++ac_cv_header_utmpx_h=yes
++ac_cv_header_vfork_h=no
+ ac_cv_header_xom_h=no
+ ac_cv_host=i686-pc-linux-gnu
+ ac_cv_host_alias=i686-pc-linux-gnu
+ ac_cv_lib_c_pthread_rwlock_init=yes
++ac_cv_lib_crypt_crypt=yes
+ ac_cv_lib_crypto_PKCS7_get_signer_info=no
++ac_cv_lib_curses_setupterm=no
+ ac_cv_lib_fl_yywrap=no
+ ac_cv_lib_keyutils_add_key=no
+ ac_cv_lib_l_yywrap=no
++ac_cv_lib_ncurses_setupterm=no
++ac_cv_lib_odm_main=no
+ ac_cv_lib_resolv_main=yes
++ac_cv_lib_termcap_main=yes
+ ac_cv_lib_util_main=yes
++ac_cv_lib_util_openpty=yes
+ ac_cv_member_struct_sockaddr_in_sin_len=no
+ ac_cv_member_struct_sockaddr_sa_len=no
+ ac_cv_member_struct_stat_st_mtim_tv_nsec=yes
+ ac_cv_member_struct_stat_st_mtimensec=no
+ ac_cv_member_struct_stat_st_mtimespec_tv_nsec=no
++ac_cv_member_struct_utmp_ut_exit=yes
++ac_cv_member_struct_utmp_ut_host=yes
++ac_cv_member_struct_utmp_ut_pid=yes
++ac_cv_member_struct_utmp_ut_type=yes
+ ac_cv_objext=o
+ ac_cv_path_BASH=/bin/sh
+ ac_cv_path_FALSE=/opt/epiphyte/bin/false
+ ac_cv_path_PERL_PATH=/opt/epiphyte/bin/perl
+ ac_cv_path_SH=/opt/epiphyte/bin/sh
+ ac_cv_path_SH5=/opt/epiphyte/bin/false
++ac_cv_path_UCB_RCP=/usr/bin/rcp
++ac_cv_path_UCB_RLOGIN=/usr/bin/rlogin
++ac_cv_path_UCB_RSH=/usr/bin/rsh
+ ac_cv_path_install='/opt/epiphyte/bin/install -c'
+ ac_cv_printf_positional=yes
+ ac_cv_prog_AR=ar
+@@ -726,6 +807,7 @@
+ ac_cv_type_long_long=yes
+ ac_cv_type_mode_t=yes
+ ac_cv_type_off_t=yes
++ac_cv_type_pid_t=yes
+ ac_cv_type_signal=void
+ ac_cv_type_size_t=yes
+ ac_cv_type_ssize_t=yes
+@@ -751,20 +833,28 @@
+ krb5_cv_build_krb4_libs=yes
+ krb5_cv_decl_perror=no
+ krb5_cv_decl_sys_errlist=yes
++krb5_cv_f_setown=yes
+ krb5_cv_func_daemon_noproto=no
+ krb5_cv_func_dn_skipname=yes
++krb5_cv_func_getutmp_noproto=yes
++krb5_cv_func_herror_noproto=no
++krb5_cv_func_logwtmp_noproto=no
+ krb5_cv_func_ns_initparse=no
+ krb5_cv_func_ns_name_uncompress=no
++krb5_cv_func_parsetos_noproto=yes
+ krb5_cv_func_res_nclose=yes
+ krb5_cv_func_res_ndestroy=no
+ krb5_cv_func_res_ninit=yes
+ krb5_cv_func_res_nsearch=yes
+ krb5_cv_func_res_search=yes
++krb5_cv_func_setenv_noproto=no
+ krb5_cv_func_sigprocmask_use=yes
+ krb5_cv_func_strptime_noproto=yes
+ krb5_cv_func_swab_noproto=yes
++krb5_cv_func_unsetenv_noproto=no
+ krb5_cv_gethostbyname_r_returns_int=yes
+ krb5_cv_gethostbyname_r_returns_ptr=no
++krb5_cv_getpgrp_args=void
+ krb5_cv_getpwnam_r_args=5
+ krb5_cv_getpwnam_r_return_type=int
+ krb5_cv_getservbyname_r_returns_int=yes
+@@ -773,6 +863,7 @@
+ krb5_cv_gmtime_r_returns_int=no
+ krb5_cv_has_ansi_stdio=yes
+ krb5_cv_has_posix_signals=yes
++krb5_cv_has_streams=no
+ krb5_cv_has_struct_if_laddrconf=no
+ krb5_cv_has_struct_lifconf=no
+ krb5_cv_has_type_socklen_t=yes
+@@ -789,11 +880,38 @@
+ krb5_cv_priocntl_hack=no
+ krb5_cv_prog_gcc=yes
+ krb5_cv_prog_gnu_ld=yes
++krb5_cv_setenv=yes
++krb5_cv_setpgrp_args=void
++krb5_cv_shadow_pwd=yes
+ krb5_cv_struct_sockaddr_storage=yes
++krb5_cv_struct_utmp_ut_addr=yes
++krb5_cv_struct_utmp_ut_exit=yes
++krb5_cv_struct_utmp_ut_exit___e_exit=no
++krb5_cv_struct_utmp_ut_exit_e_exit=yes
++krb5_cv_struct_utmp_ut_exit_ut_e_exit=no
++krb5_cv_struct_utmp_ut_exit_ut_exit=no
++krb5_cv_struct_utmp_ut_host=yes
++krb5_cv_struct_utmp_ut_id=yes
++krb5_cv_struct_utmp_ut_pid=yes
++krb5_cv_struct_utmp_ut_syslen=no
++krb5_cv_struct_utmp_ut_type=yes
++krb5_cv_struct_utmpx_ut_addr=no
++krb5_cv_struct_utmpx_ut_exit=yes
++krb5_cv_struct_utmpx_ut_exit___e_exit=yes
++krb5_cv_struct_utmpx_ut_exit_e_exit=no
++krb5_cv_struct_utmpx_ut_exit_ut_e_exit=no
++krb5_cv_struct_utmpx_ut_exit_ut_exit=no
++krb5_cv_struct_utmpx_ut_host=yes
++krb5_cv_struct_utmpx_ut_id=yes
++krb5_cv_struct_utmpx_ut_pid=yes
++krb5_cv_struct_utmpx_ut_syslen=no
++krb5_cv_struct_utmpx_ut_type=yes
+ krb5_cv_struct_wait=no
+ krb5_cv_sys_rcdir=/var/tmp
++krb5_cv_sys_setpgrp_two=no
+ krb5_cv_type_bsdaliases=yes
+ krb5_cv_type_sigset_t=yes
++krb5_cv_type_speed_t=yes
+ krb5_cv_type_yylineno=yes
+ krb5_cv_var_in6addr_any=yes
+ local_cv_program_fctsh=/opt/epiphyte/bin/sh
+@@ -851,7 +969,7 @@
+ LIBLINKS=' $(TOPLIBD)/lib$(LIBBASE)$(SHLIBEXT) $(TOPLIBD)/lib$(LIBBASE)$(SHLIBVEXT) $(TOPLIBD)/lib$(LIBBASE)$(SHLIBSEXT)'
+ LIBLIST=' lib$(LIBBASE)$(SHLIBEXT) lib$(LIBBASE)$(SHLIBSEXT)'
+ LIBOBJS=''
+-LIBS='-lresolv '
++LIBS='-lresolv -lresolv -lterminfo'
+ LN_S='ln -s'
+ LTLIBOBJS=''
+ MAINT='#'
+diff -ru krb5-1.6.3_orig/src/plugins/preauth/cksum_body/config.status krb5-1.6.3/src/plugins/preauth/cksum_body/config.status
+--- krb5-1.6.3_orig/src/plugins/preauth/cksum_body/config.status	2008-03-24 01:17:09.000000000 +0000
++++ krb5-1.6.3/src/plugins/preauth/cksum_body/config.status	2008-03-24 02:20:43.000000000 +0000
+@@ -469,7 +469,7 @@
+ s,@ECHO_C@,,;t t
+ s,@ECHO_N@,-n,;t t
+ s,@ECHO_T@,,;t t
+-s,@LIBS@,-lresolv ,;t t
++s,@LIBS@,-lresolv -lresolv -lterminfo,;t t
+ s,@EXTRA_FILES@,,;t t
+ s,@CC@,gcc,;t t
+ s,@CFLAGS@,-g -O2,;t t
+diff -ru krb5-1.6.3_orig/src/plugins/preauth/wpse/Makefile krb5-1.6.3/src/plugins/preauth/wpse/Makefile
+--- krb5-1.6.3_orig/src/plugins/preauth/wpse/Makefile	2008-03-24 01:17:09.000000000 +0000
++++ krb5-1.6.3/src/plugins/preauth/wpse/Makefile	2008-03-24 02:20:40.000000000 +0000
+@@ -175,7 +175,7 @@
+ LD_UNRESOLVED_PREFIX = @LD_UNRESOLVED_PREFIX@
+ LD_SHLIBDIR_PREFIX = @LD_SHLIBDIR_PREFIX@
+ LDARGS = @LDARGS@
+-LIBS = -lresolv 
++LIBS = -lresolv -lresolv -lterminfo
+ SRVLIBS = @SRVLIBS@
+ SRVDEPLIBS = @SRVDEPLIBS@
+ CLNTLIBS = @CLNTLIBS@
+diff -ru krb5-1.6.3_orig/src/plugins/preauth/wpse/config.log krb5-1.6.3/src/plugins/preauth/wpse/config.log
+--- krb5-1.6.3_orig/src/plugins/preauth/wpse/config.log	2008-03-24 01:17:09.000000000 +0000
++++ krb5-1.6.3/src/plugins/preauth/wpse/config.log	2008-03-24 02:20:41.000000000 +0000
+@@ -56,7 +56,7 @@
+ gcc: '-V' option must have argument
+ configure:1748: $? = 1
+ configure:1771: checking for C compiler default output file name
+-configure:1774: gcc -g -O2   conftest.c  >&5
++configure:1774: gcc -g -O2   conftest.c -lresolv -lterminfo >&5
+ /opt/epiphyte/lib/gcc/i686-epiphyte-linux-gnu/4.3.0/../../../../i686-epiphyte-linux-gnu/bin/ld: warning: ld-linux.so.2, needed by /opt/epiphyte/lib/libc.so.6, not found (try using -rpath or -rpath-link)
+ configure:1777: $? = 0
+ configure:1823: result: a.out
+@@ -67,7 +67,7 @@
+ configure:1861: checking whether we are cross compiling
+ configure:1863: result: no
+ configure:1866: checking for suffix of executables
+-configure:1868: gcc -o conftest -g -O2   conftest.c  >&5
++configure:1868: gcc -o conftest -g -O2   conftest.c -lresolv -lterminfo >&5
+ /opt/epiphyte/lib/gcc/i686-epiphyte-linux-gnu/4.3.0/../../../../i686-epiphyte-linux-gnu/bin/ld: warning: ld-linux.so.2, needed by /opt/epiphyte/lib/libc.so.6, not found (try using -rpath or -rpath-link)
+ configure:1871: $? = 0
+ configure:1896: result: 
+@@ -167,7 +167,7 @@
+ configure:4848: result: yes,yes
+ configure:4897: enabling thread support
+ configure:5098: checking for the pthreads library -lpthreads
+-configure:5136: gcc -o conftest -g -O2    conftest.c -lpthreads -lresolv  >&5
++configure:5136: gcc -o conftest -g -O2    conftest.c -lpthreads -lresolv -lresolv -lterminfo >&5
+ /opt/epiphyte/lib/gcc/i686-epiphyte-linux-gnu/4.3.0/../../../../i686-epiphyte-linux-gnu/bin/ld: cannot find -lpthreads
+ collect2: ld returned 1 exit status
+ configure:5142: $? = 1
+@@ -217,9 +217,9 @@
+ | }
+ configure:5169: result: no
+ configure:5045: checking whether pthreads work without any flags
+-configure:5136: gcc -o conftest -g -O2    conftest.c  -lresolv  >&5
++configure:5136: gcc -o conftest -g -O2    conftest.c  -lresolv -lresolv -lterminfo >&5
+ /opt/epiphyte/lib/gcc/i686-epiphyte-linux-gnu/4.3.0/../../../../i686-epiphyte-linux-gnu/bin/ld: warning: ld-linux.so.2, needed by /opt/epiphyte/lib/libc.so.6, not found (try using -rpath or -rpath-link)
+-/tmp/ccKQKXY7.o: In function `main':
++/tmp/cc6vDB2H.o: In function `main':
+ /opt/epiphyte/src/libs/krb5-1.6.3/src/plugins/preauth/wpse/conftest.c:38: undefined reference to `pthread_join'
+ /opt/epiphyte/src/libs/krb5-1.6.3/src/plugins/preauth/wpse/conftest.c:39: undefined reference to `__pthread_register_cancel'
+ /opt/epiphyte/src/libs/krb5-1.6.3/src/plugins/preauth/wpse/conftest.c:40: undefined reference to `pthread_create'
+@@ -272,10 +272,10 @@
+ | }
+ configure:5169: result: no
+ configure:5050: checking whether pthreads work with -Kthread
+-configure:5136: gcc -o conftest -g -O2 -Kthread   conftest.c  -lresolv  >&5
++configure:5136: gcc -o conftest -g -O2 -Kthread   conftest.c  -lresolv -lresolv -lterminfo >&5
+ gcc: unrecognized option '-Kthread'
+ /opt/epiphyte/lib/gcc/i686-epiphyte-linux-gnu/4.3.0/../../../../i686-epiphyte-linux-gnu/bin/ld: warning: ld-linux.so.2, needed by /opt/epiphyte/lib/libc.so.6, not found (try using -rpath or -rpath-link)
+-/tmp/ccWV2COK.o: In function `main':
++/tmp/ccuV5eXY.o: In function `main':
+ /opt/epiphyte/src/libs/krb5-1.6.3/src/plugins/preauth/wpse/conftest.c:38: undefined reference to `pthread_join'
+ /opt/epiphyte/src/libs/krb5-1.6.3/src/plugins/preauth/wpse/conftest.c:39: undefined reference to `__pthread_register_cancel'
+ /opt/epiphyte/src/libs/krb5-1.6.3/src/plugins/preauth/wpse/conftest.c:40: undefined reference to `pthread_create'
+@@ -328,10 +328,10 @@
+ | }
+ configure:5169: result: no
+ configure:5050: checking whether pthreads work with -kthread
+-configure:5136: gcc -o conftest -g -O2 -kthread   conftest.c  -lresolv  >&5
++configure:5136: gcc -o conftest -g -O2 -kthread   conftest.c  -lresolv -lresolv -lterminfo >&5
+ gcc: unrecognized option '-kthread'
+ /opt/epiphyte/lib/gcc/i686-epiphyte-linux-gnu/4.3.0/../../../../i686-epiphyte-linux-gnu/bin/ld: warning: ld-linux.so.2, needed by /opt/epiphyte/lib/libc.so.6, not found (try using -rpath or -rpath-link)
+-/tmp/ccEnsg5c.o: In function `main':
++/tmp/ccucskci.o: In function `main':
+ /opt/epiphyte/src/libs/krb5-1.6.3/src/plugins/preauth/wpse/conftest.c:38: undefined reference to `pthread_join'
+ /opt/epiphyte/src/libs/krb5-1.6.3/src/plugins/preauth/wpse/conftest.c:39: undefined reference to `__pthread_register_cancel'
+ /opt/epiphyte/src/libs/krb5-1.6.3/src/plugins/preauth/wpse/conftest.c:40: undefined reference to `pthread_create'
+@@ -384,7 +384,7 @@
+ | }
+ configure:5169: result: no
+ configure:5098: checking for the pthreads library -llthread
+-configure:5136: gcc -o conftest -g -O2    conftest.c -llthread -lresolv  >&5
++configure:5136: gcc -o conftest -g -O2    conftest.c -llthread -lresolv -lresolv -lterminfo >&5
+ /opt/epiphyte/lib/gcc/i686-epiphyte-linux-gnu/4.3.0/../../../../i686-epiphyte-linux-gnu/bin/ld: cannot find -llthread
+ collect2: ld returned 1 exit status
+ configure:5142: $? = 1
+@@ -434,7 +434,7 @@
+ | }
+ configure:5169: result: no
+ configure:5050: checking whether pthreads work with -pthread
+-configure:5136: gcc -o conftest -g -O2 -pthread   conftest.c  -lresolv  >&5
++configure:5136: gcc -o conftest -g -O2 -pthread   conftest.c  -lresolv -lresolv -lterminfo >&5
+ /opt/epiphyte/lib/gcc/i686-epiphyte-linux-gnu/4.3.0/../../../../i686-epiphyte-linux-gnu/bin/ld: warning: ld-linux.so.2, needed by /opt/epiphyte/lib/gcc/i686-epiphyte-linux-gnu/4.3.0/../../../libpthread.so, not found (try using -rpath or -rpath-link)
+ configure:5142: $? = 0
+ configure:5146: test -z 
+@@ -444,7 +444,7 @@
+ configure:5155: $? = 0
+ configure:5169: result: yes
+ configure:5189: checking for joinable pthread attribute
+-configure:5207: gcc -o conftest -g -O2 -pthread   conftest.c  -lresolv  >&5
++configure:5207: gcc -o conftest -g -O2 -pthread   conftest.c  -lresolv -lresolv -lterminfo >&5
+ /opt/epiphyte/lib/gcc/i686-epiphyte-linux-gnu/4.3.0/../../../../i686-epiphyte-linux-gnu/bin/ld: warning: ld-linux.so.2, needed by /opt/epiphyte/lib/gcc/i686-epiphyte-linux-gnu/4.3.0/../../../libpthread.so, not found (try using -rpath or -rpath-link)
+ configure:5213: $? = 0
+ configure:5217: test -z 
+@@ -473,21 +473,8 @@
+ configure:5760: result: yes
+ configure:5895: checking for add_key in -lkeyutils
+ configure:5957: result: no
+-configure:5991: checking errno.h usability
+-configure:6003: gcc -c -g -O2  conftest.c >&5
+-configure:6009: $? = 0
+-configure:6013: test -z 
+-			 || test ! -s conftest.err
+-configure:6016: $? = 0
+-configure:6019: test -s conftest.o
+-configure:6022: $? = 0
+-configure:6032: result: yes
+-configure:6036: checking errno.h presence
+-configure:6046: gcc -E  conftest.c
+-configure:6052: $? = 0
+-configure:6072: result: yes
+-configure:6107: checking for errno.h
+-configure:6114: result: yes
++configure:5982: checking for errno.h
++configure:5987: result: yes
+ configure:5982: checking for string.h
+ configure:5987: result: yes
+ configure:6145: disabling static libraries
+@@ -527,6 +514,7 @@
+ 
+ config.status:731: creating ./Makefile
+ config.status:835: creating config.h
++config.status:981: config.h is unchanged
+ 
+ ## ---------------- ##
+ ## Cache variables. ##
+@@ -562,17 +550,26 @@
+ ac_cv_env_target_alias_set=
+ ac_cv_env_target_alias_value=
+ ac_cv_exeext=
++ac_cv_file__etc_TIMEZONE=no
++ac_cv_file__etc_environment=yes
++ac_cv_func__getpty=no
+ ac_cv_func_access=yes
+ ac_cv_func_bswap16=no
+ ac_cv_func_bswap64=no
++ac_cv_func_cfsetispeed=yes
++ac_cv_func_cgetent=no
+ ac_cv_func_chmod=yes
+ ac_cv_func_closelog=yes
+ ac_cv_func_daemon=yes
+ ac_cv_func_fchmod=yes
++ac_cv_func_fchown=yes
+ ac_cv_func_flock=yes
++ac_cv_func_fork=yes
++ac_cv_func_fork_works=yes
+ ac_cv_func_ftime=yes
+ ac_cv_func_getaddrinfo=yes
+ ac_cv_func_getcwd=yes
++ac_cv_func_getdtablesize=yes
+ ac_cv_func_getenv=yes
+ ac_cv_func_geteuid=yes
+ ac_cv_func_gethostbyaddr_r=yes
+@@ -581,39 +578,63 @@
+ ac_cv_func_gethostbyname_r=yes
+ ac_cv_func_getifaddrs=yes
+ ac_cv_func_getnameinfo=yes
++ac_cv_func_getopt=yes
+ ac_cv_func_getpwnam_r=yes
+ ac_cv_func_getpwuid_r=yes
+ ac_cv_func_getservbyname_r=yes
+ ac_cv_func_getservbyport_r=yes
++ac_cv_func_gettosbyname=no
+ ac_cv_func_getusershell=yes
++ac_cv_func_getutmp=yes
++ac_cv_func_getutmpx=yes
+ ac_cv_func_gmtime_r=yes
++ac_cv_func_grantpt=yes
++ac_cv_func_herror=yes
+ ac_cv_func_inet_aton=yes
+ ac_cv_func_inet_ntoa=yes
+ ac_cv_func_inet_ntop=yes
+ ac_cv_func_inet_pton=yes
++ac_cv_func_initgroups=yes
++ac_cv_func_isatty=yes
++ac_cv_func_killpg=yes
++ac_cv_func_line_push=no
+ ac_cv_func_localtime_r=yes
++ac_cv_func_logwtmp=yes
+ ac_cv_func_lstat=yes
+ ac_cv_func_memmove=yes
+ ac_cv_func_mkstemp=yes
+ ac_cv_func_openlog=yes
++ac_cv_func_openpty=yes
++ac_cv_func_parsetos=no
+ ac_cv_func_pthread_mutex_lock=yes
+ ac_cv_func_pthread_once=no
+ ac_cv_func_pthread_rwlock_init=no
++ac_cv_func_ptsname=yes
+ ac_cv_func_re_comp=yes
+ ac_cv_func_re_exec=yes
+ ac_cv_func_regcomp=yes
+ ac_cv_func_regexec=yes
++ac_cv_func_revoke=no
++ac_cv_func_rmufile=no
++ac_cv_func_rresvport_af=yes
+ ac_cv_func_sched_yield=yes
+ ac_cv_func_sem_init=no
+ ac_cv_func_sem_trywait=no
+ ac_cv_func_setegid=yes
+ ac_cv_func_setenv=yes
+ ac_cv_func_seteuid=yes
++ac_cv_func_setlogin=no
++ac_cv_func_setpgid=yes
++ac_cv_func_setpriority=yes
+ ac_cv_func_setregid=yes
+ ac_cv_func_setresgid=yes
+ ac_cv_func_setresuid=yes
+ ac_cv_func_setreuid=yes
+ ac_cv_func_setsid=yes
++ac_cv_func_setupterm=no
++ac_cv_func_setutent=yes
++ac_cv_func_setutsent=no
++ac_cv_func_setutxent=yes
+ ac_cv_func_setvbuf=yes
+ ac_cv_func_sigprocmask=yes
+ ac_cv_func_sigsetjmp=no
+@@ -622,25 +643,41 @@
+ ac_cv_func_srand48=yes
+ ac_cv_func_srandom=yes
+ ac_cv_func_stat=yes
++ac_cv_func_strcasecmp=yes
+ ac_cv_func_strchr=yes
+ ac_cv_func_strdup=yes
+ ac_cv_func_strerror=yes
+ ac_cv_func_strerror_r=yes
+ ac_cv_func_strftime=yes
+ ac_cv_func_strptime=yes
++ac_cv_func_strsave=no
+ ac_cv_func_strstr=yes
+ ac_cv_func_syslog=yes
++ac_cv_func_tcgetpgrp=yes
+ ac_cv_func_tcsetattr=yes
++ac_cv_func_tcsetpgrp=yes
++ac_cv_func_tgetent=yes
+ ac_cv_func_timezone=yes
++ac_cv_func_ttyname=yes
+ ac_cv_func_umask=yes
+ ac_cv_func_unsetenv=yes
++ac_cv_func_updwtmp=yes
++ac_cv_func_updwtmpx=yes
++ac_cv_func_utimes=yes
++ac_cv_func_utmpname=yes
++ac_cv_func_utmpxname=yes
+ ac_cv_func_vasprintf=yes
++ac_cv_func_vfork=yes
++ac_cv_func_vfork_works=yes
++ac_cv_func_vhangup=yes
+ ac_cv_func_vsnprintf=yes
+ ac_cv_func_vsprintf=yes
+ ac_cv_func_waitpid=yes
+ ac_cv_header_alloca_h=yes
+ ac_cv_header_arpa_inet_h=yes
++ac_cv_header_arpa_nameser_h=yes
+ ac_cv_header_byteswap_h=yes
++ac_cv_header_curses_h=yes
+ ac_cv_header_dirent_dirent_h=yes
+ ac_cv_header_dirent_h=yes
+ ac_cv_header_dlfcn_h=yes
+@@ -651,7 +688,10 @@
+ ac_cv_header_inttypes_h=yes
+ ac_cv_header_kdc_h=no
+ ac_cv_header_keyutils_h=yes
++ac_cv_header_krb4_proto_h=no
+ ac_cv_header_krb_db_h=no
++ac_cv_header_lastlog_h=yes
++ac_cv_header_libutil_h=no
+ ac_cv_header_limits_h=yes
+ ac_cv_header_machine_byte_order_h=no
+ ac_cv_header_machine_endian_h=no
+@@ -660,10 +700,12 @@
+ ac_cv_header_netinet_in_h=yes
+ ac_cv_header_paths_h=yes
+ ac_cv_header_pthread_h=yes
++ac_cv_header_pty_h=yes
+ ac_cv_header_pwd_h=yes
+ ac_cv_header_regex_h=yes
+ ac_cv_header_regexp_h=yes
+ ac_cv_header_regexpr_h=no
++ac_cv_header_sac_h=no
+ ac_cv_header_sched_h=yes
+ ac_cv_header_semaphore_h=yes
+ ac_cv_header_stdarg_h=yes
+@@ -676,40 +718,66 @@
+ ac_cv_header_sys_bswap_h=no
+ ac_cv_header_sys_file_h=yes
+ ac_cv_header_sys_filio_h=no
++ac_cv_header_sys_ioctl_compat_h=no
++ac_cv_header_sys_label_h=no
+ ac_cv_header_sys_param_h=yes
++ac_cv_header_sys_ptyvar_h=no
+ ac_cv_header_sys_select_h=yes
+ ac_cv_header_sys_socket_h=yes
+ ac_cv_header_sys_sockio_h=no
+ ac_cv_header_sys_stat_h=yes
++ac_cv_header_sys_stream_h=no
+ ac_cv_header_sys_time_h=yes
++ac_cv_header_sys_tty_h=no
+ ac_cv_header_sys_types_h=yes
+ ac_cv_header_sys_uio_h=yes
++ac_cv_header_sys_utsname_h=yes
++ac_cv_header_sys_wait_h=yes
+ ac_cv_header_syslog_h=yes
++ac_cv_header_term_h=yes
+ ac_cv_header_termios_h=yes
+ ac_cv_header_time=yes
+ ac_cv_header_time_h=yes
++ac_cv_header_ttyent_h=yes
+ ac_cv_header_unistd_h=yes
++ac_cv_header_util_h=no
++ac_cv_header_utmp_h=yes
++ac_cv_header_utmpx_h=yes
++ac_cv_header_vfork_h=no
+ ac_cv_header_xom_h=no
+ ac_cv_host=i686-pc-linux-gnu
+ ac_cv_host_alias=i686-pc-linux-gnu
+ ac_cv_lib_c_pthread_rwlock_init=yes
++ac_cv_lib_crypt_crypt=yes
+ ac_cv_lib_crypto_PKCS7_get_signer_info=no
++ac_cv_lib_curses_setupterm=no
+ ac_cv_lib_fl_yywrap=no
+ ac_cv_lib_keyutils_add_key=no
+ ac_cv_lib_l_yywrap=no
++ac_cv_lib_ncurses_setupterm=no
++ac_cv_lib_odm_main=no
+ ac_cv_lib_resolv_main=yes
++ac_cv_lib_termcap_main=yes
+ ac_cv_lib_util_main=yes
++ac_cv_lib_util_openpty=yes
+ ac_cv_member_struct_sockaddr_in_sin_len=no
+ ac_cv_member_struct_sockaddr_sa_len=no
+ ac_cv_member_struct_stat_st_mtim_tv_nsec=yes
+ ac_cv_member_struct_stat_st_mtimensec=no
+ ac_cv_member_struct_stat_st_mtimespec_tv_nsec=no
++ac_cv_member_struct_utmp_ut_exit=yes
++ac_cv_member_struct_utmp_ut_host=yes
++ac_cv_member_struct_utmp_ut_pid=yes
++ac_cv_member_struct_utmp_ut_type=yes
+ ac_cv_objext=o
+ ac_cv_path_BASH=/bin/sh
+ ac_cv_path_FALSE=/opt/epiphyte/bin/false
+ ac_cv_path_PERL_PATH=/opt/epiphyte/bin/perl
+ ac_cv_path_SH=/opt/epiphyte/bin/sh
+ ac_cv_path_SH5=/opt/epiphyte/bin/false
++ac_cv_path_UCB_RCP=/usr/bin/rcp
++ac_cv_path_UCB_RLOGIN=/usr/bin/rlogin
++ac_cv_path_UCB_RSH=/usr/bin/rsh
+ ac_cv_path_install='/opt/epiphyte/bin/install -c'
+ ac_cv_printf_positional=yes
+ ac_cv_prog_AR=ar
+@@ -739,6 +807,7 @@
+ ac_cv_type_long_long=yes
+ ac_cv_type_mode_t=yes
+ ac_cv_type_off_t=yes
++ac_cv_type_pid_t=yes
+ ac_cv_type_signal=void
+ ac_cv_type_size_t=yes
+ ac_cv_type_ssize_t=yes
+@@ -764,20 +833,28 @@
+ krb5_cv_build_krb4_libs=yes
+ krb5_cv_decl_perror=no
+ krb5_cv_decl_sys_errlist=yes
++krb5_cv_f_setown=yes
+ krb5_cv_func_daemon_noproto=no
+ krb5_cv_func_dn_skipname=yes
++krb5_cv_func_getutmp_noproto=yes
++krb5_cv_func_herror_noproto=no
++krb5_cv_func_logwtmp_noproto=no
+ krb5_cv_func_ns_initparse=no
+ krb5_cv_func_ns_name_uncompress=no
++krb5_cv_func_parsetos_noproto=yes
+ krb5_cv_func_res_nclose=yes
+ krb5_cv_func_res_ndestroy=no
+ krb5_cv_func_res_ninit=yes
+ krb5_cv_func_res_nsearch=yes
+ krb5_cv_func_res_search=yes
++krb5_cv_func_setenv_noproto=no
+ krb5_cv_func_sigprocmask_use=yes
+ krb5_cv_func_strptime_noproto=yes
+ krb5_cv_func_swab_noproto=yes
++krb5_cv_func_unsetenv_noproto=no
+ krb5_cv_gethostbyname_r_returns_int=yes
+ krb5_cv_gethostbyname_r_returns_ptr=no
++krb5_cv_getpgrp_args=void
+ krb5_cv_getpwnam_r_args=5
+ krb5_cv_getpwnam_r_return_type=int
+ krb5_cv_getservbyname_r_returns_int=yes
+@@ -786,6 +863,7 @@
+ krb5_cv_gmtime_r_returns_int=no
+ krb5_cv_has_ansi_stdio=yes
+ krb5_cv_has_posix_signals=yes
++krb5_cv_has_streams=no
+ krb5_cv_has_struct_if_laddrconf=no
+ krb5_cv_has_struct_lifconf=no
+ krb5_cv_has_type_socklen_t=yes
+@@ -802,11 +880,38 @@
+ krb5_cv_priocntl_hack=no
+ krb5_cv_prog_gcc=yes
+ krb5_cv_prog_gnu_ld=yes
++krb5_cv_setenv=yes
++krb5_cv_setpgrp_args=void
++krb5_cv_shadow_pwd=yes
+ krb5_cv_struct_sockaddr_storage=yes
++krb5_cv_struct_utmp_ut_addr=yes
++krb5_cv_struct_utmp_ut_exit=yes
++krb5_cv_struct_utmp_ut_exit___e_exit=no
++krb5_cv_struct_utmp_ut_exit_e_exit=yes
++krb5_cv_struct_utmp_ut_exit_ut_e_exit=no
++krb5_cv_struct_utmp_ut_exit_ut_exit=no
++krb5_cv_struct_utmp_ut_host=yes
++krb5_cv_struct_utmp_ut_id=yes
++krb5_cv_struct_utmp_ut_pid=yes
++krb5_cv_struct_utmp_ut_syslen=no
++krb5_cv_struct_utmp_ut_type=yes
++krb5_cv_struct_utmpx_ut_addr=no
++krb5_cv_struct_utmpx_ut_exit=yes
++krb5_cv_struct_utmpx_ut_exit___e_exit=yes
++krb5_cv_struct_utmpx_ut_exit_e_exit=no
++krb5_cv_struct_utmpx_ut_exit_ut_e_exit=no
++krb5_cv_struct_utmpx_ut_exit_ut_exit=no
++krb5_cv_struct_utmpx_ut_host=yes
++krb5_cv_struct_utmpx_ut_id=yes
++krb5_cv_struct_utmpx_ut_pid=yes
++krb5_cv_struct_utmpx_ut_syslen=no
++krb5_cv_struct_utmpx_ut_type=yes
+ krb5_cv_struct_wait=no
+ krb5_cv_sys_rcdir=/var/tmp
++krb5_cv_sys_setpgrp_two=no
+ krb5_cv_type_bsdaliases=yes
+ krb5_cv_type_sigset_t=yes
++krb5_cv_type_speed_t=yes
+ krb5_cv_type_yylineno=yes
+ krb5_cv_var_in6addr_any=yes
+ local_cv_program_fctsh=/opt/epiphyte/bin/sh
+@@ -864,7 +969,7 @@
+ LIBLINKS=' $(TOPLIBD)/lib$(LIBBASE)$(SHLIBEXT) $(TOPLIBD)/lib$(LIBBASE)$(SHLIBVEXT) $(TOPLIBD)/lib$(LIBBASE)$(SHLIBSEXT)'
+ LIBLIST=' lib$(LIBBASE)$(SHLIBEXT) lib$(LIBBASE)$(SHLIBSEXT)'
+ LIBOBJS=''
+-LIBS='-lresolv '
++LIBS='-lresolv -lresolv -lterminfo'
+ LN_S='ln -s'
+ LTLIBOBJS=''
+ MAINT='#'
+diff -ru krb5-1.6.3_orig/src/plugins/preauth/wpse/config.status krb5-1.6.3/src/plugins/preauth/wpse/config.status
+--- krb5-1.6.3_orig/src/plugins/preauth/wpse/config.status	2008-03-24 01:17:09.000000000 +0000
++++ krb5-1.6.3/src/plugins/preauth/wpse/config.status	2008-03-24 02:20:40.000000000 +0000
+@@ -469,7 +469,7 @@
+ s,@ECHO_C@,,;t t
+ s,@ECHO_N@,-n,;t t
+ s,@ECHO_T@,,;t t
+-s,@LIBS@,-lresolv ,;t t
++s,@LIBS@,-lresolv -lresolv -lterminfo,;t t
+ s,@EXTRA_FILES@,,;t t
+ s,@CC@,gcc,;t t
+ s,@CFLAGS@,-g -O2,;t t
+diff -ru krb5-1.6.3_orig/src/tests/threads/Makefile krb5-1.6.3/src/tests/threads/Makefile
+--- krb5-1.6.3_orig/src/tests/threads/Makefile	2008-03-24 01:17:14.000000000 +0000
++++ krb5-1.6.3/src/tests/threads/Makefile	2008-03-24 02:21:03.000000000 +0000
+@@ -175,7 +175,7 @@
+ LD_UNRESOLVED_PREFIX = @LD_UNRESOLVED_PREFIX@
+ LD_SHLIBDIR_PREFIX = @LD_SHLIBDIR_PREFIX@
+ LDARGS = @LDARGS@
+-LIBS = -lresolv 
++LIBS = -lresolv -lresolv -lterminfo
+ SRVLIBS = @SRVLIBS@
+ SRVDEPLIBS = @SRVDEPLIBS@
+ CLNTLIBS = @CLNTLIBS@

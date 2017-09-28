@@ -1,0 +1,198 @@
+# $Id: Pkgfile,v 1.8 2007/05/09 21:02:44 roman Exp $
+#
+# Description: A version control system.
+#  Subversion is a version control system. Originally designed to be a
+#  compelling replacement for CVS in the open source community, it has far
+#  exceeded that goal and seen widespread adoption in both open source and
+#  corporate environments. The Subversion project produces Subversion's
+#  core libraries (written in C), a fully functional command line client
+#  (svn), repository administration programs, API bindings for various
+#  languages (Perl, Python, Java, Ruby, etc.), and various additional tools
+#  and scripts.
+# URL: http://subversion.tigris.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=subversion
+version=1.4.6
+release=1
+source=(http://subversion.tigris.org/downloads/subversion-$version.tar.bz2)
+
+#----------------------------------------------------------------------------
+build()
+{
+  cd subversion-$version
+
+  case $CFLAGS in
+    *-g*) ;;
+    *) export CPPFLAGS="-DNDEBUG${CPPFLAGS:+ $CPPFLAGS}" ;;
+  esac
+
+  rm -f build/libtool.m4
+
+  libtoolize --force --copy
+  aclocal --force -I build/ac-macros
+  autoheader --force
+  automake --force --copy --foreign --add-missing || true
+  aclocal --force -I build/ac-macros
+  autoconf --force
+
+  cp /usr/share/libtool/config/config.{sub,guess} build
+
+  echo -e "#!$bindir/sh\necho exported" >subversion/svnversion/svnversion
+  chmod 755 subversion/svnversion/svnversion
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --disable-mod-activation \
+      --with-editor="nano" \
+      --with-zlib="$prefix" \
+      --without-apxs \
+      --without-apache \
+      --with-apr="$prefix/bin/apr-1-config" \
+      --with-apr-util="$prefix/bin/apu-1-config" \
+      --with-apxs="$prefix/sbin/apxs"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# package configuration
+# --------------------------------------------------------------------------------
+config()
+{
+  # add the main-menu entry "svnserve"
+  config_branch 'svnserve'  'subversion server'
+
+    # Repository root
+    config_value 'root'  'SVN server root'
+
+      config_description 'Root the SVN server will run in'
+      config_default     '/'
+
+    config_end
+
+    # lets choose a user
+    config_value 'user'  'SVN server user'
+
+      config_description 'Username the SVN server will run under'
+      config_default     '$(user_find subversion svn nobody)'
+      config_function    'choose --help-{button,label} Create $(user_list)'
+      config_extra       'input'
+
+    config_end
+
+    # choose a group
+    config_value 'group' 'SVN server group'
+
+      config_description 'Group the SVN server will run under'
+      config_default     '$(user_group $(config_getvalue svnserve_user) || group_find subversion svn nobody)'
+      config_function    'choose --help-{button,label} Create $(group_list)'
+      config_extra       'input'
+
+    config_end
+
+    # choose a host
+    config_value 'host'  'SVN server host'
+
+      config_description 'Address the SVN server will listen to'
+      config_default     '$(config_getvalue global_ipaddr)'
+
+    config_end
+
+    # server port
+    config_value 'port'  'SVN server port'
+
+      config_description 'Port the SVN server will listen to'
+      config_default     '3690'
+
+    config_end
+
+    # enhance daemontools package configuration
+    config_enter 'services' 'run' 'svnserve'
+
+      config_label   'Run svnserve at boot'
+      config_default 'yes'
+      config_type    'value'
+
+    config_leave
+
+  config_end
+}
+
+# --------------------------------------------------------------------------------
+services()
+{
+  config_branch "svnserve" "subversion server"
+
+    config_branch 'log'
+    config_end
+
+    config_set 'TITLE'   'svn service'
+    config_set 'PIDFILE' '$prefix/var/run/svnserve.pid'
+    config_set 'START'   ''
+    config_set 'STOP'    ''
+
+  config_leave
+}
+
+# script to start svnserve from supervise
+# --------------------------------------------------------------------------------
+svnserve()
+{
+  exec 2>&1
+
+  # Set default values.
+  root=${svnserve_root:-/}
+  host=${svnserve_host:-0.0.0.0}
+  port=${svnserve_port:-3690}
+  user=${svnserve_user:-nobody}
+  pidf=${svnserve_PIDFILE:-$prefix/var/run/svnserve.pid}
+
+  # Checking whether the user is available to setuidgid...
+  if ! user_avail "$user"
+  then
+    service_error "no such user:" "$user"
+  fi
+
+  # Checking whether there's already an instance of httpd...
+  if test -f "$pidf"
+  then
+    pid=$(cat "$pidf")
+
+    if test $((pid)) -gt 0 && test -d /proc/$((pid))
+    then
+      service_msg "SVN server already running, restarting..."
+      kill $((pid))
+      sleep 2
+      exit 1
+    fi
+  fi
+
+  # Checking whether host:port is bindable
+  if proc=$(inet_bound tcp $host:$port)
+  then
+    service_error $host:$port "already bound"
+  fi
+
+  # Clear default values...
+  test "$ROOT" = / && unset root
+  test "$host" = "0.0.0.0" && unset host
+  test $((port)) = 3690 && unset port
+
+  # Change to prefix
+  cd $prefix
+
+  # Finally execute svnserve..
+  exec -a svnserve $bindir/svnserve -d \
+        ${root:+--root "$ROOT"} \
+        ${host:+--listen-host "$host"} \
+        ${port:+--listen-port $((port))} \
+        ${pidf:+--pid-file "${pidf#$prefix/}"} \
+        --foreground
+
+  errormsg "Failed starting $bindir/svnserve..."
+  service_down svnserve
+}

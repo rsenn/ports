@@ -1,0 +1,37 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: WikiMedia parser
+#  MediaCloth is the first WikiMedia parser and html generator written
+#  in ruby. It's small, fast and aims to recognize the complete MediaWiki
+#  language.
+#  .
+# URL: http://rubyforge.org/projects/mediacloth/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=mediacloth
+version=0.0.3
+release=1
+source=(http://rubyforge-files.ruby-forum.com/mediacloth/mediacloth-$version.gem)
+
+build()
+{
+  mkdir -p mediacloth-$version
+  cd mediacloth-$version
+  tar -xzf ../data.tar.gz
+
+  set `ruby --version`
+
+  RUBYVERSION="$2"
+  RUBYLIBDIR="$prefix/lib/ruby/${RUBYVERSION%.*}"
+
+  install -d $PKG/$RUBYLIBDIR
+  cp -rf lib/* $PKG/$RUBYLIBDIR/
+
+  install -d $ROOT/share/doc/mediacloth
+  install -m 644 README $ROOT/share/doc/mediacloth
+
+  cp -rf test $ROOT/share/doc/mediacloth
+}
+
+# EOF

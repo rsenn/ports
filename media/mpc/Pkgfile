@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A command-line tool to interface MPD
+#  MPC, music player command, is a command line tool to interface MPD, Music
+#  Player Daemon. It is fast and lightweight like MPD, making it ideal for
+#  scripting commands and binding to hotkeys. Completion for the Bash shell
+#  is provided.
+# URL: 
+# Maintainer: 
+# Depends on: 
+
+name=mpc
+version=0.15
+release=1
+source=($mirror_sf/musicpd/mpc-$version.tar.gz)
+
+build() 
+{
+  cd mpc-$version
+  
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+  
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

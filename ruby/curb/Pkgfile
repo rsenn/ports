@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: ruby language bindings to the libcurl(3) library.
+# URL: http://rubyforge.org/projects/curb
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=curb
+version=0.1.4
+release=1
+source=(http://files.rubyforge.vm.bytemark.co.uk/curb/curb-$version.tar.gz)
+
+build()
+{
+  cd curb-$version
+
+  set `ruby --version`
+
+  RUBYVERSION="$2"
+  RUBYLIBDIR="$prefix/lib/ruby/${RUBYVERSION%.*}"
+
+  ruby ext/extconf.rb
+
+  make
+  make DESTDIR="$PKG" RUBYLIBDIR="$PKG/$RUBYLIBDIR" sitedir='$(libdir)/ruby' install
+
+
+  install -d $ROOT/share/doc/curb
+  install -m 644 README LICENSE $ROOT/share/doc/curb
+}
+
+# EOF

@@ -1,0 +1,42 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Mail Functions
+#  MVMF is a package containing a growing number of utilities used in
+#  handling email. Some of these utilities make use of mvmf's scripting
+#  language, MFL, which combines an implementation of the Sieve filtering
+#  language and a C-like language in a powerful way. Using this language
+#  (or an interface that emits this language), users can direct each relevant
+#  utility's processing of email.
+#  .
+# URL: http://www.mvmf.org/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=mvmf
+version=20070914
+release=1
+source=(http://www.mvmf.org/devel/sw/mvmf-$version.tar.gz)
+
+build()
+{
+  cd mvmf-$version
+
+  #./autogen.sh
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix" \
+     --mandir="$prefix/share/man" \
+     --with-mml-library-dir="$prefix/lib" \
+     --program-prefix=""
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/mvmf
+  install -m 644 BUILD.MV ChangeLog FLAWS INSTALL* LICENSE* NAMESPACES NEWS README* TODO USING.mvmda $ROOT/share/doc/mvmf
+}
+
+# EOF

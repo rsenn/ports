@@ -1,0 +1,34 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A tool to query many Linux, BSD, and Fink/MacPorts repositories.
+#  whohas is a command line tool that allows you to query several package
+#  collections at once. It currently supports Arch Linux (and AUR), Debian,
+#  Fedora, Gentoo, Mandriva, openSUSE, Slackware (and linuxpackages.net),
+#  Source Mage Linux, Ubuntu, FreeBSD, NetBSD, OpenBSD, Fink, and
+#  MacPorts repositories. whohas was designed to help package maintainers
+#  find ebuilds, pkgbuilds, and similar package definitions from other
+#  distributions to learn from. However, it can also be used by normal
+#  users who want to know which distribution provides certain packages,
+#  and which version of a given package is in use in each distribution or
+#  in each release of a distribution.
+# URL: http://www.philippwesche.org/200811/whohas/intro.html
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=whohas
+version=0.17
+release=1
+source=(http://www.philippwesche.org/200811/whohas/whohas-$version.tar.gz)
+
+build()
+{
+  cd whohas-$version
+
+  install -d $ROOT/bin
+  install -m 755 whohas $ROOT/bin
+
+  install -d $ROOT/share/doc/whohas
+  install -m 644 Changelog INSTALL LICENSE *.txt *.html $ROOT/share/doc/whohas
+}
+
+# EOF

@@ -1,0 +1,44 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: bacula
+#  Bacula is a set of programs that allow you to manage the backup,
+#  recovery, and verification of computer data across a network of
+#  different computers. It is based on a client/server architecture and
+#  is efficient and relatively easy to use, while offering many advanced
+#  storage management features that make it easy to find and recover lost
+#  or damaged files.
+# URL: http://www.bacula.org
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=bacula
+version=1.38.11
+release=1
+source=($mirror_sf/bacula/bacula-$version.tar.gz
+        $mirror_sf/bacula/bacula-docs-$version.tar.gz)
+
+build()
+{
+  cd bacula-${version}
+  ./configure \
+    --prefix=$prefix \
+    --with-libiconv-prefix=$prefix \
+    --with-libintl-prefix=$prefix \
+    --without-included-gettext \
+    --with-readline=$prefix \
+    --with-python=$prefix/include/python2.5 \
+    --with-openssl=$prefix \
+    --with-mysql=$prefix \
+    --without-x
+  make
+  make DESTDIR=$PKG install
+
+#  return 0
+
+  cd $SRC/bacula-docs-${version}
+  ./configure \
+    --prefix=$prefix \
+    --with-bacula=$SRC/bacula-${version}
+  make
+  make DESTDIR=$PKG install
+}

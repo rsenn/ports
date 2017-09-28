@@ -1,0 +1,225 @@
+diff -r -u wocka-0.5_orig/src/dir.d wocka-0.5/src/dir.d
+--- wocka-0.5_orig/src/dir.d	2007-11-20 16:58:54.000000000 -0600
++++ wocka-0.5/src/dir.d	2007-11-20 17:02:08.000000000 -0600
+@@ -54,7 +54,7 @@
+             if (name == "." || name == "..")
+                 continue;
+ 
+-            if (!std.path.fnmatch( name, glob ))
++            if (!std.path.fnmatch( cast(invariant(char)[])name, cast(invariant(char)[])glob ))
+                 continue;
+ 
+             name = path ~ name;
+@@ -73,13 +73,13 @@
+ }
+ 
+ 
+-char[][] dirs( char[] path, char glob[] = "*" )
++char[][] dirs( char[] path, char glob[] = cast(char[])"*" )
+ {
+     return entries( linux.S_IFDIR, path, glob );
+ }
+ 
+ 
+-char[][] files( char[] path, char glob[] = "*" )
++char[][] files( char[] path, char glob[] = cast(char[])"*" )
+ {
+     return entries( linux.S_IFREG, path, glob );
+ }
+diff -r -u wocka-0.5_orig/src/dom.d wocka-0.5/src/dom.d
+--- wocka-0.5_orig/src/dom.d	2007-11-20 16:58:54.000000000 -0600
++++ wocka-0.5/src/dom.d	2007-11-20 17:03:05.000000000 -0600
+@@ -11,7 +11,7 @@
+ {
+     this( char[] path )
+     {
+-        content = cast(char[]) std.file.read( path );
++        content = cast(char[]) std.file.read( cast(invariant(char)[])path );
+     }
+ 
+     Node[] nodes()
+diff -r -u wocka-0.5_orig/src/Error.d wocka-0.5/src/Error.d
+--- wocka-0.5_orig/src/Error.d	2007-11-20 16:58:54.000000000 -0600
++++ wocka-0.5/src/Error.d	2007-11-20 17:05:14.000000000 -0600
+@@ -32,14 +32,14 @@
+ 
+         s ~= eighty_columns( text );
+ 
+-        super( s );
++        super( cast(invariant(char)[])s );
+     }
+ 
+     void write()
+     {
+         void derr( ... )
+         {
+-            writefx( std.c.stdio.stderr, _arguments, _argptr, true );
++//            writefx( std.c.stdio.stderr, _arguments, _argptr, true );
+         }
+ 
+         derr( msg );
+@@ -47,7 +47,7 @@
+ }
+ 
+ 
+-void warning( char[] title, char[] message = "" )
++void warning( char[] title, char[] message = cast(char[])"" )
+ {
+     (new Error( title, message )).write();
+ }
+@@ -57,24 +57,24 @@
+ {
+     this( char[] text )
+     {
+-        char[] s = "The software was installed, but could not be recorded in the package database. "
+-               "You may want to analyse the install.log to see what was installed. "
+-               "Don't forget that you can usually uninstall the application by typing `make uninstall'."
+-               "\n";
++        invariant(char)[] s = "The software was installed, but could not be recorded in the package database. "
++                              "You may want to analyse the install.log to see what was installed. "
++                              "Don't forget that you can usually uninstall the application by typing `make uninstall'."
++                              "\n";
+ 
+-        super( "Packaging failure!", s, text );
++        super( cast(char[])"Packaging failure!", s, text );
+     }
+ 
+     this( Exception e )
+     {
+         if (cast(Error)(e)) {
+-            this( "" );
++            this( cast(char[])"" );
+             // the Error message was already formatted by eighty_columns, and
+             // this shouldn't be done twice
+             msg ~= e.msg;
+         }
+         else
+-            this( e.msg );
++            this( cast(char[])e.msg );
+     }
+ }
+ 
+@@ -83,7 +83,7 @@
+ {
+     this( char[] file, int line )
+     {
+-        super( "Internal Error",
++        super( cast(char[])"Internal Error",
+                "Please report this error to <max.howell@methylblue.com> quoting the error code:\n",
+                file, "::", line );
+     }
+@@ -94,7 +94,7 @@
+ {
+     this( char[] example_usage, char[] error )
+     {
+-        super( "Usage Error", "\t$ wocka ", example_usage, "\n\n", error );
++        super( cast(char[])"Usage Error", "\t$ wocka ", example_usage, "\n\n", error );
+     }
+ }
+ 
+diff -r -u wocka-0.5_orig/src/main.d wocka-0.5/src/main.d
+--- wocka-0.5_orig/src/main.d	2007-11-20 16:58:54.000000000 -0600
++++ wocka-0.5/src/main.d	2007-11-20 17:09:21.000000000 -0600
+@@ -45,24 +45,24 @@
+                     write_pkgbuild();
+                     return 0;
+                 case "--aur":
+-                    if (++n == args.length)
+-                        throw new UsageError( "--aur [package]", "[package] missing" );
+-                    return aur( args[n] );
++                    if (n+1 == args.length)
++                        throw new UsageError( cast(char[])"--aur [package]", cast(char[])"[package] missing" );
++                    return aur( args[n+1] );
+                 case "--upgrade":
+                     opts.upgrade = true;
+                     break;
+                 case "--set-name":
+-                    if (++n == args.length)
+-                        throw new UsageError( "--set-name [name]", "[name] missing" );
+-                    opts.name = args[n];
+-                    break;
++                    if (n+1 == args.length)
++                        throw new UsageError( cast(char[])"--set-name [name]", cast(char[])"[name] missing" );
++                    opts.name = args[n+1];
++                    continue;
+                 case "--set-version":
+-                    if (++n == args.length)
+-                        throw new UsageError( "--set-version [version]", "[version] missing" );
+-                    opts.vers = args[n];
+-                    break;
++                    if (n+1 == args.length)
++                        throw new UsageError( cast(char[])"--set-version [version]", cast(char[])"[version] missing" );
++                    opts.vers = args[n+1];
++                    continue;
+                 default:
+-                    writefln( "Invalid option: ", arg );
++                    writefln( cast(char[])"Invalid option: ", arg );
+                     return 1;
+             }
+         }
+@@ -85,43 +85,43 @@
+     Distribution dist = guess_metadata();
+ 
+     if (dist.name == "" && dist.vers == "")
+-        throw new Error( "Could not determine name and version information",
+-                "Try the --set-name and --set-version switches" );
++        throw new Error( cast(char[])"Could not determine name and version information",
++                cast(char[])"Try the --set-name and --set-version switches" );
+     if (dist.name == "")
+-        throw new Error( "Could not determine name information",
+-                "Try the --set-name switch" );
++        throw new Error( cast(char[])"Could not determine name information",
++                cast(char[])"Try the --set-name switch" );
+     if (dist.vers == "")
+-        throw new Error( "Could not determine version information",
+-                "Try the --set-version switch" );
++        throw new Error( cast(char[])"Could not determine version information",
++                cast(char[])"Try the --set-version switch" );
+ 
+     writefln( "Name: ", Terminal.purple, dist.name, Terminal.reset );
+     writefln( "Version: ", Terminal.purple, dist.vers, Terminal.reset );
+ 
+ //////
+-    writeh( "Checking this installation is sane" );
++    writeh( cast(char[])"Checking this installation is sane" );
+ 
+     auto pkg = new PacmanDatabaseEntry( dist );
+ 
+     //TODO disable this for debug mode
+-    if (!dir.isWritable( pkg.prefix ))
+-        throw new Error( "The database is not writable", pkg.prefix );
++    if (!dir.isWritable( cast(char[])pkg.prefix ))
++        throw new Error( cast(char[])"The database is not writable", pkg.prefix );
+ 
+     if (!opts.upgrade && pkg.other_versions.length)
+-        throw new Error( "This application is already installed",
++        throw new Error( cast(char[])"This application is already installed",
+                 pkg.other_versions[0], "\n\n",
+                 "You can force an upgrade:", '\n',
+                 "    wocka --upgrade" );
+ 
+     if (pkg.other_versions.length > 1)
+-        throw new Error( "Cannot upgrade",
++        throw new Error( cast(char[])"Cannot upgrade",
+                 "There are already ", pkg.other_versions.length, " packages in the database for this application. "
+                 "It is only valid for there to be one entry for each package in the database. Try:", '\n',
+                 "    pacman -R ", pkg.name );
+ 
+-    if (std.file.exists( pkg.path ))
++    if (std.file.exists( cast(invariant(char)[])pkg.path ))
+         // if the exact path we plan to write to exists, then we fucked up
+         // determining the path
+-        throw new InternalError( __FILE__, __LINE__ );
++        throw new InternalError( cast(char[])__FILE__, __LINE__ );
+ 
+     writefln( "Apparently sane" );
+ 
+@@ -133,7 +133,7 @@
+ //////
+     {
+         if (upgrade != "") {
+-            writeh( "Important information" );
++            writeh( cast(char[])"Important information" );
+             writefln( "Will upgrade `", upgrade, "'" );
+         }
+ 

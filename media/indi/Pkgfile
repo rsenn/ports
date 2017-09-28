@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A control protocol for various astronomical instruments (telescopes, CCDs, etc).
+#  INDI is an instrument-neutral distributed interface control protocol
+#  that aims to provide backend driver support and automation for a wide
+#  range of astronomical devices (telescopes, focusers, CCDs, etc.). Current
+#  supported devices include many telescopes, CCDs, filter wheels, focusers,
+#  and video cams. INDI is used in popular astronomy suites like Xephem,
+#  KStars, DCD, and Cartes Du Ciel.
+#  .
+# URL: http://indi.sourceforge.net
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=indi
+version=0.5
+release=1
+source=($mirror_sf/indi/indilib-0.5.tar.gz)
+
+build()
+{
+  cd indi
+./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+make
+make DESTDIR="$PKG" install
+}
+
+# EOF

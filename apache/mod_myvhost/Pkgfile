@@ -1,0 +1,35 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An Apache module for dynamically configured name-based mass virtual hosting.
+#  mod_myvhost is an Apache 1.3.xx module for dynamically configured
+#  name-based mass virtual hosting with PHP. Virtual host configurations
+#  and PHP settings are stored in a MySQL database. There is no need to have
+#  every vhost in apache's configuration file, or to restart apache after a
+#  configuration change. It is able to change PHP settings dynamically for
+#  any vhost. By default, it sets open_basedir as the vhost's rootdir, but
+#  you can change almost any parameter that exists in php.ini. For example,
+#  you can turn on safe_mode or register_globals for a particular vhost.
+#  .
+# URL: http://code.google.com/p/mod-myvhost/
+# Maintainer:  Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=mod_myvhost
+version=0.15
+release=1
+source=(http://mod-myvhost.googlecode.com/files/mod_myvhost-$version.tar.gz)
+
+build()
+{
+  cd mod_myvhost
+
+  APXS=`echo $prefix/*bin/apxs*`
+
+  for apxs in $APXS; do
+    make APXS="$apxs" MYSQLLDFLAGS="-lmysqlclient"
+    make PREFIX="$ROOT" install
+    make clean
+  done
+}
+
+# EOF

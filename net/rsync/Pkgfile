@@ -1,0 +1,219 @@
+# $Id: Pkgfile,v 1.1 2007/05/12 01:34:28 roman Exp $
+#
+# Description: A file transfer program to keep remote files in sync.
+#  rsync is a replacement for rcp (and scp) that has many more features. It
+#  uses the "rsync algorithm" which provides a very fast method for remote
+#  files into sync. It does this by sending just the differences in the
+#  files across the link, without requiring that both sets of files are
+#  present at one of the ends of the link beforehand.
+# URL: http://rsync.samba.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=rsync
+version=3.0.5
+release=1
+source=(http://samba.anu.edu.au/ftp/rsync/rsync-$version.tar.gz
+        http://samba.anu.edu.au/ftp/rsync/rsync-patches-3.0.5.tar.gz
+        rsyncd.conf
+        rsyncd.secrets)
+
+build()
+{
+  cd rsync-$version
+
+  for PATCH in \
+      acls adaptec_acl_mods atimes backup-dir-dels catch_crash_signals checksum-reading \
+      checksum-updating copy-devices cvs-entries daemon-forward-lookup date-only \
+      detect-renamed downdate dparam ignore-case munge-links netgroup-auth osx-xattr-nodev \
+      preallocate remote-option soften-links source-backup transliterate tru64 xattrs; do
+    patch -N -p1 -i "$SRC/rsync-3.0.5/patches/$PATCH.diff" || return $?
+  done
+
+  case $prefix in
+    "/usr") sysconfdir="/etc" ;;
+  esac
+
+  ./configure \
+       --host="$host" \
+       --build="$build" \
+       --prefix="$prefix" \
+       --sysconfdir="${sysconfdir=$prefix/etc}" \
+       --with-rsyncd-conf="$prefix/etc/rsyncd.conf"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $PKG${sysconfdir}
+  install -m 644 $SRC/rsyncd.conf $PKG${sysconfdir}/
+  install -m 644 $SRC/rsyncd.secrets $PKG${sysconfdir}/
+}
+
+# package postmerge script
+# --------------------------------------------------------------------------------
+postmerge()
+{
+  for file in rsyncd.conf rsyncd.secrets; do
+    if test ! -f $sysconfdir/$file; then
+      sed -e "s,@prefix@,${prefix},g" \
+         -e "s,@rsyncd_user@,${rsyncd_user},g" \
+         -e "s,@rsyncd_group@,${rsyncd_group},g" \
+         -e "s,@rsyncd_host@,${rsyncd_host},g" \
+         -e "s,@rsyncd_port@,${rsyncd_port},g" \
+         -e "s,@rsyncd_chroot@,${rsyncd_chroot},g" \
+         -e "s,@rsyncd_clients@,${rsyncd_clients},g" \
+         -e "s,@rsyncd_bwlimit@,${rsyncd_bwlimit},g" \
+         -e "s,@rsyncd_pidfile@,${rsyncd_PIDFILE:-$prefix/var/run/rsyncd.pid},g" \
+         -e "s,@rsyncd_exclude@,${rsyncd_exclude},g" \
+         -e "s,@rsyncd_include@,${rsyncd_include},g" \
+           "$sysconfdir/$file~" >"$sysconfdir/$file"
+     fi
+  done
+
+  chown $rsyncd_user:$rsyncd_group ${sysconfdir}/rsyncd.secrets
+  chmod 400 ${sysconfdir}/rsyncd.secrets
+
+  # check if the user that should run the server exists
+  if ! user_exists "$rsyncd_user"; then
+    msg "no user '$rsyncd_user' found, creating it..."
+
+    # check if the group that should run the server exists
+    if ! group_exists "$rsyncd_group"; then
+      msg "no group '$rsyncd_group' found, creating it..."
+
+      # try creating group, if failed we unset the group variable
+      if ! group_add "$rsyncd_group"; then
+        warn "failed creating group '$rsyncd_group'," \
+            "omitting group when creating user"
+        unset group
+      fi
+    fi
+
+    # try to add user, if we fail here we cannot start the server
+    if ! user_add "$rsyncd_user" "$rsyncd_group" \
+       $prefix/db "" "rsync daemon"; then
+      error "failed adding user '$rsyncd_user'"
+    fi
+  fi
+}
+
+# package configuration
+# -----------------------------------------------------------------------------
+config()
+{
+  # add the main-menu entry "rsyncd"
+  config_branch 'rsyncd'    'rsyncd daemon'
+
+    config_value 'address'   'rsyncd server host'
+      config_description    'Address the rsync server will listen to'
+      config_default        '$(config_getvalue global_ipaddr)'
+      config_function       'choose --help-{button,label} Other $(inet_list)'
+    config_end
+
+    config_value 'port'     'rsyncd server port'
+      config_description    'Port the rsync server will listen to'
+      config_default        '873'
+    config_end
+
+    config_value 'user'     'rsyncd user'
+      config_description    'User-account the rsync daemon will run under'
+      config_default        '$(user_find rsync nobody daemon)'
+    config_end
+
+    config_value 'group'    'rsyncd daemon group'
+      config_description    'Group-account the rsync daemon will run under'
+      config_default        '$(user_find rsync nobody daemon)'
+    config_end
+
+    config_value 'bwlimit'  'rsyncd transfer bandwidth limit'
+      config_description    'Specifies a bandwidth limit to be enforced by the rsync server.'
+      config_default        ''
+    config_end
+
+    config_value 'clients'  'rsyncd max. number of clients'
+      config_description    'Specifies a client limit to be enforced by the rsync server (-1 = inifinite).'
+      config_default        '-1'
+    config_end
+
+    config_value 'chroot'   'rsyncd chroot'
+      config_description    'Determines whether the rsyncd child will chroot or not.'
+      config_default        'no'
+      config_function       'yesno'
+    config_end
+
+    config_value 'exclude'  'rsyncd exclude list'
+      config_description    'Space separated list of patterns to exclude when browsing files.'
+      config_default        'CVS .svn *.rej *~ la'
+    config_end
+
+    config_value 'include'  'rsyncd include list'
+      config_description    'Space separated list of patterns to include (even when previously excluded) when browsing files.'
+      config_default        'README Makefile configure'
+    config_end
+
+  config_end
+}
+
+# --------------------------------------------------------------------------------
+services()
+{
+  config_branch "rsyncd"
+
+    config_branch "log"
+    config_end
+
+    config_set 'TITLE'   'rsync daemon'
+    config_set 'PIDFILE' '$prefix/var/run/rsyncd.pid'
+    config_set 'START'   ''
+    config_set 'STOP'    ''
+
+  config_leave
+}
+
+# --------------------------------------------------------------------------------
+rsyncd()
+{
+  exec 2>&1
+
+  # set default values
+  address=${rsyncd_address:-0.0.0.0}
+  port=${rsyncd_port:-873}
+  user=${rsyncd_user:-nobody}
+  allow=${rsyncd_allow:-${global_ipaddr%.*}.0/24}
+  pidfile=$(config_getvalue 'rsyncd_PIDFILE')
+
+  # check if the user is available to setuidgid
+  if ! user_avail "$user"; then
+    service_error "no such user:" "$user"
+  fi
+
+  # check if there's already an instance of rsyncd
+  if [ -f "$pidfile" ]; then
+    pid=$(cat "$pidfile")
+
+    if [ $((pid)) != 0 ] && [ -d $prefix/proc/$((pid)) ]; then
+      service_msg "rsyncd already running, restarting..."
+      kill $pid
+      sleep 2
+      exit 1
+    fi
+  fi
+
+  # check whether address:port is bindable
+  if proc=$(inet_bound tcp "$address:$port"); then
+    service_error "$address:$port" "already bound"
+  fi
+
+  export NO_DETACH=1
+
+  # finally execute rsyncd
+  if [ $((port)) != 873 ]; then
+    port_arg="--port="$((port))
+  fi
+
+  if [ $((bwlimit)) -gt 0 ]; then
+    bwlimit_arg="--bwlimit="$((bwlimit))
+  fi
+
+  exec -a rsync $bindir/rsync --daemon --address="$address" $bwlimit_arg $port_arg --no-detach --log-file=/dev/stdout -v
+}

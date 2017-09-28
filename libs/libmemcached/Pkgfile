@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A C protocol library for memcached and assorted command line tools.
+# libmemcached is a C client library for interfacing to a memcached
+# server. It has been designed to be light on memory usage, thread safe and
+# to provide full access to server side methods. It also implements several
+# command line tools: memcat, memflush, memrm, memstat, and memslap (for
+# load generation). The library has been designed to allow for different
+# hashing methods on keys, partitioning by keys, and to use consistent
+# hashing for distribution.
+#
+# URL: http://tangent.org/552/libmemcached.html
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=libmemcached
+version=0.22
+release=1
+source=(http://download.tangent.org/libmemcached-$version.tar.gz)
+
+build()
+{
+  cd libmemcached-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

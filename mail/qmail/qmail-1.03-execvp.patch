@@ -1,0 +1,133 @@
+diff -ru qmail-1.03_orig/idedit.c qmail-1.03/idedit.c
+--- qmail-1.03_orig/idedit.c	2008-11-03 18:40:40.000000000 +0100
++++ qmail-1.03/idedit.c	2008-11-03 18:43:51.000000000 +0100
+@@ -44,7 +44,7 @@
+     strerr_die2sys(111,FATAL,"unable to fork: ");
+ 
+   if (pid == 0) {
+-    execv(*args,args);
++    execvp(*args,args);
+     strerr_die4sys(111,WARNING,"unable to run ",*args,": ");
+   }
+ 
+diff -ru qmail-1.03_orig/qmail-local.c qmail-1.03/qmail-local.c
+--- qmail-1.03_orig/qmail-local.c	2008-11-03 18:40:40.000000000 +0100
++++ qmail-1.03/qmail-local.c	2008-11-03 18:43:51.000000000 +0100
+@@ -243,7 +243,7 @@
+    case 0:
+      args[0] = "/bin/sh"; args[1] = "-c"; args[2] = prog; args[3] = 0;
+      sig_pipedefault();
+-     execv(*args,args);
++     execvp(*args,args);
+      strerr_die3x(111,"Unable to run /bin/sh: ",error_str(errno),". (#4.3.0)");
+   }
+ 
+diff -ru qmail-1.03_orig/qmail-lspawn.c qmail-1.03/qmail-lspawn.c
+--- qmail-1.03_orig/qmail-lspawn.c	2008-11-03 18:40:40.000000000 +0100
++++ qmail-1.03/qmail-lspawn.c	2008-11-03 18:43:51.000000000 +0100
+@@ -139,7 +139,7 @@
+   }
+ 
+  if (pipe(pi) == -1) _exit(QLX_SYS);
+- args[0] = "bin/qmail-getpw";
++ args[0] = "qmail-getpw";
+  args[1] = local;
+  args[2] = 0;
+  switch(gpwpid = vfork())
+@@ -151,7 +151,7 @@
+      if (prot_uid(auto_uidp) == -1) _exit(QLX_USAGE);
+      close(pi[0]);
+      if (fd_move(1,pi[1]) == -1) _exit(QLX_SYS);
+-     execv(*args,args);
++     execvp(*args,args);
+      _exit(QLX_EXECPW);
+   }
+  close(pi[1]);
+@@ -191,7 +191,7 @@
+    x = nughde.s;
+    xlen = nughde.len;
+ 
+-   args[0] = "bin/qmail-local";
++   args[0] = "qmail-local";
+    args[1] = "--";
+    args[2] = x;
+    n = byte_chr(x,xlen,0); if (n++ == xlen) _exit(QLX_USAGE); x += n; xlen -= n;
+@@ -226,7 +226,7 @@
+    if (prot_uid(uid) == -1) _exit(QLX_USAGE);
+    if (!getuid()) _exit(QLX_ROOT);
+ 
+-   execv(*args,args);
++   execvp(*args,args);
+    if (error_temp(errno)) _exit(QLX_EXECSOFT);
+    _exit(QLX_EXECHARD);
+   }
+diff -ru qmail-1.03_orig/qmail.c qmail-1.03/qmail.c
+--- qmail-1.03_orig/qmail.c	2008-11-03 18:40:41.000000000 +0100
++++ qmail-1.03/qmail.c	2008-11-03 18:43:51.000000000 +0100
+@@ -15,7 +15,7 @@
+   if(!binqqargs[0])
+     binqqargs[0] = env_get("QMAILQUEUE");
+   if(!binqqargs[0])
+-    binqqargs[0] = "bin/qmail-queue";
++    binqqargs[0] = "qmail-queue";
+ }
+ 
+ int qmail_open(qq)
+@@ -40,7 +40,7 @@
+       if (fd_move(0,pim[0]) == -1) _exit(120);
+       if (fd_move(1,pie[0]) == -1) _exit(120);
+       if (chdir(auto_qmail) == -1) _exit(61);
+-      execv(*binqqargs,binqqargs);
++      execvp(*binqqargs,binqqargs);
+       _exit(120);
+   }
+ 
+diff -ru qmail-1.03_orig/sendmail.c qmail-1.03/sendmail.c
+--- qmail-1.03_orig/sendmail.c	2008-11-03 18:40:40.000000000 +0100
++++ qmail-1.03/sendmail.c	2008-11-03 18:43:51.000000000 +0100
+@@ -19,7 +19,7 @@
+   _exit(100);
+ }
+ 
+-char *smtpdarg[] = { "bin/qmail-smtpd", 0 };
++char *smtpdarg[] = { "qmail-smtpd", 0 };
+ void smtpd()
+ {
+   if (!env_get("PROTO")) {
+@@ -32,15 +32,15 @@
+     if (!env_put("TCPREMOTEHOST=localhost")) nomem();
+     if (!env_put("TCPREMOTEINFO=sendmail-bs")) nomem();
+   }
+-  execv(*smtpdarg,smtpdarg);
++  execvp(*smtpdarg,smtpdarg);
+   substdio_putsflush(subfderr,"sendmail: fatal: unable to run qmail-smtpd\n");
+   _exit(111);
+ }
+ 
+-char *qreadarg[] = { "bin/qmail-qread", 0 };
++char *qreadarg[] = { "qmail-qread", 0 };
+ void mailq()
+ {
+-  execv(*qreadarg,qreadarg);
++  execvp(*qreadarg,qreadarg);
+   substdio_putsflush(subfderr,"sendmail: fatal: unable to run qmail-qread\n");
+   _exit(111);
+ }
+@@ -145,7 +145,7 @@
+   if (!qiargv) nomem();
+  
+   arg = qiargv;
+-  *arg++ = "bin/qmail-inject";
++  *arg++ = "qmail-inject";
+   *arg++ = (flagh ? "-H" : "-a");
+   if (sender) {
+     *arg++ = "-f";
+@@ -156,7 +156,7 @@
+   for (i = 0;i < argc;++i) *arg++ = argv[i];
+   *arg = 0;
+  
+-  execv(*qiargv,qiargv);
++  execvp(*qiargv,qiargv);
+   substdio_putsflush(subfderr,"sendmail: fatal: unable to run qmail-inject\n");
+   _exit(111);
+ }

@@ -1,0 +1,1112 @@
+diff -ruwN libsndfile-1.0.17_orig/CMakeLists.txt libsndfile-1.0.17/CMakeLists.txt
+--- libsndfile-1.0.17_orig/CMakeLists.txt	1970-01-01 01:00:00.000000000 +0100
++++ libsndfile-1.0.17/CMakeLists.txt	2007-12-10 22:30:31.031250000 +0100
+@@ -0,0 +1,127 @@
++# Set project name/version
++SET(PACKAGE libsndfile)
++SET(VERSION 1.0.17)
++
++PROJECT(${NAME} C)
++
++# Set directories
++SET(prefix ${CMAKE_INSTALL_PREFIX})
++SET(exec_prefix ${prefix})
++SET(libdir ${exec_prefix}/lib)
++SET(includedir ${prefix}/include)
++
++# Set CMake module path
++SET(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/CMakeModules)
++
++# Check for endianness
++INCLUDE(TestBigEndian)
++TEST_BIG_ENDIAN(CPU_IS_BIG_ENDIAN)
++
++IF(NOT CPU_IS_BIG_ENDIAN)
++  SET(CPU_IS_BIG_ENDIAN 0)
++ENDIF(NOT CPU_IS_BIG_ENDIAN)
++
++IF(NOT CPU_IS_BIG_ENDIAN)
++  SET(CPU_IS_LITTLE_ENDIAN 1)
++ELSE(NOT CPU_IS_BIG_ENDIAN)
++  SET(CPU_IS_LITTLE_ENDIAN 0)
++ENDIF(NOT CPU_IS_BIG_ENDIAN)
++
++# Enable experimental code?
++IF(NOT ENABLE_EXPERIMENTAL_CODE)
++  SET(ENABLE_EXPERIMENTAL_CODE 0)
++ELSE(NOT ENABLE_EXPERIMENTAL_CODE)
++  SET(ENABLE_EXPERIMENTAL_CODE 1)
++ENDIF(NOT ENABLE_EXPERIMENTAL_CODE)
++
++# Check whether to build a shared library
++IF(NOT DEFINED SHARED)
++  SET(SHARED 1)
++ENDIF(NOT DEFINED SHARED)
++
++IF(SHARED)
++  SET(LINK_MODE SHARED)
++ELSE(SHARED)
++  SET(LINK_MODE STATIC)
++ENDIF(SHARED)
++
++# Check for windows, naming the resulting library libsndfile.dll instead of sndfile.dll
++IF(WIN32)
++  SET(libsndfile_NAME libsndfile)
++ELSE(WIN32)
++  SET(libsndfile_NAME sndfile)
++ENDIF(WIN32)
++
++# Check for GCC
++INCLUDE(${CMAKE_MODULE_PATH}/CheckIsGCC.cmake)
++
++CHECK_IS_GCC(COMPILER_IS_GCC)
++
++# Check for the S_I[RWX]{USR,GRP} constants
++INCLUDE(CheckSymbolExists)
++
++CHECK_SYMBOL_EXISTS(S_IRGRP "sys/stat.h" HAVE_DECL_S_IRGRP)
++
++# Check for the math library and the lrint(f) rounding functions..
++INCLUDE(CheckLibraryExists)
++INCLUDE(CheckFunctionExists)
++
++FIND_LIBRARY(MATH_LIB NAMES m libm libcmt)
++
++IF(MATH_LIB)
++  CHECK_LIBRARY_EXISTS(${MATH_LIB} lrint "" HAVE_LRINT)
++  CHECK_LIBRARY_EXISTS(${MATH_LIB} lrintf "" HAVE_LRINTF)
++  
++  IF(HAVE_LRINT AND HAVE_LRINTF)
++    SET(CMAKE_REQUIRED_LIBRARIES ${MATH_LIB} ${CMAKE_REQUIRED_LIBRARIES})
++  ENDIF(HAVE_LRINT AND HAVE_LRINTF)
++ELSE(MATH_LIB)
++  CHECK_FUNCTION_EXISTS(lrint HAVE_LRINT)
++  CHECK_FUNCTION_EXISTS(lrintf HAVE_LRINTF)
++ENDIF(MATH_LIB)
++
++# Test CPU floating point clipping
++#SET(CHECK_CPU_CLIPS_ADD_LIBRARIES ${MATH_LIB})
++IF(HAVE_LRINT AND HAVE_LRINTF)
++  LINK_LIBRARIES(${MATH_LIB})
++  TARGET_LINK_LIBRARIES(cmTryCompileExec ${MATH_LIB})
++ENDIF(HAVE_LRINT AND HAVE_LRINTF)
++
++INCLUDE(${CMAKE_MODULE_PATH}/TestCpuClips.cmake)
++
++# Check for the FLAC library
++FIND_LIBRARY(FLAC_LIB NAMES FLAC libFLAC libFLAC_dynamic libFLAC_static)
++
++CHECK_LIBRARY_EXISTS(${FLAC_LIB} FLAC__stream_encoder_init "" HAVE_FLAC_LIB_INIT)
++
++#MESSAGE(STATUS "FLAC LIB: ${FLAC_LIB}")
++
++# Check for the ALSA library
++FIND_LIBRARY(ALSA_LIB NAMES asound libasound)
++
++IF(ALSA_LIB)
++  CHECK_LIBRARY_EXISTS(${ALSA_LIB} snd_pcm_open "" HAVE_ALSA_LIB_INIT)
++ENDIF(ALSA_LIB)
++
++# pkg-config file
++CONFIGURE_FILE(sndfile.pc.in sndfile.pc @ONLY)
++
++INSTALL(FILES sndfile.pc DESTINATION lib/pkgconfig)
++
++# Text documentation
++SET(libsndfile_DOCS
++    AUTHORS
++    COPYING
++    INSTALL
++    NEWS
++    README
++    TODO)
++    
++INSTALL(FILES ${libsndfile_DOCS} DESTINATION share/doc/${PACKAGE})
++
++ADD_SUBDIRECTORY(src)
++ADD_SUBDIRECTORY(tests)
++ADD_SUBDIRECTORY(examples)
++ADD_SUBDIRECTORY(doc)
++ADD_SUBDIRECTORY(man)
++ADD_SUBDIRECTORY(Octave)
+diff -ruwN libsndfile-1.0.17_orig/CMakeModules/CheckIsGCC.cmake libsndfile-1.0.17/CMakeModules/CheckIsGCC.cmake
+--- libsndfile-1.0.17_orig/CMakeModules/CheckIsGCC.cmake	1970-01-01 01:00:00.000000000 +0100
++++ libsndfile-1.0.17/CMakeModules/CheckIsGCC.cmake	2007-12-10 17:17:53.687500000 +0100
+@@ -0,0 +1,36 @@
++MACRO(CHECK_IS_GCC VARIABLE)
++
++  SET(CMAKE_ALLOW_UNKNOWN_VARIABLE_READ_ACCESS 1)
++  IF("${VARIABLE}" MATCHES "^${VARIABLE}$")
++    
++    SET(CHECK_GCC_MSG "Checking whether the C compiler is GCC")
++
++    MESSAGE(STATUS "${CHECK_GCC_MSG}")
++
++    SET(COMPILER_INFO "" CACHE INTERNAL "Output of ${CMAKE_C_COMPILER} --version")
++    EXEC_PROGRAM(${CMAKE_C_COMPILER} ARGS "--version" OUTPUT_VARIABLE COMPILER_INFO)
++
++    SEPARATE_ARGUMENTS(COMPILER_INFO)
++
++    IF(COMPILER_INFO)
++      SET(GCC_NAME "" CACHE STRING "GCC compiler executable name")
++      SET(GCC_TAG "" CACHE STRING "GCC compiler branding")
++
++      LIST(GET COMPILER_INFO 0 GCC_NAME)
++      LIST(GET COMPILER_INFO 1 GCC_TAG)
++    ENDIF(COMPILER_INFO)
++
++    SET(COMPILER_IS_GCC 0 CACHE BOOL "Using GNU C?")
++    STRING(COMPARE EQUAL "${GCC_TAG}" "(GCC)" COMPILER_IS_GCC)
++
++    IF(NOT COMPILER_IS_GCC)
++      SET(COMPILER_IS_GCC 0)
++      MESSAGE(STATUS "${CHECK_GCC_MSG} - no")
++    ELSE(NOT COMPILER_IS_GCC)
++      SET(COMPILER_IS_GCC 1)
++      MESSAGE(STATUS "${CHECK_GCC_MSG} - yes")
++    ENDIF(NOT COMPILER_IS_GCC)
++
++  ENDIF("${VARIABLE}" MATCHES "^${VARIABLE}$")
++
++ENDMACRO(CHECK_IS_GCC VARIABLE)
+diff -ruwN libsndfile-1.0.17_orig/CMakeModules/TestCpuClips.cmake libsndfile-1.0.17/CMakeModules/TestCpuClips.cmake
+--- libsndfile-1.0.17_orig/CMakeModules/TestCpuClips.cmake	1970-01-01 01:00:00.000000000 +0100
++++ libsndfile-1.0.17/CMakeModules/TestCpuClips.cmake	2007-12-10 21:05:10.921875000 +0100
+@@ -0,0 +1,58 @@
++MACRO(CHECK_CPU_CLIPS TYPE VARIABLE)
++
++  SET(CMAKE_ALLOW_UNKNOWN_VARIABLE_READ_ACCESS 1)
++  IF("${VARIABLE}" MATCHES "^${VARIABLE}$")
++
++    SET(CPU_CLIPS_MSG "${TYPE} floating point to int conversion clipping")
++    MESSAGE(STATUS "${CPU_CLIPS_MSG}")
++
++    SET(CPU_CLIPS_TEST ${CMAKE_MODULE_PATH}/TestCpuClips${TYPE}.c)
++
++    SET(CHECK_CPU_CLIPS_PREINCLUDE)
++    SET(CHECK_CPU_CLIPS_PREMAIN)
++
++    FOREACH(def ${CMAKE_EXTRA_INCLUDE_FILES})
++      SET(CHECK_CPU_CLIPS_PREMAIN "${CHECK_CPU_CLIPS_PREMAIN}#include \"${def}\"\n")
++    ENDFOREACH(def)
++
++#    IF(CMAKE_REQUIRED_INCLUDES)
++#      SET(CHECK_CPU_CLIPS_ADD_INCLUDES
++#        "-DINCLUDE_DIRECTORIES:STRING=${CMAKE_REQUIRED_INCLUDES}")
++#    ELSE(CMAKE_REQUIRED_INCLUDES)
++#      SET(CHECK_CPU_CLIPS_ADD_INCLUDES)
++#    ENDIF(CMAKE_REQUIRED_INCLUDES)
++
++    TRY_RUN(${VARIABLE}
++            ${VARIABLE}_COMPILE
++            ${CMAKE_BINARY_DIR} ${CPU_CLIPS_TEST}
++            COMPILE_DEFINITIONS ${CMAKE_REQUIRED_DEFINITIONS}
++            CMAKE_FLAGS -DCOMPILE_DEFINITIONS:STRING=${MACRO_CHECK_CPU_CLIPS_FLAGS}
++            "${CHECK_CPU_CLIPS_ADD_LIBRARIES}"
++            "${CHECK_CPU_CLIPS_ADD_INCLUDES}"
++            OUTPUT_VARIABLE OUTPUT)
++
++    IF(NOT ${VARIABLE}_COMPILE)
++
++      MESSAGE(STATUS "${CPU_CLIPS_MSG} - compilation failed: ${OUTPUT}")
++      
++    ELSE(NOT ${VARIABLE}_COMPILE)
++    
++      IF(${VARIABLE})
++        MESSAGE(STATUS "${CPU_CLIPS_MSG} - yes")
++      ELSE(${VARIABLE})
++        MESSAGE(STATUS "${CPU_CLIPS_MSG} - no")
++      ENDIF(${VARIABLE})
++    
++    ENDIF(NOT ${VARIABLE}_COMPILE)
++    
++    IF(NOT ${VARIABLE})
++      SET(${VARIABLE} 0)
++    ENDIF(NOT ${VARIABLE})
++
++  ENDIF("${VARIABLE}" MATCHES "^${VARIABLE}$")
++  SET(CMAKE_ALLOW_UNKNOWN_VARIABLE_READ_ACCESS )
++
++ENDMACRO(CHECK_CPU_CLIPS TYPE VARIABLE)
++
++CHECK_CPU_CLIPS(Positive CPU_CLIPS_POSITIVE)
++CHECK_CPU_CLIPS(Negative CPU_CLIPS_NEGATIVE)
+diff -ruwN libsndfile-1.0.17_orig/CMakeModules/TestCpuClips.h libsndfile-1.0.17/CMakeModules/TestCpuClips.h
+--- libsndfile-1.0.17_orig/CMakeModules/TestCpuClips.h	1970-01-01 01:00:00.000000000 +0100
++++ libsndfile-1.0.17/CMakeModules/TestCpuClips.h	2007-12-10 21:03:09.421875000 +0100
+@@ -0,0 +1,38 @@
++#define _ISOC9X_SOURCE  1
++#define _ISOC99_SOURCE  1
++#define __USE_ISOC99  1
++#define __USE_ISOC9X  1
++
++#include <stdio.h>
++
++#ifdef _MSC_VER
++__inline long int lrint(double flt)
++{ 
++  int intgr;
++
++  _asm
++  { 
++    fld flt
++    fistp intgr
++  };
++  
++  return intgr;
++}
++    
++__inline long int lrintf(float flt)
++{ 
++  int intgr;
++
++  _asm
++  { 
++    fld flt
++    fistp intgr
++  };
++
++  return intgr;
++}
++#else
++
++#include <math.h>
++
++#endif
+diff -ruwN libsndfile-1.0.17_orig/CMakeModules/TestCpuClipsNegative.c libsndfile-1.0.17/CMakeModules/TestCpuClipsNegative.c
+--- libsndfile-1.0.17_orig/CMakeModules/TestCpuClipsNegative.c	1970-01-01 01:00:00.000000000 +0100
++++ libsndfile-1.0.17/CMakeModules/TestCpuClipsNegative.c	2007-12-10 21:02:14.468750000 +0100
+@@ -0,0 +1,16 @@
++#include "TestCpuClips.h"
++int main()
++{
++  double fval;
++  int k, ival;
++
++  fval = -8.0 * 0x10000000;
++  for(k = 0; k < 100; k++)
++  { 
++    ival = (lrint(fval)) >> 24;
++    if(ival != -128)
++      return 0;
++    fval *= 1.2499999;
++  }
++  return 1;
++}
+diff -ruwN libsndfile-1.0.17_orig/CMakeModules/TestCpuClipsPositive.c libsndfile-1.0.17/CMakeModules/TestCpuClipsPositive.c
+--- libsndfile-1.0.17_orig/CMakeModules/TestCpuClipsPositive.c	1970-01-01 01:00:00.000000000 +0100
++++ libsndfile-1.0.17/CMakeModules/TestCpuClipsPositive.c	2007-12-10 21:01:59.812500000 +0100
+@@ -0,0 +1,15 @@
++#include "TestCpuClips.h"
++int main()
++{
++  double fval;
++  int k, ival;
++  fval = 1.0 * 0x7FFFFFFF;
++  for(k = 0; k < 100; k++)
++  {
++    ival = (lrint(fval)) >> 24;
++    if(ival != 127)
++      return 0;
++    fval *= 1.2499999;
++  }
++  return 1;
++}
+diff -ruwN libsndfile-1.0.17_orig/Octave/CMakeLists.txt libsndfile-1.0.17/Octave/CMakeLists.txt
+--- libsndfile-1.0.17_orig/Octave/CMakeLists.txt	1970-01-01 01:00:00.000000000 +0100
++++ libsndfile-1.0.17/Octave/CMakeLists.txt	2007-12-10 17:58:05.421875000 +0100
+@@ -0,0 +1,6 @@
++SET(libsndfile_OCTAVE
++    sndfile_load.m
++    sndfile_play.m
++    sndfile_save.m)
++
++INSTALL(FILES ${libsndfile_OCTAVE} DESTINATION share/octave/site/m)
+diff -ruwN libsndfile-1.0.17_orig/doc/CMakeLists.txt libsndfile-1.0.17/doc/CMakeLists.txt
+--- libsndfile-1.0.17_orig/doc/CMakeLists.txt	1970-01-01 01:00:00.000000000 +0100
++++ libsndfile-1.0.17/doc/CMakeLists.txt	2007-12-10 17:36:05.859375000 +0100
+@@ -0,0 +1,18 @@
++SET(libsndfile_HTML
++    FAQ.html
++    api.html
++    bugs.html
++    command.html
++    dither.html
++    embedded_files.html
++    index.html
++    libsndfile.css
++    libsndfile.jpg
++    lists.html
++    new_file_type.HOWTO
++    octave.html
++    pkgconfig.html
++    sndfile_info.html
++    win32.html)
++
++INSTALL(FILES ${libsndfile_HTML} DESTINATION share/doc/${PACKAGE}/html)
+diff -ruwN libsndfile-1.0.17_orig/examples/CMakeLists.txt libsndfile-1.0.17/examples/CMakeLists.txt
+--- libsndfile-1.0.17_orig/examples/CMakeLists.txt	1970-01-01 01:00:00.000000000 +0100
++++ libsndfile-1.0.17/examples/CMakeLists.txt	2007-12-10 17:53:19.968750000 +0100
+@@ -0,0 +1,53 @@
++LINK_DIRECTORIES(${CMAKE_BUILD_DIR}/src)
++
++FIND_LIBRARY(FLAC_LIB NAMES libFLAC_dynamic FLAC libFLAC libFLAC_static)
++
++SET(EXAMPLES cooledit-fixer generate list_formats make_sine sfprocess)
++SET(PROGRAMS sndfile-convert sndfile-info sndfile-play)
++
++STRING(COMPARE EQUAL "${LINK_MODE}" "SHARED" IS_SHARED)
++
++IF(IS_SHARED)
++  SET(LIBS ${libsndfile_NAME})
++ELSE(IS_SHARED)
++  SET(LIBS ${libsndfile_NAME} ${FLAC_STATIC_LIB})
++ENDIF(IS_SHARED)
++SET(examples_LIBS ${LIBS})
++
++IF(MSVC)
++  IF(IS_SHARED)
++    SET(examples_LIBS ${libsndfile_NAME}_static ${FLAC_STATIC_LIB})
++  ENDIF(IS_SHARED)
++  ADD_DEFINITIONS(/W0 /Dinline=__inline /D__func__=__FUNCTION__)
++ENDIF(MSVC)
++
++IF(WIN32)
++  ADD_DEFINITIONS(-DOS_IS_WIN32=1)
++ENDIF(WIN32)
++
++IF(APPLE)
++  ADD_DEFINITIONS(-DOS_IS_MACOSX=1)
++ENDIF(APPLE)
++
++INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/src)
++
++FOREACH(EXAMPLE ${EXAMPLES})
++  ADD_EXECUTABLE(${EXAMPLE} ${EXAMPLE}.c)
++  TARGET_LINK_LIBRARIES(${EXAMPLE} ${examples_LIBS})
++ENDFOREACH(EXAMPLE ${EXAMPLES})
++
++FOREACH(PROGRAM ${PROGRAMS})
++  ADD_EXECUTABLE(${PROGRAM} ${PROGRAM}.c)
++  TARGET_LINK_LIBRARIES(${PROGRAM} ${LIBS})
++ENDFOREACH(PROGRAM ${PROGRAMS})
++
++IF(WIN32)
++  TARGET_LINK_LIBRARIES(sndfile-play winmm)
++ENDIF(WIN32)
++
++IF(ALSA_LIB)
++  TARGET_LINK_LIBRARIES(sndfile-play ${ALSA_LIB})
++ENDIF(ALSA_LIB)
++
++INSTALL(TARGETS ${PROGRAMS} RUNTIME DESTINATION bin)
++
+diff -ruwN libsndfile-1.0.17_orig/man/CMakeLists.txt libsndfile-1.0.17/man/CMakeLists.txt
+--- libsndfile-1.0.17_orig/man/CMakeLists.txt	1970-01-01 01:00:00.000000000 +0100
++++ libsndfile-1.0.17/man/CMakeLists.txt	2007-12-10 17:36:05.921875000 +0100
+@@ -0,0 +1,6 @@
++SET(libsndfile_MANUALS
++    sndfile-convert.1
++    sndfile-info.1
++    sndfile-play.1)
++
++INSTALL(FILES ${libsndfile_MANUALS} DESTINATION share/man/man1)
+diff -ruwN libsndfile-1.0.17_orig/src/CMakeLists.txt libsndfile-1.0.17/src/CMakeLists.txt
+--- libsndfile-1.0.17_orig/src/CMakeLists.txt	1970-01-01 01:00:00.000000000 +0100
++++ libsndfile-1.0.17/src/CMakeLists.txt	2007-12-10 21:19:06.125000000 +0100
+@@ -0,0 +1,253 @@
++# Check for some functions
++INCLUDE(CheckFunctionExists)
++CHECK_FUNCTION_EXISTS(gmtime HAVE_GMTIME)
++CHECK_FUNCTION_EXISTS(gmtime_r HAVE_GMTIME_R)
++CHECK_FUNCTION_EXISTS(snprintf HAVE_SNPRINTF)
++CHECK_FUNCTION_EXISTS(vsnprintf HAVE_VSNPRINTF)
++#CHECK_FUNCTION_EXISTS(lrint HAVE_LRINT)
++#CHECK_FUNCTION_EXISTS(lrintf HAVE_LRINTF)
++
++# Check for headers
++INCLUDE(CheckIncludeFile)
++CHECK_INCLUDE_FILE(stdint.h HAVE_STDINT_H)
++CHECK_INCLUDE_FILE(inttypes.h HAVE_INTTYPES_H)
++CHECK_INCLUDE_FILE(limits.h HAVE_LIMITS_H)
++CHECK_INCLUDE_FILE(byteswap.h HAVE_BYTESWAP_H)
++CHECK_INCLUDE_FILE(FLAC/all.h HAVE_FLAC_ALL_H)
++CHECK_INCLUDE_FILE(alsa/asoundlib.h HAVE_ALSA_ASOUNDLIB_H)
++
++# Check for types
++INCLUDE(CheckTypeSize)
++CHECK_TYPE_SIZE("size_t" SIZEOF_SIZE_T)
++CHECK_TYPE_SIZE("ssize_t" SIZEOF_SSIZE_T)
++CHECK_TYPE_SIZE("double" SIZEOF_DOUBLE)
++CHECK_TYPE_SIZE("float" SIZEOF_FLOAT)
++CHECK_TYPE_SIZE("int" SIZEOF_INT)
++
++# Find a suitable sf_count_t type
++INCLUDE(CheckSymbolExists)
++
++IF(HAVE_STDINT_H)
++  CHECK_SYMBOL_EXISTS(INT64_MAX "stdint.h" HAVE_INT64_MAX)
++
++  SET(CMAKE_EXTRA_INCLUDE_FILES ${CMAKE_EXTRA_INCLUDE_FILES} stdint.h)
++ENDIF(HAVE_STDINT_H)
++
++IF(HAVE_INTTYPES_H)
++  SET(CMAKE_EXTRA_INCLUDE_FILES ${CMAKE_EXTRA_INCLUDE_FILES} inttypes.h)
++  CHECK_SYMBOL_EXISTS(INT64_MAX "inttypes.h" HAVE_INT64_MAX)
++ENDIF(HAVE_INTTYPES_H)
++
++IF(HAVE_LIMITS_H)
++  CHECK_SYMBOL_EXISTS(LONG_MAX "limits.h" HAVE_LONG_MAX)
++  CHECK_SYMBOL_EXISTS(LONG_LONG_MAX "limits.h" HAVE_LONG_LONG_MAX)
++
++  SET(CMAKE_EXTRA_INCLUDE_FILES ${CMAKE_EXTRA_INCLUDE_FILES} limits.h)
++ENDIF(HAVE_LIMITS_H)
++
++SET(TYPEOF_LONG "long")
++SET(TYPEOF_OFF64_T "off64_t")
++SET(TYPEOF_OFF_T "off_t")
++SET(TYPEOF_LONG_LONG "long long")
++SET(TYPEOF_LOFF_T "loff_t")
++SET(TYPEOF_INT64_T "int64_t")
++SET(TYPEOF___INT64 "__int64")
++
++SET(SF_COUNT_CANDIDATES
++    LONG
++    INT64_T
++#    LONG_LONG
++    OFF64_T
++    OFF_T
++    LOFF_T
++    __INT64
++    )
++
++SET(TYPEOF_SF_COUNT_T "int")
++SET(SIZEOF_SF_COUNT_T 4)
++SET(NAMEOF_SF_COUNT_T INT)
++
++FOREACH(TYPE ${SF_COUNT_CANDIDATES})
++  
++  CHECK_TYPE_SIZE(${TYPEOF_${TYPE}} SIZEOF_${TYPE})
++
++  IF(SIZEOF_${TYPE} GREATER SIZEOF_SF_COUNT_T)
++
++    SET(TYPENAME ${TYPEOF_${TYPE}})
++    SET(TYPESIZE ${SIZEOF_${TYPE}})
++  
++    SET(NAMEOF_SF_COUNT_T ${TYPE})
++    SET(TYPEOF_SF_COUNT_T ${TYPENAME})
++    SET(SIZEOF_SF_COUNT_T ${SIZEOF_${TYPE}})
++
++  ENDIF(SIZEOF_${TYPE} GREATER SIZEOF_SF_COUNT_T)
++
++ENDFOREACH(TYPE ${SF_COUNT_CANDIDATES})
++
++
++IF(SIZEOF_SF_COUNT_T EQUAL 4)
++  SET(SF_COUNT_MAX "0x7FFFFFFF")
++ELSEIF(SIZEOF_SF_COUNT_T EQUAL 8)
++  SET(SF_COUNT_MAX "0x7FFFFFFFFFFFFFFF")
++ELSE(SIZEOF_SF_COUNT_T EQUAL 4)
++  SET(SF_COUNT_MAX "INT_MAX")
++ENDIF(SIZEOF_SF_COUNT_T EQUAL 4)
++
++IF(NAMEOF_SF_COUNT_T STREQUAL LONG_LONG)
++
++  IF(HAVE_LONG_LONG_MAX)
++    SET(SF_COUNT_MAX "HAVE_LONG_LONG_MAX")
++  ELSE(HAVE_LONG_LONG_MAX)
++    SET(SF_COUNT_MAX "${SF_COUNT_MAX}ll")
++  ENDIF(HAVE_LONG_LONG_MAX)
++  
++ELSEIF(NAMEOF_SF_COUNT_T STREQUAL INT64_T)
++
++  IF(INT64_MAX)
++    SET(SF_COUNT_MAX "INT64_MAX")
++  ELSE(INT64_MAX)
++    SET(SF_COUNT_MAX "${SF_COUNT_MAX}ll")
++  ENDIF(INT64_MAX)
++
++ELSEIF(NAMEOF_SF_COUNT_T STREQUAL LONG)
++
++  IF(HAVE_LONG_MAX)
++    SET(SF_COUNT_MAX "HAVE_LONG_MAX")
++  ELSE(HAVE_LONG_MAX)
++    SET(SF_COUNT_MAX "${SF_COUNT_MAX}l")
++  ENDIF(HAVE_LONG_MAX)
++
++ELSEIF(NAMEOF_SF_COUNT_T STREQUAL __INT64)
++
++  SET(SF_COUNT_MAX "${SF_COUNT_MAX}i64")
++  
++ENDIF(NAMEOF_SF_COUNT_T STREQUAL LONG_LONG)
++
++# Use windows API for file I/O
++IF(WIN32)
++  SET(USE_WINDOWS_API 1)
++ELSE(WIN32)
++  SET(USE_WINDOWS_API 0)
++ENDIF(WIN32)
++
++# Test CPU floating point clipping
++#SET(CHECK_CPU_CLIPS_ADD_LIBRARIES ${MATH_LIB})
++#
++#INCLUDE(${CMAKE_MODULE_PATH}/TestCpuClips.cmake)
++
++# Generate headers
++CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake ${CMAKE_CURRENT_SOURCE_DIR}/config.h)
++CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/sndfile.h.in ${CMAKE_CURRENT_SOURCE_DIR}/sndfile.h)
++
++# Platform dependent sources
++IF(APPLE)
++  SET(MACOS_SOURCES macos.c)
++ENDIF(APPLE)
++
++# Library sources
++SET(libsndfile_SOURCES
++    aiff.c
++    alaw.c
++    au.c
++    avr.c
++    broadcast.c
++    caf.c
++    command.c
++    common.c
++    dither.c
++    double64.c
++    dwd.c
++    dwvw.c
++    file_io.c
++    flac.c
++    float32.c
++    g72x.c
++    gsm610.c
++    htk.c
++    ima_adpcm.c
++    interleave.c
++    ircam.c
++    macbinary3.c
++    mat4.c
++    mat5.c
++    ms_adpcm.c
++    nist.c
++    ogg.c
++    paf.c
++    pcm.c
++    pvf.c
++    raw.c
++    rx2.c
++    sd2.c
++    sds.c
++    sndfile.c
++    strings.c
++    svx.c
++    txw.c
++    ulaw.c
++    voc.c
++    vox_adpcm.c
++    w64.c
++    wav.c
++    wav_w64.c
++    wve.c
++    xi.c
++    ${MACOS_SOURCES}
++    G72x/g721.c
++    G72x/g723_16.c
++    G72x/g723_24.c
++    G72x/g723_40.c
++    G72x/g72x.c
++    GSM610/add.c
++    GSM610/code.c
++    GSM610/decode.c
++    GSM610/gsm_create.c
++    GSM610/gsm_decode.c
++    GSM610/gsm_destroy.c
++    GSM610/gsm_encode.c
++    GSM610/gsm_option.c
++    GSM610/long_term.c
++    GSM610/lpc.c
++    GSM610/preprocess.c
++    GSM610/rpe.c
++    GSM610/short_term.c
++    GSM610/table.c)
++
++INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/src)
++
++# Library target
++ADD_LIBRARY(${libsndfile_NAME} ${LINK_MODE} ${libsndfile_SOURCES})
++SET_TARGET_PROPERTIES(${libsndfile_NAME} PROPERTIES VERSION 1.0.17)
++TARGET_LINK_LIBRARIES(${libsndfile_NAME} ${FLAC_LIB})
++
++# Adjustments for MSVC++
++SET(tests_LIB ${libsndfile_NAME})
++
++IF(MSVC)
++  STRING(COMPARE EQUAL "${LINK_MODE}" "SHARED" IS_SHARED)
++  IF(IS_SHARED)
++    ADD_LIBRARY(${libsndfile_NAME}_static STATIC ${libsndfile_SOURCES})
++    SET_TARGET_PROPERTIES(${libsndfile_NAME}_static PROPERTIES COMPILE_FLAGS -DFLAC__NO_DLL=1)
++    SET(tests_LIB ${libsndfile_NAME}_static ${FLAC_STATIC_LIB})
++  ENDIF(IS_SHARED)
++  ADD_DEFINITIONS(/Dinline=__inline)
++  SET_TARGET_PROPERTIES(${libsndfile_NAME} PROPERTIES LINK_FLAGS /DEF:libsndfile.def)
++ENDIF(MSVC)
++
++# Test programs
++SET(TESTS test_endswap test_file_io test_log_printf)
++
++FOREACH(TEST ${TESTS})
++  ADD_EXECUTABLE(${TEST} ${TEST}.c)
++  TARGET_LINK_LIBRARIES(${TEST} ${tests_LIB})
++ENDFOREACH(TEST ${TESTS})
++
++# Installation rules
++INSTALL(TARGETS ${libsndfile_NAME}
++        LIBRARY DESTINATION lib
++        RUNTIME DESTINATION bin
++        ARCHIVE DESTINATION lib)
++
++INSTALL(FILES sndfile.h DESTINATION include)
++
++ADD_SUBDIRECTORY(G72x)
+diff -ruwN libsndfile-1.0.17_orig/src/G72x/CMakeLists.txt libsndfile-1.0.17/src/G72x/CMakeLists.txt
+--- libsndfile-1.0.17_orig/src/G72x/CMakeLists.txt	1970-01-01 01:00:00.000000000 +0100
++++ libsndfile-1.0.17/src/G72x/CMakeLists.txt	2007-12-10 12:00:08.718750000 +0100
+@@ -0,0 +1,12 @@
++LINK_DIRECTORIES(${CMAKE_BUILD_DIR}/src)
++
++ADD_EXECUTABLE(g72x_test g72x_test.c)
++
++
++IF(MSVC AND IS_SHARED)
++  SET(test_libsndfile_LIB ${libsndfile_NAME}_static)
++ELSE(MSVC AND IS_SHARED)
++  SET(test_libsndfile_LIB ${libsndfile_NAME})
++ENDIF(MSVC AND IS_SHARED)
++
++TARGET_LINK_LIBRARIES(g72x_test ${test_libsndfile_LIB})
+diff -ruwN libsndfile-1.0.17_orig/src/G72x/g72x_test.c libsndfile-1.0.17/src/G72x/g72x_test.c
+--- libsndfile-1.0.17_orig/src/G72x/g72x_test.c	2007-12-10 11:59:51.281250000 +0100
++++ libsndfile-1.0.17/src/G72x/g72x_test.c	2007-12-10 12:00:08.734375000 +0100
+@@ -17,7 +17,6 @@
+ */
+  
+ #include <stdio.h>
+-#include <unistd.h>
+ #include <stdlib.h>
+ #include <string.h>
+ #include <math.h>
+diff -ruwN libsndfile-1.0.17_orig/src/config.h.cmake libsndfile-1.0.17/src/config.h.cmake
+--- libsndfile-1.0.17_orig/src/config.h.cmake	1970-01-01 01:00:00.000000000 +0100
++++ libsndfile-1.0.17/src/config.h.cmake	2007-12-10 18:20:00.781250000 +0100
+@@ -0,0 +1,259 @@
++/* src/config.h.in.  Generated from configure.ac by autoheader.  */
++
++/* Set to 1 if the compile is GNU GCC. */
++#define COMPILER_IS_GCC @COMPILER_IS_GCC@
++
++/* Target processor clips on negative float to int conversion. */
++#define CPU_CLIPS_NEGATIVE @CPU_CLIPS_NEGATIVE@
++
++/* Target processor clips on positive float to int conversion. */
++#define CPU_CLIPS_POSITIVE @CPU_CLIPS_POSITIVE@
++
++/* Target processor is big endian. */
++#define CPU_IS_BIG_ENDIAN @CPU_IS_BIG_ENDIAN@
++
++/* Target processor is little endian. */
++#define CPU_IS_LITTLE_ENDIAN @CPU_IS_LITTLE_ENDIAN@
++
++/* Set to 1 to enable experimental code. */
++#define ENABLE_EXPERIMENTAL_CODE @ENABLE_EXPERIMENTAL_CODE@
++
++/* Major version of GCC or 3 otherwise. */
++#define GCC_MAJOR_VERSION @GCC_MAJOR_VERSION@
++
++/* Define to 1 if you have the <alsa/asoundlib.h> header file. */
++#cmakedefine HAVE_ALSA_ASOUNDLIB_H 1
++
++/* Define to 1 if you have the <byteswap.h> header file. */
++#cmakedefine HAVE_BYTESWAP_H 1
++
++/* Define to 1 if you have the 'calloc' function. */
++#cmakedefine HAVE_CALLOC 1
++
++/* Define to 1 if you have the 'ceil' function. */
++#cmakedefine HAVE_CEIL 1
++
++/* Set to 1 if S_IRGRP is defined. */
++#cmakedefine HAVE_DECL_S_IRGRP 1
++
++/* Define to 1 if you have the <dlfcn.h> header file. */
++#cmakedefine HAVE_DLFCN_H 1
++
++/* Define to 1 if you have the <endian.h> header file. */
++#cmakedefine HAVE_ENDIAN_H 1
++
++/* Define to 1 if you have the 'fdatasync' function. */
++#cmakedefine HAVE_FDATASYNC 1
++
++/* Define to 1 if you have libflac 1.1.1 */
++#cmakedefine HAVE_FLAC_1_1_1 1
++
++/* Define to 1 if you have the <FLAC/all.h> header file. */
++#cmakedefine HAVE_FLAC_ALL_H 1
++
++/* Set to 1 if the compile supports the struct hack. */
++#cmakedefine HAVE_FLEXIBLE_ARRAY 1
++
++/* Define to 1 if you have the 'floor' function. */
++#cmakedefine HAVE_FLOOR 1
++
++/* Define to 1 if you have the 'fmod' function. */
++#cmakedefine HAVE_FMOD 1
++
++/* Define to 1 if you have the 'free' function. */
++#cmakedefine HAVE_FREE 1
++
++/* Define to 1 if you have the 'fstat' function. */
++#cmakedefine HAVE_FSTAT 1
++
++/* Define to 1 if you have the 'fsync' function. */
++#cmakedefine HAVE_FSYNC 1
++
++/* Define to 1 if you have the 'ftruncate' function. */
++#cmakedefine HAVE_FTRUNCATE 1
++
++/* Define to 1 if you have the 'getpagesize' function. */
++#cmakedefine HAVE_GETPAGESIZE 1
++
++/* Define to 1 if you have the 'gmtime' function. */
++#cmakedefine HAVE_GMTIME 1
++
++/* Define to 1 if you have the 'gmtime_r' function. */
++#cmakedefine HAVE_GMTIME_R 1
++
++/* Define to 1 if you have the <inttypes.h> header file. */
++#cmakedefine HAVE_INTTYPES_H 1
++
++/* Define to 1 if you have the 'm' library (-lm). */
++#cmakedefine HAVE_LIBM 1
++
++/* Define to 1 if you have the <locale.h> header file. */
++#cmakedefine HAVE_LOCALE_H 1
++
++/* Define if you have C99's lrint function. */
++#cmakedefine HAVE_LRINT 1
++
++/* Define if you have C99's lrintf function. */
++#cmakedefine HAVE_LRINTF 1
++
++/* Define to 1 if you have the 'lseek' function. */
++#cmakedefine HAVE_LSEEK 1
++
++/* Define to 1 if you have the 'malloc' function. */
++#cmakedefine HAVE_MALLOC 1
++
++/* Define to 1 if you have the <memory.h> header file. */
++#cmakedefine HAVE_MEMORY_H 1
++
++/* Define to 1 if you have the 'mmap' function. */
++#cmakedefine HAVE_MMAP 1
++
++/* Define to 1 if you have the 'open' function. */
++#cmakedefine HAVE_OPEN 1
++
++/* Define to 1 if you have the 'pread' function. */
++#cmakedefine HAVE_PREAD 1
++
++/* Define to 1 if you have the 'pwrite' function. */
++#cmakedefine HAVE_PWRITE 1
++
++/* Define to 1 if you have the 'read' function. */
++#cmakedefine HAVE_READ 1
++
++/* Define to 1 if you have the 'realloc' function. */
++#cmakedefine HAVE_REALLOC 1
++
++/* Define to 1 if you have the 'setlocale' function. */
++#cmakedefine HAVE_SETLOCALE 1
++
++/* Define to 1 if you have the 'snprintf' function. */
++#cmakedefine HAVE_SNPRINTF 1
++
++/* Define to 1 if you have the 'vsnprintf' function. */
++#cmakedefine HAVE_VSNPRINTF 1
++
++/* Set to 1 if you have libsqlite3. */
++#cmakedefine HAVE_SQLITE3 1
++
++/* Define to 1 if the system has the type 'ssize_t'. */
++#cmakedefine HAVE_SSIZE_T 1
++
++/* Define to 1 if you have the <stdint.h> header file. */
++#cmakedefine HAVE_STDINT_H 1
++
++/* Define to 1 if you have the <stdlib.h> header file. */
++#cmakedefine HAVE_STDLIB_H 1
++
++/* Define to 1 if you have the <strings.h> header file. */
++#cmakedefine HAVE_STRINGS_H 1
++
++/* Define to 1 if you have the <string.h> header file. */
++#cmakedefine HAVE_STRING_H 1
++
++/* Define to 1 if you have the <sys/stat.h> header file. */
++#cmakedefine HAVE_SYS_STAT_H 1
++
++/* Define to 1 if you have the <sys/types.h> header file. */
++#cmakedefine HAVE_SYS_TYPES_H 1
++
++/* Define to 1 if you have <sys/wait.h> that is POSIX.1 compatible. */
++#cmakedefine HAVE_SYS_WAIT_H 1
++
++/* Define to 1 if you have the <unistd.h> header file. */
++#cmakedefine HAVE_UNISTD_H 1
++
++/* Define to 1 if you have the 'vsnprintf' function. */
++#cmakedefine HAVE_VSNPRINTF 1
++
++/* Define to 1 if you have the 'write' function. */
++#cmakedefine HAVE_WRITE 1
++
++/* Set to 1 if compiling for MacOSX */
++#cmakedefine OS_IS_MACOSX 1
++
++/* Set to 1 if compiling for Win32 */
++#cmakedefine OS_IS_WIN32 1
++
++/* Name of package */
++#define PACKAGE "@PACKAGE@"
++
++/* Define to the address where bug reports for this package should be sent. */
++#define PACKAGE_BUGREPORT "@PACKAGE_BUGREPORT@"
++
++/* Define to the full name of this package. */
++#define PACKAGE_NAME "@PACKAGE@"
++
++/* Define to the full name and version of this package. */
++#define PACKAGE_STRING "@PACKAGE@-@VERSION@"
++
++/* Define to the one symbol short name of this package. */
++#define PACKAGE_TARNAME "@PACKAGE@"
++
++/* Define to the version of this package. */
++#define PACKAGE_VERSION "@VERSION@"
++
++/* The size of a 'double', as computed by sizeof. */
++#define SIZEOF_DOUBLE @SIZEOF_DOUBLE@
++
++/* The size of a 'float', as computed by sizeof. */
++#define SIZEOF_FLOAT @SIZEOF_FLOAT@
++
++/* The size of a 'int', as computed by sizeof. */
++#define SIZEOF_INT @SIZEOF_INT@
++
++/* The size of a 'int64_t', as computed by sizeof. */
++#define SIZEOF_INT64_T @SIZEOF_INT64_T@
++
++/* The size of a 'loff_t', as computed by sizeof. */
++#define SIZEOF_LOFF_T @SIZEOF_LOFF_T@
++
++/* The size of a 'long', as computed by sizeof. */
++#define SIZEOF_LONG @SIZEOF_LONG@
++
++/* The size of a 'long long', as computed by sizeof. */
++#define SIZEOF_LONG_LONG @SIZEOF_LONG_LONG@
++
++/* The size of a 'off64_t', as computed by sizeof. */
++#cmakedefine SIZEOF_OFF64_T
++
++/* The size of a 'off_t', as computed by sizeof. */
++#cmakedefine SIZEOF_OFF_T
++
++/* Set to sizeof (long) if unknown. */
++#define SIZEOF_SF_COUNT_T @SIZEOF_SF_COUNT_T@
++
++/* The size of a 'short', as computed by sizeof. */
++#cmakedefine SIZEOF_SHORT
++
++/* The size of a 'size_t', as computed by sizeof. */
++#cmakedefine SIZEOF_SIZE_T
++
++/* The size of a 'ssize_t', as computed by sizeof. */
++#cmakedefine SIZEOF_SSIZE_T
++
++/* The size of a 'void*', as computed by sizeof. */
++#cmakedefine SIZEOF_VOIDP
++
++/* Define to 1 if you have the ANSI C header files. */
++#cmakedefine STDC_HEADERS 1
++
++/* Set to long if unknown. */
++#define TYPEOF_SF_COUNT_T @TYPEOF_SF_COUNT_T@
++
++/* Set to 1 to use the native windows API */
++#define USE_WINDOWS_API @USE_WINDOWS_API@
++
++/* Version number of package */
++#define VERSION "@VERSION@"
++
++/* Number of bits in a file offset, on hosts where this is settable. */
++#cmakedefine _FILE_OFFSET_BITS
++
++/* Define to make fseeko etc. visible, on some hosts. */
++#cmakedefine _LARGEFILE_SOURCE 1
++
++/* Define for large files, on AIX-style hosts. */
++#cmakedefine _LARGE_FILES 1
++
++/* Directive for inlining functions. */
++#cmakedefine INLINE_DIRECTIVE
+diff -ruwN libsndfile-1.0.17_orig/src/sfconfig.h libsndfile-1.0.17/src/sfconfig.h
+--- libsndfile-1.0.17_orig/src/sfconfig.h	2007-12-10 11:59:51.328125000 +0100
++++ libsndfile-1.0.17/src/sfconfig.h	2007-12-10 12:00:08.796875000 +0100
+@@ -35,6 +35,39 @@
+ /* Include the Autoconf generated file. */
+ #include "config.h"
+ 
++/* Hack for inlines */
++#ifdef _MSC_VER
++#define inline __inline
++#endif
++
++#ifndef HAVE_SSIZE_T
++typedef int ssize_t;
++#endif
++
++#ifndef PACKAGE
++#define PACKAGE "libsndfile"
++#endif
++
++#ifndef VERSION
++#define VERSION "devel"
++#endif
++
++#ifndef PACKAGE_VERSION
++#define PACKAGE_VERSION VERSION
++#endif
++
++#ifndef PACKAGE_NAME
++#define PACKAGE_NAME PACKAGE
++#endif
++
++#ifndef ENABLE_EXPERIMENTAL_CODE
++#define ENABLE_EXPERIMENTAL_CODE 0
++#endif
++
++#ifndef CPU_IS_BIG_ENDIAN
++#define CPU_IS_BIG_ENDIAN 0
++#endif
++
+ /* Now fiddle the values. */
+ 
+ #ifndef HAVE_ALSA_ASOUNDLIB_H
+diff -ruwN libsndfile-1.0.17_orig/tests/CMakeLists.txt libsndfile-1.0.17/tests/CMakeLists.txt
+--- libsndfile-1.0.17_orig/tests/CMakeLists.txt	1970-01-01 01:00:00.000000000 +0100
++++ libsndfile-1.0.17/tests/CMakeLists.txt	2007-12-10 17:36:05.984375000 +0100
+@@ -0,0 +1,28 @@
++LINK_DIRECTORIES(${CMAKE_BUILD_DIR}/src)
++
++FIND_LIBRARY(FLAC_LIB NAMES libFLAC_dynamic FLAC libFLAC libFLAC_static)
++
++SET(TESTS aiff_rw_test alaw_test benchmark command_test dither_test dwvw_test error_test fix_this floating_point_test header_test headerless_test locale_test lossy_comp_test misc_test multi_file_test open_fail_test pcm_test peak_chunk_test pipe_test raw_test scale_clip_test sfversion stdin_test stdio_test stdout_test string_test ulaw_test virtual_io_test win32_test write_read_test win32_ordinal_test largefile_test)
++
++SET(tests_LIBS tests ${libsndfile_NAME} ${FLAC_STATIC_LIB})
++  
++IF(MSVC)
++  STRING(COMPARE EQUAL "${LINK_MODE}" "SHARED" IS_SHARED)
++  IF(IS_SHARED)
++    SET(tests_LIB tests ${libsndfile_NAME}_static)
++  ENDIF(IS_SHARED)
++  ADD_DEFINITIONS(/W0 /Dinline=__inline /D__func__=__FUNCTION__)
++ENDIF(MSVC)
++
++IF(WIN32)
++  ADD_DEFINITIONS(-DOS_IS_WIN32=1)
++ENDIF(WIN32)
++
++INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/src)
++
++ADD_LIBRARY(tests utils.c dft_cmp.c)
++
++FOREACH(TEST ${TESTS})
++  ADD_EXECUTABLE(${TEST} ${TEST}.c)
++  TARGET_LINK_LIBRARIES(${TEST} ${tests_LIBS})
++ENDFOREACH(TEST ${TESTS})
+diff -ruwN libsndfile-1.0.17_orig/tests/aiff_rw_test.c libsndfile-1.0.17/tests/aiff_rw_test.c
+--- libsndfile-1.0.17_orig/tests/aiff_rw_test.c	2007-12-10 11:59:51.359375000 +0100
++++ libsndfile-1.0.17/tests/aiff_rw_test.c	2007-12-10 16:05:41.656250000 +0100
+@@ -20,7 +20,9 @@
+ #include	<stdio.h>
+ #include	<stdlib.h>
+ #include	<string.h>
++#ifdef HAVE_UNISTD_H
+ #include	<unistd.h>
++#endif
+ #include	<math.h>
+ 
+ #include	<sndfile.h>
+diff -ruwN libsndfile-1.0.17_orig/tests/dither_test.c libsndfile-1.0.17/tests/dither_test.c
+--- libsndfile-1.0.17_orig/tests/dither_test.c	2007-12-10 11:59:51.375000000 +0100
++++ libsndfile-1.0.17/tests/dither_test.c	2007-12-10 16:05:41.671250000 +0100
+@@ -20,10 +20,13 @@
+ 
+ #include	<stdio.h>
+ #include	<stdlib.h>
+-#include	<unistd.h>
+ #include	<string.h>
+ #include	<math.h>
+ 
++#ifdef HAVE_UNISTD_H
++#include	<unistd.h>
++#endif
++
+ #include	<sndfile.h>
+ 
+ #include	"utils.h"
+diff -ruwN libsndfile-1.0.17_orig/tests/fix_this.c libsndfile-1.0.17/tests/fix_this.c
+--- libsndfile-1.0.17_orig/tests/fix_this.c	2007-12-10 11:59:51.375000000 +0100
++++ libsndfile-1.0.17/tests/fix_this.c	2007-12-10 16:05:41.671250000 +0100
+@@ -19,7 +19,9 @@
+ #include	<stdio.h>
+ #include	<stdlib.h>
+ #include	<string.h>
++#ifdef HAVE_UNISTD_H
+ #include	<unistd.h>
++#endif
+ #include	<math.h>
+ 
+ #include	<sndfile.h>
+diff -ruwN libsndfile-1.0.17_orig/tests/misc_test.c libsndfile-1.0.17/tests/misc_test.c
+--- libsndfile-1.0.17_orig/tests/misc_test.c	2007-12-10 11:59:51.390625000 +0100
++++ libsndfile-1.0.17/tests/misc_test.c	2007-12-10 16:05:41.671250000 +0100
+@@ -233,7 +233,7 @@
+ #if (defined (WIN32) || defined (_WIN32))
+ 	/* Can't run this test on Win32 so return. */
+ 	return ;
+-#endif
++#else
+ 
+ 	print_test_name ("filesystem_full_test", filename) ;
+ 
+@@ -267,6 +267,7 @@
+ 		} ;
+ 
+ 	puts ("ok") ;
++#endif
+ } /* filesystem_full_test */
+ 
+ static void
+diff -ruwN libsndfile-1.0.17_orig/tests/utils.h libsndfile-1.0.17/tests/utils.h
+--- libsndfile-1.0.17_orig/tests/utils.h	2007-12-10 11:59:51.406250000 +0100
++++ libsndfile-1.0.17/tests/utils.h	2007-12-10 16:05:41.702250000 +0100
+@@ -33,7 +33,7 @@
+ 
+ #define SF_COUNT_TO_LONG(x)	((long) (x))
+ #define	ARRAY_LEN(x)		((int) (sizeof (x)) / (sizeof ((x) [0])))
+-#define SIGNED_SIZEOF(x)	((int64_t) (sizeof (x)))
++#define SIGNED_SIZEOF(x)	((long) (sizeof (x)))
+ 
+ #define	PIPE_INDEX(x)	((x) + 500)
+ #define	PIPE_TEST_LEN	12345
+diff -ruwN libsndfile-1.0.17_orig/tests/write_read_test.vcproj.cmake libsndfile-1.0.17/tests/write_read_test.vcproj.cmake

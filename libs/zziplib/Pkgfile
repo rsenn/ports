@@ -1,0 +1,35 @@
+# $Id: Pkgfile,v 1.3 2007/05/09 21:02:53 roman Exp $
+#
+# Description: Read zip-archives in place of a normal subdirectory.
+#  ZZIPlib provides read access on ZIP-archives. The library uses only
+#  the patent-free compression-algorithms supported by zlib. Functions
+#  are provided that transparently access files being either real files or
+#  zipped files, both with the same filepath. The zip-archive can be used
+#  in the place of a normal subdirectory. It is written in portable C.
+# URL: http://zziplib.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=zziplib
+version=0.10.82
+release=1
+source=($mirror_sf/zziplib/zziplib-$version.tar.bz2
+        zziplib-0.10.82-lvalue.patch)
+
+build()
+{
+  cd zziplib-$version
+  patch -N -p1 -i $SRC/zziplib-0.10.82-lvalue.patch
+
+  ./configure \
+    --build="$build" \
+    --host="$host" \
+    --prefix="$prefix" \
+    --${shared:=enable}-shared \
+    --${static:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+
+  copy_license zziplib/COPYING.*
+}

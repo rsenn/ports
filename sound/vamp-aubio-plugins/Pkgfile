@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Vamp audio analysis plugins using the Aubio labelling library.
+# URL: http://www.vamp-plugins.org/
+# Maintainer: 
+# Depends on: 
+
+name=vamp-aubio-plugins
+version=0.3.2
+release=1
+source=($mirror_sf/sv1/vamp-aubio-plugins-$version.tar.gz
+        vamp-aubio-plugins-$version-cmath.patch)
+
+build() 
+{
+  cd vamp-aubio-plugins-$version
+
+  patch -p1 -i $SRC/vamp-aubio-plugins-$version-cmath.patch
+  
+  make
+
+  install -d $ROOT/lib/vamp
+  install -m 755 vamp-*.{cat,so} $ROOT/lib/vamp
+  
+  install -d $ROOT/share/doc/vamp-aubio-plugins
+  install -m 644 COPYING README $ROOT/share/doc/vamp-aubio-plugins
+}
+
+# EOF

@@ -1,0 +1,63 @@
+# $Id: Pkgfile,v 1.4 2007/05/10 16:59:30 roman Exp $
+#
+# Description: cvs
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=swig-stable
+version=1.1p5
+release=1
+#sources=($mirror_sf/swig/swig-$version.tar.gz)
+source=($mirror_sf/swig/swig1.1p5.tar.gz
+        swig-1.1p5-libdir.patch)
+
+build()
+{
+  cd SWIG$version
+
+  patch -N -p1 -i $SRC/swig-1.1p5-libdir.patch
+#  libtoolize --force
+#  aclocal --force#
+#  automake -a --foreign --force --copy
+#  autoconf --force
+#  autoheader --force
+
+  sed -i -e "s,/usr/local,$prefix,g" \
+        -e "s,/usr,$prefix,g" \
+    configure
+
+  ./configure \
+      --host="$host" \
+      --build="$build" \
+      ${target+--target="$target"} \
+      --prefix="$prefix" \
+      --program-suffix="-$version" \
+      --disable-nls \
+      --${static:=enable}-shared \
+      --${shared:=enable}-shared \
+      --with-php4="$prefix/bin/php" \
+      --with-doc="HTML"
+
+  make SWIG="swig-$version" VERSION="$version" all runtime
+
+  install -d $ROOT/{bin,lib,include}
+
+  make SWIG="swig-$version" VERSION="$version" prefix="$ROOT" install
+
+  case $host in
+    *mingw32*|*cygwin*)
+      mv $ROOT/bin/swig $ROOT/bin/swig.exe
+      ;;
+  esac
+
+  (cd $ROOT/bin && rename swig swig-$version *)
+
+  install -d $ROOT/share/doc
+  find Doc -type f -print0 | xargs -0 chmod 644
+  mv Doc $ROOT/share/doc/$name-$version
+
+  copy_license "Copyright" "README"
+
+  find $ROOT -type f -print0 | xargs -0 chown 0.0
+}

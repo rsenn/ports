@@ -1,0 +1,78 @@
+diff -ru -ru man-1.6c_orig/man2html/Makefile.in man-1.6c/man2html/Makefile.in
+--- man-1.6c_orig/man2html/Makefile.in	2006-06-13 10:09:21.000000000 +0200
++++ man-1.6c/man2html/Makefile.in	2006-06-13 10:09:59.000000000 +0200
+@@ -1,10 +1,10 @@
+ CC = @CC@
+ CFLAGS += -Wall -Wstrict-prototypes -Wmissing-prototypes
+ OBJECTS = man2html.o cgibase.o abbrev.o strdefs.o
+-bindir = $(DESTDIR)$(PREFIX)/usr/bin
++bindir = $(DESTDIR)$(PREFIX)/bin
+ mandir = $(DESTDIR)$(PREFIX)@mandir@
+ vardir = $(DESTDIR)$(PREFIX)/var
+-httpdir = $(DESTDIR)$(PREFIX)/home/httpd
++httpdir = $(DESTDIR)$(PREFIX)/var/www
+ cgiowner = nobody
+ cgigroup = nobody
+ 
+diff -ru -ru man-1.6c_orig/src/Makefile.in man-1.6c/src/Makefile.in
+--- man-1.6c_orig/src/Makefile.in	2006-06-13 10:12:50.000000000 +0200
++++ man-1.6c/src/Makefile.in	2006-06-13 10:14:09.000000000 +0200
+@@ -100,14 +100,14 @@
+ MANCONFIG=$(DESTDIR)$(PREFIX)@man_config_file@
+ 
+ install: all apropos whatis makewhatis
+-	mkdir -p $(DESTDIR)$(PREFIX)@bindir@
+-	$(INSTALL) -c @man_install_flags@ man $(DESTDIR)$(PREFIX)@man@
+-	$(INSTALL) -c -m 755 apropos $(DESTDIR)$(PREFIX)@apropos@
+-	$(INSTALL) -c -m 755 whatis $(DESTDIR)$(PREFIX)@whatis@
+-	$(INSTALL) -c -m 755 man2dvi $(DESTDIR)$(PREFIX)@man2dvi@
+-	mkdir -p $(DESTDIR)$(PREFIX)@sbindir@
+-	$(INSTALL) -c -m 754 makewhatis $(DESTDIR)$(PREFIX)@makewhatis@
+-	mkdir -p $(DESTDIR)$(PREFIX)@man_config_dir@
++	mkdir -p $(DESTDIR)@bindir@
++	$(INSTALL) -c @man_install_flags@ man $(DESTDIR)@man@
++	$(INSTALL) -c -m 755 apropos $(DESTDIR)@apropos@
++	$(INSTALL) -c -m 755 whatis $(DESTDIR)@whatis@
++	$(INSTALL) -c -m 755 man2dvi $(DESTDIR)@man2dvi@
++	mkdir -p $(DESTDIR)@sbindir@
++	$(INSTALL) -c -m 754 makewhatis $(DESTDIR)@makewhatis@
++	mkdir -p $(DESTDIR)@man_config_dir@
+ 	if [ -f $(MANCONFIG) ]; then mv $(MANCONFIG) $(MANCONFIG).orig; fi
+ 	$(INSTALL) -c -m 644 man.conf $(MANCONFIG)
+ 
+diff -ru -ru man-1.6c_orig/src/Makefile.in man-1.6c/src/Makefile.in
+--- man-1.6c_orig/src/Makefile.in	2006-06-13 10:14:49.000000000 +0200
++++ man-1.6c/src/Makefile.in	2006-06-13 10:14:58.000000000 +0200
+@@ -97,7 +97,7 @@
+ 	    -e 's,%awk%,@awk@,' makewhatis.sh > makewhatis
+ 	chmod +x makewhatis
+ 
+-MANCONFIG=$(DESTDIR)$(PREFIX)@man_config_file@
++MANCONFIG=$(DESTDIR)@man_config_file@
+ 
+ install: all apropos whatis makewhatis
+ 	mkdir -p $(DESTDIR)@bindir@
+diff -ru -ru man-1.6c_orig/man/Makefile.in man-1.6c/man/Makefile.in
+--- man-1.6c_orig/man/Makefile.in	2006-06-13 10:15:24.000000000 +0200
++++ man-1.6c/man/Makefile.in	2006-06-13 10:15:34.000000000 +0200
+@@ -19,7 +19,7 @@
+ INSTALL = @INSTALL@ -c -m 644
+ 
+ # Where to put the manual pages.
+-mandir = $(DESTDIR)$(PREFIX)@mandir@$(SLANG)
++mandir = $(DESTDIR)@mandir@$(SLANG)
+ 
+ all:	$(ALL)
+ 	for i in $(MAYBE8); \
+diff -ru -ru man-1.6c_orig/man2html/Makefile.in man-1.6c/man2html/Makefile.in
+--- man-1.6c_orig/man2html/Makefile.in	2006-06-13 10:16:17.000000000 +0200
++++ man-1.6c/man2html/Makefile.in	2006-06-13 10:16:28.000000000 +0200
+@@ -2,7 +2,7 @@
+ CFLAGS += -Wall -Wstrict-prototypes -Wmissing-prototypes
+ OBJECTS = man2html.o cgibase.o abbrev.o strdefs.o
+ bindir = $(DESTDIR)$(PREFIX)/bin
+-mandir = $(DESTDIR)$(PREFIX)@mandir@
++mandir = $(DESTDIR)@mandir@
+ vardir = $(DESTDIR)$(PREFIX)/var
+ httpdir = $(DESTDIR)$(PREFIX)/var/www
+ cgiowner = nobody

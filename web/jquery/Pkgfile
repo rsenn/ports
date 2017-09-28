@@ -1,0 +1,37 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: jQuery is designed to change the way that you write JavaScript
+# A fast, concise, JavaScript Library that simplifies how you traverse HTML
+# documents, handle events, perform animations, and add Ajax
+# interactions to your web pages.
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: apache2
+
+name=jquery
+version=1.2.6
+release=1
+source=(http://jqueryjs.googlecode.com/files/jquery-$version{,.min,.pack}.js
+        jquery.conf)
+
+build()
+{
+  install -d $ROOT/share/jquery/src
+  install -m 644 *.js $ROOT/share/jquery/src
+
+ (cd $ROOT/share/jquery
+  for x in src/*.js
+  do
+    name=${x##*/}
+    ln -sf "$x" "jquery${name#jquery-$version}"
+  done)
+
+  case $prefix in
+    "/usr") sysconfdir="/etc" ;;
+  esac
+
+  install -d $PKG${sysconfdir=$prefix/etc}/apache2/conf.d
+
+  sed -e "s:@prefix@:$prefix:g" $SRC/jquery.conf \
+      >$PKG${sysconfdir}/apache2/conf.d/jquery.conf
+}

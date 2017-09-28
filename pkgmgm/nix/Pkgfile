@@ -1,0 +1,46 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+# .
+# Description: The Nix package manager
+#  Nix is a purely functional package manager. It allows multiple versions
+#  of a package to be installed side-by-side, ensures that dependency
+#  specifications are complete, supports atomic upgrades and rollbacks,
+#  allows non-root users to install software, and has many other features. It
+#  is the basis of the NixOS Linux distribution, but it can be used equally
+#  well under other Unix systems. Read more? Latest News
+#  .
+# URL: http://nixos.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libfile-temp-perl, libgcc1, libstdc++6, perl-base, perl-modules
+#
+
+name=nix
+version=0.11
+release=1
+source=(http://nixos.org/releases/nix/nix-$version/nix-$version.tar.bz2
+        nix-0.11-fixes.patch)
+
+build()
+{
+  cd nix-$version
+
+  patch -N -p1 -i $SRC/nix-0.11-fixes.patch
+
+  case "$prefix" in
+    "/usr")
+      sysconfdir="/etc"
+      localstatedir="/var"
+    ;;
+  esac
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --sysconfdir="${sysconfdir=$prefix/etc}" \
+       --localstatedir="${localstatedir=$prefix/var}"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

@@ -1,0 +1,39 @@
+# $Id: Pkgfile,v 1.13 2007/05/09 21:02:52 roman Exp $
+#
+# Description: A low-level, optimized basic linear algebra system.
+#  The ATLAS (Automatically Tuned Linear Algebra Software) project is
+#  an ongoing research effort focusing on applying empirical techniques
+#  in order to provide portable performance. It provides C and Fortran77
+#  interfaces to a portably efficient BLAS implementation, as well as a
+#  few routines from LAPACK.
+# URL: http://math-atlas.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=atlas
+version=3.7.34
+release=1
+source=($mirror_sf/math-atlas/atlas$version.tar.gz)
+
+build()
+{
+  cd atlas-$version
+
+  libtoolize --copy --force
+  aclocal --force
+  autoconf --force
+
+  echo $CXX
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  copy_license "COPYING"
+
+  chmod 644 $ROOT/lib/*.la
+}

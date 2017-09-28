@@ -1,0 +1,41 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A tool to interactively select and save parts of a raw audio file.
+#  soundgrab provides a cassette deck-like command line interface (ff, rw,
+#  jump to position) plus some other commands that let you easily select
+#  and save your favorite parts of a big volume of Ogg or raw audio in Ogg,
+#  FLAC, raw, cdr, or wav format. If you have a favorite radio show that
+#  plays hard-to-find things at a time when your boss insists you should be
+#  at work, you can record it, then come home later and save your favorite
+#  parts.
+#  .
+# URL: http://soundgrab.sourceforge.net/index.html
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=soundgrab
+version=1.0.1
+release=1
+source=($mirror_sf/soundgrab/soundgrab-$version.tar.gz)
+
+build()
+{
+  cd soundgrab-$version
+
+  ./configure \
+      --prefix="$prefix"
+
+  make
+
+  install -d $ROOT/bin
+  install -d $ROOT/share/doc/soundgrab
+  install -d $ROOT/share/soundgrab
+
+  make BINDIR="$ROOT/bin" MANDIR="$ROOT/share/man/man1" install
+
+  install -m 644 ChangeLog INSTALL copyright wishlist.txt $ROOT/share/doc/soundgrab
+
+  cp -rf src/test $ROOT/share/soundgrab
+}
+
+# EOF

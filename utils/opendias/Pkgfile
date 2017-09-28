@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A Document Imaging Archive System.
+#  openDIAS (Document Imaging Archive System) provides document imaging
+#  with OCR. You can scan documents (with SANE) or import ODF documents,
+#  and then assign tags. It can store all your letters, bills, statements,
+#  etc. in a convenient, safe, and easily retrievable way.
+#  .
+# URL: http://essentialcollections.co.uk/openDIAS/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=opendias
+version=0.3.2
+release=1
+source=($mirror_sf/opendias/opendias-0.3.2.tar.gz)
+
+build()
+{
+  cd opendias-0.3.2
+./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+make
+make DESTDIR="$PKG" install
+}
+
+# EOF

@@ -1,0 +1,53 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: Collection of binary utilities
+# Longdescription:
+# Includes tools capable of linking and managing archives, including
+# handling object code, libraries, profile data, and symbol names.
+# URL: http://www.gnu.org/software/binutils
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=avr-binutils
+
+version=2.17
+release=1
+target=avr
+
+source=($mirror_gnu/gnu/binutils/binutils-$version.tar.bz2
+        30-binutils-2.17-avr-size.patch
+        31-binutils-2.17-avr-coff.patch
+        50-binutils-2.17-atmega256x.patch
+        51-binutils-2.17-newdevices.patch)
+
+build()
+{
+  cd binutils-$version
+
+  for p in $SRC/[35][01]-binutils-2.17-*.patch; do
+    patch -N -p0 -i $p
+  done
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       ${target+--target="$target"} \
+       --prefix="$prefix" \
+       --${static:=enable}-shared \
+       --disable-shared \
+       --with-mmap \
+       --without-included-gettext \
+       --enable-bfd-assembler \
+       --disable-commonbfdlib \
+       --disable-install-libbfd \
+       --disable-install-libiberty \
+       --with-lib-path="$prefix/$target/lib"
+
+  make
+  make DESTDIR="$PKG" all install
+
+  copy_license "COPYING"
+
+  rm -rf $ROOT/share/{info,locale}
+  rm -rf $ROOT/{info,lib}
+}

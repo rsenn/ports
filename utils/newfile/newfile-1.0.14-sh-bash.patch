@@ -1,0 +1,65 @@
+args: -r -u -N -- newfile-1.0.14_orig newfile-1.0.14
+diff -r -u -N -- newfile-1.0.14_orig/data/Makefile.am newfile-1.0.14/data/Makefile.am
+--- newfile-1.0.14_orig/data/Makefile.am	2008-06-24 01:05:20.000000000 +0200
++++ newfile-1.0.14/data/Makefile.am	2008-06-24 01:11:47.000000000 +0200
+@@ -87,6 +87,7 @@
+ 	templates/tmpl@rb\
+ 	templates/tmpl@rd\
+ 	templates/tmpl@sh\
++	templates/tmpl@bash\
+ 	templates/body.inc@sh
+ 
+ noinst_DATA=\
+diff -r -u -N -- newfile-1.0.14_orig/data/templates/tmpl@bash newfile-1.0.14/data/templates/tmpl@bash
+--- newfile-1.0.14_orig/data/templates/tmpl@bash	1970-01-01 01:00:00.000000000 +0100
++++ newfile-1.0.14/data/templates/tmpl@bash	2008-06-24 01:11:11.000000000 +0200
+@@ -0,0 +1,38 @@
++%# -*-mode: shell-script-*-
++%define c "# "
++#!/bin/bash
++# -*-mode: shell-script-*-
++#
++# <:NAME>
++#
++%license
++#
++#
++# <:DATE> <:AUTHOR> <<:EMAIL>>
++#
++
++%if defined("BODY")
++%include <body.inc@sh>
++%endif # defined("BODY")
++
++#EOF
++%end
++
++Uses:	BODY, NOSTDFUNC, INCLUDE
++
++BODY:
++If BODY is defined, include useful shell functions, and an option parsing
++loop. See body.inc@bash.
++
++If BODY is defined, body.inc@sh is included. This file follows these rules:
++
++A usage() function, version() function, and option processing loop are 
++always defined. See MAIN in %s@rb (the ruby template) for analagous
++code.
++
++NOSTDFUNC:
++If NOTSTDFUNC is defined, the section of useful functions will be omitted.
++
++INCLUDE:
++If INCLUDE is defined, the file will source "alanestd" instead of including
++its contents as inline code.
+diff -r -u -N -- newfile-1.0.14_orig/data/templates/tmpl@sh newfile-1.0.14/data/templates/tmpl@sh
+--- newfile-1.0.14_orig/data/templates/tmpl@sh	2008-06-24 01:05:20.000000000 +0200
++++ newfile-1.0.14/data/templates/tmpl@sh	2008-06-24 01:09:02.000000000 +0200
+@@ -1,6 +1,6 @@
+ %# -*-mode: shell-script-*-
+ %define c "# "
+-#!/usr/bin/env ksh
++#!/bin/sh
+ # -*-mode: shell-script-*-
+ #
+ # <:NAME>

@@ -1,0 +1,69 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Package: libclam
+# Description: C++ Library for Audio and Music
+#  CLAM is a multiplatform software framework for research and application
+#  development for the Audio and Music domains. It offers a conceptual model
+#  for building systems as well as tools for the analysis, synthesis, and
+#  transformation of audio signals using high level representation (notes,
+#  spectral peaks, etc.). It also provides multiplatform system abstraction
+#  and tools for audio and MIDI file handling, device handling, GUI and XML
+#  support, and more. It has proper Linux audio architecture integration
+#  (Ladspa, Alsa, OSC, Jack, VST, etc.) and rapid graphical prototyping both
+#  for the processing core and the user interface (Qt designer integration).
+# URL: http://www.clam.iua.upf.edu/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libasound2, libc6, libfftw3-3, libgcc1, libid3-3.8.3c2a, libjack0, libmad0, libogg0, libportaudio2, libsndfile1, libstdc++6, libvorbis0a, libvorbisenc2, libvorbisfile3, libxerces-c28, zlib1g
+# Sp lit: libclam-dev (*/include/CLAM/* */lib/lib*.a */lib/lib*.so)
+
+name=clam
+version=1.3.1-20090221
+release=1
+source=(http://clam.iua.upf.edu/download/src/CLAM-1.3.0.tar.gz
+        #CLAM-1.2.1-20080601.patch
+        #CLAM-1.2.1-20080601-20080607.patch
+        #CLAM-1.2.0-AudioFile-Backport.patch
+        clam-1.3.1-portmidi.patch
+        CLAM-$version.diff.gz)
+
+build()
+{
+  cd CLAM-1.3.0
+
+#  patch -N -p1 -i $SRC/CLAM-1.2.1-20080601.patch
+#  patch -N -p1 -i $SRC/CLAM-1.2.1-20080601-20080607.patch
+#  patch -N -p1 -i $SRC/CLAM-1.2.0-AudioFile-Backport.patch
+  zcat $SRC/CLAM-$version.diff.gz | patch -N -p1
+  patch -p1 -i $SRC/clam-1.3.1-portmidi.patch
+
+  mkdir -p "$ROOT"
+
+  if set $prefix/lib/libportmidi.* && [ -e "$1" ]; then
+    portmidi=yes
+  fi
+
+  scons configure \
+    release="yes" \
+    verbose="yes" \
+    prefix="$ROOT" \
+    clam_prefix="$prefix" \
+    with_osc="yes" \
+    with_portaudio="yes" \
+    with_jack="yes" \
+    with_ladspa="yes" \
+    with_fftw3="yes" \
+    with_sndfile="yes" \
+    with_oggvorbis="yes" \
+    with_mad="yes" \
+    with_id3="yes" \
+    with_alsa="yes" \
+    with_portmidi="${portmidi=no}"
+
+  scons
+  scons install
+
+  install -d $ROOT/share/doc/clam
+  install -m 644 [A-Z]*[A-Z]* $ROOT/share/doc/clam
+
+  cp -rf examples $ROOT/share/doc/clam
+}

@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A collection of utilities for accessing unmounted MS-DOS disks from Unix.
+# Mtools is a collection of utilities for accessing MS-DOS disks from
+# Unix without mounting them. It supports Win95 style long file names,
+# OS/2 Xdf disks, ZIP/JAZ disks, and 2m disks (store up to 1992k on a high
+# density 3 1/2amp;quot; disk).
+#
+# URL: http://mtools.linux.lu/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=mtools
+version=3.9.11
+release=1
+source=(http://mtools.linux.lu/mtools-$version.tar.bz2)
+
+build()
+{
+  cd mtools-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --mandir="$prefix/share/man"
+
+  make
+  make DESTDIR="$PKG" install
+}

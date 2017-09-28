@@ -1,0 +1,26 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Modular audio processing system for GNU/Linux audio systems.
+#  Om is a modular audio processing system for GNU/Linux audio systems
+#  using the Jack audio server and LV2 or LADSPA plugins.
+# URL: http://savannah.nongnu.org/projects/om-synth/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=om
+version=0.2.0
+release=1
+source=(http://mirror.publicns.net/pub/nongnu/om-synth/om-$version.tar.gz)
+
+build()
+{
+  cd om-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

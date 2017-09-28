@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Vi IMproved - enhanced vi editor (transitional package)
+#  This package is simply a transitional package from individual
+#  vim-$language packages to vim-gtk. Vi IMproved - enhanced vi editor
+#  (transitional package) This package is simply a transitional package
+#  from individual vim-$language packages to vim-gtk.
+# URL: http://www.vim.org/
+#  http://www.vim.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=vim-ruby
+version=2007.05.07
+release=1
+source=(http://rubyforge.org/frs/download.php/20456/vim-ruby-2007.05.07.tgz)
+
+build()
+{
+  cd vim-ruby-$version
+
+  vimversion=`vim --version | sed -n '1 s,.*\([0-9][.0-9a-z]\+\) (.*,\1,p'`
+  vimdatadir=$prefix/share/vim/vim`IFS=. && set -- $vimversion && IFS= && echo "$*"`
+
+  install -d $PKG/$vimdatadir
+
+  cp -rf autoload compiler ftdetect ftplugin indent syntax $PKG/$vimdatadir
+}
+
+# EOF

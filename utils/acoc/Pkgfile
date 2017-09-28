@@ -1,0 +1,37 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A tool that applies matching rules to display command output in colour.
+#  acoc is a regular-expression based colour formatter for programs
+#  that display output on the command-line. It works as a wrapper
+#  around the target program, executing it and capturing the stdout
+#  stream. Optionally, stderr can be redirected to stdout, so that it, too,
+#  can be manipulated. acoc then applies matching rules to patterns in the
+#  output and applies colours to those matches.
+#  .
+# URL: http://www.caliban.org/ruby/acoc.shtml
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=acoc
+version=0.7.1
+release=1
+source=(http://www.caliban.org/files/ruby/acoc-$version.tar.gz)
+
+build()
+{
+  cd acoc-$version
+
+  case "$prefix" in
+    "/usr") sysconfdir="/etc" ;;
+  esac
+
+  sed -i 's,$(PREFIX)/etc,$(SYSCONFDIR),g' Makefile
+
+#  make SYSCONFDIR="${sysconfdir=$prefix/etc}"
+  make SYSCONFDIR="$PKG${sysconfdir=$prefix/etc}" PREFIX="$ROOT" install
+
+  install -d $ROOT/share/doc/acoc
+  install -m 644 BUGS COPYING Changelog INSTALL README TODO $ROOT/share/doc/acoc
+}
+
+# EOF

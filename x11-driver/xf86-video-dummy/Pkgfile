@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: X.org dummy video driver
+# URL: 
+# Maintainer: 
+# Depends on: 
+
+name=xf86-video-dummy
+version=0.3.2
+release=1
+source=(ftp://ftp.x.org/pub/individual/driver/xf86-video-dummy-$version.tar.gz)
+
+build() 
+{
+  cd xf86-video-dummy-$version
+  
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+  
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/xf86-video-dummy
+  install -m 644 ChangeLog README COPYING $ROOT/share/doc/xf86-video-dummy
+}
+
+# EOF

@@ -1,0 +1,26 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:50 roman Exp $
+#
+# Description: The OpenGL Extension Wrangler - runtime environment
+#  For more information about GLEW please refer to the description of the
+#  libglew-dev package.
+#  This package contains the runtime support files.
+# URL: http://glew.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=glew
+version=1.4.0
+release=1
+source=($mirror_sf/glew/glew-$version-src.tgz)
+
+build()
+{
+  cd glew
+
+  make CC="${CC-cc}"
+  make GLEW_DEST="$ROOT" install
+
+  if [ -f $ROOT/lib64 ]; then
+    mv $ROOT/lib64 $ROOT/lib
+  fi
+}

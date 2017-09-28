@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: shipper is a power distribution tool for developers with
+# multiple projects who do frequent releases. It automates the tedious
+# process of shipping a software release to several standard places,
+# including ibiblio, the Red Hat submission directory, and your own
+# hosted website. It also knows how to post a release announcement
+# to freshmeat.net via freshmeat-submit. Two auxiliary tools, buildrpms
+# and rpm2lsm, build RPMs and generate LSM files from them respectively.
+# URL: http://www.catb.org/~esr/shipper/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=shipper
+version=0.9
+release=1
+source=(http://www.catb.org/~esr/shipper/shipper-$version.tar.gz)
+
+build()
+{
+  cd shipper-$version
+
+  sed -i 's,/usr,$(prefix),g' Makefile
+
+  install -d $ROOT/bin
+  install -d $ROOT/share/man/man1
+
+  make DESTDIR="$PKG" prefix="$prefix" install
+}

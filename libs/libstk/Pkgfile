@@ -1,0 +1,47 @@
+# $Id: Pkgfile,v 1.7 2007/05/09 21:03:13 roman Exp $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=stk
+version=4.3.1
+release=1
+source=(http://ccrma.stanford.edu/software/stk/release/stk-$version.tar.gz
+        stk-4.2.1-pl1-gnu.patch
+        stk-4.2.1-cxx0x.patch)
+
+build()
+{
+  cd stk-$version
+
+  patch -N -p1 -i $SRC/stk-4.2.1-pl1-gnu.patch
+  patch -N -p1 -i $SRC/stk-4.2.1-cxx0x.patch
+
+#  autoheader --force
+  libtoolize --force
+  aclocal --force
+  autoconf --force
+  automake -a --foreign --copy --force || true
+
+  ./configure \
+      --prefix="$prefix" \
+      --build="$build" \
+      --host="$host" \
+      --${shared:=enable}-shared \
+      --${static:=enable}-shared
+
+  cd src
+
+  make RAWWAVES="$prefix/share/stk/rawwaves"
+
+  install -d $ROOT/include/stk
+  install -m 644 ../include/*.h $ROOT/include/stk
+
+  install -d $ROOT/lib
+  install -m 644 libstk.a $ROOT/lib
+
+  install -d $ROOT/share/stk/rawwaves
+}
+

@@ -1,0 +1,24 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: MIME part construction
+# URL: http://search.cpan.org/dist/Email-MIME-Creator/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libemail-simple-creator-perl, libemail-mime-modifier-perl
+
+name=email-mime-creator
+version=1.454
+release=1
+source=(http://www.ring.gr.jp/archives/lang/perl/CPAN/modules/by-module/Email/Email-MIME-Creator-$version.tar.gz)
+
+build()
+{
+  cd Email-MIME-Creator-$version
+
+  perl Makefile.PL
+
+  make \
+       DESTDIR="$PKG" \
+       INSTALLDIRS="vendor" \
+       PREFIX="$prefix" \
+       install
+}

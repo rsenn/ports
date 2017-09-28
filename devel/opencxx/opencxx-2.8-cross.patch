@@ -1,0 +1,36 @@
+diff -r -u -- opencxx-2.8_orig/buildinfo/Makefile.in opencxx-2.8/buildinfo/Makefile.in
+--- opencxx-2.8_orig/buildinfo/Makefile.in	2007-05-26 23:52:01.000000000 +0200
++++ opencxx-2.8/buildinfo/Makefile.in	2007-05-26 23:56:29.000000000 +0200
+@@ -85,7 +85,7 @@
+ LIBADD_DL = @LIBADD_DL@
+ LIBLTDL = @LIBLTDL@
+ LIBOBJS = @LIBOBJS@
+-LIBS = @LIBS@
++LIBS = @LIBS@ -lgc
+ LIBTOOL = @LIBTOOL@
+ LN_S = @LN_S@
+ LTLIBOBJS = @LTLIBOBJS@
+@@ -215,9 +215,16 @@
+ 	  echo " rm -f $$p $$f"; \
+ 	  rm -f $$p $$f ; \
+ 	done
++libgc-version.o: libgc-version.cc
++	g++ -c -o $@ $<
++
+ libgc-version$(EXEEXT): $(libgc_version_OBJECTS) $(libgc_version_DEPENDENCIES) 
+ 	@rm -f libgc-version$(EXEEXT)
+-	$(CXXLINK) $(libgc_version_LDFLAGS) $(libgc_version_OBJECTS) $(libgc_version_LDADD) $(LIBS)
++	g++ $(libgc_version_LDFLAGS) -o $@ $(libgc_version_OBJECTS) $(libgc_version_LDADD) $(LIBS) -Wl,-lgc
++
++libgc-version: $(libgc_version_OBJECTS) $(libgc_version_DEPENDENCIES) 
++	@rm -f libgc-version$(EXEEXT)
++	g++ $(libgc_version_LDFLAGS) -o $@ $(libgc_version_OBJECTS) $(libgc_version_LDADD) $(LIBS) -Wl,-lgc
+ 
+ mostlyclean-compile:
+ 	-rm -f *.$(OBJEXT) core *.core
+Only in opencxx-2.8/buildinfo: build-name.txt
+Only in opencxx-2.8/buildinfo: compiler-name.txt
+Only in opencxx-2.8/buildinfo: libgc-version
+Only in opencxx-2.8/buildinfo: libgc-version.txt
+Only in opencxx-2.8/buildinfo: target.txt
+Only in opencxx-2.8_orig/: opencxx-2.8

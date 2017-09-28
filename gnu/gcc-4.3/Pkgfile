@@ -1,0 +1,203 @@
+# $Id: Pkgfile,v 1.2 2007/04/22 23:07:53 roman Exp $
+#
+# Package: gcc-4.3
+# Description: The GNU compiler collection
+#  This is the GNU C compiler, a fairly portable optimizing compiler for C.
+# URL: http://gcc.gnu.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=gcc
+version=4.3.3
+release=1
+source=($mirror_gnu/gcc/gcc-$version/gcc-$version.tar.bz2
+        #http://distfiles.gentoo.org/distfiles/gcc-$version-patches-1.1.tar.bz2
+        gcc-4.3.1-diet.patch
+        gcc-4.2.3-no-oldincdir.patch
+        gcc-4.3.2-nofixinc.patch)
+
+build()
+{
+  cd ${srcdir=$SRC/gcc-$version}
+
+  (echo "#!/bin/sh" && echo 'echo "$@"') >config.sub
+
+  patch -N -p1 -i $SRC/gcc-4.3.1-diet.patch
+  #patch -N -p1 -i $SRC/gcc-4.2.3-no-oldincdir.patch
+  patch -N -p1 -i $SRC/gcc-4.3.2-nofixinc.patch
+
+  # adjust directory layout
+  case $prefix,$target in
+    /usr,*diet*)
+      dietprefix="$prefix/lib/diet"
+      localstatedir="$dietprefix/var"
+      rtlibdir="$dietprefix/lib"
+    ;;
+    /usr,*)
+      localstatedir="/var"
+      rtlibdir="/lib"
+    ;;
+  esac
+
+  case $prefix in
+    /usr)
+      sysconfdir="/etc"
+      libexecdir="$prefix/lib"
+      rtlibdir="/lib"
+      ;;
+  esac
+
+  # change runtime linker
+  case $target in
+    *diet*)
+      sed -i -e "s,/lib/ld-linux.so.2,${rtlibdir=$prefix/lib}/libdl.so," \
+        gcc/config/i386/linux.h
+    ;;
+    *linux*)
+      sed -i -e "s,/lib/ld-linux.so.2,${rtlibdir=$prefix/lib}/ld-linux.so.2," \
+        gcc/config/i386/linux.h
+    ;;
+    *freebsd*)
+      sed -i -e '/FBSD_DYNAMIC_LINKER/ s,".*","'${rtlibdir=$prefix/lib}/ld-elf.so.1'",' \
+        gcc/config/freebsd-spec.h
+    ;;
+  esac
+
+  # Apply a sed  substitution that will suppress the installation of libiberty.a
+  # The version of libiberty.a provided by Binutils will be used instead:
+  sed -i 's/install_to_$(INSTALL_DEST) //' libiberty/Makefile.in
+
+  sed -i 's/^XCFLAGS =$/& -fomit-frame-pointer/' gcc/Makefile.in
+
+  # The fixincludes  script is known to occasionally erroneously attempt to "fix" the system
+  # headers installed so far. As the headers installed by GCC-4.2.3 and Glibc-2.7 are known
+  # to not require fixing, issue the following command to prevent the fixincludes script from
+  # running:
+  sed -i 's@\./fixinc\.sh@-c true@' gcc/Makefile.in
+
+  case $CXXFLAGS in
+    *-g?*) libstdcxx_debug="enable" ;;
+  esac
+
+  # Decide which languages to support
+  languages="all"
+
+  case $target in
+    *diet*) languages="c" shared="disable" static="enable" ;;
+  esac
+
+  # now configure in a separate build tree
+  builddir="$srcdir/build/$host"
+
+  rm -rf $builddir && mkdir -p $builddir && cd $builddir
+
+  # Reset arguments
+  set --
+
+  if [ "$host" != "$target" ]; then
+    program_prefix="${target}-"
+
+    case $host,$target in
+      *diet*,*) program_prefix="${target##*-}" ;;
+      *,*diet*) program_prefix="diet-" ;;
+    esac
+
+    set -- "$@" \
+      --with-headers="${prefix%/$target}${target+/$target}/include" \
+      --with-libs="${prefix%/$target}${target+/$target}/lib"
+  fi
+
+  #case $host in
+  #  *diet*) export LIBS="${LIBS:+$LIBS }-lcompat" ;;
+  #esac
+
+  languages="c,c++,objc,obj-c++,fortran,java"
+  #program_prefix=
+  program_suffix="-${version%.*}"
+  #threads="posix"
+
+  $srcdir/configure \
+       --build="$build" \
+       --host="$host" \
+       ${target+--target="$target"} \
+       --prefix="$prefix" \
+       --infodir="$prefix/share/info" \
+       --mandir="$prefix/share/man" \
+       --libexecdir="${libexecdir=$prefix/lib}" \
+       --${static=enable}-static \
+       --${shared=enable}-shared \
+       --without-included-gettext \
+       ${threads+--enable-threads="$threads"} \
+       --enable-tls \
+       --disable-rpath \
+       --enable-initfini-array \
+       --with-gnu-as \
+       --with-gnu-ld \
+       --with-demangler-in-ld \
+       --with-libiconv-prefix="$prefix" \
+       --with-libintl-prefix="$prefix" \
+       --with-long-double-128 \
+       ${multilib+--${multilib:-disable}-multilib} \
+       ${libstdcxx_debug+--${libstdcxx_debug:-disable}-libstdcxx-debug} \
+       ${libada+--${libada:-disable}-libada} \
+       ${libssp+--${libssp:-disable}-libssp} \
+       ${objc_gc+--${objc_gc:-disable}-objc-gc} \
+       --with-gc="page" \
+       ${gmp+--${gmp:-without}-gmp${gmp_dir+="$gmp_dir"}} \
+       ${mpfr:--with}-mpfr${mpfr+${mpfr_dir+="$mpfr_dir"}} \
+       --enable-languages="${languages-all}" \
+       --with-system-zlib \
+       --disable-bootstrap \
+       --with-gxx-include-dir="${includedir=$prefix/include}/c++/${version%.*}" \
+       --enable-clocale="gnu" \
+       --enable-checking="release" \
+       ${program_prefix+--program-prefix="$program_prefix"} \
+       ${program_suffix+--program-suffix="$program_suffix"} \
+     "$@"
+
+  make \
+       ${libstdcxx_debug+debug_builddir="."} \
+       DESTDIR="$PKG" \
+     all \
+     install
+
+  # remove duplicate binaries
+#  rm -f $ROOT/bin/gcc
+#  rm -f $ROOT/bin/$target-gcc-$version
+
+  # make symlinks instead
+#  ln -sf $target-gcc $ROOT/bin/gcc
+#  ln -sf $target-gcc $ROOT/bin/cc
+
+  cd $srcdir
+
+  rm -f \
+     $ROOT/bin/cc{,-${version%.*}} \
+     $ROOT/lib/libiberty.a \
+     $ROOT/share/info/dir
+
+#  chmod 644 $ROOT/lib/*.la || true
+
+  mv -vf $ROOT/lib/*.{a,so} $ROOT/lib/gcc/$target/$version || true
+}
+
+#postmerge()
+#{
+#  cd ${bindir} && for bin in *-${version%.*}
+#  do
+#    test -e ${bin%-*} || ln -svf ${bin} ${bin%-*}#
+#  done
+#
+#  test -e ${bindir}/cc || ln -svf gcc ${bindir}/cc
+#  test -e ${bindir}/c++ || ln -svf g++ ${bindir}/c++
+#
+#  if test "$host" = "$target"
+#  then
+#    cd ${libdir}
+#
+#    for lib in gcc/${target}/${version}/lib*.so*
+#    do
+#      test -e ${lib##*/} || ln -svf $lib ${lib##*/}
+#    done
+#  fi
+#}

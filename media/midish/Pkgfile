@@ -1,0 +1,23 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:52 roman Exp $
+#
+# Description: A command line MIDI sequencer/filter for BSD and Linux.
+#  Midish is a MIDI sequencer/filter for Unix-like operating systems (tested
+#  like a shell. Its intended to be lightweight, fast, and reliable for
+#  real-time performance.
+# URL: http://caoua.org/midish/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=midish
+version=0.2.8
+release=1
+source=(http://caoua.org/midish/midish-$version.tar.gz)
+
+build()
+{
+  cd midish-$version
+
+  make CC="${CC-cc}" CFLAGS="$CFLAGS"
+
+  make PREFIX="$ROOT" EXAMPLES_DIR="$ROOT/share/doc/midish/examples" MAN1_DIR="$ROOT/share/man/man1" install
+}

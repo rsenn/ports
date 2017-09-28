@@ -1,0 +1,26 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: X11 Damage extension wire protocol
+#  This package provides the wire protocol for the Damage extension, used
+#  to notify clients of changes made to particular areas.
+# URL: http://www.X.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=damageproto
+version=1.1.0
+release=1
+source=(ftp://ftp.x.org/pub/individual/proto/damageproto-$version.tar.bz2)
+
+build()
+{
+  cd damageproto-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

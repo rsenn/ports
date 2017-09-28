@@ -1,0 +1,77 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Package: qmail
+# Provides: qmail
+# Replaces: qmail-ldap qmail-vanilla
+# Description: A secure, reliable, efficient, simple message transfer agent
+#  It is designed for typical Internet-connected UNIX hosts.
+#  As of October 2001, qmail is the second most common SMTP server on the
+#  Internet, and has by far the fastest growth of any SMTP server.
+#  .
+# URL:
+#  http://cr.yp.to/qmail.html
+#  http://tomclegg.net/qmail/#qmail-smtpd-auth
+#  .
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, daemontools | runit
+# Suggests: ucspi-tcp | ipsvd, ucspi-ssl
+
+name=qmail
+version=1.03
+release=1
+source=(http://cr.yp.to/software/qmail-$version.tar.gz
+        http://david.acz.org/software/sendmail-flagf.patch
+        http://www.suspectclass.com/~sgifford/qmail/qmail-0.0.0.0.patch
+        http://www.qmail.org/qmailqueue-patch
+        qmail-1.03-dotqmailtab.patch
+        qmail-1.03-execvp.patch
+        http://tomclegg.net/qmail/qmail-smtpd-auth-0.31.tar.gz
+        http://tomclegg.net/qmail/qmail-smtpd-auth-close3.patch
+        http://tomclegg.net/qmail/smtpauthlog.patch)
+
+build()
+{
+  cd qmail-$version
+
+  patch -N -p0 <$SRC/sendmail-flagf.patch
+  patch -N -p1 <$SRC/qmail-0.0.0.0.patch
+  patch -N -p1 <$SRC/qmailqueue-patch
+
+  patch -N -p0 <$SRC/qmail-smtpd-auth-*/auth.patch
+  patch -N -p0 <$SRC/qmail-smtpd-auth-close3.patch
+  patch -N -p0 <$SRC/smtpauthlog.patch
+
+  patch -N -p1 <$SRC/qmail-1.03-dotqmailtab.patch
+  patch -N -p1 <$SRC/qmail-1.03-execvp.patch
+
+  ln -sf ../qmail-smtpd-auth-*/base64.* .
+
+  case $prefix in
+    "/usr") localstatedir="/var" ;;
+  esac
+
+  echo "${CC-cc} $CFLAGS -include errno.h" >conf-cc
+  echo "${CC-cc} $LDFLAGS" >conf-ld
+  echo "${localstatedir=$prefix/var}/qmail" >conf-qmail
+
+  make
+
+  install -d $ROOT/bin
+  install -m 755 auto-{gid,int,int8,str,uid} $ROOT/bin
+  install -m 755 bouncesaying chkshsgr chkspawn condredirect dnscname dnsfq dnsmxip dnsptr except forward idedit ipmeprint maildir2mbox maildirmake maildirwatch predate preline qbiff $ROOT/bin
+  install -m 755 qmail-{clean,getpw,inject,local,lspawn,newmrh,newu,pop3d,popup,pw2u,qmqpc,qmqpd,qmtpd,qread,queue,remote,rspawn,send,showctl,smtpd,start,tcpok,tcpto} $ROOT/bin
+  install -m 755 qreceipt qsmhook sendmail splogger tcp-env $ROOT/bin
+
+  for man in *.[0-9]; do
+    install -d $ROOT/share/man/man${man##*.}
+    install -m 644 $man $ROOT/share/man/man${man##*.}
+  done
+
+  install -d $ROOT/share/doc/qmail
+
+  install -m 644 CHANGES FAQ INSTALL* INTERNALS README* SECURITY SENDMAIL THANKS THOUGHTS TODO $ROOT/share/doc/qmail
+
+  install -m 644 $SRC/qmail-smtpd-auth-*/CHANGES $ROOT/share/doc/qmail/CHANGES.auth
+  install -m 644 $SRC/qmail-smtpd-auth-*/*.auth $ROOT/share/doc/qmail/
+
+}

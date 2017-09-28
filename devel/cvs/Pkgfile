@@ -1,0 +1,53 @@
+# $Id: Pkgfile,v 1.14 2007/05/09 21:02:40 roman Exp $
+#
+# Description: CVS
+#  Version control system and important component of Source Configuration
+#  Management (SCM). Lets you record the history of source files and
+#  documents. It's similar to the free software RCS, PRCS, and Aegis
+#  programs, but has the following significant advantages over RCS:
+#  * runs user scripts to log operations or enforce site-specific policies
+#  * lets separatedevelopers operate as a team
+#  * vendor branches keep versions separate, but also merge them if needed
+#  * unreserved checkouts let developers work simultaneously on the same
+#  files
+#  * flexible modules database maps names to the components of a larger
+#  database
+#  * runs on most Unix variants; clients for Windows 95/NT, OS/2, and
+#  VMS available
+# URL: http://www.nongnu.org/cvs/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=cvs
+version=1.11.21
+release=1
+source=(ftp://ftp.gnu.org/non-gnu/cvs/source/stable/$version/cvs-$version.tar.bz2)
+
+build()
+{
+  cd cvs-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --with-external-zlib \
+       --enable-rootcommit \
+       --enable-encryption \
+       --with-editor="$prefix/bin/nano" \
+       --with-tmpdir="$prefix/tmp" \
+       --without-gssapi \
+       --without-krb4
+
+#       --with-krb4=$prefix \
+#       --with-gssapi=$prefix \
+
+  make
+  make prefix="$ROOT" bindir="$ROOT"/bin install
+
+  copy_license "COPYING" "COPYING.LIB"
+}
+
+cleanup() {
+  rm -r "$ROOT"/{man,info}
+}

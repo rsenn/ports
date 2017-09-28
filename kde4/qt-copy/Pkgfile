@@ -1,0 +1,65 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=qt-copy
+version=4.4.1
+revision=872294
+release=1
+source=(ftp://ftp.kde.org/pub/kde/snapshots/qt-copy-$revision.tar.bz2)
+
+build()
+{
+  case $host in
+     *-mingw32|\
+     *-cygwin) platform="win32-g++" tk="win" cfg="wine configure.exe" ;;
+     *-msvc*) platform="win32-msvc" tk="win" cfg="wine configure.exe" ;;
+     *-linux*) platform="linux-g++-32" tk="x11" cfg="./configure" ;;
+  esac
+
+  cd qt-copy-$revision
+
+  case $CXXFLAGS in
+    *-ggdb*) debug="-debug" ;;
+  esac
+
+#  patch -R -p1 -i $SRC/qt-x11-opensource-src-4.3.0-fixes.patch
+
+  yes "yes" | $cfg \
+         ${platform:+-platform "$platform"} \
+         -prefix "$prefix" \
+         -libdir "$prefix/lib" \
+         -headerdir "$prefix/include/qt-${version%.*}" \
+         -sysconfdir "$prefix/etc/qt-${version%.*}" \
+         -plugindir "$prefix/lib/qt-${version%.*}/plugins" \
+         -datadir "$prefix/share/qt-${version%.*}" \
+         -translationdir "$prefix/share/qt-${version%.*}/translations" \
+         -docdir "$prefix/share/doc/qt-${version%.*}" \
+         $debug \
+         -no-separate-debug-info \
+         -shared \
+         -qt3support \
+         -qdbus \
+         -pch \
+         -nomake examples \
+         -nomake demos \
+         -qt-gif \
+         -fast \
+         -opengl
+
+  make
+  make INSTALL_ROOT="$PKG" install
+
+  if test -d $ROOT/lib/qt-${version%.*}/pkgconfig; then
+    mv $ROOT/lib/qt-${version%.*}/pkgconfig $ROOT/lib/
+  fi
+
+ (cd $ROOT/bin && for bin in *; do
+    mv -vf $bin $bin-${version%.*}
+  done)
+
+  mkdir -p $ROOT/bin/designer
+}

@@ -1,0 +1,38 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A network toolbox.
+#  shtar is composed of three differents modules. This modules is
+#  libishtarservices. Built upon libishtarnet, it implements a protocol
+#  for remote procedure call (RPC) and provides basic bricks for building
+#  such procedures.
+#  .
+# URL: http://lis.epfl.ch/resources/download/doc1.0/libishtarservices/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=libishtarservices
+version=1.0
+release=1
+source=(http://lis.epfl.ch/resources/download/libishtarservices-$version.tar.gz
+        libishtarservices-1.0-cstring.patch)
+
+build()
+{
+  cd libishtarservices-$version
+
+  patch -p1 -i $SRC/libishtarservices-1.0-cstring.patch
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/libishtarservices
+  install -m 644 AUTHORS INSTALL LICENSE README $ROOT/share/doc/libishtarservices
+  cp -rf doc/html $ROOT/share/doc/libishtarservices
+}
+
+# EOF

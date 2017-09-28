@@ -1,0 +1,27 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A collaborative screensaver.
+# URL: 
+# Maintainer: 
+# Depends on: 
+
+name=electricsheep
+version=2.6.8
+release=1
+source=(http://electricsheep.org/electricsheep-2.6.8.tar.gz)
+
+build() 
+{
+  cd electricsheep-$version
+  
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --disable-warnings
+  
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

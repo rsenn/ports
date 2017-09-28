@@ -1,0 +1,100 @@
+diff -r -u libtool-1.5.24_orig/ltmain.in libtool-1.5.24/ltmain.in
+--- libtool-1.5.24_orig/ltmain.in	2007-09-10 02:49:39.000000000 +0200
++++ libtool-1.5.24/ltmain.in	2007-09-10 02:51:46.000000000 +0200
+@@ -1293,6 +1293,11 @@
+ 	  prev=
+ 	  continue
+ 	  ;;
++	vinfo)
++	  vinfo="$arg"
++	  prev=
++	  continue
++	  ;;
+ 	objectlist)
+ 	  if test -f "$arg"; then
+ 	    save_arg=$arg
+@@ -2638,10 +2643,11 @@
+ 	      case $host in
+ 	      *cygwin* | mingw*)
+ 		major=`expr $current - $age`
+-		versuffix="-$major"
++		versuffix="${major:+-$major}"
+ 		;;
+ 	      esac
+ 	      eval soname=\"$soname_spec\"
++        soname=${soname//--/-}
+ 	    else
+ 	      soname="$realname"
+ 	    fi
+@@ -3228,12 +3234,7 @@
+ 	  # which has an extra 1 added just for fun
+ 	  #
+ 	  case $version_type in
+-	  darwin|linux|osf|windows|none)
+-	    current=`expr $number_major + $number_minor`
+-	    age="$number_minor"
+-	    revision="$number_revision"
+-	    ;;
+-	  freebsd-aout|freebsd-elf|sunos)
++	  darwin|linux|osf|windows|freebsd-*|sunos|none)
+ 	    current="$number_major"
+ 	    revision="$number_minor"
+ 	    age="0"
+@@ -3281,11 +3282,11 @@
+ 	  ;;
+ 	esac
+ 
+-	if test "$age" -gt "$current"; then
+-	  $echo "$modename: AGE \`$age' is greater than the current interface number \`$current'" 1>&2
+-	  $echo "$modename: \`$vinfo' is not valid version information" 1>&2
+-	  exit $EXIT_FAILURE
+-	fi
++#	if test "$age" -gt "$current"; then
++#	  $echo "$modename: AGE \`$age' is greater than the current interface number \`$current'" 1>&2
++#	  $echo "$modename: \`$vinfo' is not valid version information" 1>&2
++#	  exit $EXIT_FAILURE
++#	fi
+ 
+ 	# Calculate the version variables.
+ 	major=
+@@ -3305,16 +3306,11 @@
+ 	  verstring="-compatibility_version $minor_current -current_version $minor_current.$revision"
+ 	  ;;
+ 
+-	freebsd-aout)
++	linux|*freebsd*)
+ 	  major=".$current"
+ 	  versuffix=".$current.$revision";
+ 	  ;;
+ 
+-	freebsd-elf)
+-	  major=".$current"
+-	  versuffix=".$current";
+-	  ;;
+-
+ 	irix | nonstopux)
+ 	  if test "X$lt_irix_increment" = "Xno"; then
+ 	    major=`expr $current - $age`
+@@ -3340,10 +3336,10 @@
+ 	  versuffix="$major.$revision"
+ 	  ;;
+ 
+-	linux)
+-	  major=.`expr $current - $age`
+-	  versuffix="$major.$age.$revision"
+-	  ;;
++#	linux)
++#	  major=.`expr $current - $age`
++#	  versuffix="$major.$age.$revision"
++#	  ;;
+ 
+ 	osf)
+ 	  major=.`expr $current - $age`
+@@ -3958,6 +3954,7 @@
+ 
+ 	if test -n "$soname_spec"; then
+ 	  eval soname=\"$soname_spec\"
++    soname=${soname//--/-}
+ 	else
+ 	  soname="$realname"
+ 	fi

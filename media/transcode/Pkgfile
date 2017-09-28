@@ -1,0 +1,68 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A video stream processing tool.
+#  transcode is a text console video-stream processing tool. It supports
+#  are included to enable import of MPEG-1/2, Digital Video, and other
+#  with DivX, OpenDivX, XviD, Digital Video or other codecs. Direct DVD
+#  and decode the sources into raw video/audio streams for import and to
+# URL: http://tcforge.berlios.de/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=transcode
+version=1.1.0
+release=1
+source=(http://download.berlios.de/tcforge/transcode-$version.tar.bz2
+        transcode-1.0.4-videodecoder.patch
+        transcode-1.1.0-ffmpeg-fixes.patch)
+
+build()
+{
+  cd transcode-$version
+
+  #patch -N -p1 -i $SRC/transcode-1.0.4-videodecoder.patch
+  patch -N -p1 -i $SRC/transcode-1.1.0-ffmpeg-fixes.patch
+
+#  libtoolize --force --copy --automake --install
+#  aclocal --force
+#  autoheader --force
+#  automake --force --copy --foreign --add-missing
+#  aclocal --force
+#  autoconf --force
+#
+  sh autogen.sh
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --program-prefix="" \
+       --enable-netstream \
+       --enable-v4l \
+       --disable-bktr \
+       --enable-libpostproc \
+       --enable-freetype2 \
+       --enable-avifile \
+       --enable-ogg \
+       --enable-vorbis \
+       --enable-theora \
+       --disable-pvm3 \
+       --enable-libdv \
+       --enable-libquicktime \
+       --enable-lzo \
+       --enable-a52 \
+       --enable-libmpeg3 \
+       --enable-libxml2 \
+       --enable-mjpegtools \
+       --enable-sdl \
+       --disable-libfame \
+       --disable-imagemagick \
+       --disable-libjpegmmx \
+       --disable-bsdav \
+       --enable-xio \
+       --enable-xvid \
+       --enable-xvid
+
+  make
+  make DESTDIR="$PKG" install
+}

@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An extensible hash table in C for storing arbitrary data.
+#  The GHT (Generic Hash Table) library is a hash table implementation in
+#  C for storing arbitrary types of data. It is meant to be small, easily
+#  extensible (in terms of hash functions etc), and easy to understand
+#  codewise.
+# URL: http://www.ipd.bth.se/ska/sim_home/libghthash.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libghthash
+version=0.6.2
+release=1
+source=(http://www.ipd.bth.se/ska/sim_home/filer/libghthash-$version.tar.gz)
+
+build()
+{
+  cd libghthash-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

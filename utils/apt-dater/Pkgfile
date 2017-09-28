@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A program to manage package updates on a large number of remote hosts.
+# apt-dater provides an ncurses frontend for managing package updates on a
+# large number of remote hosts using SSH. It supports Debian-based managed
+# hosts as well as rug (openSUSE) and Yum (CentOS) based systems.
+#
+# URL: http://www.ibh.de/apt-dater/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=ibh0-r174
+version=0.6.0
+release=1
+source=(http://micky.ibh.net/debian/pool/stable/main/apt-dater/apt-dater_$version-ibh0.tar.gz)
+
+build()
+{
+  cd $version-ibh0-r174
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

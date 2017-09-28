@@ -1,0 +1,45 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:50 roman Exp $
+#
+# Description: base applications from the official KDE release
+#  KDE is produced by an international technology team that creates free
+#  and open source software for desktop and portable computing. Among KDE's
+#  products are a modern desktop system for Linux and UNIX platforms,
+#  comprehensive office productivity and groupware suites and hundreds
+#  of software titles in many categories including Internet and web
+#  applications, multimedia, entertainment, educational, graphics and
+#  software development.
+#  This package provides core applications for the KDE 4 desktop. base
+#  applications from the official KDE release KDE is produced by an
+#  international technology team that creates free and open source software
+#  for desktop and portable computing. Among KDE's products are a modern
+#  desktop system for Linux and UNIX platforms, comprehensive office
+#  productivity and groupware suites and hundreds of software titles in
+#  many categories including Internet and web applications, multimedia,
+#  entertainment, educational, graphics and software development.
+#  This package provides core applications for the KDE 4 desktop.
+# URL: http://www.kde.org/
+#  http://www.kde.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=kdebase
+version=3.5.10
+release=1
+source=(http://mirrors.dotsrc.org/kde/stable/$version/src/kdebase-$version.tar.bz2)
+
+build()
+{
+  cd kdebase-$version
+
+  { echo "#!/bin/sh" && echo 'echo "$@"'; } >config.sub
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+

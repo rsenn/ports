@@ -1,0 +1,27 @@
+diff -ru tcl8.4.19_orig/unix/Makefile.in tcl8.4.19/unix/Makefile.in
+--- tcl8.4.19_orig/unix/Makefile.in	2009-03-02 01:32:09.000000000 +0100
++++ tcl8.4.19/unix/Makefile.in	2009-03-02 01:34:19.000000000 +0100
+@@ -642,8 +642,9 @@
+ 	    fi
+ 	@echo "Installing tclsh as $(BIN_INSTALL_DIR)/tclsh$(VERSION)"
+ 	@$(INSTALL_PROGRAM) tclsh $(BIN_INSTALL_DIR)/tclsh$(VERSION)
+-	@echo "Installing tclConfig.sh to $(LIB_INSTALL_DIR)/"
+-	@$(INSTALL_DATA) tclConfig.sh $(LIB_INSTALL_DIR)/tclConfig.sh
++	@echo "Installing tclConfig.sh to $(LIB_INSTALL_DIR)/tcl$(VERSION)"
++	@mkdir -p $(LIB_INSTALL_DIR)/tcl$(VERSION)
++	@$(INSTALL_DATA) tclConfig.sh $(LIB_INSTALL_DIR)/tcl$(VERSION)/tclConfig.sh
+ 	@if test "$(STUB_LIB_FILE)" != "" ; then \
+ 	    echo "Installing $(STUB_LIB_FILE) to $(LIB_INSTALL_DIR)/"; \
+ 	    @INSTALL_STUB_LIB@ ; \
+diff -ru tcl8.4.19_orig/unix/tclConfig.sh.in tcl8.4.19/unix/tclConfig.sh.in
+--- tcl8.4.19_orig/unix/tclConfig.sh.in	2009-03-02 02:10:29.000000000 +0100
++++ tcl8.4.19/unix/tclConfig.sh.in	2009-03-02 02:10:46.000000000 +0100
+@@ -146,7 +146,7 @@
+ # different place than the directory containing the source files, this
+ # points to the location of the sources, not the location where Tcl was
+ # compiled.
+-TCL_SRC_DIR='@TCL_SRC_DIR@'
++TCL_SRC_DIR='@includedir@/private'
+ 
+ # List of standard directories in which to look for packages during
+ # "package require" commands.  Contains the "prefix" directory plus also

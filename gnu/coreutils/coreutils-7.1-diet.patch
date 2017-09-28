@@ -1,0 +1,209 @@
+diff -r -u -- coreutils-7.1_orig/lib/fpurge.c coreutils-7.1/lib/fpurge.c
+--- coreutils-7.1_orig/lib/fpurge.c	2009-03-27 18:12:38.000000000 +0000
++++ coreutils-7.1/lib/fpurge.c	2009-03-27 18:54:04.000000000 +0000
+@@ -114,6 +114,15 @@
+     /* fp->_Buf <= fp->_Next <= fp->_Rend */
+     fp->_Rend = fp->_Next;
+   return 0;
++# elif defined __dietlibc__
++  struct {
++    int fd;
++    int flags;
++    uint32_t bs;  /* read: bytes in buffer */
++    uint32_t bm;  /* position in buffer */
++  } *f = fp;
++
++  f->bs = f->bm = 0;
+ # else
+  #error "Please port gnulib fpurge.c to your platform! Look at the definitions of fflush, setvbuf and ungetc on your system, then report this to bug-gnulib."
+ # endif
+diff -r -u -- coreutils-7.1_orig/lib/freadahead.c coreutils-7.1/lib/freadahead.c
+--- coreutils-7.1_orig/lib/freadahead.c	2009-03-27 18:12:39.000000000 +0000
++++ coreutils-7.1/lib/freadahead.c	2009-03-27 18:54:26.000000000 +0000
+@@ -70,7 +70,7 @@
+ 	 + (fp->_Mode & 0x4000 /* _MBYTE */
+ 	    ? (fp->_Back + sizeof (fp->_Back)) - fp->_Rback
+ 	    : 0);
+-#elif defined SLOW_BUT_NO_HACKS     /* users can define this */
++#elif defined SLOW_BUT_NO_HACKS     /* users can define this */ || defined __dietlibc__
+   abort ();
+   return 0;
+ #else
+diff -r -u -- coreutils-7.1_orig/lib/freading.c coreutils-7.1/lib/freading.c
+--- coreutils-7.1_orig/lib/freading.c	2009-03-27 18:12:39.000000000 +0000
++++ coreutils-7.1/lib/freading.c	2009-03-27 18:55:26.000000000 +0000
+@@ -46,6 +46,13 @@
+ #elif defined __QNX__               /* QNX */
+   return ((fp->_Mode & 0x2 /* _MOPENW */) == 0
+ 	  || (fp->_Mode & 0x1000 /* _MREAD */) != 0);
++#elif defined __dietlibc__
++  struct {
++    int fd;
++    int flags;
++  } *f = fp;
++
++  return f->flags & 0x04;
+ #else
+  #error "Please port gnulib freading.c to your platform!"
+ #endif
+diff -r -u -- coreutils-7.1_orig/lib/freadptr.c coreutils-7.1/lib/freadptr.c
+--- coreutils-7.1_orig/lib/freadptr.c	2009-03-27 18:12:39.000000000 +0000
++++ coreutils-7.1/lib/freadptr.c	2009-03-27 18:55:42.000000000 +0000
+@@ -85,7 +85,7 @@
+     return NULL;
+   *sizep = size;
+   return (const char *) fp->_Next;
+-#elif defined SLOW_BUT_NO_HACKS     /* users can define this */
++#elif defined SLOW_BUT_NO_HACKS     /* users can define this */ || defined __dietlibc__
+   /* This implementation is correct on any ANSI C platform.  It is just
+      awfully slow.  */
+   return NULL;
+diff -r -u -- coreutils-7.1_orig/lib/freadseek.c coreutils-7.1/lib/freadseek.c
+--- coreutils-7.1_orig/lib/freadseek.c	2009-03-27 18:12:39.000000000 +0000
++++ coreutils-7.1/lib/freadseek.c	2009-03-27 18:55:56.000000000 +0000
+@@ -53,7 +53,7 @@
+ # endif
+ #elif defined __QNX__               /* QNX */
+   fp->_Next += increment;
+-#elif defined SLOW_BUT_NO_HACKS     /* users can define this */
++#elif defined SLOW_BUT_NO_HACKS     /* users can define this */ || defined __dietlibc__
+ #else
+  #error "Please port gnulib freadseek.c to your platform! Look at the definition of getc, getc_unlocked on your system, then report this to bug-gnulib."
+ #endif
+diff -r -u -- coreutils-7.1_orig/lib/fseeko.c coreutils-7.1/lib/fseeko.c
+--- coreutils-7.1_orig/lib/fseeko.c	2009-03-27 18:12:39.000000000 +0000
++++ coreutils-7.1/lib/fseeko.c	2009-03-27 19:09:01.000000000 +0000
+@@ -34,6 +34,8 @@
+ # define fseeko fseek
+ #endif
+ 
++#if ! defined __dietlibc__
++
+ int
+ rpl_fseeko (FILE *fp, off_t offset, int whence)
+ {
+@@ -123,3 +125,5 @@
+     }
+   return fseeko (fp, offset, whence);
+ }
++
++#endif /* ! defined __dietlibc__ */
+diff -r -u -- coreutils-7.1_orig/lib/fseterr.c coreutils-7.1/lib/fseterr.c
+--- coreutils-7.1_orig/lib/fseterr.c	2009-03-27 18:12:39.000000000 +0000
++++ coreutils-7.1/lib/fseterr.c	2009-03-27 18:56:39.000000000 +0000
+@@ -66,6 +66,13 @@
+       close (fd2);
+     }
+   errno = saved_errno;
++#elif defined __dietlibc__
++  struct {
++    int fd;
++    int flags;
++  } *f = fp;
++
++  f->flags |= 0x01;
+ #else
+  #error "Please port gnulib fseterr.c to your platform! Look at the definitions of ferror and clearerr on your system, then report this to bug-gnulib."
+ #endif
+diff -r -u -- coreutils-7.1_orig/lib/inttypes.h coreutils-7.1/lib/inttypes.h
+diff -r -u -- coreutils-7.1_orig/lib/inttypes.in.h coreutils-7.1/lib/inttypes.in.h
+--- coreutils-7.1_orig/lib/inttypes.in.h	2009-03-27 18:12:38.000000000 +0000
++++ coreutils-7.1/lib/inttypes.in.h	2009-03-27 19:04:46.000000000 +0000
+@@ -24,7 +24,7 @@
+    has not been included yet or if this file includes gnulib stdint.h
+    which in turn includes this file.
+    The include_next requires a split double-inclusion guard.  */
+-#if ! defined INTTYPES_H || defined _GL_JUST_INCLUDE_SYSTEM_INTTYPES_H
++#if ! defined INTTYPES_H || defined _GL_JUST_INCLUDE_SYSTEM_INTTYPES_H || defined __dietlibc__
+ # if @HAVE_INTTYPES_H@
+ #  if __GNUC__ >= 3
+ @PRAGMA_SYSTEM_HEADER@
+@@ -33,7 +33,7 @@
+ # endif
+ #endif
+ 
+-#if ! defined INTTYPES_H && ! defined _GL_JUST_INCLUDE_SYSTEM_INTTYPES_H
++#if ! defined INTTYPES_H && ! defined _GL_JUST_INCLUDE_SYSTEM_INTTYPES_H && ! defined __dietlibc__
+ #define INTTYPES_H
+ 
+ /* Include <stdint.h> or the gnulib replacement.  */
+diff -r -u -- coreutils-7.1_orig/lib/randint.h coreutils-7.1/lib/randint.h
+--- coreutils-7.1_orig/lib/randint.h	2009-03-27 18:12:39.000000000 +0000
++++ coreutils-7.1/lib/randint.h	2009-03-27 18:57:11.000000000 +0000
+@@ -28,7 +28,7 @@
+ /* An unsigned integer type, used for random integers, and its maximum
+    value.  */
+ typedef uintmax_t randint;
+-# define RANDINT_MAX UINTMAX_MAX
++# define RANDINT_MAX UINT_MAX
+ 
+ struct randint_source;
+ 
+diff -r -u -- coreutils-7.1_orig/lib/readutmp.c coreutils-7.1/lib/readutmp.c
+--- coreutils-7.1_orig/lib/readutmp.c	2009-03-27 18:12:38.000000000 +0000
++++ coreutils-7.1/lib/readutmp.c	2009-03-27 19:13:48.000000000 +0000
+@@ -42,6 +42,8 @@
+ # define SIZE_MAX ((size_t) -1)
+ #endif
+ 
++#if ! defined __dietlibc__
++
+ /* Copy UT->ut_name into storage obtained from malloc.  Then remove any
+    trailing spaces from the copy, NUL terminate it, and return the copy.  */
+ 
+@@ -163,3 +165,5 @@
+ }
+ 
+ #endif
++
++#endif /* ! defined __dietlibc__ */
+diff -r -u -- coreutils-7.1_orig/lib/readutmp.h coreutils-7.1/lib/readutmp.h
+--- coreutils-7.1_orig/lib/readutmp.h	2009-03-27 18:12:39.000000000 +0000
++++ coreutils-7.1/lib/readutmp.h	2009-03-27 19:12:33.000000000 +0000
+@@ -143,7 +143,9 @@
+ 
+ typedef struct UTMP_STRUCT_NAME STRUCT_UTMP;
+ 
++#ifdef UT_USER
+ enum { UT_USER_SIZE = sizeof UT_USER ((STRUCT_UTMP *) 0) };
++#endif
+ 
+ # if !defined UTMP_FILE && defined _PATH_UTMP
+ #  define UTMP_FILE _PATH_UTMP
+diff -r -u -- coreutils-7.1_orig/lib/stdint.in.h coreutils-7.1/lib/stdint.in.h
+--- coreutils-7.1_orig/lib/stdint.in.h	2009-03-27 18:12:39.000000000 +0000
++++ coreutils-7.1/lib/stdint.in.h	2009-03-27 18:59:46.000000000 +0000
+@@ -420,6 +420,9 @@
+ #ifdef INT64_MAX
+ # define INTMAX_MIN  INT64_MIN
+ # define INTMAX_MAX  INT64_MAX
++#elif defined LLONG_MAX
++# define INTMAX_MIN  LLONG_MIN
++# define INTMAX_MAX  LLONG_MAX
+ #else
+ # define INTMAX_MIN  INT32_MIN
+ # define INTMAX_MAX  INT32_MAX
+diff -r -u -- coreutils-7.1_orig/lib/stdio.in.h coreutils-7.1/lib/stdio.in.h
+--- coreutils-7.1_orig/lib/stdio.in.h	2009-03-27 18:12:38.000000000 +0000
++++ coreutils-7.1/lib/stdio.in.h	2009-03-27 19:05:36.000000000 +0000
+@@ -317,7 +317,7 @@
+ #endif
+ 
+ #if @GNULIB_FSEEKO@
+-# if @REPLACE_FSEEKO@
++# if @REPLACE_FSEEKO@ && ! defined __dietlibc__
+ /* Provide fseek, fseeko functions that are aware of a preceding
+    fflush(), and which detect pipes.  */
+ #  define fseeko rpl_fseeko
+diff -r -u -- coreutils-7.1_orig/lib/wchar.in.h coreutils-7.1/lib/wchar.in.h
+--- coreutils-7.1_orig/lib/wchar.in.h	2009-03-27 18:12:38.000000000 +0000
++++ coreutils-7.1/lib/wchar.in.h	2009-03-27 19:04:11.000000000 +0000
+@@ -33,7 +33,7 @@
+ @PRAGMA_SYSTEM_HEADER@
+ #endif
+ 
+-#if defined __need_mbstate_t || (defined __hpux && ((defined _INTTYPES_INCLUDED && !defined strtoimax) || defined _GL_JUST_INCLUDE_SYSTEM_WCHAR_H)) || defined _GL_ALREADY_INCLUDING_WCHAR_H
++#if defined __need_mbstate_t || (defined __hpux && ((defined _INTTYPES_INCLUDED && !defined strtoimax) || defined _GL_JUST_INCLUDE_SYSTEM_WCHAR_H)) || defined _GL_ALREADY_INCLUDING_WCHAR_H || defined __dietlibc__
+ /* Special invocation convention:
+    - Inside uClibc header files.
+    - On HP-UX 11.00 we have a sequence of nested includes

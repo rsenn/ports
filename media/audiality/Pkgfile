@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A highly scalable and portable audio engine and synthesizer.
+#  Audiality is a highly scalable and portable audio engine and
+#  synthesizer. MIDI files are used in combination with scripting and modular
+#  synthesis, to minimize file sizes and maximize flexibility. Audiality can
+#  be used as a music and sound effects player in multimedia productions,
+#  or as a realtime MIDI synthesizer.
+# URL: http://audiality.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=Audiality
+version=0.1.1
+release=1
+source=(http://olofson.net/audiality/download/Audiality-$version.tar.gz
+        audiality-0.1.1-m4.patch)
+
+build()
+{
+  cd Audiality-$version
+
+  patch -N -p1 -i $SRC/audiality-0.1.1-m4.patch
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

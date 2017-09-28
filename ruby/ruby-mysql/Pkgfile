@@ -1,0 +1,26 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Http://rubyforge.org/frs/download.php/44205/mysql-ruby-2.8.tar.gz
+# URL: http://rubyforge.org/frs/download.php/44205/mysql-ruby-2.8.tar.gz
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=mysql-ruby
+version=2.8
+release=1
+source=(http://rubyforge.org/frs/download.php/44205/mysql-ruby-$version.tar.gz)
+
+build()
+{
+  cd mysql-ruby-$version
+
+  ruby extconf.rb
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/mysql-ruby
+  install -m 644 COPYING* README* $ROOT/share/doc/mysql-ruby
+}
+
+# EOF

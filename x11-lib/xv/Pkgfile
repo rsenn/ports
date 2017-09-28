@@ -1,0 +1,34 @@
+# $Id: Pkgfile,v 1.8 2007/04/22 23:07:58 roman Exp $
+#
+# Description: X11 Video extension library
+#  libXv provides an X Window System client interface to the XVideo
+#  extension to the X protocol.
+#  .
+#  The XVideo extension allows for accelerated drawing of videos.  Hardware
+#  adaptors are exposed to clients, which may draw in a number of colourspaces,
+#  including YUV.
+#  .
+#
+# URL: http://xorg.freedesktop.org
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=xv
+version=1.0.4
+release=1
+source=(ftp://ftp.x.org/pub/individual/lib/libXv-$version.tar.bz2)
+
+build()
+{
+  cd libXv-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --${static:=enable}-shared \
+       --${shared:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+}

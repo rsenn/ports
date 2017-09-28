@@ -1,0 +1,32 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: An OSC-based mixer for the Jack Audio Connection Kit.
+#  JackMixDesk is based on JackMiniMix and is a general purpose mixer for
+#  the Jack Audio Connection Kit. It has an OSC-based control interface,
+#  and a configurable number of mono/stereo inputs and pre/post sends/outputs
+#  that can be controlled by sending it OSC messages. There is LASH support
+#  and an XML config file.
+# URL: http://sourceforge.net/projects/jackmixdesk/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=jackmixdesk
+version=svn
+release=1
+source=""
+
+build()
+{
+  svn co https://jackmixdesk.svn.sourceforge.net/svnroot/jackmixdesk/trunk jackmixdesk
+
+  cd jackmixdesk
+
+  sh autogen.sh
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+  make
+  make DESTDIR="$PKG" install
+}

@@ -1,0 +1,26 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A collection of (mostly) Unix scripts for general use
+# URL: http://www.sfr-fresh.com/unix/privat/
+# Maintainer: 
+# Depends on: 
+
+name=scripts
+version=1.1
+release=1
+source=(http://www.sfr-fresh.com/unix/privat/scripts-$version.tar.gz)
+
+build() 
+{
+  cd scripts-$version
+
+  SCRIPTS=`find * -type f | while read x; do test -x "$x" && echo "$x"; done`
+
+  install -d $ROOT/bin
+  install -m 755 $SCRIPTS $ROOT/bin
+  
+  install -d $ROOT/share/doc/scripts
+  install -m 644 MANUAL README htmluni.pl.README listdb.README $ROOT/share/doc/scripts
+}
+
+# EOF

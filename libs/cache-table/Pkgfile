@@ -1,0 +1,35 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A high performance hash map.
+#  CacheTable is a C++ template library that implements a very fast hash
+#  map container. Its particularity, compared with std::hash_map and
+#  google::sparse_hash_map, is that it has a fixed size (decided it when
+#  it is created) and a random item replacement policy: in case of an
+#  "hash collision" the older item is "discarded" and replaced with the
+#  new one. This container is ideal for implementing a caching system,
+#  when you want very fast item insertion and retrieval and you know the
+#  memory amount you want to dedicate ahead of time.
+# URL: http://code.google.com/p/cache-table/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=cache-table
+version=0.2
+release=1
+source=(http://cache-table.googlecode.com/files/cache-table-$version.tar.gz)
+
+build()
+{
+  cd ${srcdir=$SRC/cache-table-$version}/test
+
+  make CXX="$CXX" CXXFLAGS="$CXXFLAGS"
+
+  ./map_unittest
+
+  install -d $ROOT/share/doc
+  cp -rf $srcdir/doc $ROOT/share/doc/cache-table-$version
+  cp -rf $srcdir/{ChangeLog,LICENSE,README,examples} $ROOT/share/doc/cache-table-$version/
+
+  install -d $ROOT/include
+  cp -rf $srcdir/mm $ROOT/include/
+}

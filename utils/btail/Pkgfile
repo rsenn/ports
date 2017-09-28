@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A Bayesian filtered version of tail.
+#  Btail monitors a logfile for specific events. It uses a Bayesian filter
+#  to determine what events are worth passing through and which should
+#  be suppressed.
+#  .
+# URL: http://www.vanheusden.com/btail/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=btail
+version=0.2
+release=1
+source=(http://www.vanheusden.com/btail/btail-$version.tgz)
+
+build()
+{
+  cd btail-$version
+
+  make
+
+  install -d $ROOT/bin
+  install -m 755 blearn btail $ROOT/bin
+
+  install -d $ROOT/share/doc/btail
+  install -m 644 Makefile license.txt readme.txt $ROOT/share/doc/btail
+}
+
+# EOF

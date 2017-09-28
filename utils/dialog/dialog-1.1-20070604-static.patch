@@ -1,0 +1,36 @@
+diff -r -u dialog-1.1-20070604_orig/makefile.in dialog-1.1-20070604/makefile.in
+--- dialog-1.1-20070604_orig/makefile.in	2007-08-02 21:38:34.000000000 +0200
++++ dialog-1.1-20070604/makefile.in	2007-08-02 21:41:29.000000000 +0200
+@@ -99,7 +99,7 @@
+ 	dlg_keys.h
+ 
+ LIB	= @LIB_PREFIX@dialog$a
+-PROG	= dialog$x
++PROG	= dialog$x dialog.static$x
+ ALL	= $(LIB) $(PROG)
+ 
+ BIN_DIRS	= $(BINDIR) $(MAN1DIR)
+@@ -124,6 +124,9 @@
+ dialog$x : $(LIB) dialog$o @INTLDIR_MAKE@ @INTLLIBS@
+ 	$(LINK) -o $@ dialog$o -L. -ldialog $(LDFLAGS) $(LIBS)
+ 
++dialog.static$x : $(LIB) dialog$o @INTLDIR_MAKE@ @INTLLIBS@
++	$(LINK) -static -o $@ dialog$o -L. -ldialog $(LDFLAGS) $(LIBS)
++
+ clean	\
+ distclean \
+ install \
+diff -r -u dialog-1.1-20070604_orig/makefile.in dialog-1.1-20070604/makefile.in
+--- dialog-1.1-20070604_orig/makefile.in	2007-08-02 21:44:21.000000000 +0200
++++ dialog-1.1-20070604/makefile.in	2007-08-02 21:45:51.000000000 +0200
+@@ -165,8 +165,8 @@
+ uninstall-full :: uninstall-bin uninstall-man uninstall-lib
+ 	@echo "made $@"
+ 
+-install-bin : $(PROG) $(BINDIR) 
+-	$(INSTALL_PROGRAM) $(PROG) $(BINDIR)/$(PACKAGE)$x
++install-bin : $(PROG) $(BINDIR)
++	$(INSTALL_PROGRAM) $(PROG) $(BINDIR)/
+ 
+ uninstall-bin :
+ 	$(RM) $(BINDIR)/$(PACKAGE)$x

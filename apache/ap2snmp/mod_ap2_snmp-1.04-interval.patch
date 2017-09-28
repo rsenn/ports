@@ -1,0 +1,59 @@
+--- mod_ap2_snmp_1.04_orig/mod_ap2_snmp.c	2007-01-30 18:20:40.234860080 +0100
++++ mod_ap2_snmp_1.04/mod_ap2_snmp.c	2007-01-30 18:20:40.232860384 +0100
+@@ -498,16 +498,20 @@
+ int j, i, res;
+ int ready;
+ int busy;
+-unsigned long count;
++unsigned long count, interval_count;
+ unsigned long lres, my_lres, conn_lres;
+ apr_off_t bytes, my_bytes, conn_bytes;
+ apr_off_t bcount, kbcount;
+ 
+ apr_time_t nowtime;
+-apr_interval_time_t up_time;
+-float requests_per_sec, kbytes_per_sec, kbytes_per_request;
++apr_interval_time_t up_time, interval_time;
++static float requests_per_sec, kbytes_per_sec, kbytes_per_request;
+ 
+-unsigned long kb_traffic;
++static unsigned long last_count;
++static apr_interval_time_t last_time;
++static unsigned long last_kb_traffic;
++
++unsigned long kb_traffic, interval_kb_traffic;
+ char temporal[128];   			// response request --> OK
+ char access_buffer[LEN_BUFFER];		//for totalAccess
+ char traffic_buffer[LEN_BUFFER]; 	//for totalTraffic
+@@ -604,15 +608,25 @@
+  count++;	// add 1 to count the current request.
+ 
+  // Get requests per second.
+-/*
+-this should be checked later
+-*/
+  nowtime = apr_time_now();	 // get now time..
+  up_time = (apr_uint32_t) apr_time_sec(nowtime - ap_scoreboard_image->global->restart_time); //get up_time in seconds
+ 
+- requests_per_sec = (float) count / (float) up_time;
+- kbytes_per_sec = (float) kb_traffic / (float) up_time;
+- kbytes_per_request = (float) kb_traffic / (float) count;
++ interval_kb_traffic = (kb_traffic - last_kb_traffic);
++ interval_time = (up_time - last_time);
++ interval_count = (count - last_count);
++
++ if(interval_time > 0)
++ {
++   requests_per_sec = (float)interval_count / (float)interval_time;
++   kbytes_per_sec = (float)interval_kb_traffic / (float)interval_time;
++ }
++
++ if(interval_count > 0)
++   kbytes_per_request = (float)interval_kb_traffic / (float)interval_count;
++
++ last_kb_traffic = kb_traffic;
++ last_time = up_time;
++ last_count = count;
+ 
+  // Interchange file
+  if (!strlen(tmp_dir))

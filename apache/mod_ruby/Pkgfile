@@ -1,0 +1,31 @@
+# $Id: Pkgfile 424 2008-08-10 01:52:57Z enki $
+#
+# Description: Embedding Ruby in the Apache2 web server
+#  mod_ruby embeds the Ruby interpreter into the Apache2 web server,
+#  allowing Ruby CGI scripts to be executed natively. These scripts will
+#  start up much faster than without mod_ruby
+#  .
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=mod_ruby
+version=1.3.0
+release=1
+source=(http://www.modruby.net/archive/mod_ruby-$version.tar.gz)
+
+build()
+{
+  cd mod_ruby-$version
+
+  APXS=`ls /usr/*bin/apxs*`
+
+  for apxs in $APXS; do
+    ./configure.rb \
+        --prefix="$prefix" \
+        --with-apr-includes="$prefix/include/apr" \
+        --with-apxs="$apxs"
+
+    make
+    make DESTDIR="$PKG" install
+  done
+}

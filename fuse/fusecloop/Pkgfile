@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: FUSE mounter for compressed loop images.
+# Cloop compressed images (like in Knoppix) FUSE mounter that allows
+# accessing content of Knoppix or similar CDs from userspace.
+#
+# URL: http://fusecloop.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libfuse2, zlib1g
+
+name=fusecloop
+version=0.20.0
+release=1
+source=($mirror_sf/fusecloop/fusecloop-$version.tar.bz2)
+
+build()
+{
+  cd fusecloop-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+
+  install -d $ROOT/bin
+  install -m 755 fusecloop $ROOT/bin
+
+  install -d $ROOT/share/doc/fusecloop
+  install -m 644 [A-Z]*[A-Z]* $ROOT/share/doc/fusecloop
+}

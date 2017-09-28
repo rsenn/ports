@@ -1,0 +1,25 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=nxlib
+version=0.44
+release=1
+source=(ftp://microwindows.censoft.com/pub/microwindows/nxlib-$version.tar.gz
+        ftp://microwindows.censoft.com/pub/microwindows/microwindows-src-0.91.tar.gz
+        nxlib-0.44-fixes.patch)
+
+build()
+{
+  cd nxlib-$version
+
+  patch -N -p1 -i $SRC/nxlib-0.44-fixes.patch
+
+  ln -si $SRC/microwindows-*/src/include/*.h .
+
+  make
+  make PREFIX="$ROOT" install
+}

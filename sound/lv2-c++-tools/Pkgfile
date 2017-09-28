@@ -1,0 +1,25 @@
+# $Id: Pkgfile 424 2008-08-10 01:52:57Z enki $
+#
+# Description: some tools and libraries that may come in handy when writing LV2 plugins
+# URL: http://ll-plugins.nongnu.org/hacking.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=lv2-c++-tools
+version=1.0.2
+release=1
+source=(http://download.savannah.nongnu.org/releases/ll-plugins/lv2-c++-tools-$version.tar.bz2)
+
+build()
+{
+  cd lv2-c++-tools-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

@@ -1,0 +1,465 @@
+diff -ru autoconf-2.61_orig/lib/autoconf/c.m4 autoconf-2.61/lib/autoconf/c.m4
+--- autoconf-2.61_orig/lib/autoconf/c.m4	2008-04-01 16:50:49.000000000 +0000
++++ autoconf-2.61/lib/autoconf/c.m4	2008-04-01 18:08:30.000000000 +0000
+@@ -65,6 +65,8 @@
+ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&AS_MESSAGE_LOG_FD'
+ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&AS_MESSAGE_LOG_FD'
+ ac_compiler_gnu=$ac_cv_c_compiler_gnu
++ac_compiler_msvc=$ac_cv_c_compiler_msvc
++ac_compiler_intel=$ac_cv_c_compiler_intel
+ ])
+ 
+ 
+@@ -97,6 +99,8 @@
+ ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&AS_MESSAGE_LOG_FD'
+ ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&AS_MESSAGE_LOG_FD'
+ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
++ac_compiler_msvc=$ac_cv_cxx_compiler_msvc
++ac_compiler_intel=$ac_cv_cxx_compiler_intel
+ ])
+ 
+ 
+@@ -129,6 +133,8 @@
+ ac_compile='$OBJC -c $OBJCFLAGS $CPPFLAGS conftest.$ac_ext >&AS_MESSAGE_LOG_FD'
+ ac_link='$OBJC -o conftest$ac_exeext $OBJCFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&AS_MESSAGE_LOG_FD'
+ ac_compiler_gnu=$ac_cv_objc_compiler_gnu
++ac_compiler_msvc=$ac_cv_objc_compiler_msvc
++ac_compiler_intel=$ac_cv_objc_compiler_intel
+ ])
+ 
+ 
+@@ -511,6 +517,25 @@
+ [ac_cv_c_compiler_gnu])
+ 
+ 
++# AC_COMPILER_PREFIX([COMPILER ...])
++# --------------------------
++AC_DEFUN([AC_COMPILER_PREFIX],
++[
++
++set dummy m4_default([\$$1],[\$CC]); ac_word=$2
++AC_MSG_CHECKING([for compiler $ac_word installation prefix])
++case $ac_word in
++  [\\/]* | ?:[\\/]*)
++    ac_compiler_path="$ac_word"
++    ;;
++  *)
++    _AC_PATH_PROG([ac_compiler_path], [m4_default([$1],[$CC])])
++    ;;
++esac
++AC_MSG_RESULT([$ac_compiler_path])
++
++])
++
+ # AC_PROG_CC([COMPILER ...])
+ # --------------------------
+ # COMPILER ... is a space separated list of C compilers to search for.
+@@ -542,7 +567,10 @@
+   AC_CHECK_PROG(CC, cc, cc, , , /usr/ucb/cc)
+ fi
+ if test -z "$CC"; then
+-  AC_CHECK_TOOLS(CC, cl.exe)
++  AC_CHECK_PROG(CC, icl.exe)
++fi
++if test -z "$CC"; then
++  AC_CHECK_PROG(CC, cl.exe)
+ fi
+ ])
+ 
+@@ -550,15 +578,110 @@
+ 
+ # Provide some information about the compiler.
+ _AS_ECHO_LOG([checking for _AC_LANG compiler version])
+-ac_compiler=`set X $ac_compile; echo $[2]`
+-_AC_DO([$ac_compiler --version >&AS_MESSAGE_LOG_FD])
+-_AC_DO([$ac_compiler -v >&AS_MESSAGE_LOG_FD])
+-_AC_DO([$ac_compiler -V >&AS_MESSAGE_LOG_FD])
++set dummy $CC; ac_compiler=$[2]
++case $ac_compiler in
++  */*) ac_compiler_name="${ac_compiler##*/}"; ac_compiler_path="$ac_compiler" ;;
++  *) ac_compiler_name="$ac_compiler"; _AC_PATH_WALK([ac_compiler_path],[$ac_compiler],[$PATH]) ;;
++esac
++case $ac_compiler_name in
++  cl.exe|icl.exe)
++    # Windows compilers don't take --version, -v or -V arguments...
++    _AC_DO([$ac_compiler >&AS_MESSAGE_LOG_FD])
++    ;;
++  *)
++    _AC_DO([$ac_compiler --version >&AS_MESSAGE_LOG_FD])
++    _AC_DO([$ac_compiler -v >&AS_MESSAGE_LOG_FD])
++    _AC_DO([$ac_compiler -V >&AS_MESSAGE_LOG_FD])
++    ;;
++esac
+ 
+-m4_expand_once([_AC_COMPILER_EXEEXT])[]dnl
+ m4_expand_once([_AC_COMPILER_OBJEXT])[]dnl
+ _AC_LANG_COMPILER_GNU
+-GCC=`test $ac_compiler_gnu = yes && echo yes`
++if test "$ac_compiler_gnu" != yes
++then
++  _AC_LANG_COMPILER_MSVC
++  if test "$ac_compiler_msvc" = yes
++  then
++    _AC_LANG_COMPILER_INTEL
++  fi
++fi
++GCC=`test "$ac_compiler_gnu" = yes && echo yes`
++MSVC=`test "$ac_compiler_msvc" = yes && echo yes`
++INTELC=`test "$ac_compiler_intel" = yes && echo yes`
++if test "$MSVC" = yes; then
++
++  ac_env_prefix_MSVC="${ac_compiler_path%/[[Bb]]in/*}"
++#  ac_env_paths="$ac_env_prefix_MSVC"
++
++  if test "$INTELC" = yes; then
++    _AC_CHECK_PROG([LINK], [link.exe], [link.exe], [], [$PATH])
++    
++    test -z "$LINK" && AC_MSG_FAILURE([the Intel C++ compiler for Visual Studio needs the link.exe from Visual Studio in \$PATH])
++    
++    ac_env_prefix_INTELC="$ac_env_prefix_MSVC"
++    ac_env_prefix_MSVC="${as_dir%/[[Bb]]in}"
++
++#    ac_env_paths="$ac_env_paths:$ac_env_prefix_MSVC"
++  fi
++  
++  AC_MSG_CHECKING([for the Windows SDK directory])
++  
++  # in Visual C++ 8.0 it is in VC/PlatformSDK
++  if test -d "$ac_env_prefix_MSVC/PlatformSDK/"; then
++    ac_env_prefix_WINSDK="$ac_env_prefix_MSVC/PlatformSDK"
++  else
++    # Check for the ildasm.exe tool which accompanies SDKs >= v6.0
++    _AC_PATH_WALK([ac_cv_path_ILDASM],[ildasm.exe],[$PATH])
++
++    if test -n "$ac_cv_path_ILDASM"; then
++      ac_env_prefix_WINSDK="${ac_cv_path_ILDASM%/[[Bb]]in/*}"
++    else
++      # Still not found? Walk through paths until we find a kernel32.lib in the subdir "Lib".
++      as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
++      for as_bindir in $PATH; do
++        as_dir=${as_bindir%/[[Bb]]in}
++        for as_subdir in lib Lib; do
++          if test -d "$as_dir/$as_subdir/"; then
++            for ac_word in kernel32.lib Kernel32.Lib; do
++              if test -f "$as_dir/$as_subdir/$ac_word"; then
++                ac_env_prefix_WINSDK="$as_dir"
++                break 3
++              fi
++            done
++          fi
++        done
++      done
++      IFS=$as_save_IFS
++    fi
++    
++    test -z "$ac_env_prefix_WINSDK" && AC_MSG_FAILURE([could not find the Windows SDK in \$PATH])
++  fi
++  
++  AC_MSG_RESULT([$ac_env_prefix_WINSDK])
++
++  for as_dir in $ac_env_prefix_WINSDK $ac_env_prefix_MSVC $ac_env_prefix_INTELC; do
++    for as_subdir in lib Lib; do
++      if test -d "$as_dir/$as_subdir/"; then
++        LIB="$as_dir/$as_subdir${LIB:+;$LIB}"
++        break
++      fi
++    done
++    for as_subdir in include Include; do
++      if test -d "$as_dir/$as_subdir/"; then
++        INCLUDE="$as_dir/$as_subdir${INCLUDE:+;$INCLUDE}"
++        break
++      fi
++    done
++  done
++  export LIB INCLUDE
++
++  _AS_ECHO_LOG([environment variable LIB='$LIB'])
++  _AS_ECHO_LOG([environment variable INCLUDE='$INCLUDE'])
++  
++  AC_SUBST([LIB])
++  AC_SUBST([INCLUDE])
++fi
++m4_expand_once([_AC_COMPILER_EXEEXT])[]dnl
+ _AC_PROG_CC_G
+ _AC_PROG_CC_C89
+ AC_LANG_POP(C)dnl
+@@ -574,35 +697,43 @@
+ m4_define([_AC_PROG_CC_G],
+ [ac_test_CFLAGS=${CFLAGS+set}
+ ac_save_CFLAGS=$CFLAGS
+-AC_CACHE_CHECK(whether $CC accepts -g, ac_cv_prog_cc_g,
++if test "$MSVC" = yes; then
++  ac_c_debug_flag="-Zi"
++else
++  ac_c_debug_flag="-g"
++fi
++AC_CACHE_CHECK(whether $CC accepts $ac_c_debug_flag, ac_cv_prog_cc_g,
+   [ac_save_c_werror_flag=$ac_c_werror_flag
+    ac_c_werror_flag=yes
+    ac_cv_prog_cc_g=no
+-   CFLAGS="-g"
++   CFLAGS="$ac_c_debug_flag"
+    _AC_COMPILE_IFELSE([AC_LANG_PROGRAM()],
+      [ac_cv_prog_cc_g=yes],
+      [CFLAGS=""
+       _AC_COMPILE_IFELSE([AC_LANG_PROGRAM()],
+ 	[],
+ 	[ac_c_werror_flag=$ac_save_c_werror_flag
+-	 CFLAGS="-g"
++	 CFLAGS="$ac_c_debug_flag"
+ 	 _AC_COMPILE_IFELSE([AC_LANG_PROGRAM()],
+ 	   [ac_cv_prog_cc_g=yes])])])
+    ac_c_werror_flag=$ac_save_c_werror_flag])
+ if test "$ac_test_CFLAGS" = set; then
+   CFLAGS=$ac_save_CFLAGS
+ elif test $ac_cv_prog_cc_g = yes; then
+-  if test "$GCC" = yes; then
+-    CFLAGS="-g -O2"
++  if test "$GCC" = yes || test "$MSVC" = yes; then
++    CFLAGS="$ac_c_debug_flag -O2"
+   else
+-    CFLAGS="-g"
++    CFLAGS="$ac_c_debug_flag"
+   fi
+ else
+-  if test "$GCC" = yes; then
++  if test "$GCC" = yes || test "$MSVC" = yes; then
+     CFLAGS="-O2"
+   else
+     CFLAGS=
+   fi
++fi
++if test "$MSVC" = yes; then
++  CFLAGS="-nologo $CFLAGS"
+ fi[]dnl
+ ])# _AC_PROG_CC_G
+ 
+@@ -774,21 +905,43 @@
+   else
+     AC_CHECK_TOOLS(CXX,
+ 		   [m4_default([$1],
+-			       [g++ c++ gpp aCC CC cxx cc++ cl.exe FCC KCC RCC xlC_r xlC])],
++			       [g++ c++ gpp aCC CC cxx cc++ icl.exe cl.exe FCC KCC RCC xlC_r xlC])],
+ 		   g++)
+   fi
+ fi
+ # Provide some information about the compiler.
+ _AS_ECHO_LOG([checking for _AC_LANG compiler version])
+-ac_compiler=`set X $ac_compile; echo $[2]`
+-_AC_DO([$ac_compiler --version >&AS_MESSAGE_LOG_FD])
+-_AC_DO([$ac_compiler -v >&AS_MESSAGE_LOG_FD])
+-_AC_DO([$ac_compiler -V >&AS_MESSAGE_LOG_FD])
++set dummy $CXX; ac_compiler=$[2]
++case $ac_compiler in
++  */*) ac_compiler_name="${ac_compiler##*/}"; ac_compiler_path="$ac_compiler" ;;
++  *) ac_compiler_name="$ac_compiler"; _AC_PATH_WALK([ac_compiler_path],[$ac_compiler],[$PATH]) ;;
++esac
++case $ac_compiler_name in
++  cl.exe|icl.exe)
++    # Windows compilers don't take --version, -v or -V arguments...
++    _AC_DO([$ac_compiler >&AS_MESSAGE_LOG_FD])
++    ;;
++  *)
++    _AC_DO([$ac_compiler --version >&AS_MESSAGE_LOG_FD])
++    _AC_DO([$ac_compiler -v >&AS_MESSAGE_LOG_FD])
++    _AC_DO([$ac_compiler -V >&AS_MESSAGE_LOG_FD])
++    ;;
++esac
+ 
+ m4_expand_once([_AC_COMPILER_EXEEXT])[]dnl
+ m4_expand_once([_AC_COMPILER_OBJEXT])[]dnl
+ _AC_LANG_COMPILER_GNU
+-GXX=`test $ac_compiler_gnu = yes && echo yes`
++if test "$ac_compiler_gnu" != yes
++then
++  _AC_LANG_COMPILER_MSVC
++  if test "$ac_compiler_msvc" = yes
++  then
++    _AC_LANG_COMPILER_INTEL
++  fi
++fi
++GXX=`test "$ac_compiler_gnu" = yes && echo yes`
++MSVCP=`test "$ac_compiler_msvc" = yes && echo yes`
++INTELCP=`test "$ac_compiler_intel" = yes && echo yes`
+ _AC_PROG_CXX_G
+ AC_LANG_POP(C++)dnl
+ ])# AC_PROG_CXX
+@@ -803,18 +956,24 @@
+ m4_define([_AC_PROG_CXX_G],
+ [ac_test_CXXFLAGS=${CXXFLAGS+set}
+ ac_save_CXXFLAGS=$CXXFLAGS
+-AC_CACHE_CHECK(whether $CXX accepts -g, ac_cv_prog_cxx_g,
++ac_cv_prog_cxx_path=${CXX%%" "*}
++ac_cv_prog_cxx_name=${ac_cv_prog_cxx_path##*/}
++case ${ac_cv_prog_cxx_name%.exe} in
++  cl|icl) ac_cxx_debug_flag="-Zi" ;;
++  *) ac_cxx_debug_flag="-g" ;;
++esac
++AC_CACHE_CHECK(whether $ac_cv_prog_cxx_name accepts $ac_cxx_debug_flag, ac_cv_prog_cxx_g,
+   [ac_save_cxx_werror_flag=$ac_cxx_werror_flag
+    ac_cxx_werror_flag=yes
+    ac_cv_prog_cxx_g=no
+-   CXXFLAGS="-g"
++   CXXFLAGS="$ac_cxx_debug_flag"
+    _AC_COMPILE_IFELSE([AC_LANG_PROGRAM()],
+      [ac_cv_prog_cxx_g=yes],
+      [CXXFLAGS=""
+       _AC_COMPILE_IFELSE([AC_LANG_PROGRAM()],
+ 	[],
+ 	[ac_cxx_werror_flag=$ac_save_cxx_werror_flag
+-	 CXXFLAGS="-g"
++	 CXXFLAGS="$ac_cxx_debug_flag"
+ 	 _AC_COMPILE_IFELSE([AC_LANG_PROGRAM()],
+ 	   [ac_cv_prog_cxx_g=yes])])])
+    ac_cxx_werror_flag=$ac_save_cxx_werror_flag])
+@@ -822,9 +981,9 @@
+   CXXFLAGS=$ac_save_CXXFLAGS
+ elif test $ac_cv_prog_cxx_g = yes; then
+   if test "$GXX" = yes; then
+-    CXXFLAGS="-g -O2"
++    CXXFLAGS="$ac_cxx_debug_flag -O2"
+   else
+-    CXXFLAGS="-g"
++    CXXFLAGS="$ac_cxx_debug_flag"
+   fi
+ else
+   if test "$GXX" = yes; then
+@@ -860,7 +1019,7 @@
+ rm -f conftest*])
+ if test $ac_cv_prog_cxx_c_o = no; then
+   AC_DEFINE(CXX_NO_MINUS_C_MINUS_O, 1,
+-            [Define to 1 if your C++ compiler doesn't accept
++            [Define to 1 if your C++ compiler doesnt accept
+              -c and -o together.])
+ fi
+ AC_LANG_POP([C++])dnl
+@@ -952,7 +1111,17 @@
+ m4_expand_once([_AC_COMPILER_EXEEXT])[]dnl
+ m4_expand_once([_AC_COMPILER_OBJEXT])[]dnl
+ _AC_LANG_COMPILER_GNU
+-GOBJC=`test $ac_compiler_gnu = yes && echo yes`
++if test $ac_compiler_gnu != yes
++then
++  _AC_LANG_COMPILER_MSVC
++  if test $ac_compiler_msvc = yes
++  then
++    _AC_LANG_COMPILER_INTEL
++  fi
++fi
++GOBJC=`test "$ac_compiler_gnu" = yes && echo yes`
++MSVOBJC=`test "$ac_compiler_msvc" = yes && echo yes`
++INTELOBJC=`test "$ac_compiler_msvc" = yes && echo yes`
+ _AC_PROG_OBJC_G
+ AC_LANG_POP(Objective C)dnl
+ ])# AC_PROG_OBJC
+diff -ru autoconf-2.61_orig/lib/autoconf/lang.m4 autoconf-2.61/lib/autoconf/lang.m4
+--- autoconf-2.61_orig/lib/autoconf/lang.m4	2008-04-01 16:50:49.000000000 +0000
++++ autoconf-2.61/lib/autoconf/lang.m4	2008-04-01 16:50:49.000000000 +0000
+@@ -323,6 +323,37 @@
+ ])])# _AC_LANG_COMPILER_GNU
+ 
+ 
++# _AC_LANG_COMPILER_MSVC
++# ---------------------
++# Check whether the compiler for the current language is the Microsoft Visual Studio.
++m4_define([_AC_LANG_COMPILER_MSVC],
++[AC_CACHE_CHECK([whether we are using the Visual C++ compiler],
++		[ac_cv_[]_AC_LANG_ABBREV[]_compiler_msvc],
++[_AC_COMPILE_IFELSE([AC_LANG_PROGRAM([], [[#ifndef _MSC_VER
++       choke me
++#endif
++]])],
++		   [ac_compiler_msvc=yes],
++		   [ac_compiler_msvc=no])
++ac_cv_[]_AC_LANG_ABBREV[]_compiler_msvc=$ac_compiler_msvc
++])])# _AC_LANG_COMPILER_MSVC
++
++# _AC_LANG_COMPILER_INTEL
++# ---------------------
++# Check whether the compiler for the current language is Intel.
++m4_define([_AC_LANG_COMPILER_INTEL],
++[AC_CACHE_CHECK([whether we are using the Intel C++ compiler],
++		[ac_cv_[]_AC_LANG_ABBREV[]_compiler_intel],
++[_AC_COMPILE_IFELSE([AC_LANG_PROGRAM([], [[#ifndef __INTEL_COMPILER
++       choke me
++#endif
++]])],
++		   [ac_compiler_intel=yes],
++		   [ac_compiler_intel=no])
++ac_cv_[]_AC_LANG_ABBREV[]_compiler_intel=$ac_compiler_intel
++])])# _AC_LANG_COMPILER_INTEL
++
++
+ # AC_LANG_PREPROC
+ # ---------------
+ # Find a preprocessor for the current language.  Note that because we
+diff -ru autoconf-2.61_orig/lib/autoconf/programs.m4 autoconf-2.61/lib/autoconf/programs.m4
+--- autoconf-2.61_orig/lib/autoconf/programs.m4	2008-04-01 16:50:49.000000000 +0000
++++ autoconf-2.61/lib/autoconf/programs.m4	2008-04-01 16:50:49.000000000 +0000
+@@ -138,26 +138,31 @@
+ m4_ifvaln([$3], [test -n "$$1" || $1="$3"])])
+ 
+ 
++# _AC_PATH_WALK(VARIABLE, PROG-TO-CHECK-FOR, [PATH])
++# ------------------------------------------------------------------------
++m4_define([_AC_PATH_WALK],
++[_AS_PATH_WALK([$3],
++[for ac_exec_ext in '' $ac_executable_extensions; do
++  if AS_EXECUTABLE_P(["$as_dir/$2$ac_exec_ext"]); then
++    $1="$as_dir/$2$ac_exec_ext"
++    _AS_ECHO_LOG([found $as_dir/$2$ac_exec_ext])
++    break 2
++  fi
++done])])# _AC_PATH_WALK
++
++
+ # _AC_PATH_PROG(VARIABLE, PROG-TO-CHECK-FOR, [VALUE-IF-NOT-FOUND], [PATH])
+ # ------------------------------------------------------------------------
+ AC_DEFUN([_AC_PATH_PROG],
+ [# Extract the first word of "$2", so it can be a program name with args.
+ set dummy $2; ac_word=$[2]
+-AC_MSG_CHECKING([for $ac_word])
+ AC_CACHE_VAL([ac_cv_path_$1],
+ [case $$1 in
+   [[\\/]]* | ?:[[\\/]]*)
+   ac_cv_path_$1="$$1" # Let the user override the test with a path.
+   ;;
+   *)
+-  _AS_PATH_WALK([$4],
+-[for ac_exec_ext in '' $ac_executable_extensions; do
+-  if AS_EXECUTABLE_P(["$as_dir/$ac_word$ac_exec_ext"]); then
+-    ac_cv_path_$1="$as_dir/$ac_word$ac_exec_ext"
+-    _AS_ECHO_LOG([found $as_dir/$ac_word$ac_exec_ext])
+-    break 2
+-  fi
+-done])
++  _AC_PATH_WALK([ac_cv_path_$1],[$ac_word],[$4])
+ dnl If no 3rd arg is given, leave the cache variable unset,
+ dnl so AC_PATH_PROGS will keep looking.
+ m4_ifvaln([$3],
+@@ -165,18 +170,19 @@
+   ;;
+ esac])dnl
+ $1=$ac_cv_path_$1
+-if test -n "$$1"; then
+-  AC_MSG_RESULT([$$1])
+-else
+-  AC_MSG_RESULT([no])
+-fi
+ ])# _AC_PATH_PROG
+ 
+ 
+ # AC_PATH_PROG(VARIABLE, PROG-TO-CHECK-FOR, [VALUE-IF-NOT-FOUND], [PATH])
+ # -----------------------------------------------------------------------
+ AC_DEFUN([AC_PATH_PROG],
+-[_AC_PATH_PROG($@)
++[AC_MSG_CHECKING([for $2])
++_AC_PATH_PROG($@)
++if test -n "$$1"; then
++  AC_MSG_RESULT([$$1])
++else
++  AC_MSG_RESULT([no])
++fi
+ AC_SUBST([$1])dnl
+ ])
+ 

@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An X onscreen display library.
+#  XOSD is a simple library to display shaped text on your X display, like
+#  a TV on-screen display. It also contains an XMMS plugin and a simple
+#  example program that can display system logs overlaid on your desktop.
+#  .
+# URL: http://sourceforge.net/projects/libxosd
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=xosd
+version=2.2.14
+release=1
+source=($mirror_sf/libxosd/xosd-$version.tar.gz)
+
+build()
+{
+  cd xosd-$version
+
+#  sh autogen.sh
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --prefix="$prefix" \
+     --mandir="$prefix/share/man"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

@@ -1,0 +1,29 @@
+# $Id: Pkgfile 424 2008-08-10 01:52:57Z enki $
+#
+# Description: A C++ wrapper for libcurl.
+#  cURLpp is a C++ wrapper for libcurl (curl back-end library), a client-side
+#  URL transfer library that supports FTP, FTPS, HTTP, HTTPS, GOPHER, TELNET,
+#  DICT, FILE, and LDAP. libcurl supports HTTPS certificates, HTTP POST,
+#  HTTP PUT, FTP uploading, and kerberos.
+# URL: http://rrette.com/textpattern/index.php?s=cURLpp
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=curlpp
+version=0.7.2
+release=1
+source=(http://rrette.com/files/curlpp/curlpp-0.7/curlpp-$version.tar.gz)
+
+build()
+{
+  cd curlpp-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

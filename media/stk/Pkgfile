@@ -1,0 +1,94 @@
+# $Id: Pkgfile,v 1.7 2007/05/09 21:03:13 roman Exp $
+#
+# Description: The Synthesis ToolKit in C++ (STK) is a set of open source
+# audio signal processing and algorithmic synthesis classes written in
+# the C++ programming language. STK was designed to facilitate rapid
+# development of music synthesis and audio processing software, with an
+# emphasis on cross-platform functionality, realtime control, ease of use,
+# and educational example code. The Synthesis ToolKit is extremely portable
+# (it's mostly platform-independent C and C++ code), and it's completely
+# user-extensible (all source included, no unusual libraries, and no hidden
+# drivers). We like to think that this increases the chances that our
+# programs will still work in another 5-10 years. In fact, the ToolKit
+# has been working continuously for about 10 years now. STK currently
+# runs with realtime support (audio and MIDI) on Linux, Macintosh OS X,
+# and Windows computer platforms. Generic, non-realtime support has been
+# tested under NeXTStep, Sun, and other platforms and should work with
+# any standard C++ compiler.
+#
+# URL: http://ccrma.stanford.edu/software/stk/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=stk
+version=4.3.1
+release=1
+source=(http://ccrma.stanford.edu/software/stk/release/stk-$version.tar.gz
+        stk-4.2.1-pl1-gnu.patch
+        stk-4.3.1-cxx0x.patch
+        stk-4.3.1-cmake.patch
+        stk-4.3.1-os-realtime.patch
+        stk-4.3.1-dllexport.patch)
+
+build()
+{
+  cd stk-$version
+
+  build_type='cmake_'
+
+#  patch -N -p1 -i $SRC/stk-4.2.1-pl1-gnu.patch
+  patch -N -p1 -i $SRC/stk-4.3.1-cxx0x.patch
+  patch -N -p1 -i $SRC/stk-4.3.1-cmake.patch
+  patch -N -p1 -i $SRC/stk-4.3.1-os-realtime.patch
+
+  #cp -rf $SRC/stk-$version $src/stk-${version}_orig
+
+  #patch -N -p1 -i $SRC/stk-4.3.1-dllexport.patch
+
+  case $build_type in
+    'cmake')
+      cmake \
+         -D CMAKE_INSTALL_PREFIX:PATH="$prefix" \
+         -D CMAKE_VERBOSE_MAKEFILE:BOOL="ON" \
+         .
+
+      make
+      make DESTDIR="$PKG" install
+    ;;
+
+    *)
+#      rm -f install.sh
+#
+#      autoheader --force
+#      libtoolize --force
+#      aclocal --force
+#      autoconf --force
+#      automake -a --foreign --copy --force || true
+
+      ./configure \
+         --prefix="$prefix" \
+         --build="$build" \
+         --host="$host" \
+         --disable-shared \
+         --${static:=enable}-shared
+
+      cd src
+
+      make RAWWAVES="$prefix/share/stk/rawwaves"
+
+      install -d $ROOT/lib
+      install -m 644 libstk.a $ROOT/lib
+
+      install -d $ROOT/include/stk
+      cp -rf ../include/*.h $ROOT/include/stk
+
+      install -d $ROOT/share/doc/stk
+      cp -rvf ../doc/* $ROOT/share/doc/stk
+
+      install -d $ROOT/share/stk
+      cp -rvf ../rawwaves $ROOT/share/stk
+
+      cp -rvf ../projects/* $ROOT/share/stk
+    ;;
+  esac
+}

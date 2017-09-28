@@ -1,0 +1,25 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: File Transfer Protocol (FTP) client applications.
+#  NcFTP Client (also known as NcFTP) is a set of application programs
+#  implementing the File Transfer Protocol (FTP). It offers many ease-of-use
+#  and performance enhancements over the stock ftp client.
+# URL: http://www.ncftp.com/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=ncftp
+version=3.2.0
+release=1
+source=(ftp://ftp.ncftp.com/ncftp/ncftp-$version-src.tar.bz2)
+
+build()
+{
+  cd ncftp-${version}
+  ./configure --prefix="$prefix"
+  make
+
+  install -d $ROOT/bin
+
+  make prefix=$ROOT install
+}

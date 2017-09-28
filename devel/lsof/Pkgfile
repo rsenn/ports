@@ -1,0 +1,42 @@
+# $Id: Pkgfile,v 1.10 2007/05/12 01:09:23 roman Exp $
+#
+# Description: List open files
+#  Lsof is a Unix-specific diagnostic tool. Its name stands for LiSt Open
+#  Files, and it does just that. It lists information about any files that
+#  are open by processes currently running on the system. It can also list
+#  communications open by each process.
+# URL: http://people.freebsd.org/~abe/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=lsof
+version=4.78
+release=1
+#sources=(ftp://lsof.itap.purdue.edu/pub/tools/unix/lsof/lsof_$version.tar.bz2)
+
+# locally stored, because they don't keep old releases on ftp
+source=(http://gd.tuwien.ac.at/utils/admin-tools/lsof/lsof_$version.tar.bz2)
+
+build()
+{
+  cd ${name}_$version
+  tar -xvf lsof_${version}_src.tar
+  cd lsof_${version}_src
+
+  case $target in
+    *linux*)
+      os=linux
+      ;;
+    *freebsd*)
+      os=freebsd
+      ;;
+  esac
+
+  yes n | ./Configure "$os"
+
+  make CC="${CC-cc}" DEBUG="$CFLAGS" #CFGL="-L./lib -llsof"
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/bin
+  install -m 755 lsof $ROOT/bin
+}

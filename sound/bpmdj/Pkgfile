@@ -1,0 +1,38 @@
+# $Id: Pkgfile 424 2008-08-10 01:52:57Z enki $
+#
+# Description: A beat per minute counter integrated into a DJ suite.
+#  BpmDj is a program that can be used by a DJ. It plays MP3 and Ogg
+#  files. It has a fully automatic BPM counter. It can determine the sound
+#  color. It has a full fledged Qt based interface. It will help you manage
+#  a large amount of songs. It can help in creating playlists and has proven
+#  to be very robust. The program also allows offline automatic mixing and
+#  contains a wavelet based beat graph analyzer to visualize audio tracks.
+# URL: http://bpmdj.yellowcouch.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libasound2, libc6, libfftw3-3, libgcc1, libqt4-core, libqt4-gui, libqt4-qt3support, libstdc++6
+
+name=bpmdj
+version=3.6
+release=1
+source=($mirror_sf/bpmdj/bpmdj-$version.source.tgz)
+
+build()
+{
+  cd bpmdj-$version
+
+  mv defines.debian defines
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+
+  install -d $ROOT/bin
+  install -m 755 bpm{count,dj,merge,play} profile-clock $ROOT/bin
+
+  install -d $ROOT/share/doc/bpmdj
+  install -m 644 readme *.txt $ROOT/share/doc/bpmdj
+}

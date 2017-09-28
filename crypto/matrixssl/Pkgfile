@@ -1,0 +1,37 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An embedded SSL implementation for small footprint devices.
+#  PeerSec MatrixSSL is an embedded SSL implementation designed for
+#  small footprint devices and applications requiring low overhead per
+#  connection. The library is less than 50K on disk with cipher suites. It
+#  includes SSL client and SSL server support, session resumption, and
+#  implementations of RSA, 3DES, ARC4, SHA1, and MD5. The source is well
+#  documented and contains portability layers for additional operating
+#  systems, cipher suites, and cryptography providers.
+#  .
+# URL: http://www.peersec.com/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=matrixssl
+version=1.8.6
+release=1
+source=(http://ftp.icm.edu.pl/packages/openpkg/sources/CPY/matrixssl/matrixssl-${version//./-}-open.tgz
+        matrixssl-1.8.6-gmake.patch)
+
+build()
+{
+  cd matrixssl-${version//./-}-open
+
+  patch -N -p1 -i $SRC/matrixssl-1.8.6-gmake.patch
+
+  make
+  make DESTDIR="$PKG" PREFIX="$prefix" install
+
+  install -d $ROOT/share/doc/matrixssl
+  install -m 644 *.txt doc/* $ROOT/share/doc/matrixssl
+
+  cp -rf examples $ROOT/share/doc/matrixssl
+}
+
+# EOF

@@ -1,0 +1,38 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: DJ software for Linux.
+#  xwax allows DJs and turntablists to playback digital audio files
+#  controlled using normal turntables via timecoded vinyl. It handles
+#  needle drops, pitch changes, scratching, spinbacks, and rewinds, making
+#  it a capable tool for beat-mixing and scratch-mixing. It focuses on an
+#  accurate vinyl feel that is efficient, stable, and fast.
+#  .
+# URL: http://www.xwax.co.uk/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=xwax
+version=0.4
+release=1
+source=(http://www.xwax.co.uk/releases/xwax-$version.tar.gz)
+
+build()
+{
+  cd xwax-$version
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+
+  make
+
+  install -d $ROOT/bin
+  install -m 755 xwax $ROOT/bin
+
+  install -d $ROOT/share/doc/xwax
+  install -m 644 COPYING README $ROOT/share/doc/xwax
+}
+
+# EOF

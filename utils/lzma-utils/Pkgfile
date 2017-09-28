@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A commandline LZMA compressor and other utilities.
+#  The LZMA utils package provides Unix utilities implementing LZMA
+#  compression from 7zip. It includes lzmash, a compression tool with an
+#  interface similar to that of gzip and bzip2.
+#  .
+# URL: http://tukaani.org/lzma/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=lzma-utils
+version=4.32.7
+release=1
+source=(http://tukaani.org/lzma/lzma-$version.tar.gz)
+
+build()
+{
+  cd lzma-$version
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

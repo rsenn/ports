@@ -1,0 +1,29 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:42 roman Exp $
+#
+# Description: XML output extension to GCC
+#  There is one open-source C++ parser, the C++ front-end to GCC, which is
+#  currently able to deal with the language in its entirety. The purpose
+#  of the GCC-XML extension is to generate an XML description of a C++
+#  program from GCC's internal representation. Since XML is easy to parse,
+#  other development tools will be able to work with C++ programs without
+#  the burden of a complicated C++ parser.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=gccxml
+version=0.6.0
+release=1
+source=(http://www.gccxml.org/files/v0.6/gccxml-$version.tar.gz
+        gccxml-0.6.0-obstack.patch)
+
+build()
+{
+  cd gccxml-$version
+  patch -N -p1 -i $SRC/gccxml-0.6.0-obstack.patch
+
+  cmake -D CMAKE_INSTALL_PREFIX="$prefix" -G 'Unix Makefiles' .
+
+  make
+  make DESTDIR="$PKG" install
+}

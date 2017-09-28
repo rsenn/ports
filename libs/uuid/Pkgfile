@@ -1,0 +1,40 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Package: libuuid1
+# Description: An  API and CLI for generating Universally Unique Identifiers.
+#  OSSP uuid is an API for ISO C, ISO C++, Perl and PHP and a corresponding
+#  CLI for the generation of DCE 1.1, ISO/IEC 11578:1996, and RFC4122
+#  compliant Universally Unique Identifiers (UUIDs). It supports DCE 1.1
+#  variant UUIDs of version 1 (time and node based), version 3 (name based,
+#  MD5), version 4 (random number based), and version 5 (name based,
+#  SHA-1). UUIDs are 128-bit numbers that are intended to have a high
+#  likelihood of uniqueness over space and time and are computationally
+#  difficult to guess. They are globally unique identifiers that can be
+#  locally generated without contacting a global registration authority.
+# URL: http://www.ossp.org/pkg/lib/uuid/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Split: uuid-dev (uuid.pc)
+# Depends on:
+
+name=uuid
+version=1.6.1
+release=1
+source=(http://mirror.switch.ch/mirror/gentoo/distfiles/uuid-$version.tar.gz)
+
+build()
+{
+  cd uuid-$version
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/uuid
+  install -m 644 AUTHORS BINDINGS ChangeLog HISTORY INSTALL MANIFEST NEWS OVERVIEW PORTING README SEEALSO THANKS TODO USERS $ROOT/share/doc/uuid
+}
+
+# EOF

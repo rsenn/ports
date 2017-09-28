@@ -1,0 +1,24 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=htun
+version=0.9.6
+release=1
+source=(http://htun.runslinux.net/dist/htun-$version.tar.gz)
+
+build()
+{
+  cd htun-$version
+
+  make -C src CC="${CC-cc}" CFLAGS="$CFLAGS"
+
+  install -d $ROOT/sbin
+  install -m 755 src/htund $ROOT/sbin
+
+  install -d $ROOT/share/doc/htun-$version
+  cp -rf COPYING doc/* $ROOT/share/doc/htun-$version/
+}

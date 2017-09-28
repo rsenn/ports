@@ -1,0 +1,53 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: The C library used in the GNU system.
+#  GNU C library (glibc) is one of the most important components of GNU
+#  Hurd and most modern Linux distributions. It is used by almost all C
+#  programs and provides the most essential program interface.
+#  .
+# URL: http://www.gnu.org/software/libc/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=glibc
+version=2.7
+release=1
+source=(ftp://ftp.gnu.org/gnu/glibc/glibc-$version.tar.gz
+        glibc-2.7-size_t-fix.patch
+        glibc-2.7-stack-chk.patch
+        glibc-2.7-fnstsw.patch)
+
+build()
+{
+  srcdir="$SRC/glibc-$version"
+  builddir="$srcdir/build/$host"
+
+  cd $srcdir
+
+  patch -N -p1 -i $SRC/glibc-2.7-size_t-fix.patch
+  patch -N -p1 -i $SRC/glibc-2.7-stack-chk.patch
+  patch -N -p1 -i $SRC/glibc-2.7-fnstsw.patch
+
+  case $prefix in
+    "/usr") sysconfdir="/etc" localstatedir="/var" ;;
+  esac
+
+  rm -rf $builddir && mkdir -p $builddir && cd $builddir
+
+  $srcdir/configure \
+      --prefix="$prefix" \
+      --sysconfdir="${sysconfdir=$prefix/etc}" \
+      --localstatedir="${localstatedir=$prefix/var}" \
+      --disable-profile \
+      --enable-add-ons \
+      --enable-kernel="2.6.0" \
+      --with-binutils="$prefix/bin" \
+      --with-headers="$prefix/include" \
+      --${selinux-without}-selinux \
+      --${gd-without}-gd
+
+  echo "CFLAGS += -march=i486" >configparms
+
+  make
+  make install_root="$PKG" install
+}

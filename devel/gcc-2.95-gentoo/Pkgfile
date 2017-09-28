@@ -1,0 +1,101 @@
+# $Id: Pkgfile,v 1.2 2007/04/22 23:07:53 roman Exp $
+#
+# Description: gcc
+# URL: http://gcc.gnu.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=gcc-2.95-gentoo
+version=2.95.3
+release=1
+source=(http://ftp.gnu.org/gnu/gcc/gcc-$version.tar.gz
+        gcc-2.95.3-rtl-return.patch
+        gcc-2.95.3-pthread-frame.patch
+        gcc-2.95.3-2.95.4-debian.patch
+        http://distfiles.gentoo.org/distfiles/gcc-2.95.3-patches-1.3.tar.bz2)
+
+build()
+{
+#  rm -rf gcc-${version}_orig
+#  cp -rf gcc-$version gcc-${version}_orig
+
+  cd gcc-$version
+
+#  patch -N -p1 -i $SRC/gcc-2.95.3-rtl-return.patch
+  patch -N -p1 -i $SRC/gcc-2.95.3-pthread-frame.patch
+
+  patch -N -p1 -i $SRC/patch/05_all_gcc-2.95.3-no-COPYING-cross-compile.patch
+  patch -N -p1 -i $SRC/patch/06_all_gcc-2.95.3-DESTDIR.patch
+  patch -N -p1 -i $SRC/patch/10_all_new-atexit.patch
+  patch -N -p1 -i $SRC/patch/11_all_gcc34compile.patch
+  patch -N -p1 -i $SRC/patch/20_all_crosstool-arm-linux.patch
+  patch -N -p1 -i $SRC/patch/21_all_crosstool-backport-config.gcc-1.4.patch
+  patch -N -p1 -i $SRC/patch/21_all_crosstool-backport-config.gcc-1.92.patch
+  patch -N -p1 -i $SRC/patch/22_all_crosstool-gcc-2.95.3-trap-posix.patch
+  patch -N -p1 -i $SRC/patch/23_all_crosstool-gcc-pr3106.patch
+  patch -N -p1 -i $SRC/patch/24_all_crosstool-threads_snafu.patch
+  patch -N -p1 -i $SRC/patch/40_all_debian-arm-const-double.patch
+  patch -N -p1 -i $SRC/patch/40_all_debian-arm-output-int.patch
+  patch -N -p1 -i $SRC/patch/41_all_debian-gcc-core-2.95.2-avr-1.1.patch
+
+#  patch -N -p1 -i $SRC/patch/10_alpha_new-atexit.patch
+#  patch -N -p1 -i $SRC/patch/12_all_dont-make-libdirs.patch
+#  patch -N -p1 -i $SRC/patch/40_all_debian-arm-libgcc-umodsi3.patch
+#  patch -N -p1 -i $SRC/patch/40_all_debian-arm-profile.patch
+#  patch -N -p1 -i $SRC/patch/42_all_debian-gcc-m68k-pic.patch
+#  patch -N -p1 -i $SRC/patch/42_all_debian-m68k-md.patch
+#  patch -N -p1 -i $SRC/patch/42_all_debian-m68k-reload.patch
+
+  sh $SRC/patch/43_all_debian-strength-red.patch -patch
+
+  # Determine system include dir...
+  set -- $({ echo '#include <stdlib.h>' | "$target-${CC##*-}" -E -M -; } || { echo '#include <stdlib.h>' | ${CC-cc} -E -M -; })
+
+  if test -f "$2"
+  then
+    export GCC_TARGET_HEADERS="${2%/*}"
+    export GCC_TARGET_PREFIX="${GCC_TARGET_HEADERS%/*}"
+  else
+    export GCC_TARGET_HEADERS="$prefix/include"
+    export GCC_TARGET_PREFIX="${GCC_TARGET_HEADERS%/*}"
+  fi
+
+  find -type f -print0 | xargs -0 sed -i \
+      -e "s:usr/include:${GCC_TARGET_HEADERS}:g" \
+      -e "s:gcc-lib:gcc:g"
+
+#  set -- $prefix/bin/gcc-3.*
+#  test -f "$1" && export CC="${1##*/}"
+
+  # now configure in a separate build tree
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       ${target+--target="$target"} \
+       --prefix="$prefix" \
+       --disable-nls \
+       --without-included-gettext \
+       --enable-threads="posix" \
+       --with-tls \
+       --disable-rpath \
+       --disable-shared \
+       --${static:=enable}-shared \
+       --enable-languages="c" \
+       --with-system-zlib \
+       --with-system-libunwind \
+       --with-ld="$prefix/bin/$target-ld" \
+       --with-as="$prefix/bin/$target-as" \
+       --with-local-prefix="GCC_TARGET_PREFIX" \
+       $args
+
+  make prefix="$prefix"
+  make prefix="$ROOT" install
+
+  rm -rf $ROOT/{info,man,$host,include}
+  rm -f $ROOT/lib/libiberty.a
+
+  (cd $ROOT/bin
+   for bin in *; do
+     mv -v $bin $bin-${version%.*}
+   done)
+}

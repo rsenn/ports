@@ -1,0 +1,43 @@
+# $Id: Pkgfile,v 1.10 2007/04/22 23:07:57 roman Exp $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=shadow
+version=4.1.2.2
+release=1
+source=(ftp://pkg-shadow.alioth.debian.org/pub/pkg-shadow/shadow-4.1.2.2.tar.gz
+        shadow-4.1.2.2-int-uidgid.patch)
+
+build()
+{
+  cd shadow-$version
+
+  patch -N -p1 -i $SRC/shadow-4.1.2.2-int-uidgid.patch
+
+  case $prefix in
+    "/usr") sysconfdir="/etc" localstatedir="/var" ;;
+  esac
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --sysconfdir="${sysconfdir=$prefix/etc}" \
+       --localstatedir="${localstatedir=$prefix/var}" \
+       --${static:=enable}-static \
+       --${shared:=enable}-shared \
+       --without-audit
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $PKG/${localstatedir="$prefix/var"}/log
+}
+
+postinst()
+{
+  touch $prefix/var/log/lastlog
+}

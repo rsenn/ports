@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A C++ library for visualizing mathematical vectors.
+#  Libgvectors is a C++ library for visualizing three dimensional
+#  mathematical vectors, providing three fundamental classes for achieving
+#  its purpose. It makes as few assumptions as possible about the graphics
+#  library used to draw vectors on a screen and is not bound to any
+#  particular graphics library.
+# URL: http://www.guengel.ch/myapps/libgvectors
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libgvectors
+version=0.1
+release=1
+source=(http://www.guengel.ch/myapps/libgvectors/downloads/libgvectors-$version.tar.bz2)
+
+build()
+{
+  cd libgvectors-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

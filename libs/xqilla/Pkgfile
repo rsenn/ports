@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+# Package: libxqilla
+# Description: XQuery and XPath 2.0 command line interpreter
+#  XQilla is a XQuery and XPath 2 library and command line utility written
+#  in C++, implemented on top of the Xerces-C library. It is made available
+#  under the terms of the Apache Lincese v2.
+#  This package contains the command line xqilla utility
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libgcc1, libstdc++6, libtidy-0.99-0, libxerces28
+
+name=XQilla
+version=2.1.2
+release=1
+source=($mirror_sf/xqilla/XQilla-$version.tar.gz)
+
+build()
+{
+  cd XQilla-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix" \
+       --with-xerces="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

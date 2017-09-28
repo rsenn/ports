@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: C++ Wrapper for pango (shared libraries)
+#  Pangomm is a C++ wrapper for the pango library. Originally part of gtkmm,
+#  pangomm provides convenient C++ interfaces for handling both the layout
+#  and internationalization of text in graphical applications.
+#  This package contains the shared library.
+# URL: http://gtkmm.org
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=pangomm
+version=2.14.1
+release=1
+source=(http://ftp.acc.umu.se/pub/gnome/sources/pangomm/2.14/pangomm-$version.tar.bz2)
+
+build()
+{
+  cd pangomm-$version
+
+  #./autogen.sh
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

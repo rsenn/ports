@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Software that produces a 3-dimensional model of a knitting pattern.
+#  Knitter produces a 3-dimensional model of a knitting pattern. It supports
+#  KnitML, as well as a native language similar to that of traditional
+#  knitting patterns. It uses wxWidgets as a GUI framework and is available
+#  for Windows, Unix, and OS X.
+#  .
+# URL: http://knitter.sourceforge.net
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=knitter
+version=0.4.99
+release=1
+source=(http://downloads.sourceforge.net/knitter/knitter-$version.tar.bz2)
+
+build()
+{
+  cd knitter-$version
+
+  #./autogen.sh
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

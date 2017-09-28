@@ -1,0 +1,47 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A software framework for conducting artificial evolution experiments.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=teem
+version=1.0
+release=1
+source=(http://lis.epfl.ch/resources/download/teem-$version.tar.gz
+        teem-1.0-cstring.patch
+        teem-1.0-ffmpeg.patch
+        teem-1.0-ft2-internal.patch
+        teem-1.0-fixes.patch)
+
+build() 
+{
+  cd teem-$version
+
+  patch -p1 -i $SRC/teem-1.0-cstring.patch
+  patch -p1 -i $SRC/teem-1.0-ffmpeg.patch
+  patch -p1 -i $SRC/teem-1.0-ft2-internal.patch
+  patch -p1 -i $SRC/teem-1.0-fixes.patch
+ 
+  sh autogen.sh
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+  
+  make
+  make DESTDIR="$PKG" install
+
+  doxygen
+
+  install -d $ROOT/share/teem
+  install -m 644 settings/*.cfg $ROOT/share/teem
+
+  install -d $ROOT/share/doc/teem
+  install -m 644 README AUTHORS INSTALL LICENSE Doxyfile $ROOT/share/doc/teem
+
+  cp -rf doc/html $ROOT/share/doc/teem
+}
+
+# EOF

@@ -1,0 +1,107 @@
+diff -ru vsound-dev-0.2.7_orig/Makefile vsound-dev-0.2.7/Makefile
+--- vsound-dev-0.2.7_orig/Makefile	2008-11-10 17:41:03.000000000 +0100
++++ vsound-dev-0.2.7/Makefile	2008-11-10 17:43:44.000000000 +0100
+@@ -3,6 +3,7 @@
+ LD = g++
+ AR = ar -rus
+ DEP = g++ -MM
++LIBTOOL = libtool --tag=CXX --silent
+ 
+ #	$Id: Makefile,v 1.7 2004/11/03 13:16:48 olethros Exp $	
+ 
+@@ -18,8 +19,8 @@
+ DBG_OPT=OPT
+ 
+ # Add -pg flag for profiling
+-CFLAGS_DBG = -g -Wall -pedantic
+-CFLAGS_OPT = -g -O3 -Wall -pedantic #-pg
++CFLAGS_DBG = -g3 -O0
++CFLAGS_OPT = -g -O3 #-pg
+ CFLAGS=$(CFLAGS_$(DBG_OPT))
+ 
+ # DIRECTORIES - You might want to change those
+@@ -34,29 +35,67 @@
+ LIB_OPT_DIR=$(LIB_DBG)
+ 
+ 
++PREFIX = /usr
+ VSOUND_DIR = .
+ BINDIR = $(VSOUND_DIR)/bin
+ LIBS_DIR = $(VSOUND_DIR)/$(LIB_DIR_NAME)
+ OBJS_DIR = $(VSOUND_DIR)/$(OBJ_DIR_NAME)
+-LIBVSOUND = $(LIBS_DIR)/libvsound.a
+-LIBVSOUNDXX = $(LIBS_DIR)/libvsound++.a
+-LIBS = -L$(LIBS_DIR) -lvsound -lsndfile -lfftw3
++LIBVSOUND = $(LIBS_DIR)/libvsound.la
++LIBVSOUNDXX = $(LIBS_DIR)/libvsound++.la
++LDADD = -lsndfile -lfftw3
++LIBS = -L$(LIBS_DIR) -lvsound 
+ # -lnjamd -lefence - add either for debugging
+ 
++vpath .:$(BINDIR):$(LIBS_DIR):$(OBJS_DIR)
++
+ C_FILES := $(wildcard *.c)
+-OBJS := $(foreach f,$(C_FILES),$(OBJS_DIR)/$(patsubst %.c,%.o,$(f)))
++LIB_SOURCES := ANN.c BioNeuron.c DiscreteSignal.c Discretiser.c Distribution.c Effects.c EntropyEstimates.c GeometryObjectIF.c Graph.c HMM.c HeadTransferFunction.c ISOLearning.c LinearPredictor.c LinkedList.c List.c MIEstimate.c MarginDistribution.c MarkovChain.c MathFunctions.c MemoryProcess.c MsgPort.c PhysicalModel.c PredictiveStateRepresentation.c Predictor.c PredictorCluster.c SampleBuffer.c SegmentedSample.c SparseVector.c StateEmissions.c TimeStamp.c TimedStreams.c Vector.c VibratingString.c Windowing.c WordCounter.c ann_policy.c datafile.c debug.c letter2num.c modulator.c pca.c policy.c psr.c string_utils.c util.c vsound2txt.c
++
++DEFUNCT_LIB_SOURCES := \
++  SFX.c
++
++DEFUNCT_BIN_SOURCES := \
+ 
+-all: $(LIBVSOUND)
+ 
+-$(LIBVSOUND): $(OBJS)
++BIN_SOURCES := \
++ FindCommonWords.c \
++	LinearPredictor_test.c \
++	LinkedList_Test.c \
++	LockPitch.c \
++	MakeMemorySeq.c \
++	MakeMultiSeq.c \
++	PredictorClassifier.c \
++	TestANN.c \
++	TestClusterPredictor.c \
++	TestISOLearning.c TestPredictor.c VSound.c alignbinseq.c ann_classifier.c boost_analysis.c classify_rl_sequence.c crossbinseq.c make_cool_sound.c mkseq.c replace_letters.c rl_ann_testbench.c rl_testbench.c seq2multi.c sequence_classifier.c sequence_targets2HTK.c speech_cluster.c str2bin.c tag2num.c test_ANN.c test_Distribution.c test_Entropy.c test_EntropyEstimate.c test_Graph.c test_HMM.c test_MDL.c test_MIEstimate.c test_PSR.c test_Ranking.c test_RemoveClipping.c test_SIMOBuffer.c test_agents.c test_bioneuron.c test_compression.c test_continuous_actions.c test_cryptoanalysis.c test_distribution.c test_exhaust.c test_filter.c test_load_wav.c test_mackeyglass.c test_msgport.c test_physical_estimation.c test_pole_task.c test_random.c test_seg.c test_vector_speed.c test_window.c torch2bin.c train_filter.c vsound2txt.c
++
++OBJS := $(foreach f,$(C_FILES),$(OBJS_DIR)/$(patsubst %.c,%.lo,$(f)))
++LIB_OBJS := $(foreach f,$(LIB_SOURCES),$(OBJS_DIR)/$(patsubst %.c,%.lo,$(f)))
++BIN_OBJS := $(foreach f,$(BIN_SOURCES),$(OBJS_DIR)/$(patsubst %.c,%.lo,$(f)))
++BIN_PROGRAMS := $(foreach f,$(BIN_SOURCES),$(BINDIR)/$(patsubst %.c,%,$(f)))
++
++all: $(LIBVSOUND) $(BIN_PROGRAMS)
++
++install:
++	mkdir -p $(DESTDIR)$(PREFIX)/include/vsound
++	cp *.h $(DESTDIR)$(PREFIX)/include/vsound
++	mkdir -p $(DESTDIR)$(PREFIX)/lib
++	$(LIBTOOL) --mode=install cp lib/libvsound.la $(DESTDIR)$(PREFIX)/lib
++	mkdir -p $(DESTDIR)$(PREFIX)/share/doc/vsound
++	cp ChangeLog README $(DESTDIR)$(PREFIX)/share/doc/vsound
++
++$(LIBVSOUND): $(LIB_OBJS)
+ 	@echo "Archiving..."
+ 	@mkdir -p $(LIBS_DIR)
+-	@$(AR) $(LIBVSOUND) $(OBJS)
++	$(LIBTOOL) --mode=link $(CC) $(CFLAGS) -rpath $(PREFIX)/lib -version-number 0:2:7 -o $@ $^ $(LDADD)
++
++$(BINDIR)/%: $(OBJS_DIR)/%.lo
++	$(LIBTOOL) --mode=link $(CC) $(CFLAGS) -o $@ $^ $(LIBS)
+ 
+-$(OBJS_DIR)/%.o: %.c
++$(OBJS_DIR)/%.lo: %.c
+ 	@mkdir -p $(OBJS_DIR)
+-	@echo $<
+-	@$(CC) $(CFLAGS) $(INC) -o $@ -c $<
++#	@echo $<
++	$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) $(INC) -o $@ -c $<
+ 
+ distclean:
+ 	@\rm -f .deps_*
+@@ -87,4 +126,4 @@
+ %: %.c
+ 	@mkdir -p $(BINDIR)
+ 	${MAKE}
+-	$(CC) $(CFLAGS) $(INCS) -o $(BINDIR)/$@ $< $(LIBS)
++	$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) $(INCS) -o $(BINDIR)/$@ $< $(LIBS)
+diff -ru vsound-dev-0.2.7_orig/Makefile~ vsound-dev-0.2.7/Makefile~

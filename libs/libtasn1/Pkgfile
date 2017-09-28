@@ -1,0 +1,41 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Manage ASN.1 structures
+#  Manage ASN1 (Abstract Syntax Notation One) structures.
+#  The main features of this library are:
+#    * on-line ASN1 structure management that doesn't require any C code
+#      file generation.
+#    * off-line ASN1 structure management with C code file generation
+#      containing an array.
+#    * DER (Distinguish Encoding Rules) encoding
+#    * no limits for INTEGER and ENUMERATED values
+#  .
+# URL: http://redmine.josefsson.org/wiki/libtasn1/Libtasn1
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libtasn1
+version=1.7
+release=1
+source=(ftp://ftp.gnu.org/gnu/gnutls/libtasn1-$version.tar.gz)
+
+build()
+{
+  cd libtasn1-$version
+
+  rm m4/{libtool,lt*}.m4
+
+  libtoolize --force --copy
+  aclocal --force -I m4 -I gl/m4
+  automake --force --copy --foreign --add-missing
+  aclocal --force -I m4 -I gl/m4
+  autoconf --force
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

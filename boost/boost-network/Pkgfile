@@ -1,0 +1,29 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=boost-network
+version=vault
+release=1
+source=(network.zip)
+
+build()
+{
+  cd boost_network
+
+  export BOOST_BUILD_PATH="$prefix/share/boost-build"
+
+  install -d $ROOT/include
+  cp -rf boost $ROOT/include
+
+  install -d $ROOT/share/doc/boost-network
+#  install -m 644 network	.pdf $ROOT/share/doc/boost-network
+
+  rm -rf libs/network	/test
+
+  cp -rf libs/network	 $ROOT/share/doc/boost-network/html
+#  (cd libs/network	/test && bjam)
+}

@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Network diagnostic tool
+#  mtr combines the functionality of the 'traceroute' and 'ping' programs
+#  in a single network diagnostic tool. It features a console as well as
+#  a GTK based interface.
+#  .
+# URL: http://www.bitwizard.nl/mtr/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=mtr
+version=0.75
+release=1
+source=(ftp://ftp.bitwizard.nl/mtr/mtr-$version.tar.gz)
+
+build()
+{
+  cd mtr-$version
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/mtr
+  install -m 644 AUTHORS README COPYING SECURITY FORMATS INSTALL TODO ChangeLog NEWS $ROOT/share/doc/mtr
+}
+
+# EOF

@@ -1,0 +1,12 @@
+diff -r -u nbd-2.9.6_orig/nbd-server.c nbd-2.9.6/nbd-server.c
+--- nbd-2.9.6_orig/nbd-server.c	2007-07-29 15:29:07.000000000 +0200
++++ nbd-2.9.6/nbd-server.c	2007-07-29 15:31:50.000000000 +0200
+@@ -1543,7 +1543,7 @@
+ 	serve=cmdline(argc, argv);
+ 	servers = parse_cfile(config_file_pos, &err);
+ 	if(!servers || !servers->len) {
+-		g_warning("Could not parse config file: %s", err->message);
++		g_warning("Could not parse config file: %s", (err ? err->message : strerror(errno)));
+ 	}
+ 	if(serve) {
+ 		g_array_append_val(servers, *serve);

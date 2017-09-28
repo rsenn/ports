@@ -1,0 +1,14 @@
+--- openssl-0.9.8b_orig/Makefile.shared	2006-01-25 16:55:52.000000000 +0100
++++ openssl-0.9.8b/Makefile.shared	2006-01-25 16:57:44.000000000 +0100
+@@ -149,9 +149,10 @@
+ DO_GNU_SO=$(CALC_VERSIONS); \
+ 	SHLIB=lib$(LIBNAME).so; \
+ 	SHLIB_SUFFIX=; \
++	SHLIB_NAME=lib$(LIBNAME).so.0; \
+ 	ALLSYMSFLAGS='-Wl,--whole-archive'; \
+ 	NOALLSYMSFLAGS='-Wl,--no-whole-archive'; \
+-	SHAREDFLAGS="$(CFLAGS) $(SHARED_LDFLAGS) -shared -Wl,-Bsymbolic -Wl,-soname=$$SHLIB$$SHLIB_SOVER$$SHLIB_SUFFIX"
++	SHAREDFLAGS="$(CFLAGS) $(SHARED_LDFLAGS) -shared -Wl,-Bsymbolic -Wl,-soname=$$SHLIB_NAME"
+ 
+ DO_GNU_APP=LDFLAGS="$(CFLAGS) -Wl,-rpath,$(LIBRPATH)"
+ 

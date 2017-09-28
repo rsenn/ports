@@ -1,0 +1,35 @@
+# $Id: Pkgfile,v 1.7 2007/05/09 21:03:13 roman Exp $
+#
+# Description: Real-time MIDI software synthesizer
+#  Fluidsynth is a real-time midi synthesizer based on the soundfont2
+#  specifications. It can be used to render MIDI input or MIDI files to
+#  audio. The MIDI events are read from a MIDI device. The sound is rendered
+#  in real-time to the sound output device.
+# URL: http://fluidsynth.resonance.org/trac
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=fluidsynth
+version=1.0.8
+release=1
+source=(http://download.savannah.gnu.org/releases/fluid/fluidsynth-${version}a.tar.gz)
+
+build()
+{
+  cd fluidsynth-$version
+
+  libtoolize --copy --force
+  aclocal --force
+  autoconf --force
+
+  ./configure \
+      --prefix="$prefix" \
+      --build="$build" \
+      --host="$host" \
+      --${shared:=enable}-shared \
+      --${static:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+}
+

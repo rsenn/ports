@@ -1,0 +1,40 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Numerical array class.
+#  NArray is an n-dimensional numerical array class. 
+#  Data types: integer/float/complex/Ruby object. 
+#  Methods: array manipulation including multi-dimensional slicing, 
+#  fast arithmetic/matrix operations, etc.
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=narray
+version=0.5.9p4
+release=1
+source=($mirror_rubyforge/narray/narray-$version.tar.gz)
+
+build()
+{
+  cd narray-$version
+
+  IFS="$IFS[]"
+  set `ruby --version`
+  eval RUBYARCH="\${$#}"
+
+  RUBYVERSION="$2"
+  RUBYLIBDIR="$prefix/lib/ruby/${RUBYVERSION%.*}"
+
+  ruby extconf.rb
+
+  make
+  make \
+      exec_prefix="$prefix" \
+      DESTDIR="$PKG" \
+      RUBYLIBDIR="$PKG/$RUBYLIBDIR" \
+      RUBYARCHDIR="$PKG/$RUBYLIBDIR/$RUBYARCH" \
+    install
+
+  install -d $ROOT/share/doc/narray
+  install -m 644 MANIFEST ChangeLog $ROOT/share/doc/narray
+}

@@ -1,0 +1,43 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: General network support and an interprocess setting access library.
+#  Ishtar is a general network support and an interprocess setting access
+#  library. Ishtar is composed of three differents modules. This modules is
+#  libishtarsettings. Built upon libishtarservices, it provides a special
+#  type of C++ variables: * whose initial values are read from a config
+#  file. * that are accessible through the network using Ishtar services
+#  protocol (see libishtarservices) Those variables can thus be modified
+#  using any Ishtar client.
+#  .
+# URL: http://lis.epfl.ch/resources/download/doc1.0/libishtarsettings/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=libishtarsettings
+version=1.0
+release=1
+source=(http://lis.epfl.ch/resources/download/libishtarsettings-$version.tar.gz
+        libishtarsettings-1.0-cstring.patch)
+
+build()
+{
+  cd libishtarsettings-$version
+
+  patch -p1 -i $SRC/libishtarsettings-1.0-cstring.patch
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/libishtarsettings
+  install -m 644 README AUTHORS INSTALL LICENSE Doxyfile $ROOT/share/doc/libishtarsettings
+
+  install -d $ROOT/share/doc/libishtarsettings/examples
+  install -m 644 *.cpp examples/settings.txt examples/advancedsettings.txt $ROOT/share/doc/libishtarsettings/examples
+}
+
+# EOF

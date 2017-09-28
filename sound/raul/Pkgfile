@@ -1,0 +1,36 @@
+# $Id: Pkgfile 424 2008-08-10 01:52:57Z enki $
+#
+# Description: Realtime audio utility library
+# Raul is a C++ utility library primarily aimed at audio/musical
+# applications.
+#
+# It is used by Ingen, Patchage, and Machina.
+#
+# URL: http://wiki.drobilla.net/Raul
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libasound2, libc6, libgcc1, libglib2.0-0, libglibmm-2.4-1c2a, libjack0, liblash2, libreadline5, libsigc++-2.0-0c2a, libstdc++6, libuuid1
+name=raul
+version=0.5.1
+release=1
+source=(http://download.drobilla.net/raul-${version#*svn}.tar.gz)
+
+build()
+{
+  cd raul-${version#*svn}
+
+  libtoolize --force --copy
+  aclocal --force
+  autoheader --force
+  automake --force --copy --foreign --add-missing
+  aclocal --force
+  autoconf --force
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

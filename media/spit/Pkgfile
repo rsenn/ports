@@ -1,0 +1,25 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description:  Spit is a graphical picture indexing tool. It can be used to manage pictures, and generate HTML pages for putting your pictures online. It is designed for user-friendliness, portability and extensibility. It allows quick  easy ordering, editing and adding captions for pictures.
+# URL: http://spit.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=spit
+version=0.3.1
+release=1
+source=($mirror_sf/spit/spit-$version.tar.gz)
+
+build()
+{
+  cd spit-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

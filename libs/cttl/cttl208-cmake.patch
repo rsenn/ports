@@ -1,0 +1,171 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+new file mode 100644
+index 0000000..a29c12c
+--- /dev/null
++++ b/CMakeLists.txt
+@@ -0,0 +1,16 @@
++project(cttl20)
++
++cmake_minimum_required(VERSION 2.6)
++
++option(BUILD_EXAMPLES "Build the examples" ON)
++option(BUILD_TESTS "Build the tests" ON)
++
++configure_file(cttl20.pc.in cttl20.pc @ONLY)
++
++install(FILES cttl20.pc DESTINATION lib/pkgconfig)
++
++add_subdirectory(cttl)
++add_subdirectory(example)
++add_subdirectory(lambda)
++add_subdirectory(test)
++add_subdirectory(utils)
+diff --git a/cttl/CMakeLists.txt b/cttl/CMakeLists.txt
+new file mode 100644
+index 0000000..8ac1483
+--- /dev/null
++++ b/cttl/CMakeLists.txt
+@@ -0,0 +1,3 @@
++set(CTTL_HEADERS const_edge.h coreutils.h cttl.h edge.h edge_functors.h input.h mingw_specific.h node.h node_functors.h policy.h xtl_base.h xtl_bitflags.h xtl_container.h xtl_container_impl.h xtl_doxypages.h xtl_edge_trait.h xtl_identity_functors.h xtl_metaphor.h xtl_op.h xtl_op_impl.h xtl_op_speclzd.h xtl_primary.h xtl_quote.h xtl_quote_speclzd.h xtl_quote_sym.h xtl_region_map.h xtl_sym.h xtl_trace.h)
++
++install(FILES ${CTTL_HEADERS} DESTINATION include/${PROJECT_NAME}/cttl)
+diff --git a/cttl/coreutils.h b/cttl/coreutils.h
+index 1e41038..738cf9e 100644
+--- a/cttl/coreutils.h
++++ b/cttl/coreutils.h
+@@ -37,6 +37,7 @@
+ 
+ #include <cassert>
+ #include <algorithm>
++#include <cctype>
+ 
+ namespace cttl {
+ 
+diff --git a/cttl/cttl.h b/cttl/cttl.h
+index 67ee4f4..109ef7a 100644
+--- a/cttl/cttl.h
++++ b/cttl/cttl.h
+@@ -65,6 +65,7 @@
+ #define CTTL_STD_CIN_BUFFER_SIZE 255
+ 
+ #include <cassert>
++#include <string>
+ #include "edge.h"
+ #include "mingw_specific.h"
+ #include "xtl_primary.h"
+diff --git a/cttl20.pc.in b/cttl20.pc.in
+new file mode 100644
+index 0000000..c196aac
+--- /dev/null
++++ b/cttl20.pc.in
+@@ -0,0 +1,9 @@
++prefix=@CMAKE_INSTALL_PREFIX@
++exec_prefix=${prefix}
++includedir=${prefix}/include/cttl20
++
++Name: cttl20
++Description: A C++ parser generator library
++Version: 208
++Cflags: -I${includedir}
++
+diff --git a/example/CMakeLists.txt b/example/CMakeLists.txt
+new file mode 100644
+index 0000000..cc2a95b
+--- /dev/null
++++ b/example/CMakeLists.txt
+@@ -0,0 +1,44 @@
++include_directories(${CMAKE_CURRENT_SOURCE_DIR}/..)
++
++set(EXAMPLES 
++    Z
++    action_handler
++#    arithmetics
++#    arithmetics_traced
++    client_regions
++    cpp_comment_strip
++    csv2xml
++#    edge_functors
++    edge_sort
++    follow_whitespace
++    functor
++#    grammar
++    gumus
++    hello_world
++    input
++    java_lexer
++    line_navigate
++    line_parser
++    mutable_universe
++    node_edge_swap
++    node_find_class
++#    node_functors
++    number2words
++    offset2line
++    partition_file
++    rules
++    runtime_match
++    search_replace
++    string_set_lexeme
++    text2array
++#    word_count
++    xtl_bitflags
++    yellow_taxi
++)
++
++if(BUILD_EXAMPLES)
++  foreach(EXAMPLE ${EXAMPLES})
++    add_executable("${EXAMPLE}" "${EXAMPLE}.cpp")
++  endforeach(EXAMPLE)
++endif(BUILD_EXAMPLES)
++
+diff --git a/lambda/CMakeLists.txt b/lambda/CMakeLists.txt
+new file mode 100644
+index 0000000..f5b855a
+--- /dev/null
++++ b/lambda/CMakeLists.txt
+@@ -0,0 +1,3 @@
++set(LAMBDA_HEADERS lambda.h xst_action_helpers.h xst_action_helpers_traced.h xst_assignment_adaptors.h xst_base.h xst_binary_adaptor.h xst_const_scalar.h xst_deposit_adaptor.h xst_dictionary_translator.h xst_edge_translator.h xst_helpers.h xst_instruction_traits.h xst_instructions.h xst_iterator_writer.h xst_lambda.h xst_literal_translator.h xst_member_action.h xst_member_action_alias.h xst_member_alias_bitset.h xst_member_noarg_action.h xst_member_noarg_void.h xst_member_void.h xst_operator_adaptors.h xst_operator_functions.h xst_operator_traits.h xst_pair.h xst_scalar.h xst_sequence_translator.h xst_stack.h xst_static_action.h xst_static_noarg_action.h xst_static_noarg_void.h xst_static_void.h xst_storage_adaptor.h xst_subscript_adaptors.h xst_traced_action_base.h xst_translator.h xst_unary_adaptor.h)
++
++install(FILES ${LAMBDA_HEADERS} DESTINATION include/${PROJECT_NAME}/lambda)
+diff --git a/test/CMakeLists.txt b/test/CMakeLists.txt
+new file mode 100644
+index 0000000..9215a05
+--- /dev/null
++++ b/test/CMakeLists.txt
+@@ -0,0 +1,15 @@
++include_directories(${CMAKE_CURRENT_SOURCE_DIR}/..)
++
++set(TESTS 
++    lambda_smoke_alias
++    lambda_smoke_test
++    lexeme_smoke_test
++    wchar_lexeme_smoke_test
++)
++
++if(BUILD_TESTS)
++  foreach(TEST ${TESTS})
++    add_executable("${TEST}" "${TEST}.cpp")
++  endforeach(TEST)
++endif(BUILD_TESTS)
++
+diff --git a/utils/CMakeLists.txt b/utils/CMakeLists.txt
+new file mode 100644
+index 0000000..8af1b00
+--- /dev/null
++++ b/utils/CMakeLists.txt
+@@ -0,0 +1,3 @@
++set(UTILS_HEADERS fileio.h inode.h inode_reader.h inode_writer.h itos.h offset_stack_guard.h pipe_input.h timeutils.h win32_specific.h)
++
++install(FILES ${UTILS_HEADERS} DESTINATION include/${PROJECT_NAME}/utils)
+diff --git a/utils/timeutils.h b/utils/timeutils.h
+index 9a68d2a..28f3276 100644
+--- a/utils/timeutils.h
++++ b/utils/timeutils.h
+@@ -42,6 +42,7 @@
+ 
+ #include <ctime>
+ #include <string>
++#include <cstring>
+ 
+ namespace cttl {
+ 

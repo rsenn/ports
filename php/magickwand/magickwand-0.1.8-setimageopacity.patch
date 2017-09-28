@@ -1,0 +1,65 @@
+diff -ru -ru magickwand_orig/magickwand.c magickwand/magickwand.c
+--- magickwand_orig/magickwand.c	2006-03-30 17:06:12.000000000 +0200
++++ magickwand/magickwand.c	2006-03-30 17:11:30.000000000 +0200
+@@ -1065,6 +1065,7 @@
+ 	ZEND_FE( magicksetimageinterlacescheme, NULL )
+ 	ZEND_FE( magicksetimageiterations, NULL )
+ 	ZEND_FE( magicksetimagemattecolor, NULL )
++	ZEND_FE( magicksetimageopacity, NULL )
+ 	ZEND_FE( magicksetimageoption, NULL )
+ 
+ 	ZEND_FE( magicksetimagepage, NULL )
+@@ -8523,6 +8524,24 @@
+ }
+ /* }}} */
+ 
++/* {{{ proto bool MagickSetImageOpacity( MagickWand mgck_wnd, float opacity )
++*/
++ZEND_FUNCTION( magicksetimageopacity )
++{
++	MW_PRINT_DEBUG_INFO
++
++	MagickWand *mgck_wnd;
++	zval *mgck_wnd_rsrc_zvl_p;
++	double opacity;
++
++	MW_GET_2_ARG( "rd", &mgck_wnd_rsrc_zvl_p, &opacity );
++
++	MW_GET_POINTER_FROM_RSRC( MagickWand, mgck_wnd, &mgck_wnd_rsrc_zvl_p );
++
++	MW_BOOL_FUNC_RETVAL_BOOL( MagickSetImageOpacity( mgck_wnd, opacity ) );
++}
++/* }}} */
++
+ /* {{{ proto bool MagickSetImageOption( MagickWand mgck_wnd, string format, string key, string value )
+ */
+ ZEND_FUNCTION( magicksetimageoption )
+diff -ru -ru magickwand_orig/magickwand.h magickwand/magickwand.h
+--- magickwand_orig/magickwand.h	2006-03-30 17:38:24.000000000 +0200
++++ magickwand/magickwand.h	2006-03-30 17:38:32.000000000 +0200
+@@ -502,6 +502,7 @@
+ 	ZEND_FUNCTION( magicksetimageinterlacescheme );
+ 	ZEND_FUNCTION( magicksetimageiterations );
+ 	ZEND_FUNCTION( magicksetimagemattecolor );
++	ZEND_FUNCTION( magicksetimageopacity );
+ 	ZEND_FUNCTION( magicksetimageoption );
+ 
+ 	ZEND_FUNCTION( magicksetimagepage );
+diff -ru -ru magickwand_orig/magickwand.c magickwand/magickwand.c
+--- magickwand_orig/magickwand.c	2006-04-03 17:49:25.000000000 +0200
++++ magickwand/magickwand.c	2006-04-03 17:53:47.000000000 +0200
+@@ -8538,7 +8538,13 @@
+ 
+ 	MW_GET_POINTER_FROM_RSRC( MagickWand, mgck_wnd, &mgck_wnd_rsrc_zvl_p );
+ 
+-	MW_BOOL_FUNC_RETVAL_BOOL( MagickSetImageOpacity( mgck_wnd, opacity ) );
++  /* UGLY, but like this we don't need to change imagemagick itself:
++   * 
++   * Call a libMagick method directly, rather than using Wand.
++   */
++  SetImageOpacity( (mgck_wnd ? mgck_wnd->images : NULL), opacity );
++    
++  RETVAL_TRUE
+ }
+ /* }}} */
+ 

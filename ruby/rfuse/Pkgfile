@@ -1,0 +1,39 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: FUSE bindings for ruby
+#  RFUSE implements a ruby interface for FUSE. So you can implement
+#  a Filesystem in Ruby. Most of the callbacks FUSE provide are
+#  implemented. The only drawback is the lack of a multithreaded mainloop.
+#  .
+# URL: http://rubyforge.org/projects/rfuse/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=rfuse
+version=0.1
+release=1
+source=(http://rubyforge.org/frs/download.php/6830/rfuse-$version.tar.bz2)
+
+build()
+{
+  cd rfuse
+
+  make -C src CC="${CC-gcc} ${CFLAGS--g -O2}"
+
+  IFS="$IFS[]"
+  set `ruby --version`
+
+  RUBYVERSION="$2"
+  eval RUBYARCH="\${$#}"
+
+  RUBYLIBDIR="$prefix/lib/ruby/${RUBYVERSION%.*}"
+
+  install -d $PKG/$RUBYLIBDIR/$RUBYARCH
+  install -m 644 src/rfuse.so $PKG/$RUBYLIBDIR/$RUBYARCH
+
+  install -d $ROOT/share/doc/rfuse
+  install -m 644 doc/COPYING.LIB doc/THANKS.txt doc/COPYING README.txt NEWS.txt TODO.txt $ROOT/share/doc/rfuse
+  install -m 755 example/test-ruby.rb $ROOT/share/doc/rfuse/example.rb
+}
+
+# EOF

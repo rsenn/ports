@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A distributed memory object caching system
+# URL: 
+# Maintainer: 
+# Depends on: 
+
+name=memcached
+version=1.4.0
+release=1
+source=(http://memcached.googlecode.com/files/memcached-$version.tar.gz)
+
+build() 
+{
+  cd memcached-$version
+  
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+  
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/memcached
+  install -m 644 AUTHORS ChangeLog COPYING NEWS README TODO $ROOT/share/doc/memcached
+
+  install -d $ROOT/share/doc/memcached
+  install -m 644 doc/CONTRIBUTORS doc/Doxyfile doc/memory_management.txt doc/protocol.txt doc/readme.txt doc/threads.txt $ROOT/share/doc/memcached
+}
+
+# EOF

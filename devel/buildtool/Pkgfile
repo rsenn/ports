@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Buildtool is a set of integrated utilities which make
+# programs more portable and easier to build on any kind of Unix-like
+# system.
+# URL: http://buildtool.sourceforge.net
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=buildtool
+version=0.16
+release=1
+source=($mirror_sf/buildtool/buildtool-$version.tar.gz
+        $mirror_sf/buildtool/buildtool-doc-$version.tar.gz)
+
+build()
+{
+  cd buildtool-$version
+
+  ./configure \
+      -p "$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/ #buildtool-$version
+  cp -rf $SRC/buildtool-doc-$version $ROOT/share/doc/builtool-$version
+}

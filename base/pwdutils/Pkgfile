@@ -1,0 +1,34 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: Utilities to manage/change user passwd information.
+#  pwdutils is a collection of utilities to manage the passwd and shadow user
+#  information. The difference to the shadow suite is that these utilities
+#  can also modify the information stored in NIS, NIS+, or LDAP. PAM is used
+#  for user authentication and changing the pasword. It contains passwd,
+#  chage, chfn, chsh, chpasswd, expiry, gpasswd, grpck, groupadd, groupdel,
+#  groupmod, grpunconv, newgrp, pwck, pwconv, pwunconv, useradd, userdel,
+#  usermod, vipw, and a daemon for changing the password on a remote machine
+#  over a secure SSL connection. The daemon also uses PAM, so it can change
+#  passwords no matter where they are stored.
+# URL: http://www.thkukuk.de/pam/pwdutils/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=pwdutils
+version=3.1.3
+release=1
+source=(ftp://ftp.kernel.org/pub/linux/utils/net/NIS/pwdutils-$version.tar.bz2)
+
+build()
+{
+  cd pwdutils-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

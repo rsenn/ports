@@ -1,0 +1,31 @@
+# $Id: Pkgfile,v 1.1.1.1 2005/03/31 19:53:25 enki Exp $
+#
+# Description: Digital DJ system.
+#  A digital DJ system, where wave, Ogg, and MP3 files can be mixed on a 
+#  computer for use in live performances Filters, a crossfader, and speed
+#  controls are provided. It is controlled by mouse and/or MIDI eventus.
+# URL: http://mixxx.sourceforge.net
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libasound2, libc6, libgcc1, libgl1-mesa-glx, libglu1-mesa, libid3tag0, libmad0, libogg0, libportaudio2, libqt4-opengl, libqt4-qt3support, libqt4-xml, libqtcore4, libqtgui4, libsndfile1, libstdc++6, libvorbis0a, libvorbisfile3, nvidia-glx-new-envy
+
+name=mixxx
+version=1.6.1
+release=1
+source=(http://downloads.mixxx.org/mixxx-$version/mixxx-$version-src.tar.gz)
+
+build()
+{
+  cd mixxx-$version
+
+  QTDIR="$prefix/lib/qt4"
+
+  scons \
+      qtdir="$QTDIR" \
+      prefix="$prefix" \
+      djconsole=1
+
+  scons \
+      install_root="$ROOT" \
+      prefix="$prefix" \
+    install
+}

@@ -1,0 +1,48 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A management GUI for OpenVZ virtual servers.
+#  EasyVZ is a GUI front end to OpenVZ that makes managing Virtual Private
+#  Servers very simple, easy, and fun. OpenVZ is a operating system level
+#  virtualization solution that lets you run several virtual servers on the
+#  same physical machine with very little overhead. EasyVZ makes it simple
+#  to create, destroy, and manage Virtual Private Servers from within a
+#  cozy and comfortable graphical user interface. The EasyVZ client can
+#  manage the server from anywhere over the network.
+#  .
+# URL: http://easyvz.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=easyvz
+version=0.1
+release=1
+source=($mirror_sf/easyvz/easyvz-$version.tar.gz
+        easyvz-backend.sh
+        easyvz-client.sh
+        easyvz-gui.sh)
+
+build()
+{
+  cd ezvz
+
+  install -d $ROOT/share/easyvz/backend
+  install -m 644 backend/*.py $ROOT/share/easyvz/backend
+
+  install -d $ROOT/share/easyvz/gui
+  install -m 644 gui/*.py $ROOT/share/easyvz/gui
+
+  cp -rf gui/icons $ROOT/share/easyvz/gui
+
+  install -d $ROOT/share/easyvz/gui/glade
+  install -m 644 gui/glade/*.glade{,p} $ROOT/share/easyvz/gui/glade
+
+  install -d $ROOT/share/doc/easyvz
+  install -m 644 COPYING README $ROOT/share/doc/easyvz
+
+  install -d $ROOT/bin
+  install -m 755 $SRC/easyvz-gui.sh $ROOT/bin/easyvz
+#  install -m 755 $SRC/easyvz-client.sh $ROOT/bin/easyvz-client
+  install -m 755 $SRC/easyvz-backend.sh $ROOT/sbin/easyvzd
+}
+
+# EOF

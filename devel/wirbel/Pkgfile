@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A fast compiler language, similar to Python.
+#  Wirbel is a programming language with a syntax and semantics similar
+#  to Python. Unlike Python, it is a compiler language, and compiles into
+#  native machine code. Wirbel programs execute very fast and do not need
+#  any runtime environment, not even a library.
+#  .
+# URL: http://mathias-kettner.de/wirbel.html
+# Maintainer:  Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=wirbel
+version=0.1.11
+release=1
+source=(http://mathias-kettner.de/download/wirbel-$version.tar.gz)
+
+build()
+{
+  cd wirbel-$version
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

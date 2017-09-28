@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: GNU Units
+#  The program converts quantities expressed in various scales to their
+#  equivalents in other scales. Units can only handle multiplicative scale
+#  changes. For example, it cannot convert Celsius to Fahrenheit but it
+#  can convert temperature differences between those teperature scales.
+#  The units are defined externally in an extensive, well annotated data file
+#  that defines over 2000 units. You can also provide your own data file.
+# URL: http://www.gnu.org/software/units/units.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=units
+version=1.87
+release=1
+source=(ftp://ftp.gnu.org/gnu/units/units-1.87.tar.gz)
+
+build()
+{
+  cd units-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

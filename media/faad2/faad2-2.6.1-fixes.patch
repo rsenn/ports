@@ -1,0 +1,38 @@
+diff -r -u -N -- faad2_orig/autogen.sh faad2/autogen.sh
+--- faad2_orig/autogen.sh	1970-01-01 01:00:00.000000000 +0100
++++ faad2/autogen.sh	2009-02-07 21:35:14.000000000 +0100
+@@ -0,0 +1,11 @@
++#!/bin/sh
++#
++# 20090207
++
++
++libtoolize --force --copy --automake
++aclocal --force
++autoheader --force
++automake --force --copy --foreign --add-missing
++aclocal --force
++autoconf --force
+diff -r -u -N -- faad2_orig/configure.in faad2/configure.in
+--- faad2_orig/configure.in	2009-02-07 21:33:00.000000000 +0100
++++ faad2/configure.in	2009-02-07 21:37:10.000000000 +0100
+@@ -16,9 +16,9 @@
+ 
+ dnl Checks for programs.
+ AC_PROG_CC
+-AC_PROG_CPP
++dnl AC_PROG_CPP
+ dnl disable for mpeg4ip plugin
+-dnl AC_PROG_CXX
++AC_PROG_CXX
+ AC_PROG_INSTALL
+ AC_PROG_LN_S
+ AC_PROG_MAKE_SET
+diff -r -u -N -- faad2_orig/plugins/Makefile.am faad2/plugins/Makefile.am
+--- faad2_orig/plugins/Makefile.am	2009-02-07 21:33:01.000000000 +0100
++++ faad2/plugins/Makefile.am	2009-02-07 21:36:54.000000000 +0100
+@@ -11,3 +11,4 @@
+ SUBDIRS =
+ endif #HAVE_XMMS
+ endif #HAVE_MPEG4IP_PLUG
++DIST_SUBDIRS = xmms mpeg4ip

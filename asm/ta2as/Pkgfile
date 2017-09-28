@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: TA2AS v0.8 convert TASM source files to ATT (GNU as)
+# URL: 
+# Maintainer: 
+# Depends on: 
+
+name=ta2as
+version=0.8
+release=1
+source=(ta2asv08.zip
+        ta2as-0.8-gnu.patch)
+
+build() 
+{
+  cd ta2asv08
+
+  patch -p1 -i $SRC/ta2as-0.8-gnu.patch
+
+  ${CC-gcc} ${CFLAGS--g -O2} -o ta2as ta2as.c meen.c strlwr.c
+  
+  install -d $ROOT/bin
+  install -m 644 ta2as $ROOT/bin
+
+  install -d $ROOT/share/doc/ta2as
+  install -m 644 legal.txt history.txt files.txt $ROOT/share/doc/ta2as
+}
+
+# EOF

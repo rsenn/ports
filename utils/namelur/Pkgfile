@@ -1,0 +1,21 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Random name generator library with rule files. Fast, lightweight and easy. Can generate rule files from custom text, you can easily use it into your application and use the command line tool to generate the best suitable name for your needs.
+# URL: http://sourceforge.net/projects/namelur/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=namelur
+version=0.3
+release=1
+source=($mirror_sf/namelur/namelur-v$version-src.zip)
+
+build()
+{
+  cd namelur-v$version
+
+  sed -i 's,RWops,rwops,g' Makefile
+
+  make CC="${CC-cc}" CFLAGS="$CFLAGS" INCLUDE="-I../include -I. -I.. -I../legolude -I../rwops"
+
+}

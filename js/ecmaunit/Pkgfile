@@ -1,0 +1,25 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: Unit testing framework for ECMAScript
+# URL: http://kupu.oscom.org/download/ecmaunit-0.2.html
+# Maintainer: Roman Senn <smoli@paranoya.ch>
+# Depends on:
+
+name=ecmaunit
+version=0.3
+release=1
+source=(http://kupu.oscom.org/midcom-serveattachmentguid-bc3b773ed0415140ec93833a8e7ee33a/ecmaunit-$version.tar.gz)
+
+build()
+{
+  cd ecmaunit
+
+  install -d $ROOT/share/ecmaunit
+  install -m 644 ecmaunit.js runtests.js $ROOT/share/ecmaunit
+
+  install -d $ROOT/share/ecmaunit/test
+  install -m 644 testecmaunit.* $ROOT/share/ecmaunit/test
+
+  install -d $ROOT/share/doc/ecmaunit
+  install -m 644 CREDITS.txt version.txt LICENSE.txt README.txt CHANGES.txt $ROOT/share/doc/ecmaunit
+}

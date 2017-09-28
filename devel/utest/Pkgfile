@@ -1,0 +1,25 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Utest is a C++ library that facilitates unit testing of C++ programs/components.
+# URL: http://www.elemental-programming.org/utest.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=utest
+version=0.20
+release=1
+source=($mirror_sf/elementals/utest-$version.tar.gz
+        utest-0.20-pod2html.patch)
+
+build()
+{
+  cd utest-$version
+
+  patch -N -p1 -i $SRC/utest-0.20-pod2html.patch
+
+  make CFLAGS="$CXXFLAGS -I. -c"
+  make PREFIX="$ROOT" install
+
+  install -d $ROOT/share
+  mv -vf $ROOT/doc $ROOT/share
+}

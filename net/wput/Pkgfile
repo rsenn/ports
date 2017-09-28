@@ -1,0 +1,25 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: $mirror_sf/wput/wput-0.6.1.tgz
+# URL: http://sourceforge.net/projects/wput/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=wput
+version=0.6.1
+release=1
+source=($mirror_sf/wput/wput-$version.tgz)
+
+build()
+{
+  cd wput-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

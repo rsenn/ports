@@ -1,0 +1,57 @@
+# $Id: Pkgfile,v 1.10 2007/04/22 23:07:53 roman Exp $
+#
+# Description: GNU Readline
+#  The Readline library provides a set of functions for use by applications
+#  that allow users to edit command lines as they are typed in. Both
+#  Emacs and vi editing modes are available. The Readline library includes
+#  additional functions to maintain a list of previously-entered command
+#  lines, to recall and perhaps reedit those lines, and perform csh-like
+#  history expansion on previous commands.
+# URL: http://cnswww.cns.cwru.edu/php/chet/readline/rltop.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=readline
+version=6.0
+release=1
+source=($mirror_gnu/readline/readline-$version.tar.gz
+        readline-5.1-terminfo.patch
+        readline-5.2-fixes.patch)
+
+build()
+{
+  cd readline-$version
+
+#  patch -N -p1 -i $SRC/readline-$version-terminfo.patch
+#  patch -N -p2 -i $SRC/readline-5.2-fixes.patch
+
+#  case $host in
+#    *-linux*)
+#      SHLIB_LIBS="-L$prefix/lib -lterminfo"
+#      ;;
+#  esac
+  if set -- $prefix/lib/libterminfo.* && [ -e "$1" ]; then
+    SHLIB_LIBS="-lterminfo"
+  elif set -- $prefix/lib/libncurses.* && [ -e "$1" ]; then
+    SHLIB_LIBS="-lncurses"
+  fi
+
+  (echo "#!/bin/sh" && echo 'echo "$@"') >support/config.sub
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --mandir="$prefix/share/man" \
+       --infodir="$prefix/share/info" \
+       --${static:=enable}-shared \
+       --${shared:=enable}-shared
+
+  make ${SHLIB_LIBS+SHLIB_LIBS="$SHLIB_LIBS"}
+
+  install -d $ROOT/bin
+
+  make DESTDIR="$PKG" install
+
+  rm -f $ROOT/share/info/dir
+}

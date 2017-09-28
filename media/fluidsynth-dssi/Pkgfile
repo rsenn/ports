@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: DSSI wrapper for the FluidSynth SoundFont-playing software synthesizer
+#  The FluidSynth-DSSI package contains FluidSynth-DSSI, a wrapper for
+#  the FluidSynth SoundFont-playing software synthesizer, allowing it to
+#  function as a DSSI plugin.
+#  DSSI is an API for audio processing plugins, particularly
+#  useful for software synthesis plugins with user interfaces (see
+#  http://dssi.sourceforge.net/).
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=fluidsynth-dssi
+version=0.9.1
+release=1
+source=($mirror_sf/dssi/fluidsynth-dssi-$version.tar.gz)
+
+build()
+{
+  cd fluidsynth-dssi-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

@@ -1,0 +1,44 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An easy-to-use, cross-platform logging library.
+# Liblogging is an easy-to-use, cross-platform library for RFC 3195-style
+# logging. It has a very simple API which takes out all complexity of
+# the new BEEP-based RFC 3195 syslog standard. It supports RAW and COOKED
+# profiles as well as initiators and listeners.
+#
+# URL: http://www.liblogging.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6
+
+name=liblogging
+version=0.7.1
+release=1
+source=(http://download.rsyslog.com/liblogging/liblogging-$version.tar.gz)
+
+build()
+{
+  cd liblogging-$version
+
+  libtoolize --force --copy --automake
+  aclocal --force
+  automake --force --copy --foreign --add-missing
+  aclocal --force
+  autoheader --force
+  autoconf --force
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/liblogging
+  install -m 644 [A-Z]*[A-Z]* $ROOT/share/doc/liblogging
+
+  find doc -name "Makefile*" -exec rm -f '{}' ';'
+
+  cp -rf doc/* $ROOT/share/doc/liblogging
+}

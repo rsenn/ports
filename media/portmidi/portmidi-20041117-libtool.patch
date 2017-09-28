@@ -1,0 +1,103 @@
+--- portmidi_orig/Makefile.libtool	1970-01-01 01:00:00.000000000 +0100
++++ portmidi/Makefile.libtool	2008-11-27 02:20:15.000000000 +0100
+@@ -0,0 +1,100 @@
++# MAKEFILE FOR PORTMIDI AND PORTTIME
++
++
++# For debugging, define PM_CHECK_ERRORS
++PMFLAGS = -DPM_CHECK_ERRORS
++# Otherwise do not define PM_CHECK_ERRORS
++# PMFLAGS = 
++
++# Use this for $(OS) alsa (0.9x) version
++versions = pm_$(OS)/pm$(OS)alsa.lo
++ALSALIB = -lasound
++VFLAGS = -DPMALSA
++
++# Use this for null (a dummy implementation for no Midi I/O:
++# versions = pm$(OS)null.lo
++# ALSALIB = 
++# VFLAGS = -DPMNULL
++
++OS ?= linux
++
++pmlib = pm_$(OS)/libportmidi.la
++ptlib = porttime/libporttime.la
++
++pminc = pm_common/portmidi.h
++ptinc = porttime/porttime.h
++
++prefix ?= /usr
++libdir = ${prefix}/lib
++includedir = ${prefix}/include
++
++CC = gcc
++CFLAGS = $(PICFLAGS) $(VFLAGS) $(PMFLAGS) -g -O2
++CPPFLAGS = -Ipm_common -Iporttime
++
++LIBTOOL = libtool --tag=CC --silent
++LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(CPPFLAGS) $(CFLAGS)
++LTLINK = $(LIBTOOL) --mode=link $(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS)
++
++pmobjects = pm_common/pmutil.lo $(versions) pm_$(OS)/pm$(OS).lo  \
++	pm_common/portmidi.lo pm_$(OS)/pm$(OS)alsa.lo
++
++ptobjects = porttime/porttime.lo porttime/pt$(OS).lo 
++
++current: all
++
++all: $(pmlib) $(ptlib) pm_test/test pm_test/sysex pm_test/midithread \
++	pm_test/latency pm_test/midithru
++
++%.lo: %.c
++	$(LTCOMPILE) -c -o $@ $<
++
++$(pmlib): LDFLAGS = -rpath $(libdir) -version-info 0:0:0
++$(pmlib): $(pmobjects) $(ptlib) | Makefile
++	$(LTLINK) -o $(pmlib) $^ $(ALSALIB)
++
++$(ptlib): $(ptobjects) | Makefile
++	$(LTLINK) -o $(ptlib) $^ 
++
++pm_$(OS)/pm$(OS)alsa.lo: pm_$(OS)/pm$(OS)alsa.c pm_$(OS)/pm$(OS)alsa.h | Makefile
++#	$(CC) -c pm_$(OS)/pm$(OS)alsa.c -o pm_$(OS)/pm$(OS)alsa.lo
++
++pm_test/test: Makefile pm_test/test.lo $(pmlib) $(ptlib)
++	$(LTLINK) pm_test/test.c -o pm_test/test $(pmlib) $(ptlib) $(ALSALIB)
++
++pm_test/sysex: Makefile pm_test/sysex.lo $(pmlib) $(ptlib)
++	$(LTLINK) pm_test/sysex.c -o pm_test/sysex $(pmlib) $(ptlib) $(ALSALIB)
++
++pm_test/midithread: Makefile pm_test/midithread.lo $(pmlib) $(ptlib)
++	$(LTLINK) pm_test/midithread.c -o pm_test/midithread \
++        $(pmlib) $(ptlib) $(ALSALIB)
++
++pm_test/latency: Makefile $(ptlib) pm_test/latency.lo 
++	$(LTLINK) pm_test/latency.c -o pm_test/latency $(pmlib) $(ptlib) \
++        $(ALSALIB) -lpthread -lm
++
++pm_test/midithru: Makefile $(ptlib) pm_test/midithru.lo 
++	$(LTLINK) pm_test/midithru.c -o pm_test/midithru $(pmlib) $(ptlib) \
++        $(ALSALIB) -lpthread -lm
++
++porttime/pt$(OS).lo: porttime/pt$(OS).c | Makefile
++
++clean:
++	rm -f *.lo *~ core* */*.lo */*~ */core* pm_test/*/pm_dll.dll 
++	rm -f *.lopt *.ncb *.plg pm_win/Debug/pm_dll.lib pm_win/Release/pm_dll.lib
++	rm -f pm_test/*.lopt pm_test/*.ncb
++
++cleaner: clean
++
++cleanest: cleaner
++	rm -f $(pmlib) $(ptlib) pm_test/test pm_test/sysex pm_test/midithread
++	rm -f pm_test/latency pm_test/midithru
++
++backup: cleanest
++	cd ..; zip -r portmidi.zip portmidi
++
++install: all
++	mkdir -p $(DESTDIR)$(includedir)
++	cp $(ptinc) $(pminc) $(DESTDIR)$(includedir)
++	mkdir -p $(DESTDIR)$(libdir)
++	$(LIBTOOL) --tag=CC --mode=install cp $(ptlib) $(pmlib) $(DESTDIR)$(libdir)

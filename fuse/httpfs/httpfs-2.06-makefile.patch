@@ -1,0 +1,30 @@
+--- Makefile_orig	2009-03-07 21:57:42.000000000 +0100
++++ Makefile	2009-03-07 21:44:41.000000000 +0100
+@@ -0,0 +1,27 @@
++CC = gcc
++#CFLAGS = -std=c99
++CPPFLAGS = -DUSE_AUTH -D_FILE_OFFSET_BITS=64 -D_REENTRANT -DFUSE_USE_VERSION=25 
++LIBS = -lfuse
++
++ifeq ($(DEBUG),)
++CFLAGS += -g -O2 
++CPPFLAGS += -DNDEBUG=1
++else
++CFLAGS += -g -ggdb -O0 -Wall
++CPPFLAGS += -DDEBUG=1
++endif
++
++ifneq ($(SSL),)
++CPPFLAGS += -DUSE_SSL=1
++LIBS += -lssl -lcrypto
++endif
++
++#CPPFLAGS += -D_POSIX_C_SOURCE=200112L -D_POSIX_SOURCE -D_SVID_SOURCE -D_BSD_SOURCE -D_XOPEN_SOURCE=500
++
++all: httpfs
++
++clean:
++	$(RM) httpfs *.o *~
++
++httpfs: httpfs.o
++	$(CC) -o $@ $^ $(LIBS)

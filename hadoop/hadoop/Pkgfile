@@ -1,0 +1,37 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Utilities that support the Hadoop subprojects.
+# URL: http://hadoop.apache.org/common/
+# Maintainer: 
+# Depends on: 
+
+name=hadoop
+version=0.20.0
+release=1
+source=(http://mirror.switch.ch/mirror/apache/dist/hadoop/core/hadoop-$version/hadoop-$version.tar.gz)
+
+build() 
+{
+  cd hadoop-$version
+
+  for DIR in \
+      src/c++/libhdfs \
+      src/c++/pipes \
+      src/c++/utils \
+      src/examples/pipes \
+      src/native
+  do
+   (set -e
+    cd "$DIR"
+
+    sh configure \
+        --build="$build" \
+        --host="$host" \
+        --prefix="$prefix"
+    
+    make
+    make DESTDIR="$PKG" install) || break
+  done
+}
+
+# EOF

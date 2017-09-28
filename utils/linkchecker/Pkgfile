@@ -1,0 +1,35 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An URL link checker.
+# With LinkChecker, you can check HTML documents and Web sites for broken
+# links. It features recursion, robots.txt exclusion protocol support, HTTP
+# proxy support, i18n support, multithreading, regular expression filtering
+# rules for links, and user/password checking for authorized pages. Output
+# can be colored or normal text, HTML, SQL, CSV, or a sitemap graph in DOT,
+# GML, or XML format. Supported link types are HTTP/1.1 and 1.0, HTTPS,
+# FTP, mailto:, news:, nntp:, Telnet, and local files.
+#
+# URL: http://linkchecker.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=linkchecker
+version=4.9
+release=1
+source=($mirror_sf/linkchecker/linkchecker-$version.tar.gz)
+
+build()
+{
+  cd linkchecker-$version
+
+  python setup.py install --prefix="$ROOT"
+
+  make -C doc
+  make -C doc/en
+
+  find doc -name Makefile -exec rm -f '{}' ';'
+
+  install -d $ROOT/share/doc/linkchecker
+  install -m 644 [A-Z]*[A-Z]* $ROOT/share/doc/linkchecker
+  cp -rf doc/* $ROOT/share/doc/linkchecker
+}

@@ -1,0 +1,43 @@
+Binary files dmake-4.9_orig/dmake and dmake-4.9/dmake differ
+diff -r -u dmake-4.9_orig/rulparse.c dmake-4.9/rulparse.c
+--- dmake-4.9_orig/rulparse.c	2007-08-04 07:11:13.000000000 +0200
++++ dmake-4.9/rulparse.c	2007-08-04 07:11:53.000000000 +0200
+@@ -175,14 +175,14 @@
+ 
+ 	       if( _is_percent( tok ) ) {
+ 		  /* First %-target checks if there were non-%-targets before. */
+-		  if( !percent && targets != NIL(CELL) )
+-		     Fatal( "A %%-target must not be mixed with non-%%-targets, offending target [%s]", tok );
++//		  if( !percent && targets != NIL(CELL) )
++//		     Fatal( "A %%-target must not be mixed with non-%%-targets, offending target [%s]", tok );
+ 
+ 		  percent++;
+ 		  cp->ce_flag |= F_PERCENT;
+ 	       } else {
+-		  if( percent )
+-		     Fatal( "A non-%%-target must not be mixed with %%-targets, offending target [%s]", tok );
++//		  if( percent )
++//		     Fatal( "A non-%%-target must not be mixed with %%-targets, offending target [%s]", tok );
+ 	       }
+ 
+ 	       if( _is_magic( tok ) ) {
+@@ -194,14 +194,14 @@
+ 		   * store the result for later, but for multiple .<suffix>
+ 		   * targets this creates too much overhead.
+ 		   * These targets should be rare (obsolete?) anyway. */
+-		  if( !augmeta && targets != NIL(CELL) )
+-		     Fatal( "An AUGMAKE meta target must not be mixed with non AUGMAKE meta targets, offending target [%s]", tok );
++//		  if( !augmeta && targets != NIL(CELL) )
++//		     Fatal( "An AUGMAKE meta target must not be mixed with non AUGMAKE meta targets, offending target [%s]", tok );
+ 
+ 		  augmeta++;
+ 		  cp->ce_flag |= F_MAGIC; /* do_magic will also add F_PERCENT later. */
+ 	       } else {
+-		  if( augmeta )
+-		     Fatal( "A non AUGMAKE meta target must not be mixed with AUGMAKE meta targets, offending target [%s]", tok );
++//		  if( augmeta )
++//		     Fatal( "A non AUGMAKE meta target must not be mixed with AUGMAKE meta targets, offending target [%s]", tok );
+ 	       }
+ 
+ 	       if( special )
+Binary files dmake-4.9_orig/rulparse.o and dmake-4.9/rulparse.o differ

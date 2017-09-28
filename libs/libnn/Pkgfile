@@ -1,0 +1,27 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:52 roman Exp $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libnn
+version=cvs
+release=1
+source=(libnn-cvs-fixes.patch)
+
+build()
+{
+  export HOME=$(pwd)
+  echo "/1 :pserver:anonymous@libnn.cvs.sourceforge.net:2401/cvsroot/libnn A" >> .cvspass
+
+#  cvs -d:pserver:anonymous@libnn.cvs.sourceforge.net:/cvsroot/libnn login
+  cvs -z9 -d:pserver:anonymous@libnn.cvs.sourceforge.net:/cvsroot/libnn co libnn
+
+  cd libnn
+
+  patch -N -p1 -i $SRC/libnn-cvs-fixes.patch
+
+  make
+}
+

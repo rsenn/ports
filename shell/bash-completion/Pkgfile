@@ -1,0 +1,43 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Section: shells
+# Description: programmable completion for the bash shell
+#  Since v2.04, bash has allowed you to intelligently program
+#  and extend its standard completion behavior to achieve complex command
+#  lines with just a few keystrokes. Imagine typing ssh [Tab] and being able
+#  to complete on hosts from your ~/.ssh/known_hosts files. Or typing man 3
+#  str [Tab] and getting a list of all string handling functions in the UNIX
+#  manual. mount system: [Tab] would complete on all exported file-systems
+#  from the host called system, while make [Tab] would complete on all targets
+#  in Makefile. This project was conceived to produce programmable completion
+#  routines for the most common Linux/UNIX commands, reducing the amount of
+#  typing sysadmins and programmers need to do on a daily basis.
+#  .
+# URL: http://www.caliban.org/bash/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=bash_completion
+version=20060301
+release=1
+source=(http://www.caliban.org/files/bash/bash-completion-$version.tar.gz)
+
+build()
+{
+  cd bash_completion
+
+  case $prefix in
+    "/usr") sysconfdir="/etc" ;;
+  esac
+
+  install -d $ROOT/share/doc/bash-completion
+
+  cp -rf [A-Z]* contrib $ROOT/share/doc/bash-completion
+
+
+  install -d $PKG${sysconfdir=$prefix/etc}
+  install -m 644 bash_completion $PKG$sysconfdir
+
+  install -d $PKG$sysconfdir/profile.d
+  install -m 644 bash_completion.sh $PKG$sysconfdir/profile.d
+}

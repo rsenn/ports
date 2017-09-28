@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Collection of functionality for various realtime audio related tasks.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=libspiralcore
+version=1.0.0rc1
+release=1
+source=(http://www.pawfal.org/Software/libspiralcore/libspiralcore-$version.tar.gz
+        libspiralcore-1.0.0rc1-fixes.patch)
+
+build() 
+{
+  cd libspiralcore-$version
+
+  patch -p1 -i $SRC/libspiralcore-1.0.0rc1-fixes.patch
+
+  scons
+
+  install -d $ROOT/lib
+  install -m 755 libspiralcore.so $ROOT/lib
+
+  install -d $ROOT/include/spiralcore
+  install -m 644 include/*.h $ROOT/include/spiralcore
+}
+
+# EOF

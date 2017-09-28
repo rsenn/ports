@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Provides tools and an interface for signing and verifying ELF binary images with certificates
+# The functionality is similar to Microsoft's Authenticode technology in
+# that binaries can be tagged with an owner as well as proof that they
+# have not been modified or tampered with.
+#
+# URL: http://www.hick.org/code.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=elfsign
+version=0.2.2
+release=1
+source=(http://www.hick.org/code/skape/elfsign/elfsign-$version.tar.gz)
+
+build()
+{
+  cd elfsign-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

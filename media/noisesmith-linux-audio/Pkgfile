@@ -1,0 +1,24 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A set of plugins, utilities, and programs for making music with Linux. The focus is on increasing a composer's alternatives, and providing unusual tools as a spur to creativity.
+# URL: http://code.google.com/p/noisesmith-linux-audio/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=synthofnoise
+version=0.1
+release=1
+source=(http://noisesmith-linux-audio.googlecode.com/files/synthofnoise-0.1.tar.bz2)
+
+build()
+{
+  cd synthofnoise-$version
+
+  sed -i \
+      -e 's/g++/$(CXX)/g' \
+      -e 's/-O3/$(CXXFLAGS)/g' \
+    Makefile
+
+  make CXX="$CXX" CXXFLAGS="$CXXFLAGS"
+
+}

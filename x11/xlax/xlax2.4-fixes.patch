@@ -1,0 +1,46 @@
+diff -wru xlax2.4_orig/mkxlax xlax2.4/mkxlax
+--- xlax2.4_orig/mkxlax	2008-07-31 22:18:25.000000000 +0200
++++ xlax2.4/mkxlax	2008-11-11 09:42:12.000000000 +0100
+@@ -8,6 +8,10 @@
+   exit(0);
+ }
+ 
++if (-e "/etc/mkxlax") {
++  &loadconfig("/etc/mkxlax");
++}
++
+ if (-e "$ENV{'HOME'}/.mkxlax") {
+   &loadconfig("$ENV{'HOME'}/.mkxlax");
+ }
+diff -wru xlax2.4_orig/xlax.c xlax2.4/xlax.c
+--- xlax2.4_orig/xlax.c	2008-07-31 22:18:25.000000000 +0200
++++ xlax2.4/xlax.c	2008-11-11 09:16:56.000000000 +0100
+@@ -170,7 +170,8 @@
+   XtAddCallback (thing, XtNcallback, selectCB, NULL);
+ 
+   strcpy(findname,"Find ");
+-  strlcpy(findname+5,prefix,11);
++  strncpy(findname+5,prefix,11);
++  findname[5+10]='\0';
+   if (strlen(prefix)<6) {
+     for (cnt=5+strlen(prefix); cnt<11; ++cnt) {
+       findname[cnt]=' ';
+diff -wru xlax2.4_orig/xlax.h xlax2.4/xlax.h
+--- xlax2.4_orig/xlax.h	2008-07-31 22:18:25.000000000 +0200
++++ xlax2.4/xlax.h	2008-11-11 09:40:14.000000000 +0100
+@@ -39,8 +39,15 @@
+ #include <X11/Xmu/WinUtil.h>
+ 
+ #include <X11/cursorfont.h>
++
++#ifndef XK_MISCELLANY
+ #define XK_MISCELLANY  1
++#endif
++
++#ifndef XK_LATIN1
+ #define XK_LATIN1  1
++#endif
++
+ #include <X11/keysymdef.h>
+ 
+ #include <stdlib.h>

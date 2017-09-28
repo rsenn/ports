@@ -1,0 +1,38 @@
+.TH https@ 1 "" "" ucspi-ssl
+.SH NAME
+.LP
+https@ - prints data from an SSL/TLS connection
+.SH SYNOPSIS
+.LP
+https@ \fIhost\fR \fIport\fR \fIargs ...\fR
+.SH DESCRIPTION
+.LP
+
+@ connects to \fIhost\fR on \fIport\fR via TCP, and then attempts
+an SSL connection.  It sends the request:
+
+  GET /\fIpage\fR HTTP/1.0
+  Host: \fIhost\fR
+
+and prints the body of the response, removing the CR from the end of each line.
+
+If \fIport\fR is not supplied, https@ uses TCP port 443 (HTTPS).
+
+If \fIpage\fR is not supplied, https@ asks for / from \fIhost\fR.
+
+If \fIhost\fR is not supplied, https@ connects to the local host.
+
+If \fIargs\fR are supplied, they are passed to https@ unmodified.
+
+If \fIargs\fR are supplied, they are passed to sslclient unmodified.
+
+
+.SH AUTHORS
+.LP
+SuperScript Technology, Inc.
+
+.SH SEE ALSO
+sslclient(1),
+sslcat(1),
+http@(1)
+

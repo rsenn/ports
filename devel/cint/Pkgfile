@@ -1,0 +1,68 @@
+# $Id: Pkgfile,v 1.4 2007/05/09 21:02:44 roman Exp $
+#
+# Description: C/C++ Interpreter
+#  CINT is a C/C++ interpreter which is aimed at processing C/C++
+#  scripts. CINT covers about 95% of ANSI C and 85% of C++. CINT, written
+#  in ANSI C (about 80000 loc), is solid enough to interpret itself and
+#  let the interpreted version execute a program.
+# URL: http://root.cern.ch/root/Cint.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=cint
+version=5.16.19
+release=1
+source=(ftp://root.cern.ch/root/cint-$version-source.tar.gz
+        cint-5.16.19-configure.patch
+        cint-5.16.19-fixes.patch)
+
+build()
+{
+  cd cint-$version
+
+  patch -N -p1 -i $SRC/cint-5.16.19-configure.patch
+  patch -N -p1 -i $SRC/cint-5.16.19-fixes.patch
+
+  export CINTSYSDIR="$prefix/cint"
+
+  readline_lib="-lreadline"
+
+  case $host in
+    *-linux*) arch="linux" ;;
+    *-mingw*) arch="mingw" ;;
+    *-cygwin*)
+      arch="cygwin" #readline_lib="$libdir/libreadline.dll.a"
+      ;;
+  esac
+
+  ./configure \
+      --arch="$arch" \
+      --prefix="$prefix" \
+      ${readline_lib:+--readline="$readline_lib"}
+
+  make
+#  make DESTDIR="$PKG" install
+
+  install -d $ROOT/{lib,bin,man,cint}
+
+  if test -f libcint.so
+  then
+    install libcint.so $ROOT/lib/libcint.so.${version}
+    ln -s libcint.so.$version $ROOT/lib/libcint.so.${version%.*}
+    ln -s libcint.so.$version $ROOT/lib/libcint.so.${version%%.*}
+    ln -s libcint.so.$version $ROOT/lib/libcint.so
+  fi
+
+  install cint makecint $ROOT/bin
+
+  install -d $ROOT/share/doc/cint
+  install *.txt $ROOT/share/doc/cint
+
+  find -name CVS | xargs rm -rf
+
+  mv -vf doc/man* $ROOT/man/
+  cp -rvf doc/* $ROOT/share/doc/cint
+  cp -rvf demo $ROOT/share/doc/cint
+
+  cp -rvf include $PKG/$CINTSYSDIR
+}

@@ -1,0 +1,21 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=xml2sql-v
+version=1.1
+release=1
+source=(http://www.scylla-charybdis.com/download/xml2sql-v.tgz)
+
+build()
+{
+  cd xml2sql-v$version
+
+  make CFLAGS="$CFLAGS"
+
+  install -d $ROOT/bin
+  install -m 755 xml2sql-v utf8-latin1 latin1-utf8 entityfix $ROOT/bin
+}

@@ -1,0 +1,46 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: EXtendable, SCalable Architecture for Live Interactive or Batch-orientated Audio-signal Refinement.
+#  Exscalibar is an EXtendable, SCalable Architecture for Live, 
+#  Interactive or Batch-orientated Audio-signal Refinement.
+# URL: http://sourceforge.net/projects/exscalibar
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=exscalibar
+version=1.0.4
+release=1
+source=($mirror_sf/exscalibar/exscalibar-$version.tar.bz2
+        exscalibar-1.0.4-no_virtual.patch
+        exscalibar-1.0.4-no-const-ret.patch
+        exscalibar-1.0.4-plugin-dir.patch)
+
+build()
+{
+  cd exscalibar-$version
+
+  patch -N -p1 -i $SRC/exscalibar-1.0.4-no_virtual.patch
+  patch -N -p1 -i $SRC/exscalibar-1.0.4-no-const-ret.patch
+  patch -N -p1 -i $SRC/exscalibar-1.0.4-plugin-dir.patch
+
+  EXSCALIBAR_LOCATION="$prefix"
+  QMAKESPEC="linux-g++"
+  HAVE_MAD="1"
+  QTDIR="$prefix/share/qt3"
+
+  export EXSCALIBAR_LOCATION QMAKESPEC HAVE_MAD QTDIR 
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make 
+  make INSTALL_ROOT="$PKG" install
+
+  install -d $ROOT/share/doc/exscalibar
+  install -m 644 NOTES README CHANGELOG INSTALL COPYING RELEASE $ROOT/share/doc/exscalibar
+}
+
+  install -d $ROOT/share/doc/exscalibar/system
+  install -m 644 system/Geddei system/SignalTypes system/rGeddei $ROOT/share/doc/exscalibar/system

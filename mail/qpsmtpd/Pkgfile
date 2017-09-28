@@ -1,0 +1,34 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A plugin driven, object-oriented SMTP daemon.
+#  qpsmtpd is a flexible smtpd daemon written in Perl. Apart from the core
+#  SMTP features, all functionality is implemented in small "extension
+#  plugins" using the easy-to-use object oriented plugin API. qpsmtpd was
+#  originally written as a drop-in qmail-smtpd replacement, but now it also
+#  includes an smtp forward and a postfix "backend".
+#  .
+# URL: http://smtpd.develooper.com/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=qpsmtpd
+version=0.40
+release=1
+source=(http://smtpd.develooper.com/files/qpsmtpd-$version.tar.gz)
+
+build()
+{
+  cd qpsmtpd-$version
+
+  perl Makefile.PL
+  make \
+      DESTDIR="$PKG" \
+      INSTALLDIRS="vendor" \
+      PREFIX="$prefix" \
+    install
+
+  install -d $ROOT/share/doc/qpsmtpd
+  install -m 644 CREDITS Changes LICENSE MANIFEST README* STATUS  $ROOT/share/doc/qpsmtpd
+}
+
+# EOF

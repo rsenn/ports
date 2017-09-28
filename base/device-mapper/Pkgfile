@@ -1,0 +1,47 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: The Linux Kernel Device Mapper userspace library
+#  The Linux Kernel Device Mapper is the LVM (Linux Logical Volume
+#  Management) Team's implementation of a minimalistic kernel-space driver
+#  that handles volume management, while keeping knowledge of the underlying
+#  device layout in user-space. This makes it useful for not only LVM,
+#  but EVMS, software raid, and other drivers that create "virtual"
+#  block devices.
+#  This package contains the (user-space) shared library for accessing the
+#  device-mapper; it allows usage of the device-mapper through a clean,
+#  consistent interface (as opposed to through kernel ioctls).
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=device-mapper
+version=1.02.28
+release=1
+source=(ftp://sources.redhat.com/pub/dm/device-mapper.$version.tgz)
+
+build()
+{
+  cd device-mapper.$version
+
+  case $prefix in
+    "/usr") sbindir="/sbin" sysconfdir="/etc" ;;
+  esac
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --sysconfdir="${sysconfdir=$prefix/etc}" \
+       --sbindir="${sbindir=$prefix/sbin}"
+
+  make
+  make DESTDIR="$PKG" install
+
+  ln -sf libdevmapper.so.${version%.*} $ROOT/lib/libdevmapper.so.${version%%.*}
+
+  install -d $ROOT/share/doc/device-mapper
+  install -m 644 COPYING.LIB COPYING INSTALL INTRO WHATS_NEW README VERSION $ROOT/share/doc/device-mapper
+
+  install -d $ROOT/share/doc/device-mapper
+  install -m 644 contrib/dm-reverse.README $ROOT/share/doc/device-mapper
+}

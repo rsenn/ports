@@ -1,0 +1,42 @@
+--- php-4.4.2_orig/Makefile.global	2006-01-30 13:50:13.000000000 +0100
++++ php-4.4.2/Makefile.global	2006-01-30 13:52:49.000000000 +0100
+@@ -2,7 +2,8 @@
+ INSTALL = $(top_srcdir)/build/shtool install -c
+ INSTALL_DATA = $(INSTALL) -m 644
+ 
+-DEFS = -DPHP_ATOM_INC -I$(top_builddir)/include -I$(top_builddir)/main -I$(top_srcdir)
++DEFS = -DPHP_ATOM_INC -I$(top_builddir)/include -I$(top_builddir)/main -I$(top_srcdir) -DEXTENSION_DIR=\"$(EXTENSION_DIR)\"
++
+ COMMON_FLAGS = $(DEFS) $(INCLUDES) $(EXTRA_INCLUDES) $(CPPFLAGS) $(PHP_FRAMEWORKPATH)
+ 
+ 
+--- php-4.4.2_orig/Zend/zend_extensions.c	2006-01-30 13:50:12.000000000 +0100
++++ php-4.4.2/Zend/zend_extensions.c	2006-01-30 13:52:49.000000000 +0100
+@@ -29,6 +29,27 @@
+ 	DL_HANDLE handle;
+ 	zend_extension *new_extension;
+ 	zend_extension_version_info *extension_version_info;
++        char full_path[PATH_MAX+1];
++
++        if(path[0] != '/')
++        {
++          char ext_dir[PATH_MAX+1];
++          size_t n;
++          strncpy(ext_dir, EXTENSION_DIR, PATH_MAX);
++          ext_dir[PATH_MAX] = '\0';
++          strncpy(full_path, dirname(ext_dir), PATH_MAX);
++          full_path[PATH_MAX] = '\0';
++          n = strlen(full_path);
++          if(n < PATH_MAX)
++          {
++            full_path[n] = '/';
++            n = PATH_MAX - n;
++            if(n)
++              strncat(full_path, path, n);
++          }
++          
++          path = full_path;
++        }
+ 
+ 	handle = DL_LOAD(path);
+ 	if (!handle) {

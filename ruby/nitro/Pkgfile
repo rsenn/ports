@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Web application engine.
+#  Nitro is an efficient, yet simple engine for developing professional
+#  Web Applications using the Ruby language.
+#  .
+# URL: http://rubyforge.org/projects/nitro/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=nitro
+version=0.41.0
+release=1
+source=(http://files.rubyforge.mmmultiworks.com/nitro/nitro-$version.tgz)
+
+build()
+{
+  cd nitro
+
+  set -- `ruby --version`
+
+  RUBYVERSION="$2"
+  RUBYLIBDIR="$prefix/lib/ruby/${RUBYVERSION%.*}"
+
+  ruby setup.rb config --siterubyver="$RUBYLIBDIR"
+  ruby setup.rb setup
+  ruby setup.rb install --prefix="$PKG"
+
+  install -d $ROOT/share/doc/nitro
+  install -m 644 CHANGELOG README INSTALL $ROOT/share/doc/nitro
+}
+
+# EOF

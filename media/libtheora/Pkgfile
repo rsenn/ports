@@ -1,0 +1,40 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: The Theora Video Compression Codec
+#  Theora is an open video codec being developed by the Xiph.org Foundation
+#  as part of their Ogg project (It is a project that aims to integrate
+#  On2's VP3 video codec, Ogg Vorbis audio codec and Ogg multimedia
+#  container formats into a multimedia solution that can compete with MPEG-4
+#  format). Theora is derived directly from On2's VP3 codec; currently the
+#  two are nearly identical, varying only in framing headers, but Theora
+#  will diverge and improve from the main VP3 development lineage as time
+#  progresses.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libtheora
+version=1.0beta2
+release=1
+source=(http://downloads.xiph.org/releases/theora/libtheora-$version.tar.bz2)
+
+build()
+{
+  cd libtheora-$version
+
+  libtoolize --force --copy
+  aclocal --force
+  automake --force --copy --foreign --add-missing
+  aclocal --force
+  autoconf --force
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --${shared:=enable}-shared \
+      --${static:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+}

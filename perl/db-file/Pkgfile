@@ -1,0 +1,21 @@
+# $Id: Pkgfile,v 1.6 2007/04/22 23:07:53 roman Exp $
+#
+# Description: Perl5 access to Berkeley DB version 1.x
+# URL: http://search.cpan.org/dist/DB_File/
+# Maintainer: Simon Josi <duke@yokto.net>
+# Depends on:
+
+name=db-file
+version=1.819
+release=1
+source=(http://search.cpan.org/CPAN/authors/id/P/PM/PMQS/DB_File-$version.tar.gz)
+
+build()
+{
+  cd DB_File-$version
+
+  perl Makefile.PL installdirs=vendor
+
+  make
+  make DESTDIR="$PKG" install
+}

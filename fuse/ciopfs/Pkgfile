@@ -1,0 +1,24 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: a stackable or overlay FUSE file system which mounts a normal directory in case insensitive fashion
+# URL: http://www.brain-dump.org/projects/ciopfs/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=ciopfs
+version=0.1
+release=1
+source=(http://www.brain-dump.org/projects/ciopfs/ciopfs-$version.tar.gz)
+
+build()
+{
+  cd ciopfs-$version
+
+  export LIBS="${LIBS:+$LIBS }-lfuse"
+
+  make CC="${CC-cc}" CFLAGS="$CFLAGS -D_FILE_OFFSET_BITS=64 -DVERSION=\\\"$version\\\"" ciopfs
+#  ${CC-cc} $CFLAGS -D_FILE_OFFSET_BITS=64 -o ciopfs ciopfs.c $LIBS
+
+  install -d $ROOT/bin
+  install -m 755 ciopfs $ROOT/bin
+}

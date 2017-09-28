@@ -1,0 +1,47 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Section: universe/x11
+# Description: Twindy is a window manager for the X11 desktop
+#  Twindy tries to apply Tracktion's workflow, where everything is on screen
+#  at once, to a window manager. As such, there are two panels, a main panel
+#  where new windows/programs open by default and may be selected using tabs,
+#  and a lower panel, which can only hold one window/program at a time.
+#  .
+# URL: http://www.niallmoody.com/twindy/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=twindy
+version=1.00
+release=1
+source=(http://www.niallmoody.com/twindy/downloads/Twindy-$version.zip
+        twindy-1.00-fixes.patch
+        twindy.xsession)
+
+build()
+{
+  cd Twindy-$version
+
+  patch -N -p1 -i $SRC/twindy-1.00-fixes.patch
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --docdir="$prefix/share/doc" \
+      --disable-dependency-tracking \
+      --disable-maintainer-mode
+
+  make
+  make DESTDIR="$PKG" install
+
+  if [ -d $ROOT/doc ]; then
+    install -d $ROOT/share
+    mv -f $ROOT/doc $ROOT/share
+  fi
+
+  rm -f $ROOT/share/doc/twindy/{NEWS,AUTHORS}
+
+  install -d $ROOT/share/xsessions
+  install -m 644 $SRC/twindy.xsession $ROOT/share/xsessions/twindy.desktop
+}

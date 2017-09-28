@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Tools to ease installation and management of third-party software.
+#  swpkg is a collection of tools which allow a system administrator to
+#  build, install, and maintain software packages on a system. It is based
+#  on a fairly simple philosophy intended to simplify the management of
+#  third party software and their inter-dependencies.
+# URL: http://web.taranis.org/swpkg/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=swpkg
+version=0.51
+release=1
+source=(http://web.taranis.org/swpkg/dist/swpkg-0.51.tgz)
+
+build()
+{
+  cd swpkg-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

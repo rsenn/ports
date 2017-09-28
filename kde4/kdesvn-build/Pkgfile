@@ -1,0 +1,33 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:50 roman Exp $
+#
+# Description: A script that downloads, builds, and installs KDE from its source repository.
+#  kdesvn-build is a script to automate the process of downloading, building,
+#  and installing KDE from its Subversion source repository. It supports
+#  many advanced features such as partial checkout/build of a module,
+#  the unsermake build system, incremental make, module checkouts using
+#  Subversion snapshots from the kdesvn-build.kde.org site, and repeatable
+#  builds. Many options are available, and they apply to every module
+#  by default, but most options can be overridden on a module-by-module
+#  basis. Every command it executes is logged.
+# URL: http://kdesvn-build.kde.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=kdesvn-build
+version=1.4.1
+release=1
+source=(http://kdesvn-build.kde.org/releases/kdesvn-build-$version.tar.bz2)
+
+build()
+{
+  cd kdesvn-build-$version
+
+  sed -i "s,/usr/bin,$prefix/bin," kdesvn-build
+
+  install -d $ROOT/bin
+  install -m 755 kdesvn-build $ROOT/bin
+
+  install -d $ROOT/etc
+  install -m 644 kdesvn-buildrc-sample $ROOT/etc/kdesvn-buildrc
+}
+

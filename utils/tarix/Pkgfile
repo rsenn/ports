@@ -1,0 +1,26 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A simple indexer for GNU and POSIX tar files.
+#  tarix is a simple indexer for GNU and POSIX tar files. The indexes allow
+#  fast extraction of files in the archive, especially on seekable tape
+#  devices. The index format is simple enough to be used from a rescue
+#  disk with only mt, dd, and tar (though grep and sed would be very
+#  useful there).
+# URL: http://sourceforge.net/projects/xtar/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=tarix
+version=1.0.2
+release=1
+source=($mirror_sf/xtar/tarix-$version.tgz)
+
+build()
+{
+  cd tarix-$version
+
+  install -d $ROOT/bin
+
+  make
+  make INSTBASE="$ROOT" install
+}

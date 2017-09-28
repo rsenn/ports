@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Fast util to search the rfc-index for a topic and display it with lynx
+#  RFC Util allows you to specify the number of an RFC, or a search string,
+#  and it returns all related RFCs. It features command line switches to
+#  spawn lynx or w3m to view the RFC, dump to file for offline viewing,
+#  or mail to an address. It also allows local and remote lookups of port,
+#  service, or proto numbers.
+#  .
+# URL: http://www.dewn.com/rfc/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=rfcutil
+version=3.2.2
+release=1
+source=(http://www.dewn.com/rfc/rfc-$version.tar.gz)
+
+build()
+{
+  cd rfc-$version
+
+  install -d $ROOT/bin
+  install rfc-$version $ROOT/bin/rfc
+
+  install -d $ROOT/share/man/man1
+  install -m 644 rfc.1 $ROOT/share/man/man1
+
+  install -d $ROOT/share/doc/rfcutil
+  install -m 644 README INSTALL $ROOT/share/doc/rfcutil
+}
+
+# EOF

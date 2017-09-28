@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: command-line WebDAV tool
+#  cadaver is a command-line WebDAV client. It supports resource
+#  upload/download/display, namespace operations (copy/move), collection
+#  deletion/creation, property manipulation, and locking operations.
+# URL: http://www.webdav.org/cadaver/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=cadaver
+version=0.23.2
+release=1
+source=(http://www.webdav.org/cadaver/cadaver-$version.tar.gz)
+
+build()
+{
+  cd cadaver-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix" \
+       --enable-threadsafe-ssl="posix" \
+       --with-ca-bundle \
+       --with-ssl="openssl"
+
+  make
+  make DESTDIR="$PKG" install
+}

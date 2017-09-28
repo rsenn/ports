@@ -1,0 +1,47 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:52 roman Exp $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=spuc
+version=cvs
+release=1
+source=(GNUmakefile
+        spuc-2.3-mingw32.patch
+        $mirror_sf/spuc/spuc_manual.pdf)
+
+build()
+{
+  export HOME=$(pwd)
+  echo "/1 :pserver:anonymous@spuc.cvs.sourceforge.net:2401/cvsroot/spuc A" >> .cvspass
+
+#  cvs -d:pserver:anonymous@spuc.cvs.sourceforge.net:/cvsroot/spuc login
+  cvs -z9 -d:pserver:anonymous@spuc.cvs.sourceforge.net:/cvsroot/spuc co spuc
+
+  cd spuc
+  patch -N -p1 -i $SRC/spuc-2.3-mingw32.patch
+
+  if [ "$host" != "$build" ]; then
+    export LIBTOOL="$host-libtool"
+  fi
+
+  cp $SRC/GNUmakefile .
+  make -i CXX="$CXX" ${LIBTOOL:+LIBTOOL="$LIBTOOL"}
+  make -i CXX="$CXX" prefix="$prefix" DESTDIR="$PKG" install
+
+  install -d $ROOT/lib
+  install -m 644 .libs/libspuc.a $ROOT/lib
+
+  find -name "*.h" >headers.list
+  tar -cvf headers.tar --files-from headers.list
+  install -d $ROOT/include/spuc
+  tar -C $ROOT/include/spuc -xvf headers.tar
+
+  install -d $ROOT/share/doc/$name-$version
+  install -m 644 $SRC/*.pdf $ROOT/share/doc/$name-$version
+  cp -rf examples $ROOT/share/doc/$name-$version
+  find $ROOT/share/doc/$name-$version -name CVS | xargs rm -rf
+}
+

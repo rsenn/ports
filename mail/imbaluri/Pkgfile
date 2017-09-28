@@ -1,0 +1,35 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A spam and virus check proxy for email servers.
+# Imabluri takes a message from your SMTP server, runs virus and spam
+# checks on it, and does some marking and logging. Afterwards, it hands
+# the message over to your mailbox system or IMAP/POP3 server. A daemon
+# approach minimizes the system load. A very small client program actually
+# takes the mail from the SMTP server, writes it to your hard drive, and
+# adds it to a MySQL database. The daemon is polled after the client stores
+# the message, and tries to spawn a child process that does the actual
+# checks. This project replaces vislog, which will no longer be mantained.
+#
+# URL: http://imbaluri.leenox.de
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libgcc1, libmysql++2c2a, libmysqlclient15off, libstdc++6
+
+name=imbaluri
+version=1.1.1
+release=1
+source=(http://imbaluri.leenox.de/tarballs/imbaluri-$version.tar.gz)
+
+build()
+{
+  cd imbaluri-$version
+
+  make
+  make PREFIX="$ROOT" install
+
+  install -d $ROOT/bin
+  install -m 755 imbaluri{c,d,eval,flush} $ROOT/bin
+
+  install -d $ROOT/share/doc/imbaluri
+  install -m 644 [A-Z]*[A-Z]* $ROOT/share/doc/imbaluri
+  install -m 644 misc/*.{html,sh} $ROOT/share/doc/imbaluri
+}

@@ -1,0 +1,25 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: MusicIP analysis tool.
+#  GenPuid is a command-line utility for generating the analysis data
+#  that the MusicIP mixer requires. GenPuid is part of the MusicDNS music
+#  recognition tools. GenPuid is free for non-commercial use.
+# URL: http://musicip.com/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=genpuid
+version=1.2
+release=1
+source=(http://www.musicip.com/dns/files/genpuid_linux_$version.tgz)
+
+build()
+{
+  cd genpuid-$version
+
+  install -d $ROOT/bin/
+  install -m 755 genpuid mipcore $ROOT/bin/
+
+  install -d $ROOT/share/doc/genpuid
+  install -m 644 *.txt $ROOT/share/doc/genpuid
+}

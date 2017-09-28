@@ -1,0 +1,51 @@
+# $Id: Pkgfile,v 1.22 2007/05/09 21:02:55 roman Exp $
+#
+# Description: The debian package manager.
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=rpm
+version=4.4.9
+release=4
+source=(http://www.sfr-fresh.com/linux/misc/rpm-$version.tar.gz
+        rpm-4.4.9-no-ownerdead.patch)
+
+build()
+{
+  cd rpm-$version
+
+  patch -N -p1 -i $SRC/rpm-4.4.9-no-ownerdead.patch
+
+  case ${prefix:="/usr"} in
+    /usr) sysconfdir="/etc" localstatedir="/var" ;;
+       *) sysconfdir="$prefix/etc" localstatedir="$prefix/var" ;;
+  esac
+
+  (echo '#!/bin/sh' && echo 'echo "$@"') >config.sub
+
+
+#  CPPFLAGS="-I$prefix/include/neon" \
+
+  CPPFLAGS="-I$(set -- $prefix/include/python2.* && test -e $1 && echo $1)" \
+  ./configure \
+        --build="${build:=$(${CC-cc} -dumpmachine)}" \
+        --host="${host:=$build}" \
+        --prefix="${prefix:=/usr}" \
+        --sysconfdir="${sysconfdir:=$prefix/etc}" \
+        --localstatedir="${localstatedir:=$prefix/var}" \
+        --with-installed-gettext \
+        --with-python \
+        --with-perl \
+        --with-apidocs \
+        --with-lua \
+        --with-syck \
+        --without-selinux
+
+  sed -i "s/-all-static//g" Makefile
+
+  make
+  make DESTDIR="$PKG" install
+
+  rm -f $ROOT/share/info/dir
+}

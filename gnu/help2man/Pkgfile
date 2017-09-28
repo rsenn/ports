@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: 
+# URL: 
+# Maintainer: 
+# Depends on: 
+
+name=help2man
+version=1.36.4
+release=1
+source=(http://ftp.gnu.org/gnu/help2man/help2man-$version.tar.gz)
+
+build() 
+{
+  cd help2man-$version
+  
+  autoreconf --force --verbose --install
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+  
+  make
+  make DESTDIR="$PKG" install
+
+  sed -i \
+      -e "1 { s,^#!.*/perl[\.0-9]*\$,#!/usr/bin/env perl, }" \
+      -e "1 { s,^#!.*/perl[\.0-9]*\\(.*\\)\$,#!/usr/bin/perl\\1, }" \
+    $ROOT/bin/*
+}
+
+# EOF

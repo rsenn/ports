@@ -1,0 +1,45 @@
+# $Id: Pkgfile,v 1.10 2007/04/22 23:07:53 roman Exp $
+#
+# Description: GNU Diffutils
+#  A group of utilities that displays difference between and among text
+#  files. 'diff' outputs the difference between two files in any of several
+#  formats. If the files are identical, it normally produces no ouput;
+#  if they are binary (non-text) it normally reports only that they are
+#  different. 'cmp' shows the offsets and files numbers where two files
+#  differ; it can also show, side by side, all the characters that differ
+#  between the two files. 'sdiff' merges two files interactively. 'diff3'
+#  shows differences among three files. If two people have made independent
+#  changes to a common original, diff3 reports that difference between the
+#  original and the two changed versions, and can produce a merged file
+#  that contains both persons' changes along with warnings about conflicts.
+# URL: http://www.gnu.org/software/diffutils/diffutils.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6
+
+name=diffutils
+version=2.8.1
+release=1
+source=($mirror_gnu/diffutils/diffutils-$version.tar.gz
+        udiff
+        diffutils-2.8.1-warning.patch)
+
+build()
+{
+  cd diffutils-$version
+
+  patch -N -p1 -i $SRC/diffutils-2.8.1-warning.patch
+
+  (echo "#!/bin/sh" && echo 'echo "$@"') >config/config.sub
+
+  ./configure \
+        --build="$build" \
+        --host="$host" \
+        --prefix="$prefix" \
+        --infodir="$prefix/share/info" \
+        --mandir="$prefix/share/man"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -m 755 $SRC/udiff $ROOT/bin
+}

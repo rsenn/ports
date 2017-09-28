@@ -1,0 +1,89 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: An easy-to-use rich text processor for Linux.
+#  Ted is a text processor running under X on Unix/Linux systems, with the
+#  ability to edit rich text documents on Unix/Linux in a WYSIWYG way. It
+#  also converts RTF to PostScript and PDF. RTF files from Ted are fully
+#  compatible with MS Word.
+# URL: http://www.nllgg.nl/ted/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=ted
+version=2.17
+release=1
+source=(ftp://ftp.nluug.nl/pub/editors/ted/ted-$version.src.tar.gz)
+
+build()
+{
+  cd Ted-${version}
+
+  sed -i -e 's,-lXp,-lXp -lXau,g;;s,-lXaum,-lXpm,g' \
+  -e 's,\(X_EXTRA_LIBS= @X_EXTRA_LIBS@\),\1 -lXau -lXdmcp,g' \
+  -e "s,-l\([A-Z][0-9A-Za-z]\+\),$prefix/lib/lib\1.a,g" \
+  -e 's,\$(HOME)/afm,\$(HOME)/fonts/afm,g' \
+  -e 's,\(\#[ \t]*define[ \t]*AFMDIR[ \t]*PKGDIR[ \t]*\)"/afm",\1"/fonts/afm",g' \
+  -e "s,/usr/X11R6,$prefix,g" \
+    Makefile \
+    Ted/aclocal.m4 \
+    Ted/configure \
+    Ted/makefile.in \
+    appFrame/aclocal.m4 \
+    appFrame/configure \
+    appFrame/appFrameConfig.h.in \
+    appUtil/configure \
+    bitmap/aclocal.m4 \
+    bitmap/configure \
+    ind/configure \
+    libreg/configure \
+    tedPackage/configure
+
+  case $target in
+    *linux*)
+      sed -i -e 's,-lm,-ldl -lm,;;s,-ldl -ldl,-ldl,g' Ted/makefile.in
+      ;;
+    *)
+      ;;
+  esac
+
+  make CONFIGURE_OPTIONS="--prefix=$prefix --with-MOTIF"
+#    XM_EXTRA_LIBS="$prefix/lib/libXp.a $prefix/lib/libXmu.a" \
+#    X_PRE_LIBS="$prefix/lib/libSM.a $prefix/lib/libICE.a
+
+  yes "n" | make DESTDIR="$PKG" install
+
+  tar -C $SRC -xvf tedPackage/TedBindist.tar
+
+  # install afm fonts
+  install -d $ROOT/fonts
+  mv $SRC/afm $ROOT/fonts
+
+  # install manuals
+  install -d $ROOT/man/man1
+  mv $SRC/Ted/*.1 $ROOT/man/man1
+
+  # install scripts
+  install -d $ROOT/bin
+
+  for script in $(ls -1 --color=no $SRC/Ted/*.sh | grep '/[0-9a-z]*.sh$')
+  do
+    script=${script##*/}
+    mv $SRC/Ted/$script $ROOT/bin/${script%.sh}
+    sed -i "/^PAPER=/a PATH=$prefix/bin" $ROOT/bin/*
+    chmod 755 $ROOT/bin/*
+  done
+
+  install -m 755 Ted/Ted $ROOT/bin
+
+  # install shared components
+  install -d $ROOT/share/Ted
+  mv $SRC/Ted/* $ROOT/share/Ted
+
+
+  copy_license "gpl.txt"
+}
+
+cleanup()
+{
+  :
+}

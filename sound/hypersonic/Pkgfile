@@ -1,0 +1,40 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A Python module for sound synthesis/manipulation.
+#  hYPerSonic allows you to build and manipulate signal processing pipelines
+#  from Python scripts. It is designed for real-time control. It includes
+#  objects for oscillators, filters, file IO, and soundcard and memory
+#  operations. It is low-level: every byte counts.
+#  .
+# URL: http://arrowtheory.com/software/hypersonic/index.html
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=hypersonic
+version=1.1.0
+release=1
+source=(http://arrowtheory.com/software/hypersonic/hypersonic-$version.tar.gz
+        hypersonic-1.1.0-fixes.patch)
+
+build()
+{
+  cd hypersonic-$version
+
+  patch -N -p1 <$SRC/hypersonic-1.1.0-fixes.patch
+
+  sh autogen.sh
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/hypersonic
+  install -m 644 CHANGES README TODO *.html $ROOT/share/doc/hypersonic
+}
+
+# EOF

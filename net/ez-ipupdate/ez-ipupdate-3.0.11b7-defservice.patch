@@ -1,0 +1,71 @@
+args: -r -u -N -- ez-ipupdate-3.0.11b7_orig ez-ipupdate-3.0.11b7
+diff -r -u -N -- ez-ipupdate-3.0.11b7_orig/Makefile ez-ipupdate-3.0.11b7/Makefile
+diff -r -u -N -- ez-ipupdate-3.0.11b7_orig/Makefile.am ez-ipupdate-3.0.11b7/Makefile.am
+--- ez-ipupdate-3.0.11b7_orig/Makefile.am	2008-11-14 22:28:49.000000000 +0100
++++ ez-ipupdate-3.0.11b7/Makefile.am	2008-11-14 22:55:37.000000000 +0100
+@@ -1,4 +1,6 @@
+-AM_CPPFLAGS = -DCONFIG_FILE=\"$(sysconfdir)/ez-ipupdate.conf\"
++AM_CPPFLAGS = -DCONFIG_FILE=\"$(sysconfdir)/ez-ipupdate.conf\" 
++
++#AM_CPPFLAGS += -DDEF_SERVICE=\"$(DEF_SERVICE)\"
+ 
+ bin_PROGRAMS = ez-ipupdate
+ 
+diff -r -u -N -- ez-ipupdate-3.0.11b7_orig/Makefile.in ez-ipupdate-3.0.11b7/Makefile.in
+diff -r -u -N -- ez-ipupdate-3.0.11b7_orig/autom4te.cache/output.0 ez-ipupdate-3.0.11b7/autom4te.cache/output.0
+diff -r -u -N -- ez-ipupdate-3.0.11b7_orig/autom4te.cache/output.1 ez-ipupdate-3.0.11b7/autom4te.cache/output.1
+diff -r -u -N -- ez-ipupdate-3.0.11b7_orig/autom4te.cache/requests ez-ipupdate-3.0.11b7/autom4te.cache/requests
+diff -r -u -N -- ez-ipupdate-3.0.11b7_orig/autom4te.cache/traces.0 ez-ipupdate-3.0.11b7/autom4te.cache/traces.0
+diff -r -u -N -- ez-ipupdate-3.0.11b7_orig/autom4te.cache/traces.1 ez-ipupdate-3.0.11b7/autom4te.cache/traces.1
+diff -r -u -N -- ez-ipupdate-3.0.11b7_orig/config.log ez-ipupdate-3.0.11b7/config.log
+diff -r -u -N -- ez-ipupdate-3.0.11b7_orig/config.status ez-ipupdate-3.0.11b7/config.status
+diff -r -u -N -- ez-ipupdate-3.0.11b7_orig/configure ez-ipupdate-3.0.11b7/configure
+diff -r -u -N -- ez-ipupdate-3.0.11b7_orig/configure.in ez-ipupdate-3.0.11b7/configure.in
+--- ez-ipupdate-3.0.11b7_orig/configure.in	2008-11-14 22:28:49.000000000 +0100
++++ ez-ipupdate-3.0.11b7/configure.in	2008-11-14 22:56:53.000000000 +0100
+@@ -111,6 +111,7 @@
+ 	      [ AC_MSG_RESULT(no) 
+                 use_SERVICE=null
+                 AC_MSG_WARN(not setting default service) ]   )
++DEF_SERVICE="$use_SERVICE"
+ case "$use_SERVICE" in
+   ezip ) AC_DEFINE(DEF_SERVICE, "ezip", [Default service]);;
+   ez-ip ) AC_DEFINE(DEF_SERVICE, "ezip");;
+@@ -130,10 +131,12 @@
+   hn ) AC_DEFINE(DEF_SERVICE, "hn");;
+   zoneedit ) AC_DEFINE(DEF_SERVICE, "zoneedit");;
+   heipv6tb ) AC_DEFINE(DEF_SERVICE, "heipv6tb");;
+-  null ) AC_DEFINE(DEF_SERVICE, "NULL");;
+-  "" ) ;;
++  null ) DEF_SERVICE="NULL"; dnl AC_DEFINE(DEF_SERVICE, "NULL")
++  ;;
++  "" ) DEF_SERVICE="NULL" ;;
+   * ) AC_MSG_ERROR(unknown default service type);;
+ esac
++AC_SUBST([DEF_SERVICE])
+ 
+ dnl check weather we want debugging support
+ dnl the default is to NOT use debugging support
+diff -r -u -N -- ez-ipupdate-3.0.11b7_orig/ez-ipupdate.c ez-ipupdate-3.0.11b7/ez-ipupdate.c
+--- ez-ipupdate-3.0.11b7_orig/ez-ipupdate.c	2008-11-14 22:28:49.000000000 +0100
++++ ez-ipupdate-3.0.11b7/ez-ipupdate.c	2008-11-14 23:00:25.000000000 +0100
+@@ -653,7 +653,7 @@
+     if(width > 60) { width = fprintf(stdout, "\n\t\t\t\t") -1 + 4*7; }
+     width += fprintf(stdout, "%s ", services[i].names[0]);
+   }
+-  fprintf(stdout, "\n");
++  fprintf(stdout, "(default: "DEF_SERVICE")\n");
+   fprintf(stdout, "  -t, --timeout <sec.millisec>\tthe amount of time to wait on I/O\n");
+   fprintf(stdout, "  -T, --connection-type <num>\tnumber sent to TZO as your connection \n\t\t\t\ttype (default: 1)\n");
+   fprintf(stdout, "  -U, --url <url>\t\tstring to send as the url parameter\n");
+@@ -4446,6 +4446,10 @@
+   *user = '\0';
+   timeout.tv_sec = DEFAULT_TIMEOUT;
+   timeout.tv_usec = 0;
++#ifndef DEF_SERVICE 
++#warning No DEF_SERVICE
++#define DEF_SERVICE NULL
++#endif
+   parse_service(DEF_SERVICE);
+ 
+ 

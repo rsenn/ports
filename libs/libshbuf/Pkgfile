@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A "shared buffer" IPC library.
+#  libshbuf introduces a new IPC concept: the "shared buffer", a more
+#  flexible and faster alternative for standard Unix FIFOs. Take some shared
+#  memory, flavour it with semaphore-based locking and change notifications,
+#  and refine it with an easy-to-use API and you get libshbuf's "shared
+#  buffers".
+# URL: http://0pointer.de/lennart/projects/libshbuf/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libshbuf
+version=0.0.3
+release=1
+source=(http://0pointer.de/lennart/projects/libshbuf/libshbuf-$version.tar.gz)
+
+build()
+{
+  cd libshbuf-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

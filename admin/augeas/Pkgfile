@@ -1,0 +1,39 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: HA configuration API.
+#  Augeas is a configuration API and editing tool. It parses common
+#  configuration files like /etc/hosts or /etc/grub.conf in their native
+#  formats and transforms them into a tree. Configuration changes are made by
+#  manipulating this tree and saving it back into native configuration files.
+#  .
+# URL: http://augeas.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=augeas
+version=0.5.0
+release=1
+source=(http://augeas.net/download/augeas-$version.tar.gz)
+
+build()
+{
+  cd augeas-$version
+
+  sed -i 's, -Werror,,g' configure
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/augeas
+  install -m 644 AUTHORS COPYING ChangeLog INSTALL NEWS README TODO $ROOT/share/doc/augeas
+
+  cp -rf docs/*.tex docs/naturaldocs $ROOT/share/doc/augeas
+}
+
+# EOF

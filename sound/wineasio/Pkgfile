@@ -1,0 +1,30 @@
+# $Id: Pkgfile 448 2008-08-17 22:16:04Z enki $
+#
+# Description: Provides an ASIO to JACK driver for WINE
+# ASIO is the most common Windows low-latency driver, so is commonly used
+# in audio workstation programs. (Wine's built-in JACK transport isn't a
+# Windows ASIO driver.)
+# URL: http://sourceforge.net/projects/wineasio/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libjack0, wine
+
+name=wineasio
+version=0.7.4
+release=1
+source=($mirror_sf/wineasio/wineasio-$version.tar.bz2
+        wineasio-0.7.4-asio_h.patch)
+
+build()
+{
+  cd wineasio
+
+  patch -N -p1 -i $SRC/wineasio-0.7.4-asio_h.patch
+
+  make CC="${CC-cc}" CFLAGS="$CFLAGS"
+
+  install -d $ROOT/lib/wine
+  install -m 755 *.so $ROOT/lib/wine
+
+  install -d $ROOT/share/doc/wineasio
+  install -m 644 [A-Z]*[A-Z]* $ROOT/share/doc/wineasio
+}

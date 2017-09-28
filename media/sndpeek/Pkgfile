@@ -1,0 +1,53 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Real-time audio visualization
+# sndpeek is just what it sounds (and looks) like:
+#   * real-time 3D animated display/playback
+#   * can use mic-input or wav/aiff/snd/raw/mat file (with playback)
+#   * time-domain waveform
+#   * FFT magnitude spectrum
+#   * 3D waterfall plot
+#   * lissajous! (interchannel correlation)
+#   * rotatable and scalable display
+#   * freeze frame! (for didactic purposes)
+#   * real-time spectral feature extraction (centroid, rms, flux, rolloff)
+#   * available on MacOS X, Linux, and Windows under GPL
+# URL: http://soundlab.cs.princeton.edu/software/sndpeek/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: freeglut3, libasound2, libc6, libgcc1, libgl1-mesa-glx, libglu1-mesa, libjack0, libsndfile1, libstdc++6, libx11-6, libxext6, libxi6, libxmu6
+
+name=sndpeek
+version=1.3
+release=1
+source=(http://soundlab.cs.princeton.edu/software/sndpeek/files/sndpeek-$version.tgz
+        sndpeek-1.3-cheaders.patch
+        #sndpeek-1.3-rtaudio-4.0.x.patch
+        sndpeek-1.3-rtaudio-3x.patch)
+
+build()
+{
+  cd ${srcdir=$SRC/sndpeek-$version}
+
+  patch -N -p1 -i $SRC/sndpeek-1.3-cheaders.patch
+  #patch -N -p1 -i $SRC/sndpeek-1.3-rtaudio-4.0.x.patch
+  #patch -N -p1 -i $SRC/sndpeek-1.3-rtaudio-3x.patch
+
+  for driver in jack alsa oss; do
+   (set -e 
+    cd src/sndpeek
+    DRIVER=`echo "$driver" | tr \[:{lower,upper}:\]`
+    make -f makefile.$driver \
+        CFLAGS="-D__UNIX_${DRIVER}__ -D__LINUX_${DRIVER}__ -D__LITTLE_ENDIAN__ \$(INCLUDES) ${CFLAGS--g -O2} -c" \
+        CC="${CC-gcc}" \
+        CPP="${CXX-g++}"
+
+    mv -f sndpeek sndpeek.$driver
+    make -f makefile.$driver clean) || exit $?
+  done
+
+  install -d $ROOT/bin
+  install -m 755 src/sndpeek/sndpeek.{jack,alsa,oss} $ROOT/bin/
+
+  install -d $ROOT/share/doc/sndpeek
+  install -m 644 AUTHORS COPYING INSTALL README THANKS TODO VERSIONS $ROOT/share/doc/sndpeek
+}

@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Debian Configuration Management System (C-implementation)
+#  Debconf is a configuration management system for Debian packages. It
+#  is used by some packages to prompt you for information before they are
+#  installed. This is a reimplementation of the original debconf version
+#  in C.
+#  .
+# URL:
+# Maintainer:  Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=cdebconf
+version=0.137
+release=1
+source=(http://ftp.de.debian.org/debian/pool/main/c/cdebconf/cdebconf_$version.tar.gz)
+
+build()
+{
+  cd cdebconf
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

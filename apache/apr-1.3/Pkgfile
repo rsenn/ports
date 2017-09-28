@@ -1,0 +1,52 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: The Apache Portable Runtime Library
+#  APR is Apache's Portable Runtime Library, designed to be a support library
+#  that provides a predictable and consistent interface to underlying
+#  platform-specific implementations.
+#  .
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=apr-1
+version=1.3.5
+release=1
+source=(http://www.apache.org/dist/apr/apr-$version.tar.bz2
+        apr-1.2.7-nosetsid.patch
+        apr-1.2.9-w32-compat-2.patch
+        apr-1.2.9-bsd-compat.patch
+        config.layout.patch)
+
+build()
+{
+  cd apr-$version
+
+  patch -N -p1 -i $SRC/apr-1.2.7-nosetsid.patch
+  patch -N -p0 -i $SRC/config.layout.patch
+
+  rm -f build/config.sub
+  autoreconf --force --verbose --install
+  libtoolize --copy --force --install
+  #(echo "#!/bin/sh" && echo 'echo "$@"') >config.sub
+
+  LTFLAGS="--tag=CC"
+
+  export LTFLAGS CFLAGS CPPFLAGS
+
+  ./configure \
+      --host="$host" \
+      --build="$build" \
+      --prefix="$prefix" \
+      --datadir="$prefix/share" \
+      --with-installbuilddir="$prefix/share/apr-1/build" \
+      --enable-layout="epiphyte" \
+      --with-devrandom="/dev/urandom" \
+      --enable-threads \
+      --enable-nonportable-atomics
+
+  make
+  make DESTDIR="$PKG" install
+  
+  install -d $ROOT/share/doc/apr-1
+  install -m 644 NOTICE CHANGES LICENSE $ROOT/share/doc/apr-1
+}

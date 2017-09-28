@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A package management library.
+#  libpackman, the GNUpdate Package Management library, provides a single
+#  API for accessing and modifying multiple package formats and package
+#  databases. Its module support allows for other developers to quickly
+#  provide support for new package formats and databases.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libpackman
+version=0.3.2
+release=1
+source=($mirror_sf/gnupdate/libpackman-$version.tar.gz)
+
+build()
+{
+  cd libpackman-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

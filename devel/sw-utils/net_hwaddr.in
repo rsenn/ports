@@ -1,0 +1,33 @@
+#!@prefix@/bin/sh
+
+: ${prefix=@prefix@}           # installation path
+: ${libdir=$prefix/lib}        # library path
+: ${shelldir=$libdir/nexshell} # shell script path
+
+# load network shell library
+source $shelldir/util
+source $shelldir/inet
+
+# check for arguments
+if [ "$#" = "0" ]; then
+  msg "Usage: $0 <ip address>"
+  exit 1
+fi
+
+ipaddr=$1
+
+# determine interface
+interface=$(inet_iface_by_ip "$ipaddr")
+
+if [ -z "$interface" ]; then
+  error "no such IP address:" $ipaddr
+fi
+
+# now that we got the interface we can get the MAC address
+hwaddr=$(inet_hwaddr "$interface")
+
+if [ -z "$hwaddr" ]; then
+  error "no such interface:" $interface
+fi
+
+echo "$hwaddr"

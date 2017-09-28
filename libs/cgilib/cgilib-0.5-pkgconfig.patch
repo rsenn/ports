@@ -1,0 +1,37 @@
+diff -ru cgilib-0.5_orig/Makefile cgilib-0.5/Makefile
+--- cgilib-0.5_orig/Makefile	2006-02-13 12:00:04.000000000 +0000
++++ cgilib-0.5/Makefile	2006-02-13 12:03:09.000000000 +0000
+@@ -15,6 +15,7 @@
+ #   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111, USA.
+ 
+ prefix = /usr
++version = 0.5
+ 
+ CC = gcc
+ CFLAGS = -fPIC -I. -Wall -O2 -g -DLibrary=\"cgilib\"
+@@ -45,8 +46,10 @@
+ 	$(LIBTOOL) --mode=install install -m 755 cgitest $(DESTDIR)$(prefix)/var/www/cgi-bin
+ 	install -d $(DESTDIR)$(prefix)/lib
+ 	$(LIBTOOL) --mode=install install -m 755 libcgi.la $(DESTDIR)$(prefix)/lib
+ 	install -d $(DESTDIR)$(prefix)/include
+ 	$(LIBTOOL) --mode=install install -m 644 cgi.h $(DESTDIR)$(prefix)/include
++	install -d $(DESTDIR)$(prefix)/lib/pkgconfig
++	sed -e "s,@prefix@,$(prefix),g;;s,@version@,$(version),g" < cgilib.pc.in > $(DESTDIR)$(prefix)/lib/pkgconfig/cgilib.pc
+ 
+ clean:
+ 	rm -f cgitest cgitest.lo jumpto jumpto.lo libcgi.la $(OBJS) *.[35].html
+diff -ruN cgilib-0.5_orig/cgilib.pc.in cgilib-0.5/cgilib.pc.in
+--- cgilib-0.5_orig/cgilib.pc.in	1970-01-01 00:00:00.000000000 +0000
++++ cgilib-0.5/cgilib.pc.in	2006-02-13 12:06:47.000000000 +0000
+@@ -0,0 +1,11 @@
++prefix=@prefix@
++exec_prefix=${prefix}
++libdir=${exec_prefix}/lib
++includedir=${prefix}/include
++
++Name: cgilib
++Description: The CGI Library
++Version: @version@
++Requires: 
++Libs: -L${libdir} -lcgi
++Cflags: -I${includedir} 

@@ -1,0 +1,35 @@
+# $Id: Pkgfile,v 1.3 2007/05/09 21:02:51 roman Exp $
+#
+# Description:
+# URL: http://www.mpfr.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=fltk2
+version=2.0.x-r6136
+release=1
+source=(http://ftp.easysw.com/pub/fltk/snapshots/fltk-$version.tar.bz2)
+
+build()
+{
+  cd fltk-$version
+
+  libtoolize --force --copy
+  aclocal --force
+  autoheader --force
+  automake --force --copy --foreign --add-missing
+  aclocal --force
+  autoconf --force
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --mandir="$prefix/share/man" \
+      --${static:=enable}-static \
+      --${shared:=enable}-shared \
+      --disable-nls
+
+  make
+  make DESTDIR="$PKG" install
+}

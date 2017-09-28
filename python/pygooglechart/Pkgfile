@@ -1,0 +1,23 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A complete wrapper for the Google Chart API.
+#  Python Google Chart is a complete wrapper for the Google Chart API.
+# URL: http://pygooglechart.slowchop.com/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=pygooglechart
+version=0.1.2
+release=1
+source=(http://pygooglechart.slowchop.com/files/download/pygooglechart-$version.tar.gz)
+
+build()
+{
+  cd pygooglechart-$version
+
+  python setup.py install --prefix="$ROOT"
+
+  install -d $ROOT/share/doc
+  cp -rf examples $ROOT/share/doc/$name-$version
+  cp COPYING PKG-INFO $ROOT/share/doc/$name-$version
+}

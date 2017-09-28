@@ -1,0 +1,39 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:52 roman Exp $
+#
+# Description: High-performance and Widely Portable MPI
+#  MPICH2 is a high-performance and widely portable implementation of the
+#  Message Passing Interface (MPI) standard (both MPI-1 and MPI-2). The goals
+#  of MPICH2 are: (1) to provide an MPI implementation that efficiently
+#  supports different computation and communication platforms including
+#  commodity clusters (desktop systems, shared-memory systems, multicore
+#  architectures), high-speed networks (10 Gigabit Ethernet, InfiniBand,
+#  Myrinet, Quadrics) and proprietary high-end computing systems (Blue Gene,
+#  Cray, SiCortex) and (2) to enable cutting-edge research in MPI through
+#  an easy-to-extend modular framework for other derived implementations.
+# URL: http://www.mcs.anl.gov/research/projects/mpich2/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=mpich2
+version=1.0.8
+release=1
+source=(http://www.mcs.anl.gov/research/projects/mpich2/downloads/tarballs/$version/mpich2-$version.tar.gz)
+
+build()
+{
+  cd mpich2-$version
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix"
+
+  make
+  make prefix="$ROOT" install
+
+  mkdir -p $ROOT/share/doc
+
+  mv -f $ROOT/doc $ROOT/share/doc/mpich2
+  mv -f $ROOT/www $ROOT/share/doc/mpich2
+}
+

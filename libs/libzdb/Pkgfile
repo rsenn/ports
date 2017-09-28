@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A high level multi-database API.
+#  The Zild C Database Library implements a small, fast, and easy to
+#  use database API with thread-safe connection pooling. The library can
+#  connect transparently to multiple database systems. It has zero runtime
+#  configuration and connections are specified via a URL scheme.
+#  .
+# URL: http://www.tildeslash.com/libzdb/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=libzdb
+version=2.2.3
+release=1
+source=(http://www.tildeslash.com/libzdb/dist/libzdb-2.2.3.tar.gz)
+
+build()
+{
+  cd libzdb-2.2.3
+./bootstrap
+./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+make
+make DESTDIR="$PKG" install
+}
+
+# EOF

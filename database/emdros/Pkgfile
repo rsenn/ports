@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A corpus query system for analyzed text.
+#  Emdros is a corpus query system for storing and searching linguistically
+#  annotated text. It is very generic, supporting almost any kind of
+#  annotation from almost any linguistic theory. All linguistic levels of
+#  analysis are supported, including phonology, morphology, the lexical
+#  level, syntax, and discourse. The core libraries act as a middleware
+#  layer between a client and an underlying SQL database. MySQL, PostgreSQL,
+#  and SQLite are supported.
+# URL: http://emdros.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=emdros
+version=3.0.1
+release=1
+source=($mirror_sf/emdros/emdros-$version.tar.gz)
+
+build()
+{
+  cd emdros-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

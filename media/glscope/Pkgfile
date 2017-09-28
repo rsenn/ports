@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: glScope is an audio oscilloscope program that uses OpenGL, GLUT, and ALSA
+# The UI is sort of an experiment in more fluid, intuitive interfaces, and
+# therefore is a departure from the traditional fixed-grid-knobs-and-switches
+# interface on most real oscilloscopes.
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=glscope
+version=1.0
+release=1
+source=(http://luke.no-ip.org/code/downloads/glscope.tar.gz)
+
+build()
+{
+  cd glscope
+
+  rm -f glscope
+
+  make
+
+  install -d $ROOT/bin
+  install -m 755 glscope $ROOT/bin/
+
+  install -d $ROOT/share/doc/$name
+  install -m 644 README $ROOT/share/doc/$name/
+}

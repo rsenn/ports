@@ -1,0 +1,24 @@
+Index: src/makefile
+===================================================================
+--- src/makefile	(revision 31)
++++ src/makefile	(working copy)
+@@ -47,8 +47,8 @@
+ endif
+ 
+ 
+-LUA_LIB = -L $(LUA_DIR)/lib -llua $(DL_LIB)
+-LUA_INC = -I$(LUA_DIR)/include
++LUA_LIB = `pkg-config lua5.1 --libs`
++LUA_INC = `pkg-config lua5.1 --cflags`
+ 
+ LDFLAGS = -L.
+ INCLUDE = -I.
+@@ -87,7 +87,7 @@
+ 	gcc $(CFLAGS) -c -o $*.o $*.c
+ 	
+ msq.h: hdrs$(_EXE) $(HDRS)
+-	hdrs $(HDRS) > msq.h
++	./hdrs $(HDRS) > msq.h
+ 
+ hdrs$(_EXE): hdrs.c
+ 	gcc -O2 -s -o $@ $<

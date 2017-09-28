@@ -1,0 +1,896 @@
+diff -ru gcc-4.2.2_orig/Makefile.in gcc-4.2.2/Makefile.in
+--- gcc-4.2.2_orig/Makefile.in	2007-11-21 10:16:44.000000000 +0100
++++ gcc-4.2.2/Makefile.in	2007-11-21 10:21:02.000000000 +0100
+@@ -41843,6 +41843,18 @@
+ 	@: $(MAKE); $(unstage)
+ stage:
+ 	@: $(MAKE); $(stage)
++	$(INSTALL) -d $(DESTDIR)$(includedir)/gcc; \
++	files='$(INSTALL_HEADERS)'; \
++	for i in $$files; do \
++		$(INSTALL_DATA) $(srcdir)/$$i $(DESTDIR)$(includedir)/gcc/; \
++	done
++
++INSTALL_HEADERS = \
++	include/libiberty.h \
++	include/obstack.h \
++	include/splay-tree.h \
++	include/safe-ctype.h \
++	include/filenames.h
+ 
+ # Disable commands for lean bootstrap.
+ LEAN = false
+Only in gcc-4.2.2: Makefile.in.orig
+diff -ru gcc-4.2.2_orig/gcc/Makefile.in gcc-4.2.2/gcc/Makefile.in
+--- gcc-4.2.2_orig/gcc/Makefile.in	2007-11-21 10:16:37.000000000 +0100
++++ gcc-4.2.2/gcc/Makefile.in	2007-11-21 10:21:02.000000000 +0100
+@@ -483,13 +483,13 @@
+ # Directory in which to find other cross-compilation tools and headers.
+ dollar = @dollar@
+ # Used in install-cross.
+-gcc_tooldir = @gcc_tooldir@
++gcc_tooldir = $(prefix)/$(target_noncanonical)
+ # Used to install the shared libgcc.
+ slibdir = @slibdir@
+ # Since gcc_tooldir does not exist at build-time, use -B$(build_tooldir)/bin/
+ build_tooldir = $(exec_prefix)/$(target_noncanonical)
+ # Directory in which the compiler finds target-independent g++ includes.
+-gcc_gxx_include_dir = @gcc_gxx_include_dir@
++gcc_gxx_include_dir = $(gcc_tooldir)/include/c++/$(version)
+ # Directory to search for site-specific includes.
+ local_includedir = $(local_prefix)/include
+ includedir = $(prefix)/include
+@@ -669,7 +669,7 @@
+ 
+ # Native linker and preprocessor flags.  For x-fragment overrides.
+ BUILD_LDFLAGS=$(LDFLAGS)
+-BUILD_CPPFLAGS=$(ALL_CPPFLAGS)
++BUILD_CPPFLAGS=$(filter-out $(CPPFLAGS),$(ALL_CPPFLAGS))
+ 
+ # Actual name to use when installing a native compiler.
+ GCC_INSTALL_NAME := $(shell echo gcc|sed '$(program_transform_name)')
+@@ -3066,7 +3066,6 @@
+   -DGPLUSPLUS_TOOL_INCLUDE_DIR=\"$(gcc_gxx_include_dir)/$(target_noncanonical)\" \
+   -DGPLUSPLUS_BACKWARD_INCLUDE_DIR=\"$(gcc_gxx_include_dir)/backward\" \
+   -DLOCAL_INCLUDE_DIR=\"$(local_includedir)\" \
+-  -DCROSS_INCLUDE_DIR=\"$(CROSS_SYSTEM_HEADER_DIR)\" \
+   -DTOOL_INCLUDE_DIR=\"$(gcc_tooldir)/include\" \
+   @TARGET_SYSTEM_ROOT_DEFINE@
+ 
+@@ -3854,6 +3843,621 @@
+ 	    fi; \
+ 	  done; \
+ 	fi
++	for d in $(sort $(dir $(COMPILER_HEADERS))); do \
++		$(INSTALL) -d $(DESTDIR)$(includedir)/gcc/$$d; \
++	done ; \
++	$(INSTALL) -d $(DESTDIR)$(includedir)/gcc; \
++	files='$(COMPILER_HEADERS)'; \
++	for i in $$files; do \
++		$(INSTALL_DATA) $(srcdir)/$$i $(DESTDIR)$(includedir)/gcc/$$i; \
++	done; \
++	files='$(COMPILER_CONFIG)'; \
++	for c in $$files; do \
++		$(INSTALL_DATA) $$c $(DESTDIR)$(includedir)/gcc/$$c; \
++	done
++
++COMPILER_CONFIG = \
++  config.h \
++  insn-config.h \
++  insn-modes.h \
++  auto-host.h \
++  gtype-desc.h \
++  tree-check.h \
++  genrtl.h
++
++COMPILER_HEADERS = \
++  alias.h \
++  alloc-pool.h \
++  basic-block.h \
++  bitmap.h \
++  builtin-attrs.def \
++  builtin-types.def \
++  builtins.def \
++  c-common.def \
++  c-common.h \
++  c-format.h \
++  c-incpath.h \
++  c-objc-common.h \
++  c-pragma.h \
++  c-pretty-print.h \
++  c-tree.h \
++  cfghooks.h \
++  cfglayout.h \
++  cfgloop.h \
++  cgraph.h \
++  collect2.h \
++  conditions.h \
++  config/alpha/alpha-modes.def \
++  config/alpha/alpha-protos.h \
++  config/alpha/alpha.h \
++  config/alpha/elf.h \
++  config/alpha/freebsd.h \
++  config/alpha/gnu.h \
++  config/alpha/linux-elf.h \
++  config/alpha/linux-unwind.h \
++  config/alpha/linux.h \
++  config/alpha/netbsd.h \
++  config/alpha/openbsd.h \
++  config/alpha/osf.h \
++  config/alpha/osf5.h \
++  config/alpha/unicosmk.h \
++  config/alpha/va_list.h \
++  config/alpha/vms-unwind.h \
++  config/alpha/vms.h \
++  config/alpha/vms64.h \
++  config/alpha/xm-vms.h \
++  config/arc/arc-modes.def \
++  config/arc/arc-protos.h \
++  config/arc/arc.h \
++  config/arm/aof.h \
++  config/arm/aout.h \
++  config/arm/arm-cores.def \
++  config/arm/arm-modes.def \
++  config/arm/arm-protos.h \
++  config/arm/arm.h \
++  config/arm/bpabi.h \
++  config/arm/coff.h \
++  config/arm/ecos-elf.h \
++  config/arm/elf.h \
++  config/arm/freebsd.h \
++  config/arm/kaos-arm.h \
++  config/arm/kaos-strongarm.h \
++  config/arm/linux-eabi.h \
++  config/arm/linux-elf.h \
++  config/arm/linux-gas.h \
++  config/arm/mmintrin.h \
++  config/arm/netbsd-elf.h \
++  config/arm/netbsd.h \
++  config/arm/pe.h \
++  config/arm/rtems-elf.h \
++  config/arm/semi.h \
++  config/arm/semiaof.h \
++  config/arm/strongarm-coff.h \
++  config/arm/strongarm-elf.h \
++  config/arm/strongarm-pe.h \
++  config/arm/symbian.h \
++  config/arm/uclinux-elf.h \
++  config/arm/unknown-elf.h \
++  config/arm/unwind-arm.h \
++  config/arm/vxworks.h \
++  config/arm/wince-pe.h \
++  config/arm/xscale-coff.h \
++  config/arm/xscale-elf.h \
++  config/avr/avr-protos.h \
++  config/avr/avr.h \
++  config/avr/rtems.h \
++  config/bfin/bfin-modes.def \
++  config/bfin/bfin-protos.h \
++  config/bfin/bfin.h \
++  config/bfin/elf.h \
++  config/bfin/uclinux.h \
++  config/c4x/c4x-modes.def \
++  config/c4x/c4x-protos.h \
++  config/c4x/c4x.h \
++  config/c4x/rtems.h \
++  config/chorus.h \
++  config/cris/aout.h \
++  config/cris/cris-protos.h \
++  config/cris/cris.h \
++  config/cris/linux.h \
++  config/crx/crx-protos.h \
++  config/crx/crx.h \
++  config/darwin-protos.h \
++  config/darwin.h \
++  config/dbx.h \
++  config/dbxcoff.h \
++  config/dbxelf.h \
++  config/elfos.h \
++  config/fp-bit.h \
++  config/fr30/fr30-protos.h \
++  config/fr30/fr30.h \
++  config/freebsd-nthr.h \
++  config/freebsd-spec.h \
++  config/freebsd.h \
++  config/frv/frv-abi.h \
++  config/frv/frv-asm.h \
++  config/frv/frv-modes.def \
++  config/frv/frv-protos.h \
++  config/frv/frv.h \
++  config/frv/linux.h \
++  config/gnu.h \
++  config/gofast.h \
++  config/h8300/coff.h \
++  config/h8300/elf.h \
++  config/h8300/h8300-protos.h \
++  config/h8300/h8300.h \
++  config/h8300/rtems.h \
++  config/host-darwin.h \
++  config/i386/att.h \
++  config/i386/beos-elf.h \
++  config/i386/biarch64.h \
++  config/i386/bsd.h \
++  config/i386/crtdll.h \
++  config/i386/cygming.h \
++  config/i386/cygwin.h \
++  config/i386/darwin.h \
++  config/i386/djgpp.h \
++  config/i386/emmintrin.h \
++  config/i386/freebsd.h \
++  config/i386/freebsd64.h \
++  config/i386/gas.h \
++  config/i386/gmm_malloc.h \
++  config/i386/gnu.h \
++  config/i386/gstabs.h \
++  config/i386/i386-aout.h \
++  config/i386/i386-coff.h \
++  config/i386/i386-interix.h \
++  config/i386/i386-interix3.h \
++  config/i386/i386-modes.def \
++  config/i386/i386-protos.h \
++  config/i386/i386.h \
++  config/i386/i386elf.h \
++  config/i386/kaos-i386.h \
++  config/i386/kfreebsd-gnu.h \
++  config/i386/knetbsd-gnu.h \
++  config/i386/linux-unwind.h \
++  config/i386/linux.h \
++  config/i386/linux64.h \
++  config/i386/lynx.h \
++  config/i386/mach.h \
++  config/i386/mingw32.h \
++  config/i386/mm3dnow.h \
++  config/i386/mmintrin.h \
++  config/i386/netbsd-elf.h \
++  config/i386/netbsd.h \
++  config/i386/netbsd64.h \
++  config/i386/netware-libgcc.def \
++  config/i386/netware.h \
++  config/i386/nto.h \
++  config/i386/nwld.h \
++  config/i386/openbsd.h \
++  config/i386/openbsdelf.h \
++  config/i386/pmm_malloc.h \
++  config/i386/pmmintrin.h \
++  config/i386/ptx4-i.h \
++  config/i386/rtemself.h \
++  config/i386/sco5.h \
++  config/i386/sol2-10.h \
++  config/i386/sol2.h \
++  config/i386/sysv4-cpp.h \
++  config/i386/sysv4.h \
++  config/i386/sysv5.h \
++  config/i386/unix.h \
++  config/i386/uwin.h \
++  config/i386/vxworks.h \
++  config/i386/vxworksae.h \
++  config/i386/x86-64.h \
++  config/i386/xm-cygwin.h \
++  config/i386/xm-djgpp.h \
++  config/i386/xm-mingw32.h \
++  config/i386/xmmintrin.h \
++  config/ia64/elf.h \
++  config/ia64/freebsd.h \
++  config/ia64/hpux.h \
++  config/ia64/ia64-modes.def \
++  config/ia64/ia64-protos.h \
++  config/ia64/ia64.h \
++  config/ia64/ia64intrin.h \
++  config/ia64/linux-unwind.h \
++  config/ia64/linux.h \
++  config/ia64/sysv4.h \
++  config/ia64/unwind-ia64.h \
++  config/interix.h \
++  config/interix3.h \
++  config/iq2000/iq2000-protos.h \
++  config/iq2000/iq2000.h \
++  config/kaos.h \
++  config/kfreebsd-gnu.h \
++  config/knetbsd-gnu.h \
++  config/libgloss.h \
++  config/linux.h \
++  config/lynx.h \
++  config/m32c/m32c-modes.def \
++  config/m32c/m32c-protos.h \
++  config/m32c/m32c.h \
++  config/m32r/linux.h \
++  config/m32r/little.h \
++  config/m32r/m32r-protos.h \
++  config/m32r/m32r.h \
++  config/m68hc11/m68hc11-protos.h \
++  config/m68hc11/m68hc11.h \
++  config/m68hc11/m68hc12.h \
++  config/m68k/coff.h \
++  config/m68k/linux.h \
++  config/m68k/m68020-elf.h \
++  config/m68k/m68k-aout.h \
++  config/m68k/m68k-modes.def \
++  config/m68k/m68k-none.h \
++  config/m68k/m68k-protos.h \
++  config/m68k/m68k.h \
++  config/m68k/m68kelf.h \
++  config/m68k/m68kemb.h \
++  config/m68k/math-68881.h \
++  config/m68k/netbsd-elf.h \
++  config/m68k/openbsd.h \
++  config/m68k/rtemself.h \
++  config/m68k/uclinux.h \
++  config/mcore/mcore-elf.h \
++  config/mcore/mcore-pe.h \
++  config/mcore/mcore-protos.h \
++  config/mcore/mcore.h \
++  config/mips/dbxmdebug.h \
++  config/mips/elf.h \
++  config/mips/elforion.h \
++  config/mips/iris.h \
++  config/mips/iris5.h \
++  config/mips/iris6.h \
++  config/mips/linux-unwind.h \
++  config/mips/linux.h \
++  config/mips/linux64.h \
++  config/mips/mips-modes.def \
++  config/mips/mips-protos.h \
++  config/mips/mips.h \
++  config/mips/netbsd.h \
++  config/mips/openbsd.h \
++  config/mips/r3900.h \
++  config/mips/rtems.h \
++  config/mips/sdb.h \
++  config/mips/vr.h \
++  config/mips/vxworks.h \
++  config/mips/windiss.h \
++  config/mmix/mmix-modes.def \
++  config/mmix/mmix-protos.h \
++  config/mmix/mmix.h \
++  config/mn10300/linux.h \
++  config/mn10300/mn10300-protos.h \
++  config/mn10300/mn10300.h \
++  config/mt/mt-protos.h \
++  config/mt/mt.h \
++  config/netbsd-aout.h \
++  config/netbsd-elf.h \
++  config/netbsd.h \
++  config/openbsd-oldgas.h \
++  config/openbsd.h \
++  config/pa/elf.h \
++  config/pa/hpux-unwind.h \
++  config/pa/linux-unwind.h \
++  config/pa/pa-64.h \
++  config/pa/pa-hpux.h \
++  config/pa/pa-hpux10.h \
++  config/pa/pa-hpux1010.h \
++  config/pa/pa-hpux11.h \
++  config/pa/pa-hpux1111.h \
++  config/pa/pa-linux.h \
++  config/pa/pa-modes.def \
++  config/pa/pa-osf.h \
++  config/pa/pa-pro-end.h \
++  config/pa/pa-protos.h \
++  config/pa/pa.h \
++  config/pa/pa32-linux.h \
++  config/pa/pa32-regs.h \
++  config/pa/pa64-hpux.h \
++  config/pa/pa64-linux.h \
++  config/pa/pa64-regs.h \
++  config/pa/pa64-start.h \
++  config/pa/som.h \
++  config/pdp11/2bsd.h \
++  config/pdp11/pdp11-modes.def \
++  config/pdp11/pdp11-protos.h \
++  config/pdp11/pdp11.h \
++  config/ptx4.h \
++  config/rs6000/aix.h \
++  config/rs6000/aix41.h \
++  config/rs6000/aix43.h \
++  config/rs6000/aix51.h \
++  config/rs6000/aix52.h \
++  config/rs6000/altivec.h \
++  config/rs6000/beos.h \
++  config/rs6000/biarch64.h \
++  config/rs6000/darwin-asm.h \
++  config/rs6000/darwin-unwind.h \
++  config/rs6000/darwin.h \
++  config/rs6000/darwin7.h \
++  config/rs6000/darwin8.h \
++  config/rs6000/default64.h \
++  config/rs6000/e500-double.h \
++  config/rs6000/eabi.h \
++  config/rs6000/eabialtivec.h \
++  config/rs6000/eabisim.h \
++  config/rs6000/eabispe.h \
++  config/rs6000/freebsd.h \
++  config/rs6000/gnu.h \
++  config/rs6000/kaos-ppc.h \
++  config/rs6000/linux-unwind.h \
++  config/rs6000/linux.h \
++  config/rs6000/linux64.h \
++  config/rs6000/linuxaltivec.h \
++  config/rs6000/linuxspe.h \
++  config/rs6000/lynx.h \
++  config/rs6000/netbsd.h \
++  config/rs6000/ppc-asm.h \
++  config/rs6000/rs6000-modes.def \
++  config/rs6000/rs6000-protos.h \
++  config/rs6000/rs6000.h \
++  config/rs6000/rtems.h \
++  config/rs6000/secureplt.h \
++  config/rs6000/spe.h \
++  config/rs6000/sysv4.h \
++  config/rs6000/sysv4le.h \
++  config/rs6000/vxworks.h \
++  config/rs6000/vxworksae.h \
++  config/rs6000/windiss.h \
++  config/rs6000/xcoff.h \
++  config/rtems.h \
++  config/s390/fixdfdi.h \
++  config/s390/linux-unwind.h \
++  config/s390/linux.h \
++  config/s390/s390-modes.def \
++  config/s390/s390-protos.h \
++  config/s390/s390.h \
++  config/s390/s390x.h \
++  config/s390/tpf-unwind.h \
++  config/s390/tpf.h \
++  config/sh/coff.h \
++  config/sh/elf.h \
++  config/sh/embed-elf.h \
++  config/sh/kaos-sh.h \
++  config/sh/linux-unwind.h \
++  config/sh/linux.h \
++  config/sh/little.h \
++  config/sh/netbsd-elf.h \
++  config/sh/newlib.h \
++  config/sh/rtems.h \
++  config/sh/rtemself.h \
++  config/sh/sh-modes.def \
++  config/sh/sh-protos.h \
++  config/sh/sh.h \
++  config/sh/sh64.h \
++  config/sh/shmedia.h \
++  config/sh/sshmedia.h \
++  config/sh/superh.h \
++  config/sh/superh64.h \
++  config/sh/symbian-post.h \
++  config/sh/symbian-pre.h \
++  config/sh/ushmedia.h \
++  config/sh/vxworks.h \
++  config/sol2-protos.h \
++  config/sol2.h \
++  config/sol26.h \
++  config/sparc/biarch64.h \
++  config/sparc/freebsd.h \
++  config/sparc/linux-unwind.h \
++  config/sparc/linux.h \
++  config/sparc/linux64.h \
++  config/sparc/netbsd-elf.h \
++  config/sparc/openbsd1-64.h \
++  config/sparc/openbsd64.h \
++  config/sparc/rtemself.h \
++  config/sparc/sol2-64.h \
++  config/sparc/sol2-bi.h \
++  config/sparc/sol2-gas-bi.h \
++  config/sparc/sol2-gas.h \
++  config/sparc/sol2-gld-bi.h \
++  config/sparc/sol2-gld.h \
++  config/sparc/sol2.h \
++  config/sparc/sol26-sld.h \
++  config/sparc/sp-elf.h \
++  config/sparc/sp64-elf.h \
++  config/sparc/sparc-modes.def \
++  config/sparc/sparc-protos.h \
++  config/sparc/sparc.h \
++  config/sparc/sysv4-only.h \
++  config/sparc/sysv4.h \
++  config/stormy16/stormy16-protos.h \
++  config/stormy16/stormy16.h \
++  config/svr3.h \
++  config/svr4.h \
++  config/tm-dwarf2.h \
++  config/usegas.h \
++  config/v850/v850-protos.h \
++  config/v850/v850.h \
++  config/vax/bsd.h \
++  config/vax/elf.h \
++  config/vax/netbsd-elf.h \
++  config/vax/netbsd.h \
++  config/vax/openbsd.h \
++  config/vax/openbsd1.h \
++  config/vax/ultrix.h \
++  config/vax/vax-modes.def \
++  config/vax/vax-protos.h \
++  config/vax/vax.h \
++  config/vax/vaxv.h \
++  config/vx-common.h \
++  config/vxworks.h \
++  config/vxworksae.h \
++  config/windiss.h \
++  config/xtensa/elf.h \
++  config/xtensa/linux.h \
++  config/xtensa/xtensa-protos.h \
++  config/xtensa/xtensa.h \
++  convert.h \
++  coretypes.h \
++  coverage.h \
++  cp/cfns.h \
++  cp/cp-objcp-common.h \
++  cp/cp-tree.def \
++  cp/cp-tree.h \
++  cp/cxx-pretty-print.h \
++  cp/decl.h \
++  cp/lang-specs.h \
++  cp/name-lookup.h \
++  cp/operators.def \
++  cppdefault.h \
++  cselib.h \
++  dbxout.h \
++  ddg.h \
++  debug.h \
++  defaults.h \
++  df.h \
++  diagnostic.def \
++  diagnostic.h \
++  domwalk.h \
++  dwarf.h \
++  dwarf2.h \
++  dwarf2asm.h \
++  dwarf2out.h \
++  emit-rtl.h \
++  errors.h \
++  et-forest.h \
++  except.h \
++  expr.h \
++  flags.h \
++  function.h \
++  gbl-ctors.h \
++  gcc.h \
++  gcov-io.h \
++  genattrtab.h \
++  gengtype-yacc.h \
++  gengtype.h \
++  genrtl.h \
++  gensupport.h \
++  ggc.h \
++  ginclude/float.h \
++  ginclude/iso646.h \
++  ginclude/stdarg.h \
++  ginclude/stdbool.h \
++  ginclude/stddef.h \
++  ginclude/varargs.h \
++  glimits.h \
++  graph.h \
++  gstab.h \
++  gsyms.h \
++  gsyslimits.h \
++  gthr-aix.h \
++  gthr-dce.h \
++  gthr-gnat.h \
++  gthr-lynx.h \
++  gthr-nks.h \
++  gthr-posix.h \
++  gthr-posix95.h \
++  gthr-rtems.h \
++  gthr-single.h \
++  gthr-solaris.h \
++  gthr-tpf.h \
++  gthr-vxworks.h \
++  gthr-win32.h \
++  gthr.h \
++  hard-reg-set.h \
++  hooks.h \
++  hosthooks-def.h \
++  hosthooks.h \
++  hwint.h \
++  input.h \
++  insn-addr.h \
++  insn-notes.def \
++  integrate.h \
++  intl.h \
++  ipa-prop.h \
++  ipa-reference.h \
++  ipa-type-escape.h \
++  ipa-utils.h \
++  lambda.h \
++  langhooks-def.h \
++  langhooks.h \
++  libfuncs.h \
++  libgcc2.h \
++  limitx.h \
++  limity.h \
++  longlong.h \
++  machmode.def \
++  machmode.h \
++  mode-classes.def \
++  objcp/lang-specs.h \
++  objcp/objcp-decl.h \
++  optabs.h \
++  opts.h \
++  output.h \
++  params.def \
++  params.h \
++  pointer-set.h \
++  predict.def \
++  predict.h \
++  prefix.h \
++  pretty-print.h \
++  real.h \
++  recog.h \
++  reg-notes.def \
++  regs.h \
++  reload.h \
++  resource.h \
++  rtl.def \
++  rtl.h \
++  rtlhooks-def.h \
++  sbitmap.h \
++  scan.h \
++  sched-int.h \
++  sdbout.h \
++  sreal.h \
++  stab.def \
++  statistics.h \
++  sys-protos.h \
++  sys-types.h \
++  system.h \
++  target-def.h \
++  target.h \
++  targhooks.h \
++  timevar.def \
++  timevar.h \
++  toplev.h \
++  tree-browser.def \
++  tree-chrec.h \
++  tree-data-ref.h \
++  tree-dump.h \
++  tree-flow-inline.h \
++  tree-flow.h \
++  tree-gimple.h \
++  tree-inline.h \
++  tree-iterator.h \
++  tree-mudflap.h \
++  tree-pass.h \
++  tree-scalar-evolution.h \
++  tree-ssa-live.h \
++  tree-ssa-operands.h \
++  tree-ssa-opfinalize.h \
++  tree-ssa-propagate.h \
++  tree-ssa-structalias.h \
++  tree-stdarg.h \
++  tree-vectorizer.h \
++  tree.def \
++  tree.h \
++  treelang/lang-specs.h \
++  treelang/treelang.h \
++  treelang/treetree.h \
++  treestruct.def \
++  tsystem.h \
++  typeclass.h \
++  unwind-compat.h \
++  unwind-dw2-fde.h \
++  unwind-dw2.h \
++  unwind-generic.h \
++  unwind-pe.h \
++  value-prof.h \
++  varray.h \
++  vec.h \
++  version.h \
++  vmsdbg.h \
++  xcoff.h \
++  xcoffout.h
+ 
+ # Create or recreate the gcc private include file directory.
+ install-include-dir: installdirs
+Only in gcc-4.2.2/gcc: Makefile.in.orig
+Only in gcc-4.2.2/gcc: Makefile.in.rej
+diff -ru gcc-4.2.2_orig/gcc/config/host-linux.c gcc-4.2.2/gcc/config/host-linux.c
+--- gcc-4.2.2_orig/gcc/config/host-linux.c	2007-11-21 10:16:37.000000000 +0100
++++ gcc-4.2.2/gcc/config/host-linux.c	2007-11-21 10:21:02.000000000 +0100
+@@ -64,6 +64,10 @@
+ #undef HOST_HOOKS_GT_PCH_USE_ADDRESS
+ #define HOST_HOOKS_GT_PCH_USE_ADDRESS linux_gt_pch_use_address
+ 
++#ifndef SSIZE_MAX
++#define SSIZE_MAX 2147483647
++#endif //ndef SSIZE_MAX
++
+ /* For various ports, try to guess a fixed spot in the vm space
+    that's probably free.  */
+ #if defined(__alpha)
+Only in gcc-4.2.2/gcc/config: host-linux.c.orig
+diff -ru gcc-4.2.2_orig/gcc/config/i386/mingw32.h gcc-4.2.2/gcc/config/i386/mingw32.h
+--- gcc-4.2.2_orig/gcc/config/i386/mingw32.h	2007-11-21 10:16:37.000000000 +0100
++++ gcc-4.2.2/gcc/config/i386/mingw32.h	2007-11-21 10:21:02.000000000 +0100
+@@ -37,7 +37,7 @@
+ /* Override the standard choice of /usr/include as the default prefix
+    to try when searching for header files.  */
+ #undef STANDARD_INCLUDE_DIR
+-#define STANDARD_INCLUDE_DIR "/mingw/include"
++#define STANDARD_INCLUDE_DIR "/Dev-Cpp/include"
+ #undef STANDARD_INCLUDE_COMPONENT
+ #define STANDARD_INCLUDE_COMPONENT "MINGW"
+ 
+@@ -70,7 +70,7 @@
+ 
+ /* Override startfile prefix defaults.  */
+ #ifndef STANDARD_STARTFILE_PREFIX_1
+-#define STANDARD_STARTFILE_PREFIX_1 "/mingw/lib/"
++#define STANDARD_STARTFILE_PREFIX_1 "/Dev-Cpp/lib/"
+ #endif
+ #ifndef STANDARD_STARTFILE_PREFIX_2
+ #define STANDARD_STARTFILE_PREFIX_2 ""
+Only in gcc-4.2.2/gcc/config/i386: mingw32.h.orig
+Only in gcc-4.2.2/gcc/config/i386: t-mingw32.orig
+Only in gcc-4.2.2/gcc/config/i386: t-mingw32.rej
+Only in gcc-4.2.2_orig: gcc-4.2.2
+diff -ru gcc-4.2.2_orig/include/libiberty.h gcc-4.2.2/include/libiberty.h
+--- gcc-4.2.2_orig/include/libiberty.h	2007-11-21 10:16:43.000000000 +0100
++++ gcc-4.2.2/include/libiberty.h	2007-11-21 10:21:02.000000000 +0100
+@@ -181,7 +181,7 @@
+ /* Get the current time.  */
+ /* Prototypes vary from system to system, so we only provide a
+    prototype on systems where we know that we need it.  */
+-#ifdef __MINGW32__
++#if 0
+ /* Forward declaration to avoid #include <sys/time.h>.   */
+ struct timeval;
+ extern int gettimeofday (struct timeval *, void *); 
+diff -ru gcc-4.2.2_orig/libcpp/Makefile.in gcc-4.2.2/libcpp/Makefile.in
+--- gcc-4.2.2_orig/libcpp/Makefile.in	2007-11-21 10:16:45.000000000 +0100
++++ gcc-4.2.2/libcpp/Makefile.in	2007-11-21 10:21:02.000000000 +0100
+@@ -57,6 +57,7 @@
+ datadir = @datadir@
+ exec_prefix = @prefix@
+ libdir = @libdir@
++includedir = @includedir@
+ localedir = $(datadir)/locale
+ prefix = @prefix@
+ 
+@@ -158,8 +159,20 @@
+ 	  dir=$(localedir)/$$lang/LC_MESSAGES; \
+ 	  echo $(INSTALL_DATA) $$cat $(DESTDIR)$$dir/$(PACKAGE).mo; \
+ 	  $(INSTALL_DATA) $$cat $(DESTDIR)$$dir/$(PACKAGE).mo; \
++	done; \
++	$(INSTALL) -d $(DESTDIR)$(libdir); \
++	$(INSTALL_DATA) libcpp.a $(DESTDIR)$(libdir); \
++	$(INSTALL) -d $(DESTDIR)$(includedir)/gcc; \
++	files='$(CPPLIB_HEADERS)'; \
++	for i in $$files; do \
++		$(INSTALL_DATA) $(srcdir)/$$i $(DESTDIR)$(includedir)/gcc/; \
+ 	done
+ 
++CPPLIB_HEADERS = \
++	include/cpplib.h \
++	include/line-map.h \
++	include/symtab.h
++
+ mostlyclean:
+ 	-rm -f *.o
+ 
+diff -ru gcc-4.2.2_orig/libiberty/configure gcc-4.2.2/libiberty/configure
+--- gcc-4.2.2_orig/libiberty/configure	2007-11-21 10:16:40.000000000 +0100
++++ gcc-4.2.2/libiberty/configure	2007-11-21 10:21:02.000000000 +0100
+@@ -5054,7 +5054,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -6121,7 +6121,7 @@
+ else
+   ac_func_search_save_LIBS=$LIBS
+ ac_cv_search_strerror=no
+-if test x$gcc_no_link = xyes; then
++if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -6181,7 +6181,7 @@
+ if test "$ac_cv_search_strerror" = no; then
+   for ac_lib in cposix; do
+     LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
+-    if test x$gcc_no_link = xyes; then
++    if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -6259,7 +6259,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -6398,7 +6398,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -6620,7 +6620,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -6966,7 +6966,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -7078,7 +7078,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -7178,7 +7178,7 @@
+     if eval "test \"\${libiberty_cv_var_$v+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -7311,7 +7311,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+@@ -8407,7 +8407,7 @@
+ esac
+ 
+ 
+-if test x$gcc_no_link = xyes; then
++if false; then
+   if test "x${ac_cv_func_mmap_fixed_mapped+set}" != xset; then
+     ac_cv_func_mmap_fixed_mapped=no
+   fi
+@@ -8477,7 +8477,7 @@
+ if eval "test \"\${$as_ac_var+set}\" = set"; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+-  if test x$gcc_no_link = xyes; then
++  if false; then
+   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+ echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+    { (exit 1); exit 1; }; }
+Only in gcc-4.2.2/libiberty: configure.orig
+diff -ru gcc-4.2.2_orig/libiberty/gettimeofday.c gcc-4.2.2/libiberty/gettimeofday.c
+--- gcc-4.2.2_orig/libiberty/gettimeofday.c	2007-11-21 10:16:40.000000000 +0100
++++ gcc-4.2.2/libiberty/gettimeofday.c	2007-11-21 10:21:02.000000000 +0100
+@@ -17,7 +17,7 @@
+ @end deftypefn
+ 
+ */ 
+-
++#if 0
+ int
+ gettimeofday (struct timeval *tp, void *tz)
+ {
+@@ -28,3 +28,4 @@
+     return -1;
+   return 0;
+ }
++#endif

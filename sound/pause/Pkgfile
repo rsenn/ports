@@ -1,0 +1,37 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Section: universe/sound
+# Description: A tool that locates silent intervals in audio files.
+#  Pause determines the location of silences in an audio file for use in
+#  fragmentation of large recordings, studies of pause duration, and the
+#  like. It generates both a nicely formatted table intended to be read by
+#  people and a simple tab-delimited file that is easily parsed by software.
+#  .
+# URL: http://billposer.org/Software/pause.html
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=pause
+version=2.4
+release=1
+source=(http://billposer.org/Software/Downloads/pause-$version.tbz)
+
+build()
+{
+  cd pause-$version
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix" \
+     --mandir="$prefix/share/man"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/pause
+  install -m 644 AUTHORS COPYING ChangeLog INSTALL NEWS README $ROOT/share/doc/pause
+}
+
+# EOF

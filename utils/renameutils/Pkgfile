@@ -1,0 +1,36 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A set of programs to make renaming of files easier.
+# The file renaming utilities (renameutils for short) are a set of programs
+# designed to make renaming of files faster and less cumbersome. qmv
+# ("quick move") allows file names to be edited in a text editor. The
+# names of all files in a directory are written to a text file, which
+# is then edited by the user. The text file is read and parsed, and the
+# changes are applied to the files. qcp copies files instead of renaming
+# them. imv ("interactive move"), is trivial but useful when you are too
+# lazy to type (or even complete) the name of the file to rename twice. It
+# allows a file name to be edited in the terminal using the GNU Readline
+# library. Similarly, icp copies files instead of renaming them.
+#
+# URL: http://www.nongnu.org/renameutils/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=renameutils
+version=0.9.0
+release=1
+source=(http://savannah.nongnu.org/download/renameutils/renameutils-latest.tar.gz)
+
+build()
+{
+  cd renameutils-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

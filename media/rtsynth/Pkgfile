@@ -1,0 +1,35 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: a midi event triggered real time synth for Linux.
+#  RTSynth is a a midi event triggered real time, physical modeling synth
+#  specialising in the synthesis of 'real' instruments like strings, organs,
+#  flutes and drums which it does through simulating the physical properties
+#  of the instrument.
+# URL: http://linux-sound.org/rtsynth/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=rtsynth
+version=1.9.5
+release=1
+source=(http://www.linux-sound.org/rtsynth/rtsynth-$version-alsa+jack.tgz)
+
+build()
+{
+  cd rtsynth-$version-alsa+jack
+
+  install -d $ROOT/bin
+  install -m 755 RTSynth* $ROOT/bin
+
+  install -d $ROOT/lib
+  install -m 755 lib*.so* $ROOT/lib
+
+  install -d $ROOT/share/rtsynth
+  cp -r Examples-v* $ROOT/share/rtsynth/examples
+  cp -r icons $ROOT/share/rtsynth
+  cp -r JackDriver $ROOT/share/rtsynth/jack-driver
+
+  install -d $ROOT/share/doc/rtsynth
+  install -m 644 README Copying Changelog $ROOT/share/doc/rtsynth
+  cp -r HtmlDocs $ROOT/share/doc/rtsynth/html
+}

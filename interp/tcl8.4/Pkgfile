@@ -1,0 +1,77 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: Tool Command Language.
+#  An interpreted language and very portable interpreter for that
+#  language. Tcl is embeddable and extensible, and has been widely used
+#  since its creation in 1988 by John Ousterhout. See http://www.tcl.tk/
+#  for more info.
+# URL: http://www.tcl.tk/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=tcl8.4
+version=8.4.19
+release=1
+source=($mirror_sf/tcl/tcl$version-src.tar.gz
+        $mirror_sf/tcl/tcl$version-html.tar.gz
+        tcl8.4.16-{msvc,apptype}.patch
+        tcl8.4.19-tclconfig.patch)
+
+build()
+{
+  cd tcl$version
+
+  #patch -N -p1 -i $SRC/tcl8.4.16-msvc.patch
+  #patch -N -p1 -i $SRC/tcl8.4.16-apptype.patch
+  patch -N -p1 -i $SRC/tcl8.4.19-tclconfig.patch
+#
+  case $host in
+    *-linux*) 
+      DIR="unix" 
+    ;;
+    *-mingw32 | *-cygwin) 
+      DIR="win" 
+    ;;
+    *-msvc*)
+      DIR="win"
+
+      if [ "$build" != "$host" ]; then
+        ac_cv_prog_cc_cross="yes" 
+        ac_emul="wine" 
+        ac_exeext=".exe"
+
+        export ac_cv_prog_cc_cross ac_emul ac_exeext
+
+        if [ -e "$prefix/bin/cl" ]; then
+          CC="$prefix/bin/cl"
+        fi
+      fi
+      ;;
+  esac
+
+  cd $DIR
+
+  TCLVER=${version%.*}
+
+  ./configure \
+       --host="$host" \
+       --prefix="$prefix" \
+       --mandir="$prefix/share/man" \
+       --includedir="$prefix/include/tcl$TCLVER" \
+       --enable-shared \
+       --enable-threads
+
+  make #CFLAGS_WARNING=""
+  make DESTDIR="$PKG" PRIVATE_INCLUDE_DIR="\$(includedir)/private" \
+    install #install-private-headers
+
+  cd ..
+
+  install -d $ROOT/include/tcl$TCLVER/private/{generic,unix,compat}
+  install -m 644 generic/*.h $ROOT/include/tcl$TCLVER/private/generic
+  install -m 644 unix/*.h $ROOT/include/tcl$TCLVER/private/unix
+  install -m 644 compat/*.h $ROOT/include/tcl$TCLVER/private/compat
+
+  install -d $ROOT/share/doc/tcl$TCLVER
+  cp -r html $ROOT/share/doc/tcl$TCLVER
+}

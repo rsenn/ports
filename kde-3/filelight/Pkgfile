@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A compact and recursive graphical representation of your disk usage.
+#  Filelight graphically represents a file system as a set of concentric
+#  segmented rings (or nested piecharts), aiming to show where disk space
+#  is being used. Segments expand from the center, representing files and
+#  directories. The size of segments is proportional to the size of the files
+#  they represent. Directories have child segments which represent the files
+#  they contain. Filelight performs a similar function to the command line
+#  tool du, but all the information is shown in a compact graphical fashion.
+# URL: http://www.methylblue.com/filelight/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=filelight
+version=1.0
+release=1
+source=(http://www.methylblue.com/filelight/packages/filelight-$version.tar.bz2)
+
+build()
+{
+  cd filelight-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

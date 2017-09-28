@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Provides an easy to use C interface for several hash algorithms
+#  mhash is a thread-safe hash library implemented in C, and provides a
+#  uniform interface to a large number of hash algorithms (MD5, SHA-1,
+#  HAVAL, RIPEMD160, TIGER, GOST). These algorithms can be used to compute
+#  checksums, message digests, and other signatures. The HMAC support
+#  implements the basics for message authentication, following RFC 2104.
+# URL: http://mhash.sf.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=mhash
+version=0.9.9
+release=1
+source=($mirror_sf/mhash/mhash-$version.tar.bz2)
+
+build()
+{
+  cd mhash-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

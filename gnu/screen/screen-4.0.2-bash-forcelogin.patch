@@ -1,0 +1,31 @@
+--- screen-4.0.2_orig/screen.c	2008-05-28 00:47:40.000000000 +0200
++++ screen-4.0.2/screen.c	2008-06-01 22:50:00.000000000 +0200
+@@ -101,6 +101,8 @@
+ 
+ #include "logfile.h"	/* islogfile, logfflush */
+ 
++#include <libgen.h> /* basename() */
++
+ #ifdef DEBUG
+ FILE *dfp;
+ #endif
+@@ -127,7 +129,7 @@
+ 
+ 
+ char *ShellProg;
+-char *ShellArgs[2];
++char *ShellArgs[3];
+ 
+ extern struct NewWindow nwin_undef, nwin_default, nwin_options;
+ struct backtick;
+@@ -802,6 +804,10 @@
+       ShellProg = SaveStr(sh ? sh : DefaultShell);
+     }
+   ShellArgs[0] = ShellProg;
++  
++  if(!strcmp(basename(ShellProg), "bash"))
++    ShellArgs[1] = (nwin_options.lflag & 1) ? "--login" : NULL;
++
+   home = getenv("HOME");
+ 
+ #ifdef NETHACK

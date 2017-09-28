@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Yet another implementation of the Secure Sockets Layer.
+#  yaSSL is a fast, dual-licensed implementation of SSL in library form. It
+#  includes SSL client libraries and an SSL server implementation. It
+#  supports multiple APIs including an OpenSSL compatibility layer.
+# URL: http://www.yassl.com
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=yassl
+version=1.8.6
+release=1
+source=(http://www.yassl.com/yassl-$version.zip)
+
+build()
+{
+  cd yassl-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --mandir="$prefix/share/man" \
+       --infodir="$prefix/share/info" \
+       --${shared:=enable}-shared \
+       --disable-static \
+       --with-mpfr="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

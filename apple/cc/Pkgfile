@@ -1,0 +1,27 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: An innovative date picker.
+#  CalendarComponent is an innovative date picker with various features
+#  including I18N, the ability to toggle between ISO 8601 week of year and
+#  simple week of year, navigation by week of the year, quarter of the year,
+#  day of month, etc., a short cut to today, a short cut to the selected
+#  date, the ability to toggle between the day of the month and the day
+#  of the year, a leap year indicator, a quarter of the year indicator,
+#  the ability to dynamically change the first day of the week, null/no
+#  date selection, keyboard navigation, and an era indicator.
+# Longdescription:
+# URL: http://calendar.buglerock.com
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=cc
+version=798
+release=1
+source=(http://www.opensource.apple.com/darwinsource/tarballs/other/cc-$version.tar.gz
+        $mirror_gnu/bison/bison-2.3.tar.bz2)
+build()
+{
+  cd cc-$version
+  mv $SRC/bison-* cc
+  make RC_ARCHS="i386 ppc" RC_OS="macos" RC_RELEASE="darwin" config build
+}

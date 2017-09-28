@@ -1,0 +1,34 @@
+# $Id: Pkgfile,v 1.3 2007/05/09 21:02:51 roman Exp $
+#
+# Description: Fast Light Toolkit - shared libraries
+#  This package contains the files necessary for running programs dynamically
+#  linked with FLTK.
+#  The Fast Light Toolkit (FLTK) is a cross-platform graphical user interface
+#  toolkit originally based on libForms.
+# URL: http://www.fltk.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=fltk1
+version=1.3.x
+release=6530
+source=(http://ftp.easysw.com/pub/fltk/snapshots/fltk-$version-r$release.tar.bz2
+        fltk-1.3.x-r6530-flfont.patch)
+
+build()
+{
+  cd fltk-$version-r$release
+
+  patch -N -p1 -i $SRC/fltk-1.3.x-r6530-flfont.patch
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --mandir="$prefix/man" \
+      --${shared:=enable}-shared \
+      --${static:=enable}-static
+
+  make
+  make DESTDIR="$PKG" install
+}

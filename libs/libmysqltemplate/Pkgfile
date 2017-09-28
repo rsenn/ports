@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A C template library that uses MySQL data directly.
+#  libmysqltemplate is a very high speed C state machine template library
+#  that uses MySQL data for the source of the templates and optionally for
+#  name/value pairs. It is required for the mysqlApache2/mysqlMail2/iDNS
+#  family of openisp.net/unixservice.com Web based consoles for clusters
+#  and other complex Internet service infrastructure management.
+# URL: http://openisp.net/libmysqltemplate/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=template
+version=libmysqltemplate.tar.gz
+release=1
+source=(http://openisp.net/libmysqltemplate/$version)
+
+build()
+{
+  cd template
+
+  sed -i \
+      -e "s,/usr,\$(prefix),g" \
+      -e "s/^\(CFLAGS\s*=\s\).*$/\1${CFLAGS}/" \
+      makefile
+
+  make
+  make prefix="$ROOT" install
+}

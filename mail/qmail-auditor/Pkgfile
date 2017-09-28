@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An email auditing tool.
+# QMail Auditor provides simple a method for auditing emails. It is easy
+# to configure and uses regular expressions as rules.
+#
+# URL: http://sourceforge.net/projects/qmail-auditor/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6
+
+name=qmail-auditor
+version=0.4.0
+release=1adfinis1
+source=($mirror_sf/qmail-auditor/qmail-auditor-$version.tar.gz)
+
+build()
+{
+  cd qmail-auditor
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/qmail-auditor
+  install -m 644 AUTHORS COPYING ChangeLog INSTALL NEWS README \
+    $ROOT/share/doc/qmail-auditor
+}

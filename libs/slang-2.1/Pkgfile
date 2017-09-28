@@ -1,0 +1,40 @@
+# $Id: Pkgfile,v 1.9 2007/05/09 21:02:52 roman Exp $
+#
+# Description: jed
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: slang
+
+name=slang-2.1
+version=2.1.3
+release=1
+source=(ftp://sunsite.cnlab-switch.ch/mirror/FreeBSD/ports/distfiles/slang-$version.tar.bz2
+        slang-2.1.2-slsh-libs.patch
+        slang-2.1.3-uclibc.patch)
+
+build()
+{
+  cd slang-$version
+
+  patch -N -p1 -i $SRC/slang-2.1.2-slsh-libs.patch
+  patch -N -p1 -i $SRC/slang-2.1.3-uclibc.patch
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --${shared:=enable}-shared \
+       --${static:=enable}-shared
+
+  make
+
+  set -- src/elfobjs/*slang*
+
+  if test "$#" -ge 1
+  then
+    install -d $ROOT/lib
+    mv -vf src/elfobjs/*slang* $ROOT/lib
+  fi
+
+  make -i DESTDIR="$PKG" install
+}

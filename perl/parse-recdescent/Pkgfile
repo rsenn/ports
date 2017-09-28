@@ -1,0 +1,26 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Generate Recursive-Descent Parsers
+# URL: http://search.cpan.org/~dconway/Parse-RecDescent-1.96.0/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=parse-recdescent
+version=1.96.0
+release=1
+source=(http://search.cpan.org/CPAN/authors/id/D/DC/DCONWAY/Parse-RecDescent-$version.tar.gz)
+
+build()
+{
+  cd Parse-RecDescent-$version
+
+  perl Makefile.PL installdirs="vendor"
+
+  make
+  make test
+
+  make DESTDIR="$PKG" install
+  #perl Build install destdir="$PKG"
+}
+
+# EOF

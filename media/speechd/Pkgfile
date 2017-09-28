@@ -1,0 +1,45 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Section: universe/sound
+# Description: Implements /dev/speech device (all plaintext written to it will be spoken aloud)
+#  speechd implements a /dev/speech device using either the Festival or
+#  rsynth speech synthesis packages. All plaintext written to this device
+#  will be spoken aloud (or optionally output as morse code if you are
+#  using the "morse" program as the underlying driver). Certain programs
+#  have been modified to make use of this device, including an ircII script
+#  called speech.irc, a Slashdot ticker called slashes and a package for
+#  TiK. All of these modified packages are available on the homepage.
+#  .
+# URL: http://www.SpeechIO.org/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=speechd
+version=0.56
+release=1
+source=(http://www.SpeechIO.org/dl/speechd-$version.tar.gz)
+
+build()
+{
+  cd speechd
+
+  case $prefix in
+    "/usr") sysconfdir="/etc" ;;
+  esac
+
+  install -d $ROOT/bin
+  install -d $ROOT/share/man/man1
+  install -d $PKG${sysconfdir=$prefix/etc}
+
+  make
+  make \
+      INSTALL_BINDIR="$ROOT/bin" \
+      INSTALL_MANDIR="$ROOT/share/man/man1" \
+      INSTALL_RCDIR="$PKG${sysconfdir=$prefix/etc}" \
+  install
+
+  install -d $ROOT/share/doc/speechd
+  install -m 644 AUTHORS CHANGELOG COPYING INSTALL README TODO speechio.faq $ROOT/share/doc/speechd
+}
+
+# EOF

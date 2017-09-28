@@ -1,0 +1,23 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: Apache module for making domain redirects easy - the known
+# service of many hosting providers that lets a domain point to your
+# webpage on another server.
+# The configuration part of the mappings are handled in either a MySQL
+# or Postgresql database or a NDBM or SDBM db file, so it's easy to build
+# a webbased interface for letting users change it on their own.
+# URL: http://www.stderr.net/mod_pointer/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=mod_pointer
+version=0.8
+release=1
+source=(http://www.stderr.net/mod_pointer/dist/mod_pointer-$version.tar.gz)
+
+build()
+{
+  cd mod_pointer-$version
+
+  make WITH_APXS="$prefix/bin/apxs" all
+}

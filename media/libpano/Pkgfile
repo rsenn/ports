@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+# Summary: Panorama backend library
+# Description: pano13 library, part of the Panorama Tools by Helmut
+# Dersch of the University of Applied Sciences Furtwangen.
+# URL: http://panotools.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libpano13
+version=2.9.12
+release=1
+source=($mirror_sf/panotools/libpano13-$version.tar.gz)
+
+build()
+{
+  cd libpano13-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix" \
+       --program-prefix="" \
+       --${shared:=enable}-shared \
+       --${static:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+}

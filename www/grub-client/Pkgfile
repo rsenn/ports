@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A distributed crawler for indexing the Web.
+#  Grub.org's client is a Web crawler which helps to build and maintain (in
+#  real-time) the most comprehensive index of the Web ever compiled. The
+#  size of the grub.org database is expected to exceed the size of any
+#  other index on the Internet today, and to be the most up-to-date.
+#   .
+# URL: http://www.grub.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=grub-client
+version=0.3.0
+release=1
+source=($mirror_sf/grub/grub-client-$version.tar.gz)
+
+build()
+{
+  cd grub-client-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

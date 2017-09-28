@@ -1,0 +1,31 @@
+# $Id: Pkgfile,v 1.2 2007/04/22 23:07:53 roman Exp $
+# Name:
+# Description: A very reliable, fast and stable assembler that is NASM compatible.
+#  GASM is a very reliable, fast and stable assembler. It is NASM compatible,
+#  and will compile 99.7% of programs that assemble on NASM.
+# URL: http://gaztek.sourceforge.net/gasm/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=gasm
+version=0.55
+release=1
+source=(http://gaztek.sourceforge.net/gasm/gasm-source-$version.zip)
+
+build()
+{
+  test -f gasm.h || ln GASM.H gasm.h
+#  test -f gasm.c || ln gasm.cpp gasm.c
+
+  sed -i "/^void main/ s,void,int," gasm.cpp
+
+  ${CXX-g++} ${CXXFLAGS--g -O2} -o gasm gasm.cpp
+
+  install -d $ROOT/bin
+  install -m 755 gasm $ROOT/bin/
+
+  install -d $ROOT/share/doc/$name
+  install -m 644 LICENSE \
+       {credits,errors,nasmdiff,pmode,readme,source,version}.txt \
+       $ROOT/share/doc/$name/
+}

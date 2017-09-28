@@ -1,0 +1,39 @@
+# $Id: Pkgfile,v 1.4 2007/04/22 23:07:58 roman Exp $
+#
+# Description: X Rendering Extension client library
+#  The X Rendering Extension (Render) introduces digital image composition as
+#  Rendering geometric figures is accomplished by client-side tessellation
+#  either triangles or trapezoids. Text is drawn by loading glyphs into the
+#  server and rendering sets of them.  The Xrender library exposes this
+#  extension to X clients.
+#  .
+#  More information about X.Org can be found at:
+#  <URL:http://www.X.org>
+#  <URL:http://xorg.freedesktop.org>
+#  <URL:http://lists.freedesktop.org/mailman/listinfo/xorg>
+#  .
+#  This module can be found at
+#  git://anongit.freedesktop.org/git/xorg/lib/libXrender
+#  .
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=xrender
+version=0.9.4
+release=1
+source=(ftp://ftp.x.org/pub/individual/lib/libXrender-$version.tar.bz2)
+
+build()
+{
+  cd libXrender-$version
+
+  ./configure \
+        --build="$build" \
+        --host="$host" \
+        --prefix="$prefix" \
+        --${static:=enable}-shared \
+        --${shared:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+}

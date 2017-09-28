@@ -1,0 +1,81 @@
+# $Id: Pkgfile,v 1.26 2007/04/23 17:39:08 roman Exp $
+#
+# Package: coreutils
+# Essential: yes
+# Priority: required
+# Section: base
+# Version: 7:
+# URL: http://www.gnu.org/software/coreutils
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Provides: fileutils, shellutils, textutils
+# Replaces: fileutils, shellutils, stat, textutils
+# Pre-Depends: libacl1, libc6, libselinux1
+# Conflicts: stat
+# Depends on: libc6
+# Description: A collection of core GNU utilities.
+#  GNU Coreutils are a set of basic file, shell, and text manipulation
+#  every operating system.
+#
+name=coreutils
+category=gnu
+version=7.1
+release=1
+source=($mirror_gnu/coreutils/coreutils-$version.tar.gz
+        coreutils-6.12-devmapper-resolve.patch
+        coreutils-7.1-diet.patch
+#        coreutils-6.10-static.patch
+        #ftime.c
+        isodate.sh)
+
+build()
+{
+  cd ${srcdir=$SRC/coreutils-$version}
+
+#  patch -N -p1 -i $SRC/coreutils-6.10-static.patch
+  patch -N -p1 -i $SRC/coreutils-6.12-devmapper-resolve.patch
+  patch -N -p1 -i $SRC/coreutils-7.1-diet.patch
+
+  case $prefix in
+    "/usr") bindir="/bin" ;;
+  esac
+
+  usrbindir="$prefix/bin"
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --bindir="$usrbindir" \
+      --sbindir="$prefix/sbin" \
+      --sysconfdir="$prefix/etc" \
+      --mandir="$prefix/share/man" \
+      --with-libiconv-prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+ # ${CC-gcc} $LDFLAGS $CFLAGS -o $ROOT/bin/ftime $SRC/ftime.c
+
+  rm -f $ROOT/bin/[
+  rm -f $ROOT/info/dir
+  rm -f $ROOT/bin/tsort
+  rm -f $ROOT/share/man/man1/{tsort}.1*
+
+  rm -f $ROOT/lib/charset.alias
+  rm -rf $ROOT/lib
+
+  install -m 755 $SRC/isodate.sh $ROOT/bin/isodate
+
+  install -d $PKG${bindir="$prefix/bin"}
+
+  for bin in cat chgrp chmod chown cp date dd df dir echo false ln ls \
+    mkdir mknod mv pwd readlink rm rmdir vdir sleep stty sync touch \
+    true uname; do
+    mv -f $PKG${usrbindir}/$bin $PKG${bindir}/
+  done
+
+  for bin in kill uptime mktemp; do
+    rm -f $ROOT/bin/$bin
+    rm -f $ROOT/share/man/man1/$bin.1*
+  done
+}

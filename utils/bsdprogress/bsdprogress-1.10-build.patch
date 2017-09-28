@@ -1,0 +1,27 @@
+diff -ru progress-1.10_orig/Makefile.in progress-1.10/Makefile.in
+--- progress-1.10_orig/Makefile.in	2009-03-08 23:18:30.000000000 +0100
++++ progress-1.10/Makefile.in	2009-03-08 23:29:30.000000000 +0100
+@@ -4,6 +4,7 @@
+ CC=@CC@
+ INSTALL=@INSTALL@
+ PREFIX=@PREFIX@
++MANDIR=@PREFIX@/share/man
+ CFLAGS=@CFLAGS@
+ LIBS=@LIBS@
+ 
+@@ -16,11 +17,11 @@
+ 	$(CC) $(CFLAGS)  -c    $<
+ 
+ clean:
+-	-rm *.o progress Makefile
++	-rm *.o $(PROG) Makefile
+ 
+-install:
++install: all
+ 	$(INSTALL) -d $(PREFIX)/bin
+ 	$(INSTALL) $(PROG) $(PREFIX)/bin
+-	$(INSTALL) -d $(PREFIX)/man/man1
+-	$(INSTALL) $(PROG).1 $(PREFIX)/man/man1
++	$(INSTALL) -d $(MANDIR)/man1
++	$(INSTALL) progress.1 $(MANDIR)/man1/$(PROG).1
+ 

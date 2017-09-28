@@ -1,0 +1,23 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Provides dynamically configured Virtual Hosting in Apache2.
+# URL: http://modules.apache.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=mod_vhost_mysql2
+version=0.10
+release=1
+source=(http://fabienne.tc2.utelisys.net/~skinkie/mod_vhost_mysql2/mod_vhost_mysql2-0.10.tar.gz)
+
+build()
+{
+  cd mod_vhost_mysql2-$version
+
+  make LIB="-lmysqlclient" PREFIX="$ROOT" all install
+
+  install -d $ROOT/share/doc/mod_vhost_mysql2
+  install -m 644 README $ROOT/share/doc/mod_vhost_mysql2
+}
+
+# EOF

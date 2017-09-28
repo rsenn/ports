@@ -1,0 +1,89 @@
+diff -uNr gcc-5341/gcc/config/darwin-crt3.c gcc-5341-new/gcc/config/darwin-crt3.c
+--- gcc-5341/gcc/config/darwin-crt3.c	2006-04-05 14:45:49.000000000 -0400
++++ gcc-5341-new/gcc/config/darwin-crt3.c	2006-06-14 10:16:20.000000000 -0400
+@@ -37,7 +37,9 @@
+ #include "tconfig.h"
+ #include "tsystem.h"
+ 
++#if 0
+ #include <dlfcn.h>
++#endif
+ #include <stdbool.h>
+ #include <stdlib.h>
+ #include <string.h>
+@@ -277,7 +279,9 @@
+     {
+       void *handle;
+ 
++#if 0
+       handle = dlopen ("/usr/lib/libSystem.B.dylib", RTLD_NOLOAD);
++#endif
+       if (!handle)
+ 	{
+ #ifdef __ppc__
+diff -uNr gcc-5341/gcc/config.gcc gcc-5341-new/gcc/config.gcc
+--- gcc-5341/gcc/config.gcc	2006-03-16 16:01:45.000000000 -0500
++++ gcc-5341-new/gcc/config.gcc	2006-06-14 10:10:21.000000000 -0400
+@@ -358,7 +358,7 @@
+  # APPLE LOCAL end mainline 2005-10-02 4218570
+   tm_p_file="${tm_p_file} darwin-protos.h"
+  # APPLE LOCAL begin mainline 2005-10-02 4218570
+-  tmake_file="t-darwin ${cpu_type}/t-darwin t-slibgcc-darwin"
++  tmake_file="t-darwin ${cpu_type}/t-darwin"
+  # APPLE LOCAL end mainline 2005-10-02 4218570
+   target_gtfiles="\$(srcdir)/config/darwin.c"
+   c_target_objs="darwin-c.o"
+diff -uNr gcc-5341/gcc/Makefile.in gcc-5341-new/gcc/Makefile.in
+--- gcc-5341/gcc/Makefile.in	2006-02-28 14:47:38.000000000 -0500
++++ gcc-5341-new/gcc/Makefile.in	2006-06-14 10:15:55.000000000 -0400
+@@ -119,10 +119,10 @@
+ # See below for how to change them for certain systems.
+ 
+ # List of language subdirectories.
+-SUBDIRS =@subdirs@ build
++SUBDIRS = cp objc objcp build
+ 
+ # Selection of languages to be made.
+-CONFIG_LANGUAGES = @all_languages@
++CONFIG_LANGUAGES = c++ objc
+ LANGUAGES = c gcov$(exeext) gcov-dump$(exeext) $(CONFIG_LANGUAGES)
+ 
+ # Selection of languages to be made during stage1 build.
+@@ -331,11 +331,7 @@
+   if [ -f $(objdir)/../binutils/ar ] ; then \
+     echo $(objdir)/../binutils/ar ; \
+   else \
+-    if [ "$(host)" = "$(target)" ] ; then \
+       echo $(AR); \
+-    else \
+-       t='$(program_transform_name)'; echo ar | sed -e $$t ; \
+-    fi; \
+   fi)
+ AR_FLAGS_FOR_TARGET =
+ AR_CREATE_FOR_TARGET = $(AR_FOR_TARGET) $(AR_FLAGS_FOR_TARGET) rc
+@@ -344,11 +340,7 @@
+   if [ -f $(objdir)/../binutils/ranlib ] ; then \
+     echo $(objdir)/../binutils/ranlib ; \
+   else \
+-    if [ "$(host)" = "$(target)" ] ; then \
+-      echo $(RANLIB); \
+-    else \
+-       t='$(program_transform_name)'; echo ranlib | sed -e $$t ; \
+-    fi; \
++    echo $(RANLIB); \
+   fi)
+ NM_FOR_TARGET := $(shell \
+   if [ -f ./nm ] ; then \
+@@ -356,11 +348,7 @@
+   elif [ -f $(objdir)/../binutils/nm-new ] ; then \
+     echo $(objdir)/../binutils/nm-new ; \
+   else \
+-    if [ "$(host)" = "$(target)" ] ; then \
+-      echo $(NM); \
+-    else \
+-       t='$(program_transform_name)'; echo nm | sed -e $$t ; \
+-    fi; \
++    echo $(NM); \
+   fi)
+ 
+ # --------

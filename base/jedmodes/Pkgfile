@@ -1,0 +1,26 @@
+# $Id: Pkgfile 424 2008-08-10 01:52:57Z enki $
+#
+# Description: Contributed jed modes
+# JED in an x-terminal A collection of S-Lang extension scripts (modes) for
+# the Jed text editor, contributed by Jed users. Browse the repository at
+# http://jedmodes.sf.net/
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: jed
+
+name=jedmodes
+version=2.5.1
+release=1
+source=($mirror_sf/jedmodes/jedmodes-$version.tgz)
+
+build()
+{
+  cd jedmodes-$version
+
+  install -d $ROOT/lib/jed
+
+  find * -type d -maxdepth 0 | while read dir
+  do
+    cp -rvf $dir $ROOT/lib/jed
+  done
+}

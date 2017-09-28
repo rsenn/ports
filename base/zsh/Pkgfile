@@ -1,0 +1,29 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: A powerful UNIX shell.
+#  Zsh is a UNIX command interpreter (shell) which of the standard shells most
+#  resembles the Korn shell (ksh). It includes enhancements of many types,
+#  notably in the command-line editor, options for customising its behaviour,
+#  filename globbing, features to make C-shell (csh) users feel more at home
+#  and extra features drawn from tcsh.
+# URL: http://www.zsh.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=zsh
+version=4.3.4
+release=1
+source=(ftp://mirror.switch.ch/mirror/gentoo/distfiles/zsh-$version{,-doc}.tar.bz2)
+
+build()
+{
+  cd zsh-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

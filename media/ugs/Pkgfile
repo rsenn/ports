@@ -1,0 +1,28 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:50 roman Exp $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=ugs
+version=0.1.3
+release=1
+source=($mirror_sf/ugs3d/ugs-$version.tar.gz)
+
+build()
+{
+  cd ugs-$version
+
+  CPPFLAGS="-include assert.h" \
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --${shared:=enable}-shared \
+       --${static:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+}
+

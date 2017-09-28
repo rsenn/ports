@@ -1,0 +1,52 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:50 roman Exp $
+#
+# Description: A fast, cross-platform audio editor
+#  Audacity is a multi-track audio editor for Linux/Unix, MacOS and
+#  Windows. It is designed for easy recording, playing and editing of
+#  digital audio. Audacity features digital effects and spectrum analysis
+#  tools. Editing is very fast and provides unlimited undo/redo.
+#  Supported file formats include Ogg Vorbis, MP3, WAV, AIFF, and AU.
+#  For more information, see http://audacity.sourceforge.net/.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=audacity
+version=1.2.6
+release=1
+source=($mirror_sf/audacity/audacity-src-$version.tar.gz
+        audacity-1.2.6-fixes.patch)
+
+build()
+{
+  cd audacity-src-$version
+
+  patch -N -p1 -i $SRC/audacity-1.2.6-fixes.patch
+
+#  sed -i 's,{ (exit 1); exit 1; },:,g' configure
+
+  WX_CONFIG="wxgtk-2.4-config"
+
+  export WX_CONFIG
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --${shared:=enable}-shared \
+       --${static:=enable}-shared
+
+  sed -i -e '/#define.*TRUE/ i\
+#undef TRUE
+' \
+  -e '/#define.*FALSE/ { i\
+#undef FALSE
+}' \
+  -e '/#define.*ALLOW_SSE/d' lib-src/*/*/STTypes.h
+
+  sed -i -e '/#define.*PACKAGE/d' lib-src/*/*/soundtouch_config.h
+
+  make
+  make DESTDIR="$PKG" install
+}
+

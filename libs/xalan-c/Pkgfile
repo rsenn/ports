@@ -1,0 +1,113 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:53 roman Exp $
+# Package: libxalan110
+# Description: XSLT Processor written in C++.
+#
+#  Xalan is an XSLT processor for transforming XML documents into HTML, text,
+#  or other XML document types.
+#
+#  Xalan-C++ version 1.10 is a robust implementation of the W3C Recommendations
+#  for XSL Transformations (XSLT) and the XML Path Language (XPath).
+#
+#  It works with a compatible release of the Xerces-C++ XML parser:
+#  Xerces-C++ version 2.7.0.
+#
+# URL: http://xml.apache.org/xalan-c/
+# Maintainer: Roman Senn <rs@adfinis.com>
+
+name=xalan-c
+version=1.10.0
+release=1
+source=(http://mirror.switch.ch/mirror/apache/dist/xml/xalan-c/source/Xalan-C_${version//./_}-src.tar.gz)
+
+build()
+{
+  cd xml-xalan/c
+
+  export XERCESCROOT="$prefix"
+  export XALANCROOT="$SRC/xml-xalan/c"
+
+  if set -- $prefix/lib/libiconv.* && test -e $1
+  then
+    export LIBS="-liconv${LIBS:+ $LIBS}"
+  fi
+
+  case $host in
+    *mingw*)
+        platform="mingw-msys"
+        sockets="winsock"
+        LIB_NAME='$(PROJECT_NAME)'
+        LOC_LIBNAME='${LOC_PROJECT_NAME}'
+        export LDFLAGS="-L$libdir/w32api"
+        ;;
+    *linux*)
+        platform="linux"
+        sockets="socket"
+        LIB_NAME='lib$(PROJECT_NAME)'
+        LOC_LIBNAME='lib${LOC_PROJECT_NAME}'
+        ;;
+    *cygwin*)
+        platform="cygwin"
+        sockets="socket"
+        LIB_NAME='cyg$(PROJECT_NAME)'
+        LOC_LIBNAME='cyg${LOC_PROJECT_NAME}'
+        export LDFLAGS="-L$libdir/w32api"
+        ;;
+  esac
+
+  ./runConfigure \
+      -p "$platform" \
+      -c "${CC-cc}" \
+      -x "$CXX" \
+      -t IconvGNU \
+      -r pthread \
+      -z \
+      -I"$XALANCROOT" \
+      -C --build="$build" \
+      -C --host="$host" \
+      -P "$prefix"
+
+   echo "${prefix%/$host}/bin/MsgCreator"
+
+   if [ -f "${prefix%/$host}/bin/MsgCreator" ]; then
+     make XSL_BIN_DIR="${prefix%/$host}/bin" LIB_NAME="$LIB_NAME" LOC_LIBNAME="$LOC_LIBNAME" DESTDIR="$PKG" all install
+   else
+     make LIB_NAME="$LIB_NAME" LOC_LIBNAME="$LOC_LIBNAME" DESTDIR="$PKG" all install
+   fi
+
+   chown -R 0.0 "$PKG"
+
+   find $ROOT/lib -type l | xargs rm
+
+   (cd $ROOT/lib
+
+    libs=$(ls *.so*)
+
+    for lib in $libs
+    do
+      prev=$lib
+      while lnk=${prev%.[0-9]*} && test "$lnk" != "$prev"; do
+        ln -s $lib $lnk
+        prev=$lnk
+      done
+    done)
+
+   return 0
+#   for lib in lib/*
+#   do
+#     mv $lib $ROOT/lib
+#   done
+   for lib in lib/*
+   do
+     test -h "$lib" || continue
+
+     t=$(readlink "$lib")
+     ln -sf "${t#$XALANCROOT/lib/}" $lib
+   done
+
+   sed -e "s,@libdir@,$libdir,g" $SRC/libxml-xalan-c.la >lib/libxml-xalan-c.la
+   sed -e "s,@libdir@,$libdir,g" $SRC/libxml-xalan-depdom.la >lib/libxml-xalan-depdom.la
+
+   install -d $ROOT/lib
+   mv lib/* $ROOT/lib
+
+}

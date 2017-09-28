@@ -1,0 +1,32 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:50 roman Exp $
+#
+# Description: A CD ripping application.
+#  cdparanoia reads audio from the CDROM directly as data, with no analog
+#  step between, and writes the data to a file or pipe in WAV, AIFC or raw
+#  16 bit linear PCM. Cdparanoia will read correct, rock-solid audio data
+#  from inexpensive drives prone to misalignment, frame jitter and loss of
+#  streaming during atomic reads. cdparanoia will also read and repair data
+#  from CDs that have been damaged in some way.
+# URL: http://www.xiph.org/paranoia/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=cdparanoia
+version=III-alpha9.8
+release=1
+source=($mirror_gentoo/cdparanoia-$version.src.tgz
+        cdparanoia-III-alpha9.8-switch-compound.patch)
+
+build()
+{
+  cd cdparanoia-$version
+
+  patch -N -p1 -i $SRC/cdparanoia-III-alpha9.8-switch-compound.patch
+
+  ./configure \
+       --prefix="$prefix"
+
+  make
+  make prefix="$ROOT" install
+}
+

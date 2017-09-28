@@ -1,0 +1,51 @@
+# $Id: Pkgfile,v 1.13 2007/05/09 21:02:52 roman Exp $
+#
+# Description: A complete Common Lisp implementation.
+#  Allegro Common Lisp is a full ANSI Common Lisp (1994) implementation. It
+#  contains many extensions, including 32- and 64-bit native compilation,
+#  efficient built-in memory management, foreign functions (for interfacing
+#  with other languages), multiprocessing, UNICODE and locale support,
+#  XML/HTML parsers, a Web client and server, GTK+ interface (1.2 and
+#  2.0), Java interface, OLE interface (Windows only), profiler, regular
+#  expressions, an XML RPC implementation, native Lisp RPC, sockets, DLL
+#  and shared library support, and more.
+# URL: http://www.franz.com/downloads/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=acl
+version=2.2.47
+release=1
+source=(ftp://oss.sgi.com/projects/xfs/cmd_tars/acl_$version-$release.tar.gz
+        http://www.citi.umich.edu/projects/nfsv4/linux/acl-patches/2.2.42-2/acl-2.2.42-CITI_NFS4_ALL-2.dif
+        acl-2.2.44-enoattr.patch
+        acl-2.2.47-libtool.patch
+        acl-2.2.47-instmod.patch)
+
+build()
+{
+  cd acl-$version
+
+  patch -N -p0 -i $SRC/acl-2.2.44-enoattr.patch
+  patch -N -p1 -i $SRC/acl-2.2.42-CITI_NFS4_ALL-2.dif
+  patch -N -p1 -i $SRC/acl-2.2.47-libtool.patch
+  patch -N -p1 -i $SRC/acl-2.2.47-instmod.patch
+
+  sh autogen.sh
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --${shared:=enable}-shared \
+       --${static:=enable}-shared
+
+  make
+  make prefix="$ROOT" install
+  make prefix="$ROOT" -C libacl install-lib install-dev
+
+  if set -- $ROOT/libexec/*.{l,}a && [ -e "$1" ]; then
+    mv $ROOT/libexec/*.{l,}a $ROOT/lib
+    rm -rf $ROOT/libexec
+  fi
+}

@@ -1,0 +1,25 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: ELF object file manipulation library.
+# URL: http://www.hick.org/code/skape/libmelf
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libmelf
+version=0.4.0
+release=1
+source=(http://www.hick.org/code/skape/libmelf/libmelf-$version.tar.gz)
+
+build()
+{
+  cd libmelf-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

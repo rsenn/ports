@@ -1,0 +1,25 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Check for POD errors in files
+# URL: http://search.cpan.org/dist/Test-Pod/
+# Maintainer: 
+# Depends on: 
+
+name=test-pod
+version=1.26
+release=1
+source=(http://search.cpan.org/CPAN/authors/id/P/PE/PETDANCE/Test-Pod-$version.tar.gz)
+
+build() 
+{
+  cd Test-Pod-$version
+  
+  perl Makefile.PL installdirs=vendor
+  
+  make DESTDIR="$PKG" install
+  
+  install -d $ROOT/share/doc/test-pod
+  install -m 644 Changes MANIFEST $ROOT/share/doc/test-pod
+}
+
+# EOF

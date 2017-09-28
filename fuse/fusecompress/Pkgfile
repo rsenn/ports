@@ -1,0 +1,40 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A mountable Linux filesystem which transparently compress its content
+# Files stored in this filesystem are compressed on the fly and Fuse allows
+# to create a transparent interface between compressed files and user
+# applications.
+# URL: http://www.miio.net/fusecompress/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libbz2-1.0, libc6, libfuse2, libgcc1, libmagic1, librlog1c2a, libstdc++6, zlib1g
+
+name=fusecompress
+version=1.99.16
+release=1
+source=(http://miio.net/files/fusecompress-$version.tar.gz
+        mount.fusecompress.sh)
+
+build()
+{
+  cd fusecompress-$version
+
+  case $prefix in
+    "/usr") sbindir="/sbin" ;;
+  esac
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/fusecompress
+  install -m 644 [A-Z]*[A-Z]* $ROOT/share/doc/fusecompress
+
+  install -d $PKG${sbindir=$prefix/sbin}
+
+  ln -sf $prefix/bin/fusecompress $PKG${sbindir}/mount.fusecompress
+#  install -m 755 $SRC/mount.fusecompress.sh $PKG${sbindir}/mount.fusecompress
+}

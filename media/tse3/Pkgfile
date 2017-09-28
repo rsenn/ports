@@ -1,0 +1,36 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A powerful sequencer engine written in C++.
+#  TSE3 (Trax Sequencer Engine v3) is a powerful open source sequencer
+#  engine written in C++. It is a sequencer engine because it provides the
+#  actual driving force elements of a sequencer but provides no form of
+#  user interface.
+# URL: http://TSE3.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=tse3
+version=0.3.1
+release=1
+source=($mirror_sf/tse3/tse3-$version.tar.gz
+        tse3-0.2.7-gcc4.patch
+        tse3-0.2.7-size_t-64bit.patch
+        tse3-0.3.1-parallelmake.patch)
+
+build()
+{
+  cd tse3-$version
+
+  patch -N -p0 -i $SRC/tse3-0.2.7-gcc4.patch
+  patch -N -p0 -i $SRC/tse3-0.2.7-size_t-64bit.patch
+  patch -N -p0 -i $SRC/tse3-0.3.1-parallelmake.patch
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

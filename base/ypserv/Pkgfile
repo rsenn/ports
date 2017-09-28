@@ -1,0 +1,30 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: Simple network lookupservice consisting of databases and processes
+#  The Network Information Service (NIS) provides a simple network lookup
+#  service consisting of databases and processes. It was formerly known as
+#  Sun Yellow Pages (YP). The functionality of the two remains the same,
+#  only the name has changed. Its purpose is to provide information, that
+#  has to be known throughout the network, to all machines on the network.
+# URL: http://www.linux-nis.org/nis/ypserv/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=ypserv
+version=2.19
+release=1
+source=(ftp://ftp.kernel.org/pub/linux/utils/net/NIS/ypserv-$version.tar.bz2)
+
+build()
+{
+  cd ypserv-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

@@ -1,0 +1,31 @@
+--- tiff-3.8.2_orig/Makefile.am	2008-12-04 21:02:37.000000000 +0100
++++ tiff-3.8.2/Makefile.am	2008-12-04 21:02:45.000000000 +0100
+@@ -26,7 +26,7 @@
+ docdir = $(LIBTIFF_DOCDIR)
+ 
+ AUTOMAKE_OPTIONS = dist-zip foreign
+-ACLOCAL_AMFLAGS = -I ./m4
++ACLOCAL_AMFLAGS = -I m4
+ 
+ docfiles = \
+ 	COPYRIGHT \
+--- tiff-3.8.2_orig/autogen.sh	2008-12-04 21:02:37.000000000 +0100
++++ tiff-3.8.2/autogen.sh	2008-12-04 21:03:13.000000000 +0100
+@@ -1,8 +1,11 @@
+ #!/bin/sh
+-set -x
+-#libtoolize --force --copy
+-aclocal -I ./m4
+-autoheader
+-automake --foreign --add-missing --copy
+-autoconf
++#
++# 20081204
+ 
++
++libtoolize --force --copy --automake
++aclocal --force -I m4
++autoheader --force
++automake --force --copy --foreign --add-missing --foreign --add-missing
++aclocal --force -I m4
++autoconf --force

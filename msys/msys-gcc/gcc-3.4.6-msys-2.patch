@@ -1,0 +1,1369 @@
+diff -r -u -N gcc-3.4.6_orig/config/mh-msys gcc-3.4.6/config/mh-msys
+--- gcc-3.4.6_orig/config/mh-msys	2007-09-05 03:43:11.000000000 +0200
++++ gcc-3.4.6/config/mh-msys	2007-09-05 03:46:49.000000000 +0200
+@@ -0,0 +1,6 @@
++EXTRA_TARGET_HOST_ALL_MODULES=maybe-all-libtermcap
++EXTRA_TARGET_HOST_INSTALL_MODULES=maybe-install-libtermcap
++
++all-gdb: maybe-all-libtermcap
++
++install-gdb: maybe-all-libtermcap
+diff -r -u -N gcc-3.4.6_orig/configure gcc-3.4.6/configure
+--- gcc-3.4.6_orig/configure	2007-09-05 03:35:09.000000000 +0200
++++ gcc-3.4.6/configure	2007-09-05 03:49:55.000000000 +0200
+@@ -1882,6 +1882,9 @@
+   i[3456789]86-*-msdosdjgpp*)
+     host_makefile_frag="config/mh-djgpp"
+     ;;
++  *-msys*)
++    host_makefile_frag="config/mh-msys"
++    ;;
+   *-cygwin*)
+     host_makefile_frag="config/mh-cygwin"
+     ;;
+diff -r -u -N gcc-3.4.6_orig/configure.in gcc-3.4.6/configure.in
+--- gcc-3.4.6_orig/configure.in	2007-09-05 03:35:09.000000000 +0200
++++ gcc-3.4.6/configure.in	2007-09-05 03:49:37.000000000 +0200
+@@ -1121,6 +1121,9 @@
+   i[[3456789]]86-*-msdosdjgpp*)
+     host_makefile_frag="config/mh-djgpp"
+     ;;
++  *-msys*)
++    host_makefile_frag="config/mh-msys"
++    ;;
+   *-cygwin*)
+     host_makefile_frag="config/mh-cygwin"
+     ;;
+diff -r -u -N gcc-3.4.6_orig/gcc/config/i386/msys.asm gcc-3.4.6/gcc/config/i386/msys.asm
+--- gcc-3.4.6_orig/gcc/config/i386/msys.asm	2007-09-05 03:43:11.000000000 +0200
++++ gcc-3.4.6/gcc/config/i386/msys.asm	2007-09-05 03:46:49.000000000 +0200
+@@ -0,0 +1,68 @@
++/* stuff needed for libgcc on win32.
++ *
++ *   Copyright (C) 1996, 1998, 2001, 2003 Free Software Foundation, Inc.
++ *   Written By Steve Chamberlain
++ * 
++ * This file is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License as published by the
++ * Free Software Foundation; either version 2, or (at your option) any
++ * later version.
++ * 
++ * In addition to the permissions in the GNU General Public License, the
++ * Free Software Foundation gives you unlimited permission to link the
++ * compiled version of this file with other programs, and to distribute
++ * those programs without any restriction coming from the use of this
++ * file.  (The General Public License restrictions do apply in other
++ * respects; for example, they cover modification of the file, and
++ * distribution when not linked into another program.)
++ * 
++ * This file is distributed in the hope that it will be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * General Public License for more details.
++ * 
++ * You should have received a copy of the GNU General Public License
++ * along with this program; see the file COPYING.  If not, write to
++ * the Free Software Foundation, 59 Temple Place - Suite 330,
++ * Boston, MA 02111-1307, USA.
++ * 
++ *    As a special exception, if you link this library with files
++ *    compiled with GCC to produce an executable, this does not cause
++ *    the resulting executable to be covered by the GNU General Public License.
++ *    This exception does not however invalidate any other reasons why
++ *    the executable file might be covered by the GNU General Public License.
++ */
++
++#ifdef L_chkstk
++
++/* Function prologue calls _alloca to probe the stack when allocating more
++   than CHECK_STACK_LIMIT bytes in one go.  Touching the stack at 4K
++   increments is necessary to ensure that the guard pages used
++   by the OS virtual memory manger are allocated in correct sequence.  */
++
++	.global ___chkstk
++	.global	__alloca
++___chkstk:
++__alloca:
++	pushl  %ecx		/* save temp */
++	movl   %esp,%ecx	/* get sp */
++	addl   $0x8,%ecx	/* and point to return addr */
++
++probe: 	cmpl   $0x1000,%eax	/* > 4k ?*/
++	jb    done		
++
++	subl   $0x1000,%ecx  		/* yes, move pointer down 4k*/
++	orl    $0x0,(%ecx)   		/* probe there */
++	subl   $0x1000,%eax  	 	/* decrement count */
++	jmp    probe           	 	/* and do it again */
++
++done: 	subl   %eax,%ecx	   
++	orl    $0x0,(%ecx)	/* less that 4k, just peek here */
++
++	movl   %esp,%eax
++	movl   %ecx,%esp	/* decrement stack */
++
++	movl   (%eax),%ecx	/* recover saved temp */
++	movl   4(%eax),%eax	/* get return address */
++	jmp    *%eax	
++#endif
+diff -r -u -N gcc-3.4.6_orig/gcc/config/i386/msys.h gcc-3.4.6/gcc/config/i386/msys.h
+--- gcc-3.4.6_orig/gcc/config/i386/msys.h	2007-09-05 03:43:11.000000000 +0200
++++ gcc-3.4.6/gcc/config/i386/msys.h	2007-09-05 03:46:49.000000000 +0200
+@@ -0,0 +1,230 @@
++/* Operating system specific defines to be used when targeting GCC for
++   hosting on Windows32, using a Unix style C library and tools.
++   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003
++   Free Software Foundation, Inc.
++
++This file is part of GCC.
++
++GCC is free software; you can redistribute it and/or modify
++it under the terms of the GNU General Public License as published by
++the Free Software Foundation; either version 2, or (at your option)
++any later version.
++
++GCC is distributed in the hope that it will be useful,
++but WITHOUT ANY WARRANTY; without even the implied warranty of
++MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++GNU General Public License for more details.
++
++You should have received a copy of the GNU General Public License
++along with GCC; see the file COPYING.  If not, write to
++the Free Software Foundation, 59 Temple Place - Suite 330,
++Boston, MA 02111-1307, USA.  */
++
++#define TARGET_VERSION fprintf (stderr, " (x86 Cygwin)");
++
++#define EXTRA_OS_CPP_BUILTINS()  /* Nothing.  */
++
++#undef CPP_SPEC
++#define CPP_SPEC "%(cpp_cpu) %{posix:-D_POSIX_SOURCE} \
++  %{mno-win32:%{mno-msys: %emno-msys and mno-win32 are not compatible}} \
++  %{mno-msys:-D__MSVCRT__ -D__MINGW32__ %{!ansi:%{mthreads:-D_MT}}}\
++  %{!mno-msys:-D__MSYS32__ -D__MSYS__ %{!ansi:-Dunix} -D__unix__ -D__unix }\
++  %{mwin32|mno-msys:-DWIN32 -D_WIN32 -D__WIN32 -D__WIN32__ %{!ansi:-DWINNT}}\
++  %{!nostdinc:%{!mno-win32|mno-msys:-idirafter ../include/w32api%s -idirafter ../../include/w32api%s}}\
++"
++
++#undef STARTFILE_SPEC
++#define STARTFILE_SPEC "\
++  %{shared|mdll: %{mno-msys:dllcrt2%O%s}}\
++  %{!shared: %{!mdll: %{!mno-msys:crt0%O%s} %{mno-msys:crt2%O%s}\
++  %{pg:gcrt0%O%s}}}\
++"
++
++/* Normally, -lgcc is not needed since everything in it is in the DLL, but we
++   want to allow things to be added to it when installing new versions of
++   GCC without making a new MSYS.DLL, so we leave it.  Profiling is handled
++   by calling the init function from main.  */
++
++#undef LIBGCC_SPEC
++#define LIBGCC_SPEC \
++  "%{mno-msys: %{mthreads:-lmingwthrd} -lmingw32} -lgcc	\
++   %{mno-msys:-lmoldname -lmingwex -lmsvcrt}"
++
++/* We have to dynamic link to get to the system DLLs.  All of libc, libm and
++   the Unix stuff is in msys.dll.  The import library is called
++   'libmsys.a'.  For Windows applications, include more libraries, but
++   always include kernel32.  We'd like to specific subsystem windows to
++   ld, but that doesn't work just yet.  */
++
++#undef LIB_SPEC
++#define LIB_SPEC "\
++  %{pg:-lgmon} \
++  %{!mno-msys:-lmsys} \
++  %{mno-msys:%{mthreads:-lmingwthrd} -lmingw32} \
++  %{mwindows:-lgdi32 -lcomdlg32} \
++  -luser32 -lkernel32 -ladvapi32 -lshell32"
++
++#define LINK_SPEC "\
++  %{mwindows:--subsystem windows} \
++  %{mconsole:--subsystem console} \
++  %{shared: %{mdll: %eshared and mdll are not compatible}} \
++  %{shared: --shared} %{mdll:--dll} \
++  %{static:-Bstatic} %{!static:-Bdynamic} \
++  %{shared|mdll: -e \
++    %{mno-msys:_DllMainCRTStartup@12} \
++    %{!mno-msys:__msys_dll_entry@12}}\
++  %{!mno-msys:--dll-search-prefix=cyg}"
++
++/* Allocate space for all of the machine-spec-specific stuff.
++   Allocate enough space for msys -> mingw32  munging plus
++   possible addition of "/mingw".  */
++
++#ifndef MSYS_MINGW_SUBDIR
++#define MSYS_MINGW_SUBDIR "/mingw"
++#endif
++#define MSYS_MINGW_SUBDIR_LEN (sizeof (MSYS_MINGW_SUBDIR) - 1)
++
++#ifdef GPLUSPLUS_INCLUDE_DIR
++char msys_gplusplus_include_dir[sizeof (GPLUSPLUS_INCLUDE_DIR) + 1
++				  + (MSYS_MINGW_SUBDIR_LEN)]
++  = GPLUSPLUS_INCLUDE_DIR;
++#undef GPLUSPLUS_INCLUDE_DIR
++#define GPLUSPLUS_INCLUDE_DIR ((const char *) msys_gplusplus_include_dir)
++#ifndef GEN_CVT_ARRAY
++#define GEN_CVT_ARRAY
++#endif
++#endif
++
++#ifdef GPLUSPLUS_TOOL_INCLUDE_DIR
++char msys_gplusplus_tool_include_dir[sizeof (GPLUSPLUS_TOOL_INCLUDE_DIR) + 1
++				       + MSYS_MINGW_SUBDIR_LEN]
++  = GPLUSPLUS_TOOL_INCLUDE_DIR;
++#undef GPLUSPLUS_TOOL_INCLUDE_DIR
++#define GPLUSPLUS_TOOL_INCLUDE_DIR ((const char *) msys_gplusplus_tool_include_dir)
++#ifndef GEN_CVT_ARRAY
++#define GEN_CVT_ARRAY
++#endif
++#endif
++
++#ifdef GPLUSPLUS_BACKWARD_INCLUDE_DIR
++char msys_gplusplus_backward_include_dir[sizeof (GPLUSPLUS_BACKWARD_INCLUDE_DIR)  + 1
++					   + MSYS_MINGW_SUBDIR_LEN]
++  = GPLUSPLUS_BACKWARD_INCLUDE_DIR;
++#undef GPLUSPLUS_BACKWARD_INCLUDE_DIR
++#define GPLUSPLUS_BACKWARD_INCLUDE_DIR ((const char *) msys_gplusplus_backward_include_dir)
++#ifndef GEN_CVT_ARRAY
++#define GEN_CVT_ARRAY
++#endif
++#endif
++
++#ifdef LOCAL_INCLUDE_DIR
++char msys_local_include_dir[sizeof (LOCAL_INCLUDE_DIR)  + 1
++			      + MSYS_MINGW_SUBDIR_LEN]
++  = LOCAL_INCLUDE_DIR;
++#undef LOCAL_INCLUDE_DIR
++#define LOCAL_INCLUDE_DIR ((const char *) msys_local_include_dir)
++#ifndef GEN_CVT_ARRAY
++#define GEN_CVT_ARRAY
++#endif
++#endif
++
++#ifdef CROSS_INCLUDE_DIR
++char msys_cross_include_dir[sizeof (CROSS_INCLUDE_DIR) + 1
++			      + MSYS_MINGW_SUBDIR_LEN]
++  = CROSS_INCLUDE_DIR;
++#undef CROSS_INCLUDE_DIR
++#define CROSS_INCLUDE_DIR ((const char *) msys_cross_include_dir)
++#ifndef GEN_CVT_ARRAY
++#define GEN_CVT_ARRAY
++#endif
++#endif
++
++#ifdef TOOL_INCLUDE_DIR
++char msys_tool_include_dir[sizeof (TOOL_INCLUDE_DIR) + 1
++			     + MSYS_MINGW_SUBDIR_LEN]
++  = TOOL_INCLUDE_DIR;
++#undef TOOL_INCLUDE_DIR
++#define TOOL_INCLUDE_DIR ((const char *) msys_tool_include_dir)
++
++#ifndef CROSS_COMPILE
++#undef STANDARD_INCLUDE_DIR
++#define STANDARD_INCLUDE_DIR "/usr/include"
++char msys_standard_include_dir[sizeof (STANDARD_INCLUDE_DIR) + 1
++				 + MSYS_MINGW_SUBDIR_LEN]
++  = STANDARD_INCLUDE_DIR;
++#undef STANDARD_INCLUDE_DIR
++#define STANDARD_INCLUDE_DIR ((const char *) msys_standard_include_dir)
++#endif
++
++#ifndef GEN_CVT_ARRAY
++#define GEN_CVT_ARRAY
++#endif
++#endif
++
++#ifndef GEN_CVT_ARRAY
++extern char *cvt_to_mingw[];
++#else
++char *cvt_to_mingw[] =
++  {
++#ifdef GPLUSPLUS_INCLUDE_DIR
++    msys_gplusplus_include_dir,
++#endif
++
++#ifdef GPLUSPLUS_TOOL_INCLUDE_DIR
++    msys_gplusplus_tool_include_dir,
++#endif
++
++#ifdef GPLUSPLUS_BACKWARD_INCLUDE_DIR
++    msys_gplusplus_backward_include_dir,
++#endif
++
++#ifdef LOCAL_INCLUDE_DIR
++    msys_local_include_dir,
++#endif
++
++#ifdef CROSS_INCLUDE_DIR
++    msys_cross_include_dir,
++#endif
++
++#ifdef TOOL_INCLUDE_DIR
++    msys_tool_include_dir,
++#endif
++
++#ifdef STANDARD_INCLUDE_DIR
++    msys_standard_include_dir,
++#endif
++
++    NULL
++  };
++#undef GEN_CVT_ARRAY
++#endif /*GEN_CVT_ARRAY*/
++
++void mingw_scan (int, const char * const *, char **);
++#if 1
++#define GCC_DRIVER_HOST_INITIALIZATION \
++do \
++{ \
++  mingw_scan(argc, argv, (char **) &spec_machine); \
++  } \
++while (0)
++#else
++#define GCC_DRIVER_HOST_INITIALIZATION \
++do \
++{ \
++  char *cprefix = concat (tooldir_base_prefix, spec_machine, \
++			  dir_separator_str, NULL); \
++  if (!IS_ABSOLUTE_PATH (cprefix)) \
++    cprefix = concat (standard_exec_prefix, spec_machine, dir_separator_str, \
++		      spec_version, dir_separator_str, tooldir_prefix, NULL); \
++  add_prefix (&exec_prefixes,\
++	      concat (cprefix, "../../../../", spec_machine, "/bin/", NULL), \
++	      "BINUTILS", PREFIX_PRIORITY_LAST, 0, NULL); \
++  add_prefix (&exec_prefixes, cprefix, \
++	      "BINUTILS", PREFIX_PRIORITY_LAST, 0, NULL); \
++  add_prefix (&startfile_prefixes,\
++	      concat (standard_startfile_prefix, "w32api", NULL),\
++	      "GCC", PREFIX_PRIORITY_LAST, 0, NULL);\
++  mingw_scan(argc, argv, &spec_machine); \
++  } \
++while (0)
++#endif
+diff -r -u -N gcc-3.4.6_orig/gcc/config/i386/msys1.c gcc-3.4.6/gcc/config/i386/msys1.c
+--- gcc-3.4.6_orig/gcc/config/i386/msys1.c	2007-09-05 03:43:11.000000000 +0200
++++ gcc-3.4.6/gcc/config/i386/msys1.c	2007-09-05 03:46:49.000000000 +0200
+@@ -0,0 +1,54 @@
++/* Helper routines for msys-specific command-line parsing.
++   Contributed by Christopher Faylor (cgf@redhat.com)
++   Copyright 2003 Free Software Foundation, Inc.
++
++This file is part of GCC.
++
++GCC is free software; you can redistribute it and/or modify
++it under the terms of the GNU General Public License as published by
++the Free Software Foundation; either version 2, or (at your option)
++any later version.
++
++GCC is distributed in the hope that it will be useful,
++but WITHOUT ANY WARRANTY; without even the implied warranty of
++MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++GNU General Public License for more details.
++
++You should have received a copy of the GNU General Public License
++along with GCC; see the file COPYING.  If not, write to
++the Free Software Foundation, 59 Temple Place - Suite 330,
++Boston, MA 02111-1307, USA.  */
++
++#include "config.h"
++#include "system.h"
++#include "coretypes.h"
++#include "tm.h"
++#include <string.h>
++
++void
++mingw_scan (int argc ATTRIBUTE_UNUSED,
++            const char *const *argv,
++            char **spec_machine)
++{
++  putenv (xstrdup ("GCC_MSYS_MINGW=0"));
++ 
++  while (*++argv)
++    if (strcmp (*argv, "-mno-win32") == 0)
++      putenv (xstrdup ("GCC_MSYS_WIN32=0"));
++    else if (strcmp (*argv, "-mwin32") == 0)
++      putenv (xstrdup ("GCC_MSYS_WIN32=1"));
++    else if (strcmp (*argv, "-mno-msys") == 0)
++      {
++	char *p = strstr (*spec_machine, "-msys");
++	if (p)
++	  {
++	    int len = p - *spec_machine;
++	    char *s = xmalloc (strlen (*spec_machine) + 3);
++	    memcpy (s, *spec_machine, len);
++	    strcpy (s + len, "-mingw32");
++	    *spec_machine = s;
++	  }
++	putenv (xstrdup ("GCC_MSYS_MINGW=1"));
++      }
++  return;
++}
+diff -r -u -N gcc-3.4.6_orig/gcc/config/i386/msys2.c gcc-3.4.6/gcc/config/i386/msys2.c
+--- gcc-3.4.6_orig/gcc/config/i386/msys2.c	2007-09-05 03:43:11.000000000 +0200
++++ gcc-3.4.6/gcc/config/i386/msys2.c	2007-09-05 03:46:49.000000000 +0200
+@@ -0,0 +1,67 @@
++/* Helper routines for msys-specific command-line parsing.
++   Contributed by Christopher Faylor (cgf@redhat.com)
++   Copyright 2003 Free Software Foundation, Inc.
++
++This file is part of GCC.
++
++GCC is free software; you can redistribute it and/or modify
++it under the terms of the GNU General Public License as published by
++the Free Software Foundation; either version 2, or (at your option)
++any later version.
++
++GCC is distributed in the hope that it will be useful,
++but WITHOUT ANY WARRANTY; without even the implied warranty of
++MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++GNU General Public License for more details.
++
++You should have received a copy of the GNU General Public License
++along with GCC; see the file COPYING.  If not, write to
++the Free Software Foundation, 59 Temple Place - Suite 330,
++Boston, MA 02111-1307, USA.  */
++
++#include "config.h"
++#include "system.h"
++#include "coretypes.h"
++#include "tm.h"
++
++#include "safe-ctype.h"
++#include <string.h>
++
++/*
++static void remove_w32api (void);
++*/
++static void add_mingw (void);
++static void set_mingw (void) __attribute__ ((constructor));
++
++static void
++add_mingw (void)
++{
++  char **av;
++  char *p;
++  for (av = cvt_to_mingw; *av; av++)
++    {
++      int sawmsys = 0;
++      while ((p = strstr (*av, "-msys")))
++	{
++	  char *over = p + sizeof ("-msys") - 1;
++	  memmove (over + 1, over, strlen (over));
++	  memcpy (p, "-mingw32", sizeof("-mingw32") - 1);
++	  p = ++over;
++	  while (ISALNUM (*p))
++	    p++;
++	  strcpy (over, p);
++	  sawmsys = 1;
++	}
++      if (!sawmsys && !strstr (*av, "mingw"))
++	strcat (*av, MSYS_MINGW_SUBDIR);
++    }
++}
++
++
++static void
++set_mingw (void)
++{
++  char *env = getenv ("GCC_MSYS_MINGW");
++  if (env && *env == '1')
++    add_mingw ();
++}
+diff -r -u -N gcc-3.4.6_orig/gcc/config/i386/msysming.h gcc-3.4.6/gcc/config/i386/msysming.h
+--- gcc-3.4.6_orig/gcc/config/i386/msysming.h	2007-09-05 03:43:40.000000000 +0200
++++ gcc-3.4.6/gcc/config/i386/msysming.h	2007-09-05 03:48:47.000000000 +0200
+@@ -0,0 +1,417 @@
++/* Operating system specific defines to be used when targeting GCC for
++   hosting on Windows32, using a Unix style C library and tools.
++   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
++   Free Software Foundation, Inc.
++
++This file is part of GCC.
++
++GCC is free software; you can redistribute it and/or modify
++it under the terms of the GNU General Public License as published by
++the Free Software Foundation; either version 2, or (at your option)
++any later version.
++
++GCC is distributed in the hope that it will be useful,
++but WITHOUT ANY WARRANTY; without even the implied warranty of
++MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++GNU General Public License for more details.
++
++You should have received a copy of the GNU General Public License
++along with GCC; see the file COPYING.  If not, write to
++the Free Software Foundation, 59 Temple Place - Suite 330,
++Boston, MA 02111-1307, USA.  */
++
++#define DBX_DEBUGGING_INFO 1
++#define SDB_DEBUGGING_INFO 1
++#undef PREFERRED_DEBUGGING_TYPE
++#define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
++
++#if 1 /* def HAVE_GAS_PE_SECREL32_RELOC */
++#define DWARF2_DEBUGGING_INFO 1
++
++#undef DBX_REGISTER_NUMBER
++#define DBX_REGISTER_NUMBER(n) (write_symbols == DWARF2_DEBUG   \
++                                ? svr4_dbx_register_map[n]      \
++                                : dbx_register_map[n])
++
++/* Use section relative relocations for debugging offsets.  Unlike
++   other targets that fake this by putting the section VMA at 0, PE
++   won't allow it.  */
++#define ASM_OUTPUT_DWARF_OFFSET(FILE, SIZE, LABEL)    \
++  do {                                                \
++    if (SIZE != 4)                                    \
++      abort ();                                       \
++                                                      \
++    fputs ("\t.secrel32\t", FILE);                    \
++    assemble_name (FILE, LABEL);                      \
++  } while (0)
++#endif
++
++#define TARGET_EXECUTABLE_SUFFIX ".exe"
++
++#define TARGET_IS_PE_COFF 1
++
++#include <stdio.h>
++
++/* Masks for subtarget switches used by other files.  */
++#define MASK_NOP_FUN_DLLIMPORT 0x08000000 /* Ignore dllimport for functions */
++
++/* Used in winnt.c.  */
++#define TARGET_NOP_FUN_DLLIMPORT (target_flags & MASK_NOP_FUN_DLLIMPORT)
++
++#undef  SUBTARGET_SWITCHES
++#define SUBTARGET_SWITCHES \
++{ "msys",		  0, N_("Use the MSYS interface") },	\
++{ "no-msys",		  0, N_("Use the Mingw32 interface") },	\
++{ "windows",		  0, N_("Create GUI application") },	\
++{ "no-win32",		  0, N_("Don't set Windows defines") },	\
++{ "win32",		  0, N_("Set Windows defines") },	\
++{ "console",		  0, N_("Create console application") },\
++{ "dll",		  0, N_("Generate code for a DLL") },	\
++{ "nop-fun-dllimport",	  MASK_NOP_FUN_DLLIMPORT,		\
++  N_("Ignore dllimport for functions") },			\
++{ "no-nop-fun-dllimport", -MASK_NOP_FUN_DLLIMPORT, "" },	\
++{ "threads",		  0, N_("Use Mingw-specific thread support") },
++
++#define MAYBE_UWIN_CPP_BUILTINS() /* Nothing.  */
++
++/* Support the __declspec keyword by turning them into attributes.
++   We currently only support: dllimport and dllexport.
++   Note that the current way we do this may result in a collision with
++   predefined attributes later on.  This can be solved by using one attribute,
++   say __declspec__, and passing args to it.  The problem with that approach
++   is that args are not accumulated: each new appearance would clobber any
++   existing args.  */
++
++#define TARGET_OS_CPP_BUILTINS()					\
++  do									\
++    {									\
++	builtin_define ("_X86_=1");					\
++	builtin_assert ("system=winnt");				\
++	builtin_define ("__stdcall=__attribute__((__stdcall__))");	\
++	builtin_define ("__fastcall=__attribute__((__fastcall__))");	\
++	builtin_define ("__cdecl=__attribute__((__cdecl__))");		\
++	builtin_define ("__declspec(x)=__attribute__((x))");		\
++	if (!flag_iso)							\
++	  {								\
++	    builtin_define ("_stdcall=__attribute__((__stdcall__))");	\
++	    builtin_define ("_fastcall=__attribute__((__fastcall__))");	\
++	    builtin_define ("_cdecl=__attribute__((__cdecl__))");	\
++	  }								\
++	MAYBE_UWIN_CPP_BUILTINS ();					\
++	EXTRA_OS_CPP_BUILTINS ();					\
++  }									\
++  while (0)
++
++/* Get tree.c to declare a target-specific specialization of
++   merge_decl_attributes.  */
++#define TARGET_DLLIMPORT_DECL_ATTRIBUTES
++
++/* This macro defines names of additional specifications to put in the specs
++   that can be used in various specifications like CC1_SPEC.  Its definition
++   is an initializer with a subgrouping for each command option.
++
++   Each subgrouping contains a string constant, that defines the
++   specification name, and a string constant that used by the GCC driver
++   program.
++
++   Do not define this macro if it does not need to do anything.  */
++
++#undef  SUBTARGET_EXTRA_SPECS
++#define SUBTARGET_EXTRA_SPECS						\
++  { "mingw_include_path", DEFAULT_TARGET_MACHINE }
++
++#undef MATH_LIBRARY
++#define MATH_LIBRARY ""
++
++#define SIZE_TYPE "unsigned int"
++#define PTRDIFF_TYPE "int"
++#define WCHAR_TYPE_SIZE 16
++#define WCHAR_TYPE "short unsigned int"
++
++
++/* Enable parsing of #pragma pack(push,<n>) and #pragma pack(pop).  */
++#define HANDLE_PRAGMA_PACK_PUSH_POP 1
++
++union tree_node;
++#define TREE union tree_node *
++
++#undef EXTRA_SECTIONS
++#define EXTRA_SECTIONS in_drectve
++
++#undef EXTRA_SECTION_FUNCTIONS
++#define EXTRA_SECTION_FUNCTIONS					\
++  DRECTVE_SECTION_FUNCTION					\
++  SWITCH_TO_SECTION_FUNCTION
++
++#define DRECTVE_SECTION_FUNCTION \
++void									\
++drectve_section (void)							\
++{									\
++  if (in_section != in_drectve)						\
++    {									\
++      fprintf (asm_out_file, "%s\n", "\t.section .drectve\n");		\
++      in_section = in_drectve;						\
++    }									\
++}
++void drectve_section (void);
++
++/* Older versions of gas don't handle 'r' as data.
++   Explicitly set data flag with 'd'.  */  
++#define READONLY_DATA_SECTION_ASM_OP "\t.section .rdata,\"dr\""
++
++/* Switch to SECTION (an `enum in_section').
++
++   ??? This facility should be provided by GCC proper.
++   The problem is that we want to temporarily switch sections in
++   ASM_DECLARE_OBJECT_NAME and then switch back to the original section
++   afterwards.  */
++#define SWITCH_TO_SECTION_FUNCTION				\
++void switch_to_section (enum in_section, tree);			\
++void								\
++switch_to_section (enum in_section section, tree decl)		\
++{								\
++  switch (section)						\
++    {								\
++      case in_text: text_section (); break;			\
++      case in_data: data_section (); break;			\
++      case in_readonly_data: readonly_data_section (); break;	\
++      case in_named: named_section (decl, NULL, 0); break;	\
++      case in_drectve: drectve_section (); break;		\
++      default: abort (); break;					\
++    }								\
++}
++
++/* Don't allow flag_pic to propagate since gas may produce invalid code
++   otherwise.  */
++
++#undef  SUBTARGET_OVERRIDE_OPTIONS
++#define SUBTARGET_OVERRIDE_OPTIONS					\
++do {									\
++  if (flag_pic)								\
++    {									\
++      warning ("-f%s ignored for target (all code is position independent)",\
++	       (flag_pic > 1) ? "PIC" : "pic");				\
++      flag_pic = 0;							\
++    }									\
++} while (0)								\
++
++/* Define this macro if references to a symbol must be treated
++   differently depending on something about the variable or
++   function named by the symbol (such as what section it is in).
++
++   On i386 running Windows NT, modify the assembler name with a suffix
++   consisting of an atsign (@) followed by string of digits that represents
++   the number of bytes of arguments passed to the function, if it has the
++   attribute STDCALL.
++
++   In addition, we must mark dll symbols specially. Definitions of
++   dllexport'd objects install some info in the .drectve section.
++   References to dllimport'd objects are fetched indirectly via
++   _imp__.  If both are declared, dllexport overrides.  This is also
++   needed to implement one-only vtables: they go into their own
++   section and we need to set DECL_SECTION_NAME so we do that here.
++   Note that we can be called twice on the same decl.  */
++
++#undef TARGET_ENCODE_SECTION_INFO
++#define TARGET_ENCODE_SECTION_INFO  i386_pe_encode_section_info
++#undef  TARGET_STRIP_NAME_ENCODING
++#define TARGET_STRIP_NAME_ENCODING  i386_pe_strip_name_encoding_full
++
++/* Output a reference to a label.  */
++#undef ASM_OUTPUT_LABELREF
++#define ASM_OUTPUT_LABELREF  i386_pe_output_labelref
++
++/* Output a common block.  */
++#undef ASM_OUTPUT_COMMON
++#define ASM_OUTPUT_COMMON(STREAM, NAME, SIZE, ROUNDED)	\
++do {							\
++  if (i386_pe_dllexport_name_p (NAME))			\
++    i386_pe_record_exported_symbol (NAME, 1);		\
++  if (! i386_pe_dllimport_name_p (NAME))		\
++    {							\
++      fprintf ((STREAM), "\t.comm\t");			\
++      assemble_name ((STREAM), (NAME));			\
++      fprintf ((STREAM), ", %d\t%s %d\n",		\
++	       (int)(ROUNDED), ASM_COMMENT_START, (int)(SIZE));	\
++    }							\
++} while (0)
++
++/* Output the label for an initialized variable.  */
++#undef ASM_DECLARE_OBJECT_NAME
++#define ASM_DECLARE_OBJECT_NAME(STREAM, NAME, DECL)	\
++do {							\
++  if (i386_pe_dllexport_name_p (NAME))			\
++    i386_pe_record_exported_symbol (NAME, 1);		\
++  ASM_OUTPUT_LABEL ((STREAM), (NAME));			\
++} while (0)
++
++
++/* Emit code to check the stack when allocating more that 4000
++   bytes in one go.  */
++
++#define CHECK_STACK_LIMIT 4000
++
++/* By default, target has a 80387, uses IEEE compatible arithmetic,
++   returns float values in the 387 and needs stack probes.
++   We also align doubles to 64-bits for MSVC default compatibility.  */
++
++#undef TARGET_SUBTARGET_DEFAULT
++#define TARGET_SUBTARGET_DEFAULT \
++   (MASK_80387 | MASK_IEEE_FP | MASK_FLOAT_RETURNS | MASK_STACK_PROBE \
++    | MASK_ALIGN_DOUBLE)
++
++/* This is how to output an assembler line
++   that says to advance the location counter
++   to a multiple of 2**LOG bytes.  */
++
++#undef ASM_OUTPUT_ALIGN
++#define ASM_OUTPUT_ALIGN(FILE,LOG)	\
++    if ((LOG)!=0) fprintf ((FILE), "\t.align %d\n", 1<<(LOG))
++
++/* Define this macro if in some cases global symbols from one translation
++   unit may not be bound to undefined symbols in another translation unit
++   without user intervention.  For instance, under Microsoft Windows
++   symbols must be explicitly imported from shared libraries (DLLs).  */
++#define MULTIPLE_SYMBOL_SPACES 1
++
++extern void i386_pe_unique_section (TREE, int);
++#define TARGET_ASM_UNIQUE_SECTION i386_pe_unique_section
++
++#define SUPPORTS_ONE_ONLY 1
++
++/* Switch into a generic section.  */
++#define TARGET_ASM_NAMED_SECTION  i386_pe_asm_named_section
++
++/* Select attributes for named sections.  */
++#define TARGET_SECTION_TYPE_FLAGS  i386_pe_section_type_flags
++
++/* Write the extra assembler code needed to declare a function
++   properly.  If we are generating SDB debugging information, this
++   will happen automatically, so we only need to handle other cases.  */
++#undef ASM_DECLARE_FUNCTION_NAME
++#define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL)			\
++  do									\
++    {									\
++      if (i386_pe_dllexport_name_p (NAME))				\
++	i386_pe_record_exported_symbol (NAME, 0);			\
++      if (write_symbols != SDB_DEBUG)					\
++	i386_pe_declare_function_type (FILE, NAME, TREE_PUBLIC (DECL));	\
++      ASM_OUTPUT_LABEL (FILE, NAME);					\
++    }									\
++  while (0)
++
++/* Add an external function to the list of functions to be declared at
++   the end of the file.  */
++#define ASM_OUTPUT_EXTERNAL(FILE, DECL, NAME)				\
++  do									\
++    {									\
++      if (TREE_CODE (DECL) == FUNCTION_DECL)				\
++	i386_pe_record_external_function ((DECL), (NAME));		\
++    }									\
++  while (0)
++
++/* Declare the type properly for any external libcall.  */
++#define ASM_OUTPUT_EXTERNAL_LIBCALL(FILE, FUN) \
++  i386_pe_declare_function_type (FILE, XSTR (FUN, 0), 1)
++
++/* This says out to put a global symbol in the BSS section.  */
++#undef ASM_OUTPUT_ALIGNED_BSS
++#define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN) \
++  asm_output_aligned_bss ((FILE), (DECL), (NAME), (SIZE), (ALIGN))
++
++/* Output function declarations at the end of the file.  */
++#undef TARGET_ASM_FILE_END
++#define TARGET_ASM_FILE_END i386_pe_file_end
++
++#undef ASM_COMMENT_START
++#define ASM_COMMENT_START " #"
++
++/* DWARF2 Unwinding doesn't work with exception handling yet.  To make
++   it work, we need to build a libgcc_s.dll, and dcrt0.o should be
++   changed to call __register_frame_info/__deregister_frame_info.  */
++#define DWARF2_UNWIND_INFO 1
++
++/* Don't assume anything about the header files.  */
++#define NO_IMPLICIT_EXTERN_C
++
++#undef PROFILE_HOOK
++#define PROFILE_HOOK(LABEL)						\
++  if (MAIN_NAME_P (DECL_NAME (current_function_decl)))			\
++    {									\
++      emit_call_insn (gen_rtx (CALL, VOIDmode,				\
++	gen_rtx_MEM (FUNCTION_MODE,					\
++		     gen_rtx_SYMBOL_REF (Pmode, "_monstartup")),	\
++	const0_rtx));							\
++    }
++
++/* Java Native Interface (JNI) methods on Win32 are invoked using the
++   stdcall calling convention.  */
++#undef MODIFY_JNI_METHOD_CALL
++#define MODIFY_JNI_METHOD_CALL(MDECL)					      \
++  build_type_attribute_variant ((MDECL),				      \
++			       build_tree_list (get_identifier ("stdcall"),   \
++						NULL))
++
++/* External function declarations.  */
++
++extern void i386_pe_record_external_function (tree, const char *);
++extern void i386_pe_declare_function_type (FILE *, const char *, int);
++extern void i386_pe_record_exported_symbol (const char *, int);
++extern void i386_pe_file_end (void);
++extern int i386_pe_dllexport_name_p (const char *);
++extern int i386_pe_dllimport_name_p (const char *);
++
++/* For Win32 ABI compatibility */
++#undef DEFAULT_PCC_STRUCT_RETURN
++#define DEFAULT_PCC_STRUCT_RETURN 0
++
++/* MSVC returns aggregate types of up to 8 bytes via registers.
++   See i386.c:ix86_return_in_memory.  */
++#undef MS_AGGREGATE_RETURN
++#define MS_AGGREGATE_RETURN 1
++
++/* No data type wants to be aligned rounder than this.  */
++#undef	BIGGEST_ALIGNMENT
++#define BIGGEST_ALIGNMENT 128
++
++/* Native complier aligns internal doubles in structures on dword boundaries.  */
++#ifdef IN_TARGET_LIBS
++#undef	BIGGEST_FIELD_ALIGNMENT
++#define BIGGEST_FIELD_ALIGNMENT 64
++#endif
++
++/* A bit-field declared as `int' forces `int' alignment for the struct.  */
++#undef PCC_BITFIELD_TYPE_MATTERS
++#define PCC_BITFIELD_TYPE_MATTERS 1
++#define GROUP_BITFIELDS_BY_ALIGN TYPE_NATIVE(rec)
++
++/* Enable alias attribute support.  */
++#ifndef SET_ASM_OP
++#define SET_ASM_OP "\t.set\t"
++#endif
++/* This implements the `alias' attribute, keeping any stdcall or
++   fastcall decoration.  */
++#undef	ASM_OUTPUT_DEF_FROM_DECLS
++#define	ASM_OUTPUT_DEF_FROM_DECLS(STREAM, DECL, TARGET) 		\
++  do									\
++    {									\
++      const char *alias;						\
++      rtx rtlname = XEXP (DECL_RTL (DECL), 0);				\
++      if (GET_CODE (rtlname) == SYMBOL_REF)				\
++	alias = XSTR (rtlname, 0);					\
++      else								\
++	abort ();							\
++      if (TREE_CODE (DECL) == FUNCTION_DECL)				\
++	i386_pe_declare_function_type (STREAM, alias,			\
++				       TREE_PUBLIC (DECL));		\
++      ASM_OUTPUT_DEF (STREAM, alias, IDENTIFIER_POINTER (TARGET));	\
++      if (i386_pe_dllexport_name_p (alias))				\
++	i386_pe_record_exported_symbol (alias,				\
++					TREE_CODE (DECL) == VAR_DECL);	\
++    } while (0)
++
++#undef TREE
++
++#ifndef BUFSIZ
++# undef FILE
++#endif
+diff -r -u -N gcc-3.4.6_orig/gcc/config/i386/t-msys gcc-3.4.6/gcc/config/i386/t-msys
+--- gcc-3.4.6_orig/gcc/config/i386/t-msys	2007-09-05 03:43:11.000000000 +0200
++++ gcc-3.4.6/gcc/config/i386/t-msys	2007-09-05 03:46:49.000000000 +0200
+@@ -0,0 +1,16 @@
++# If we are building next to winsup, this will let us find the real
++# limits.h when building libgcc2.  Otherwise, winsup must be installed
++# first.
++LIBGCC2_INCLUDES += -I$(srcdir)/../winsup/include \
++	-I$(srcdir)/../winsup/msys/include
++
++msys1.o: $(srcdir)/config/i386/msys1.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
++  $(TM_H) $(TM_P_H)
++	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
++	$(srcdir)/config/i386/msys1.c
++
++msys2.o: $(srcdir)/config/i386/msys2.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
++  $(TM_H) $(TM_P_H)
++	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
++	$(srcdir)/config/i386/msys2.c
++
+diff -r -u -N gcc-3.4.6_orig/gcc/config/i386/t-msysming gcc-3.4.6/gcc/config/i386/t-msysming
+--- gcc-3.4.6_orig/gcc/config/i386/t-msysming	2007-09-05 03:43:40.000000000 +0200
++++ gcc-3.4.6/gcc/config/i386/t-msysming	2007-09-05 03:46:49.000000000 +0200
+@@ -0,0 +1,34 @@
++LIB1ASMSRC = i386/msys.asm
++LIB1ASMFUNCS = _chkstk
++
++# msys and mingw always have a limits.h, but, depending upon how we are
++# doing the build, it may not be installed yet.
++LIMITS_H_TEST = true
++
++# If we are building next to winsup, this will let us find the real
++# limits.h when building libgcc2.  Otherwise, winsup must be installed
++# first.
++LIBGCC2_INCLUDES = -I$(srcdir)/../winsup/w32api/include
++
++LIB2FUNCS_EXTRA = $(srcdir)/config/i386/w32-shared-ptr.c
++
++winnt.o: $(srcdir)/config/i386/winnt.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
++  $(TM_H) $(RTL_H) $(REGS_H) hard-reg-set.h output.h $(TREE_H) flags.h \
++  $(TM_P_H) toplev.h $(HASHTAB_H) $(GGC_H)
++	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
++	$(srcdir)/config/i386/winnt.c
++
++winnt-stubs.o: $(srcdir)/config/i386/winnt.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
++  $(TM_H) $(RTL_H) $(REGS_H) hard-reg-set.h output.h $(TREE_H) flags.h \
++  $(TM_P_H) toplev.h $(HASHTAB_H) $(GGC_H)
++	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
++	$(srcdir)/config/i386/winnt-stubs.c
++
++winnt-cxx.o: $(srcdir)/config/i386/winnt.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
++  $(TM_H) $(RTL_H) $(REGS_H) hard-reg-set.h output.h $(TREE_H) flags.h \
++  $(TM_P_H) toplev.h $(HASHTAB_H) $(GGC_H)
++	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
++	$(srcdir)/config/i386/winnt-cxx.c
++
++
++STMP_FIXINC=stmp-fixinc
+diff -r -u -N gcc-3.4.6_orig/gcc/config/i386/w32-shared-ptr.c gcc-3.4.6/gcc/config/i386/w32-shared-ptr.c
+--- gcc-3.4.6_orig/gcc/config/i386/w32-shared-ptr.c	2007-09-05 03:35:08.000000000 +0200
++++ gcc-3.4.6/gcc/config/i386/w32-shared-ptr.c	2007-09-05 03:41:19.000000000 +0200
+@@ -27,7 +27,7 @@
+ 
+ #include <stdlib.h>
+ #include <string.h>
+-#ifdef __CYGWIN__
++#if defined(__CYGWIN__) || defined(__MSYS__)
+ #include <unistd.h>
+ #endif
+ #ifdef DEBUG
+@@ -40,7 +40,7 @@
+ 
+ #include "w32-shared-ptr.h"
+ 
+-#if defined (__CYGWIN__) /* FIXME: This shouldn't be necessary. */
++#if defined (__CYGWIN__) || defined(__MSYS__) /* FIXME: This shouldn't be necessary. */
+ typedef unsigned short ATOM;
+ ATOM __attribute__ ((stdcall)) AddAtomA(const char*);
+ ATOM __attribute__  ((stdcall)) FindAtomA(const char*);
+@@ -74,7 +74,9 @@
+ #define GTHR_SUFFIX
+ #endif
+ 
+-#ifdef __CYGWIN__
++#if defined(__MSYS__)
++#define SYS_SUFFIX "-MSYS"
++#elif defined(__CYGWIN__)
+ #define SYS_SUFFIX "-CYGWIN"
+ #else
+ #define SYS_SUFFIX "-MINGW32"
+@@ -93,7 +95,7 @@
+ static W32_EH_SHARED * __w32_sharedptr_get (ATOM atom);
+ static void __w32_sharedptr_default_unexpected(void);
+ 
+-#ifdef __CYGWIN__
++#if defined(__CYGWIN__) || defined(__MSYS__)
+ static void __w32_sharedptr_fixup_after_fork (void);
+ #endif
+ 
+@@ -180,7 +182,7 @@
+ 
+       if (__w32_sharedptr_set (w32_sharedptr))
+         {
+-#ifdef __CYGWIN__
++#if defined(__CYGWIN__) || defined(__MSYS__)
+           /* recreate atom after fork */
+           pthread_atfork (NULL,NULL,__w32_sharedptr_fixup_after_fork);
+ #endif
+@@ -253,7 +255,7 @@
+   return w32_sharedptr;
+ }
+ 
+-#ifdef __CYGWIN__
++#if defined(__CYGWIN__) || defined(__MSYS__)
+ static void __w32_sharedptr_fixup_after_fork (void)
+ {
+   assert (__w32_sharedptr_set (__w32_sharedptr) != 0);
+diff -r -u -N gcc-3.4.6_orig/gcc/config/i386/xm-msys.h gcc-3.4.6/gcc/config/i386/xm-msys.h
+--- gcc-3.4.6_orig/gcc/config/i386/xm-msys.h	2007-09-05 03:43:11.000000000 +0200
++++ gcc-3.4.6/gcc/config/i386/xm-msys.h	2007-09-05 03:46:49.000000000 +0200
+@@ -0,0 +1,22 @@
++/* Configuration for GCC for hosting on Windows NT.
++   using a unix style C library.
++   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
++
++This file is part of GCC.
++
++GCC is free software; you can redistribute it and/or modify
++it under the terms of the GNU General Public License as published by
++the Free Software Foundation; either version 2, or (at your option)
++any later version.
++
++GCC is distributed in the hope that it will be useful,
++but WITHOUT ANY WARRANTY; without even the implied warranty of
++MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++GNU General Public License for more details.
++
++You should have received a copy of the GNU General Public License
++along with GCC; see the file COPYING.  If not, write to
++the Free Software Foundation, 59 Temple Place - Suite 330,
++Boston, MA 02111-1307, USA.  */
++
++#define HOST_EXECUTABLE_SUFFIX ".exe"
+diff -r -u -N gcc-3.4.6_orig/gcc/config.gcc gcc-3.4.6/gcc/config.gcc
+--- gcc-3.4.6_orig/gcc/config.gcc	2007-09-05 03:35:08.000000000 +0200
++++ gcc-3.4.6/gcc/config.gcc	2007-09-05 03:48:14.000000000 +0200
+@@ -1162,7 +1162,7 @@
+ 	tm_file="${tm_file} i386/sysv4.h i386/unix.h i386/vxworks.h"
+ 	tmake_file="${tmake_file} i386/t-vxworks"
+ 	;;
+-i[34567]86-*-pe |  i[34567]86-*-cygwin* |  i[34567]86-*-msys*)
++i[34567]86-*-pe |  i[34567]86-*-cygwin*)
+ 	tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h dbxcoff.h i386/cygming.h i386/cygwin.h"
+ 	target_gtfiles="\$(srcdir)/config/i386/winnt.c"
+ 	xm_file=i386/xm-cygwin.h
+@@ -1175,6 +1175,19 @@
+ 		thread_file='posix'
+ 	fi
+ 	;;
++i[34567]86-*-msys*)
++	tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h dbxcoff.h i386/msysming.h i386/msys.h"
++	target_gtfiles="\$(srcdir)/config/i386/winnt.c"
++	xm_file=i386/xm-msys.h
++	tmake_file="i386/t-msys i386/t-msysming"
++	extra_objs="winnt.o winnt-stubs.o"
++	c_target_objs=msys2.o
++	cxx_target_objs="msys2.o winnt-cxx.o"
++	extra_gcc_objs=msys1.o
++	if test x$enable_threads = xyes; then
++		thread_file='posix'
++	fi
++	;;
+ i[34567]86-*-mingw32*)
+ 	tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h dbxcoff.h i386/cygming.h i386/mingw32.h"
+ 	xm_file=i386/xm-mingw32.h
+diff -r -u -N gcc-3.4.6_orig/gcc/crtstuff.c gcc-3.4.6/gcc/crtstuff.c
+--- gcc-3.4.6_orig/gcc/crtstuff.c	2007-09-05 03:35:09.000000000 +0200
++++ gcc-3.4.6/gcc/crtstuff.c	2007-09-05 03:40:21.000000000 +0200
+@@ -134,7 +134,7 @@
+ /* Likewise for _Jv_RegisterClasses.  */
+ extern void _Jv_RegisterClasses (void *) TARGET_ATTRIBUTE_WEAK;
+ 
+-#if !(defined (__MINGW32__) || defined (__CYGWIN__))
++#if !(defined (__MINGW32__) || defined (__CYGWIN__) || defined (__MSYS__))
+ 
+ #ifdef OBJECT_FORMAT_ELF
+ 
+diff -r -u -N gcc-3.4.6_orig/gcc/unwind-dw2-fde.c gcc-3.4.6/gcc/unwind-dw2-fde.c
+--- gcc-3.4.6_orig/gcc/unwind-dw2-fde.c	2007-09-05 03:35:08.000000000 +0200
++++ gcc-3.4.6/gcc/unwind-dw2-fde.c	2007-09-05 03:40:21.000000000 +0200
+@@ -41,7 +41,7 @@
+ #include "gthr.h"
+ #endif
+ 
+-#if defined (__MINGW32__ ) || defined (__CYGWIN__)
++#if defined (__MINGW32__ ) || defined (__CYGWIN__) || defined (__MSYS__)
+ #include "config/i386/w32-shared-ptr.h"
+ #endif
+ 
+@@ -50,7 +50,7 @@
+    it's pc_begin and count fields initialized at minimum, and is sorted
+    by decreasing value of pc_begin.  */
+ 
+-#if ! (defined (__MINGW32__ ) || defined (__CYGWIN__))
++#if ! (defined (__MINGW32__ ) || defined (__CYGWIN__) || defined (__MSYS__))
+ static struct object *unseen_objects;
+ static struct object *seen_objects;
+ #else
+@@ -58,7 +58,7 @@
+ #define seen_objects    (*(struct object**)(&__w32_sharedptr->dw2_seen_objects))
+ #endif
+ 
+-#if !(defined (__MINGW32__ ) || defined (__CYGWIN__))
++#if !(defined (__MINGW32__ ) || defined (__CYGWIN__) || defined (__MSYS__))
+ #ifdef __GTHREAD_MUTEX_INIT
+ static __gthread_mutex_t object_mutex = __GTHREAD_MUTEX_INIT;
+ #else
+@@ -78,13 +78,13 @@
+ static void
+ init_object_mutex_once (void)
+ {
+-#if !(defined (__MINGW32__ ) || defined (__CYGWIN__))
++#if !(defined (__MINGW32__ ) || defined (__CYGWIN__) || defined (__MSYS__))
+   static __gthread_once_t once = __GTHREAD_ONCE_INIT;
+ #else
+ #define once  (__w32_sharedptr->dw2_once)
+ #endif
+   __gthread_once (&once, init_object_mutex);
+-#if (defined (__MINGW32__ ) || defined (__CYGWIN__))
++#if (defined (__MINGW32__ ) || defined (__CYGWIN__) || defined (__MSYS__))
+ #undef once
+ #endif
+ }
+@@ -450,7 +450,7 @@
+ fde_split (struct object *ob, fde_compare_t fde_compare,
+ 	   struct fde_vector *linear, struct fde_vector *erratic)
+ {
+-#if !(defined (__MINGW32__ ) || defined (__CYGWIN__))
++#if !(defined (__MINGW32__ ) || defined (__CYGWIN__) || defined (__MSYS__))
+   static fde *marker;
+ #else
+ #define marker  (*(const fde **)&__w32_sharedptr->dw2_marker)
+@@ -490,7 +490,7 @@
+       erratic->array[k++] = linear->array[i];
+   linear->count = j;
+   erratic->count = k;
+-#if (defined (__MINGW32__ ) || defined (__CYGWIN__))
++#if (defined (__MINGW32__ ) || defined (__CYGWIN__) || defined (__MSYS__))
+ #undef marker
+ #endif
+ }
+diff -r -u -N gcc-3.4.6_orig/gcc/unwind-sjlj.c gcc-3.4.6/gcc/unwind-sjlj.c
+--- gcc-3.4.6_orig/gcc/unwind-sjlj.c	2007-09-05 03:35:08.000000000 +0200
++++ gcc-3.4.6/gcc/unwind-sjlj.c	2007-09-05 03:40:21.000000000 +0200
+@@ -35,7 +35,7 @@
+ #include "unwind.h"
+ #include "gthr.h"
+ 
+-#if defined (__MINGW32__ ) || defined (__CYGWIN__)
++#if defined (__MINGW32__ ) || defined (__CYGWIN__) || defined (__MSYS__)
+ #include "config/i386/w32-shared-ptr.h"
+ #endif
+ 
+@@ -99,7 +99,7 @@
+ 
+ /* Manage the chain of registered function contexts.  */
+ 
+-#if !(defined (__MINGW32__ ) || defined (__CYGWIN__))
++#if !(defined (__MINGW32__ ) || defined (__CYGWIN__) || defined (__MSYS__))
+ /* Single threaded fallback chain.  */
+ static struct SjLj_Function_Context *fc_static;
+ #else
+@@ -107,7 +107,7 @@
+ #endif
+ 
+ #if __GTHREADS
+-#if !(defined (__MINGW32__ ) || defined (__CYGWIN__))
++#if !(defined (__MINGW32__ ) || defined (__CYGWIN__) || defined (__MSYS__))
+ static __gthread_key_t fc_key;
+ static int use_fc_key = -1;
+ #else
+@@ -124,14 +124,14 @@
+ static void
+ fc_key_init_once (void)
+ {
+-#if !(defined (__MINGW32__ ) || defined (__CYGWIN__))
++#if !(defined (__MINGW32__ ) || defined (__CYGWIN__) || defined (__MSYS__))
+   static __gthread_once_t once = __GTHREAD_ONCE_INIT;
+ #else
+ #define once (__w32_sharedptr->sjlj_once)
+ #endif
+   if (__gthread_once (&once, fc_key_init) != 0 || use_fc_key < 0)
+     use_fc_key = 0;
+-#if defined (__MINGW32__ ) || defined (__CYGWIN__)
++#if defined (__MINGW32__ ) || defined (__CYGWIN__) || defined (__MSYS__)
+ #undef once
+ #endif
+ }
+@@ -140,7 +140,7 @@
+ void
+ _Unwind_SjLj_Register (struct SjLj_Function_Context *fc)
+ {
+-#if defined (__MINGW32__ ) || defined (__CYGWIN__)
++#if defined (__MINGW32__ ) || defined (__CYGWIN__) || defined (__MSYS__)
+   W32_SHAREDPTR_INITIALIZE ();
+ #endif
+ 
+@@ -164,7 +164,7 @@
+ static inline struct SjLj_Function_Context *
+ _Unwind_SjLj_GetContext (void)
+ {
+-#if defined (__MINGW32__ ) || defined (__CYGWIN__)
++#if defined (__MINGW32__ ) || defined (__CYGWIN__) || defined (__MSYS__)
+   W32_SHAREDPTR_INITIALIZE ();
+ #endif
+ 
+@@ -181,7 +181,7 @@
+ static inline void
+ _Unwind_SjLj_SetContext (struct SjLj_Function_Context *fc)
+ {
+-#if defined (__MINGW32__ ) || defined (__CYGWIN__)
++#if defined (__MINGW32__ ) || defined (__CYGWIN__) || defined (__MSYS__)
+   W32_SHAREDPTR_INITIALIZE ();
+ #endif
+ 
+diff -r -u -N gcc-3.4.6_orig/include/filenames.h gcc-3.4.6/include/filenames.h
+--- gcc-3.4.6_orig/include/filenames.h	2007-09-05 03:35:09.000000000 +0200
++++ gcc-3.4.6/include/filenames.h	2007-09-05 03:40:21.000000000 +0200
+@@ -26,7 +26,7 @@
+ #ifndef FILENAMES_H
+ #define FILENAMES_H
+ 
+-#if defined(__MSDOS__) || defined(_WIN32) || defined(__OS2__) || defined (__CYGWIN__)
++#if defined(__MSDOS__) || defined(_WIN32) || defined(__OS2__) || defined (__CYGWIN__) || defined (__MSYS__)
+ 
+ #ifndef HAVE_DOS_BASED_FILE_SYSTEM
+ #define HAVE_DOS_BASED_FILE_SYSTEM 1
+diff -r -u -N gcc-3.4.6_orig/include/libiberty.h gcc-3.4.6/include/libiberty.h
+--- gcc-3.4.6_orig/include/libiberty.h	2007-09-05 03:35:09.000000000 +0200
++++ gcc-3.4.6/include/libiberty.h	2007-09-05 03:40:21.000000000 +0200
+@@ -79,7 +79,7 @@
+    to find the declaration so provide a fully prototyped one.  If it
+    is 1, we found it so don't provide any declaration at all.  */
+ #if !HAVE_DECL_BASENAME
+-#if defined (__GNU_LIBRARY__ ) || defined (__linux__) || defined (__FreeBSD__) || defined (__OpenBSD__) || defined(__NetBSD__) || defined (__CYGWIN__) || defined (__CYGWIN32__) || defined (__sun__) || defined (HAVE_DECL_BASENAME)
++#if defined (__GNU_LIBRARY__ ) || defined (__linux__) || defined (__FreeBSD__) || defined (__OpenBSD__) || defined(__NetBSD__) || defined (__CYGWIN__) || defined (__MSYS__) || defined (__CYGWIN32__) || defined (__sun__) || defined (HAVE_DECL_BASENAME)
+ extern char *basename PARAMS ((const char *));
+ #else
+ extern char *basename ();
+diff -r -u -N gcc-3.4.6_orig/libstdc++-v3/libsupc++/eh_globals.cc gcc-3.4.6/libstdc++-v3/libsupc++/eh_globals.cc
+--- gcc-3.4.6_orig/libstdc++-v3/libsupc++/eh_globals.cc	2007-09-05 03:35:09.000000000 +0200
++++ gcc-3.4.6/libstdc++-v3/libsupc++/eh_globals.cc	2007-09-05 03:40:22.000000000 +0200
+@@ -34,7 +34,7 @@
+ #include "bits/c++config.h"
+ #include "bits/gthr.h"
+ 
+-#if defined (__MINGW32__ ) || defined (__CYGWIN__)
++#if defined (__MINGW32__ ) || defined (__CYGWIN__) || defined (__MSYS__)
+ #include "config/i386/w32-shared-ptr.h"
+ #endif
+ 
+@@ -43,14 +43,14 @@
+ 
+ // Single-threaded fallback buffer.
+ 
+-#if !(defined (__MINGW32__ ) || defined (__CYGWIN__))
++#if !(defined (__MINGW32__ ) || defined (__CYGWIN__) || defined (__MSYS__))
+ static __cxa_eh_globals globals_static;
+ #else
+ #define globals_static  (*(struct __cxa_eh_globals*)(&__w32_sharedptr->eh_globals_static))
+ #endif
+ 
+ #if __GTHREADS
+-#if !(defined (__MINGW32__ ) || defined (__CYGWIN__))
++#if !(defined (__MINGW32__ ) || defined (__CYGWIN__) || defined (__MSYS__))
+ static __gthread_key_t globals_key;
+ static int use_thread_key = -1;
+ #else
+@@ -85,7 +85,7 @@
+ static void
+ get_globals_init_once ()
+ {
+-#if !(defined (__MINGW32__ ) || defined (__CYGWIN__))
++#if !(defined (__MINGW32__ ) || defined (__CYGWIN__) || defined (__MSYS__))
+   static __gthread_once_t once = __GTHREAD_ONCE_INIT;
+ #else
+ #define once (__w32_sharedptr->eh_globals_once)
+@@ -93,7 +93,7 @@
+   if (__gthread_once (&once, get_globals_init) != 0
+       || use_thread_key < 0)
+     use_thread_key = 0;
+-#if defined (__MINGW32__ ) || defined (__CYGWIN__)
++#if defined (__MINGW32__ ) || defined (__CYGWIN__) || defined (__MSYS__)
+ #undef once
+ #endif
+ }
+diff -r -u -N gcc-3.4.6_orig/libstdc++-v3/libsupc++/eh_term_handler.cc gcc-3.4.6/libstdc++-v3/libsupc++/eh_term_handler.cc
+--- gcc-3.4.6_orig/libstdc++-v3/libsupc++/eh_term_handler.cc	2007-09-05 03:35:09.000000000 +0200
++++ gcc-3.4.6/libstdc++-v3/libsupc++/eh_term_handler.cc	2007-09-05 03:40:22.000000000 +0200
+@@ -41,7 +41,7 @@
+ # include <cstdlib>
+ #endif
+ 
+-#if !(defined (__MINGW32__) || defined (__CYGWIN__))
++#if !(defined (__MINGW32__) || defined (__CYGWIN__) || defined (__MSYS__))
+ /* The current installed user handler.  */
+ std::terminate_handler __cxxabiv1::__terminate_handler =
+ #if _GLIBCXX_HOSTED
+diff -r -u -N gcc-3.4.6_orig/libstdc++-v3/libsupc++/eh_terminate.cc gcc-3.4.6/libstdc++-v3/libsupc++/eh_terminate.cc
+--- gcc-3.4.6_orig/libstdc++-v3/libsupc++/eh_terminate.cc	2007-09-05 03:35:09.000000000 +0200
++++ gcc-3.4.6/libstdc++-v3/libsupc++/eh_terminate.cc	2007-09-05 03:40:22.000000000 +0200
+@@ -50,7 +50,7 @@
+ void
+ std::terminate ()
+ {
+-#if 0 // (defined (__MINGW32__) || defined (__CYGWIN__))
++#if 0 // (defined (__MINGW32__) || defined (__CYGWIN__) || defined (__MSYS__))
+   if (__terminate_handler == NULL )
+     __terminate (__gnu_cxx::__verbose_terminate_handler);
+   else
+@@ -68,7 +68,7 @@
+ void
+ std::unexpected ()
+ {
+-#if  0 // (defined (__MINGW32__) || defined (__CYGWIN__))
++#if  0 // (defined (__MINGW32__) || defined (__CYGWIN__) || defined (__MSYS__))
+   if (__unexpected_handler == NULL)
+     std::terminate();
+   else
+diff -r -u -N gcc-3.4.6_orig/libstdc++-v3/libsupc++/eh_unex_handler.cc gcc-3.4.6/libstdc++-v3/libsupc++/eh_unex_handler.cc
+--- gcc-3.4.6_orig/libstdc++-v3/libsupc++/eh_unex_handler.cc	2007-09-05 03:35:09.000000000 +0200
++++ gcc-3.4.6/libstdc++-v3/libsupc++/eh_unex_handler.cc	2007-09-05 03:40:22.000000000 +0200
+@@ -29,7 +29,7 @@
+ 
+ #include "unwind-cxx.h"
+ 
+-#if !(defined  (__MINGW32__) || defined (__CYGWIN__))
++#if !(defined  (__MINGW32__) || defined (__CYGWIN__) || defined (__MSYS__))
+ /* The current installed user handler.  */
+ std::unexpected_handler __cxxabiv1::__unexpected_handler = std::terminate;
+ #endif
+diff -r -u -N gcc-3.4.6_orig/libstdc++-v3/libsupc++/typeinfo gcc-3.4.6/libstdc++-v3/libsupc++/typeinfo
+--- gcc-3.4.6_orig/libstdc++-v3/libsupc++/typeinfo	2007-09-05 03:35:09.000000000 +0200
++++ gcc-3.4.6/libstdc++-v3/libsupc++/typeinfo	2007-09-05 03:40:22.000000000 +0200
+@@ -44,7 +44,7 @@
+   class __class_type_info;
+ } // namespace __cxxabiv1
+ 
+-#if !__GXX_WEAK__ || defined (__MINGW32__) || defined (__CYGWIN__)
++#if !__GXX_WEAK__ || defined (__MINGW32__) || defined (__CYGWIN__) || defined (__MSYS__)
+   // If weak symbols are not supported, typeinfo names are not merged.
+   #define __GXX_MERGED_TYPEINFO_NAMES 0
+ #else
+diff -r -u -N gcc-3.4.6_orig/libstdc++-v3/libsupc++/unwind-cxx.h gcc-3.4.6/libstdc++-v3/libsupc++/unwind-cxx.h
+--- gcc-3.4.6_orig/libstdc++-v3/libsupc++/unwind-cxx.h	2007-09-05 03:35:09.000000000 +0200
++++ gcc-3.4.6/libstdc++-v3/libsupc++/unwind-cxx.h	2007-09-05 03:40:22.000000000 +0200
+@@ -126,7 +126,7 @@
+ extern void __unexpected(std::unexpected_handler) __attribute__((noreturn));
+ 
+  // The current installed user handlers.
+-#if defined  (__MINGW32__) || defined (__CYGWIN__)
++#if defined  (__MINGW32__) || defined (__CYGWIN__) || defined (__MSYS__)
+ extern "C" void** __w32_sharedptr_terminate;
+ extern "C" void** __w32_sharedptr_unexpected;
+ #define __terminate_handler (*(std::terminate_handler*)(__w32_sharedptr_terminate))
+diff -r -u -N gcc-3.4.6_orig/ltconfig gcc-3.4.6/ltconfig
+--- gcc-3.4.6_orig/ltconfig	2007-09-05 03:35:09.000000000 +0200
++++ gcc-3.4.6/ltconfig	2007-09-05 03:40:22.000000000 +0200
+@@ -2585,7 +2585,7 @@
+ # }
+ # #endif
+ #
+-# #ifdef __CYGWIN__
++# #if defined(__CYGWIN__) || defined(__MSYS__)
+ # #include <cygwin/cygwin_dll.h>
+ # DECLARE_CYGWIN_DLL( DllMain );
+ # #endif

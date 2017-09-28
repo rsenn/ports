@@ -1,0 +1,25 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A library for common data structures (tree, map, linked list), string operations, configuration-related tasks and more.
+# URL: http://jengelh.medozas.de/projects/libHX/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libHX
+version=1.27
+release=1
+source=(http://jengelh.medozas.de/files/libHX/libHX-$version.tar.bz2)
+
+build()
+{
+  cd libHX-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

@@ -1,0 +1,40 @@
+# $Id: Pkgfile,v 1.10 2007/05/10 16:59:30 roman Exp $
+#
+# Description: A computer vision framework for tangible user interfaces.
+#  reacTIVision is an open source, cross-platform computer vision framework
+#  for the fast and robust tracking of fiducial markers attached to
+#  physical objects, as well as for multi-touch finger tracking. It was
+#  mainly designed as a toolkit for the rapid development of table-based
+#  tangible user interfaces and multi-touch interactive surfaces. Client
+#  application examples are available for various programming environments
+#  such as C++, Java, C#, Processing, PureData and Max/MSP.
+# URL: http://reactivision.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=reactivision
+version=1.4rc1
+release=1
+source=($mirror_sf/reactivision/reacTIVision-$version-src.zip
+        reacTIVision-1.3-fixes.patch)
+
+build()
+{
+  cd reacTIVision-${version%rc[0-9]*}-src
+
+  #patch -N -p1 -i $SRC/reacTIVision-1.3-fixes.patch
+
+  case $host in
+    *-linux-*) DIR=linux ;;
+    *-cygwin | *-mingw32) DIR=win32 ;;
+  esac
+
+  make -C $DIR
+  make -C $DIR -i BINDIR="$prefix/bin" PREFIX="$prefix" DESTDIR="$PKG" install
+
+  mkdir -p $ROOT/share/doc
+  mv -f $ROOT/share/reacTIVision $ROOT/share/doc/reactivision
+
+  rm -rf calibration classic midi
+}
+

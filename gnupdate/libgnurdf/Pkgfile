@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A library for creating/modifying/searching RDF files.
+#  The libgnurdf library makes it easy to create, modify, and search
+#  RDF (Resource Description Format) files. It was based off the RDF
+#  implementation in gnorpm, but has evolved since then, and is suited for
+#  all types of applications.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libgnurdf
+version=0.3.1
+release=1
+source=($mirror_sf/gnupdate/libgnurdf-$version.tar.gz
+        libgnurdf-0.3.1-m4.patch)
+
+build()
+{
+  cd libgnurdf-$version
+
+  patch -N -p1 -i $SRC/libgnurdf-0.3.1-m4.patch
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

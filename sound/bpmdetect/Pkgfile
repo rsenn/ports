@@ -1,0 +1,24 @@
+# $Id: Pkgfile 424 2008-08-10 01:52:57Z enki $
+#
+# Description: Automatic BPM (Beat Per Minute) detecting application. It can also store detected BPMs into tags.
+# URL: http://sourceforge.net/projects/bpmdetect/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=bpmdetect
+version=0.6.1-src.tar.bz2
+release=1
+source=($mirror_sf/bpmdetect/bpmdetect-0.6.1-src.tar.bz2)
+
+build()
+{
+  cd bpmdetect
+
+  scons
+
+  make
+#  make DESTDIR="$PKG" install
+
+  install -d $ROOT/bin
+  install -m 755 build/bpmdetect $ROOT/bin
+}

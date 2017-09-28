@@ -1,0 +1,27 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:42 roman Exp $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=cppx
+version=1.0
+release=1
+source=(http://swag.uwaterloo.ca/~cppx/dist/${name}_source.tar.gz)
+
+build()
+{
+  cd opencxx-$version
+
+#  patch -N -p1 -i $SRC/opencxx-2.8-cross.patch
+
+  ./configure \
+      --prefix="$prefix" \
+      --host="$host" \
+      --build="$build" \
+      --datadir="$prefix/share/doc"
+
+  make
+  make DESTDIR="$PKG" install
+}

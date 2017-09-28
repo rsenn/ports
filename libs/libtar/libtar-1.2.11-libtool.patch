@@ -1,0 +1,559 @@
+diff -ruN libtar-1.2.11/.cvsignore libtar-libtool/.cvsignore
+diff -ruN libtar-1.2.11/COPYRIGHT libtar-libtool/COPYRIGHT
+diff -ruN libtar-1.2.11/ChangeLog-1.0.x libtar-libtool/ChangeLog-1.0.x
+diff -ruN libtar-1.2.11/INSTALL libtar-libtool/INSTALL
+diff -ruN libtar-1.2.11/Makefile.am libtar-libtool/Makefile.am
+--- libtar-1.2.11/Makefile.am	1970-01-01 00:00:00.000000000 +0000
++++ libtar-libtool/Makefile.am	2008-03-29 23:35:29.000000000 +0000
+@@ -0,0 +1,8 @@
++SUBDIRS = autoconf doc compat listhash lib libtar
++
++include_HEADERS = tar.h
++
++pkgdocdir = ${docdir}/${PACKAGE_NAME}
++
++pkgdoc_DATA = README COPYRIGHT ChangeLog ChangeLog-1.0.x TODO
++
+diff -ruN libtar-1.2.11/Makefile.in libtar-libtool/Makefile.in
+diff -ruN libtar-1.2.11/aclocal.m4 libtar-libtool/aclocal.m4
+diff -ruN libtar-1.2.11/autoconf/Makefile.am libtar-libtool/autoconf/Makefile.am
+--- libtar-1.2.11/autoconf/Makefile.am	1970-01-01 00:00:00.000000000 +0000
++++ libtar-libtool/autoconf/Makefile.am	2008-03-29 23:14:27.000000000 +0000
+@@ -0,0 +1,2 @@
++
++
+diff -ruN libtar-1.2.11/autoconf/Makefile.in libtar-libtool/autoconf/Makefile.in
+diff -ruN libtar-1.2.11/autoconf/ac_path_generic.m4 libtar-libtool/autoconf/ac_path_generic.m4
+diff -ruN libtar-1.2.11/autoconf/aclocal.m4 libtar-libtool/autoconf/aclocal.m4
+diff -ruN libtar-1.2.11/autoconf/config.guess libtar-libtool/autoconf/config.guess
+diff -ruN libtar-1.2.11/autoconf/config.sub libtar-libtool/autoconf/config.sub
+diff -ruN libtar-1.2.11/autoconf/depcomp libtar-libtool/autoconf/depcomp
+diff -ruN libtar-1.2.11/autoconf/encap.m4 libtar-libtool/autoconf/encap.m4
+diff -ruN libtar-1.2.11/autoconf/install-sh libtar-libtool/autoconf/install-sh
+diff -ruN libtar-1.2.11/autoconf/ltmain.sh libtar-libtool/autoconf/ltmain.sh
+diff -ruN libtar-1.2.11/autoconf/missing libtar-libtool/autoconf/missing
+diff -ruN libtar-1.2.11/autoconf/zlib.m4 libtar-libtool/autoconf/zlib.m4
+--- libtar-1.2.11/autoconf/zlib.m4	1970-01-01 00:00:00.000000000 +0000
++++ libtar-libtool/autoconf/zlib.m4	2008-03-29 23:14:27.000000000 +0000
+@@ -0,0 +1,96 @@
++dnl AC_CHECK_ZLIB([action-if-enabled-and-found], [action-if-enabled-and-not-found], [action-if-disabled])
++
++dnl AC_DEFUN([AC_HELP_STRING], [])
++
++AC_DEFUN([AC_CHECK_ZLIB],
++[
++  # let the user enable/disable the usage of zlib
++  AC_ARG_WITH([zlib-dir],
++    AC_HELP_STRING([--with-zlib-dir=PATH],[search for zlib in PATH])
++AC_HELP_STRING([--without-zlib-dir],[disable use of zlib]),
++    
++[
++  ZLIB_ENABLE="yes"
++  ZLIB_DIR="$withval"
++],
++[
++  ZLIB_ENABLE="$withval"
++  ZLIB_DIR=""
++])
++  
++  if test -z "$ZLIB_ENABLE"; then
++    ZLIB_ENABLE="yes"
++  fi
++  
++  if test -z "$ZLIB_DIR"; then
++    ZLIB_DIR='${prefix}'
++  fi
++
++  # let the user specify a non-standard include path
++  AC_ARG_WITH([zlib-include-dir],
++    AC_HELP_STRING([--with-zlib-include-dir=PATH],[search for zlib headers in PATH]),
++      [ZLIB_INC_DIR="$withval"], [ZLIB_INC_DIR="$ZLIB_DIR/include"])
++    
++  # let the user specify a non-standard library path
++  AC_ARG_WITH([zlib-lib-dir],
++    AC_HELP_STRING([--with-zlib-lib-dir=PATH],[search for zlib libraries in PATH]),
++      [ZLIB_LIB_DIR="$withval"], [ZLIB_LIB_DIR="$ZLIB_DIR/lib"])
++
++  # reset zlib dir if none was specified
++  if test "$ZLIB_DIR" = "yes"; then
++    ZLIB_ENABLE="yes"
++    ZLIB_DIR="$prefix"
++  fi
++  
++  if test "$ZLIB_DIR" = "no"; then
++    ZLIB_ENABLE="no"
++    ZLIB_DIR=""
++  fi
++  
++  # set include dir if specified
++  if test -n "$ZLIB_INC_DIR"; then
++    ZLIB_CFLAGS="-I$ZLIB_INC_DIR"
++  fi
++  
++  # set lib dir if specified
++  if test -n "$ZLIB_LIB_DIR"; then
++    ZLIB_LIBS="-L$ZLIB_LIB_DIR"
++  fi
++  
++  if test "$ZLIB_ENABLE" = "yes" || test -z "$ZLIB_ENABLE"; then
++    # backup libs and cflags
++    save_LIBS="$LIBS"
++    save_CFLAGS="$CFLAGS"
++  
++    # set zlib libs and cflags
++    CFLAGS="$ZLIB_CFLAGS"
++    LIBS="$ZLIB_LIBS"
++  
++    # now check for the library
++    AC_CHECK_LIB([z], [inflate], [ZLIB_OK="yes"], [ZLIB_OK="no"])
++  
++    # and now for the header
++    AC_CHECK_HEADER([zlib.h], [ZLIB_OK="yes"], [ZLIB_OK="no"])
++    
++    if test "$ZLIB_OK" = "yes"; then
++      :; $1
++    else
++      :; $2
++    fi
++  
++    # restore the flags
++    ZLIB_CFLAGS="$CFLAGS"
++    ZLIB_LIBS="$LIBS -lz"
++  
++    CFLAGS="$save_CFLAGS"
++    LIBS="$save_LIBS"
++    
++    AC_SUBST([ZLIB_DIR])
++    AC_SUBST([ZLIB_INC_DIR])
++    AC_SUBST([ZLIB_LIB_DIR])
++    AC_SUBST([ZLIB_CFLAGS])
++    AC_SUBST([ZLIB_LIBS])
++    AC_SUBST([ZLIB_ENABLE])
++  else
++    :; $3
++  fi])
+diff -ruN libtar-1.2.11/autom4te.cache/output.0 libtar-libtool/autom4te.cache/output.0
+diff -ruN libtar-1.2.11/autom4te.cache/requests libtar-libtool/autom4te.cache/requests
+diff -ruN libtar-1.2.11/autom4te.cache/traces.0 libtar-libtool/autom4te.cache/traces.0
+diff -ruN libtar-1.2.11/compat/Makefile.am libtar-libtool/compat/Makefile.am
+--- libtar-1.2.11/compat/Makefile.am	1970-01-01 00:00:00.000000000 +0000
++++ libtar-libtool/compat/Makefile.am	2008-03-29 23:14:27.000000000 +0000
+@@ -0,0 +1,6 @@
++noinst_HEADERS = compat.h
++noinst_LTLIBRARIES = libcompat.la
++
++INCLUDES = -I$(top_srcdir) -I$(top_builddir) -I$(srcdir)
++
++libcompat_la_SOURCES = basename.c dirname.c fnmatch.c gethostbyname_r.c gethostname.c getservbyname_r.c glob.c inet_aton.c snprintf.c strdup.c strlcat.c strlcpy.c strmode.c strrstr.c strsep.c
+diff -ruN libtar-1.2.11/compat/Makefile.in libtar-libtool/compat/Makefile.in
+diff -ruN libtar-1.2.11/compat/fnmatch.c libtar-libtool/compat/fnmatch.c
+--- libtar-1.2.11/compat/fnmatch.c	2003-01-07 01:38:10.000000000 +0000
++++ libtar-libtool/compat/fnmatch.c	2008-03-29 23:14:27.000000000 +0000
+@@ -51,6 +51,8 @@
+ 
+ #include <config.h>
+ 
++#ifndef HAVE_FNMATCH
++
+ #include <stdio.h>
+ 
+ #ifdef STDC_HEADERS
+@@ -235,3 +237,5 @@
+ 	*newp = (char *)pattern;
+ 	return (ok == negate ? RANGE_NOMATCH : RANGE_MATCH);
+ }
++
++#endif
+diff -ruN libtar-1.2.11/compat/glob.c libtar-libtool/compat/glob.c
+--- libtar-1.2.11/compat/glob.c	2001-04-17 14:52:37.000000000 +0000
++++ libtar-libtool/compat/glob.c	2008-03-29 23:14:27.000000000 +0000
+@@ -69,6 +69,8 @@
+ 
+ #include <config.h>
+ 
++#ifndef HAVE_GLOB
++
+ #include <sys/param.h>
+ #include <sys/stat.h>
+ 
+@@ -871,3 +873,5 @@
+ 	(void)printf("\n");
+ }
+ #endif
++
++#endif /* HAVE_GLOB */
+diff -ruN libtar-1.2.11/compat/strsep.c libtar-libtool/compat/strsep.c
+--- libtar-1.2.11/compat/strsep.c	2000-10-27 16:16:34.000000000 +0000
++++ libtar-libtool/compat/strsep.c	2008-03-29 23:14:27.000000000 +0000
+@@ -44,6 +44,8 @@
+ #endif
+ #endif /* LIBC_SCCS and not lint */
+ 
++#include <config.h>
++
+ #ifndef HAVE_STRSEP
+ /*
+  * Get next token from string *stringp, where tokens are possibly-empty
+diff -ruN libtar-1.2.11/config.h.in libtar-libtool/config.h.in
+diff -ruN libtar-1.2.11/config.sub libtar-libtool/config.sub
+diff -ruN libtar-1.2.11/configure libtar-libtool/configure
+diff -ruN libtar-1.2.11/configure.ac libtar-libtool/configure.ac
+diff -ruN libtar-1.2.11/configure.in libtar-libtool/configure.in
+--- libtar-1.2.11/configure.in	1970-01-01 00:00:00.000000000 +0000
++++ libtar-libtool/configure.in	2008-03-29 23:14:27.000000000 +0000
+@@ -0,0 +1,127 @@
++dnl ### Normal initialization. ######################################
++AC_INIT
++AC_CONFIG_AUX_DIR([autoconf])
++AM_INIT_AUTOMAKE([libtar], [1.2.11])
++AC_PREREQ([2.57])
++AC_CONFIG_HEADERS([config.h])
++AC_COPYRIGHT([[
++Copyright (c) 1998-2003 University of Illinois Board of Trustees
++Copyright (c) 1998-2003 Mark D. Roth
++All rights reserved.
++]])
++AC_CONFIG_SRCDIR([lib/libtar.h])
++dnl ENCAP_PKG([], [postinstall-encap])
++
++
++dnl ### Load subdirectory modules. ##################################
++dnl PSG_MODULE([compat])
++dnl PSG_MODULE([listhash], [libtar])
++
++
++dnl ### Set some option defaults. ###################################
++if test -z "$CFLAGS"; then
++  CFLAGS="-O"
++fi
++MKDIR="mkdir -p -m 755"
++AC_SUBST([MKDIR])
++
++
++dnl ### Check for compiler et al. ###################################
++AC_PROG_CC
++AC_PROG_RANLIB
++AC_PROG_INSTALL
++AC_PROG_LN_S
++AC_PROG_MAKE_SET
++AC_PROG_LIBTOOL
++
++
++dnl ### Compiler characteristics. ##################################
++AC_AIX
++AC_C_CONST
++
++
++dnl ### Checks for header files. ###################################
++AC_HEADER_STDC
++AC_CHECK_HEADERS([unistd.h])
++AC_HEADER_MAJOR
++dnl PSG_REPLACE_TYPE([major_t], [unsigned int], [
++dnl   #include <sys/types.h>
++dnl   #ifdef MAJOR_IN_MKDEV
++dnl   # include <sys/mkdev.h>
++dnl   #else
++dnl   # ifdef MAJOR_IN_SYSMACROS
++dnl   #  include <sys/sysmacros.h>
++dnl   # endif
++dnl   #endif
++dnl ])
++dnl PSG_REPLACE_TYPE([minor_t], [unsigned int], [
++dnl   #include <sys/types.h>
++dnl   #ifdef MAJOR_IN_MKDEV
++dnl   # include <sys/mkdev.h>
++dnl   #else
++dnl   # ifdef MAJOR_IN_SYSMACROS
++dnl   #  include <sys/sysmacros.h>
++dnl   # endif
++dnl   #endif
++dnl ])
++dnl PSG_REPLACE_TYPE([dev_t], [unsigned long], [
++dnl   #include <sys/types.h>
++dnl   #ifdef MAJOR_IN_MKDEV
++dnl   # include <sys/mkdev.h>
++dnl   #else
++dnl   # ifdef MAJOR_IN_SYSMACROS
++dnl   #  include <sys/sysmacros.h>
++dnl   # endif
++dnl   #endif
++dnl ])
++dnl PSG_REPLACE_TYPE([socklen_t], [unsigned long], [
++dnl   #include <sys/types.h>
++dnl   #include <sys/socket.h>
++dnl ])
++dnl PSG_REPLACE_TYPE([uint64_t], [long long])
++AC_TYPE_MODE_T
++AC_TYPE_OFF_T
++AC_TYPE_SIZE_T
++AC_TYPE_UID_T
++dnl PSG_REPLACE_TYPE([nlink_t], [unsigned short])
++
++m4_include([compat/module.ac])
++m4_include([listhash/module.ac])
++
++
++dnl ### Check for needed functions. ################################
++COMPAT_FUNC_BASENAME
++COMPAT_FUNC_DIRNAME
++COMPAT_FUNC_FNMATCH
++AC_CHECK_FUNCS([lchown glob vsnprintf])
++COMPAT_FUNC_MAKEDEV
++COMPAT_FUNC_SNPRINTF
++COMPAT_FUNC_STRDUP
++AC_FUNC_STRFTIME
++COMPAT_FUNC_STRLCPY
++COMPAT_FUNC_STRMODE
++COMPAT_FUNC_STRSEP
++
++
++dnl ### Check for libraries. #######################################
++dnl AC_ARG_WITH([zlib],
++dnl   [  --without-zlib          Use external gzip binary instead of zlib],
++dnl   [],
++dnl   [with_zlib=yes])
++dnl if test "$with_zlib" = "yes"; then
++dnl   AC_CHECK_LIB([z], [gzread])
++dnl fi
++
++AC_CHECK_ZLIB
++
++
++dnl ### Create output files. #######################################
++AC_CONFIG_FILES([Makefile
++                 autoconf/Makefile
++                 compat/Makefile
++                 lib/Makefile
++                 libtar/Makefile
++                 doc/Makefile
++                 listhash/Makefile])
++AC_OUTPUT
++
+diff -ruN libtar-1.2.11/doc/Makefile.am libtar-libtool/doc/Makefile.am
+--- libtar-1.2.11/doc/Makefile.am	1970-01-01 00:00:00.000000000 +0000
++++ libtar-libtool/doc/Makefile.am	2008-03-29 23:32:41.000000000 +0000
+@@ -0,0 +1,3 @@
++#mandir = ${datarootdir}/man3
++
++man3_MANS = tar_append_file.3 tar_block_read.3 tar_extract_all.3 tar_extract_file.3 tar_open.3 th_get_pathname.3 th_print_long_ls.3 th_read.3 th_set_from_stat.3
+diff -ruN libtar-1.2.11/doc/Makefile.in libtar-libtool/doc/Makefile.in
+diff -ruN libtar-1.2.11/doc/tar_append_file.3 libtar-libtool/doc/tar_append_file.3
+diff -ruN libtar-1.2.11/doc/tar_block_read.3 libtar-libtool/doc/tar_block_read.3
+diff -ruN libtar-1.2.11/doc/tar_extract_all.3 libtar-libtool/doc/tar_extract_all.3
+diff -ruN libtar-1.2.11/doc/tar_extract_file.3 libtar-libtool/doc/tar_extract_file.3
+diff -ruN libtar-1.2.11/doc/tar_open.3 libtar-libtool/doc/tar_open.3
+diff -ruN libtar-1.2.11/doc/th_get_pathname.3 libtar-libtool/doc/th_get_pathname.3
+diff -ruN libtar-1.2.11/doc/th_print_long_ls.3 libtar-libtool/doc/th_print_long_ls.3
+diff -ruN libtar-1.2.11/doc/th_read.3 libtar-libtool/doc/th_read.3
+diff -ruN libtar-1.2.11/doc/th_set_from_stat.3 libtar-libtool/doc/th_set_from_stat.3
+diff -ruN libtar-1.2.11/lib/Makefile.am libtar-libtool/lib/Makefile.am
+--- libtar-1.2.11/lib/Makefile.am	1970-01-01 00:00:00.000000000 +0000
++++ libtar-libtool/lib/Makefile.am	2008-03-29 23:14:27.000000000 +0000
+@@ -0,0 +1,18 @@
++lib_LTLIBRARIES = libtar.la
++
++INCLUDES = -I$(srcdir) -I$(top_srcdir) -I$(top_builddir) -I$(top_srcdir)/compat
++
++libtar_la_SOURCES = \
++    append.c \
++    block.c \
++    decode.c \
++    encode.c \
++    extract.c \
++    handle.c \
++    internal.h \
++    libtar.h \
++    output.c \
++    util.c \
++    wrapper.c
++libtar_la_LDFLAGS = -rpath $(libdir) -no-undefined -version-number 1:2:11
++libtar_la_LIBADD = ../listhash/liblisthash.la ../compat/libcompat.la $(ZLIB_LIBS)
+diff -ruN libtar-1.2.11/lib/Makefile.in libtar-libtool/lib/Makefile.in
+diff -ruN libtar-1.2.11/lib/extract.c libtar-libtool/lib/extract.c
+--- libtar-1.2.11/lib/extract.c	2003-03-02 23:58:07.000000000 +0000
++++ libtar-libtool/lib/extract.c	2008-03-29 23:14:27.000000000 +0000
+@@ -13,6 +13,7 @@
+ #include <internal.h>
+ 
+ #include <stdio.h>
++#include <string.h>
+ #include <sys/param.h>
+ #include <sys/types.h>
+ #include <fcntl.h>
+diff -ruN libtar-1.2.11/libtar/Makefile.am libtar-libtool/libtar/Makefile.am
+--- libtar-1.2.11/libtar/Makefile.am	1970-01-01 00:00:00.000000000 +0000
++++ libtar-libtool/libtar/Makefile.am	2008-03-29 23:14:27.000000000 +0000
+@@ -0,0 +1,8 @@
++bin_PROGRAMS = libtar
++
++INCLUDES = -I$(srcdir)/../compat -I$(builddir)/..
++
++LDADD = -L../lib -ltar
++
++libtar_SOURCES = libtar.c
++libtar_LIBS = $(LIBS)
+diff -ruN libtar-1.2.11/libtar/Makefile.in libtar-libtool/libtar/Makefile.in
+diff -ruN libtar-1.2.11/listhash/Makefile.am libtar-libtool/listhash/Makefile.am
+--- libtar-1.2.11/listhash/Makefile.am	1970-01-01 00:00:00.000000000 +0000
++++ libtar-libtool/listhash/Makefile.am	2008-03-29 23:14:27.000000000 +0000
+@@ -0,0 +1,7 @@
++noinst_LTLIBRARIES = liblisthash.la
++liblisthash_la_SOURCES = libtar_hash.c libtar_list.c libtar_listhash.h
++
++INCLUDES = -I$(srcdir) -I$(srcdir)/../compat -I$(builddir)/..
++
++libtar_hash.c:
++	cd .. && ./config.status listhash/$@
+diff -ruN libtar-1.2.11/listhash/Makefile.in libtar-libtool/listhash/Makefile.in
+diff -ruN libtar-1.2.11/listhash/libtar_hash.c libtar-libtool/listhash/libtar_hash.c
+diff -ruN libtar-1.2.11/listhash/libtar_list.c libtar-libtool/listhash/libtar_list.c
+diff -ruN libtar-1.2.11/listhash/libtar_listhash.h libtar-libtool/listhash/libtar_listhash.h
+diff -ruN libtar-1.2.11/listhash/module.ac libtar-libtool/listhash/module.ac
+--- libtar-1.2.11/listhash/module.ac	2002-09-06 19:43:58.000000000 +0000
++++ libtar-libtool/listhash/module.ac	2008-03-29 23:14:27.000000000 +0000
+@@ -1,21 +1,21 @@
+-AC_DEFUN(subdir[_INIT], [
+-  AC_REQUIRE([COMPAT_FUNC_STRLCPY])
+-  AC_REQUIRE([COMPAT_FUNC_STRSEP])
++dnl AC_DEFUN(subdir[_INIT], [
++dnl  AC_REQUIRE([COMPAT_FUNC_STRLCPY])
++dnl  AC_REQUIRE([COMPAT_FUNC_STRSEP])
+ 
+-  if test -z "$2"; then
++  if test -n "$PACKAGE_NAME"; then
+     LISTHASH_PREFIX="${PACKAGE_NAME}";
+   else
+-    LISTHASH_PREFIX="$2";
++    LISTHASH_PREFIX="libtar";
+   fi
+   AC_SUBST([LISTHASH_PREFIX])
+ 
+-  LISTHASH_DIR="$1";
++  LISTHASH_DIR="listhash";
+   AC_SUBST([LISTHASH_DIR])
+ 
+-  AC_CONFIG_FILES([$1/${LISTHASH_PREFIX}_listhash.h:$1/listhash.h.in])
+-  AC_CONFIG_FILES([$1/${LISTHASH_PREFIX}_list.c:$1/list.c.in])
+-  AC_CONFIG_FILES([$1/${LISTHASH_PREFIX}_hash.c:$1/hash.c.in])
+-  AC_CONFIG_FILES([$1/${LISTHASH_PREFIX}_list_new.3:$1/list_new.3.in])
+-  AC_CONFIG_FILES([$1/${LISTHASH_PREFIX}_hash_new.3:$1/hash_new.3.in])
+-])
++  AC_CONFIG_FILES([listhash/libtar_listhash.h:listhash/listhash.h.in
++                   listhash/libtar_list.c:listhash/list.c.in
++                   listhash/libtar_hash.c:listhash/hash.c.in
++                   listhash/libtar_list_new.3:listhash/list_new.3.in
++                   listhash/libtar_hash_new.3:listhash/hash_new.3.in])
++dnl ])
+ 
+diff -ruN libtar-1.2.11/tar.h libtar-libtool/tar.h
+--- libtar-1.2.11/tar.h	1970-01-01 00:00:00.000000000 +0000
++++ libtar-libtool/tar.h	2008-03-29 23:14:27.000000000 +0000
+@@ -0,0 +1,108 @@
++/* Extended tar format from POSIX.1.
++   Copyright (C) 1992, 1996 Free Software Foundation, Inc.
++   This file is part of the GNU C Library.
++   Written by David J. MacKenzie.
++
++   The GNU C Library is free software; you can redistribute it and/or
++   modify it under the terms of the GNU Lesser General Public
++   License as published by the Free Software Foundation; either
++   version 2.1 of the License, or (at your option) any later version.
++
++   The GNU C Library is distributed in the hope that it will be useful,
++   but WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++   Lesser General Public License for more details.
++
++   You should have received a copy of the GNU Lesser General Public
++   License along with the GNU C Library; if not, write to the Free
++   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
++   02111-1307 USA.  */
++
++#ifndef	_TAR_H
++#define	_TAR_H	1
++
++/* A tar archive consists of 512-byte blocks.
++   Each file in the archive has a header block followed by 0+ data blocks.
++   Two blocks of NUL bytes indicate the end of the archive.  */
++
++/* The fields of header blocks:
++   All strings are stored as ISO 646 (approximately ASCII) strings.
++
++   Fields are numeric unless otherwise noted below; numbers are ISO 646
++   representations of octal numbers, with leading zeros as needed.
++
++   linkname is only valid when typeflag==LNKTYPE.  It doesn't use prefix;
++   files that are links to pathnames >100 chars long can not be stored
++   in a tar archive.
++
++   If typeflag=={LNKTYPE,SYMTYPE,DIRTYPE} then size must be 0.
++
++   devmajor and devminor are only valid for typeflag=={BLKTYPE,CHRTYPE}.
++
++   chksum contains the sum of all 512 bytes in the header block,
++   treating each byte as an 8-bit unsigned value and treating the
++   8 bytes of chksum as blank characters.
++
++   uname and gname are used in preference to uid and gid, if those
++   names exist locally.
++
++   Field Name	Byte Offset	Length in Bytes	Field Type
++   name		0		100		NUL-terminated if NUL fits
++   mode		100		8
++   uid		108		8
++   gid		116		8
++   size		124		12
++   mtime	136		12
++   chksum	148		8
++   typeflag	156		1		see below
++   linkname	157		100		NUL-terminated if NUL fits
++   magic	257		6		must be TMAGIC (NUL term.)
++   version	263		2		must be TVERSION
++   uname	265		32		NUL-terminated
++   gname	297		32		NUL-terminated
++   devmajor	329		8
++   devminor	337		8
++   prefix	345		155		NUL-terminated if NUL fits
++
++   If the first character of prefix is '\0', the file name is name;
++   otherwise, it is prefix/name.  Files whose pathnames don't fit in that
++   length can not be stored in a tar archive.  */
++
++/* The bits in mode: */
++#define TSUID	04000
++#define TSGID	02000
++#define TSVTX	01000
++#define TUREAD	00400
++#define TUWRITE	00200
++#define TUEXEC	00100
++#define TGREAD	00040
++#define TGWRITE	00020
++#define TGEXEC	00010
++#define TOREAD	00004
++#define TOWRITE	00002
++#define TOEXEC	00001
++
++/* The values for typeflag:
++   Values 'A'-'Z' are reserved for custom implementations.
++   All other values are reserved for future POSIX.1 revisions.  */
++
++#define REGTYPE		'0'	/* Regular file (preferred code).  */
++#define AREGTYPE	'\0'	/* Regular file (alternate code).  */
++#define LNKTYPE		'1'	/* Hard link.  */
++#define SYMTYPE		'2'	/* Symbolic link (hard if not supported).  */
++#define CHRTYPE		'3'	/* Character special.  */
++#define BLKTYPE		'4'	/* Block special.  */
++#define DIRTYPE		'5'	/* Directory.  */
++#define FIFOTYPE	'6'	/* Named pipe.  */
++#define CONTTYPE	'7'	/* Contiguous file */
++ /* (regular file if not supported).  */
++
++/* Contents of magic field and its length.  */
++#define TMAGIC	"ustar"
++#define TMAGLEN	6
++
++/* Contents of the version field and its length.  */
++#define TVERSION	"00"
++#define TVERSLEN	2
++
++#endif /* tar.h */

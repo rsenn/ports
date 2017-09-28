@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A command line icecast/shoutcast stream grabber.
+#  fIcy is a command line icecast/shoutcast stream grabber. Its goal is to
+#  cleanly and automatically rip a stream into user-customizable files. It
+#  will work with any ICY-compatible stream, allowing you to either to save
+#  the stream to disk, pipe the output to a media player, or both.
+#  .
+# URL: http://ficy.sf.net/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=ficy
+version=1.0.16
+release=1
+source=($mirror_sf/ficy/fIcy-$version.tar.gz)
+
+build()
+{
+  cd fIcy-$version
+
+  make
+
+  install -d $ROOT/bin
+  install -m 755 fIcy $ROOT/bin/ficy
+
+  install -d $ROOT/share/doc/ficy
+  install -m 755 AUTHORS COPYING FAQ NEWS README TODO $ROOT/share/doc/ficy
+}
+
+# EOF

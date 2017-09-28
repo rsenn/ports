@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: HTTP client/server library for GNOME.
+# URL: http://live.gnome.org/LibSoup
+# Maintainer: 
+# Depends on: 
+
+name=libsoup
+version=2.24.3
+release=1
+source=(ftp://mirror.switch.ch/mirror/gentoo/distfiles/libsoup-$version.tar.bz2)
+
+build() 
+{
+  cd libsoup-$version
+  
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+  
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/libsoup
+  install -m 644 INSTALL ChangeLog NEWS COPYING AUTHORS README $ROOT/share/doc/libsoup
+}
+
+# EOF

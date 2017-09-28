@@ -1,0 +1,66 @@
+diff -ru pircbotcpp-src-1.4.4.1_orig/build_files/autoconf/lib/Makefile.am pircbotcpp-src-1.4.4.1/build_files/autoconf/lib/Makefile.am
+--- pircbotcpp-src-1.4.4.1_orig/build_files/autoconf/lib/Makefile.am	2008-07-04 18:54:15.000000000 +0200
++++ pircbotcpp-src-1.4.4.1/build_files/autoconf/lib/Makefile.am	2008-07-04 18:54:30.000000000 +0200
+@@ -1,6 +1,6 @@
+ AUTOMAKE_OPTIONS = gnu
+ 
+-LIBS = -lboost_date_time -lboost_regex-mt -lboost_thread-mt -lpthread
++LIBS = -lboost_date_time-mt -lboost_system-mt -lboost_regex-mt -lboost_thread-mt -lpthread
+ 
+ lib_LTLIBRARIES = libpircbot-mt.la
+ libpircbot_mt_la_SOURCES = ../../../src/pircbotcpp/Colors.cpp \
+@@ -14,7 +14,7 @@
+ 						   ../../../src/pircbotcpp/impl/Socket.cpp
+ 
+ libpircbot_mt_la_LDFLAGS = -version-info 0:0:0
+-INCLUDES=-I../../../include
++INCLUDES=-I$(includedir)/boost -I../../../include
+ 
+ # public api directory that we're going to copy all of 
+ # our header files from
+diff -ru pircbotcpp-src-1.4.4.1_orig/include/pircbot/impl/IdentServer.h pircbotcpp-src-1.4.4.1/include/pircbot/impl/IdentServer.h
+--- pircbotcpp-src-1.4.4.1_orig/include/pircbot/impl/IdentServer.h	2008-07-04 18:54:13.000000000 +0200
++++ pircbotcpp-src-1.4.4.1/include/pircbot/impl/IdentServer.h	2008-07-04 18:55:00.000000000 +0200
+@@ -50,8 +50,8 @@
+ #  pragma warning(disable:4554)
+ #endif
+ 
+-#include <asio.hpp>
+-using asio::ip::tcp;
++#include <boost/asio.hpp>
++using boost::asio::ip::tcp;
+ 
+ #ifdef _WIN32
+ #  pragma warning(default: 4267)  	
+diff -ru pircbotcpp-src-1.4.4.1_orig/include/pircbot/impl/Socket.h pircbotcpp-src-1.4.4.1/include/pircbot/impl/Socket.h
+--- pircbotcpp-src-1.4.4.1_orig/include/pircbot/impl/Socket.h	2008-07-04 18:54:13.000000000 +0200
++++ pircbotcpp-src-1.4.4.1/include/pircbot/impl/Socket.h	2008-07-04 18:54:49.000000000 +0200
+@@ -42,7 +42,7 @@
+ #  pragma warning(disable:4554)
+ #endif
+ 
+-#include <asio.hpp>
++#include <boost/asio.hpp>
+ 
+ //Reenable warnings to their default value
+ #ifdef _WIN32
+@@ -63,7 +63,7 @@
+ namespace impl
+ {
+ 
+-using asio::ip::tcp;
++using boost::asio::ip::tcp;
+ using namespace boost;
+ using namespace std;
+ 
+diff -ru pircbotcpp-src-1.4.4.1_orig/src/pircbotcpp/PircBot.cpp pircbotcpp-src-1.4.4.1/src/pircbotcpp/PircBot.cpp
+--- pircbotcpp-src-1.4.4.1_orig/src/pircbotcpp/PircBot.cpp	2008-07-04 18:54:13.000000000 +0200
++++ pircbotcpp-src-1.4.4.1/src/pircbotcpp/PircBot.cpp	2008-07-04 18:54:30.000000000 +0200
+@@ -727,7 +727,6 @@
+         // Read stuff back from the server to see if we connected.
+         int tries = 1;
+ 		string line;
+-		line = m_pimpl->m_socket.readLine();
+ 		while((line = m_pimpl->m_socket.readLine()) != "")
+ 		{
+ 			handleLine(line.c_str());

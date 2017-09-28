@@ -1,0 +1,36 @@
+# $Id: Pkgfile,v 1.9 2007/04/22 23:07:53 roman Exp $
+#
+# Description: A cross-platform audio library.
+#  Libao is a cross-platform audio library that allows programs to output
+#  audio using a simple API on a wide variety of platforms. It currently
+#  supports null output, WAV files, AU files, OSS (Open Sound System,
+#  used on Linux and FreeBSD), esd, ALSA, AIX, Sun/NetBSD/OpenBSD, IRIX,
+#  and NAS (Network Audio Server).
+# URL: http://www.xiph.org/ao/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: mpg321
+
+name=libao
+version=0.8.8
+release=1
+source=(http://downloads.xiph.org/releases/ao/libao-$version.tar.gz)
+
+build()
+{
+  cd libao-$version
+
+  libtoolize --force
+  aclocal --force
+  automake -a --foreign --force
+  autoconf --force
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make \
+      DESTDIR="$PKG" \
+      docdir="$prefix/share/doc/libao" \
+    install
+}

@@ -1,0 +1,36 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A 'top' program for monitoring MySQL databases.
+#  mtop (MySQL top) monitors a MySQL database showing the queries which are
+#  taking the most amount of time to complete. Features include 'zooming'
+#  in on a process to show the complete query, 'explaining' the query
+#  optimizer information for a query and 'killing' queries. In addition,
+#  server performance statistics, configuration information, and tuning
+#  tips are provided.
+#  .
+# URL: http://mtop.sourceforge.net/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=mtop
+version=0.6.6
+release=1
+source=($mirror_sf/mtop/mtop-$version.tar.gz)
+
+build()
+{
+  cd mtop-$version
+
+  perl Makefile.PL
+
+  make \
+     DESTDIR="$PKG" \
+     INSTALLDIRS="vendor" \
+     PREFIX="$prefix" \
+    install
+
+  install -d $ROOT/share/doc/mtop
+  install -m 644 COPYING ChangeLog README README.devel mkill.html mtop.html $ROOT/share/doc/mtop
+}
+
+# EOF

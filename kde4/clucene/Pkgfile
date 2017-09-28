@@ -1,0 +1,35 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:50 roman Exp $
+#
+# Description: A high-performance, full-featured search engine.
+#  CLucene is a C++ port of Lucene, a high-performance, full-featured text
+#  search engine. It is, however, faster than Lucene as it is written in C++.
+# URL: http://sourceforge.net/projects/clucene/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=clucene
+version=0.9.21b
+release=1
+source=($mirror_sf/clucene/clucene-core-$version.tar.bz2
+        clucene-0.9.21b-aclocal-amflags.patch)
+
+build()
+{
+  cd clucene-core-$version
+
+  patch -p1 -i $SRC/clucene-0.9.21b-aclocal-amflags.patch
+
+  rm -f config/config.sub
+  autoreconf --force --verbose --install
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/clucene
+  install -m 644 REQUESTS INSTALL README AUTHORS COPYING HACKING $ROOT/share/doc/clucene
+}

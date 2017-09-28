@@ -1,0 +1,51 @@
+diff -ru -ru glib-2.12.11_orig/glib/gatomic.c glib-2.12.11/glib/gatomic.c
+--- glib-2.12.11_orig/glib/gatomic.c	2007-03-09 05:01:38.000000000 +0100
++++ glib-2.12.11/glib/gatomic.c	2007-04-13 15:52:06.000000000 +0200
+@@ -26,6 +26,9 @@
+ #include "gthreadprivate.h"
+ #include "galias.h"
+ 
++/* #define DEFINE_WITH_MUTEXES */
++/* #undef G_ATOMIC_X86_64 */
++
+ #if defined (__GNUC__)
+ # if defined (G_ATOMIC_I486)
+ /* Adapted from CVS version 1.10 of glibc's sysdeps/i386/i486/bits/atomic.h 
+diff -ru -ru glib-2.12.11_orig/glib/giounix.c glib-2.12.11/glib/giounix.c
+--- glib-2.12.11_orig/glib/giounix.c	2007-03-09 05:01:41.000000000 +0100
++++ glib-2.12.11/glib/giounix.c	2007-04-13 15:54:32.000000000 +0200
+@@ -46,6 +46,10 @@
+ #include "glib.h"
+ #include "galias.h"
+ 
++#ifndef SSIZE_MAX
++#define SSIZE_MAX 2147483647
++#endif // SSIZE_MAX
++
+ /*
+  * Unix IO Channels
+  */
+diff -r -u glib-2.12.11_orig/glib/gatomic.c glib-2.12.11/glib/gatomic.c
+--- glib-2.12.11_orig/glib/gatomic.c	2007-08-01 11:39:40.000000000 +0200
++++ glib-2.12.11/glib/gatomic.c	2007-08-01 11:41:50.000000000 +0200
+@@ -214,7 +214,7 @@
+ #   error "Your system has an unsupported pointer size"
+ #  endif /* GLIB_SIZEOF_VOID_P */
+ #  define G_ATOMIC_MEMORY_BARRIER  __asm__ ("mb" : : : "memory")
+-# elif defined (G_ATOMIC_X86_64)
++# elif defined (G_ATOMIC_X86_64) && !defined(__GNUC__)
+ /* Adapted from CVS version 1.9 of glibc's sysdeps/x86_64/bits/atomic.h 
+  */
+ gint
+@@ -555,10 +555,10 @@
+ }
+ #endif /* DEFINE_WITH_WIN32_INTERLOCKED */
+ 
+-#ifdef DEFINE_WITH_MUTEXES
+ /* We have to use the slow, but safe locking method */
+ static GMutex *g_atomic_mutex; 
+ 
++#if 0
+ gint
+ g_atomic_int_exchange_and_add (volatile gint *atomic, 
+ 			       gint           val)

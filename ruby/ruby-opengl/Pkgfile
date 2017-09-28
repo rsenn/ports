@@ -1,0 +1,37 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Ruby bindings for GTK+ 2.x
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=ruby-opengl
+version=0.60.0
+release=1
+source=(http://rubyforge.org/frs/download.php/30282/ruby-opengl-$version.gem)
+
+build()
+{
+  rm -rf ${srcdir=ruby-opengl-$version} && mkdir -p $srcdir && cd $srcdir
+
+  gzip -dc ../data.tar.gz | tar -x
+
+  rake
+#  rake install prefix="$ROOT"
+
+    set -- $(ruby --version)
+
+  RUBYVERSION="$2"
+  RUBYLIBDIR="$prefix/lib/ruby/${RUBYVERSION%.*}"
+  ruby_hostdir=$(IFS="-" && set -- $host && echo $1-$3)
+
+  install -d $PKG/$RUBYLIBDIR/$ruby_hostdir
+  install -m 755 lib/*.so $PKG/$RUBYLIBDIR/$ruby_hostdir
+
+  install -m 644 lib/opengl.rb $PKG/$RUBYLIBDIR
+
+  install -d $ROOT/share/doc/ruby-opengl-$version
+  mv doc/* examples test $ROOT/share/doc/ruby-opengl-$version
+
+  chown -R 0:0 $PKG
+}

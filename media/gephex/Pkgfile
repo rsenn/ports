@@ -1,0 +1,39 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A modular realtime vj tool.
+#  GePhex is a modular video jockey software. The base visuals can be chosen
+#  from sources like video files or cameras. Then they can be modified by
+#  filters and mixers. Each modifier has several parameters that can be
+#  controlled by signal-generators, input devices like joysticks, sound
+#  cards, or MIDI-devices. The effect engine is independent of the user
+#  interface, and is extensible through plugins.
+#  .
+# URL: http://www.gephex.org
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on: libasound2, libc6, libgcc1, libqt4-dev, libqtcore4, libqtgui4, libstdc++6, libx11-6, libxext6, libxv1, zlib1g
+
+name=gephex
+version=0.4.4
+release=1
+source=(http://www.gephex.org/download/src/gephex-$version.tar.bz2
+        gephex-0.4.4-cincludes.patch
+        gephex-0.4.4-tolower.patch)
+
+build()
+{
+  cd gephex-$version
+
+  patch -N -p1 -i $SRC/gephex-0.4.4-cincludes.patch
+  patch -N -p1 -i $SRC/gephex-0.4.4-tolower.patch
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --prefix="$prefix" \
+     --program-prefix=""
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

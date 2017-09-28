@@ -1,0 +1,92 @@
+# $Id: Pkgfile,v 1.2 2007/04/22 23:07:53 roman Exp $
+#
+# Description: gcc
+# URL: http://gcc.gnu.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=gcc-3.4
+version=3.4.6
+release=1
+source=($mirror_gnu/gcc/gcc-$version/gcc-core-$version.tar.bz2
+        $mirror_gnu/gcc/gcc-$version/gcc-g++-$version.tar.bz2
+        gcc-3.4.6-x86_64-fixes.patch)
+
+build()
+{
+  cd ${srcdir=$SRC/gcc-$version}
+
+  patch -N -p1 -i $SRC/gcc-3.4.6-x86_64-fixes.patch
+
+  case "$prefix" in
+    "/usr") ldlibdir="/lib" ;;
+  esac
+
+  # change runtime linker
+  case $target in
+    *linux*)
+      sed -i -e "s,/lib/ld-linux.so.2,${ldlibdir=$prefix/lib}/ld-linux.so.2," \
+        gcc/config/i386/linux.h
+      ;;
+    *freebsd*)
+      sed -i -e '/FBSD_DYNAMIC_LINKER/ s,".*","'${ldlibdir=$prefix/lib}/ld-elf.so.1'",' \
+        gcc/config/freebsd-spec.h
+      ;;
+  esac
+
+  cd ..
+
+  if [ "$host" != "$build" ]; then
+    args="
+    --with-libs=$prefix/$target/lib
+    --with-headers=$prefix/$target/include"
+  fi
+
+#    --with-local-prefix="$prefix/$target" \
+  # now configure in a separate build tree
+  rm -rf ${builddir=$SRC/$name-build} && mkdir -p $builddir && cd $builddir
+
+  $srcdir/configure \
+       --prefix="$prefix" \
+       --build="$build" \
+       --host="$host" \
+       ${target+--target="$target"} \
+       --libexecdir="$prefix/lib" \
+       --infodir="$prefix/share/info" \
+       --mandir="$prefix/share/man" \
+       --disable-nls \
+       --without-included-gettext \
+       --disable-rpath \
+       --with-system-zlib \
+       --enable-threads="posix" \
+       --with-tls \
+       --${shared:=disable}-shared \
+       --enable-languages="c,c++" \
+       $args
+
+  make \
+    DESTDIR="$PKG" all install
+
+  rm $ROOT/lib/libiberty.a
+  rm -rf $ROOT/share/{info,man}
+  chmod 644 $ROOT/lib/*.la
+
+  mv -vf $ROOT/lib/lib* $ROOT/lib/gcc/*/$version/
+
+  (cd $ROOT/bin
+   for bin in *; do
+     case $bin in
+       *-${version%%.*} | *-${version%.*} | *-$version) ;;
+       *) mv -vf $bin $bin-${version%.*} ;;
+     esac
+   done)
+}
+
+
+postmerge()
+{
+  cd ${bindir} && for bin in *-${version%.*}
+  do
+    test -e ${bin%-*} || ln -svf ${bin} ${bin%-*}
+  done
+}

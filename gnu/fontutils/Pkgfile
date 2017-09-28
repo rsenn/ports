@@ -1,0 +1,35 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Package to create fonts for use with Ghostscript or TeX.
+#  The fontutils package includes the programs bpltobzr, bzrto, charspace,
+#  fontconvert, gsrenderfont, imageto, imgrotate, limn, and xbfe. These
+#  create fonts for use with Ghostscript or TeX (starting with a scanned
+#  type image and converting the bitmaps to outlines), convert between
+#  font formats, etc. The package also includes the libraries libbzr.a,
+#  libgf.a, libpbm.a, libpk.a, libtfm.a, and libwidgets.a.
+#  .
+# URL: http://www.gnu.org/software/fontutils/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=fontutils
+version=0.7
+release=1
+source=(http://ftp.gnu.org/gnu/fontutils/fontutils-$version.tar.gz
+        fontutils-0.7-multiline-str.patch)
+
+build()
+{
+  cd fontutils-$version
+
+  patch -N -p1 -i $SRC/fontutils-0.7-multiline-str.patch
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make prefix="$ROOT" install
+}

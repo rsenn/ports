@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A collection of utilities for searching and indexing maildirs.
+#  mu is a collection of utilities for maildirs, in particular for indexing
+#  and searching them. mu fills a database with information about a message,
+#  which can then be queried with an easy query language. It can work
+#  stand-alone or be integrated with a mail client like Mutt.
+#  .
+# URL: http://www.djcbsoftware.nl/code/mu
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=mu
+version=
+release=1
+source=(http://mu0.googlecode.com/files/mu-0.4.tar.gz)
+
+build()
+{
+  cd mu-0.4
+./autogen.sh
+./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+make
+make DESTDIR="$PKG" install
+}
+
+# EOF

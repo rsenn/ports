@@ -1,0 +1,68 @@
+diff -ru binutils-2.18.50_orig/binutils/Makefile.am binutils-2.18.50/binutils/Makefile.am
+--- binutils-2.18.50_orig/binutils/Makefile.am	2008-03-30 02:53:55.000000000 +0000
++++ binutils-2.18.50/binutils/Makefile.am	2008-03-30 03:08:56.000000000 +0000
+@@ -12,6 +12,7 @@
+ ## thus is not seen by automake.
+ CC_FOR_BUILD = @CC_FOR_BUILD@
+ EXEEXT_FOR_BUILD = @EXEEXT_FOR_BUILD@
++LIBS_FOR_BUILD = @LIBS_FOR_BUILD@
+ 
+ YACC = `if [ -f ../bison/bison ]; then echo ../bison/bison -y -L$(srcdir)/../bison/; else echo @YACC@; fi`
+ YFLAGS = -d
+@@ -266,7 +267,7 @@
+ 	./sysinfo$(EXEEXT_FOR_BUILD) -d <$(srcdir)/sysroff.info >sysroff.h
+ 
+ sysinfo$(EXEEXT_FOR_BUILD): sysinfo.o syslex.o
+-	$(CC_FOR_BUILD) $(CFLAGS) $(LDFLAGS) -o $@ sysinfo.o syslex.o
++	$(CC_FOR_BUILD) $(CFLAGS) $(LDFLAGS) -o $@ sysinfo.o syslex.o $(LIBS_FOR_BUILD)
+ 
+ syslex.o:
+ 	if [ -r syslex.c ]; then \
+@@ -283,7 +284,7 @@
+ 	fi
+ 
+ bin2c$(EXEEXT_FOR_BUILD):
+-	$(CC_FOR_BUILD) -o $@ $(INCLUDES) $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) $(srcdir)/bin2c.c $(srcdir)/version.c
++	$(CC_FOR_BUILD) -o $@ $(INCLUDES) $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) $(srcdir)/bin2c.c $(srcdir)/version.c $(LIBS_FOR_BUILD)
+ 
+ embedspu: embedspu.sh
+ 	sed "s@^program_transform_name=@program_transform_name=$(program_transform_name)@" < $< > $@
+--- binutils-2.18.50_orig/binutils/Makefile.in	2008-03-30 02:53:55.000000000 +0000
++++ binutils-2.18.50/binutils/Makefile.in	2008-03-30 03:15:06.000000000 +0000
+@@ -249,9 +232,10 @@
+ LIBICONV = @LIBICONV@
+ LIBINTL = @LIBINTL@
+ LIBINTL_DEP = @LIBINTL_DEP@
+ LIBOBJS = @LIBOBJS@
+ LIBS = @LIBS@
++LIBS_FOR_BUILD = @LIBS_FOR_BUILD@
+ LIBTOOL = @LIBTOOL@
+ LN_S = @LN_S@
+ LTLIBICONV = @LTLIBICONV@
+ LTLIBOBJS = @LTLIBOBJS@
+@@ -1053,5 +1046,5 @@
+ 	./sysinfo$(EXEEXT_FOR_BUILD) -d <$(srcdir)/sysroff.info >sysroff.h
+ 
+ sysinfo$(EXEEXT_FOR_BUILD): sysinfo.o syslex.o
+-	$(CC_FOR_BUILD) $(CFLAGS) $(LDFLAGS) -o $@ sysinfo.o syslex.o
++	$(CC_FOR_BUILD) $(CFLAGS) $(LDFLAGS) -o $@ sysinfo.o syslex.o $(LIBS_FOR_BUILD)
+ 
+@@ -1070,7 +1063,7 @@
+ 	fi
+ 
+ bin2c$(EXEEXT_FOR_BUILD):
+-	$(CC_FOR_BUILD) -o $@ $(INCLUDES) $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) $(srcdir)/bin2c.c $(srcdir)/version.c
++	$(CC_FOR_BUILD) -o $@ $(INCLUDES) $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) $(srcdir)/bin2c.c $(srcdir)/version.c $(LIBS_FOR_BUILD)
+ 
+ embedspu: embedspu.sh
+ 	sed "s@^program_transform_name=@program_transform_name=$(program_transform_name)@" < $< > $@
+--- binutils-2.18.50_orig/binutils/configure.in	2008-03-30 02:53:40.000000000 +0000
++++ binutils-2.18.50/binutils/configure.in	2008-03-30 03:13:54.000000000 +0000
+@@ -72,6 +72,7 @@
+ AC_PROG_INSTALL
+ 
+ BFD_CC_FOR_BUILD
++AC_SUBST([LIBS_FOR_BUILD])
+ 
+ DEMANGLER_NAME=c++filt
+ case "${host}" in

@@ -1,0 +1,45 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A calendar synchronization program.
+#  MultiSync is a free modular program to synchronize calendars, address
+#  books, and other PIM data between programs on your computer and other
+#  computers, mobile devices, PDAs or cell phones. Currently MultiSync
+#  has plugins for Ximian Evolution, mobile phones (IrMC and SyncML),
+#  Opie/Zaurus devices, PocketPC devices, Palm devices, and LDAP directories.
+#  .
+# URL: http://multisync.sourceforge.net
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=multisync
+version=0.82
+release=1
+source=($mirror_sf/multisync/multisync-$version.tar.bz2)
+
+build()
+{
+  cd multisync-$version
+
+#  ./autogen.sh
+  libtoolize --force --copy --automake
+  aclocal --force
+  automake --force --copy --foreign --add-missing
+  aclocal --force
+  autoconf --force
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  cd plugins
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

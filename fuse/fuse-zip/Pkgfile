@@ -1,0 +1,27 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: ZIP archive mounter.
+#  fuse-zip is a FUSE file system to navigate, extract, create, and modify
+#  ZIP archives based on libzip implemented in C++. You can work with ZIP
+#  archives as real directories. Unlike KIO or Gnome VFS, it can be used in
+#  any application without modifications. Unlike other FUSE filesystems,
+#  fuse-zip provides write support for ZIP archives. Also, fuse-zip is
+#  faster than other known implementations on large archives with many files.
+# URL: http://code.google.com/p/fuse-zip
+# Maintainer: 
+# Depends on: 
+
+name=fuse-zip
+version=0.2.7
+release=1
+source=(http://fuse-zip.googlecode.com/files/fuse-zip-$version.tar.gz)
+
+build() 
+{
+  cd fuse-zip-$version
+  
+  make
+  make INSTALLPREFIX="$ROOT" install
+}
+
+# EOF

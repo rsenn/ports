@@ -1,0 +1,26 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A versatile ncurses-based MPD client.
+# URL: 
+# Maintainer: 
+# Depends on: 
+
+name=pms
+version=0.40.1
+release=1
+source=(http://heanet.dl.sourceforge.net/sourceforge/pms/pms-0.40.1.tar.gz)
+
+build() 
+{
+  cd pms-$version
+  
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+  
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

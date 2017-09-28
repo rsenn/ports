@@ -1,0 +1,32 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:03:14 roman Exp $
+#
+# Description: GLUT-based C++ GUI library
+#  GLUI is a GLUT-based C++ user interface library which provides controls
+#  such as buttons, checkboxes, radio buttons, and spinners to OpenGL
+#  applications. It is window-system independent, relying on GLUT to handle
+#  all system-dependent issues, such as window and mouse management.
+# URL: http://glui.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=glui
+version=2.35
+release=1
+source=($mirror_sf/glui/glui-$version.tgz
+        glui-2.35-semicolon.patch)
+
+build()
+{
+  cd glui-$version/src
+
+  patch -N -p2 -i $SRC/glui-2.35-semicolon.patch
+
+  make
+  cp bin/* example
+
+  install -d $ROOT/share/doc
+
+  cp -rvf include lib $ROOT
+  cp -rvf doc $ROOT/share/doc/$name-$version
+  cp -rvf example $ROOT/share/doc/$name-$version
+}

@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Tamarin is a JavaScript engine written in C++
+# It currently implements Adobe ActionScript(TM) 3 (a superset of
+# ECMAScript Edition 3) and is embedded within the Adobeport Flashport
+# Player 9. Tamarin will be extended to support ECMAScript Edition 4
+# and will be used by both SpiderMonkey (see the ActionMonkey project)
+# and the Flash Player.
+#
+# URL: http://www.mozilla.org/projects/tamarin/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=tamarin-tracing
+version=20080219
+release=1
+source=(tamarin-tracing-$version.tar.bz2)
+
+build()
+{
+  cd tamarin-tracing
+
+  rm -rf build/$host && mkdir -p build/$host && cd build/$host
+
+  PYTHON="python" \
+  ../../configure \
+       --enable-shell
+
+  make
+
+  install -d $ROOT/bin
+  install -m 755 shell/avmshell $ROOT/bin
+}

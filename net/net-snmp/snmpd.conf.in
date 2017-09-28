@@ -1,0 +1,50 @@
+###########################################################################
+#
+# snmpd.conf
+#
+#   - created by the snmpconf configuration program
+#
+###########################################################################
+# SECTION: Access Control Setup
+#
+#   This section defines who is allowed to talk to your running
+#   snmp agent.
+
+# rocommunity: a SNMPv1/SNMPv2c read-write access community name
+#   arguments:  community [default|hostname|network/bits] [oid]
+
+rocommunity @snmpd_community@ @snmpd_allow@
+
+###########################################################################
+# SECTION: Agent Operating Mode
+#
+#   This section defines how the agent will operate when it
+#   is running.
+
+# master: Should the agent operate as a master agent or not.
+#   Currently, the only supported master agent type for this token
+#   is "agentx".
+#   
+#   arguments: (on|yes|agentx|all|off|no)
+
+master agentx
+
+# agentuser: The system user that the agent runs as.
+#   arguments: name|#uid
+
+agentuser @snmpd_user@
+
+# agentgroup: The system group that the agent runs as.
+#   arguments: group|#GID
+
+agentgroup @snmpd_group@
+
+# agentaddress: The IP address and port number that the agent will listen on.
+#   By default the agent listens to any and all traffic from any
+#   interface on the default SNMP port (161).  This allows you to
+#   specify which address, interface, transport type and port(s) that you
+#   want the agent to listen on.  Multiple definitions of this token
+#   are concatenated together (using ':'s).
+#   arguments: [transport:]port[@interface/address],...
+
+agentaddress @snmpd_host@:@snmpd_port@

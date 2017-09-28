@@ -1,0 +1,62 @@
+# $Id: Pkgfile,v 1.9 2007/05/09 21:02:53 roman Exp $
+#
+# Description: A free PHP accelerator, optimizer, encoder, and dynamic content cache.
+#  eAccelerator is a further development of the mmcache PHP accelerator
+#  and encoder. It increases the performance of PHP scripts by caching
+#  them in a compiled state, so that the overhead of compiling is almost
+#  completely eliminated.
+# URL: http://eaccelerator.net
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=eaccelerator
+version=0.9.4
+release=2
+source=($mirror_sf/eaccelerator/eaccelerator-$version.tar.bz2
+        phpencoder-0.9.4-cmdline.patch)
+
+build()
+{
+  cd eaccelerator-${version}
+  patch -N -p0 -i $SRC/phpencoder-0.9.4-cmdline.patch
+
+  phpize
+  ./configure --prefix="$prefix" \
+             --with-php-config="$prefix/bin/php-config" \
+             --with-eaccelerator-disassembler \
+             --enable-eaccelerator
+  make
+  make EXTENSION_DIR="$ROOT/lib/php" install
+
+  install -d $ROOT/share/doc/$name-${version}
+  install -m 644 NEWS README* $ROOT/share/doc/$name-${version}
+  install -d $ROOT/lib
+  install -m 644 *.ini $ROOT/lib
+
+  install -d $ROOT/sbin
+  install -m755 encoder.php $ROOT/sbin/phpencoder
+
+  copy_license "COPYING"
+}
+
+postmerge()
+{
+  $bindir/sed -i 's,^\(zend_extension\),;\1,' \
+    $prefix/lib/eaccelerator.ini
+
+  ext="zend_extension = eaccelerator.so"
+  cfg=$(cat $prefix/lib/eaccelerator.ini)
+
+  for ini in $libdir/php*.ini
+  do
+    if ! grep -q "^$ext$" $ini; then
+      text_insert_after "$ext" "zend extensions" ${ini}
+    fi
+
+    if ! grep -q "\[eaccelerator\]" $ini; then
+      text_insert_before "$cfg" "Local Variables:" ${ini}
+    fi
+  done
+
+
+}

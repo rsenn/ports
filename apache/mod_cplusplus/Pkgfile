@@ -1,0 +1,55 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: C++ support routines for writing Apache handlers.
+#  Easily implement object oriented apache-2.0 handlers with C++
+#  including all the standard phases of the request cycle, input filters,
+#  output filters, and protocol handlers. 
+# URL: http://modcplusplus.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=mod_cplusplus
+version=1.5.4
+release=1
+source=($mirror_sf/modcplusplus/mod_cplusplus-$version.tar.gz
+        mod_cplusplus-1.5.4-includes.patch
+        mod_cplusplus-1.5.4-noconf.patch)
+
+build()
+{
+  cd mod_cplusplus
+
+  patch -N -p1 -i $SRC/mod_cplusplus-1.5.4-includes.patch
+  patch -N -p1 -i $SRC/mod_cplusplus-1.5.4-noconf.patch
+
+  ./autogen.sh
+
+  APXS=`ls $prefix/*bin/apxs*`
+
+  for apxs in $APXS; do
+   (rm -rf ${builddir=build-`$apxs -q progname`}
+    mkdir -p $builddir
+    cd $builddir
+
+    libexecdir=`$apxs -q libexecdir`
+
+    install -d $PKG${libexecdir}
+
+    ../configure \
+        --build="$build" \
+        --host="$host" \
+        --prefix="$prefix" \
+        --${shared:=enable}-shared \
+        --${static:=enable}-shared \
+        --with-apxs="$apxs"
+
+    make
+    make DESTDIR="$PKG" install
+
+    sysconfdir=`$apxs -q sysconfdir`
+
+    install -d $PKG${sysconfdir}/mods-available
+    echo "LoadModule cplusplus_module $libexecdir/mod_cplusplus.so" >$PKG${sysconfdir}/mods-available/cplusplus.load
+   )
+  done
+}

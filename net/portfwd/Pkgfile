@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A daemon that forwards incoming TCP connections and UDP packets.
+#  portfwd is a small user-level daemon which forwards incoming TCP
+#  connections and/or UDP packets to remote hosts. Multiple forwarders can
+#  be specified in a flexible configuration file. There is support for FTP
+#  forwarding and transparent proxy.
+#  .
+# URL: http://portfwd.sf.net/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=portfwd
+version=0.27
+release=1
+source=(http://prdownloads.sf.net/portfwd/portfwd-0.27.tar.gz)
+
+build()
+{
+  cd portfwd-0.27
+./bootstrap
+./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+make
+make DESTDIR="$PKG" install
+}
+
+# EOF

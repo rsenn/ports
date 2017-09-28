@@ -1,0 +1,37 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: SOAP1.1 implementation in ruby
+#  This is a dummy package to provide SOAP 1.1 implementation for default
+#  version of ruby (ruby1.8).
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=soap4r
+version=1.5.8
+release=1
+source=(http://files.rubyforge.mmmultiworks.com/soap4r/soap4r-$version.gem)
+
+build()
+{
+  tar -xzf data.tar.gz
+
+  set -- `ruby --version`
+
+  RUBYVERSION="$2"
+  RUBYLIBDIR="$prefix/lib/ruby/${RUBYVERSION%.*}"
+
+  install -d $ROOT/bin
+  install -m 755 bin/wsdl2ruby.rb $ROOT/bin/wsdl2ruby
+  install -m 755 bin/xsd2ruby.rb $ROOT/bin/xsd2ruby
+
+  install -d $ROOT/$RUBYLIBDIR
+  cp -rf lib/*/ $ROOT/$RUBYLIBDIR
+
+  install -d $ROOT/share/soap4r
+  cp -rf test $ROOT/share/soap4r
+
+  install -d $ROOT/share/doc/soap4r
+}
+
+# EOF

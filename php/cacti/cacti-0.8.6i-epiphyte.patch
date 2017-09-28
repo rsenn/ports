@@ -1,0 +1,166 @@
+diff -ru -ru cacti-0.8.6i_orig/include/config.php cacti-0.8.6i/include/config.php
+--- cacti-0.8.6i_orig/include/config.php	2007-01-18 17:49:44.000000000 +0100
++++ cacti-0.8.6i/include/config.php	2007-01-18 17:47:18.000000000 +0100
+@@ -26,11 +26,11 @@
+ 
+ /* make sure these values refect your actual database/host/user/password */
+ $database_type = "mysql";
+-$database_default = "cacti";
+-$database_hostname = "localhost";
+-$database_username = "cactiuser";
+-$database_password = "cactiuser";
+-$database_port = "3306";
++$database_default = "@cacti_dbname@";
++$database_hostname = "@cacti_dbhost@";
++$database_username = "@cacti_dbuser@";
++$database_password = "@cacti_dbpass@";
++$database_port = "@cacti_dbport@";
+ 
+ /* ----- you probably do not need to change anything below this line ----- */
+ 
+diff -ru -ru cacti-0.8.6i_orig/install/index.php cacti-0.8.6i/install/index.php
+--- cacti-0.8.6i_orig/install/index.php	2007-01-18 17:49:44.000000000 +0100
++++ cacti-0.8.6i/install/index.php	2007-01-18 17:49:54.000000000 +0100
+@@ -73,9 +73,9 @@
+ function find_best_path($binary_name) {
+ 	global $config;
+ 	if ($config["cacti_server_os"] == "win32") {
+-		$search_paths = array("c:/usr/bin", "c:/cacti", "c:/rrdtool", "c:/cactid", "c:/php", "c:/progra~1/php", "c:/net-snmp/bin", "c:/progra~1/net-snmp/bin", "d:/usr/bin", "d:/net-snmp/bin", "d:/progra~1/net-snmp/bin", "d:/cacti", "d:/rrdtool", "d:/cactid", "d:/php", "d:/progra~1/php");
++		$search_paths = array("@bindir@", "c:/cacti", "c:/rrdtool", "c:/cactid", "c:/php", "c:/progra~1/php", "@bindir@", "c:/progra~1@bindir@", "@bindir@", "@bindir@", "d:/progra~1@bindir@", "d:/cacti", "d:/rrdtool", "d:/cactid", "d:/php", "d:/progra~1/php");
+ 	}else{
+-		$search_paths = array("/bin", "/sbin", "/usr/bin", "/usr/sbin", "/usr/local/bin", "/usr/local/sbin");
++		$search_paths = array("@bindir@", "@sbindir@", "@bindir@", "@sbindir@", "@bindir@", "@sbindir@");
+ 	}
+ 
+ 	for ($i=0; $i<count($search_paths); $i++) {
+@@ -101,7 +101,7 @@
+ 	}else if (!empty($which_rrdtool)) {
+ 		$input["path_rrdtool"]["default"] = $which_rrdtool;
+ 	}else{
+-		$input["path_rrdtool"]["default"] = "/usr/local/bin/rrdtool";
++		$input["path_rrdtool"]["default"] = "@bindir@/rrdtool";
+ 	}
+ }elseif ($config["cacti_server_os"] == "win32") {
+ 	$which_php = find_best_path("rrdtool.exe");
+@@ -126,7 +126,7 @@
+ 	}else if (!empty($which_php)) {
+ 		$input["path_php_binary"]["default"] = $which_php;
+ 	}else{
+-		$input["path_php_binary"]["default"] = "/usr/bin/php";
++		$input["path_php_binary"]["default"] = "@bindir@/php";
+ 	}
+ }elseif ($config["cacti_server_os"] == "win32") {
+ 	$which_php = find_best_path("php.exe");
+@@ -151,7 +151,7 @@
+ 	}else if (!empty($which_snmpwalk)) {
+ 		$input["path_snmpwalk"]["default"] = $which_snmpwalk;
+ 	}else{
+-		$input["path_snmpwalk"]["default"] = "/usr/local/bin/snmpwalk";
++		$input["path_snmpwalk"]["default"] = "@bindir@/snmpwalk";
+ 	}
+ }elseif ($config["cacti_server_os"] == "win32") {
+ 	$which_snmpwalk = find_best_path("snmpwalk.exe");
+@@ -161,7 +161,7 @@
+ 	}else if (!empty($which_snmpwalk)) {
+ 		$input["path_snmpwalk"]["default"] = $which_snmpwalk;
+ 	}else{
+-		$input["path_snmpwalk"]["default"] = "c:/net-snmp/bin/snmpwalk.exe";
++		$input["path_snmpwalk"]["default"] = "@bindir@/snmpwalk.exe";
+ 	}
+ }
+ 
+@@ -176,7 +176,7 @@
+ 	}else if (!empty($which_snmpget)) {
+ 		$input["path_snmpget"]["default"] = $which_snmpget;
+ 	}else{
+-		$input["path_snmpget"]["default"] = "/usr/local/bin/snmpget";
++		$input["path_snmpget"]["default"] = "@bindir@/snmpget";
+ 	}
+ }elseif ($config["cacti_server_os"] == "win32") {
+ 	$which_snmpget = find_best_path("snmpget.exe");
+@@ -186,7 +186,7 @@
+ 	}else if (!empty($which_snmpget)) {
+ 		$input["path_snmpget"]["default"] = $which_snmpget;
+ 	}else{
+-		$input["path_snmpget"]["default"] = "c:/net-snmp/bin/snmpget.exe";
++		$input["path_snmpget"]["default"] = "@bindir@/snmpget.exe";
+ 	}
+ }
+ 
+@@ -201,7 +201,7 @@
+ 	}else if (!empty($which_snmpbulkwalk)) {
+ 		$input["path_snmpbulkwalk"]["default"] = $which_snmpbulkwalk;
+ 	}else{
+-		$input["path_snmpbulkwalk"]["default"] = "/usr/local/bin/snmpbulkwalk";
++		$input["path_snmpbulkwalk"]["default"] = "@bindir@/snmpbulkwalk";
+ 	}
+ }elseif ($config["cacti_server_os"] == "win32") {
+ 	$which_snmpbulkwalk = find_best_path("snmpbulkwalk.exe");
+@@ -211,7 +211,7 @@
+ 	}else if (!empty($which_snmpbulkwalk)) {
+ 		$input["path_snmpbulkwalk"]["default"] = $which_snmpbulkwalk;
+ 	}else{
+-		$input["path_snmpbulkwalk"]["default"] = "c:/net-snmp/bin/snmpbulkwalk.exe";
++		$input["path_snmpbulkwalk"]["default"] = "@bindir@/snmpbulkwalk.exe";
+ 	}
+ }
+ 
+@@ -226,7 +226,7 @@
+ 	}else if (!empty($which_snmpgetnext)) {
+ 		$input["path_snmpgetnext"]["default"] = $which_snmpgetnext;
+ 	}else{
+-		$input["path_snmpgetnext"]["default"] = "/usr/local/bin/snmpgetnext";
++		$input["path_snmpgetnext"]["default"] = "@bindir@/snmpgetnext";
+ 	}
+ }elseif ($config["cacti_server_os"] == "win32") {
+ 	$which_snmpgetnext = find_best_path("snmpgetnext.exe");
+@@ -236,7 +236,7 @@
+ 	}else if (!empty($which_snmpgetnext)) {
+ 		$input["path_snmpgetnext"]["default"] = $which_snmpgetnext;
+ 	}else{
+-		$input["path_snmpgetnext"]["default"] = "c:/net-snmp/bin/snmpgetnext.exe";
++		$input["path_snmpgetnext"]["default"] = "@bindir@/snmpgetnext.exe";
+ 	}
+ }
+ 
+@@ -246,7 +246,7 @@
+ if (config_value_exists("path_cactilog")) {
+ 	$input["path_cactilog"]["default"] = read_config_option("path_cactilog");
+ } else {
+-	$input["path_cactilog"]["default"] = $config["base_path"] . "/log/cacti.log";
++	$input["path_cactilog"]["default"] = $config["base_path"] . "/logs/cacti.log";
+ }
+ 
+ /* SNMP Version */
+diff -ru -ru cacti-0.8.6i_orig/lib/adodb/drivers/adodb-mysql.inc.php cacti-0.8.6i/lib/adodb/drivers/adodb-mysql.inc.php
+--- cacti-0.8.6i_orig/lib/adodb/drivers/adodb-mysql.inc.php	2007-01-18 17:49:44.000000000 +0100
++++ cacti-0.8.6i/lib/adodb/drivers/adodb-mysql.inc.php	2007-01-18 17:47:18.000000000 +0100
+@@ -351,6 +351,7 @@
+ 	// returns true or false
+ 	function _pconnect($argHostname, $argUsername, $argPassword, $argDatabasename)
+ 	{
++    if(!extension_loaded('mysql')) dl('mysql.so');
+ 		if (ADODB_PHPVER >= 0x4300)
+ 			$this->_connectionID = @mysql_pconnect($argHostname,$argUsername,$argPassword,$this->clientFlags);
+ 		else
+diff -ru -ru cacti-0.8.6i_orig/utilities.php cacti-0.8.6i/utilities.php
+--- cacti-0.8.6i_orig/utilities.php	2007-01-18 17:49:44.000000000 +0100
++++ cacti-0.8.6i/utilities.php	2007-01-18 17:47:18.000000000 +0100
+@@ -342,7 +342,7 @@
+ 	$logfile = read_config_option("path_cactilog");
+ 
+ 	if ($logfile == "") {
+-		$logfile = "./log/rrd.log";
++		$logfile = "./logs/rrd.log";
+ 	}
+ 
+ 	/* helps determine output color */
+@@ -543,7 +543,7 @@
+ 	$logfile = read_config_option("path_cactilog");
+ 
+ 	if ($logfile == "") {
+-		$logfile = "./log/cacti.log";
++		$logfile = "./logs/cacti.log";
+ 	}
+ 
+ 	html_start_box("<strong>Clear Cacti Log File</strong>", "98%", $colors["header"], "1", "center", "");

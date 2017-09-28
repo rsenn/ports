@@ -1,0 +1,38 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Graphical disk usage display with cleanup facilities.
+#  KDirStat (KDE Directory Statistics) is a small utility program that sums
+#  up disk usage for direcory trees, very much like the Unix 'du' command. It
+#  displays the disk space used up by a directory tree, both numerically
+#  and graphically. It is network transparent (i.e., you can use it to sum
+#  up FTP servers), and comes with predefined and user configurable cleanup
+#  actions. You can directly open a directory branch in Konqueror or the
+#  shell of your choice, compress it to a .tar.bz2 archive, or define your
+#  own cleanup actions.
+#  .
+# URL: http://kdirstat.sourceforge.net/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=kdirstat
+version=2.4.4
+release=1
+source=(http://kdirstat.sourceforge.net/download/kdirstat-$version.tar.bz2)
+
+build()
+{
+  cd kdirstat-$version
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix" \
+     --program-prefix="" \
+     --program-suffix=""
+
+  make -i
+  make -i DESTDIR="$PKG" install
+}
+
+# EOF

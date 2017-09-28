@@ -1,0 +1,38 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A vixie-cron fork with new features.
+#  The cronie package contains the Vixie version of cron. Cron is a standard
+#  UNIX daemon that runs specified programs at scheduled times. This fork
+#  of cron adds better security and more powerful configuration options
+#  to the standard version of cron. It's possible to use cronie with or
+#  without these features: PAM authentication, SElinux, and inotify support.
+#  .
+# URL: https://fedorahosted.org/cronie/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=cronie
+version=1.2
+release=1
+source=(https://fedorahosted.org/cronie/attachment/wiki/WikiStart/cronie-$version.tar.gz?format=raw)
+
+build()
+{
+  cd cronie-$version
+
+  case $prefix in
+    "/usr") sysconfdir="/etc" localstatedir="/var" ;;
+  esac
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --sysconfdir="${sysconfdir=$prefix/etc}" \
+      --localstatedir="${localstatedir=$prefix/var}"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

@@ -1,0 +1,147 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: An SNMP module for Apache 2.0.x.
+#  Apache SNMP Module allows you to monitor different configuration and
+# URL: http://mod-apache-snmp.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=ap2snmp
+version=1.04
+release=3
+source=($mirror_sf/mod-apache-snmp/mod_ap2_snmp_$version.tar.gz
+        mod_ap2_snmp-1.04-log.patch
+        mod_ap2_snmp-1.04-notice.patch
+        mod_ap2_snmp-1.04-error.patch
+        mod_ap2_snmp-1.04-makefile.patch
+        mod_ap2_snmp-1.04-debug.patch
+        mod_ap2_snmp-1.04-status.patch
+        mod_ap2_snmp-1.04-interval.patch
+        mod_ap2_snmp-1.04-tmpdir.patch)
+
+build()
+{
+  cd mod_ap2_snmp_$version
+
+
+  patch -N -p0 -i $SRC/mod_ap2_snmp-1.04-log.patch
+  patch -N -p0 -i $SRC/mod_ap2_snmp-1.04-notice.patch
+  patch -N -p0 -i $SRC/mod_ap2_snmp-1.04-error.patch
+  patch -N -p1 -i $SRC/mod_ap2_snmp-1.04-makefile.patch
+  patch -N -p1 -i $SRC/mod_ap2_snmp-1.04-debug.patch
+#  patch -l -p1 -i $SRC/mod_ap2_snmp-1.04-status.patch
+#  patch -N -p1 -i $SRC/mod_ap2_snmp-1.04-tmpdir.patch
+  dos2unix *.c || d2u *.c
+  patch -N -p1 -i $SRC/mod_ap2_snmp-1.04-interval.patch
+
+  sed -i "/DEFAULT_TMP_DIR/ s,\".*\",\"$prefix/tmp/\"," \
+    mod_ap2_snmp.h
+
+  
+  APXS=`ls $prefix/*bin/apxs*`
+
+  for apxs in $APXS; do
+    make \
+      DEFS="`apxs -q CPPFLAGS` `apr-config --cppflags`" \
+      INCLUDES="-I`apxs -q includedir` `apr-config --includes`" \
+      CFLAGS="${CFLAGS--g -O2}" \
+      LIBS="-lnetsnmp `apr-config --link-ld --libs`"
+      APXS="$apxs"
+
+    install -d $PKG/`apxs -q libexecdir`
+    install -m 755 .libs/mod_ap2_snmp.so $PKG/`apxs -q libexecdir`/
+
+    make clean
+  done
+
+  install -d $ROOT/share/doc/ap2snmp
+  install -m 644 AUTHORS COPYING README VERSION $ROOT/share/doc/ap2snmp
+
+  install -d $ROOT/share/doc/ap2snmp/docs
+  install -m 644 docs/configuration.txt docs/intallation.txt $ROOT/share/doc/ap2snmp
+}
+
+postmerge()
+{
+  httpd_libdir=$prefix/lib/apache2
+  httpd_module_add "mod_ap2_snmp.so" "ap2_snmp_module" $prefix/local/config/dso2.conf
+
+  for v in community allow tmpdir agent server
+  do
+    if ! var_isset "ap2snmp_$v"; then
+      echo "WARNING: variable $v not set, not updating configs (run nexconfig first)"
+      exit 1
+    fi
+  done
+
+  if ! grep -q "^rwcommunity[ \t]\+$ap2snmp_community" "$prefix/local/config/snmpd.conf"; then
+    text_append "rwcommunity $ap2snmp_community $ap2snmp_allow" \
+      "$prefix/local/config/snmpd.conf"
+  fi
+
+#  if [ "$ap2snmp_agent" = "127.0.0.1" ] || [ "$ap2snmp_agent" = "localhost" ]; then
+    allow="$httpd2_host"
+#  else
+#    allow="$ap2snmp_agent"
+#  fi
+#  echo "allow: $allow"
+
+  if ! grep -q 'mod_ap2_snmp statistics' $prefix/local/config/general2.conf; then
+
+    IFS="$IFS:"; set -- ${ap2snmp_server}
+
+    cat >>$prefix/local/config/general2.conf <<EOF
+
+# Configuration for mod_ap2_snmp statistics
+ExtendedStatus On
+
+snmp_community ${ap2snmp_community}
+snmp_agent_address ${ap2snmp_agent}
+snmp_tmp_dir ${ap2snmp_tmpdir}
+snmp_version 1
+snmp_http_address $1 $2
+
+<Location /ap2_snmp>
+    Sethandler ap2_snmp
+    Order Deny,Allow
+    Deny from all
+    Allow from ${allow}
+</Location>
+EOF
+  fi
+
+  httpd_section_set 'Location /ap2_snmp' 'Allow from' "$allow" $prefix/local/config/general2.conf
+}
+
+# ap2snmp configuration
+# --------------------------------------------------------------------------------
+config()
+{
+  config_branch 'ap2snmp'    'SNMP agent for Apache 2'
+    config_value 'community' 'SNMP/Apache2 community'
+      config_description     'SNMP read-/write community used for storing the apache-related values in snmpd'
+      config_default         'apache2'
+    config_end
+
+    config_value 'allow'     'SNMP/Apache2 allowed host/network'
+      config_description     'Allowed host/network. Network is specified using CIDR netmasks (eg. 10.10.0.0/16).'
+      config_default         '$(config_getvalue snmpd_allow)'
+    config_end
+
+    config_value 'tmpdir'    'SNMP/Apache2 temp directoryt'
+      config_description     'Temporary directory to store exchanged data between httpd2 and snmpd'
+      config_default         '$(config_getvalue global_root)usr/local/tmp'
+    config_end
+
+    config_value 'agent'     'SNMP/Apache agent address'
+      config_description     'Address (host) of the SNMP daemon running the ap2_snmp agent'
+      config_default         '$(config_getvalue snmpd_host)'
+    config_end
+
+    config_value 'server'    'SNMP/Apache http server'
+      config_description     'Address (host:port) of the HTTP server which runs the ap2_snmp handler'
+      config_default         '$(config_getvalue httpd2_host):$(config_getvalue httpd2_port)'
+    config_end
+  config_end
+}
+

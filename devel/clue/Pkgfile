@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An ANSI C compiler for JavaScript and Lua.
+#  Clue is an experimental ANSI C compiler that targets high level dynamic
+#  languages like Lua, JavaScript, Python, and Perl. It is designed to be
+#  very easy to adapt to new targets. It is currently under development
+#  and is more interesting than useful, although it is complete enough to
+#  run several benchmarking tools (including Whetstone).
+#  .
+# URL: http://cluecc.sourceforge.net/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=clue
+version=0.5
+release=1
+source=($mirror_sf/cluecc/clue-$version.tar.bz2
+        clue-0.5-paths.patch)
+
+build()
+{
+  cd clue-$version
+
+  patch -N -p1 -i $SRC/clue-0.5-paths.patch
+
+  ./pm || true
+
+  install -d $ROOT/share/doc/clue
+  install -m 644 README $ROOT/share/doc/clue
+}
+
+# EOF

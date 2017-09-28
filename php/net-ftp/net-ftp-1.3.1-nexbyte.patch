@@ -1,0 +1,79 @@
+diff -ru -ru Net_FTP-1.3.1_orig/Net/FTP.php Net_FTP-1.3.1/Net/FTP.php
+--- Net_FTP-1.3.1_orig/Net/FTP.php	2006-08-15 14:45:45.245608328 +0200
++++ Net_FTP-1.3.1/Net/FTP.php	2006-08-15 14:45:58.515590984 +0200
+@@ -569,13 +569,26 @@
+     
+     var $_ls_match = array(
+         'unix'    => array(
+-            'pattern' => '/(?:(d)|.)([rwxt-]+)\s+(\w+)\s+([\w\d]+)\s+([\w\d]+)\s+(\w+)\s+(\S+\s+\S+\s+\S+)\s+(.+)/',
+-            'map'     => array('name'=>8,'size'=>6,'rights'=>2,'user'=>4,'group'=>5,
+-                              'files_inside'=>3,'date'=>7,'is_dir'=>1)
++            'pattern' => '/(?:(d)|.)([rwxt-]+)\s+(\w+)\s+([\w\d-]+)\s+([\w\d-]+)\s+(\w+)\s+(\S+\s+\S+\s+\S+)\s+(.+)/',
++            'map'     => array(
++                'is_dir'        => 1,
++                'rights'        => 2,
++                'files_inside'  => 3,
++                'user'          => 4,
++                'group'         => 5,
++                'size'          => 6,
++                'date'          => 7,
++                'name'          => 8,
++            )
+         ),
+         'windows' => array(
+             'pattern' => '/(.+)\s+(.+)\s+((<DIR>)|[0-9]+)\s+(.+)/',
+-            'map'     => array('name'=>5,'date'=>1,'is_dir'=>3)
++            'map'     => array(
++                'name'   => 5,
++                'date'   => 1,
++                'size'   => 3,
++                'is_dir' => 4,
++            )
+         )
+     );
+     
+@@ -927,7 +940,10 @@
+             $mode = NET_FTP_DIRS_ONLY;
+             $dir_list = $this->ls($remote_path, $mode);
+             foreach ($dir_list as $dir_entry) {
+-
++                if ($dir_entry == '.' || $dir_entry == '..') {;
++                    continue;
++                }
++                
+                 $remote_path_new = $remote_path.$dir_entry["name"]."/";
+ 
+                 // Chmod the directory we're about to enter
+@@ -1896,6 +1912,9 @@
+         }
+         $dir_list = $this->_ls_dirs($dir);
+         foreach ($dir_list as $new_dir) {
++            if ($new_dir == '.' || $new_dir == '..') {
++                continue;
++            }
+             $new_dir = $dir.$new_dir["name"]."/";
+             $res = $this->_rm_dir_recursive($new_dir);
+             if ($this->isError($res)) {
+@@ -1921,6 +1940,9 @@
+     function _ls_both($dir)
+     {
+         $list_splitted = $this->_list_and_parse($dir);
++        if (PEAR::isError($list_splitted)) {
++            return $list_splitted;
++        }
+         if (!is_array($list_splitted["files"])) {
+             $list_splitted["files"] = array();
+         }
+@@ -1990,6 +2012,12 @@
+         if (count($dir_list) == 0) {
+             return array('dirs' => $dirs_list, 'files' => $files_list);
+         }
++
++        // Exception for some FTP servers seem to return this wiered result instead of an empty list
++        if (count($dirs_list) == 1 && $dirs_list[0] == 'total 0') {
++            return array('dirs' => array(), 'files' => $files_list);
++        }
++        
+         if (!isset($this->_matcher) || PEAR::isError($this->_matcher)) {
+             $this->_matcher = $this->_determine_os_match($dir_list);
+             if (PEAR::isError($this->_matcher)) {

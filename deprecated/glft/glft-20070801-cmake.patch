@@ -1,0 +1,1574 @@
+diff -x CVS -ru glft-20070801_orig/CMakeLists.txt glft-20070801/CMakeLists.txt
+--- glft-20070801_orig/CMakeLists.txt	2007-08-20 05:18:10.000000000 +0200
++++ glft-20070801/CMakeLists.txt	2007-08-19 13:35:00.000000000 +0200
+@@ -0,0 +1,4 @@
++project(glft)
++
++add_subdirectory( glft )
++add_subdirectory( demos )
+diff -x CVS -ru glft-20070801_orig/demos/CMakeLists.txt glft-20070801/demos/CMakeLists.txt
+--- glft-20070801_orig/demos/CMakeLists.txt	2007-08-20 05:18:10.000000000 +0200
++++ glft-20070801/demos/CMakeLists.txt	2007-08-20 05:13:32.000000000 +0200
+@@ -0,0 +1,7 @@
++include_directories(../include ..)
++
++add_executable(simple simple.cpp)
++add_executable(autoscale autoscale.cpp)
++
++target_link_libraries(simple glft)
++target_link_libraries(autoscale glft)
+diff -x CVS -ru glft-20070801_orig/demos/autoscale.cpp glft-20070801/demos/autoscale.cpp
+--- glft-20070801_orig/demos/autoscale.cpp	2007-08-20 05:40:32.000000000 +0200
++++ glft-20070801/demos/autoscale.cpp	2007-08-20 05:40:34.000000000 +0200
+@@ -69,8 +69,8 @@
+ 	// function dy:s : -100:2 0:1 100:0.5 200:0.25 ...
+ 	// ensure that when going back to the init point, the scale is the same...
+ 	// should be -dy but y is reversed...
+-	  double sscale = exp2(dy/100.);
+-	  //double sscale = exp(log(2)*dy/100.);
++	  //double sscale = exp2(dy/100.);
++	  double sscale = exp(log((double)2)*dy/100.);
+ 	double newscale = glinfo.scale*sscale;
+ 	double dscale = newscale-glinfo.scale;
+ 	double f = dscale/(glinfo.scale+dscale);
+diff -x CVS -ru glft-20070801_orig/glft/CMakeLists.txt glft-20070801/glft/CMakeLists.txt
+--- glft-20070801_orig/glft/CMakeLists.txt	2007-08-20 05:18:10.000000000 +0200
++++ glft-20070801/glft/CMakeLists.txt	2007-08-20 05:42:10.000000000 +0200
+@@ -0,0 +1,14 @@
++include_directories(../include ..)
++
++INCLUDE(FindOpenGL)
++
++set(glft_LIB_SRCS FontManager.cpp glft.cpp FontInfo.hpp FontManager.hpp config.hpp debug.hpp glft.hpp)
++
++ADD_DEFINITIONS(-DBUILD_GLFT -D_CRT_SECURE_NO_DEPRECATE)
++
++add_library(glft SHARED ${glft_LIB_SRCS})
++target_link_libraries(glft ${OPENGL_LIBRARIES} freetype)
++# set_target_properties(glft PROPERTIES VERSION 2.1.10 SOVERSION 2.1.10)
++install(TARGETS glft DESTINATION lib)
++
++
+diff -x CVS -ru glft-20070801_orig/glft/FontManager.cpp glft-20070801/glft/FontManager.cpp
+--- glft-20070801_orig/glft/FontManager.cpp	2004-06-22 14:09:10.000000000 +0200
++++ glft-20070801/glft/FontManager.cpp	2007-08-20 05:12:06.000000000 +0200
+@@ -103,7 +103,7 @@
+ 
+ namespace glft {
+ 
+-  void
++  FONTMAN_API(void) 
+   lower(std::string& s)
+   {
+     for(std::string::size_type i=0; i<s.size(); ++i) {
+@@ -148,7 +148,7 @@
+   }
+ 
+ 
+-  void
++  FONTMAN_API(void) 
+   setFontFileInfo(FontFileInfo& f, FT_Face ftface, const std::string& path_)
+   {
+     f.path = path_;
+@@ -207,7 +207,7 @@
+ 
+   }
+ 
+-  void
++  FONTMAN_API(void) 
+   FontManager::updateFontList()
+   {
+     // synonyms
+@@ -392,7 +392,7 @@
+     glft_done();
+   }
+ 
+-  void
++  FONTMAN_API(void) 
+   FontManager::updateCacheDirectories(DirectoriesPath& path)
+   {
+     system_string cachedir = _cache_path;
+@@ -424,7 +424,7 @@
+     }    
+   }
+ 
+-  void
++  FONTMAN_API(void) 
+   FontManager::glCreateTextureFont( PixmapFaceInfo& faceInfo)
+   {
+     glGenTextures(1, &(faceInfo._texnum));
+@@ -443,7 +443,7 @@
+ 
+   }
+ 
+-  void
++  FONTMAN_API(void) 
+   FontManager::glSetCurrentTextureFont( PixmapFaceInfo& faceInfo)
+   {
+     glBindTexture(GL_TEXTURE_2D, faceInfo._texnum);
+@@ -457,7 +457,7 @@
+     _currentPixmapFaceInfo = &faceInfo;
+   }
+ 
+-  void
++  FONTMAN_API(void) 
+   FontManager::setCurrentTextureFont(const FontFileInfo& fontFileInfoRequested, size_type size)
+   {
+     // check the existence of font file
+@@ -578,14 +578,14 @@
+   }
+ 
+ 
+-  void
++  FONTMAN_API(void) 
+   FontManager::glSetCurrentVectorFont( VectorFaceInfo& faceInfo)
+   {
+     _currentVectorFaceInfo = &faceInfo;
+   }
+ 
+ 
+-  void
++  FONTMAN_API(void) 
+   FontManager::setCurrentVectorFont(const FontFileInfo& fontFileInfoRequested, size_type size)
+   {
+     // check the existence of font file
+@@ -671,7 +671,7 @@
+     glSetCurrentVectorFont(faceInfo);
+   }
+ 
+-  void
++  FONTMAN_API(void) 
+   fineAlignment()
+   {
+     // fine alignment with pixels
+@@ -696,8 +696,8 @@
+     float dy = (rint(m[13])-m[13])/m[0];
+ 		glTranslatef(dx,dy,0);
+ #else
+-		m[12]=rint(m[12]);
+-		m[13]=rint(m[13]);
++		m[12]=/*rint*/(int)(m[12]);
++		m[13]=/*rint*/(int)(m[13]);
+ 		glLoadMatrixf(m);
+ #endif
+     
+@@ -717,7 +717,7 @@
+   }
+ 
+ 
+-  void
++  FONTMAN_API(void) 
+   FontManager::renderTexture(FontManager::string* msg)
+   {
+     if(!msg)
+@@ -737,7 +737,7 @@
+     glft_pixmap_font_render(_currentPixmapFaceInfo->_glft_face, msg->transcode());
+   }
+ 
+-  void
++  FONTMAN_API(void) 
+   FontManager::renderTexture(const FontManager::char_type& domchar)
+   {
+     if(!_currentPixmapFaceInfo) {
+@@ -757,7 +757,7 @@
+   }
+ 
+ 
+-  void
++  FONTMAN_API(void) 
+   FontManager::renderVector(FontManager::string* msg)
+   {
+     if(!msg)
+@@ -776,23 +776,20 @@
+     glft_vector_font_render_plain(_currentVectorFaceInfo->_glft_face, msg->transcode());
+   }
+ 
+-  void FontManager::render(const char* msg) { string smsg = msg; render(&smsg); }
+-  void FontManager::renderAndAdvance(const char* msg) { string smsg = msg; renderAndAdvance(&smsg); }
+-  void FontManager::renderAutoScale(const char* msg) { string smsg = msg; renderAutoScale(&smsg); }
+-  void FontManager::renderAndAdvanceAutoScale(const char* msg) { string smsg = msg; renderAndAdvanceAutoScale(&smsg); }
+-  void FontManager::renderWithScale(const char* msg, double scale) { string smsg = msg; renderWithScale(&smsg, scale); }
+-  void FontManager::renderAndAdvanceWithScale(const char* msg, double scale) { string smsg = msg; renderAndAdvanceWithScale(&smsg, scale); }
++  FONTMAN_API(void) FontManager::render(const char* msg) { string smsg = msg; render(&smsg); }
++  FONTMAN_API(void) FontManager::renderAndAdvance(const char* msg) { string smsg = msg; renderAndAdvance(&smsg); }
++  FONTMAN_API(void) FontManager::renderAutoScale(const char* msg) { string smsg = msg; renderAutoScale(&smsg); }
++  FONTMAN_API(void) FontManager::renderAndAdvanceAutoScale(const char* msg) { string smsg = msg; renderAndAdvanceAutoScale(&smsg); }
++  FONTMAN_API(void) FontManager::renderWithScale(const char* msg, double scale) { string smsg = msg; renderWithScale(&smsg, scale); }
++  FONTMAN_API(void) FontManager::renderAndAdvanceWithScale(const char* msg, double scale) { string smsg = msg; renderAndAdvanceWithScale(&smsg, scale); }
+   
+-  void FontManager::getBoundingBox(const char* msg, int* x, int* y, int* width, int* height) { string smsg = msg; getBoundingBox(&smsg, x,y,width,height); }
+-  void FontManager::getBoundingBoxWithScale(const char* msg, double scale, int* x, int* y, int* width, int* height) { string smsg = msg; getBoundingBoxWithScale(&smsg, scale, x,y,width,height); }
+-  void FontManager::getBoundingBoxAutoScale(const char* msg, int* x, int* y, int* width, int* height) { string smsg = msg; getBoundingBoxAutoScale(&smsg, x,y,width,height); }
++  FONTMAN_API(void) FontManager::getBoundingBox(const char* msg, int* x, int* y, int* width, int* height) { string smsg = msg; getBoundingBox(&smsg, x,y,width,height); }
++  FONTMAN_API(void) FontManager::getBoundingBoxWithScale(const char* msg, double scale, int* x, int* y, int* width, int* height) { string smsg = msg; getBoundingBoxWithScale(&smsg, scale, x,y,width,height); }
++  FONTMAN_API(void) FontManager::getBoundingBoxAutoScale(const char* msg, int* x, int* y, int* width, int* height) { string smsg = msg; getBoundingBoxAutoScale(&smsg, x,y,width,height); }
+   
+-  float getXAdvance(const char* msg);
++  FONTMAN_API(float) getXAdvance(const char* msg);
+ 
+-
+-
+-
+-  void
++  FONTMAN_API(void)
+   FontManager::renderVector(const FontManager::char_type& domchar)
+   {
+     if(!_currentVectorFaceInfo) {
+@@ -812,7 +809,7 @@
+   }
+ 
+ 
+-  void
++  FONTMAN_API(void)
+   FontManager::getTextureBoundingBox(FontManager::string* msg, int* x, int* y, int* width, int* height)
+   {
+     if(!msg) {
+@@ -830,7 +827,7 @@
+     *height = y2-*y;
+   }
+ 
+-  void
++  FONTMAN_API(void)
+   FontManager::getVectorBoundingBox(FontManager::string* msg, int* x, int* y, int* width, int* height)
+   {
+     if(!msg) {
+@@ -849,7 +846,7 @@
+     //*y=-(*height+*y);
+   }
+ 
+-  void
++  FONTMAN_API(void)
+   FontManager::getTextureBoundingBox(const FontManager::char_type& domchar, int* x, int* y, int* width, int* height)
+   {
+     if(!_currentPixmapFaceInfo) {
+@@ -865,7 +862,7 @@
+     *height = y2-*y;
+   }
+ 
+-  void
++  FONTMAN_API(void)
+   FontManager::getVectorBoundingBox(const FontManager::char_type& domchar, int* x, int* y, int* width, int* height)
+   {
+     if(!_currentVectorFaceInfo) {
+@@ -883,7 +880,7 @@
+   }
+ 
+ 
+-  void
++  FONTMAN_API(void)
+   FontManager::setFontType(font_type t)
+   {
+     if(t==_font_type)
+@@ -907,7 +904,7 @@
+     
+   }
+ 
+-  void
++  FONTMAN_API(void)
+   FontManager::setCurrentFont(const FontInfo& fontInfo, size_type size)
+   {
+     FontFileInfo fontFileInfo;
+@@ -930,7 +927,7 @@
+ 		}
+   }
+ 
+-  void
++  FONTMAN_API(void)
+   FontManager::renderAndAdvance(FontManager::string* msg)
+   {
+     switch(_font_type) {
+@@ -955,8 +952,7 @@
+     }
+   }
+ 
+-
+-  double
++  FONTMAN_API(double)
+   getCurrentScale()
+   {
+     double currentScale = 1.0;
+@@ -975,14 +971,14 @@
+   }
+ 
+ 
+-  void
++  FONTMAN_API(void)
+   FontManager::getFontTypeWithScale(double s, FontManager::font_type& chosenType, float& exactApparentFontSize)
+   {
+     //int apparentFontSize = _user_size;
+     // double scale = 1;
+     exactApparentFontSize  = _user_size * s;
+ 
+-    int apparentFontSize = (int) rint(exactApparentFontSize);
++    int apparentFontSize = (int)/*rint*/(exactApparentFontSize);
+     chosenType=texture;
+     if(apparentFontSize > _maxTexturedFontSize) {
+       chosenType=vector;
+@@ -990,7 +986,7 @@
+     //return chosenType;
+   }
+ 
+-  void
++  FONTMAN_API(void)
+   FontManager::getFontTypeAutoScale(FontManager::font_type& chosenType, float& exactApparentFontSize)
+   {
+     double currentScale=1.0;
+@@ -999,7 +995,7 @@
+   }
+ 
+ 
+-  void
++  FONTMAN_API(void) 
+   FontManager::renderAndAdvanceAutoScale(FontManager::string* msg)
+   {
+     double currentScale=1.0;
+@@ -1010,8 +1006,8 @@
+ 
+ 
+ 
+-  void
+-		FontManager::setupFontsForScale(double currentScale, FontManager::PixmapFaceInfo *& metricsPixmapFaceInfo, float& exactApparentFontSize)
++  void 
++  FontManager::setupFontsForScale(double currentScale, FontManager::PixmapFaceInfo *& metricsPixmapFaceInfo, float& exactApparentFontSize)
+   {
+ 			font_type chosenType;
+ 			//float exactApparentFontSize;
+@@ -1019,7 +1015,7 @@
+ 			double scale=1;
+ 
+ 			getFontTypeWithScale(currentScale, chosenType, exactApparentFontSize);
+-			int apparentFontSize = (int) rint(exactApparentFontSize);
++			int apparentFontSize = (int)/*rint*/(exactApparentFontSize);
+ 			
+ 	    if(_user_size > _maxTexturedFontSize) {
+ 				shouldBeType=vector;
+@@ -1199,7 +1195,7 @@
+     glPopMatrix();
+   }
+ 
+-  void
++  FONTMAN_API(void) 
+   FontManager::render(FontManager::string* msg)
+   {
+     glPushMatrix();
+@@ -1207,7 +1203,7 @@
+     glPopMatrix();
+   }
+   
+-  void
++  FONTMAN_API(void) 
+   FontManager::renderAutoScale(FontManager::string* msg)
+   {
+     glPushMatrix();
+@@ -1215,7 +1211,7 @@
+     glPopMatrix();
+   }
+ 
+-  void
++  FONTMAN_API(void) 
+   FontManager::renderWithScale(FontManager::string* msg, double scale)
+   {
+     glPushMatrix();
+@@ -1223,7 +1219,7 @@
+     glPopMatrix();
+   }
+ 
+-  void
++  FONTMAN_API(void) 
+   FontManager::renderAndAdvance(const FontManager::char_type& domchar)
+   {
+     switch(_font_type) {
+@@ -1270,7 +1266,7 @@
+ 	}
+ 	
+   
+-  void
++  FONTMAN_API(void) 
+ 	FontManager::renderAndAdvanceAutoScale(const char_type& domchar)
+ 	{
+ 		renderAndAdvanceWithScale(domchar, getCurrentScale());		
+@@ -1341,7 +1337,7 @@
+ 		
+ 	
+   
+-  void
++  FONTMAN_API(void)
+   FontManager::getBoundingBox(FontManager::string* msg, int* x, int* y, int* width, int* height)
+   {
+     setCurrentFont(_current_fontinfo.fontInfo, _user_size);
+@@ -1355,14 +1351,14 @@
+     }   
+   }
+ 
+-  void
++  FONTMAN_API(void)
+   FontManager::getBoundingBoxAutoScale(FontManager::string* msg, int* x, int* y, int* width, int* height)
+   {
+     double scale = getCurrentScale();
+     getBoundingBoxWithScale(msg, scale, x, y, width, height);
+   }
+ 
+-  void
++  FONTMAN_API(void)
+   FontManager::getBoundingBoxWithScale(FontManager::string* msg, double currentScale, int* x, int* y, int* width, int* height)
+   {
+     int x2,y2;
+@@ -1370,7 +1366,7 @@
+     double scale = 1;
+     float exactApparentFontSize  = apparentFontSize * currentScale;
+ 
+-    apparentFontSize = (int) rint(exactApparentFontSize);
++    apparentFontSize = (int)/*rint*/(exactApparentFontSize);
+ 
+     if(apparentFontSize<1) {
+       getBoundingBox(msg,x,y,width,height);
+@@ -1414,16 +1410,16 @@
+     *height = y2-*y;
+ 
+ 		//std::cerr  << *width << " " << *height << std::endl;
+-    *x = (int)rint(*x * scale);
+-    *y = (int)rint(*y * scale);
++    *x = (int)/*rint*/(*x * scale);
++    *y = (int)/*rint*/(*y * scale);
+ 		
+-    *width = (int)rint(*width * scale);
+-    *height = (int)rint(*height * scale);
++    *width = (int)/*rint*/(*width * scale);
++    *height = (int)/*rint*/(*height * scale);
+ 		//std::cerr  << *width << " " << *height << std::endl;
+ 
+   }
+ 
+-  void
++  FONTMAN_API(void)
+   FontManager::getBoundingBox(const FontManager::char_type& domchar, int* x, int* y, int* width, int* height)
+   {
+     switch(_font_type) {
+@@ -1436,7 +1432,7 @@
+     }   
+   }
+ 
+-  float
++  FONTMAN_API(float)
+   FontManager::getXAdvance(FontManager::string* msg)
+   {
+     switch(_font_type) {
+@@ -1451,7 +1447,7 @@
+   }
+ 
+ 
+-  float
++  FONTMAN_API(float)
+   FontManager::getXAdvance(const FontManager::char_type& domchar)
+   {
+     switch(_font_type) {
+@@ -1466,20 +1462,20 @@
+   }
+ 
+ 
+-  float
++  FONTMAN_API(float)
+   FontManager::getVectorXAdvance(FontManager::string* msg)
+   {
+     return glft_vector_font_get_xadvance(_currentVectorFaceInfo->_glft_face, msg->transcode());
+   }
+ 
+-  float
++  FONTMAN_API(float)
+   FontManager::getTextureXAdvance(FontManager::string* msg)
+   {
+     return glft_pixmap_font_get_xadvance(_currentPixmapFaceInfo->_glft_face, msg->transcode());
+   }
+ 
+ 
+-  float
++  FONTMAN_API(float)
+   FontManager::getVectorXAdvance(const FontManager::char_type& domchar)
+   {
+     char tmp[] = " ";
+@@ -1487,7 +1483,7 @@
+     return glft_vector_font_get_xadvance(_currentVectorFaceInfo->_glft_face, tmp);
+   }
+ 
+-  float
++  FONTMAN_API(float)
+   FontManager::getTextureXAdvance(const FontManager::char_type& domchar)
+   {
+     char tmp[] = " ";
+@@ -1497,7 +1493,7 @@
+ 
+   FontManager *FontManager::_defaultManager = 0 ;
+ 
+-  FontManager *
++  FONTMAN_API(FontManager *)
+   FontManager::getDefaultManager(void) {
+     if (!_defaultManager) {
+ 	 char *fontdir = getenv("GLFT_FONTDIR") ;
+diff -x CVS -ru glft-20070801_orig/glft/FontManager.hpp glft-20070801/glft/FontManager.hpp
+--- glft-20070801_orig/glft/FontManager.hpp	2004-06-22 14:09:10.000000000 +0200
++++ glft-20070801/glft/FontManager.hpp	2007-08-20 05:41:02.000000000 +0200
+@@ -30,6 +30,18 @@
+ #include <glft/FontInfo.hpp>
+ #include <GL/gl.h>
+ 
++#ifdef WIN32
++#ifndef BUILD_GLFT
++#define FONTMAN_LINKAGE __declspec(dllimport)
++#else
++#define FONTMAN_LINKAGE __declspec(dllexport)
++#endif
++#define FONTMAN_API(type) type __stdcall
++#else
++#define FONTMAN_LINKAGE
++#define FONTMAN_API(type) type
++#endif
++
+ namespace glft {
+ 
+   struct FontFileInfo {
+@@ -38,7 +50,7 @@
+     std::string fileName;
+   };
+ 
+-  class FontManager {
++  class FONTMAN_LINKAGE FontManager {
+   public:
+     typedef int size_type;
+     typedef std::string system_string;
+@@ -60,66 +72,66 @@
+ 
+     // --------------------------------
+ 
+-    void setFontType(font_type);
+-    font_type getFontType() { return _font_type ; }
+-    void setCurrentFont(const FontInfo&, size_type size);
++    FONTMAN_API(void) setFontType(font_type);
++    FONTMAN_API(font_type) getFontType() { return _font_type ; }
++    FONTMAN_API(void) setCurrentFont(const FontInfo&, size_type size);
+ 
+     // --------
+     // string*
+ 
+-    void render(string* msg);
+-    void renderAndAdvance(string* msg);
+-    void renderAutoScale(string* msg);
+-    void renderAndAdvanceAutoScale(string* msg);
+-    void renderWithScale(string* msg, double scale);
+-    void renderAndAdvanceWithScale(string* msg, double scale);
+-
+-    void getBoundingBox(string* msg, int* x, int* y, int* width, int* height);
+-    void getBoundingBoxWithScale(string* msg, double scale, int* x, int* y, int* width, int* height);
+-    void getBoundingBoxAutoScale(string* msg, int* x, int* y, int* width, int* height);
++    FONTMAN_API(void) render(string* msg);
++    FONTMAN_API(void) renderAndAdvance(string* msg);
++    FONTMAN_API(void) renderAutoScale(string* msg);
++    FONTMAN_API(void) renderAndAdvanceAutoScale(string* msg);
++    FONTMAN_API(void) renderWithScale(string* msg, double scale);
++    FONTMAN_API(void) renderAndAdvanceWithScale(string* msg, double scale);
++
++    FONTMAN_API(void) getBoundingBox(string* msg, int* x, int* y, int* width, int* height);
++    FONTMAN_API(void) getBoundingBoxWithScale(string* msg, double scale, int* x, int* y, int* width, int* height);
++    FONTMAN_API(void) getBoundingBoxAutoScale(string* msg, int* x, int* y, int* width, int* height);
+ 
+-    float getXAdvance(string* msg);
++    FONTMAN_API(float) getXAdvance(string* msg);
+ 
+     // --------
+     // const char*
+ 
+-    void render(const char* msg);
+-    void renderAndAdvance(const char* msg);
+-    void renderAutoScale(const char* msg);
+-    void renderAndAdvanceAutoScale(const char* msg);
+-    void renderWithScale(const char* msg, double scale);
+-    void renderAndAdvanceWithScale(const char* msg, double scale);
+-
+-    void getBoundingBox(const char* msg, int* x, int* y, int* width, int* height);
+-    void getBoundingBoxWithScale(const char* msg, double scale, int* x, int* y, int* width, int* height);
+-    void getBoundingBoxAutoScale(const char* msg, int* x, int* y, int* width, int* height);
++    FONTMAN_API(void) render(const char* msg);
++    FONTMAN_API(void) renderAndAdvance(const char* msg);
++    FONTMAN_API(void) renderAutoScale(const char* msg);
++    FONTMAN_API(void) renderAndAdvanceAutoScale(const char* msg);
++    FONTMAN_API(void) renderWithScale(const char* msg, double scale);
++    FONTMAN_API(void) renderAndAdvanceWithScale(const char* msg, double scale);
++
++    FONTMAN_API(void) getBoundingBox(const char* msg, int* x, int* y, int* width, int* height);
++    FONTMAN_API(void) getBoundingBoxWithScale(const char* msg, double scale, int* x, int* y, int* width, int* height);
++    FONTMAN_API(void) getBoundingBoxAutoScale(const char* msg, int* x, int* y, int* width, int* height);
+ 
+-    float getXAdvance(const char* msg);
++    FONTMAN_API(float) getXAdvance(const char* msg);
+ 
+     // --------
+     // char_type
+ 
+-    void render(const char_type& domchar);
+-  	void renderAndAdvance(const char_type& domchar);
+-    void renderAutoScale(const char_type& domchar);
+-		void renderAndAdvanceAutoScale(const char_type& domchar);
+-	  void renderWithScale(const char_type& domchar, double scale);
+-    void renderAndAdvanceWithScale(const char_type& domchar, double scale);
++    FONTMAN_API(void) render(const char_type& domchar);
++  	FONTMAN_API(void) renderAndAdvance(const char_type& domchar);
++    FONTMAN_API(void) renderAutoScale(const char_type& domchar);
++    FONTMAN_API(void) renderAndAdvanceAutoScale(const char_type& domchar);
++    FONTMAN_API(void) renderWithScale(const char_type& domchar, double scale);
++    FONTMAN_API(void) renderAndAdvanceWithScale(const char_type& domchar, double scale);
+ 
+-    void getBoundingBox(const char_type&, int* x, int* y, int* width, int* height);
+-    float getXAdvance(const char_type& c);
++    FONTMAN_API(void) getBoundingBox(const char_type&, int* x, int* y, int* width, int* height);
++    FONTMAN_API(float) getXAdvance(const char_type& c);
+ 
+-    void getFontTypeWithScale(double s, font_type& chosenType, float& exactApparentFontSize);
+-    void getFontTypeAutoScale(font_type& chosenType, float& exactApparentFontSize);
++    FONTMAN_API(void) getFontTypeWithScale(double s, font_type& chosenType, float& exactApparentFontSize);
++    FONTMAN_API(void) getFontTypeAutoScale(font_type& chosenType, float& exactApparentFontSize);
+ 
+     // --------------------------------
+ 
+-    void updateFontList();
++    FONTMAN_API(void) updateFontList();
+     //void setAutoScale(bool onoff);
+-    void setMaxTexturedFontSize(size_type s) { _maxTexturedFontSize = s; }
+-    size_type getMaxTexturedFontSize() const { return _maxTexturedFontSize; }
++    FONTMAN_API(void) setMaxTexturedFontSize(size_type s) { _maxTexturedFontSize = s; }
++    FONTMAN_API(size_type) getMaxTexturedFontSize() const { return _maxTexturedFontSize; }
+ 
+-    static FontManager *getDefaultManager(void) ;
++    static FONTMAN_API(FontManager *) getDefaultManager(void) ;
+ 
+   private:
+ 
+@@ -130,21 +142,21 @@
+ 
+ 		
+ 		
+-    void setCurrentTextureFont(const FontFileInfo& f, size_type size);
+-    void setCurrentVectorFont(const FontFileInfo& f, size_type size);
++    FONTMAN_API(void) setCurrentTextureFont(const FontFileInfo& f, size_type size);
++    FONTMAN_API(void) setCurrentVectorFont(const FontFileInfo& f, size_type size);
+ 
+-    void renderTexture(string* msg);
+-    void renderTexture(const char_type& domchar);
+-    void renderVector(string* msg);
+-    void renderVector(const char_type& domchar);
+-    void getTextureBoundingBox(string* msg, int* x, int* y, int* width, int* height);
+-    void getVectorBoundingBox(string* msg, int* x, int* y, int* width, int* height);
+-    void getTextureBoundingBox(const char_type& msg, int* x, int* y, int* width, int* height);
+-    void getVectorBoundingBox(const char_type& msg, int* x, int* y, int* width, int* height);
+-    float getTextureXAdvance(string* msg);
+-    float getVectorXAdvance(string* msg);
+-    float getTextureXAdvance(const char_type& c);
+-    float getVectorXAdvance(const char_type& c);
++    FONTMAN_API(void) renderTexture(string* msg);
++    FONTMAN_API(void) renderTexture(const char_type& domchar);
++    FONTMAN_API(void) renderVector(string* msg);
++    FONTMAN_API(void) renderVector(const char_type& domchar);
++    FONTMAN_API(void) getTextureBoundingBox(string* msg, int* x, int* y, int* width, int* height);
++    FONTMAN_API(void) getVectorBoundingBox(string* msg, int* x, int* y, int* width, int* height);
++    FONTMAN_API(void) getTextureBoundingBox(const char_type& msg, int* x, int* y, int* width, int* height);
++    FONTMAN_API(void) getVectorBoundingBox(const char_type& msg, int* x, int* y, int* width, int* height);
++    FONTMAN_API(float) getTextureXAdvance(string* msg);
++    FONTMAN_API(float) getVectorXAdvance(string* msg);
++    FONTMAN_API(float) getTextureXAdvance(const char_type& c);
++    FONTMAN_API(float) getVectorXAdvance(const char_type& c);
+ 
+ // Bounding Box
+ //
+@@ -183,7 +195,7 @@
+     };
+ 
+     typedef std::map<system_string, PixmapFontInfo> PixmapFontInfos;
+-    PixmapFontInfos _pixmapFontInfos;
++    FONTMAN_API(PixmapFontInfos) _pixmapFontInfos;
+ 
+     PixmapFaceInfo * _currentPixmapFaceInfo;
+ 
+@@ -198,19 +210,19 @@
+     };
+ 
+     typedef std::map<system_string, VectorFontInfo> VectorFontInfos;
+-    VectorFontInfos _vectorFontInfos;
++    FONTMAN_API(VectorFontInfos) _vectorFontInfos;
+ 
+     VectorFaceInfo * _currentVectorFaceInfo;
+ 
+-    void glCreateTextureFont( PixmapFaceInfo& );
+-    void glSetCurrentTextureFont( PixmapFaceInfo& );
+-    void glSetCurrentVectorFont( VectorFaceInfo& );
++    FONTMAN_API(void) glCreateTextureFont( PixmapFaceInfo& );
++    FONTMAN_API(void) glSetCurrentTextureFont( PixmapFaceInfo& );
++    FONTMAN_API(void) glSetCurrentVectorFont( VectorFaceInfo& );
+ 
+     typedef std::vector<const std::string*> DirectoriesPath;
+-    void updateCacheDirectories(DirectoriesPath& path);
++    FONTMAN_API(void) updateCacheDirectories(DirectoriesPath& path);
+ 
+     typedef std::vector<FontFileInfo> FontFileInfos;
+-    FontFileInfos _fontFileInfos;
++    FONTMAN_API(FontFileInfos) _fontFileInfos;
+     const FontFileInfo* _defaultFileInfo;
+     FontFileInfo _current_fontinfo;
+ 
+@@ -227,7 +239,7 @@
+     size_type _maxTexturedFontSize;
+     font_type _user_font_type;
+     size_type _user_size;
+-    //    void setFontAccordingToScale(double scale);
++    //    FONTMAN_API(void) setFontAccordingToScale(double scale);
+     bool _yUp, _autoEnableTexture;
+ 
+   };
+diff -x CVS -ru glft-20070801_orig/glft/config.hpp.in glft-20070801/glft/config.hpp.in
+--- glft-20070801_orig/glft/config.hpp.in	2004-06-22 14:09:10.000000000 +0200
++++ glft-20070801/glft/config.hpp.in	2007-08-14 01:00:04.000000000 +0200
+@@ -57,6 +57,9 @@
+ /* Mac OS X support */
+ #undef OS_IS_MACOSX
+ 
++/* mingw32 support */
++#undef OS_IS_MINWG32
++
+ /* Name of package */
+ #undef PACKAGE
+ 
+diff -x CVS -ru glft-20070801_orig/glft/glft.cpp glft-20070801/glft/glft.cpp
+--- glft-20070801_orig/glft/glft.cpp	2004-06-22 14:09:10.000000000 +0200
++++ glft-20070801/glft/glft.cpp	2007-08-20 05:27:28.000000000 +0200
+@@ -13,13 +13,13 @@
+ http://www.emn.fr/info/image/Themes/Indigo/licence.html
+ 
+  */
++//#include <glft/debug.hpp>
++#include <glft/glft.hpp>
++
+ #if defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW32__)
+ #include <windows.h>
+ #endif
+ 
+-#include <glft/debug.hpp>
+-#include <glft/glft.hpp>
+-
+ #include <ft2build.h>
+ #include FT_FREETYPE_H
+ #include FT_GLYPH_H
+@@ -30,11 +30,10 @@
+ #define FT_ERROR_START_LIST  {                                    
+ #define FT_ERROR_END_LIST    { 0, 0 } };                          
+   
+-const struct                                                      
+-{                                                                 
++const struct {
+   int          err_code;                                          
+   const char*  err_msg;
+-} ft_errors[] =                                                   
++} ft_errors[] =
+ 
+ #include <freetype/fterrors.h>                                    
+ 
+@@ -111,7 +110,7 @@
+  Thanks to G. Lanois (gerard@msi.com)
+  */
+ #if !defined(CALLBACK)
+-#define CALLBACK
++#define CALLBACK 
+ #endif
+ 
+ #define CALLBACKARG 
+@@ -203,9 +202,7 @@
+ 
+ const char *glft_printable, *glft_english_printable;
+ 
+-
+-
+-int
++GLFT_API(int)
+ glft_set_gl_context()
+ {
+   gluTessCallback(thetess, GLU_TESS_VERTEX,
+@@ -228,7 +225,7 @@
+   return 0;
+ }
+ 
+-int
++GLFT_API(int)
+ glft_init(void)
+ {
+   int error;
+@@ -279,7 +276,7 @@
+   return 0;
+ }
+ 
+-int
++GLFT_API(int)
+ glft_done(void)
+ {
+   gluDeleteTess(thetess);
+@@ -302,7 +299,7 @@
+ */
+ 
+ 
+-struct glft_font*
++GLFT_API(struct glft_font*)
+ glft_font_new(const char* file)
+ {
+   int error=0;
+@@ -332,7 +329,7 @@
+ }
+ 
+ 
+-void
++GLFT_API(void)
+ glft_font_delete(struct glft_font* thefont)
+ {
+         
+@@ -341,20 +338,20 @@
+ }
+ 
+ 
+-int
++GLFT_API(int)
+ glft_font_get_ascent(const struct glft_font * f)
+ {
+   return f->ascent;
+ }
+ 
+-int
++GLFT_API(int)
+ glft_font_get_descent(const struct glft_font * f)
+ {
+   return f->descent;
+ }
+ 
+ 
+-int
++GLFT_API(int)
+ glft_font_get_line_gap(const struct glft_font * f)
+ {
+   return f->line_gap;
+@@ -400,7 +397,7 @@
+   return 0;
+ }
+ 
+-int
++GLFT_API(int)
+ glft_font_get_glyph_metrics(struct glft_font* thefont, unsigned char thechar, int size, int *xadvance)
+ {
+   struct glft_glyph_info info;
+@@ -446,19 +443,19 @@
+ 
+ 
+ 
+-struct glft_font*
++GLFT_API(struct glft_font*)
+ glft_glyph_get_font(const struct glft_glyph* g)
+ {
+   return g->font;
+ }
+ 
+-int
++GLFT_API(int)
+ glft_glyph_get_xadvance(const struct glft_glyph * g)
+ {
+   return g->xadvance;
+ }
+ 
+-void
++GLFT_API(void)
+ glft_glyph_get_bounding_box(const struct glft_glyph * g, int* xmin, int* ymin, int* xmax, int* ymax)
+ {
+   *xmin = g->xmin;
+@@ -845,7 +842,7 @@
+   return 0;
+ }
+ 
+-struct glft_glyph*
++GLFT_API(struct glft_glyph*)
+ glft_new_glyph(struct glft_font* thefont, char _thechar, int size)
+ {
+   int error;
+@@ -927,7 +924,7 @@
+ 
+ 
+ 
+-void
++GLFT_API(void)
+ glft_glyph_render_plain(struct glft_glyph* theglyph)
+ {
+   int i;
+@@ -967,7 +964,7 @@
+ #endif
+ }
+ 
+-void
++GLFT_API(void)
+ glft_glyph_render_outline(const struct glft_glyph* theglyph)
+ {
+   int i;
+@@ -1033,7 +1030,7 @@
+ }
+ 
+ 
+-int
++GLFT_API(int)
+ glft_glyph_save(const struct glft_glyph* glyph, FILE* file)
+ {
+   typedef int vector_glyph_coord_t;
+@@ -1050,7 +1047,7 @@
+   return 0;
+ }
+ 
+-int
++GLFT_API(int)
+ glft_glyph_load(struct glft_glyph* glyph, FILE* file)
+ {
+   typedef int vector_glyph_coord_t;
+@@ -1098,7 +1095,7 @@
+   free(info);
+ }
+ 
+-struct glft_vector_font*
++GLFT_API(struct glft_vector_font*)
+ glft_new_vector_font(struct glft_font* thefont, const char* charset, int thesize)
+ {
+   struct glft_vector_font *res;
+@@ -1136,7 +1133,7 @@
+   return res;
+ }
+ 
+-struct glft_vector_font*
++GLFT_API(struct glft_vector_font*)
+ glft_vector_font_new()
+ {
+   struct glft_vector_font *res;
+@@ -1150,7 +1147,7 @@
+   return res;
+ }
+ 
+-void
++GLFT_API(void)
+ glft_vector_font_delete(struct glft_vector_font* font)
+ {
+   int i;
+@@ -1162,7 +1159,7 @@
+   free(font);
+ }
+ 
+-void
++GLFT_API(void)
+ glft_vector_font_render_outline(const struct glft_vector_font* font, const char* str)
+ {
+   while(*str) {
+@@ -1179,7 +1176,7 @@
+ int
+ test_load_save(const struct glft_vector_font* font1);
+ 
+-void
++GLFT_API(void)
+ glft_vector_font_render_plain(const struct glft_vector_font* font, const char* str)
+ {
+   /*test_load_save(font);*/
+@@ -1199,7 +1196,7 @@
+   }
+ }
+ 
+-int
++GLFT_API(int)
+ glft_vector_font_get_xadvance(struct glft_vector_font* font, const char* str)
+ {
+   int xadvance=0;
+@@ -1228,7 +1225,7 @@
+ }
+ #endif
+ 
+-void
++GLFT_API(void)
+ glft_vector_font_bounding_box(struct glft_vector_font* font, const char* thestring, int* x1, int* y1, int* x2, int* y2)
+ {
+   *x1=*y1=*x2=*y2=0;
+@@ -1261,7 +1258,7 @@
+ }
+ 
+ 
+-int
++GLFT_API(int)
+ glft_vector_font_save_glyph(const struct glft_vector_font* font, char str, FILE* file)
+ {
+   unsigned char thechar=str;
+@@ -1271,7 +1268,7 @@
+     return 1;
+ }
+ 
+-int
++GLFT_API(int)
+ glft_vector_font_load_glyph(struct glft_vector_font* font, char str, FILE* file)
+ {
+   unsigned char thechar=str;
+@@ -1288,7 +1285,7 @@
+ }
+ 
+ 
+-int
++GLFT_API(int)
+ glft_vector_font_save(const struct glft_vector_font* font, FILE* file)
+ {
+   typedef int index_t;
+@@ -1320,7 +1317,7 @@
+   return 0;
+ }
+ 
+-int
++GLFT_API(int)
+ glft_vector_font_load(struct glft_vector_font* font, FILE* file)
+ {
+   typedef int index_t;
+@@ -1359,19 +1356,19 @@
+ };
+ 
+ 
+-struct glft_font*
++GLFT_API(struct glft_font*)
+ glft_pixmap_glyph_get_font(const struct glft_pixmap_glyph* g)
+ {
+   return g->font;
+ }
+ 
+-int
++GLFT_API(int)
+ glft_pixmap_glyph_get_xadvance(const struct glft_pixmap_glyph * g)
+ {
+   return g->xadvance;
+ }
+ 
+-void
++GLFT_API(void)
+ glft_pixmap_glyph_get_bounding_box(const struct glft_pixmap_glyph * g, int* xmin, int* ymin, int* xmax, int* ymax)
+ {
+   *xmin = g->xmin;
+@@ -1380,7 +1377,7 @@
+   *ymax = g->ymax;
+ }
+ 
+-struct glft_pixmap_glyph*
++GLFT_API(struct glft_pixmap_glyph*)
+ glft_new_pixmap_glyph(struct glft_font* thefont, char _thechar, int size)
+ {
+   int error;
+@@ -1414,20 +1411,20 @@
+   return rglyph;
+ }
+ 
+-void
++GLFT_API(void)
+ glft_pixmap_glyph_delete(struct glft_pixmap_glyph* theglyph)
+ {
+   free(theglyph->_pixmap);
+   free(theglyph);
+ }
+ 
+-unsigned char*
++GLFT_API(unsigned char*)
+ glft_pixmap_glyph_get_pixmap(const struct glft_pixmap_glyph * g) {
+   return g->_pixmap;
+ }
+ 
+ 
+-void
++GLFT_API(void)
+ glft_pixmap_glyph_render(struct glft_pixmap_glyph* theglyph)
+ { 
+   glRasterPos2i(theglyph->xmin, theglyph->ymin);
+@@ -1470,19 +1467,19 @@
+ };
+ 
+ 
+-int
++GLFT_API(int)
+ glft_pixmap_font_get_width(const struct glft_pixmap_font* tex)
+ {
+   return tex->width;
+ }
+ 
+-int
++GLFT_API(int)
+ glft_pixmap_font_get_height(const struct glft_pixmap_font* tex)
+ {
+   return tex->height;
+ }
+ 
+-unsigned char*
++GLFT_API(unsigned char*)
+ glft_pixmap_font_get_pixmap(const struct glft_pixmap_font* tex)
+ {
+   return tex->pixmap;
+@@ -1491,14 +1488,14 @@
+ /* ----------------------------------------------------- */
+ /* factory */
+ 
+-struct glft_pixmap_font*
++GLFT_API(struct glft_pixmap_font*)
+ glft_new_pixmap_font(struct glft_font* thefont, const char* charset, int thesize)
+ {
+   return glft_new_pixmap_font_maxsize(thefont, charset, thesize, -1);
+ }
+ 
+ 
+-struct glft_pixmap_font*
++GLFT_API(struct glft_pixmap_font*)
+ glft_new_pixmap_font_maxsize(struct glft_font* thefont, const char* charset, int thesize, GLint max_size)
+ {
+   int i=0, err = 0;
+@@ -1678,7 +1675,7 @@
+   return thetexture;
+ }
+ 
+-struct glft_pixmap_font*
++GLFT_API(struct glft_pixmap_font*)
+ glft_pixmap_font_new()
+ {
+   int i;
+@@ -1693,7 +1690,7 @@
+ }
+ 
+ 
+-void
++GLFT_API(void)
+ glft_pixmap_font_delete(struct glft_pixmap_font* tex)
+ {
+   int i;
+@@ -1706,7 +1703,7 @@
+   free(tex);
+ }
+ 
+-void
++GLFT_API(void)
+ glft_pixmap_font_enable_texture(const struct glft_pixmap_font* thetex)
+ {
+   glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA8,
+@@ -1726,13 +1723,13 @@
+ #endif
+ }
+ 
+-void
++GLFT_API(void)
+ glft_pixmap_font_render_texture(const struct glft_pixmap_font* tex)
+ {
+   glDrawPixels(tex->width, tex->height, GL_ALPHA, GL_UNSIGNED_BYTE, tex->pixmap);
+ }
+ 
+-void
++GLFT_API(void)
+ glft_pixmap_font_render(struct glft_pixmap_font* thetex, const char* thestring)
+ {
+ #ifdef PRECOMPUTED_TEXCOORD
+@@ -1785,7 +1782,7 @@
+ }
+ 
+ 
+-void
++GLFT_API(void)
+ glft_pixmap_font_render_with_other_advance(struct glft_pixmap_font* thetex, struct glft_pixmap_font* theOtherAdvance, double scale, const char* thestring)
+ {
+ #ifdef PRECOMPUTED_TEXCOORD
+@@ -1811,7 +1808,7 @@
+       continue;
+     }
+ 
+-    x = (int)rint(xadvanceacc+info->bearing_x);
++    x = (int)/*rint*/(xadvanceacc+info->bearing_x);
+     /*    
+ 		fprintf(stderr, "%c %p %d %d %d %d - %d\n", *thestring, info,
+ 		info->x1,info->y1, info->x2,info->y2,
+@@ -1848,7 +1845,7 @@
+ }
+ 
+ 
+-int
++GLFT_API(int)
+ glft_pixmap_font_get_xadvance(struct glft_pixmap_font* thetex, const char* thestring)
+ {
+ #ifdef PRECOMPUTED_TEXCOORD
+@@ -1878,7 +1875,7 @@
+ }
+ #endif
+ 
+-void
++GLFT_API(void)
+ glft_pixmap_font_bounding_box(struct glft_pixmap_font* thetex, const char* thestring, int* x1, int* y1, int* x2, int* y2)
+ {
+ #ifdef PRECOMPUTED_TEXCOORD
+@@ -1927,7 +1924,7 @@
+ 	
+ }
+ 
+-void
++GLFT_API(void)
+ glft_pixmap_font_bounding_box_with_other_advance(struct glft_pixmap_font* thetex, struct glft_pixmap_font* theOtherAdvance, double scale, const char* thestring, int* x1, int* y1, int* x2, int* y2)
+ {
+ #ifdef PRECOMPUTED_TEXCOORD
+@@ -1979,10 +1976,10 @@
+     ++thestring;
+   }
+ 	if(info) {
+-		*x2=(int)rint(xadvanceacc-xadvance+info->xmax);
++		*x2=(int)/*rint*/(xadvanceacc-xadvance+info->xmax);
+ 		/* *x2 = (int)rint(xadvanceacc); */
+ 	} else	
+-		*x2 = (int)rint(xadvanceacc);
++		*x2 = (int)/*rint*/(xadvanceacc);
+ 
+ }
+ 
+@@ -1998,7 +1995,7 @@
+ #include <fcntl.h>
+ #endif
+ 
+-void
++GLFT_API(void)
+ glft_pixmap_font_save_pixmap_pgm(const struct glft_pixmap_font* thetex, FILE* file)
+ {
+ #if 0
+@@ -2022,7 +2019,7 @@
+ #endif
+ }
+ 
+-int
++GLFT_API(int)
+ glft_pixmap_font_load_pixmap_pgm(struct glft_pixmap_font* thetex, FILE* file)
+ {
+   char P5[] = {0,0,0};
+@@ -2382,7 +2379,7 @@
+ #endif
+ 
+ 
+-void
++GLFT_API(void)
+ glft_pixmap_font_save_metrics(const struct glft_pixmap_font* thetex, FILE* file)
+ {
+   /*
+@@ -2424,7 +2421,7 @@
+ }
+ 
+ 
+-int
++GLFT_API(int)
+ glft_pixmap_font_load_metrics(struct glft_pixmap_font* thetex, FILE* file)
+ {
+   char glft[]={0,0,0,0,0};
+diff -x CVS -ru glft-20070801_orig/glft/glft.hpp glft-20070801/glft/glft.hpp
+--- glft-20070801_orig/glft/glft.hpp	2004-06-22 14:09:10.000000000 +0200
++++ glft-20070801/glft/glft.hpp	2007-08-20 05:21:26.000000000 +0200
+@@ -5,22 +5,34 @@
+ /*#define __use_bzip2__*/
+ /*#define __use_png__*/
+ 
++;
++
+ #include <GL/gl.h>
+ 
+ #include <stdio.h>
+ 
++#ifdef WIN32
++#ifdef BUILD_GLFT
++#define GLFT_API(type) __declspec(dllexport) type __stdcall
++#else
++#define GLFT_API(type) __declspec(dllimport) type
++#endif
++#else
++#define GLFT_API(type) type
++#endif
++
+ extern int glft_ft_error;
+ extern int glft_gl_error;
+ extern const char* glft_printable;
+ extern const char* glft_english_printable;
+ 
+-int
++GLFT_API(int)
+ glft_init(void);
+ 
+-int
++GLFT_API(int)
+ glft_done(void);
+ 
+-int
++GLFT_API(int)
+ glft_set_gl_context();
+ 
+ /* ----------------------------------------------------- */
+@@ -28,37 +40,37 @@
+ 
+ struct glft_font;
+ 
+-struct glft_font*
++GLFT_API(struct glft_font*)
+ glft_font_new(const char* file);
+ 
+-void
++GLFT_API(void)
+ glft_font_delete(struct glft_font* thefont);
+ 
+-int
++GLFT_API(int)
+ glft_font_get_ascent(const struct glft_font *);
+ 
+-int
++GLFT_API(int)
+ glft_font_get_descent(const struct glft_font *);
+ 
+-int
++GLFT_API(int)
+ glft_font_get_line_gap(const struct glft_font *);
+ 
+ /* ----------------------------------------------------- */
+ /* factory */
+ 
+-struct glft_glyph*
++GLFT_API(struct glft_glyph*)
+ glft_new_glyph(struct glft_font* thefont, char thechar, int size);
+ 
+-struct glft_vector_font*
++GLFT_API(struct glft_vector_font*)
+ glft_new_vector_font(struct glft_font*, const char* charset, int size);
+ 
+-struct glft_pixmap_glyph*
++GLFT_API(struct glft_pixmap_glyph*)
+ glft_new_pixmap_glyph(struct glft_font* thefont, char thechar, int size);
+ 
+-struct glft_pixmap_font*
++GLFT_API(struct glft_pixmap_font*)
+ glft_new_pixmap_font(struct glft_font*, const char* charset, int size);
+ 
+-struct glft_pixmap_font*
++GLFT_API(struct glft_pixmap_font*)
+ glft_new_pixmap_font_maxsize(struct glft_font*, const char* charset, int size, GLint maxsize);
+ 
+ /* ----------------------------------------------------- */
+@@ -66,28 +78,28 @@
+ 
+ struct glft_glyph;
+ 
+-void
++GLFT_API(void)
+ glft_glyph_delete(struct glft_glyph* theglyph);
+ 
+-struct glft_font*
++GLFT_API(struct glft_font*)
+ glft_glyph_get_font(const struct glft_glyph*);
+ 
+-int
++GLFT_API(int)
+ glft_glyph_get_xadvance(const struct glft_glyph *);
+ 
+-void
++GLFT_API(void)
+ glft_glyph_get_bounding_box(const struct glft_glyph *, int* xmin, int* ymin, int* xmax, int* ymax);
+ 
+-void
++GLFT_API(void)
+ glft_glyph_render_plain(struct glft_glyph* theglyph);
+ 
+-void
++GLFT_API(void)
+ glft_glyph_render_outline(const struct glft_glyph* theglyph);
+ 
+-int
++GLFT_API(int)
+ glft_glyph_save(const struct glft_glyph*, FILE*);
+ 
+-int
++GLFT_API(int)
+ glft_glyph_load(struct glft_glyph*, FILE*);
+ 
+ /* ----------------------------------------------------- */
+@@ -95,39 +107,39 @@
+ 
+ struct glft_vector_font;
+ 
+-struct glft_vector_font*
++GLFT_API(struct glft_vector_font*)
+ glft_vector_font_new();
+ 
+-void
++GLFT_API(void)
+ glft_vector_font_delete(struct glft_vector_font *);
+ 
+-void
++GLFT_API(void)
+ glft_vector_font_render_plain(const struct glft_vector_font*, const char*);
+ 
+-void
++GLFT_API(void)
+ glft_vector_font_render_outline(const struct glft_vector_font*, const char*);
+ 
+-void
++GLFT_API(void)
+ glft_vector_font_bounding_box(struct glft_vector_font*, const char*, int* x1, int* y1, int* x2, int* y2);
+ 
+-int
++GLFT_API(int)
+ glft_vector_font_get_xadvance(struct glft_vector_font*, const char*);
+ 
+ #if 0
+-int
++GLFT_API(int)
+ glft_vector_font_get_xadvance_char(struct glft_vector_font*, char);
+ #endif
+ 
+-int
++GLFT_API(int)
+ glft_vector_font_save_glyph(const struct glft_vector_font*, char, FILE*);
+ 
+-int
++GLFT_API(int)
+ glft_vector_font_load_glyph(struct glft_vector_font*, char, FILE*);
+ 
+-int
++GLFT_API(int)
+ glft_vector_font_save(const struct glft_vector_font*, FILE*);
+ 
+-int
++GLFT_API(int)
+ glft_vector_font_load(struct glft_vector_font*, FILE*);
+ 
+ /* ----------------------------------------------------- */
+@@ -135,23 +147,23 @@
+ 
+ struct glft_pixmap_glyph;
+ 
+-void
++GLFT_API(void)
+ glft_pixmap_glyph_delete(struct glft_pixmap_glyph* theglyph);
+ 
+-struct glft_font*
++GLFT_API(struct glft_font*)
+ glft_pixmap_glyph_get_font(const struct glft_glyph*);
+ 
+-int
++GLFT_API(int)
+ glft_pixmap_glyph_get_xadvance(const struct glft_pixmap_glyph *);
+ 
+-void
++GLFT_API(void)
+ glft_pixmap_glyph_get_bounding_box(const struct glft_pixmap_glyph *, int* xmin, int* ymin, int* xmax, int* ymax);
+ 
+-void
++GLFT_API(void)
+ glft_pixmap_glyph_render(struct glft_pixmap_glyph* theglyph);
+ 
+ /* debug */
+-unsigned char*
++GLFT_API(unsigned char*)
+ glft_pixmap_glyph_get_pixmap(const struct glft_pixmap_glyph *);
+ /* debug */
+ 
+@@ -160,84 +172,84 @@
+ 
+ struct glft_pixmap_font;
+ 
+-struct glft_pixmap_font*
++GLFT_API(struct glft_pixmap_font*)
+ glft_pixmap_font_new();
+ 
+-void
++GLFT_API(void)
+ glft_pixmap_font_delete(struct glft_pixmap_font*);
+ 
+-int
++GLFT_API(int)
+ glft_pixmap_font_get_width(const struct glft_pixmap_font*);
+ 
+-int
++GLFT_API(int)
+ glft_pixmap_font_get_height(const struct glft_pixmap_font*);
+ 
+-unsigned char*
++GLFT_API(unsigned char*)
+ glft_pixmap_font_get_pixmap(const struct glft_pixmap_font*);
+ 
+ /* debug */
+-void
++GLFT_API(void)
+ glft_pixmap_font_render_texture(const struct glft_pixmap_font*);
+ /* debug */
+ 
+-void
++GLFT_API(void)
+ glft_pixmap_font_enable_texture(const struct glft_pixmap_font*);
+ 
+-void
++GLFT_API(void)
+ glft_pixmap_font_render(struct glft_pixmap_font*, const char*);
+ 
+-void
++GLFT_API(void)
+ glft_pixmap_font_render_with_other_advance(struct glft_pixmap_font*, struct glft_pixmap_font* otherAdvance, double scale, const char*);
+ 
+-void
++GLFT_API(void)
+ glft_pixmap_font_bounding_box(struct glft_pixmap_font*, const char*, int* x1, int* y1, int* x2, int* y2);
+ 
+-void
++GLFT_API(void)
+ glft_pixmap_font_bounding_box_with_other_advance(struct glft_pixmap_font*, struct glft_pixmap_font* otherAdvance, double scale, const char*, int* x1, int* y1, int* x2, int* y2);
+ 
+-int
++GLFT_API(int)
+ glft_pixmap_font_get_xadvance(struct glft_pixmap_font*, const char*);
+ 
+ #if 0
+-int
++GLFT_API(int)
+ glft_pixmap_font_get_xadvance_char(struct glft_pixmap_font*, char);
+ #endif
+ 
+-void
++GLFT_API(void)
+ glft_pixmap_font_save_pixmap_pgm(const struct glft_pixmap_font*, FILE*);
+ 
+-int
++GLFT_API(int)
+ glft_pixmap_font_load_pixmap_pgm(struct glft_pixmap_font*, FILE*);
+ 
+ 
+ #ifdef __use_gzip__
+-void
++GLFT_API(void)
+ glft_pixmap_font_save_pixmap_pgm_gzip(const struct glft_pixmap_font*, FILE*);
+ 
+-int
++GLFT_API(int)
+ glft_pixmap_font_load_pixmap_pgm_gzip(struct glft_pixmap_font*, FILE*);
+ #endif // __use_gzip__
+ 
+ #ifdef __use_bzip2__
+-void
++GLFT_API(void)
+ glft_pixmap_font_save_pixmap_pgm_bzip2(const struct glft_pixmap_font*, FILE*);
+ 
+-int
++GLFT_API(int)
+ glft_pixmap_font_load_pixmap_pgm_bzip2(struct glft_pixmap_font*, FILE*);
+ #endif // __use_bzip2__
+ 
+ #ifdef __use_png__
+-void
++GLFT_API(void)
+ glft_pixmap_font_save_pixmap_png(const struct glft_pixmap_font*, FILE*);
+ 
+-int
++GLFT_API(int)
+ glft_pixmap_font_load_pixmap_png(struct glft_pixmap_font*, FILE*);
+ #endif // __use_png__
+ 
+-void
++GLFT_API(void)
+ glft_pixmap_font_save_metrics(const struct glft_pixmap_font*, FILE*);
+ 
+-int
++GLFT_API(int)
+ glft_pixmap_font_load_metrics(struct glft_pixmap_font*, FILE*);
+ 
+ 

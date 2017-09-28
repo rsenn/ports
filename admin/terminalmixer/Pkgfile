@@ -1,0 +1,34 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A multi-user multi-point terminal application frontend.
+#  Terminal Mixer allows sharing the stdin/out/err of a process through a
+#  Unix socket, TCP, or raw ethernet (the latter only on Linux). It allows
+#  sharing a pseudo-terminal as well, for terminal-aware applications. The
+#  users can be allowed only to watch, or even to contribute. You can run
+#  your favourite 'vim' or 'bash' and access it remotely, even with multiple
+#  users using them.
+#  .
+# URL: http://vicerveza.homeunix.net/~viric/soft/tm/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=terminalmixer
+version=0.4.1
+release=1
+source=(http://vicerveza.homeunix.net/~viric/soft/tm/tm-$version.tar.gz)
+
+build()
+{
+  cd tm-$version
+
+  make CFLAGS="${CFLAGS-'-g -O2'}"
+  make PREFIX="$ROOT" install
+
+  install -d $ROOT/share/doc/terminalmixer
+  install -m 644 AUTHORS COPYING ChangeLog DOCS $ROOT/share/doc/terminalmixer
+
+  install -d $ROOT/share/terminalmixer
+  cp -rf utils web $ROOT/share/terminalmixer
+}
+
+# EOF

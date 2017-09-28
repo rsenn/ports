@@ -1,0 +1,49 @@
+# $Id: Pkgfile,v 1.9 2007/04/23 17:39:08 roman Exp $
+#
+# Package: libraptor
+# Description: Raptor is a free software / Open Source C library that
+# provides a set of parsers and serializers that generate Resource
+# Description Framework (RDF) triples by parsing syntaxes or serialize
+# the triples into a syntax. The supported parsing syntaxes are RDF/XML,
+# N-Triples, TRiG, Turtle, RSS tag soup including all versions of RSS,
+# Atom 1.0 and 0.3, GRDDL and microformats for HTML, XHTML and XML. The
+# serializing syntaxes are RDF/XML (regular, and abbreviated), N-Triples,
+# RSS 1.0, Atom 1.0 and Adobe XMP.
+#
+# Raptor was designed to work closely with the Redland RDF library (RDF
+# Parser Toolkit for Redland) but is entirely separate. It is a portable
+# library that works across many POSIX systems (Unix, GNU/Linux, BSDs,
+# OSX, cygwin, win32). Raptor has no memory leaks and is fast.
+#
+# URL: http://librdf.org/raptor/
+# Depends on: libc6, libcomerr2, libcurl3, libidn11, libkrb53, libldap-2.4-2, libssl0.9.8, libxml2, libxslt1.1, zlib1g
+# Maintainer: Roman Senn <rs@adfinis.com>
+
+name=raptor
+version=1.4.18
+release=1adfinis1
+source=(http://download.librdf.org/source/raptor-$version.tar.gz)
+
+build()
+{
+  cd raptor-$version
+
+#  libtoolize --force --copy
+#  aclocal --force
+#  automake --force --copy --foreign --add-missing
+#  aclocal --force
+#  autoconf --force
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --${shared:=enable}-shared \
+       --${static:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+
+  mkdir -p $ROOT/share/doc
+  ln -s ../gtk-doc/html/raptor $ROOT/share/doc/raptor
+}

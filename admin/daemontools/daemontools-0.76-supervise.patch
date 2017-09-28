@@ -1,0 +1,39 @@
+diff -ru daemontools-0.76_orig/src/svscan.c daemontools-0.76/src/svscan.c
+--- daemontools-0.76_orig/src/svscan.c	2006-02-15 16:09:34.000000000 +0100
++++ daemontools-0.76/src/svscan.c	2006-02-15 16:11:47.000000000 +0100
+@@ -38,6 +38,7 @@
+   int child;
+   int i;
+   const char *args[3];
++	const char *arg0;
+ 
+   if (fn[0] == '.') return;
+ 
+@@ -99,10 +100,11 @@
+         if (x[i].flaglog)
+ 	  if (fd_move(1,x[i].pi[1]) == -1)
+             strerr_die4sys(111,WARNING,"unable to set up descriptors for ",fn,": ");
+-        args[0] = "supervise";
++			  arg0 = PREFIX"/bin/supervise";
++        args[0] = basename(arg0);
+         args[1] = fn;
+         args[2] = 0;
+-	pathexec_run(*args,args,environ);
++	pathexec_run(arg0,args,environ);
+         strerr_die4sys(111,WARNING,"unable to start supervise ",fn,": ");
+       default:
+ 	x[i].pid = child;
+@@ -118,10 +120,11 @@
+           strerr_die4sys(111,WARNING,"unable to set up descriptors for ",fn,"/log: ");
+ 	if (chdir(fn) == -1)
+           strerr_die4sys(111,WARNING,"unable to switch to ",fn,": ");
+-        args[0] = "supervise";
++			  arg0 = PREFIX"/bin/supervise";
++        args[0] = basename(arg0);
+         args[1] = "log";
+         args[2] = 0;
+-	pathexec_run(*args,args,environ);
++	pathexec_run(arg0,args,environ);
+         strerr_die4sys(111,WARNING,"unable to start supervise ",fn,"/log: ");
+       default:
+ 	x[i].pidlog = child;

@@ -1,0 +1,44 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: emulates the detach/attach feature of screen
+#  dtach is a tiny program that emulates the detach feature of screen,
+#  allowing you to run a program in an environment that is protected from
+#  the controlling terminal and attach to it later. dtach does not keep
+#  track of the contents of the screen, and thus works best with programs
+#  that know how to redraw themselves.
+#  dtach does not, however, have the other features of screen, such as its
+#  support of multiple terminals or its terminal emulation support. This
+#  makes dtach extremely tiny compared to screen, making it more easily
+#  audited for bugs and security holes, and also allows it to fit in
+#  environments where space is limited, such as on rescue disks.
+# URL: http://dtach.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=dtach
+version=0.8
+release=1
+source=(http://heanet.dl.sourceforge.net/sourceforge/dtach/dtach-$version.tar.gz)
+
+build() 
+{
+  cd dtach-$version
+
+  libtoolize --force --copy --install
+  aclocal --force
+  autoconf --force
+
+  ./configure \
+       ${build+--build="$build"} \
+       ${host+--host="$host"} \
+       --prefix="$prefix"
+
+  make
+  
+  install -d $ROOT/{bin,share/man/man1}
+  install -m 755 dtach $ROOT/bin
+  install -m 644 dtach.1 $ROOT/share/man/man1
+
+  install -d $ROOT/share/doc/dtach
+  install -m 644 README COPYING $ROOT/share/doc/dtach
+}

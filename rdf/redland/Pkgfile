@@ -1,0 +1,52 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:50 roman Exp $
+#
+# Description: A set of Redland RDF (Resource Description Framework) C libraries.
+#  Redland is a set of C libraries providing a high-level API for the
+#  Resource Description Framework (RDF), allowing it to be stored, parsed,
+#  serialized, queried, and manipulated. It has an object-based, modular
+#  design and comes with detailed reference documentation and examples. APIs
+#  are provided in C#, C, Perl, Python, Ruby, PHP, Java, and Tcl. Redland
+#  supports all RDF vocabularies such as FOAF, RSS 1.0, Dublin Core, DOAP,
+#  and OWL, the query languages RDQL and SPARQL, and all RDF syntaxes
+#  including Turtle, RDF/XML, RSS, Atom, and GRDDL.
+# URL: http://librdf.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=redland
+version=1.0.8
+release=1
+source=($mirror_sf/librdf/redland-$version.tar.gz)
+
+build()
+{
+  cd redland-$version
+
+  libtoolize --force --copy
+  aclocal --force -I .
+  autoheader --force
+  automake --force --copy --foreign --add-missing
+  aclocal --force -I .
+  autoconf --force
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --disable-assert-messages
+
+  sed -i \
+      -e "/FLAGS\\s\\+=/ {
+    s/$CFLAGS//g
+    s/ -mtune=[^ ][^ ]*\\? / /g
+    s/ -march=[^ ][^ ]*\\? / /g
+    s/ -fmessage / /g
+    s/=/= $CFLAGS/
+  }" \
+    Makefile \
+  */Makefile
+
+  make #librdf_la_LDFLAGS="-version-number ${version//./:}"
+  make DESTDIR="$PKG" install
+}
+

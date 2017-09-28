@@ -1,0 +1,23 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Parallel bzip2
+# Parallel implementation of the bzip2 block-sorting file compressor that
+# uses pthreads and achieves near-linear speedup on SMP machines. The
+# output of this version is fully compatible with bzip2 v1.0.2 or newer.
+#
+# URL: http://compression.ca/pbzip2/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=pbzip2
+version=1.0.2
+release=1
+source=(http://compression.ca/pbzip2/pbzip2-$version.tar.gz)
+
+build()
+{
+  cd pbzip2-$version
+
+  make
+  make PREFIX="$ROOT" install
+}

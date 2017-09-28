@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: fio is an I/O tool meant to be used both for benchmark and
+# stress/hardware verification. It has support for 12 different types of I/O
+# engines (sync, mmap, libaio, posixaio, SG v3, splice, null, network, syslet,
+# guasi, and more), I/O priorities (for newer Linux kernels), rate I/O, forked
+# or threaded jobs, and much more. It can work on block devices as well as
+# files. fio accepts job descriptions in a simple-to-understand text format.
+# Several example job files are included. fio displays all sorts of I/O
+# performance information. It supports Linux, FreeBSD, and OpenSolaris.
+# URL: http://git.kernel.dk/?p=fio.git;a=summary
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=fio
+version=1.20
+release=1
+source=(http://brick.kernel.dk/snaps/fio-$version.tar.bz2)
+
+build()
+{
+  cd fio
+
+  make \
+      CC="${CC-cc}" \
+      OPTFLAGS="$CFLAGS" \
+      DESTDIR="$PKG" \
+      prefix="$prefix" \
+    all \
+    install
+}

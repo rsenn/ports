@@ -1,0 +1,25 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Write Perl subroutines in other programming languages.
+# URL: http://search.cpan.org/~ingy/Inline-0.44/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=inline
+version=0.44
+release=1
+source=(http://search.cpan.org/CPAN/authors/id/I/IN/INGY/Inline-$version.tar.gz)
+
+build()
+{
+  cd Inline-$version
+
+  perl Makefile.PL
+  make \
+      DESTDIR="$PKG" \
+      INSTALLDIRS="vendor" \
+      PREFIX="$prefix" \
+    install
+}
+
+# EOF

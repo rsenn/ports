@@ -1,0 +1,34 @@
+# $Id: Pkgfile,v 1.3 2007/05/12 01:09:23 roman Exp $
+#
+# Description: A multilingual system for PHP class documentation.
+#  phpDoc is a system for PHP class documentation. It allows you to document
+#  classes (organized in projects) with their functions and parameters. At
+#  the moment it has to be on a central server for all developers, because
+#  their is no synchronisation between independent databases.
+# URL: http://sourceforge.net/projects/phpdoc/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=phpdoc
+version=1beta
+release=1
+source=(http://www.phpdoc.de/download/phpdoc$version.zip)
+
+build()
+{
+  cd PHPDoc
+  find -name cvs | xargs rm -rf
+
+  install -d $ROOT/lib/${name}
+  cp -rvfL * $ROOT/lib/${name}
+
+  install -d $ROOT/bin
+
+  sed -i "1 { i\
+#!$prefix/bin/php
+}" $ROOT/lib/$name/core/Phpdoc.php
+
+  chmod 755 $ROOT/lib/$name/core/Phpdoc.php
+
+  ln -s ../lib/$name/core/Phpdoc.php $ROOT/bin/phpdoc
+}

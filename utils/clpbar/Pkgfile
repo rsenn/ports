@@ -1,0 +1,36 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A simple command line tool to display information about a data transfer stream.
+#  Command Line Progress Bar is a simple command line tool to display
+#  information about a data transfer stream. It will display the number
+#  of bytes transfered, the speed of the transfer, and if the size of the
+#  data stream is known it will display the ETA, percent complete, and a
+#  progress bar.
+# URL: http://clpbar.sourceforge.net/
+# Maintainer: 
+# Depends on: 
+
+name=clpbar
+version=1.10.9
+release=1
+source=($mirror_sf/clpbar/bar_${version}.tar.gz)
+
+build() 
+{
+  cd bar-$version
+  
+  #./autogen
+  
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+  
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/clpbar
+  install -m 644 INSTALL TODO ChangeLog COPYING AUTHORS TROUBLESHOOTING $ROOT/share/doc/clpbar
+}
+
+# EOF

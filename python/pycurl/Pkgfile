@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A Python module interface to the cURL library.
+#  PycURL is a Python module interface to the cURL library. PycURL can be
+#  used to fetch objects identified by an URL within a Python program.
+# URL: http://pycurl.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=pycurl
+version=7.16.4
+release=1
+source=(http://pycurl.sourceforge.net/download/pycurl-$version.tar.gz)
+
+build()
+{
+  cd pycurl-$version
+
+  python setup.py install --prefix="$ROOT"
+
+  install -d $ROOT/share/doc/pycurl
+
+  cp -rt $ROOT/share/doc/pycurl \
+    COPYING ChangeLog INSTALL README TODO \
+    examples tests
+
+  cp -rt $ROOT/share/doc/pycurl/html \
+    doc
+}

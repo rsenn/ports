@@ -1,0 +1,22 @@
+diff -ru nightingale-1.3_orig/Makefile nightingale-1.3/Makefile
+--- nightingale-1.3_orig/Makefile	2009-03-09 16:47:18.000000000 +0100
++++ nightingale-1.3/Makefile	2009-03-09 18:59:56.000000000 +0100
+@@ -1,7 +1,8 @@
+-
++PREFIX=/usr/local
++X11DIR=/usr/X11R6
+ CC=gcc
+-CFLAGS=-Wall -O2 -I/usr/X11R6/include -g
+-LDFLAGS=-L/usr/X11R6/lib -lforms -lX11 -lm 
++CFLAGS=-Wall -O2 -I$(X11DIR)/include -g -D_POSIX_SOURCE
++LDFLAGS=-L$(X11DIR)/lib -lforms -lX11 -lm 
+ 
+ all:  nightingale
+ 
+@@ -13,4 +14,5 @@
+ 	rm -f *.o nightingale *~ *.bak
+ 
+ install: nightingale
+-	cp nightingale /usr/local/bin
++	mkdir -p $(PREFIX)/bin
++	cp nightingale $(PREFIX)/bin

@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: $'A COLLECTION OF USEFUL C++ CLASS LIBRARIES.\NTHE POCO C++ LIBRARIES ARE A COLLECTION OF CLASS LIBRARIES FOR DEVELOPING NETWORK-CENTRIC, PORTABLE APPLICATIONS IN C++'A collection of useful C++ class libraries.\nThe POCO C++ Libraries are a collection of class libraries for developing network-centric, portable applications in C++
+#  The classes integrate perfectly with the C++ Standard Library and cover
+#  functionality like threads, thread synchronization, filesystem access,
+#  streams, shared libraries and class loading, sockets and network protocols
+#  (HTTP, FTP, SMTP, etc.), including an HTTP server, as well as an XML
+#  parser with SAX2 and DOM interfaces and SQL database access.'
+#  .
+# URL: http://pocoproject.org
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name='cpoco'
+version=1.3.3p1
+release=1
+source=($mirror_sf/poco/poco-1.3.3p1-all.tar.bz2)
+
+build()
+{
+  cd poco-$version-all
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

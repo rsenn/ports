@@ -1,0 +1,26 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: filesystem to mount WebDAV shares
+# It makes use of FUSE as userspace file system API and neon
+# as WebDAV API.
+# URL: http://0pointer.de/lennart/projects/fusedav/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=fusedav
+version=0.2
+release=1
+source=(http://0pointer.de/lennart/projects/fusedav/fusedav-$version.tar.gz)
+
+build()
+{
+  cd fusedav-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

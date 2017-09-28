@@ -1,0 +1,38 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A daemon that downloads and installs plugins
+#  Capuchin is an open-source program that runs in the background, downloads
+#  and installs plugins. It can be used by any application through its
+#  D-Bus interface.
+#  .
+# URL: http://capuchin.k-d-w.org/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=capuchin
+version=0.3.2
+release=1
+source=(ftp://ftp.gnome.org/pub/gnome/sources/capuchin/${version%.*}/capuchin-$version.tar.bz2)
+
+build()
+{
+  cd capuchin-$version
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix" \
+     --program-prefix=""
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/capuchin
+  install -m 644 AUTHORS COPYING ChangeLog INSTALL NEWS README TODO $ROOT/share/doc/capuchin
+
+  install -d $ROOT/share/doc/capuchin/examples
+  cp -rf examples/[a-z]* $ROOT/share/doc/capuchin/examples
+}
+
+# EOF

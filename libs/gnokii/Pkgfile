@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A toolset for mobile phones.
+#  gnokii is a multisystem tool suite for mobile phones. It provides a
+#  library to communicate with a phone hiding the communication protocol. The
+#  library handles SMS, phonebook, calendar, phone calls, and other mobile
+#  phone capabilities. It supports Nokia-FBUS mobiles, AT-capable phones
+#  (most of the mobiles), as well as Symbian-based phones.
+# URL: http://www.gnokii.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=gnokii
+version=0.6.20
+release=1
+source=(http://www.gnokii.org/download/gnokii/gnokii-$version.tar.bz2)
+
+build()
+{
+  cd gnokii-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix" \
+       --${shared:=enable}-shared \
+       --${static:=enable}-shared \
+       --enable-security
+
+  make
+  make DESTDIR="$PKG" install
+}

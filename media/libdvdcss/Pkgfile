@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Portable abstraction library for DVD decryption.
+#  The libdvdcss library provides a portable abstraction for DVD decryption,
+#  with a simple API to access a DVD device as a block device.
+#  .
+# URL: http://www.videolan.org/developers/libdvdcss.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libdvdcss
+version=1.2.10
+release=1
+source=(http://download.videolan.org/pub/videolan/libdvdcss/$version/libdvdcss-$version.tar.bz2)
+
+build()
+{
+  cd libdvdcss-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/libdvdcss
+  install -m 644 INSTALL NEWS ChangeLog AUTHORS README COPYING $ROOT/share/doc/libdvdcss
+}

@@ -1,0 +1,27 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Faust AUdio STreams is a functional programming language for realtime audio signal processing. The Faust compiler translates DSP specifications into efficient C++ code. A variety of plateforms and plugin are supported (jack, alsa, ladspa, max, Q, vst...)
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=faust
+version=0.9.9.4
+release=1
+source=($mirror_sf/faudiostream/faust-$version.tar.gz)
+
+build()
+{
+  cd faust-$version
+
+  make CC="${CC-cc}" CFLAGS="$CFLAGS"
+
+  make prefix="$ROOT" install
+
+  mv -vf \
+      documentation/additional\ documentation \
+      documentation/additional_documentation.txt
+
+  install -d $ROOT/share/doc
+  cp -rf documentation $ROOT/share/doc/faust
+}

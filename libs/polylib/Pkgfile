@@ -1,0 +1,57 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A library of polyhedral functions
+# URL: http://icps.u-strasbg.fr/PolyLib/
+# Maintainer: 
+# Depends on: 
+
+name=polylib
+version=5.22.3
+release=1
+source=(http://icps.u-strasbg.fr/PolyLib/polylib_src/polylib-$version.tar.gz)
+
+build() 
+{
+  cd ${srcdir=$SRC/polylib-$version}
+
+  types=int,longint,longlongint,gmp
+  
+  IFS="$IFS,"
+
+  for type in $types; do
+   (set -e 
+    mkdir -p ${builddir=$srcdir/build-$type}
+    cd $builddir
+
+    case $type in
+      gmp) libtype="--with-libgmp" ;;
+      *) libtype="--enable-$type-lib --without-libgmp" ;;
+    esac
+
+    ../configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --program-suffix="" \
+       $libtype \
+       --enable-extra-suffix \
+       --${shared:=enable}-shared \
+       --${static:=enable}-static
+  
+    make
+    make DESTDIR="$PKG" install) || return $?
+  done
+
+  #bits=32,64,gmp
+  
+  IFS="$IFS,"
+
+  for bit in 32 64 gmp; do
+    for file in $ROOT/bin/*$bit$bit; do
+      base=${file%$bit$bit}
+      mv -vf "$file" "$base$bit"
+    done
+  done
+}
+
+# EOF

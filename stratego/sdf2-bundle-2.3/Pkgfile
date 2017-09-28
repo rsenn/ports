@@ -1,0 +1,64 @@
+# $Id: Pkgfile,v 1.11 2007/05/12 01:09:23 roman Exp $
+#
+# Package: sdf2-bundle
+# Section: universe/libs
+# Description: SDF: Modular Syntax Definition Formalism
+#  The SDF2 Bundle is an easy to install collection of packages related to
+#  the SDF2 syntax definition formalism. The packages are developed at the
+#  CWI. The main packages of the SDF2 Bundle are:
+#
+#  * PGEN - parser generator for SDF2
+#  * SGLR - parser
+#
+#  The bundling related code is maintained by Martin Bravenboer.
+#  The packages themselves are maintained by members of SEN1 group at the
+#  CWI in the Netherlands.
+#
+# URL: http://www.program-transformation.org/Sdf/SdfBundle
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Split: liblogging-dev (liblogging.* logging.h)
+# Depends on: libaterm2
+
+name=sdf2-bundle
+version=2.3.3
+release=1
+source=(ftp://ftp.stratego-language.org/pub/stratego/sdf2/sdf2-bundle-$version/sdf2-bundle-$version.tar.gz
+        sdf2-bundle-2.3-pgen-makefile-am.patch)
+
+build()
+{
+  cd ${srcdir=$SRC/sdf2-bundle-$version}
+
+  patch -N -p1 -i $SRC/sdf2-bundle-2.3-pgen-makefile-am.patch
+  touch -r COPYING pgen/src/Makefile*
+
+  false || (find -name configure.ac -or -name configure.in | while read cfg; do
+    dir=`dirname "$cfg"`
+
+    (cd $dir
+
+     libtoolize --force --copy
+     aclocal --force -I . -I $srcdir/toolbuslib
+     automake --force --copy --foreign --add-missing && aclocal --force -I . -I $srcdir/toolbuslib || true
+     autoconf --force
+     : sed -i 's,{ (exit 1); exit 1; },:,g' configure)
+  done)
+
+  case $host in
+    *-mingw32)
+      export LIBS="-lws2_32"
+      ;;
+  esac
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --${shared:=enable}-shared \
+      --${static:=enable}-shared \
+      --disable-dependency-tracking \
+      --disable-maintainer-mode
+
+  make
+  make prefix="$ROOT" mandir="$ROOT/share/man" install
+}

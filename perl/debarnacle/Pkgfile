@@ -1,0 +1,21 @@
+# $Id: Pkgfile,v 1.6 2007/04/22 23:07:53 roman Exp $
+#
+# Description: Check the filesystem for barnacles (missing and unexplained files) 
+# URL: http://search.cpan.org/dist/Debarnacle/
+# Maintainer: Simon Josi <duke@yokto.net>
+# Depends on:
+
+name=debarnacle
+version=2002.05.15
+release=1
+source=(http://search.cpan.org/CPAN/authors/id/T/TH/THEDEVIL/Debarnacle-$version.tar.gz)
+
+build()
+{
+  cd Debarnacle-$version
+
+  perl Makefile.PL installdirs=vendor
+
+  make
+  make DESTDIR="$PKG" install
+}

@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: X11 various extension wire protocol
+#  This package provides development headers describing the wire protocol
+#  for various extensions, the client-side libraries of which are provided
+#  in the Xext library.
+#  This package is built from the X.org xextproto proto module.
+# URL: http://www.X.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=xextproto
+version=7.0.3
+release=1
+source=(ftp://ftp.x.org/pub/individual/proto/xextproto-$version.tar.bz2)
+
+build()
+{
+  cd xextproto-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

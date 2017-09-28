@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: QAircrack-ng GUI frontend to Aircrack-ng
+# URL: http://qaircrack-ng.sourceforge.net/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on: libqt4-gui, libv2
+
+name=qaircrack-ng
+version=0.1
+release=2
+source=($mirror_sf/qaircrack-ng/qaircrack-ng-$version.tar.gz
+        qaircrack-ng-0.1-dev-monitor.patch)
+
+build() 
+{
+  cd qAircrack-ng-$version
+
+  patch -p1 -i $SRC/qaircrack-ng-0.1-dev-monitor.patch
+  
+  qmake qaircrack-ng.pro
+
+  make
+
+  install -d $ROOT/bin
+  install -m 755 qaircrack-ng $ROOT/bin
+
+  install -d $ROOT/share/doc/qaircrack-ng
+  install -m 644 README $ROOT/share/doc/qaircrack-ng
+}
+
+# EOF

@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Open Sound World, or OSW, is a scalable, extensible programming environment that allows musicians, sound designers and researchers to process sound in response to expressive real-time control. OSW combines a familiar visual patching paradigm with solid programming-language features such as a strong type system and hierarchical name spaces. OSW also includes an intuitive model for specifying new components using a graphical interface and high-level C++ expressions, making it easy to develop and share new music and signal-processing algorithms.
+# URL: http://osw.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=osw
+version=1.2.7
+release=1
+source=($mirror_sf/osw/osw-$version.tar.bz2)
+
+build()
+{
+  cd osw-$version/src/linux
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix" \
+       --enable-alsa \
+       --enable-jack \
+       --enable-ladspa
+
+
+  make
+  make DESTDIR="$PKG" install
+}

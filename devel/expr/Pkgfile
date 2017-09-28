@@ -1,0 +1,26 @@
+# $Id: Pkgfile,v 1.4 2007/05/09 21:02:41 roman Exp $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=expr
+version=6.2
+release=1
+source=(bin-expr-freebsd6.2.tar.gz
+        expr-portable.patch)
+
+build()
+{
+  cd bin/expr
+  patch -N -p1 -i $SRC/expr-portable.patch
+
+  bsdmake OPTFLAGS="$CFLAGS"
+
+  install -d $ROOT/bin
+  install -m 755 expr $ROOT/bin
+
+  install -d $ROOT/man/man1
+  install -m 644 expr.1 $ROOT/man/man1/expr.1
+}

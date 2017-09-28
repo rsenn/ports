@@ -1,0 +1,115 @@
+diff -r -u -- CSL_orig/CSL/IO/FileIO.cpp CSL/CSL/IO/FileIO.cpp
+--- CSL_orig/CSL/IO/FileIO.cpp	2007-06-15 16:06:23.000000000 +0000
++++ CSL/CSL/IO/FileIO.cpp	2007-06-15 16:08:26.000000000 +0000
+@@ -41,7 +41,7 @@
+ 	mOutBuffer.setSize(channels, blockSize);
+ 	mOutBuffer.allocateMonoBuffers();	
+ 
+-	char * dot = rindex(mPath, '.');		// get the file name extension
++	char * dot = strrchr(mPath, '.');		// get the file name extension
+ 	format = kSoundFileFormatAIFF;			// default = AIFF files
+ 	if (strcmp(dot, ".wav") == 0)
+ 		format = kSoundFileFormatWAV;
+diff -r -u -- CSL_orig/CSL/IO/SoundFile.cpp CSL/CSL/IO/SoundFile.cpp
+--- CSL_orig/CSL/IO/SoundFile.cpp	2007-06-15 16:06:23.000000000 +0000
++++ CSL/CSL/IO/SoundFile.cpp	2007-06-15 16:09:08.000000000 +0000
+@@ -182,11 +182,11 @@
+ }
+ 
+ void SoundFile :: setStartSec(float val) {
+-	setStart(val * rate());
++	setStart((int)(val * rate()));
+ }
+ 
+ void SoundFile :: setStartRatio(float val) {
+-	setStart(val * duration());
++	setStart((int)(val * duration()));
+ }
+ 
+ void SoundFile :: setStop(int val) { 
+@@ -196,11 +196,11 @@
+ }
+ 
+ void SoundFile :: setStopSec(float val) {
+-	setStop(val * rate());
++	setStop((int)(val * rate()));
+ }
+ 
+ void SoundFile :: setStopRatio(float val) {
+-	setStop(val * duration());
++	setStop((int)(val * duration()));
+ }
+ 
+ bool SoundFile :: isActive() {
+diff -r -u -- CSL_orig/CSL/Kernel/CGestalt.cpp CSL/CSL/Kernel/CGestalt.cpp
+--- CSL_orig/CSL/Kernel/CGestalt.cpp	2007-06-15 16:06:23.000000000 +0000
++++ CSL/CSL/Kernel/CGestalt.cpp	2007-06-15 16:07:36.000000000 +0000
+@@ -102,14 +102,14 @@
+ #ifndef CSL_WINDOWS
+ #include <unistd.h>		// for usleep
+ #else
+-#include <Windows.h>	// for ::Sleep
++#include <windows.h>	// for ::Sleep
+ #endif
+ 
+ // Global Sleep functions that work for windows and mac/unix
+ 
+ void csl::sleepUsec(float dur_in_usec) {
+ #ifdef CSL_WINDOWS
+-	::Sleep(dur_in_usec / 1000);
++	::Sleep((int)(dur_in_usec / 1000));
+ #else
+ 	usleep((int) dur_in_usec);
+ #endif
+@@ -117,7 +117,7 @@
+ 
+ void csl::sleepMsec(float dur_in_msec) {
+ #ifdef CSL_WINDOWS
+-	::Sleep(dur_in_usec);
++	::Sleep((int)dur_in_msec);
+ #else
+ 	usleep((int) (dur_in_msec * 1000.0));
+ #endif
+@@ -125,7 +125,7 @@
+ 
+ void csl::sleepSec(float dur_in_sec) {
+ #ifdef CSL_WINDOWS
+-	::Sleep(dur_in_sec * 1000);
++	::Sleep((int)(dur_in_sec * 1000));
+ #else
+ 	usleep((int) (dur_in_sec * 1000000.0));
+ #endif
+diff -r -u -- CSL_orig/CSL/Processors/Convolver.cpp CSL/CSL/Processors/Convolver.cpp
+--- CSL_orig/CSL/Processors/Convolver.cpp	2007-06-15 16:06:23.000000000 +0000
++++ CSL/CSL/Processors/Convolver.cpp	2007-06-15 16:08:12.000000000 +0000
+@@ -133,7 +133,7 @@
+ 			mFilterFFTs[i] =  (CSL_FFTW_cmplx * ) CSL_FFTW_alloc(cbufsize); // new fftwf_complex[fftlen];
+ 					CHECK_PTR(mFilterFFTs[i]);
+ 		}
+-		bzero(mInputFFTs[i], cbufsize);							// zero out past input buffers
++		memset(mInputFFTs[i], 0, cbufsize);							// zero out past input buffers
+ 		for (unsigned j = 0; j < fftlen/2; j++) {					// fill bottom half of sample buffer from input
+ 			k = j + (i * fftlen);
+ 			if (k >= frames)	mSampleBuffer[j] = 0.0;				// copy into sample buffer
+@@ -171,7 +171,7 @@
+ 		CSL_FFTW_exec(mForwardPlan);									// FFT input from mSampleBuffer into mSpectrumBuffer
+ 		memcpy(mInputFFTs[whichInp], mSpectrumBuffer, cbufsize);	// copy it into the mInputFFT[] buffer
+ 	}
+-	bzero(mSpectrumBuffer, cbufsize);						// zero out the working FFT buffer before loop
++	memset(mSpectrumBuffer, 0, cbufsize);						// zero out the working FFT buffer before loop
+ 																// loop to  multiply/accumulate spectra for convolution
+ 	for (unsigned i = 0; i < numBufs; i++) {							// loop over IR windows
+ 		whichInp = (numBufs + windowCount - i) % numBufs;			// which input FFT to use
+diff -r -u -- CSL_orig/Linux/Makefile CSL/Linux/Makefile
+--- CSL_orig/Linux/Makefile	2007-06-15 16:06:23.000000000 +0000
++++ CSL/Linux/Makefile	2007-06-15 16:06:41.000000000 +0000
+@@ -42,7 +42,8 @@
+ 
+ # C++ compiler flags
+ 
+-CCFLAGS = -O2 -I../CSL/Kernel -I../CSL/Sources -I../CSL/Processors -I../CSL/IO \
++COPTS = -O2
++CCFLAGS = $(COPTS) -I../CSL/Kernel -I../CSL/Sources -I../CSL/Processors -I../CSL/IO \
+ 	-I../CSL/Utilities -I../CSL/Spatializers -I../CSL/Instruments -I/usr/local/include 
+ 
+ # Linker flags (generic UNIX)

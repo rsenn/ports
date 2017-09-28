@@ -1,0 +1,48 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: A library for configuring and customizing font access.
+#  Fontconfig is a library for configuring and customizing font access. It
+#  contains two essential modules, the configuration module which builds
+#  an internal configuration from XML files and the matching module which
+#  accepts font patterns and returns the nearest matching font.
+# URL: http://fontconfig.org
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=fontconfig
+version=2.6.0
+release=1
+source=(http://fontconfig.org/release/fontconfig-$version.tar.gz
+        fonts.tar)
+
+build()
+{
+  cd fontconfig-$version
+
+#  libtoolize --force --copy
+#  aclocal --force
+#  autoconf --force
+
+  case $prefix in
+    /usr) sysconfdir="/etc" localstatedir="/var" ;;
+  esac
+
+  HASDOCBOOK="no" \
+  ./configure \
+      --prefix="$prefix" \
+      --build="$build" \
+      --host="$host" \
+      ${sysconfdir+--sysconfdir="$sysconfdir"} \
+      ${localstatedir+--localstatedir="$localstatedir"} \
+      --${static:=enable}-shared \
+      --${shared:=enable}-shared \
+      --with-freetype-config="$prefix/bin/freetype-config" \
+      --with-default-fonts="$prefix/share/fonts" \
+      --disable-docs \
+      --enable-libxml2
+
+  make FC_DEFAULT_FONTS="$prefix/share/fonts"
+  make DESTDIR="$PKG" install
+
+  mkdir -p $ROOT/share/fonts
+}

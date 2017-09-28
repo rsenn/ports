@@ -1,0 +1,35 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A small and fast image processing library with a simple API.
+# impr is a small and fast image processing library with a simple API. Its
+# functions work mostly on 8-bit image channels, which means that main type
+# is just (u8 *) or (b8 *) for grey and binary images respectively. It was
+# intended for use in real-time processing, so functions are optimized for
+# speed. It supports segmentation (4 and 8-connected), flood fill, filling
+# object holes, downscaling and upscaling (with linear interpolation) by
+# an integer factor, generic implementations of dilate and erode (+image
+# open and close), color space conversions between HSVRGB and YRGRGB,
+# convolutions with Roberts and 2x2 low-pass filters, and common binary
+# image operations.
+#
+# URL: http://cba.si/impr/impr.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=impr
+version=0.1
+release=1
+source=(http://cba.si/impr/libimpr-$version.tar.gz
+        libimpr-0.1-libtool.patch)
+
+build()
+{
+  fs_duplicate libimpr-$version
+
+  cd libimpr-$version
+
+  patch -N -p1 -i $SRC/libimpr-0.1-libtool.patch
+
+  make
+  make DESTDIR="$PKG" PREFIX="$prefix" install
+}

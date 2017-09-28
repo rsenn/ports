@@ -1,0 +1,26 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Compiles state machines from regular languages.
+# URL: 
+# Maintainer: 
+# Depends on: 
+
+name=ragel
+version=5.25
+release=1
+source=(http://www.complang.org/ragel/ragel-$version.tar.gz)
+
+build() 
+{
+  cd ragel-$version
+  
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+  
+  make
+  make prefix="$ROOT" install
+}
+
+# EOF

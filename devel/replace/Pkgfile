@@ -1,0 +1,25 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:43 roman Exp $
+#
+# Description: Replace ASCII or hex strings in text or binary files
+#  replace provides an easier alternative to sed for replacing one or
+#  more strings with another in one or more text or binary files or from
+#  standard input.
+# URL: http://replace.richardlloyd.org.uk/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=replace
+version=2.24
+release=1
+source=(http://hpux.connect.org.uk/ftp/hpux/Users/replace-$version/replace-$version-src-11.11.tar.gz)
+
+build()
+{
+  cd replace-$version
+
+  make
+
+  install -d $ROOT/bin
+
+  make TREE="$ROOT" install
+}

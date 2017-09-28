@@ -1,0 +1,36 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A general purpose, double precision, astronomical calculation library.
+#  libnova is a general purpose, double precision, celestial mechanics
+#  and astronomical calculation library. It can calculate aberration,
+#  nutation, apparent position, dynamical time, Julian day, precession,
+#  proper motion, sidereal time, solar coordinates (using VSOP87), coordinate
+#  transformations, planetary positions (Mercury - Neptune using VSOP87),
+#  planetary magnitude, illuminated disk and phase angle, lunar position
+#  (using ELP82), phase angle, elliptic motion of bodies (Asteroid +
+#  Comet positional and orbit data), asteroid + comet magnitudes, parabolic
+#  motion of bodies (comet positional data), orbit velocities and lengths,
+#  atmospheric refraction, rise/set/transit times, and semidiameters of
+#  the Sun, Moon, planets, and asteroids.
+# URL: http://libnova.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libnova
+version=0.12.1
+release=1
+source=($mirror_sf/libnova/libnova-$version.tar.gz)
+
+build()
+{
+  cd libnova-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

@@ -1,0 +1,40 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An easy to use OpenVPN Server GUI.
+#  GADMIN-OpenVPN-Server is an easy to use GTK+ interface for the OpenVPN
+#  server in bridge mode. It allows generation of five signed certificates
+#  and keys, including HMAC-Firewall and user authentications. Bridge mode
+#  enables SAMBA browsing and printing across physically separated networks
+#  and or full-blown road warrior client capabilities.
+#  .
+# URL: http://mange.dynalias.org/linux.html
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=gadmin-openvpn-server
+version=0.0.7
+release=1
+source=(http://mange.dynalias.org/linux/gadmin-openvpn/server/gadmin-openvpn-server-$version.tar.gz)
+
+build()
+{
+  cd gadmin-openvpn-server-$version
+
+  case $prefix in
+    "/usr") sysconfdir="/etc" ;;
+  esac
+
+  #sh autogen.sh
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix" \
+     --sysconfdir="${sysconfdir=$prefix/etc}"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

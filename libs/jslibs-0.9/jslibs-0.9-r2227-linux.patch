@@ -1,0 +1,940 @@
+diff -w -ruN jslibs-0.9-r1881_orig/Makefile jslibs-0.9-r1881/Makefile
+--- jslibs-0.9-r1881_orig/Makefile	2009-02-05 23:23:26.000000000 +0100
++++ jslibs-0.9-r1881/Makefile	2009-02-05 23:59:07.000000000 +0100
+@@ -1,6 +1,9 @@
+ BUILD ?= opt
+ 
+-SUBDIRS := libs/js src/jshost src/jsstd src/jsdebug libs/nspr src/jsio src/jsobjex src/jssqlite src/jsz src/jscrypt src/jsimage src/jsfont src/jsprotex src/jsfastcgi
++BROKEN_SUBDIRS := src/jssqlite
++SUBDIRS := src/host src/jslang src/jshost src/jsstd src/jsdebug src/jsio src/jsobjex src/jsz src/jscrypt src/jsimage src/jsfont src/jsprotex src/jsfastcgi
++
++all: $(SUBDIRS)
+ 
+ .PHONY: $(SUBDIRS)
+ $(SUBDIRS):
+diff -w -ruN jslibs-0.9-r1881_orig/Makefile.orig jslibs-0.9-r1881/Makefile.orig
+diff -w -ruN jslibs-0.9-r1881_orig/Makefile.rej jslibs-0.9-r1881/Makefile.rej
+diff -w -ruN jslibs-0.9-r1881_orig/src/common/jsHelper.h jslibs-0.9-r1881/src/common/jsHelper.h
+--- jslibs-0.9-r1881_orig/src/common/jsHelper.h	2009-02-05 23:23:26.000000000 +0100
++++ jslibs-0.9-r1881/src/common/jsHelper.h	2009-02-05 23:30:37.000000000 +0100
+@@ -1187,11 +1187,11 @@
+ 
+ typedef JSXDRState* Serialized;
+ 
+-inline bool IsSerializable( jsval val ) {
++inline bool IsSerializable( JSContext *cx, jsval val ) {
+ 	
+ 	if ( JSVAL_IS_PRIMITIVE(val) )
+ 		return true;
+-	JSClass *cl = JS_GetClass(JSVAL_TO_OBJECT(val));
++	JSClass *cl = JS_GET_CLASS(cx, JSVAL_TO_OBJECT(val));
+ 	return cl->xdrObject != NULL;
+ }
+ 
+diff -w -ruN jslibs-0.9-r1881_orig/src/common/platform.h.orig jslibs-0.9-r1881/src/common/platform.h.orig
+diff -w -ruN jslibs-0.9-r1881_orig/src/common/platform.h.rej jslibs-0.9-r1881/src/common/platform.h.rej
+diff -w -ruN jslibs-0.9-r1881_orig/src/host/Makefile jslibs-0.9-r1881/src/host/Makefile
+--- jslibs-0.9-r1881_orig/src/host/Makefile	2009-02-05 23:23:26.000000000 +0100
++++ jslibs-0.9-r1881/src/host/Makefile	2009-02-05 23:24:23.000000000 +0100
+@@ -1,6 +1,6 @@
+ TARGET     = host.a
+ SRC        = $(wildcard *.cpp)
+-INCLUDES   =
++INCLUDES   = `pkg-config js --cflags`
+ STATICLIBS =
+ SHAREDLIBS =
+ 
+diff -w -ruN jslibs-0.9-r1881_orig/src/jscrypt/Makefile jslibs-0.9-r1881/src/jscrypt/Makefile
+--- jslibs-0.9-r1881_orig/src/jscrypt/Makefile	2009-02-05 23:23:26.000000000 +0100
++++ jslibs-0.9-r1881/src/jscrypt/Makefile	2009-02-05 23:24:23.000000000 +0100
+@@ -1,9 +1,9 @@
+ TARGET     = jscrypt.so
+ SRC        = $(wildcard *.cpp)
+-INCLUDES   = -I../../libs/libtommath/src -I../../libs/libtomcrypt/src/src/headers
+-#STATICLIBS =  -L../../libs/libtommath/src -ltommath -L../../libs/libtomcrypt/src -ltomcrypt
+-STATICLIBS = ../../libs/libtomcrypt/src/libtomcrypt.a ../../libs/libtommath/src/libtommath.a
+-SHAREDLIBS =
++INCLUDES   = `pkg-config js --cflags`
++#STATICLIBS =  
++STATICLIBS = 
++SHAREDLIBS = `pkg-config js --libs`
+ DEFINES    = -DLTM_DESC
+ DEPENDS    = ../../libs/libtommath/Makefile ../../libs/libtomcrypt/Makefile
+ 
+diff -w -ruN jslibs-0.9-r1881_orig/src/jsdebug/Makefile jslibs-0.9-r1881/src/jsdebug/Makefile
+--- jslibs-0.9-r1881_orig/src/jsdebug/Makefile	2009-02-05 23:23:26.000000000 +0100
++++ jslibs-0.9-r1881/src/jsdebug/Makefile	2009-02-05 23:24:23.000000000 +0100
+@@ -1,7 +1,7 @@
+ TARGET     = jsdebug.so
+ SRC        = $(wildcard *.cpp)
+-INCLUDES   =
++INCLUDES   = `pkg-config js --cflags`
+ STATICLIBS =
+-SHAREDLIBS =
++SHAREDLIBS = `pkg-config js --libs`
+ 
+ include ../rules.mk
+diff -w -ruN jslibs-0.9-r1881_orig/src/jsdebug/static.cpp jslibs-0.9-r1881/src/jsdebug/static.cpp
+--- jslibs-0.9-r1881_orig/src/jsdebug/static.cpp	2009-02-05 23:23:26.000000000 +0100
++++ jslibs-0.9-r1881/src/jsdebug/static.cpp	2009-02-05 23:24:23.000000000 +0100
+@@ -932,7 +932,7 @@
+ 
+     uint32 *pbytes, bytes;
+ #ifdef JS_THREADSAFE
+-    pbytes = &cx->thread->gcBytes;
++    pbytes = &cx->thread->gcMallocBytes;
+ #else
+ 	 pbytes = &cx->runtime->gcBytes;
+ #endif
+diff -w -ruN jslibs-0.9-r1881_orig/src/jsdebug/static.cpp.orig jslibs-0.9-r1881/src/jsdebug/static.cpp.orig
+diff -w -ruN jslibs-0.9-r1881_orig/src/jsfastcgi/Makefile jslibs-0.9-r1881/src/jsfastcgi/Makefile
+--- jslibs-0.9-r1881_orig/src/jsfastcgi/Makefile	2009-02-05 23:23:26.000000000 +0100
++++ jslibs-0.9-r1881/src/jsfastcgi/Makefile	2009-02-06 00:02:31.000000000 +0100
+@@ -1,8 +1,8 @@
+ TARGET     = jsfastcgi.so
+ SRC        = $(wildcard *.cpp)
+-INCLUDES   = -I../../libs/fastcgi/src/include
+-STATICLIBS = -L../../libs/fastcgi/src/libfcgi/.libs/ -lfcgi
+-SHAREDLIBS =
+-DEPENDS    = ../../libs/fastcgi/Makefile
++INCLUDES   = `pkg-config js --cflags`
++STATICLIBS = 
++SHAREDLIBS = `pkg-config js --libs`
++DEPENDS    = 
+ 
+ include ../rules.mk
+diff -w -ruN jslibs-0.9-r1881_orig/src/jsfont/Makefile jslibs-0.9-r1881/src/jsfont/Makefile
+--- jslibs-0.9-r1881_orig/src/jsfont/Makefile	2009-02-05 23:23:26.000000000 +0100
++++ jslibs-0.9-r1881/src/jsfont/Makefile	2009-02-06 00:00:39.000000000 +0100
+@@ -1,8 +1,8 @@
+ TARGET     = jsfont.so
+ SRC        = $(wildcard *.cpp)
+-INCLUDES   = -I../../libs/freetype/src/include
+-STATICLIBS = -L../../libs/freetype/$(BUILD) -lfreetype
+-SHAREDLIBS =
+-DEPENDS    = ../../libs/freetype/Makefile
++INCLUDES   = `pkg-config js freetype2 --cflags`
++STATICLIBS = 
++SHAREDLIBS = `pkg-config js freetype2 --libs`
++DEPENDS    = 
+ 
+ include ../rules.mk
+diff -w -ruN jslibs-0.9-r1881_orig/src/jshost/Makefile jslibs-0.9-r1881/src/jshost/Makefile
+--- jslibs-0.9-r1881_orig/src/jshost/Makefile	2009-02-05 23:23:26.000000000 +0100
++++ jslibs-0.9-r1881/src/jshost/Makefile	2009-02-05 23:24:23.000000000 +0100
+@@ -1,8 +1,10 @@
+ TARGET=jshost
+ SRC=$(wildcard *.cpp)
+-INCLUDES=
+-STATICLIBS=../host/host.a ../jslang/jslang.a -lm
+-SHAREDLIBS=-ldl
++INCLUDES=`pkg-config js --cflags`
++STATICLIBS=../host/host.a ../jslang/jslang.a
++SHAREDLIBS=`pkg-config js --libs`
+ DEPENDS=../host/Makefile ../jslang/Makefile
+ 
+ include ../rules.mk
++
++jshost: CC = g++
+diff -w -ruN jslibs-0.9-r1881_orig/src/jsimage/Makefile jslibs-0.9-r1881/src/jsimage/Makefile
+--- jslibs-0.9-r1881_orig/src/jsimage/Makefile	2009-02-05 23:23:26.000000000 +0100
++++ jslibs-0.9-r1881/src/jsimage/Makefile	2009-02-06 00:00:17.000000000 +0100
+@@ -1,9 +1,9 @@
+ TARGET     = jsimage.so
+ SRC        = $(wildcard *.cpp)
+-INCLUDES   = -I../../libs/zlib/src -I../../libs/libpng/src -I../../libs/libjpeg/src
+-STATICLIBS = ../../libs/libpng/$(BUILD)/libpng.a ../../libs/libjpeg/$(BUILD)/libjpeg.a ../../libs/zlib/$(BUILD)/libz.a
+-SHAREDLIBS = -ldl -lpthread
+-DEPENDS    = ../../libs/libpng/Makefile ../../libs/libjpeg/Makefile
++INCLUDES   = `pkg-config js libpng --cflags`
++STATICLIBS = 
++SHAREDLIBS = `pkg-config js libpng --libs` -ljpeg
++DEPENDS    = 
+ 
+ include ../rules.mk
+ 
+diff -w -ruN jslibs-0.9-r1881_orig/src/jsio/Makefile jslibs-0.9-r1881/src/jsio/Makefile
+--- jslibs-0.9-r1881_orig/src/jsio/Makefile	2009-02-05 23:23:26.000000000 +0100
++++ jslibs-0.9-r1881/src/jsio/Makefile	2009-02-05 23:24:23.000000000 +0100
+@@ -1,8 +1,8 @@
+ TARGET     = jsio.so
+ SRC        = $(wildcard *.cpp)
+-INCLUDES   = -I../../libs/nspr/src/dist/include/nspr -I../../libs/nspr/src/dist/include/nspr/private
+-#STATICLIBS = -L../../libs/nspr/src/dist/lib -lnspr4
+-SHAREDLIBS = -L../../libs/nspr/src/dist/lib -lnspr4
+-DEPENDS    = ../../libs/nspr/Makefile
++INCLUDES   = `pkg-config js --cflags` 
++#STATICLIBS = 
++SHAREDLIBS = `pkg-config js --libs`
++DEPENDS    = 
+ 
+ include ../rules.mk
+diff -w -ruN jslibs-0.9-r1881_orig/src/jsio/descriptor.cpp jslibs-0.9-r1881/src/jsio/descriptor.cpp
+--- jslibs-0.9-r1881_orig/src/jsio/descriptor.cpp	2009-02-05 23:23:26.000000000 +0100
++++ jslibs-0.9-r1881/src/jsio/descriptor.cpp	2009-02-05 23:24:23.000000000 +0100
+@@ -14,7 +14,7 @@
+ 
+ #include "stdafx.h"
+ 
+-#include <pprio.h> // nspr/include/nspr/private
++#include <private/pprio.h> // nspr/include/nspr/private
+ #include <string.h>
+ #include <cstring>
+ 
+diff -w -ruN jslibs-0.9-r1881_orig/src/jsio/file.cpp jslibs-0.9-r1881/src/jsio/file.cpp
+--- jslibs-0.9-r1881_orig/src/jsio/file.cpp	2009-02-05 23:23:26.000000000 +0100
++++ jslibs-0.9-r1881/src/jsio/file.cpp	2009-02-05 23:24:23.000000000 +0100
+@@ -14,7 +14,7 @@
+ 
+ #include "stdafx.h"
+ 
+-#include <pprio.h> // nspr/include/nspr/private
++#include <private/pprio.h> // nspr/include/nspr/private
+ 
+ #include "descriptor.h"
+ #include "file.h"
+diff -w -ruN jslibs-0.9-r1881_orig/src/jslang/Makefile jslibs-0.9-r1881/src/jslang/Makefile
+--- jslibs-0.9-r1881_orig/src/jslang/Makefile	2009-02-05 23:23:26.000000000 +0100
++++ jslibs-0.9-r1881/src/jslang/Makefile	2009-02-05 23:24:23.000000000 +0100
+@@ -1,6 +1,6 @@
+ TARGET     = jslang.a
+ SRC        = $(wildcard *.cpp)
+-INCLUDES   =
++INCLUDES   = `pkg-config js --cflags`
+ STATICLIBS =
+ SHAREDLIBS =
+ 
+diff -w -ruN jslibs-0.9-r1881_orig/src/jsobjex/Makefile jslibs-0.9-r1881/src/jsobjex/Makefile
+--- jslibs-0.9-r1881_orig/src/jsobjex/Makefile	2009-02-05 23:23:26.000000000 +0100
++++ jslibs-0.9-r1881/src/jsobjex/Makefile	2009-02-05 23:24:23.000000000 +0100
+@@ -1,7 +1,7 @@
+ TARGET     = jsobjex.so
+ SRC        = $(wildcard *.cpp)
+-INCLUDES   =
++INCLUDES   = `pkg-config js --cflags`
+ STATICLIBS =
+-SHAREDLIBS =
++SHAREDLIBS = `pkg-config js --libs`
+ 
+ include ../rules.mk
+diff -w -ruN jslibs-0.9-r1881_orig/src/jsode/Makefile jslibs-0.9-r1881/src/jsode/Makefile
+--- jslibs-0.9-r1881_orig/src/jsode/Makefile	2009-02-05 23:23:26.000000000 +0100
++++ jslibs-0.9-r1881/src/jsode/Makefile	2009-02-05 23:27:35.000000000 +0100
+@@ -1,9 +1,9 @@
+ TARGET     = jsode.so
+ SRC        = $(wildcard *.cpp)
+-INCLUDES   = -I../../libs/ode/src/include
+-STATICLIBS = -L../../libs/ode/$(BUILD) -lfast -lGIMPACT -lode
+-SHAREDLIBS =
+-DEPENDS    = ../../libs/ode/Makefile
++INCLUDES   = `pkg-config js ode --cflags`
++STATICLIBS = 
++SHAREDLIBS = `pkg-config js ode --libs`
++DEPENDS    = 
+ 
+ include ../rules.mk
+ 
+diff -w -ruN jslibs-0.9-r1881_orig/src/jsode/Makefile.orig jslibs-0.9-r1881/src/jsode/Makefile.orig
+diff -w -ruN jslibs-0.9-r1881_orig/src/jsode/body.cpp jslibs-0.9-r1881/src/jsode/body.cpp
+--- jslibs-0.9-r1881_orig/src/jsode/body.cpp	2009-02-05 23:23:26.000000000 +0100
++++ jslibs-0.9-r1881/src/jsode/body.cpp	2009-02-05 23:40:03.000000000 +0100
+@@ -20,15 +20,16 @@
+ //#include "../common/jsNativeInterface.h"
+ 
+ static JSBool ReadMatrix( JSContext *cx, JSObject *obj, float **pm) { // Doc: __declspec(noinline) tells the compiler to never inline a particular function.
+-
++  float *m;
++  const ode::dReal *m43, *pos;
+ 	//ode::dBodyID id = (ode::dBodyID)pv;
+ 	ode::dBodyID id = (ode::dBodyID)JS_GetPrivate(cx, obj);
+ 	J_S_ASSERT_RESOURCE(id);
+ 
+-	const ode::dReal * m43 = dBodyGetRotation( id );
+-	const ode::dReal * pos = dBodyGetPosition( id );
++  m43 = dBodyGetRotation( id );
++  pos = dBodyGetPosition( id );
+ // (TBD) need center of mass ajustement ?
+-	float *m = *pm;
++  m = *pm;
+ 	m[0]  = m43[0];
+ 	m[1]  = m43[4];
+ 	m[2]  = m43[8];
+@@ -75,7 +76,7 @@
+ **/
+ 
+ DEFINE_CONSTRUCTOR() {
+-
++   ode::dBodyID bodyID;
+ 	J_S_ASSERT_CONSTRUCTING();
+ //	J_S_ASSERT_CLASS(&classBody);
+ 	J_S_ASSERT_THIS_CLASS();
+@@ -85,7 +86,7 @@
+ 	ode::dWorldID worldId;
+ 	ValToWorldID(cx, argv[0], &worldId);
+ 
+-	ode::dBodyID bodyID = ode::dBodyCreate(worldId);
++  bodyID = ode::dBodyCreate(worldId);
+ 	J_S_ASSERT( bodyID != NULL, "unable to create the body." );
+ 
+ 	JS_SetPrivate(cx, obj, bodyID);
+@@ -109,9 +110,9 @@
+   TBD dBodyDestroy
+ **/
+ DEFINE_FUNCTION( Destroy ) {
+-
++  ode::dBodyID bodyId;
+ 	J_S_ASSERT_CLASS(obj, classBody);
+-	ode::dBodyID bodyId = (ode::dBodyID)JS_GetPrivate( cx, obj );
++	bodyId = (ode::dBodyID)JS_GetPrivate( cx, obj );
+ 	J_S_ASSERT_RESOURCE( bodyId ); // (TBD) manage world-connected ( when bodyId == 0 )
+ 	dBodyDestroy(bodyId);
+ 	JS_SetPrivate(cx, obj, NULL);
+@@ -125,10 +126,10 @@
+   TBD dAreConnected
+ **/
+ DEFINE_FUNCTION( IsConnectedTo ) {
+-
++  ode::dBodyID thisBodyID;
+ 	J_S_ASSERT_ARG_MIN(1);
+ 	J_S_ASSERT_CLASS(obj, classBody);
+-	ode::dBodyID thisBodyID = (ode::dBodyID)JS_GetPrivate( cx, obj );
++	thisBodyID = (ode::dBodyID)JS_GetPrivate( cx, obj );
+ 	J_S_ASSERT_RESOURCE( thisBodyID );
+ 	ode::dBodyID bodyId;
+ 	ValToBodyID(cx, argv[0], &bodyId);
+diff -w -ruN jslibs-0.9-r1881_orig/src/jsode/body.h jslibs-0.9-r1881/src/jsode/body.h
+--- jslibs-0.9-r1881_orig/src/jsode/body.h	2009-02-05 23:23:26.000000000 +0100
++++ jslibs-0.9-r1881/src/jsode/body.h	2009-02-05 23:32:12.000000000 +0100
+@@ -17,9 +17,9 @@
+ #define BODY_SLOT_WORLD 0 // the world
+ 
+ inline JSBool ValToBodyID( JSContext *cx, jsval val, ode::dBodyID *bodyId ) {
+-
++  JSObject *obj;
+ 	J_S_ASSERT_OBJECT(val);
+-	JSObject *obj = JSVAL_TO_OBJECT(val);
++  obj = JSVAL_TO_OBJECT(val);
+ 	J_S_ASSERT_CLASS(obj, classBody);
+ 	*bodyId = (ode::dBodyID)JS_GetPrivate(cx,obj); // (TBD) ! manage null body ( environment connected; see world.body property )
+ 	// *bodyId == NULL is not an error !
+diff -w -ruN jslibs-0.9-r1881_orig/src/jsode/geom.cpp jslibs-0.9-r1881/src/jsode/geom.cpp
+--- jslibs-0.9-r1881_orig/src/jsode/geom.cpp	2009-02-05 23:23:26.000000000 +0100
++++ jslibs-0.9-r1881/src/jsode/geom.cpp	2009-02-05 23:40:58.000000000 +0100
+@@ -224,10 +224,10 @@
+   Is the current position of the geometry.
+ **/
+ DEFINE_PROPERTY( positionGetter ) {
+-
++  const ode::dReal *vector;
+ 	ode::dGeomID geom = (ode::dGeomID)JS_GetPrivate(cx, obj);
+ 	J_S_ASSERT_RESOURCE(geom);
+-	const ode::dReal *vector = ode::dGeomGetPosition(geom);
++	vector = ode::dGeomGetPosition(geom);
+ 	//FloatVectorToArray(cx, 3, vector, vp);
+ 	J_CHK( FloatVectorToJsval(cx, vector, 3, vp) );
+ 	return JS_TRUE;
+diff -w -ruN jslibs-0.9-r1881_orig/src/jsode/geomBox.cpp jslibs-0.9-r1881/src/jsode/geomBox.cpp
+--- jslibs-0.9-r1881_orig/src/jsode/geomBox.cpp	2009-02-05 23:23:26.000000000 +0100
++++ jslibs-0.9-r1881/src/jsode/geomBox.cpp	2009-02-05 23:42:17.000000000 +0100
+@@ -35,14 +35,15 @@
+   TBD
+ **/
+ DEFINE_CONSTRUCTOR() {
+-
++  ode::dSpaceID space;
++  ode::dGeomID geomId;
+ 	J_S_ASSERT_CONSTRUCTING();
+ 	J_S_ASSERT_THIS_CLASS();
+-	ode::dSpaceID space = 0;
++	space = 0;
+ 	if ( argc >= 1 ) // place it in a space ?
+ 		if ( ValToSpaceID(cx, argv[0], &space) == JS_FALSE )
+ 			return JS_FALSE;
+-	ode::dGeomID geomId = ode::dCreateBox(space, 1.0f,1.0f,1.0f); // default lengths are 1
++	geomId = ode::dCreateBox(space, 1.0f,1.0f,1.0f); // default lengths are 1
+ 	JS_SetPrivate(cx, obj, geomId);
+ 	SetupReadMatrix(cx, obj); // (TBD) check return status
+ 	ode::dGeomSetData(geomId, obj); // 'obj' do not need to be rooted because Goem's data is reset to NULL when 'obj' is finalized.
+diff -w -ruN jslibs-0.9-r1881_orig/src/jsode/geomCapsule.cpp jslibs-0.9-r1881/src/jsode/geomCapsule.cpp
+--- jslibs-0.9-r1881_orig/src/jsode/geomCapsule.cpp	2009-02-05 23:23:26.000000000 +0100
++++ jslibs-0.9-r1881/src/jsode/geomCapsule.cpp	2009-02-05 23:43:13.000000000 +0100
+@@ -35,13 +35,14 @@
+   TBD
+ **/
+ DEFINE_CONSTRUCTOR() {
+-
++  ode::dSpaceID space;
++  ode::dGeomID geomId;
+ 	J_S_ASSERT_CONSTRUCTING();
+ 	J_S_ASSERT_THIS_CLASS();
+-	ode::dSpaceID space = 0;
++	space = 0;
+ 	if ( argc >= 1 ) // place it in a space ?
+ 		J_CHK( ValToSpaceID(cx, argv[0], &space) );
+-	ode::dGeomID geomId = ode::dCreateCapsule(space, 1, 1); // default radius and length are 1
++	geomId = ode::dCreateCapsule(space, 1, 1); // default radius and length are 1
+ 	JS_SetPrivate(cx, obj, geomId);
+ 	SetupReadMatrix(cx, obj); // (TBD) check return status
+ 	ode::dGeomSetData(geomId, obj); // 'obj' do not need to be rooted because Goem's data is reset to NULL when 'obj' is finalized.
+diff -w -ruN jslibs-0.9-r1881_orig/src/jsode/geomPlane.cpp jslibs-0.9-r1881/src/jsode/geomPlane.cpp
+--- jslibs-0.9-r1881_orig/src/jsode/geomPlane.cpp	2009-02-05 23:23:26.000000000 +0100
++++ jslibs-0.9-r1881/src/jsode/geomPlane.cpp	2009-02-05 23:43:56.000000000 +0100
+@@ -35,13 +35,14 @@
+   TBD
+ **/
+ DEFINE_CONSTRUCTOR() {
+-
++  ode::dSpaceID space;
++  ode::dGeomID geomId;
+ 	J_S_ASSERT_CONSTRUCTING();
+ 	J_S_ASSERT_THIS_CLASS();
+-	ode::dSpaceID space = 0;
++	space = 0;
+ 	if ( argc >= 1 ) // place it in a space ?
+ 		J_CHK( ValToSpaceID(cx, argv[0], &space) );
+-	ode::dGeomID geomId = ode::dCreatePlane(space, 0,0,1,0); // default lengths are 1
++	geomId = ode::dCreatePlane(space, 0,0,1,0); // default lengths are 1
+ 	JS_SetPrivate(cx, obj, geomId);
+ 	SetupReadMatrix(cx, obj); // (TBD) check return status
+ 	ode::dGeomSetData(geomId, obj); // 'obj' do not need to be rooted because Goem's data is reset to NULL when 'obj' is finalized.
+diff -w -ruN jslibs-0.9-r1881_orig/src/jsode/geomRay.cpp jslibs-0.9-r1881/src/jsode/geomRay.cpp
+--- jslibs-0.9-r1881_orig/src/jsode/geomRay.cpp	2009-02-05 23:23:26.000000000 +0100
++++ jslibs-0.9-r1881/src/jsode/geomRay.cpp	2009-02-05 23:44:32.000000000 +0100
+@@ -35,13 +35,14 @@
+   TBD
+ **/
+ DEFINE_CONSTRUCTOR() {
+-
++  ode::dSpaceID space;
++  ode::dGeomID geomId;
+ 	J_S_ASSERT_CONSTRUCTING();
+ 	J_S_ASSERT_THIS_CLASS();
+-	ode::dSpaceID space = 0;
++	space = 0;
+ 	if ( argc >= 1 ) // place it in a space ?
+ 		J_CHK( ValToSpaceID(cx, argv[0], &space) );
+-	ode::dGeomID geomId = ode::dCreateRay(space, 1); // default ray length is 1
++	geomId = ode::dCreateRay(space, 1); // default ray length is 1
+ 	JS_SetPrivate(cx, obj, geomId);
+ 	SetupReadMatrix(cx, obj); // (TBD) check return status
+ 	ode::dGeomSetData(geomId, obj); // 'obj' do not need to be rooted because Goem's data is reset to NULL when 'obj' is finalized.
+diff -w -ruN jslibs-0.9-r1881_orig/src/jsode/geomSphere.cpp jslibs-0.9-r1881/src/jsode/geomSphere.cpp
+--- jslibs-0.9-r1881_orig/src/jsode/geomSphere.cpp	2009-02-05 23:23:26.000000000 +0100
++++ jslibs-0.9-r1881/src/jsode/geomSphere.cpp	2009-02-05 23:45:20.000000000 +0100
+@@ -35,13 +35,14 @@
+   TBD
+ **/
+ DEFINE_CONSTRUCTOR() {
+-
++  ode::dSpaceID space;
++  ode::dGeomID geomId;
+ 	J_S_ASSERT_CONSTRUCTING();
+ 	J_S_ASSERT_THIS_CLASS();
+-	ode::dSpaceID space = 0;
++	space = 0;
+ 	if ( argc >= 1 ) // place it in a space ?
+ 		J_CHK( ValToSpaceID(cx, argv[0], &space) );
+-	ode::dGeomID geomId = ode::dCreateSphere(space, 1); // default radius is 1
++	geomId = ode::dCreateSphere(space, 1); // default radius is 1
+ 	JS_SetPrivate(cx, obj, geomId);
+ 	SetupReadMatrix(cx, obj); // (TBD) check return status
+ 	ode::dGeomSetData(geomId, obj); // 'obj' do not need to be rooted because Goem's data is reset to NULL when 'obj' is finalized.
+diff -w -ruN jslibs-0.9-r1881_orig/src/jsode/geomTrimesh.cpp jslibs-0.9-r1881/src/jsode/geomTrimesh.cpp
+--- jslibs-0.9-r1881_orig/src/jsode/geomTrimesh.cpp	2009-02-05 23:23:26.000000000 +0100
++++ jslibs-0.9-r1881/src/jsode/geomTrimesh.cpp	2009-02-05 23:48:19.000000000 +0100
+@@ -42,6 +42,12 @@
+   TBD
+ **/
+ DEFINE_CONSTRUCTOR() {
++  ode::dSpaceID space;
++  jsval trimeshVal;
++  Surface *srf;
++  JSObject *trimesh;
++  ode::dTriMeshDataID triMeshDataID;
++  ode::dGeomID geomId;
+ 
+ 	J_S_ASSERT_CONSTRUCTING();
+ 	J_S_ASSERT_THIS_CLASS();
+@@ -49,23 +55,23 @@
+ 	J_S_ASSERT_ARG_MIN(2);
+ 	J_S_ASSERT_OBJECT(J_ARG(2));
+ 
+-	ode::dSpaceID space = 0;
++	space = 0;
+ 	if ( J_ARG_ISDEF(1) ) // place it in a space ?
+ 		J_CHK( ValToSpaceID(cx, J_ARG(1), &space) );
+ 
+-	jsval trimeshVal = J_ARG(2);
+-	JSObject *trimesh = JSVAL_TO_OBJECT(trimeshVal);
++	trimeshVal = J_ARG(2);
++	trimesh = JSVAL_TO_OBJECT(trimeshVal);
+ 	J_S_ASSERT( IsTrimeshObject(cx, trimesh), "Invalid Trimesh object." );
+-	Surface *srf = GetTrimeshSurface(cx, trimesh);
++	srf = GetTrimeshSurface(cx, trimesh);
+ 	J_S_ASSERT_RESOURCE( srf );
+ 	J_S_ASSERT( srf->vertex && srf->vertexCount && srf->index && srf->indexCount, "No enough data" );
+ 
+-	ode::dTriMeshDataID triMeshDataID = ode::dGeomTriMeshDataCreate();
++	triMeshDataID = ode::dGeomTriMeshDataCreate();
+ 
+ 	ode::dGeomTriMeshDataBuildSingle(triMeshDataID, srf->vertex, 3*sizeof(SURFACE_REAL_TYPE), srf->vertexCount, srf->index, srf->indexCount, sizeof(SURFACE_INDEX_TYPE));
+ 	ode::dGeomTriMeshDataPreprocess(triMeshDataID);
+ 
+-	ode::dGeomID geomId = ode::dCreateTriMesh(space, triMeshDataID, NULL, NULL, NULL);
++	geomId = ode::dCreateTriMesh(space, triMeshDataID, NULL, NULL, NULL);
+ 
+ 	J_CHK( JS_SetReservedSlot(cx, obj, SLOT_TRIMESH, trimeshVal) ); // keep e reference to the trimesh object because dGeomTriMeshDataBuildSingle do not make a copy of the data.
+ 	J_CHK( JS_SetPrivate(cx, obj, geomId) );
+diff -w -ruN jslibs-0.9-r1881_orig/src/jsode/joint.cpp jslibs-0.9-r1881/src/jsode/joint.cpp
+--- jslibs-0.9-r1881_orig/src/jsode/joint.cpp	2009-02-05 23:23:26.000000000 +0100
++++ jslibs-0.9-r1881/src/jsode/joint.cpp	2009-02-05 23:50:51.000000000 +0100
+@@ -47,15 +47,15 @@
+ */
+ 
+ inline JSBool SetJoint( JSContext *cx, JSObject *obj, jsval *b1, jsval *b2 ) {
+-
++  ode::dBodyID bId1, bId2;
+ 	ode::dJointID jointID = (ode::dJointID)JS_GetPrivate( cx, obj );
+ 	J_S_ASSERT_RESOURCE( jointID );
+ 
+ 	if ( JSVAL_IS_VOID( *b1 ) || JSVAL_IS_VOID( *b2 ) )
+ 		ode::dJointAttach(jointID, 0, 0); // detach it. The only way to attach it to the world environment is to use World.env
+ 
+-	ode::dBodyID bId1 = 0;
+-	ode::dBodyID bId2 = 0;
++	bId1 = 0;
++	bId2 = 0;
+ 
+ 	if ( !JSVAL_IS_VOID( *b1 ) )
+ 		J_CHK( ValToBodyID(cx, *b1, &bId1) );
+@@ -78,16 +78,19 @@
+   TBD
+ **/
+ DEFINE_FUNCTION( Destroy ) {
++  jsval val;
++  ode::dJointID jointId;
++  ode::dJointFeedback *currentFeedback;
+ 
+ 	J_S_ASSERT( InheritFrom(cx, obj, _class), J__ERRMSG_INVALID_CLASS );
+-	ode::dJointID jointId = (ode::dJointID)JS_GetPrivate( cx, obj );
++	jointId = (ode::dJointID)JS_GetPrivate( cx, obj );
+ 	J_S_ASSERT_RESOURCE( jointId );
+ 
+-	ode::dJointFeedback *currentFeedback = ode::dJointGetFeedback(jointId);
++  currentFeedback = ode::dJointGetFeedback(jointId);
+ 	if ( currentFeedback != NULL )
+ 		free(currentFeedback);
+ 	// remove references to bodies
+-	jsval val = JSVAL_VOID;
++	val = JSVAL_VOID;
+ 	JS_SetProperty(cx, obj, "body1", &val); // (TBD) find why to not use JS_DeleteProperty
+ 	JS_SetProperty(cx, obj, "body2", &val);
+ 	JS_SetPrivate(cx, obj, NULL);
+@@ -207,6 +210,7 @@
+   Using feedback will allows body1Force, body1Torque, body2Force and body2Torque to be used.
+ **/
+ DEFINE_PROPERTY( useFeedback ) {
++  ode::dJointFeedback *currentFeedback;
+ 
+ 	ode::dJointID jointId = (ode::dJointID)JS_GetPrivate( cx, obj );
+ 	J_S_ASSERT_RESOURCE( jointId );
+@@ -214,7 +218,7 @@
+ 	JSBool b;
+ 	JS_ValueToBoolean(cx, *vp, &b);
+ 
+-	ode::dJointFeedback *currentFeedback = ode::dJointGetFeedback(jointId);
++  currentFeedback = ode::dJointGetFeedback(jointId);
+ 
+ 	if ( currentFeedback == NULL && b == JS_TRUE ) {
+ 
+@@ -247,10 +251,11 @@
+ enum { body1Force, body1Torque, body2Force, body2Torque };
+ 
+ DEFINE_PROPERTY( feedbackVectorSetter ) {
++  ode::dJointFeedback *feedback;
+ 
+ 	ode::dJointID jointId = (ode::dJointID)JS_GetPrivate( cx, obj );
+ 	J_S_ASSERT_RESOURCE( jointId );
+-	ode::dJointFeedback *feedback = ode::dJointGetFeedback(jointId);
++  feedback = ode::dJointGetFeedback(jointId);
+ 	J_S_ASSERT( feedback != NULL, "Feedback is disabled." );
+ 	size_t length;
+ 	switch(JSVAL_TO_INT(id)) {
+@@ -281,10 +286,11 @@
+ 
+ 
+ DEFINE_PROPERTY( feedbackVectorGetter ) {
++  ode::dJointFeedback *feedback;
+ 
+ 	ode::dJointID jointId = (ode::dJointID)JS_GetPrivate( cx, obj );
+ 	J_S_ASSERT_RESOURCE( jointId );
+-	ode::dJointFeedback *feedback = ode::dJointGetFeedback(jointId);
++  feedback = ode::dJointGetFeedback(jointId);
+ 	J_S_ASSERT( feedback != NULL, "Feedback is disabled." );
+ 	switch(JSVAL_TO_INT(id)) {
+ 		case body1Force:
+diff -w -ruN jslibs-0.9-r1881_orig/src/jsode/jointBall.cpp jslibs-0.9-r1881/src/jsode/jointBall.cpp
+--- jslibs-0.9-r1881_orig/src/jsode/jointBall.cpp	2009-02-05 23:23:26.000000000 +0100
++++ jslibs-0.9-r1881/src/jsode/jointBall.cpp	2009-02-05 23:51:11.000000000 +0100
+@@ -26,6 +26,7 @@
+  * $INAME( world )
+ **/
+ DEFINE_CONSTRUCTOR() {
++  ode::dJointID jointId;
+ 
+ 	J_S_ASSERT_CONSTRUCTING();
+ 	J_S_ASSERT_THIS_CLASS();
+@@ -33,7 +34,7 @@
+ 	ode::dWorldID worldId;
+ 	if ( ValToWorldID( cx, argv[0], &worldId) == JS_FALSE )
+ 		return JS_FALSE;
+-	ode::dJointID jointId = ode::dJointCreateBall(worldId, 0); // The joint group ID is 0 to allocate the joint normally.
++	jointId = ode::dJointCreateBall(worldId, 0); // The joint group ID is 0 to allocate the joint normally.
+ 	JS_SetPrivate(cx, obj, jointId);
+ 	return JS_TRUE;
+ 	JL_BAD;
+diff -w -ruN jslibs-0.9-r1881_orig/src/jsode/jointFixed.cpp jslibs-0.9-r1881/src/jsode/jointFixed.cpp
+--- jslibs-0.9-r1881_orig/src/jsode/jointFixed.cpp	2009-02-05 23:23:26.000000000 +0100
++++ jslibs-0.9-r1881/src/jsode/jointFixed.cpp	2009-02-05 23:51:31.000000000 +0100
+@@ -26,6 +26,7 @@
+  * $INAME( world )
+ **/
+ DEFINE_CONSTRUCTOR() {
++  ode::dJointID jointId;
+ 
+ 	J_S_ASSERT_CONSTRUCTING();
+ 	J_S_ASSERT_THIS_CLASS();
+@@ -33,7 +34,7 @@
+ 	ode::dWorldID worldId;
+ 	if ( ValToWorldID( cx, argv[0], &worldId) == JS_FALSE )
+ 		return JS_FALSE;
+-	ode::dJointID jointId = ode::dJointCreateFixed(worldId, 0); // The joint group ID is 0 to allocate the joint normally.
++	jointId = ode::dJointCreateFixed(worldId, 0); // The joint group ID is 0 to allocate the joint normally.
+ 	JS_SetPrivate(cx, obj, jointId);
+ 	return JS_TRUE;
+ 	JL_BAD;
+diff -w -ruN jslibs-0.9-r1881_orig/src/jsode/jointHinge.cpp jslibs-0.9-r1881/src/jsode/jointHinge.cpp
+--- jslibs-0.9-r1881_orig/src/jsode/jointHinge.cpp	2009-02-05 23:23:26.000000000 +0100
++++ jslibs-0.9-r1881/src/jsode/jointHinge.cpp	2009-02-05 23:52:10.000000000 +0100
+@@ -31,6 +31,7 @@
+   TBD
+ **/
+ DEFINE_CONSTRUCTOR() {
++  ode::dJointID jointId;
+ 
+ 	J_S_ASSERT_CONSTRUCTING();
+ 	J_S_ASSERT_THIS_CLASS();
+@@ -38,7 +39,7 @@
+ 	ode::dWorldID worldId;
+ 	if ( ValToWorldID( cx, argv[0], &worldId) == JS_FALSE )
+ 		return JS_FALSE;
+-	ode::dJointID jointId = ode::dJointCreateHinge(worldId, 0); // The joint group ID is 0 to allocate the joint normally.
++	jointId = ode::dJointCreateHinge(worldId, 0); // The joint group ID is 0 to allocate the joint normally.
+ 	JS_SetPrivate(cx, obj, jointId);
+ 	return JS_TRUE;
+ 	JL_BAD;
+@@ -50,9 +51,10 @@
+   TBD
+ **/
+ DEFINE_FUNCTION( AddTorque ) {
++  ode::dJointID jointId;
+ 
+ 	J_S_ASSERT_ARG_MIN(1);
+-	ode::dJointID jointId = (ode::dJointID)JS_GetPrivate(cx, obj);
++	jointId = (ode::dJointID)JS_GetPrivate(cx, obj);
+ 	J_S_ASSERT_RESOURCE(jointId);
+ 	jsdouble torque;
+ 	JS_ValueToNumber(cx, argv[0], &torque);
+diff -w -ruN jslibs-0.9-r1881_orig/src/jsode/jointPlane.cpp jslibs-0.9-r1881/src/jsode/jointPlane.cpp
+--- jslibs-0.9-r1881_orig/src/jsode/jointPlane.cpp	2009-02-05 23:23:26.000000000 +0100
++++ jslibs-0.9-r1881/src/jsode/jointPlane.cpp	2009-02-05 23:52:26.000000000 +0100
+@@ -27,6 +27,7 @@
+   TBD
+ **/
+ DEFINE_CONSTRUCTOR() {
++  ode::dJointID jointId;
+ 
+ 	J_S_ASSERT_CONSTRUCTING();
+ 	J_S_ASSERT_THIS_CLASS();
+@@ -34,7 +35,7 @@
+ 	ode::dWorldID worldId;
+ 	if ( ValToWorldID( cx, argv[0], &worldId) == JS_FALSE )
+ 		return JS_FALSE;
+-	ode::dJointID jointId = ode::dJointCreatePlane2D(worldId, 0); // The joint group ID is 0 to allocate the joint normally.
++	jointId = ode::dJointCreatePlane2D(worldId, 0); // The joint group ID is 0 to allocate the joint normally.
+ 	JS_SetPrivate(cx, obj, jointId);
+ 	return JS_TRUE;
+ 	JL_BAD;
+diff -w -ruN jslibs-0.9-r1881_orig/src/jsode/jointSlider.cpp jslibs-0.9-r1881/src/jsode/jointSlider.cpp
+--- jslibs-0.9-r1881_orig/src/jsode/jointSlider.cpp	2009-02-05 23:23:26.000000000 +0100
++++ jslibs-0.9-r1881/src/jsode/jointSlider.cpp	2009-02-05 23:52:44.000000000 +0100
+@@ -27,6 +27,7 @@
+   TBD
+ **/
+ DEFINE_CONSTRUCTOR() {
++  ode::dJointID jointId;
+ 
+ 	J_S_ASSERT_CONSTRUCTING();
+ 	J_S_ASSERT_THIS_CLASS();
+@@ -34,7 +35,7 @@
+ 	ode::dWorldID worldId;
+ 	if ( ValToWorldID( cx, argv[0], &worldId) == JS_FALSE )
+ 		return JS_FALSE;
+-	ode::dJointID jointId = ode::dJointCreateSlider(worldId, 0); // The joint group ID is 0 to allocate the joint normally.
++	jointId = ode::dJointCreateSlider(worldId, 0); // The joint group ID is 0 to allocate the joint normally.
+ 	JS_SetPrivate(cx, obj, jointId);
+ 	return JS_TRUE;
+ 	JL_BAD;
+diff -w -ruN jslibs-0.9-r1881_orig/src/jsode/main.cpp.orig jslibs-0.9-r1881/src/jsode/main.cpp.orig
+diff -w -ruN jslibs-0.9-r1881_orig/src/jsode/main.cpp.rej jslibs-0.9-r1881/src/jsode/main.cpp.rej
+diff -w -ruN jslibs-0.9-r1881_orig/src/jsode/space.cpp jslibs-0.9-r1881/src/jsode/space.cpp
+--- jslibs-0.9-r1881_orig/src/jsode/space.cpp	2009-02-05 23:23:26.000000000 +0100
++++ jslibs-0.9-r1881/src/jsode/space.cpp	2009-02-05 23:53:16.000000000 +0100
+@@ -42,14 +42,15 @@
+  * $INAME( parentSpace )
+ **/
+ DEFINE_CONSTRUCTOR() {
++  ode::dSpaceID spaceId, parentSpace;
+ 
+ 	J_S_ASSERT_CONSTRUCTING();
+ 	J_S_ASSERT_THIS_CLASS();
+-	ode::dSpaceID parentSpace = 0;
++	parentSpace = 0;
+ 	if ( argc >= 1 )
+ 		if ( ValToSpaceID(cx, argv[0], &parentSpace) == JS_FALSE )
+ 			return JS_FALSE;
+-	ode::dSpaceID spaceId = ode::dSimpleSpaceCreate(parentSpace);
++	spaceId = ode::dSimpleSpaceCreate(parentSpace);
+ 	JS_SetPrivate(cx, obj, spaceId); // dSimpleSpaceCreate / dHashSpaceCreate / dQuadTreeSpaceCreate
+ 	// ode::dHashSpaceSetLevels(spaceId,
+ 	// (TBD) use this
+diff -w -ruN jslibs-0.9-r1881_orig/src/jsode/space.h jslibs-0.9-r1881/src/jsode/space.h
+--- jslibs-0.9-r1881_orig/src/jsode/space.h	2009-02-05 23:23:26.000000000 +0100
++++ jslibs-0.9-r1881/src/jsode/space.h	2009-02-05 23:41:29.000000000 +0100
+@@ -15,9 +15,9 @@
+ DECLARE_CLASS( Space );
+ 
+ inline JSBool ValToSpaceID( JSContext *cx, jsval val, ode::dSpaceID *spaceId ) {
+-
++  JSObject *obj;
+ 	J_S_ASSERT_OBJECT(val);
+-	JSObject *obj = JSVAL_TO_OBJECT(val);
++	obj = JSVAL_TO_OBJECT(val);
+ 	J_S_ASSERT_CLASS(obj, classSpace);
+ 	*spaceId = (ode::dSpaceID)JS_GetPrivate(cx,obj);
+ 	return JS_TRUE;
+diff -w -ruN jslibs-0.9-r1881_orig/src/jsode/stdafx.h.orig jslibs-0.9-r1881/src/jsode/stdafx.h.orig
+diff -w -ruN jslibs-0.9-r1881_orig/src/jsode/stdafx.h.rej jslibs-0.9-r1881/src/jsode/stdafx.h.rej
+diff -w -ruN jslibs-0.9-r1881_orig/src/jsode/surfaceParameters.cpp jslibs-0.9-r1881/src/jsode/surfaceParameters.cpp
+--- jslibs-0.9-r1881_orig/src/jsode/surfaceParameters.cpp	2009-02-05 23:23:26.000000000 +0100
++++ jslibs-0.9-r1881/src/jsode/surfaceParameters.cpp	2009-02-05 23:53:37.000000000 +0100
+@@ -36,11 +36,12 @@
+    by default, mu is set to Infinity.
+ **/
+ DEFINE_CONSTRUCTOR() {
++  ode::dSurfaceParameters *data;
+ 
+ 	static const ode::dSurfaceParameters initSurfaceParameters = {0};
+ 	J_S_ASSERT_CONSTRUCTING();
+ 	J_S_ASSERT_THIS_CLASS();
+-	ode::dSurfaceParameters *data = (ode::dSurfaceParameters*)malloc(sizeof(ode::dSurfaceParameters));
++	data = (ode::dSurfaceParameters*)malloc(sizeof(ode::dSurfaceParameters));
+ 	*data = initSurfaceParameters;
+ 	data->mu = dInfinity;
+ 	J_S_ASSERT_ALLOC(data);
+diff -w -ruN jslibs-0.9-r1881_orig/src/jsode/world.cpp jslibs-0.9-r1881/src/jsode/world.cpp
+--- jslibs-0.9-r1881_orig/src/jsode/world.cpp	2009-02-05 23:23:26.000000000 +0100
++++ jslibs-0.9-r1881/src/jsode/world.cpp	2009-02-05 23:55:15.000000000 +0100
+@@ -157,24 +157,26 @@
+    This function creates also a Space (space) object and a SurfaceParameters object (defaultSurfaceParameters).
+ **/
+ DEFINE_CONSTRUCTOR() {
++  ode::dWorldID worldId;
++  JSObject *spaceObject, *surfaceParameters;
+ 
+ 	J_S_ASSERT_CONSTRUCTING();
+ 	J_S_ASSERT_THIS_CLASS();
+ 
+-	ode::dWorldID worldId = ode::dWorldCreate();
++	worldId = ode::dWorldCreate();
+ 	JS_SetPrivate(cx, obj, worldId);
+ 	//ode::dJointGroupID contactgroup = ode::dJointGroupCreate(0);
+ 	//J_S_ASSERT( contactgroup != NULL, "Unable to create contact group." );
+ 	//JS_SetReservedSlot(cx, obj, WORLD_SLOT_CONTACTGROUP, PRIVATE_TO_JSVAL(contactgroup));
+ 
+-	JSObject *spaceObject = JS_ConstructObject(cx, classSpace, NULL, NULL); // no arguments = create a topmost space object
++	spaceObject = JS_ConstructObject(cx, classSpace, NULL, NULL); // no arguments = create a topmost space object
+ 	J_S_ASSERT( spaceObject != NULL, "Unable to construct Space for the World." );
+ 	JS_DefineProperty(cx, obj, WORLD_SPACE_PROPERTY_NAME, OBJECT_TO_JSVAL(spaceObject), NULL, NULL, JSPROP_PERMANENT | JSPROP_READONLY);
+ 
+ //	JS_SetReservedSlot(cx, obj, WORLD_SLOT_SPACE, PRIVATE_TO_JSVAL(spaceObject));
+ //	JS_DefineObject(cx, obj, WORLD_SPACE_PROPERTY_NAME, &classSpace, NULL, JSPROP_PERMANENT|JSPROP_READONLY );
+ 
+-	JSObject *surfaceParameters = JS_ConstructObject(cx, classSurfaceParameters, NULL, NULL);
++	surfaceParameters = JS_ConstructObject(cx, classSurfaceParameters, NULL, NULL);
+ 	J_S_ASSERT( surfaceParameters != NULL, "Unable to construct classSurfaceParameters." );
+ 	JS_DefineProperty(cx, obj, DEFAULT_SURFACE_PARAMETERS_PROPERTY_NAME, OBJECT_TO_JSVAL(surfaceParameters), NULL, NULL, JSPROP_PERMANENT | JSPROP_READONLY );
+ 
+@@ -203,10 +205,13 @@
+ **/
+ 
+ DEFINE_FUNCTION( Step ) {
++  ode::dJointGroupID contactgroup;
++  ode::dSurfaceParameters *defaultSurfaceParameters;
++  ode::dWorldID worldID;
+ 
+ 	J_S_ASSERT_ARG_MIN(1);
+ 	J_S_ASSERT_CLASS(obj, classWorld);
+-	ode::dWorldID worldID = (ode::dWorldID)JS_GetPrivate( cx, obj );
++	worldID = (ode::dWorldID)JS_GetPrivate( cx, obj );
+ 	J_S_ASSERT_RESOURCE(worldID);
+ 	jsdouble value;
+ 	JS_ValueToNumber(cx, argv[0], &value);
+@@ -227,12 +232,12 @@
+ 	J_S_ASSERT_DEFINED( defaultSurfaceParametersObject );
+ 	J_S_ASSERT_OBJECT( defaultSurfaceParametersObject );
+ 	J_S_ASSERT_CLASS( JSVAL_TO_OBJECT(defaultSurfaceParametersObject), classSurfaceParameters ); // (TBD) simplify RT_ASSERT
+-	ode::dSurfaceParameters *defaultSurfaceParameters = (ode::dSurfaceParameters*)JS_GetPrivate(cx, JSVAL_TO_OBJECT(defaultSurfaceParametersObject)); // beware: local variable !
++	defaultSurfaceParameters = (ode::dSurfaceParameters*)JS_GetPrivate(cx, JSVAL_TO_OBJECT(defaultSurfaceParametersObject)); // beware: local variable !
+ 	J_S_ASSERT_RESOURCE( defaultSurfaceParameters );
+ 
+ //	JS_GetReservedSlot(cx, obj, WORLD_SLOT_CONTACTGROUP, &val);
+ //	ode::dJointGroupID contactgroup = (ode::dJointGroupID)JSVAL_TO_PRIVATE(val);
+-	ode::dJointGroupID contactgroup = ode::dJointGroupCreate(0);
++	contactgroup = ode::dJointGroupCreate(0);
+ 
+ 	ColideContextPrivate ccp;
+ 	ccp.cx = cx; // the context will only be used while the worls step.
+diff -w -ruN jslibs-0.9-r1881_orig/src/jsode/world.h jslibs-0.9-r1881/src/jsode/world.h
+--- jslibs-0.9-r1881_orig/src/jsode/world.h	2009-02-05 23:23:26.000000000 +0100
++++ jslibs-0.9-r1881/src/jsode/world.h	2009-02-05 23:32:52.000000000 +0100
+@@ -23,9 +23,9 @@
+ #define WORLD_SLOT_SPACE 1
+ 
+ inline JSBool ValToWorldID( JSContext *cx, jsval val, ode::dWorldID *worldId ) {
+-
++  JSObject *worldObject;
+ 	J_S_ASSERT_OBJECT(val);
+-	JSObject *worldObject = JSVAL_TO_OBJECT(val);
++	worldObject = JSVAL_TO_OBJECT(val);
+ 	J_S_ASSERT_CLASS(worldObject, classWorld);
+ 	*worldId = (ode::dWorldID)JS_GetPrivate(cx,worldObject);
+ 	return JS_TRUE;
+diff -w -ruN jslibs-0.9-r1881_orig/src/jsprotex/Makefile jslibs-0.9-r1881/src/jsprotex/Makefile
+--- jslibs-0.9-r1881_orig/src/jsprotex/Makefile	2009-02-05 23:23:26.000000000 +0100
++++ jslibs-0.9-r1881/src/jsprotex/Makefile	2009-02-06 00:01:07.000000000 +0100
+@@ -1,7 +1,7 @@
+ TARGET     = jsprotex.so
+ SRC        = $(wildcard *.cpp) mt19937ar-cok.c
+-INCLUDES   =
++INCLUDES   = `pkg-config js --cflags`
+ STATICLIBS =
+-SHAREDLIBS =
++SHAREDLIBS = `pkg-config js --libs`
+ 
+ include ../rules.mk
+diff -w -ruN jslibs-0.9-r1881_orig/src/jssqlite/Makefile jslibs-0.9-r1881/src/jssqlite/Makefile
+--- jslibs-0.9-r1881_orig/src/jssqlite/Makefile	2009-02-05 23:23:26.000000000 +0100
++++ jslibs-0.9-r1881/src/jssqlite/Makefile	2009-02-05 23:24:26.000000000 +0100
+@@ -1,8 +1,8 @@
+ TARGET     = jssqlite.so
+ SRC        = $(wildcard *.cpp)
+-INCLUDES   = -I../../libs/sqlite/src
+-STATICLIBS = ../../libs/sqlite/src/libsqlite3.a
+-SHAREDLIBS = -ldl -lpthread
+-DEPENDS    = ../../libs/sqlite/Makefile
++INCLUDES   = `pkg-config js --cflags`
++STATICLIBS =
++SHAREDLIBS = `pkg-config js --libs`
++DEPENDS    = 
+ 
+ include ../rules.mk
+diff -w -ruN jslibs-0.9-r1881_orig/src/jsstd/Makefile jslibs-0.9-r1881/src/jsstd/Makefile
+--- jslibs-0.9-r1881_orig/src/jsstd/Makefile	2009-02-05 23:23:26.000000000 +0100
++++ jslibs-0.9-r1881/src/jsstd/Makefile	2009-02-05 23:24:26.000000000 +0100
+@@ -1,7 +1,7 @@
+ TARGET     = jsstd.so
+ SRC        = $(wildcard *.cpp)
+-INCLUDES   =
++INCLUDES   = `pkg-config js --cflags`
+ STATICLIBS =
+-SHAREDLIBS =
++SHAREDLIBS = `pkg-config js --libs`
+ 
+ include ../rules.mk
+diff -w -ruN jslibs-0.9-r1881_orig/src/jsstd/static.h jslibs-0.9-r1881/src/jsstd/static.h
+--- jslibs-0.9-r1881_orig/src/jsstd/static.h	2009-02-05 23:23:26.000000000 +0100
++++ jslibs-0.9-r1881/src/jsstd/static.h	2009-02-05 23:58:14.000000000 +0100
+@@ -13,3 +13,7 @@
+  * ***** END LICENSE BLOCK ***** */
+ 
+ DECLARE_STATIC()
++
++#ifndef JSOPTION_JIT
++#define JSOPTION_JIT 0
++#endif // JSOPTION_JIT
+diff -w -ruN jslibs-0.9-r1881_orig/src/jsvst/Makefile jslibs-0.9-r1881/src/jsvst/Makefile
+--- jslibs-0.9-r1881_orig/src/jsvst/Makefile	1970-01-01 01:00:00.000000000 +0100
++++ jslibs-0.9-r1881/src/jsvst/Makefile	2009-02-05 23:24:26.000000000 +0100
+@@ -0,0 +1,7 @@
++TARGET     = jsvst.so
++SRC        = $(wildcard *.cpp)
++INCLUDES   = `pkg-config js vstsdk2.4 --cflags`
++STATICLIBS =
++SHAREDLIBS = `pkg-config js vstsdk2.4 --libs`
++
++include ../rules.mk
+diff -w -ruN jslibs-0.9-r1881_orig/src/jsvst/audiomaster.cpp jslibs-0.9-r1881/src/jsvst/audiomaster.cpp
+--- jslibs-0.9-r1881_orig/src/jsvst/audiomaster.cpp	2009-02-05 23:23:26.000000000 +0100
++++ jslibs-0.9-r1881/src/jsvst/audiomaster.cpp	2009-02-05 23:24:26.000000000 +0100
+@@ -69,6 +69,6 @@
+ 	JSObject *audioMasterObject = JS_NewObject(cx, classAudioMaster, NULL, NULL);
+ 	if ( audioMasterObject == NULL )
+ 		return NULL;
+-	JS_SetPrivate(cx, audioMasterObject, audioMaster);
++	JS_SetPrivate(cx, audioMasterObject, reinterpret_cast<void *>(audioMaster));
+ 	return audioMasterObject;
+ }
+diff -w -ruN jslibs-0.9-r1881_orig/src/jsvst/audiomaster.cpp.orig jslibs-0.9-r1881/src/jsvst/audiomaster.cpp.orig
+diff -w -ruN jslibs-0.9-r1881_orig/src/jsz/Makefile jslibs-0.9-r1881/src/jsz/Makefile
+--- jslibs-0.9-r1881_orig/src/jsz/Makefile	2009-02-05 23:23:26.000000000 +0100
++++ jslibs-0.9-r1881/src/jsz/Makefile	2009-02-05 23:24:26.000000000 +0100
+@@ -1,8 +1,8 @@
+ TARGET     = jsz.so
+ SRC        = $(wildcard *.cpp)
+-INCLUDES   = -I../../libs/zlib/src
+-STATICLIBS = -L../../libs/zlib/src -lz
+-SHAREDLIBS =
+-DEPENDS    = ../../libs/zlib/Makefile
++INCLUDES   = `pkg-config js --cflags`
++STATICLIBS =
++SHAREDLIBS = `pkg-config js --libs` -lz
++DEPENDS    =
+ 
+ include ../rules.mk
+diff -w -ruN jslibs-0.9-r1881_orig/src/rules.mk jslibs-0.9-r1881/src/rules.mk
+--- jslibs-0.9-r1881_orig/src/rules.mk	2009-02-05 23:23:26.000000000 +0100
++++ jslibs-0.9-r1881/src/rules.mk	2009-02-05 23:24:26.000000000 +0100
+@@ -1,5 +1,5 @@
+ ifeq ($(MAKECMDGOALS),)
+-$(error NO GOAL SPECIFIED)
++MAKECMDGOALS = all
+ endif
+ 
+ BUILD ?= opt
+@@ -32,12 +32,12 @@
+ 	CFLAGS += -m64
+ endif
+ 
+-CFLAGS += -fno-exceptions -fno-rtti -felide-constructors # -static-libgcc 
++CFLAGS += -fno-rtti -felide-constructors # -static-libgcc 
+ 
+ OBJECTS = $(patsubst %.cpp,%.o,$(filter %.cpp, $(SRC))) $(patsubst %.c,%.o,$(filter %.c, $(SRC)))
+ 
+ CC := gcc
+-CCX := gcc
++CCX := g++
+ 
+ %.o: %.cpp
+ 	$(CCX) -c $(CFLAGS) $(DEFINES) $(SMDEF) $(SMINC) $(INCLUDES) -o $@ $<
+diff -w -ruN jslibs-0.9-r1881_orig/src/rules.mk.orig jslibs-0.9-r1881/src/rules.mk.orig

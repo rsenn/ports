@@ -1,0 +1,52 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:50 roman Exp $
+#
+# Description: Extensible image library.
+#  Developer's Image Library (DevIL) is a cross-platform image library
+#  and display a variety of images with ease. It is highly portable and
+#  and has been ported to several platforms, including the Pocket PC.
+# URL: http://openil.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=devil
+version=1.7.7
+release=1
+source=($mirror_sf/openil/DevIL-$version.tar.gz
+        $mirror_sf/openil/Docs.tar.bz2
+        http://openil.sourceforge.net/docs/DevIL%20Manual.pdf
+        http://openil.sourceforge.net/docs/DevIL%20Reference%20Guide.pdf
+        DevIL-1.6.8-fixes.patch)
+
+build()
+{
+  cd devil-${version%-*}
+
+  #patch -N -p1 -i $SRC/DevIL-1.6.8-fixes.patch
+
+  libtoolize --force --copy --install
+  aclocal --force -I m4 
+  autoconf --force
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --enable-ILU \
+       --enable-ILUT
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc
+  cp -rf $SRC/Docs $ROOT/share/doc/devil
+  mv -f $SRC/*.pdf $ROOT/share/doc/devil
+  rename.ul index devil $ROOT/share/doc/devil/*.html
+  rename.ul %20 '_' $ROOT/share/doc/devil/*.pdf
+  rename.ul %20 '_' $ROOT/share/doc/devil/*.pdf
+  find examples -maxdepth 1 -type d -print0 | xargs -0 rename.ul ' ' '_'
+  find examples -maxdepth 1 -type d -print0 | xargs -0 rename.ul ' ' '_'
+  find examples -maxdepth 1 -type d -print0 | xargs -0 rename.ul ' ' '_'
+  cp -rvf examples $ROOT/share/doc/devil
+  find $ROOT -name CVS -print0 | xargs -0 rm -rvf
+}
+

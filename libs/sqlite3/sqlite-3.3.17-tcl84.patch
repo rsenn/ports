@@ -1,0 +1,47 @@
+diff -r -u sqlite-3.3.17_orig/Makefile.in sqlite-3.3.17/Makefile.in
+--- sqlite-3.3.17_orig/Makefile.in	2007-09-30 13:50:42.000000000 +0200
++++ sqlite-3.3.17/Makefile.in	2007-09-30 16:00:10.000000000 +0200
+@@ -283,7 +283,7 @@
+ 	$(LTLINK) -o libtclsqlite3.la tclsqlite.lo \
+ 		$(LIBOBJ) @TCL_STUB_LIB_SPEC@ $(LIBPTHREAD) \
+                 -rpath $(libdir)/sqlite \
+-		-version-info "8:6:8"
++		-version-info "8:6:8" -ltcl84
+ 
+ sqlite3$(TEXE):	$(TOP)/src/shell.c libsqlite3.la sqlite3.h
+ 	$(LTLINK) $(READLINE_FLAGS) $(LIBPTHREAD) \
+diff -r -u sqlite-3.3.17_orig/src/tclsqlite.c sqlite-3.3.17/src/tclsqlite.c
+--- sqlite-3.3.17_orig/src/tclsqlite.c	2007-09-30 13:50:42.000000000 +0200
++++ sqlite-3.3.17/src/tclsqlite.c	2007-09-30 15:58:15.000000000 +0200
+@@ -2131,7 +2131,7 @@
+ ** used to open a new SQLite database.  See the DbMain() routine above
+ ** for additional information.
+ */
+-EXTERN int Sqlite3_Init(Tcl_Interp *interp){
++DLLEXPORT int Sqlite3_Init(Tcl_Interp *interp){
+   Tcl_InitStubs(interp, "8.4", 0);
+   Tcl_CreateObjCommand(interp, "sqlite3", (Tcl_ObjCmdProc*)DbMain, 0, 0);
+   Tcl_PkgProvide(interp, "sqlite3", PACKAGE_VERSION);
+@@ -2139,15 +2139,15 @@
+   Tcl_PkgProvide(interp, "sqlite", PACKAGE_VERSION);
+   return TCL_OK;
+ }
+-EXTERN int Tclsqlite3_Init(Tcl_Interp *interp){ return Sqlite3_Init(interp); }
+-EXTERN int Sqlite3_SafeInit(Tcl_Interp *interp){ return TCL_OK; }
+-EXTERN int Tclsqlite3_SafeInit(Tcl_Interp *interp){ return TCL_OK; }
++DLLEXPORT int Tclsqlite3_Init(Tcl_Interp *interp){ return Sqlite3_Init(interp); }
++DLLEXPORT int Sqlite3_SafeInit(Tcl_Interp *interp){ return TCL_OK; }
++DLLEXPORT int Tclsqlite3_SafeInit(Tcl_Interp *interp){ return TCL_OK; }
+ 
+ #ifndef SQLITE_3_SUFFIX_ONLY
+-EXTERN int Sqlite_Init(Tcl_Interp *interp){ return Sqlite3_Init(interp); }
+-EXTERN int Tclsqlite_Init(Tcl_Interp *interp){ return Sqlite3_Init(interp); }
+-EXTERN int Sqlite_SafeInit(Tcl_Interp *interp){ return TCL_OK; }
+-EXTERN int Tclsqlite_SafeInit(Tcl_Interp *interp){ return TCL_OK; }
++DLLEXPORT int Sqlite_Init(Tcl_Interp *interp){ return Sqlite3_Init(interp); }
++DLLEXPORT int Tclsqlite_Init(Tcl_Interp *interp){ return Sqlite3_Init(interp); }
++DLLEXPORT int Sqlite_SafeInit(Tcl_Interp *interp){ return TCL_OK; }
++DLLEXPORT int Tclsqlite_SafeInit(Tcl_Interp *interp){ return TCL_OK; }
+ #endif
+ 
+ #ifdef TCLSH

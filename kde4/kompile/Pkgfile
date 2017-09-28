@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: KDE System Tool
+# Kompile is a KDE interface for automatic execution of configurations,
+# compilation and installation of source tarball.
+#
+# when you compile and install Kompile sources (with normal steps configure
+#
+# URL:
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=kompile
+version=0.3
+release=1
+source=(http://www.brainspace.it/downloads/kompile-$version-beta3.tar.gz)
+
+build()
+{
+  cd kompile-$version-beta3
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

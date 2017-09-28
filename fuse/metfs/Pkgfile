@@ -1,0 +1,53 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Encrypted FUSE based filesystem
+# MetFS is a filesystem software in userspace that is FUSE based, encrypted,
+# dynamic sized (increase when new data added, decrease when data removed),
+# single file when it's unmounted and very fast.
+# No data stored on an encrypted partition can be read without using the
+# correct password. Until decrypted, a MetFS partition appears to be
+# nothing more than a series of meaningless data.
+# The .MFS file extension is associated with the MetFS program but it is
+# not required; these files can have any file extension or no file
+# extension. The program does not care. MetFS 's been written in C language
+# for performance reasons; proved to be running on Linux and FreeBSD.
+#
+# Features:
+#  - MetFS partitions are visible only to the user who mounted them.
+#    No other users (including root) can view the filesystem contents.
+#  - MetFS partition looks like a single file when it's unmounted.
+#  - Clear version of the user password is never written to disk.
+#  - RC4 stream cipher algorithm is used.
+#  - MD5 hash algorithm is preferred.
+#  - Clear data never stored in anywhere.
+#  - Writing 1.6 GB sized data in ext3 filesystem is just 16 seconds faster
+#    than MetFS.
+#  - Faster and more secure string functions of OpenBSD and D.J.B are used.
+#  - .mfs is official file extension of MetFS.
+#
+# URL: http://www.enderunix.org/metfs/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libfuse2, libgcrypt11, libgpg-error0
+
+name=metfs
+version=1.0
+release=1
+source=(http://www.enderunix.org/metfs/metfs-$version.tar.gz)
+
+build()
+{
+  cd metfs-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+
+  install -d $ROOT/bin
+  install -m 755 metfs $ROOT/bin
+
+  install -d $ROOT/share/doc/metfs
+  install -m 644 [A-Z]*[A-Z]* $ROOT/share/doc/metfs
+}

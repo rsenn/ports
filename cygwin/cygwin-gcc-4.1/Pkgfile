@@ -1,0 +1,119 @@
+# $Id: Pkgfile,v 1.2 2007/04/22 23:07:53 roman Exp $
+#
+# Description: gcc
+# URL: http://gcc.gnu.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=cygwin-gcc-4.1
+version=4.1.2
+release=1
+target=i686-pc-cygwin
+
+source=($mirror_gnu/gcc/gcc-$version/gcc-$version.tar.bz2
+        gcc-4.1.2-configure.patch)
+
+build()
+{
+  cd ${srcdir=$SRC/gcc-$version}
+
+  patch -N -p1 -i $SRC/gcc-4.1.2-configure.patch
+
+#  patch -N -p1 -i $SRC/gcc-4.1.0-nofixincludes.patch
+#  patch -N -p1 -i $SRC/gcc-4.1.0-path.patch
+#  patch -N -p1 -i $SRC/gcc-4.1.0-rpath.patch
+#  patch -N -p1 -i $SRC/gcc-4.1.1-rpathspec.patch
+
+  # change runtime linker
+  case $target in
+    *linux*)
+      sed -i -e "s,/lib/ld-linux.so.2,$prefix/lib/ld-linux.so.2," \
+        gcc/config/i386/linux.h
+      ;;
+    *freebsd*)
+      sed -i -e '/FBSD_DYNAMIC_LINKER/ s,".*","'$prefix/lib/ld-elf.so.1'",' \
+        gcc/config/freebsd-spec.h
+      ;;
+  esac
+
+  cd ..
+
+  # now configure in a separate build tree
+  rm -rf ${builddir=$SRC/$name-$build} && mkdir -p $builddir && cd $builddir
+
+  $srcdir/configure \
+      --verbose \
+      --build="$build" \
+      --host="$host" \
+      ${target+--target="$target"} \
+      --prefix="$prefix" \
+      --exec-prefix="$prefix" \
+      --mandir="$prefix/share/man" \
+      --infodir="$prefix/share/info" \
+      --enable-languages="c,c++" \
+      --disable-nls \
+      --without-included-gettext \
+      --without-x \
+      --with-system-zlib \
+      --disable-win32-registry \
+      --enable-sjlj-exceptions \
+      --enable-hash-synchronization \
+      --enable-libstdcxx-debug \
+      --with-ld="$prefix/bin/$target-ld" \
+      --with-as="$prefix/bin/$target-as" \
+      --with-headers="$prefix/$target/include" \
+      --with-libs="$prefix/$target/lib" \
+      --with-slibdir="$prefix/$target/bin" \
+      --with-cpp-install-dir="$prefix/$target/lib" \
+      --includedir="$prefix/$target/include"
+
+#      --enable-interpreter \
+#      --disable-libgcj-debug \
+#      --enable-java-gc="boehm" \
+#      --enable-libgcj \
+#      --disable-java-awt \
+#      --enable-version-specific-runtime-libs \
+#      --enable-threads="posix" \
+#      --prefix="$prefix" \
+#      --with-local-prefix="$prefix/$target" \
+#      --disable-nls \
+#      --without-included-gettext \
+#      --enable-threads="posix" \
+#      --with-tls \
+#      --disable-rpath \
+#      --${shared:=enable}-shared \
+#      --${static:=enable}-shared \
+#      --enable-languages="c,c++" \
+#      --with-system-zlib \
+#      --build="$build" \
+#      --host="$host" \
+#      --target="$target"
+
+  make \
+    CROSS_SYSTEM_HEADER_DIR="$prefix/$target/include" \
+    DESTDIR="$PKG" \
+    all \
+    install
+
+  rm -f $ROOT/lib/libiberty.a
+
+  return 0
+
+  # remove duplicate binaries
+  rm $ROOT/bin/gcc
+  rm $ROOT/bin/$target-gcc-${version}
+
+  # make symlinks instead
+  ln -s $target-gcc $ROOT/bin/gcc
+  ln -s $target-gcc $ROOT/bin/cc
+
+  cd ../gcc-${version}
+  copy_license "COPYING" "COPYING.LIB"
+
+  rm -f $ROOT/lib/*.so*
+  rm $ROOT/lib/libiberty.a
+
+  chmod 644 $ROOT/lib/*.la
+
+  rm -f $ROOT/info/dir
+}

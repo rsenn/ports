@@ -1,0 +1,60 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: image manipulation library
+#  LibMagick supports loading and saving a very large set of image formats.
+#  It allows a lot of image manipulation as well.
+#  .
+# URL: http://www.imagemagick.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libpng
+
+name=imagemagick
+version=6.4.5
+release=9
+source=(ftp://ftp.imagemagick.org/pub/ImageMagick/legacy/ImageMagick-$version-$release.tar.bz2
+        #imagemagick-6.2.7-libdirversion.patch
+        imagemagick-6.2.7-nexbyte.patch
+        #imagemagick-6.2.7-setimageopacity.patch
+        #imagemagick-6.3.2-imageopacity.patch
+        #imagemagick-6.3.2-sharpen.patch
+        #imagemagick-6.3.2-tga.patch
+        #imagemagick-6.3.2-ttfmagic.patch
+        #imagemagick-6.3.2-composite.patch
+        imagemagick-6.4.5-ll-type.patch)
+
+build()
+{
+  cd ImageMagick-$version
+
+  patch -N -p1 -i $SRC/imagemagick-6.2.7-nexbyte.patch
+  patch -N -p1 -i $SRC/imagemagick-6.4.5-ll-type.patch
+
+  ./configure \
+       --prefix="$prefix" \
+       --build="$build" \
+       --host="$host" \
+       --docdir="$prefix/share/doc/imagemagick" \
+       --${shared:=enable}-shared \
+       --${static:=enable}-shared \
+       --${threads:=without}-threads \
+       --with-modules \
+       --with-perl="$prefix/bin/perl" \
+       --with-rsvg="$prefix" \
+       --with-x="$prefix" \
+       --with-bzlib="$prefix" \
+       --with-jpeg="$prefix" \
+       --with-lcms="$prefix" \
+       --with-png="$prefix" \
+       --with-tiff="$prefix" \
+       --with-wmf="$prefix" \
+       --with-gs-font-dir="$prefix/share/fonts/default/Type1" \
+       --with-xml="$prefix" \
+       --with-zlib="$prefix" \
+       --with-fontconfig="$prefix" \
+       --with-magick-plus-plus \
+       --with-quantum-depth=8 \
+       --with-rsvg
+
+  make
+  make DESTDIR="$PKG" install
+}

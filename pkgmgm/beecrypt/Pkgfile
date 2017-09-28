@@ -1,0 +1,29 @@
+# $Id: Pkgfile,v 1.22 2007/05/09 21:02:55 roman Exp $
+#
+# Description: A cryptography library.
+#  BeeCrypt is an ongoing project to provide strong and fast
+#  cryptography in the form of a toolkit usable by commercial and open
+#  source projects. Included in the library are entropy sources, random
+#  generators, block ciphers, hash functions, message authentication codes,
+#  multiprecision integer routines, and public key primitives.
+# URL: http://sourceforge.net/projects/beecrypt/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=beecrypt
+version=4.1.2
+release=1
+source=($mirror_gentoo/beecrypt-$version.tar.gz)
+
+build() 
+{
+  cd beecrypt-$version
+  
+  ./configure \
+        --build="$build" \
+        --host="$host" \
+        --prefix="$prefix"
+ 
+  make
+  make DESTDIR="$PKG" install
+}

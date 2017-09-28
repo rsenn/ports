@@ -1,0 +1,49 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: LibIRC is a cross-platform framework for connecting to and interacting with Internet Relay Chat (IRC) networks
+# libIRC is useful as the foundation for embedding IRC capabilities into
+# various applications such as chat clients, games, and irc bots.
+#
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libgcc1, libstdc++6
+
+name=libirc
+version=svn20080704
+release=1
+source=(libirc-$version.tar.gz
+        libirc-svn20080704-build-fixes.patch)
+
+build()
+{
+  cd libirc-svn20080704
+
+  patch -N -p1 -i $SRC/libirc-svn20080704-build-fixes.patch
+
+#  ./autogen.sh
+
+  libtoolize --force --copy
+  aclocal --force -I m4
+  autoheader --force
+  automake --force --copy --foreign --add-missing
+  aclocal --force -I m4
+  autoconf --force
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/libirc
+  install -m 644 [A-Z]*[A-Z]* $ROOT/share/doc/libirc
+
+  make examples
+
+  find examples -name "Makefile*" -exec rm '{}' ';'
+
+  cp -rf examples $ROOT/share/doc/libirc
+}

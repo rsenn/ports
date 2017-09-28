@@ -1,0 +1,1040 @@
+diff -ru jslibs-0.9-r1881_orig/src/common/buffer.h jslibs-0.9-r1881/src/common/buffer.h
+--- jslibs-0.9-r1881_orig/src/common/buffer.h	2009-02-06 00:09:48.000000000 +0100
++++ jslibs-0.9-r1881/src/common/buffer.h	2009-02-06 01:47:58.000000000 +0100
+@@ -149,6 +149,9 @@
+ 			chunk->begin = (char*)realloc(chunk->begin, chunk->size);
+ 			return chunk->begin + chunk->pos;
+ 
++    case bufferTypeAuto:
++      break;
++
+ 		case bufferTypeChunk:
+ 			buffer->chunkPos++;
+ 			if ( buffer->chunkPos >= buffer->chunkListSize ) {
+diff -ru jslibs-0.9-r1881_orig/src/common/errors.h jslibs-0.9-r1881/src/common/errors.h
+--- jslibs-0.9-r1881_orig/src/common/errors.h	2009-02-06 00:09:48.000000000 +0100
++++ jslibs-0.9-r1881/src/common/errors.h	2009-02-06 00:14:48.000000000 +0100
+@@ -28,7 +28,7 @@
+ #undef MSGDEF
+ } J_ErrNum;
+ 
+-
++/*
+ // usage: JS_ReportErrorNumber(cx, my_GetErrorMessage, NULL, JSSMSG_OUT_OF_RANGE);
+ static JSBool J_ReportError( JSContext *cx, J_ErrNum name ) {
+ 
+@@ -42,6 +42,6 @@
+ 		JS_ReportError(cx, "Failed to get the ErrorCallback.");
+ 	JS_ReportErrorNumber(cx, errorCallback, NULL, name);
+ 	JL_BAD;
+-}
++}*/
+ 
+ #endif // _JSERRORS_H_
+diff -ru jslibs-0.9-r1881_orig/src/common/jsClass.h jslibs-0.9-r1881/src/common/jsClass.h
+--- jslibs-0.9-r1881_orig/src/common/jsClass.h	2009-02-06 00:09:48.000000000 +0100
++++ jslibs-0.9-r1881/src/common/jsClass.h	2009-02-06 00:18:03.000000000 +0100
+@@ -190,13 +190,13 @@
+ 	extern JSClass *class##CLASSNAME; \
+ 	extern JSObject *prototype##CLASSNAME;
+ 
+-
++/*
+ static JSBool RemoveClass( JSContext *cx, JSClass *cl ) {
+ 
+ 	// (TBD)
+ 	// JS_InitClass( ... ?
+ 	return JS_TRUE;
+-}
++}*/
+ 
+ #define REMOVE_CLASS( CLASSNAME ) \
+ 	J_CHK( RemoveClass( cx, class##CLASSNAME ) )
+diff -ru jslibs-0.9-r1881_orig/src/common/platform.h jslibs-0.9-r1881/src/common/platform.h
+--- jslibs-0.9-r1881_orig/src/common/platform.h	2009-02-06 00:09:48.000000000 +0100
++++ jslibs-0.9-r1881/src/common/platform.h	2009-02-06 00:11:38.000000000 +0100
+@@ -99,6 +99,7 @@
+ 
+ #if defined(_WINDOWS) || defined(WIN32) // Windows platform
+ 
++  #undef XP_WIN
+ 	#define XP_WIN // used by SpiderMonkey and jslibs
+ 
+ 	#ifndef WINVER         // Allow use of features specific to Windows 95 and Windows NT 4 or later.
+@@ -141,7 +142,8 @@
+ 	#define strcasecmp stricmp
+ 
+ #elif defined(_MACOSX) // MacosX platform
+-	
++
++  #undef XP_UNIX
+ 	#define XP_UNIX // used by SpiderMonkey and jslibs
+ 
+ 	#include <unistd.h>
+@@ -155,7 +157,8 @@
+ 	#define LIST_SEPARATOR ':'
+ 
+ #else // Linux platform
+-	
++
++  #undef XP_UNIX
+ 	#define XP_UNIX // used by SpiderMonkey and jslibs
+ 
+ 	#include <unistd.h>
+diff -ru jslibs-0.9-r1881_orig/src/host/host.cpp jslibs-0.9-r1881/src/host/host.cpp
+--- jslibs-0.9-r1881_orig/src/host/host.cpp	2009-02-06 00:09:49.000000000 +0100
++++ jslibs-0.9-r1881/src/host/host.cpp	2009-02-06 00:12:02.000000000 +0100
+@@ -29,7 +29,7 @@
+ 
+ #include "host.h"
+ 
+-extern bool _unsafeMode = false;
++bool _unsafeMode = false;
+ 
+ JSErrorFormatString errorFormatString[J_ErrLimit] = {
+ #define MSG_DEF(name, number, count, exception, format) \
+diff -ru jslibs-0.9-r1881_orig/src/jsaudio/main.cpp jslibs-0.9-r1881/src/jsaudio/main.cpp
+--- jslibs-0.9-r1881_orig/src/jsaudio/main.cpp	2009-02-06 00:09:48.000000000 +0100
++++ jslibs-0.9-r1881/src/jsaudio/main.cpp	2009-02-06 00:16:34.000000000 +0100
+@@ -15,7 +15,7 @@
+ #include "stdafx.h"
+ #include "error.h"
+ 
+-extern bool _unsafeMode = false;
++bool _unsafeMode = false;
+ 
+ DECLARE_CLASS(Oal)
+ DECLARE_CLASS(OalBuffer)
+diff -ru jslibs-0.9-r1881_orig/src/jscrypt/cipher.cpp jslibs-0.9-r1881/src/jscrypt/cipher.cpp
+--- jslibs-0.9-r1881_orig/src/jscrypt/cipher.cpp	2009-02-06 00:09:48.000000000 +0100
++++ jslibs-0.9-r1881/src/jscrypt/cipher.cpp	2009-02-06 01:43:28.000000000 +0100
+@@ -122,6 +122,7 @@
+ **/
+ // mode, cipher, key, IV
+ DEFINE_CONSTRUCTOR() {
++  int err;
+ 
+ 	J_S_ASSERT_CONSTRUCTING();
+ 	J_S_ASSERT_THIS_CLASS();
+@@ -189,7 +190,7 @@
+ 	privateData->descriptor = cipher;
+ 	J_S_ASSERT_1( cipher->test() == CRYPT_OK, "%s cipher test failed.", cipherName );
+ 
+-	int err;
++	err = 0;
+ 	switch ( mode ) {
+ 		case mode_ecb: {
+ 			privateData->symmetric_XXX = malloc( sizeof(symmetric_ECB) );
+@@ -230,7 +231,7 @@
+ 		case mode_ctr: {
+ 			privateData->symmetric_XXX = malloc( sizeof(symmetric_CTR) );
+ 			J_S_ASSERT_ALLOC( privateData->symmetric_XXX );
+-			J_S_ASSERT_2( (int)keyLength >= cipher->min_key_length && (int)keyLength <= (size_t)cipher->max_key_length, "Invalid key length (need [%d,%d]  bytes)", cipher->min_key_length, cipher->max_key_length );
++			J_S_ASSERT_2( (unsigned int)keyLength >= (size_t)cipher->min_key_length && (unsigned int)keyLength <= (size_t)cipher->max_key_length, "Invalid key length (need [%d,%d]  bytes)", cipher->min_key_length, cipher->max_key_length );
+ //			J_S_ASSERT_1( IVLength == cipher->block_length, "This cipher require a IV length of %d", cipher->block_length );
+ 			J_S_ASSERT( optarg == NULL, "invalid 'arg' argument for this mode." );
+ 			err = ctr_start( cipherIndex, (unsigned char *)IV, (unsigned char *)key, (int)keyLength, numRounds, CTR_COUNTER_LITTLE_ENDIAN, (symmetric_CTR *)privateData->symmetric_XXX );
+@@ -239,16 +240,16 @@
+ 		case mode_lrw: {
+ 			privateData->symmetric_XXX = malloc( sizeof(symmetric_LRW) );
+ 			J_S_ASSERT_ALLOC( privateData->symmetric_XXX );
+-			J_S_ASSERT_2( (int)keyLength >= cipher->min_key_length && (int)keyLength <= cipher->max_key_length, "Invalid key length (need [%d,%d]  bytes)", cipher->min_key_length, cipher->max_key_length );
++			J_S_ASSERT_2( (unsigned int)keyLength >= (size_t)cipher->min_key_length && (unsigned int)keyLength <= (size_t)cipher->max_key_length, "Invalid key length (need [%d,%d]  bytes)", cipher->min_key_length, cipher->max_key_length );
+ //			J_S_ASSERT_1( IVLength == cipher->block_length, "This cipher require a IV length of %d", cipher->block_length );
+-			J_S_ASSERT_1( optargLength == (int)keyLength, "The tweak length must be %d bytes length (key size)", (int)keyLength );
++			J_S_ASSERT_1( optargLength == (unsigned int)keyLength, "The tweak length must be %d bytes length (key size)", (int)keyLength );
+ 			err = lrw_start( cipherIndex, (unsigned char *)IV, (unsigned char *)key, (int)keyLength, (unsigned char *)optarg, numRounds, (symmetric_LRW *)privateData->symmetric_XXX );
+ 			break;
+ 		}
+ 		case mode_f8: {
+ 			privateData->symmetric_XXX = malloc( sizeof(symmetric_F8) );
+ 			J_S_ASSERT_ALLOC( privateData->symmetric_XXX );
+-			J_S_ASSERT_2( (int)keyLength >= cipher->min_key_length && (int)keyLength <= cipher->max_key_length, "Invalid key length (need [%d,%d]  bytes)", cipher->min_key_length, cipher->max_key_length );
++			J_S_ASSERT_2( (unsigned int)keyLength >= (size_t)cipher->min_key_length && (unsigned int)keyLength <= (size_t)cipher->max_key_length, "Invalid key length (need [%d,%d]  bytes)", cipher->min_key_length, cipher->max_key_length );
+ //			J_S_ASSERT_1( IVLength == cipher->block_length, "This cipher require a IV length of %d", cipher->block_length );
+ 			J_S_ASSERT( optargLength > 0, "This mode need the salt argument" );
+ 			err = f8_start( cipherIndex, (unsigned char *)IV, (unsigned char *)key, (int)keyLength, (unsigned char *)optarg, optargLength, numRounds, (symmetric_F8 *)privateData->symmetric_XXX );
+@@ -272,6 +273,7 @@
+   Encrypts the given _data_ using the current cipher.
+ **/
+ DEFINE_FUNCTION( Encrypt ) {
++  int err;
+ 
+ 	J_S_ASSERT_CLASS( obj, _class );
+ 	J_S_ASSERT_ARG_MIN( 1 );
+@@ -288,10 +290,10 @@
+ 	J_S_ASSERT_ALLOC( ct );
+ 	ct[ptLength] = '\0';
+ 
+-	int err;
++	err = 0;
+ 	switch ( privateData->mode ) {
+ 		case mode_ecb:
+-			J_S_ASSERT_1( ptLength == privateData->descriptor->block_length, "This mode require a %d bytes block of data", privateData->descriptor->block_length );
++			J_S_ASSERT_1( ptLength == (unsigned)privateData->descriptor->block_length, "This mode require a %d bytes block of data", privateData->descriptor->block_length );
+ 			err = ecb_encrypt( (const unsigned char *)pt, (unsigned char *)ct, ptLength, (symmetric_ECB *)privateData->symmetric_XXX );
+ 			break;
+ 		case mode_cfb:
+@@ -301,14 +303,14 @@
+ 			err = ofb_encrypt( (const unsigned char *)pt, (unsigned char *)ct, ptLength, (symmetric_OFB *)privateData->symmetric_XXX );
+ 			break;
+ 		case mode_cbc:
+-			J_S_ASSERT_1( ptLength == privateData->descriptor->block_length, "This mode require a %d bytes block of data", privateData->descriptor->block_length );
++			J_S_ASSERT_1( ptLength == (unsigned)privateData->descriptor->block_length, "This mode require a %d bytes block of data", privateData->descriptor->block_length );
+ 			err = cbc_encrypt( (const unsigned char *)pt, (unsigned char *)ct, ptLength, (symmetric_CBC *)privateData->symmetric_XXX );
+ 			break;
+ 		case mode_ctr:
+ 			err = ctr_encrypt( (const unsigned char *)pt, (unsigned char *)ct, ptLength, (symmetric_CTR *)privateData->symmetric_XXX );
+ 			break;
+ 		case mode_lrw:
+-			J_S_ASSERT_1( ptLength == privateData->descriptor->block_length, "This mode require a %d bytes block of data", privateData->descriptor->block_length );
++			J_S_ASSERT_1( ptLength == (unsigned)privateData->descriptor->block_length, "This mode require a %d bytes block of data", privateData->descriptor->block_length );
+ 			err = lrw_encrypt( (const unsigned char *)pt, (unsigned char *)ct, ptLength, (symmetric_LRW *)privateData->symmetric_XXX );
+ 			break;
+ 		case mode_f8:
+@@ -330,6 +332,7 @@
+   Decrypts the given _data_ using the current cipher.
+ **/
+ DEFINE_FUNCTION( Decrypt ) {
++  int err;
+ 
+ 	J_S_ASSERT_CLASS( obj, _class );
+ 	J_S_ASSERT_ARG_MIN( 1 );
+@@ -346,7 +349,7 @@
+ 	J_S_ASSERT_ALLOC( pt );
+ 	pt[ctLength] = '\0';
+ 
+-	int err;
++	err = 0;
+ 	switch ( privateData->mode ) {
+ 		case mode_ecb:
+ 			err = ecb_decrypt( (const unsigned char *)ct, (unsigned char *)pt, ctLength, (symmetric_ECB *)privateData->symmetric_XXX );
+@@ -456,7 +459,7 @@
+ 			J_REPORT_ERROR("No IV in ECB mode");
+ 		case mode_cfb: {
+ 			symmetric_CFB *tmp = (symmetric_CFB *)privateData->symmetric_XXX;
+-			J_S_ASSERT_1( IVLength == tmp->blocklen, "This cipher require a IV length of %d", tmp->blocklen );
++			J_S_ASSERT_1( IVLength == (unsigned)tmp->blocklen, "This cipher require a IV length of %d", tmp->blocklen );
+ 			err = cfb_setiv( (const unsigned char *)IV, IVLength, tmp );
+ 			if (err != CRYPT_OK)
+ 				return ThrowCryptError(cx, err);
+@@ -464,7 +467,7 @@
+ 		}
+ 		case mode_ofb: {
+ 			symmetric_OFB *tmp = (symmetric_OFB *)privateData->symmetric_XXX;
+-			J_S_ASSERT_1( IVLength == tmp->blocklen, "This cipher require a IV length of %d", tmp->blocklen );
++			J_S_ASSERT_1( IVLength == (unsigned)tmp->blocklen, "This cipher require a IV length of %d", tmp->blocklen );
+ 			err = ofb_setiv( (const unsigned char *)IV, IVLength, tmp );
+ 			if (err != CRYPT_OK)
+ 				return ThrowCryptError(cx, err);
+@@ -472,7 +475,7 @@
+ 		}
+ 		case mode_cbc: {
+ 			symmetric_CBC *tmp = (symmetric_CBC *)privateData->symmetric_XXX;
+-			J_S_ASSERT_1( IVLength == tmp->blocklen, "This cipher require a IV length of %d", tmp->blocklen );
++			J_S_ASSERT_1( IVLength == (unsigned)tmp->blocklen, "This cipher require a IV length of %d", tmp->blocklen );
+ 			err = cbc_setiv( (const unsigned char *)IV, IVLength, tmp );
+ 			if (err != CRYPT_OK)
+ 				return ThrowCryptError(cx, err);
+@@ -480,7 +483,7 @@
+ 		}
+ 		case mode_ctr: {
+ 			symmetric_CTR *tmp = (symmetric_CTR *)privateData->symmetric_XXX;
+-			J_S_ASSERT_1( IVLength == tmp->blocklen, "This cipher require a IV length of %d", tmp->blocklen );
++			J_S_ASSERT_1( IVLength == (unsigned)tmp->blocklen, "This cipher require a IV length of %d", tmp->blocklen );
+ 			err = ctr_setiv( (const unsigned char *)IV, IVLength, tmp );
+ 			if (err != CRYPT_OK)
+ 				return ThrowCryptError(cx, err);
+@@ -496,7 +499,7 @@
+ 		}
+ 		case mode_f8: {
+ 			symmetric_F8 *tmp = (symmetric_F8 *)privateData->symmetric_XXX;
+-			J_S_ASSERT_1( IVLength == tmp->blocklen, "This cipher require a IV length of %d", tmp->blocklen );
++			J_S_ASSERT_1( IVLength == (unsigned)tmp->blocklen, "This cipher require a IV length of %d", tmp->blocklen );
+ 			err = f8_setiv( (const unsigned char *)IV, IVLength, tmp );
+ 			if (err != CRYPT_OK)
+ 				return ThrowCryptError(cx, err);
+@@ -509,6 +512,7 @@
+ }
+ 
+ DEFINE_PROPERTY( IVGetter ) {
++  int err;
+ 
+ 	J_S_ASSERT_CLASS( obj, _class );
+ 	CipherPrivate *privateData;
+@@ -519,7 +523,7 @@
+ 	IV = NULL;
+ 	unsigned long IVLength;
+ 
+-	int err;
++	err = 0;
+ 	switch ( privateData->mode ) {
+ 
+ 		case mode_ecb:
+@@ -620,7 +624,7 @@
+ 		LTC_MUTEX_UNLOCK(&ltc_cipher_mutex);
+ 	}
+ 	return JS_TRUE;
+-	JL_BAD;
++	//JL_BAD;
+ }
+ 
+ 
+diff -ru jslibs-0.9-r1881_orig/src/jscrypt/hash.cpp jslibs-0.9-r1881/src/jscrypt/hash.cpp
+--- jslibs-0.9-r1881_orig/src/jscrypt/hash.cpp	2009-02-06 00:09:48.000000000 +0100
++++ jslibs-0.9-r1881/src/jscrypt/hash.cpp	2009-02-06 00:46:55.000000000 +0100
+@@ -385,7 +385,7 @@
+ 		LTC_MUTEX_UNLOCK(&ltc_hash_mutex);
+ 	}
+ 	return JS_TRUE;
+-	JL_BAD;
++	//JL_BAD;
+ }
+ 
+ 
+diff -ru jslibs-0.9-r1881_orig/src/jscrypt/main.cpp jslibs-0.9-r1881/src/jscrypt/main.cpp
+--- jslibs-0.9-r1881_orig/src/jscrypt/main.cpp	2009-02-06 00:09:48.000000000 +0100
++++ jslibs-0.9-r1881/src/jscrypt/main.cpp	2009-02-06 01:32:41.000000000 +0100
+@@ -24,7 +24,7 @@
+ #include "hash.h"
+ #include "cipher.h"
+ 
+-extern bool _unsafeMode = false;
++bool _unsafeMode = false;
+ 
+ 
+ /**doc t:header
+@@ -95,19 +95,19 @@
+ 		&sober128_desc,
+ 	};
+ 
+-	for ( int i=0; i<sizeof(cipherList)/sizeof(*cipherList); i++ ) {
++	for ( unsigned int i=0; i<sizeof(cipherList)/sizeof(*cipherList); i++ ) {
+ 
+ 		regStatus = register_cipher(cipherList[i]);
+ 		J_S_ASSERT_1( regStatus != -1, "Unable to load cipher %s", cipherList[i]->name );
+ 	}
+ 
+-	for ( int i=0; i<sizeof(hashList)/sizeof(*hashList); i++ ) {
++	for ( unsigned int i=0; i<sizeof(hashList)/sizeof(*hashList); i++ ) {
+ 
+ 		regStatus = register_hash(hashList[i]);
+ 		J_S_ASSERT_1( regStatus != -1, "Unable to load hash %s", hashList[i]->name );
+ 	}
+ 
+-	for ( int i=0; i<sizeof(prngList)/sizeof(*prngList); i++ ) {
++	for ( unsigned int i=0; i<sizeof(prngList)/sizeof(*prngList); i++ ) {
+ 
+ 		regStatus = register_prng(prngList[i]);
+ 		J_S_ASSERT_1( regStatus != -1, "Unable to load prng %s", prngList[i]->name );
+diff -ru jslibs-0.9-r1881_orig/src/jscrypt/prng.cpp jslibs-0.9-r1881/src/jscrypt/prng.cpp
+--- jslibs-0.9-r1881_orig/src/jscrypt/prng.cpp	2009-02-06 00:09:48.000000000 +0100
++++ jslibs-0.9-r1881/src/jscrypt/prng.cpp	2009-02-06 01:31:58.000000000 +0100
+@@ -214,7 +214,7 @@
+ 	const char *stateData;
+ 	size_t stateLength;
+ 	J_CHK( JsvalToStringAndLength(cx, vp, &stateData, &stateLength) );
+-	J_S_ASSERT( stateLength == privateData->prng.export_size, "Invalid import size." );
++	J_S_ASSERT( stateLength == (unsigned)privateData->prng.export_size, "Invalid import size." );
+ 	int err;
+ 	err = privateData->prng.pimport((unsigned char *)stateData, stateLength, &privateData->state);
+ 	if ( err != CRYPT_OK )
+@@ -263,7 +263,7 @@
+ 		LTC_MUTEX_UNLOCK(&ltc_prng_mutex);
+ 	}
+ 	return JS_TRUE;
+-	JL_BAD;
++	//JL_BAD;
+ }
+ 
+ 
+diff -ru jslibs-0.9-r1881_orig/src/jsdebug/main.cpp jslibs-0.9-r1881/src/jsdebug/main.cpp
+--- jslibs-0.9-r1881_orig/src/jsdebug/main.cpp	2009-02-06 00:09:49.000000000 +0100
++++ jslibs-0.9-r1881/src/jsdebug/main.cpp	2009-02-06 00:21:40.000000000 +0100
+@@ -15,7 +15,7 @@
+ #include "stdafx.h"
+ #include "static.h"
+ 
+-extern bool _unsafeMode = false;
++bool _unsafeMode = false;
+ 
+ 
+ /**doc t:header
+@@ -35,7 +35,7 @@
+ 	INIT_STATIC();
+ 
+ 	return JS_TRUE;
+-	JL_BAD;
++	//JL_BAD;
+ }
+ 
+ EXTERN_C DLLEXPORT JSBool ModuleRelease(JSContext *cx) {
+diff -ru jslibs-0.9-r1881_orig/src/jsdebug/static.cpp jslibs-0.9-r1881/src/jsdebug/static.cpp
+--- jslibs-0.9-r1881_orig/src/jsdebug/static.cpp	2009-02-06 00:09:49.000000000 +0100
++++ jslibs-0.9-r1881/src/jsdebug/static.cpp	2009-02-06 00:24:59.000000000 +0100
+@@ -618,7 +618,7 @@
+ 
+ JSBool GCCallTrace(JSContext *cx, JSGCStatus status) {
+ 
+-	char *statusStr[4] = { "JSGC_BEGIN", "JSGC_END", "JSGC_MARK_END", "JSGC_FINALIZE_END" };
++	//char *statusStr[4] = { "JSGC_BEGIN", "JSGC_END", "JSGC_MARK_END", "JSGC_FINALIZE_END" };
+ 	if ( status == JSGC_MARK_END || status == JSGC_FINALIZE_END )
+ 		return JS_TRUE;
+ 
+@@ -632,7 +632,7 @@
+ 
+ 	FILE *dumpFile;
+ 
+-	if ( GCTraceFileName && GCTraceFileName[0] ) {
++	if ( GCTraceFileName[0] ) {
+ 
+ 		dumpFile = fopen(GCTraceFileName, "a");
+ 		if (!dumpFile) {
+@@ -666,7 +666,7 @@
+ 	if ( argc > 0 ) { // start GC dump
+ 
+ 		jsval *argv = JS_ARGV(cx, vp);
+-		JSObject *obj = JS_THIS_OBJECT(cx, vp);
++		//JSObject *obj = JS_THIS_OBJECT(cx, vp);
+ 
+ 		char *fileName = NULL;
+ 
+diff -ru jslibs-0.9-r1881_orig/src/jsfastcgi/main.cpp jslibs-0.9-r1881/src/jsfastcgi/main.cpp
+--- jslibs-0.9-r1881_orig/src/jsfastcgi/main.cpp	2009-02-06 00:09:48.000000000 +0100
++++ jslibs-0.9-r1881/src/jsfastcgi/main.cpp	2009-02-06 00:43:26.000000000 +0100
+@@ -18,7 +18,7 @@
+ #include "fcgi.h"
+ #include "static.h"
+ 
+-extern bool _unsafeMode = false;
++bool _unsafeMode = false;
+ 
+ EXTERN_C DLLEXPORT JSBool ModuleInit(JSContext *cx, JSObject *obj) {
+ 
+@@ -28,7 +28,7 @@
+ 	INIT_STATIC();
+ 
+ 	return JS_TRUE;
+-	JL_BAD;
++	//JL_BAD;
+ }
+ 
+ #ifdef XP_WIN
+diff -ru jslibs-0.9-r1881_orig/src/jsfastcgi/static.cpp jslibs-0.9-r1881/src/jsfastcgi/static.cpp
+--- jslibs-0.9-r1881_orig/src/jsfastcgi/static.cpp	2009-02-06 00:09:48.000000000 +0100
++++ jslibs-0.9-r1881/src/jsfastcgi/static.cpp	2009-02-06 01:29:48.000000000 +0100
+@@ -84,14 +84,14 @@
+ 		// (TDB) use FCGX_ParamArray instead ?
+ 		JSObject *argsObj = JS_NewObject(cx, NULL, NULL, NULL);
+ 		J_S_ASSERT_ALLOC(argsObj);
+-		int index = 0;
++		//int index = 0;
+ 		for ( char** ptr = _request.envp; *ptr; ptr++ ) {
+ 
+ 			char *separator = strchr( *ptr, '=' );
+ 			J_S_ASSERT( separator != NULL, "Unable to find the value." );
+ 			*separator = '\0';
+ 			JSString *value = JS_NewStringCopyZ(cx, separator + 1);
+-			JSBool jsStatus = JS_DefineProperty(cx, argsObj, *ptr, STRING_TO_JSVAL(value), NULL, NULL, JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
++			JS_DefineProperty(cx, argsObj, *ptr, STRING_TO_JSVAL(value), NULL, NULL, JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT);
+ 			*separator = '=';
+ 		}
+ 		*rval = OBJECT_TO_JSVAL(argsObj);
+@@ -101,20 +101,21 @@
+ }
+ 
+ DEFINE_FUNCTION( Read ) {
++  int result = 0;
+ 
+ 	J_S_ASSERT_ARG_MIN( 1 );
+ 	size_t len;
+ 	J_CHK( JsvalToUInt(cx, argv[0], &len) );
+ 	char* str;
+ 	str = (char*)JS_malloc(cx, len + 1);
+-	int result;
+ 	result = FCGX_GetStr( str, len, _request.in );
+-	if ( result = 0 ) {
++	if ( result == 0 ) {
+ 		
+ 		JS_free(cx, str);
+ 		*rval = JS_GetEmptyStringValue(cx);
+ 		return JS_TRUE;
+ 	}
++  result = 0;
+ 	str[result] = '\0';
+ 	JSString *jsstr;
+ 	jsstr = JS_NewString(cx, str, result);
+@@ -575,7 +576,7 @@
+ 
+ 
+ 
+-/*
++
+ DEFINE_FUNCTION( ParseRecord ) {
+ 
+ 	// http://www.fastcgi.com/devkit/doc/fcgi-spec.html
+diff -ru jslibs-0.9-r1881_orig/src/jsfont/main.cpp jslibs-0.9-r1881/src/jsfont/main.cpp
+--- jslibs-0.9-r1881_orig/src/jsfont/main.cpp	2009-02-06 00:09:49.000000000 +0100
++++ jslibs-0.9-r1881/src/jsfont/main.cpp	2009-02-06 00:16:34.000000000 +0100
+@@ -21,7 +21,7 @@
+ 
+ FT_Library _freetype;
+ 
+-extern bool _unsafeMode = false;
++bool _unsafeMode = false;
+ 
+ 
+ /**doc t:header
+diff -ru jslibs-0.9-r1881_orig/src/jsgraphics/main.cpp jslibs-0.9-r1881/src/jsgraphics/main.cpp
+--- jslibs-0.9-r1881_orig/src/jsgraphics/main.cpp	2009-02-06 00:09:48.000000000 +0100
++++ jslibs-0.9-r1881/src/jsgraphics/main.cpp	2009-02-06 00:16:34.000000000 +0100
+@@ -20,7 +20,7 @@
+ 
+ DECLARE_CLASS( OglError )
+ 
+-extern bool _unsafeMode = false;
++bool _unsafeMode = false;
+ 
+ /**doc t:header
+ $MODULE_HEADER
+diff -ru jslibs-0.9-r1881_orig/src/jshost/jshost.cpp jslibs-0.9-r1881/src/jshost/jshost.cpp
+--- jslibs-0.9-r1881_orig/src/jshost/jshost.cpp	2009-02-06 00:09:48.000000000 +0100
++++ jslibs-0.9-r1881/src/jshost/jshost.cpp	2009-02-06 01:50:46.000000000 +0100
+@@ -211,7 +211,7 @@
+ 		hostPath = hostFullPath;
+ 	} else {
+ 
+-		hostPath = ".";
++		hostPath = (char *)".";
+ 		hostName = hostFullPath;
+ 	}
+ 
+diff -ru jslibs-0.9-r1881_orig/src/jsiconv/main.cpp jslibs-0.9-r1881/src/jsiconv/main.cpp
+--- jslibs-0.9-r1881_orig/src/jsiconv/main.cpp	2009-02-06 00:09:49.000000000 +0100
++++ jslibs-0.9-r1881/src/jsiconv/main.cpp	2009-02-06 00:16:34.000000000 +0100
+@@ -14,7 +14,7 @@
+ 
+ #include "stdafx.h"
+ 
+-extern bool _unsafeMode = false;
++bool _unsafeMode = false;
+ 
+ DECLARE_CLASS( Iconv )
+ 
+diff -ru jslibs-0.9-r1881_orig/src/jsimage/main.cpp jslibs-0.9-r1881/src/jsimage/main.cpp
+--- jslibs-0.9-r1881_orig/src/jsimage/main.cpp	2009-02-06 00:09:48.000000000 +0100
++++ jslibs-0.9-r1881/src/jsimage/main.cpp	2009-02-06 00:45:00.000000000 +0100
+@@ -16,7 +16,7 @@
+ 
+ DECLARE_STATIC()
+ 
+-extern bool _unsafeMode = false;
++bool _unsafeMode = false;
+ 
+ /**doc t:header
+ $MODULE_HEADER
+@@ -46,7 +46,7 @@
+ */
+ 
+ 	return JS_TRUE;
+-	JL_BAD;
++	//JL_BAD;
+ }
+ 
+ EXTERN_C DLLEXPORT JSBool ModuleRelease(JSContext *cx, JSObject *obj) {
+diff -ru jslibs-0.9-r1881_orig/src/jsimage/static.cpp jslibs-0.9-r1881/src/jsimage/static.cpp
+--- jslibs-0.9-r1881_orig/src/jsimage/static.cpp	2009-02-06 00:09:48.000000000 +0100
++++ jslibs-0.9-r1881/src/jsimage/static.cpp	2009-02-06 01:31:01.000000000 +0100
+@@ -382,7 +382,7 @@
+ 	const char *sBuffer;
+ 	size_t bufferLength;
+ 	J_CHK( JsvalToStringAndLength(cx, &J_FARG(1), &sBuffer, &bufferLength ) ); // warning: GC on the returned buffer !
+-	J_S_ASSERT( bufferLength == sWidth * sHeight * sChannels * 1, "Invalid image format." );
++	J_S_ASSERT( bufferLength == (unsigned)(sWidth * sHeight * sChannels * 1), "Invalid image format." );
+ 
+ 	desc.png = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+ 	J_S_ASSERT( desc.png != NULL, "Unable to png_create_write_struct.");
+diff -ru jslibs-0.9-r1881_orig/src/jsio/directory.cpp jslibs-0.9-r1881/src/jsio/directory.cpp
+--- jslibs-0.9-r1881_orig/src/jsio/directory.cpp	2009-02-06 00:09:48.000000000 +0100
++++ jslibs-0.9-r1881/src/jsio/directory.cpp	2009-02-06 01:19:25.000000000 +0100
+@@ -309,9 +309,9 @@
+ 			if ( status != PR_SUCCESS )
+ 				return ThrowIoError(cx);
+ 
+-			if ( flags & _SKIP_FILE && fileInfo.type == PR_FILE_FILE ||
+-				  flags & _SKIP_DIRECTORY && fileInfo.type == PR_FILE_DIRECTORY ||
+-				  flags & _SKIP_OTHER && fileInfo.type == PR_FILE_OTHER )
++			if ( ((flags & _SKIP_FILE) && fileInfo.type == PR_FILE_FILE) ||
++				  ((flags & _SKIP_DIRECTORY) && fileInfo.type == PR_FILE_DIRECTORY) ||
++				  ((flags & _SKIP_OTHER) && fileInfo.type == PR_FILE_OTHER) )
+ 				continue;
+ 		}
+ 
+diff -ru jslibs-0.9-r1881_orig/src/jsio/file.cpp jslibs-0.9-r1881/src/jsio/file.cpp
+--- jslibs-0.9-r1881_orig/src/jsio/file.cpp	2009-02-06 00:09:48.000000000 +0100
++++ jslibs-0.9-r1881/src/jsio/file.cpp	2009-02-06 00:32:27.000000000 +0100
+@@ -397,7 +397,7 @@
+ 	bytesSent = PR_Write( fd, buf, len );
+ 	if ( bytesSent == -1 )
+ 		return ThrowIoError(cx);
+-	J_S_ASSERT( bytesSent == len, "unable to set content" );
++	J_S_ASSERT( (unsigned)bytesSent == len, "unable to set content" );
+ 	if ( PR_Close(fd) != PR_SUCCESS )
+ 		return ThrowIoError(cx);
+ 	return JS_TRUE;
+diff -ru jslibs-0.9-r1881_orig/src/jsio/main.cpp jslibs-0.9-r1881/src/jsio/main.cpp
+--- jslibs-0.9-r1881_orig/src/jsio/main.cpp	2009-02-06 00:09:48.000000000 +0100
++++ jslibs-0.9-r1881/src/jsio/main.cpp	2009-02-06 00:16:34.000000000 +0100
+@@ -25,7 +25,7 @@
+ #include "process.h"
+ #include "static.h"
+ 
+-extern bool _unsafeMode = false;
++bool _unsafeMode = false;
+ 
+ static PRInt32 instanceCount = 0;
+ 
+diff -ru jslibs-0.9-r1881_orig/src/jsio/process.cpp jslibs-0.9-r1881/src/jsio/process.cpp
+--- jslibs-0.9-r1881_orig/src/jsio/process.cpp	2009-02-06 00:09:48.000000000 +0100
++++ jslibs-0.9-r1881/src/jsio/process.cpp	2009-02-06 01:19:54.000000000 +0100
+@@ -56,7 +56,7 @@
+ 	J_S_ASSERT_CONSTRUCTING();
+ 	J_S_ASSERT_THIS_CLASS();
+ 	J_S_ASSERT_ARG_MIN(1);
+-	J_S_ASSERT( !J_ARG_ISDEF(2) || J_ARG_ISDEF(2) && JsvalIsArray(cx, J_ARG(2)), "Invalid 2nd argument" );
++	J_S_ASSERT( (!J_ARG_ISDEF(2) || J_ARG_ISDEF(2)) && JsvalIsArray(cx, J_ARG(2)), "Invalid 2nd argument" );
+ 
+ 	int processArgc;
+ 	if ( J_ARG_ISDEF(2) ) {
+diff -ru jslibs-0.9-r1881_orig/src/jsio/socket.cpp jslibs-0.9-r1881/src/jsio/socket.cpp
+--- jslibs-0.9-r1881_orig/src/jsio/socket.cpp	2009-02-06 00:09:48.000000000 +0100
++++ jslibs-0.9-r1881/src/jsio/socket.cpp	2009-02-06 00:39:14.000000000 +0100
+@@ -402,6 +402,7 @@
+   See. Static functions.
+ **/
+ DEFINE_FUNCTION( RecvFrom ) {
++  jsval data;
+ 
+ 	J_S_ASSERT_CLASS( obj, _class );
+ 
+@@ -441,7 +442,7 @@
+ 	PRUint16 port;
+ 	port = PR_NetAddrInetPort(&addr);
+ 
+-	jsval data;
++	data = JSVAL_VOID;
+ 	if (res > 0) {
+ 
+ 		J_CHK( J_NewBlob( cx, buffer, res, &data ) );
+diff -ru jslibs-0.9-r1881_orig/src/jsio/static.cpp jslibs-0.9-r1881/src/jsio/static.cpp
+--- jslibs-0.9-r1881_orig/src/jsio/static.cpp	2009-02-06 00:09:48.000000000 +0100
++++ jslibs-0.9-r1881/src/jsio/static.cpp	2009-02-06 00:20:46.000000000 +0100
+@@ -654,7 +654,7 @@
+ 	J_S_ASSERT_ALLOC( jsstr );
+ 	*vp = STRING_TO_JSVAL(jsstr);
+ 	return JS_TRUE;
+-	JL_BAD;
++	//JL_BAD;
+ }
+ 
+ 
+@@ -819,7 +819,7 @@
+ 	J_S_ASSERT_ALLOC( str );
+ 	*vp = STRING_TO_JSVAL( str );
+ 	return JS_TRUE;
+-	JL_BAD;
++	//JL_BAD;
+ }
+ 
+ DEFINE_PROPERTY_SETTER( currentWorkingDirectory ) {
+@@ -851,7 +851,7 @@
+ 		*vp = STRING_TO_JSVAL( str );
+ 	}
+ 	return JS_TRUE;
+-	JL_BAD;
++	//JL_BAD;
+ }
+ 
+ /**doc
+@@ -871,7 +871,7 @@
+ 		*vp = STRING_TO_JSVAL( str );
+ 	}
+ 	return JS_TRUE;
+-	JL_BAD;
++	//JL_BAD;
+ }
+ 
+ 
+diff -ru jslibs-0.9-r1881_orig/src/jsjabber/main.cpp jslibs-0.9-r1881/src/jsjabber/main.cpp
+--- jslibs-0.9-r1881_orig/src/jsjabber/main.cpp	2009-02-06 00:09:49.000000000 +0100
++++ jslibs-0.9-r1881/src/jsjabber/main.cpp	2009-02-06 00:16:34.000000000 +0100
+@@ -17,7 +17,7 @@
+ #include "static.h"
+ #include "jabber.h"
+ 
+-extern bool _unsafeMode = false;
++bool _unsafeMode = false;
+ 
+ 
+ EXTERN_C DLLEXPORT JSBool ModuleInit(JSContext *cx, JSObject *obj) {
+diff -ru jslibs-0.9-r1881_orig/src/jslang/blob.cpp jslibs-0.9-r1881/src/jslang/blob.cpp
+--- jslibs-0.9-r1881_orig/src/jslang/blob.cpp	2009-02-06 00:09:49.000000000 +0100
++++ jslibs-0.9-r1881/src/jslang/blob.cpp	2009-02-06 01:18:38.000000000 +0100
+@@ -238,11 +238,10 @@
+    [http://developer.mozilla.org/index.php?title=En/Core_JavaScript_1.5_Reference/Global_Objects/String/concat]
+ **/
+ DEFINE_FUNCTION_FAST( concat ) {
++  char *dst = NULL;
+ 
+ 	J_S_ASSERT_CLASS(J_FOBJ, _class);
+ 	J_S_ASSERT_ARG_MIN( 1 );
+-	char *dst;
+-	dst = NULL;
+ 
+ 	size_t thisLength;
+ 	const char *thisBuffer;
+@@ -582,7 +581,7 @@
+ 		
+ 		jsval arg2 = J_FARG(2);
+ 
+-		if ( JSVAL_IS_INT(arg2) && JSVAL_TO_INT(arg2) < 0 || IsNInfinity(cx, arg2) ) {
++		if ( (JSVAL_IS_INT(arg2) && JSVAL_TO_INT(arg2) < 0) || IsNInfinity(cx, arg2) ) {
+ 			
+ 			start = 0;
+ 		} else {
+diff -ru jslibs-0.9-r1881_orig/src/jslibs_module_template/main.cpp jslibs-0.9-r1881/src/jslibs_module_template/main.cpp
+--- jslibs-0.9-r1881_orig/src/jslibs_module_template/main.cpp	2009-02-06 00:09:48.000000000 +0100
++++ jslibs-0.9-r1881/src/jslibs_module_template/main.cpp	2009-02-06 00:16:34.000000000 +0100
+@@ -17,7 +17,7 @@
+ #include "static.h"
+ #include "template.h"
+ 
+-extern bool _unsafeMode = false;
++bool _unsafeMode = false;
+ 
+ 
+ EXTERN_C DLLEXPORT JSBool ModuleInit(JSContext *cx, JSObject *obj) {
+diff -ru jslibs-0.9-r1881_orig/src/jsobjex/main.cpp jslibs-0.9-r1881/src/jsobjex/main.cpp
+--- jslibs-0.9-r1881_orig/src/jsobjex/main.cpp	2009-02-06 00:09:48.000000000 +0100
++++ jslibs-0.9-r1881/src/jsobjex/main.cpp	2009-02-06 00:16:34.000000000 +0100
+@@ -16,7 +16,7 @@
+ 
+ #include "objex.h"
+ 
+-extern bool _unsafeMode = false;
++bool _unsafeMode = false;
+ 
+ 
+ DECLARE_CLASS( ObjEx )
+diff -ru jslibs-0.9-r1881_orig/src/jsode/main.cpp jslibs-0.9-r1881/src/jsode/main.cpp
+--- jslibs-0.9-r1881_orig/src/jsode/main.cpp	2009-02-06 00:09:48.000000000 +0100
++++ jslibs-0.9-r1881/src/jsode/main.cpp	2009-02-06 00:16:34.000000000 +0100
+@@ -22,7 +22,7 @@
+ 
+ #include "geom.h"
+ 
+-extern bool _unsafeMode = false;
++bool _unsafeMode = false;
+ 
+ // the following avoid ODE to be linked with User32.lib ( MessageBox* symbol is used in ../ode/src/ode/src/error.cpp )
+ 
+diff -ru jslibs-0.9-r1881_orig/src/jsprotex/main.cpp jslibs-0.9-r1881/src/jsprotex/main.cpp
+--- jslibs-0.9-r1881_orig/src/jsprotex/main.cpp	2009-02-06 00:09:48.000000000 +0100
++++ jslibs-0.9-r1881/src/jsprotex/main.cpp	2009-02-06 00:16:34.000000000 +0100
+@@ -14,7 +14,7 @@
+ 
+ #include "stdafx.h"
+ 
+-extern bool _unsafeMode = false;
++bool _unsafeMode = false;
+ 
+ DECLARE_CLASS( Texture )
+ 
+diff -ru jslibs-0.9-r1881_orig/src/jsprotex/texture.cpp jslibs-0.9-r1881/src/jsprotex/texture.cpp
+--- jslibs-0.9-r1881_orig/src/jsprotex/texture.cpp	2009-02-06 00:09:48.000000000 +0100
++++ jslibs-0.9-r1881/src/jsprotex/texture.cpp	2009-02-06 01:49:59.000000000 +0100
+@@ -194,7 +194,7 @@
+ 		J_CHK( JsvalToStringAndLength(cx, &value, &color, &length) );
+ 		if ( *color++ == '#' && ((int)length-1) / 2 >= count ) {
+ 
+-			unsigned char val;
++			unsigned char val = 0;
+ 			for ( int i = 0; i < count; i++ ) {
+ 
+ 				if ( *color >= '0' && *color <= '9' ) val = *color - '0';
+@@ -415,7 +415,7 @@
+ 	}
+ 
+ //	if ( JsvalIsDataBuffer( cx, J_ARG(1) ) ) {
+-	if ( JSVAL_IS_STRING(J_ARG(1)) || JSVAL_IS_OBJECT(J_ARG(1)) && BufferGetInterface(cx, JSVAL_TO_OBJECT(J_ARG(1))) != NULL ) {
++	if ( (JSVAL_IS_STRING(J_ARG(1)) || JSVAL_IS_OBJECT(J_ARG(1))) && BufferGetInterface(cx, JSVAL_TO_OBJECT(J_ARG(1))) != NULL ) {
+ 
+ 		JSObject *bstrObj;
+ //		bstrObj = JSVAL_TO_OBJECT( J_ARG(1) );
+@@ -1288,6 +1288,7 @@
+ **/
+ // PTYPE ok
+ DEFINE_FUNCTION_FAST( Desaturate ) {
++  PTYPE val = 0, min, max, tmp;
+ 
+ 	J_S_ASSERT_ARG_MIN(2);
+ 
+@@ -1310,7 +1311,6 @@
+ 	srcChannels = tex->channels;
+ 	int size;
+ 	size = tex->width * tex->height;
+-	PTYPE val, min, max, tmp;
+ 	for ( i = 0; i < size; i++ ) {
+ 
+ 		pos = i * srcChannels;
+@@ -1676,7 +1676,7 @@
+   $H note
+    For non-integer rotations, see RotoZoom() function.
+ **/
+-DEFINE_FUNCTION_FAST( Rotate90 ) { // (TBD) test it
++/*DEFINE_FUNCTION_FAST( Rotate90 ) { // (TBD) test it
+ 
+ 	J_S_ASSERT_ARG_MIN( 1 );
+ 
+@@ -1741,7 +1741,7 @@
+ 	return JS_TRUE;
+ 	JL_BAD;
+ }
+-
++*/
+ 
+ /**doc
+  * $THIS $INAME( horizontally, vertically )
+@@ -1967,7 +1967,7 @@
+ 		borderMode = borderWrap;
+ 
+ 
+-	if ( newWidth != width || newHeight != height ) { // nothing to do
++	if ( newWidth != (unsigned)width || newHeight != (unsigned)height ) { // nothing to do
+ 
+ 
+ 		PTYPE *newBuffer = (PTYPE*)JS_malloc(cx, newWidth * newHeight * channels * sizeof(PTYPE) );
+@@ -1981,7 +1981,7 @@
+ 		ry = (float)height / newHeight; // texture ratio y
+ 		size_t x, y, c;
+ 
+-		int pos, pos1, pos2, pos3, pos4; // offset in the buffer
++		int pos, pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0; // offset in the buffer
+ 		float ratio1, ratio2, ratio3, ratio4; // pixel value ratio
+ 
+ 		for ( y = 0; y < newHeight; y++ )
+@@ -2118,7 +2118,7 @@
+ 	int size;
+ 	size = (int)sqrtf(count);
+ 
+-	J_S_ASSERT( size * size == count, "Invalid convolution kernel size.");
++	J_S_ASSERT( (unsigned)(size * size) == count, "Invalid convolution kernel size.");
+ 
+ 	BorderMode borderMode;
+ 	if ( J_FARG_ISDEF(2) ) {
+@@ -3052,6 +3052,7 @@
+   }}}
+ **/
+ DEFINE_FUNCTION_FAST( Import ) { // (Blob)image, (int)x, (int)y
++	int sWidth, sHeight, sChannels;
+ 
+ 	J_S_ASSERT_ARG_MIN(1);
+ 
+@@ -3085,7 +3086,7 @@
+ 	int dChannels;
+ 	dChannels = tex->channels;
+ 
+-	int sWidth, sHeight, sChannels;
++  sWidth = 0; sHeight = 0; sChannels = 0;
+ 	GetPropertyInt(cx, bstr, "width", &sWidth);
+ 	GetPropertyInt(cx, bstr, "height", &sHeight);
+ 	GetPropertyInt(cx, bstr, "channels", &sChannels);
+diff -ru jslibs-0.9-r1881_orig/src/jssdl/main.cpp jslibs-0.9-r1881/src/jssdl/main.cpp
+--- jslibs-0.9-r1881_orig/src/jssdl/main.cpp	2009-02-06 00:09:49.000000000 +0100
++++ jslibs-0.9-r1881/src/jssdl/main.cpp	2009-02-06 00:16:34.000000000 +0100
+@@ -18,7 +18,7 @@
+ #include "error.h"
+ #include "sdl.h"
+ 
+-extern bool _unsafeMode = false;
++bool _unsafeMode = false;
+ 
+ DECLARE_CLASS( Cursor )
+ 
+diff -ru jslibs-0.9-r1881_orig/src/jssound/main.cpp jslibs-0.9-r1881/src/jssound/main.cpp
+--- jslibs-0.9-r1881_orig/src/jssound/main.cpp	2009-02-06 00:09:48.000000000 +0100
++++ jslibs-0.9-r1881/src/jssound/main.cpp	2009-02-06 00:16:34.000000000 +0100
+@@ -17,7 +17,7 @@
+ #include "static.h"
+ //#include "sound.h"
+ 
+-extern bool _unsafeMode = false;
++bool _unsafeMode = false;
+ 
+ 
+ /**doc t:header
+diff -ru jslibs-0.9-r1881_orig/src/jssqlite/main.cpp jslibs-0.9-r1881/src/jssqlite/main.cpp
+--- jslibs-0.9-r1881_orig/src/jssqlite/main.cpp	2009-02-06 00:09:49.000000000 +0100
++++ jslibs-0.9-r1881/src/jssqlite/main.cpp	2009-02-06 00:16:34.000000000 +0100
+@@ -20,7 +20,7 @@
+ 
+ #include "../common/queue.h"
+ 
+-extern bool _unsafeMode = false;
++bool _unsafeMode = false;
+ 
+ extern jl::Queue *dbContextList = NULL;
+ 
+diff -ru jslibs-0.9-r1881_orig/src/jsstd/buffer.cpp jslibs-0.9-r1881/src/jsstd/buffer.cpp
+--- jslibs-0.9-r1881_orig/src/jsstd/buffer.cpp	2009-02-06 00:09:49.000000000 +0100
++++ jslibs-0.9-r1881/src/jsstd/buffer.cpp	2009-02-06 00:19:51.000000000 +0100
+@@ -50,7 +50,7 @@
+ 	*pItem = value;
+ 	jl::QueuePush( queue, pItem ); // no need to JS_AddRoot *pItem, see Tracer callback
+ 	return JS_TRUE;
+-	JL_BAD;
++	//JL_BAD;
+ }
+ 
+ 
+@@ -61,7 +61,7 @@
+ 	*pItem = value;
+ 	jl::QueueUnshift( queue, pItem ); // no need to JS_AddRoot *pItem, see Tracer callback
+ 	return JS_TRUE;
+-	JL_BAD;
++	//JL_BAD;
+ }
+ 
+ 
+diff -ru jslibs-0.9-r1881_orig/src/jsstd/main.cpp jslibs-0.9-r1881/src/jsstd/main.cpp
+--- jslibs-0.9-r1881_orig/src/jsstd/main.cpp	2009-02-06 00:09:49.000000000 +0100
++++ jslibs-0.9-r1881/src/jsstd/main.cpp	2009-02-06 00:16:34.000000000 +0100
+@@ -19,7 +19,7 @@
+ #include "buffer.h"
+ #include "pack.h"
+ 
+-extern bool _unsafeMode = false;
++bool _unsafeMode = false;
+ 
+ DECLARE_CLASS( OperationLimit )
+ DECLARE_CLASS( Sandbox )
+diff -ru jslibs-0.9-r1881_orig/src/jsstd/pack.cpp jslibs-0.9-r1881/src/jsstd/pack.cpp
+--- jslibs-0.9-r1881_orig/src/jsstd/pack.cpp	2009-02-06 00:09:49.000000000 +0100
++++ jslibs-0.9-r1881/src/jsstd/pack.cpp	2009-02-06 00:21:54.000000000 +0100
+@@ -437,7 +437,7 @@
+ 
+ 	*vp = BOOLEAN_TO_JSVAL( systemEndian == BigEndian );
+ 	return JS_TRUE;
+-	JL_BAD;
++	//JL_BAD;
+ }
+ 
+ JSBool Init(JSContext *cx, JSObject *obj) {
+diff -ru jslibs-0.9-r1881_orig/src/jsstd/static.cpp jslibs-0.9-r1881/src/jsstd/static.cpp
+--- jslibs-0.9-r1881_orig/src/jsstd/static.cpp	2009-02-06 00:09:49.000000000 +0100
++++ jslibs-0.9-r1881/src/jsstd/static.cpp	2009-02-06 01:43:50.000000000 +0100
+@@ -742,7 +742,7 @@
+ 
+ 		int readCount = read( file, data, compFileSize ); // here we can use "Memory-Mapped I/O Functions" ( http://developer.mozilla.org/en/docs/NSPR_API_Reference:I/O_Functions#Memory-Mapped_I.2FO_Functions )
+ 
+-		if ( readCount == -1 || readCount != compFileSize ) {
++		if ( readCount == -1 || (unsigned)readCount != compFileSize ) {
+ 
+ 			JS_ReportError( cx, "Unable to read the file \"%s\" ", compiledFileName );
+ 			return NULL;
+diff -ru jslibs-0.9-r1881_orig/src/jssvg/main.cpp jslibs-0.9-r1881/src/jssvg/main.cpp
+--- jslibs-0.9-r1881_orig/src/jssvg/main.cpp	2009-02-06 00:09:49.000000000 +0100
++++ jslibs-0.9-r1881/src/jssvg/main.cpp	2009-02-06 00:16:34.000000000 +0100
+@@ -14,7 +14,7 @@
+ 
+ #include "stdafx.h"
+ 
+-extern bool _unsafeMode = false;
++bool _unsafeMode = false;
+ 
+ DECLARE_CLASS( SVG )
+ 
+diff -ru jslibs-0.9-r1881_orig/src/jstrimesh/main.cpp jslibs-0.9-r1881/src/jstrimesh/main.cpp
+--- jslibs-0.9-r1881_orig/src/jstrimesh/main.cpp	2009-02-06 00:09:49.000000000 +0100
++++ jslibs-0.9-r1881/src/jstrimesh/main.cpp	2009-02-06 00:16:34.000000000 +0100
+@@ -16,7 +16,7 @@
+ 
+ #include "trimesh.h"
+ 
+-extern bool _unsafeMode = false;
++bool _unsafeMode = false;
+ 
+ EXTERN_C DLLEXPORT JSBool ModuleInit(JSContext *cx, JSObject *obj) {
+ 
+diff -ru jslibs-0.9-r1881_orig/src/jswinshell/main.cpp jslibs-0.9-r1881/src/jswinshell/main.cpp
+--- jslibs-0.9-r1881_orig/src/jswinshell/main.cpp	2009-02-06 00:09:48.000000000 +0100
++++ jslibs-0.9-r1881/src/jswinshell/main.cpp	2009-02-06 00:16:34.000000000 +0100
+@@ -20,7 +20,7 @@
+ #include "systray.h"
+ #include "console.h"
+ 
+-extern bool _unsafeMode = false;
++bool _unsafeMode = false;
+ 
+ 
+ /**doc t:header
+diff -ru jslibs-0.9-r1881_orig/src/jswxjs/main.cpp jslibs-0.9-r1881/src/jswxjs/main.cpp
+--- jslibs-0.9-r1881_orig/src/jswxjs/main.cpp	2009-02-06 00:09:48.000000000 +0100
++++ jslibs-0.9-r1881/src/jswxjs/main.cpp	2009-02-06 00:16:34.000000000 +0100
+@@ -16,7 +16,7 @@
+ 
+ #define MAX_WXJS_MODULES 32
+ 
+-extern bool _unsafeMode = false;
++bool _unsafeMode = false;
+ 
+ 
+ #define wxString char*
+diff -ru jslibs-0.9-r1881_orig/src/jsz/main.cpp jslibs-0.9-r1881/src/jsz/main.cpp
+--- jslibs-0.9-r1881_orig/src/jsz/main.cpp	2009-02-06 00:09:48.000000000 +0100
++++ jslibs-0.9-r1881/src/jsz/main.cpp	2009-02-06 00:16:34.000000000 +0100
+@@ -16,7 +16,7 @@
+ 
+ #include "zError.h"
+ 
+-extern bool _unsafeMode = false;
++bool _unsafeMode = false;
+ 
+ 
+ DECLARE_CLASS( Z )
+diff -ru jslibs-0.9-r1881_orig/src/jsz/zError.cpp jslibs-0.9-r1881/src/jsz/zError.cpp
+--- jslibs-0.9-r1881_orig/src/jsz/zError.cpp	2009-02-06 00:09:48.000000000 +0100
++++ jslibs-0.9-r1881/src/jsz/zError.cpp	2009-02-06 00:27:56.000000000 +0100
+@@ -47,7 +47,7 @@
+ 	JS_GetReservedSlot( cx, obj, 0, vp );
+ 	int errorCode = JSVAL_TO_INT(*vp);
+ 
+-	char *errStr;
++	const char *errStr;
+ 	switch (errorCode) {
+ 		case 0:
+ 			errStr = "Z_OK";
+diff -ru jslibs-0.9-r1881_orig/src/rules.mk jslibs-0.9-r1881/src/rules.mk
+--- jslibs-0.9-r1881_orig/src/rules.mk	2009-02-06 00:09:48.000000000 +0100
++++ jslibs-0.9-r1881/src/rules.mk	2009-02-06 01:46:34.000000000 +0100
+@@ -32,7 +32,7 @@
+ 	CFLAGS += -m64
+ endif
+ 
+-CFLAGS += -fno-rtti -felide-constructors # -static-libgcc 
++#CFLAGS += -fno-rtti -felide-constructors # -static-libgcc 
+ 
+ OBJECTS = $(patsubst %.cpp,%.o,$(filter %.cpp, $(SRC))) $(patsubst %.c,%.o,$(filter %.c, $(SRC)))
+ 
+diff -ru jslibs-0.9-r1881_orig/src/common/jsHelper.h jslibs-0.9-r1881/src/common/jsHelper.h
+--- jslibs-0.9-r1881_orig/src/common/jsHelper.h	2009-02-06 02:06:35.000000000 +0100
++++ jslibs-0.9-r1881/src/common/jsHelper.h	2009-02-06 02:14:02.000000000 +0100
+@@ -142,7 +142,7 @@
+ // is the current obj (this)
+ #define J_OBJ (obj)
+ // same for fast native
+-#define J_FOBJ (argc, JS_THIS_OBJECT(cx, vp))
++#define J_FOBJ ((void)argc, JS_THIS_OBJECT(cx, vp))
+ 
+ // the return value
+ #define J_RVAL (rval)

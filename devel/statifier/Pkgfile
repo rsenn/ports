@@ -1,0 +1,36 @@
+# $Id: Pkgfile,v 1.4 2007/05/12 01:09:23 roman Exp $
+#
+# Description: Creates a static executable from a dynamic executable and required libraries.
+#  Executable files may be linked statically or dynamically. Dynamically
+#  appropriative dynamic libraries present in order to run. ELF statifier
+#  linked executable and all its libraries. This file can be copied and
+# URL: http://statifier.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=statifier
+version=1.6.15
+release=1
+source=($mirror_sf/statifier/statifier-$version.tar.gz)
+
+build()
+{
+  cd statifier-$version
+
+  make \
+      ELF64="no" \
+      SUPPORTED_CPU_LIST="i386" \
+      BIN_DIR="$prefix/bin" \
+      LIB_DIR="$prefix/lib/statifier" \
+    all
+
+  make \
+      ELF64="no" \
+      SUPPORTED_CPU_LIST="i386" \
+      BIN_DIR="$ROOT/bin" \
+      LIB_DIR="$ROOT/lib/statifier" \
+    install
+
+  sed -i "s,/usr,$prefix,g" $ROOT/bin/statifier
+  sed -i "s,gdb32,gdb,g" $ROOT/lib/statifier/32/statifier_dump.sh
+}

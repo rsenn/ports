@@ -1,0 +1,48 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Several virtual filesystems for GNU/Linux
+# This version works with FUSE
+# (Linux Userland Filesystems - http://fuse.sourceforge.net).
+#
+# Written in C++. Contains Virtual Filesystems C++ Library, a C++ template
+# library which includes:
+#
+#  - FUSE++ - a thick C++ wrapper around FUSE library.
+#  - C++ TCP library wrapper.
+#  - FTP Filesystem C++ Library (an FTP client library).
+#  - In-Memory Caching C++ Library (abstract caching classes and directory
+#    content caching).
+#
+# Includes the following filesystems:
+#
+#  - FTP Filesystem
+#  - dereferencefs - dereferences all symbolic links in a directory; when a
+#    symlink is moved it is automatically updated to point to the same file.
+#
+# URL: http://savannah.nongnu.org/projects/virtfs-cxx/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=virtfs
+version=20080614
+release=1
+source=(virtfs-$version.tar.gz)
+
+build()
+{
+  cd virtfs
+
+  libtoolize --force --copy
+  aclocal --force
+  automake --force --copy --foreign --add-missing
+  aclocal --force
+  autoconf --force
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

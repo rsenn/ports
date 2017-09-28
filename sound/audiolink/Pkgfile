@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: AudioLink is an audio (MP3, Ogg) collection manager.
+#  AudioLink is a tool that makes searching for music on your local storage
+#  media easier and faster. Your searches can include a variety of criteria,
+#  like male artists, female artists, band, genre, etc. It is flexible:
+#  you can use a command line interface or your choice of multiple GUIs,
+#  design your own search criteria, etc. You can search MP3 and Ogg files
+#  and use AudioLink to categorize your music collection.
+#  .
+# URL: http://audiolink.sourceforge.net/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=audiolink
+version=0.05
+release=1
+source=($mirror_sf/audiolink/audiolink-$version.tar.bz2)
+
+build()
+{
+  cd audiolink-$version
+
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/audiolink
+  install -m 644 COPYING CREDITS README Changes ChangeLog INSTALL FEATURES RELEASE_NOTES TODO VERSION $ROOT/share/doc/audiolink
+  install -m 644 Documentation/*.txt Documentation/*.html $ROOT/share/doc/audiolink
+}
+
+# EOF

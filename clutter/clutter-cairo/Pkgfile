@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Package: libclutter-cairo-0.8
+# Provides: libclutter-cairo
+# Description: A basic Cairo clutter widget
+# URL: http://www.clutter-project.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libcairo-directfb2, libcairo2, libclutter-0.8-0, libglib2.0-0, libgtk2.0-0, libpango1.0-0
+
+name=clutter-cairo
+version=0.8.2
+release=1
+source=(http://www.clutter-project.org/sources/clutter-cairo/${version%.*}/clutter-cairo-$version.tar.bz2)
+
+build()
+{
+  cd clutter-cairo-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/clutter-cairo
+  install -m 644 COPYING INSTALL README ChangeLog $ROOT/share/doc/clutter-cairo
+}

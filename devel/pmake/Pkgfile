@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: 4.4BSD make (pmake).
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=pmake
+version=1.111
+release=1
+source=(ftp://mirror.switch.ch/mirror/gentoo/distfiles/pmake_$version.orig.tar.gz
+        pmake-nexbyte.patch
+        pmake_1.111-1.diff.gz)
+
+
+build() 
+{
+  cd pmake
+  
+  zcat $SRC/pmake_1.111-1.diff.gz | patch -p1 
+  patch -p1 -i $SRC/pmake-nexbyte.patch
+
+  make CC="${CC-gcc}" CFLAGS="${CFLAGS--g -O2}"
+
+  install -d $ROOT/bin
+  install -m 755 pmake $ROOT/bin
+
+  install -d $ROOT/share/man/man1
+  install -m 755 make.1 $ROOT/share/man/man1/pmake.1
+}
+
+# EOF

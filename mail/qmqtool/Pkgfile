@@ -1,0 +1,39 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A tool for manipulating the contents of a qmail-1.03 queue.
+#  qmqtool is a utility designed for viewing and safely modifying the
+#  contents of a qmail queue. It is extremely feature rich, with features
+#  including finding abusers, sorting messages by sender/sender's IP,
+#  showing stats, requeueing messages, queue consistency check, queue
+#  backup/restore, and others.
+#  .
+# URL: http://jeremy.kister.net/code/qmqtool/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=qmqtool
+version=1.14b8
+release=1
+source=(http://jeremy.kister.net/code/qmqtool/files/qmqtool-$version.tgz)
+
+build()
+{
+  cd qmqtool-$version
+
+  ./configure \
+     --prefix="$prefix"
+
+  sed -i \
+      -e "s,usr/man,usr/share/man," \
+      -e "s,/usr,\$(prefix),g" \
+      -e "s,/script,/sbin,g" \
+    Makefile
+
+  make
+  make prefix="$ROOT" install
+
+  install -d $ROOT/share/doc/qmqtool
+  install -m 644 Artistic ChangeLog FAQ INSTALL README $ROOT/share/doc/qmqtool
+}
+
+# EOF

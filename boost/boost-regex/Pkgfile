@@ -1,0 +1,55 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: regular expression library for C++
+#  Part of the Boost C++ Libraries collection.
+#  Regular expressions are a form of pattern-matching that are often used
+#  in text processing; many users will be familiar with the Unix utilities
+#  grep, sed and awk, and the programming language perl, each of which
+#  make extensive use of regular expressions. Traditionally C++ users have
+#  been limited to the POSIX C APIs for manipulating regular expressions,
+#  and while regex does provide these APIs, they do not represent the best
+#  way to use the library. For example regex can cope with wide character
+#  strings, or search and replace operations (in a manner analogous to
+#  either sed or perl), something that traditional C libraries can not do.
+# URL: http://www.boost.org/libs/regex/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=boost-regex
+version=1.34.1
+release=1
+source=($mirror_sf/boost/boost_${version//./_}.tar.gz)
+
+build()
+{
+  cd boost_${version//./_}
+
+  export COMPILER=${CC%%' '*}
+
+  set -- --prefix="$ROOT" --toolset="${COMPILER##*-}"
+
+  case $CXXFLAGS in
+    *) set -- "$@" debug optimization="speed" ;;
+    *"-g"*) set -- "$@" release debug-symbols="none" optimization="none" ;;
+  esac
+
+  set -- "$@" threading="single,multi" --layout="system" --with-regex
+
+  bjam "$@"
+
+  install -d $ROOT/lib
+
+  find -type f -and \( -name "*.so*" -or -name "*.a" \) -and -wholename "*/${name#boost-}/*" -print0 | xargs -0 mv -vt $ROOT/lib/
+
+  install -d $ROOT/include/boost
+  cp -rvf boost/${name#boost-}* $ROOT/include/boost
+
+  cd $ROOT/lib
+
+  for lib in *.so
+  do
+    mv -f $lib $lib.${version%.*}
+    ln -sf $lib.${version%.*} $lib.${version%%.*}
+    ln -sf $lib.${version%.*} $lib
+  done
+}

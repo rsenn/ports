@@ -1,0 +1,11 @@
+--- libarchive-2.5.4b_orig/tar/subst.c	2008-06-30 23:29:58.000000000 +0200
++++ libarchive-2.5.4b/tar/subst.c	2008-06-30 23:30:52.000000000 +0200
+@@ -93,7 +93,7 @@
+ 	memcpy(pattern, rule_text + 1, end_pattern - rule_text - 1);
+ 	pattern[end_pattern - rule_text - 1] = '\0';
+ 
+-	if ((r = regcomp(&rule->re, pattern, REG_BASIC)) != 0) {
++	if ((r = regcomp(&rule->re, pattern, 0)) != 0) {
+ 		char buf[80];
+ 		regerror(r, &rule->re, buf, sizeof(buf));
+ 		bsdtar_errc(bsdtar, 1, 0, "Invalid regular expression: %s", buf);

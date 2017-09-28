@@ -1,0 +1,39 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A hyphenation library for C++.
+#  libhyphenate is a library that provides an implementation of Frank Liangs
+#  hyphenation algorithm, better known as the TeX hyphenation algorithm,
+#  for C++. It is similar to the libhnj implementation, but, in contrast to
+#  libhnj, actually works reliably and is well-documented. It has been tested
+#  for English and German. The implementation fully works in and with UTF-8.
+#  .
+# URL: http://swolter.sdf1.org/software/libhyphenate.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libhyphenate
+version=1.1
+release=1
+source=(http://swolter.sdf1.org/libhyphenate_1.1-current.tar.gz
+        libhyphenate-1.1.0-c++fixes.patch
+        libhyphenate-1.1.0-tools.patch)
+
+build()
+{
+  cd libhyphenate-1.1.0
+
+  patch -N -p1 -i $SRC/libhyphenate-1.1.0-c++fixes.patch
+  patch -N -p1 -i $SRC/libhyphenate-1.1.0-tools.patch
+
+  make clean
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

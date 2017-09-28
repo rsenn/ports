@@ -1,0 +1,33 @@
+# $Id: Pkgfile,v 1.4 2007/04/22 23:07:53 roman Exp $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=jsoncpp
+version=svn20070619
+release=1
+source=(jsoncpp-20070619-svn.tar.gz
+        $mirror_sf/scons/scons-local-0.97.tar.gz
+        GNUmakefile)
+
+build()
+{
+#  svn co https://jsoncpp.svn.sourceforge.net/svnroot/jsoncpp jsoncpp
+#  cd jsoncpp/trunk
+
+  case $host in
+    *)
+      PLATFORM='linux-gcc'
+      ;;
+  esac
+
+  mv scons* jsoncpp
+
+  cd jsoncpp
+  mv $SRC/GNUmakefile .
+
+  make CXXFLAGS="$CFLAGS" CXX="$CXX"
+  make DESTDIR="$PKG" prefix="$prefix" install
+}

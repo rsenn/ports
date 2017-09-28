@@ -1,0 +1,37 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Logistical networking library.
+# URL: http://loci.cs.utk.edu/exnode/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=libexnode
+version=0.5
+release=1
+source=(http://loci.cs.utk.edu/exnode/distributions/libexnode-$version.tar.gz
+        libexnode-0.5-destdir.patch
+        libexnode-0.5-autogen.patch)
+
+build() 
+{
+  cd libexnode-$version
+
+  patch -N -p1 -i $SRC/libexnode-0.5-destdir.patch
+  patch -N -p1 -i $SRC/libexnode-0.5-autogen.patch
+ 
+  sh autogen.sh
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --with-libxml2="$prefix"
+  
+  make
+  make DESTDIR="$PKG" install
+
+  #install -d $ROOT/share/doc/libexnode
+  #install -m 644 README INSTALL COPYRIGHT $ROOT/share/doc/libexnode
+}
+
+# EOF

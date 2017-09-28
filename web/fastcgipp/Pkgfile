@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A C++ library for using FastCGI.
+#  fastcgi++ is a C++ library for developing Web applications in C++
+#  with the FastCGI protocol. This library does not support the old CGI
+#  protocol. It effectively manages simultaneous requests without the need
+#  for multiple threads. Session data is organized into meaningful data types
+#  as opposed to a series of text strings. Internationalization and Unicode
+#  support is another priority. The library is templated to allow internal
+#  wide character use, while converting down to UTF-8 upon transmission to
+#  the client.
+#  .
+# URL: http://fastcgipp.com/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=fastcgipp
+version=1.2
+release=1
+source=(http://fastcgipp.com/releases/fastcgi++-$version.tar.bz2)
+
+build()
+{
+  cd fastcgi++-$version
+
+  make
+  make PREFIX="$ROOT" install
+}
+
+# EOF

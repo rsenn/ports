@@ -1,0 +1,37 @@
+# $Id: Pkgfile,v 1.10 2007/05/10 16:59:30 roman Exp $
+#
+# Description: A beat slicer.
+#  Freecycle is a beat slicer providing amplitude domain and frequency
+#  domain beat matching and zero crossing algorithms. It exports sliced
+#  audio chunks and generates a MIDI file which can be used to play the
+#  sliced loop. Alternatively, you can jam with it as soon as you've made
+#  slices using a MIDI keyboard or sequencer. Freecycle also exports AKAI
+#  S5000/S6000/Z4/Z8 .AKP files to be used with your favorite sampler,
+#  SoundFont files, and supports slice drag and drop from the application
+#  to the desktop. It can process the audio inline using LADSPA effects,
+#  as well as applying envelopes to seperate slices.
+# URL: http://freecycle.redsteamrecords.com
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=freecycle
+version=0.6.1.1alpha
+release=1
+source=(http://download.savannah.gnu.org/releases/freecycle/freecycle-$version.tar.bz2)
+
+build()
+{
+  cd freecycle
+
+  QMAKE="qmake-3.3"
+
+  case $host in
+    *-linux*) QMAKESPEC="linux-g++" ;;
+  esac
+
+  export QMAKE QMAKESPEC
+
+  "$QMAKE" freecycle.pro
+
+  make
+}

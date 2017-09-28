@@ -1,0 +1,27 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: List processes using a mount point.
+#  muser lists processes which have a given directory (or cwd if not
+#  specified) as a parent of their current working directory (thus making it
+#  impossible to unmount that directory if it is a mount point). This script
+#  has overlapping functionality with the fuser program from the psmisc
+#  package, but has the advantage that it works on SMB mounts. Additionally,
+#  it provides a color, formatted listing of process IDs, executable names,
+#  current working directories, and the command lines used to run the
+#  programs. It works with varying-sized /proc/*/cwd fields.
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=parse
+version=1.0
+release=1
+source=($mirror_sf/igloo/muser.gz)
+
+build()
+{
+  gzip -d muser.gz
+
+  install -d $ROOT/bin
+  install -m 755 muser $ROOT/bin
+}

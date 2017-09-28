@@ -1,0 +1,34 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: stylesheets for processing DocBook XML files to various output formats
+#  These are modular XSL stylesheets for processing documents composed
+#  with the DocBook XML DTD and its derivatives ("Simplified" DocBook XML,
+#  JRefEntry DTD, etc.).
+#  The stylesheets provide XSLT transformations for (X)HTML, WordML, HTML
+#  Help, JavaHelp, Man page (nroff), Website, Eclipse Platform Help file
+#  and Formatting Object (FO) output. The latter can be further processed
+#  to a number of print formats using FOP or TeX-based tools.
+#  The stylesheets are modular in the sense that you can extend and,
+#  to some extent, customize them. The documentation is included in a
+#  separate package.
+# Longdescription:
+# URL: http://wiki.docbook.org/topic/DocBookXslStylesheets
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=docbook-xsl
+version=1.72.0
+release=1
+source=($mirror_sf/docbook/docbook-xsl-$version.tar.bz2)
+
+build()
+{
+  install -d $ROOT/share/sgml
+  cp -rvf docbook-xsl-$version $ROOT/share/sgml
+
+  cd $ROOT/share/sgml/docbook-xsl-$version
+  yes | sh install.sh --batch
+
+  install -d $ROOT/share/doc/docbook-xsl
+  install -m 644 AUTHORS BUGS COPYING INSTALL NEWS README RELEASE-NOTES.txt TODO VERSION $ROOT/share/doc/docbook-xsl
+}

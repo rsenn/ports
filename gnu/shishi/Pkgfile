@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A Kerberos 5 implementation.
+#  Shishi is a (still incomplete) implementation of Kerberos 5, which
+#  can be used to authenticate users in distributed systems. It contains
+#  a library that can be used by application developers, and a command
+#  line utility for users. Shishi supports Kerberos authenticated telnet
+#  client/server, IMAP client/server (via GSSAPI), SSH client/server (via
+#  GSSAPI), rsh/rlogin client, and a PAM module for host security.
+#  .
+# URL: http://www.gnu.org/software/shishi/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=shishi
+version=0.0.25
+release=1
+source=(ftp://alpha.gnu.org/pub/gnu/shishi/shishi-$version.tar.gz)
+
+build()
+{
+  cd shishi-$version
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

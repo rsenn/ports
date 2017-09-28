@@ -1,0 +1,32 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:50 roman Exp $
+#
+# Description: A sample audio mixer implementation using SDL
+#  SDL_mixer is a simple multi-channel audio mixer. It supports 8 channels
+#  of 16 bit stereo audio, plus a single channel of music, mixed by the
+#  popular MikMod MOD, Timidity MIDI, Ogg Vorbis, and SMPEG MP3 libraries.
+# URL: http://www.libsdl.org/projects/SDL_mixer/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=sdl-image
+version=1.2.8
+release=1
+source=(http://www.libsdl.org/projects/SDL_mixer/release/SDL_mixer-$version.tar.gz)
+
+build()
+{
+  cd SDL_mixer-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --${shared:=enable}-shared \
+       --${static:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/sdl-mixer
+  install -m 644 CHANGES COPYING README $ROOT/share/doc/sdl-mixer
+}

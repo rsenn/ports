@@ -1,0 +1,47 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: The man page suite used to read most of the documentation for Linux.
+#  The man page suite, including man, apropos, and whatis consists of
+#  programs that are used to read most of the documentation available on
+#  a Linux system. The whatis and apropos programs can be used to find
+#  documentation related to a particular subject.
+# URL: http://primates.ximian.com/~flucifredi/man/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=man
+version=1.6c
+release=1
+source=(http://primates.ximian.com/~flucifredi/man/man-$version.tar.gz
+        man-1.6c-dirs.patch)
+
+build()
+{
+  cd man-$version
+
+#  patch -N -p1 -i $SRC/man-1.6c-dirs.patch
+
+  sed -i "/^PREPATH/ s|=.*|=\$PATH|g" \
+      configure
+
+  ./configure \
+      -default \
+      -prefix="$prefix" \
+      -mandir="$prefix/share/man"
+
+  make
+
+  install -d $ROOT/bin
+  install -d $ROOT/man
+
+  make \
+       PREFIX="$PKG" \
+       mandir="$ROOT/share/man" \
+       pager="$prefix/bin/less -is" \
+    all \
+    install
+
+  if set -- $SRC/man-pages*/man[0-9]* && test -e $1; then
+    cp -rf "$@" $ROOT/share/man
+  fi
+}

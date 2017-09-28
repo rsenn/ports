@@ -1,0 +1,36 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A utility that cleans up filenames.
+#  detox is a utility designed to clean up filenames, especially those
+#  created on other operating systems. It replaces non-standard characters,
+#  such as spaces or Latin-1 characters, with standard equivalents.
+#  .
+# URL: http://detox.sourceforge.net/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=detox
+version=1.2.0
+release=1
+source=($mirror_sf/detox/detox-$version.tar.bz2)
+
+build()
+{
+  cd detox-$version
+
+  case "$prefix" in
+    "/usr") sysconfdir="/etc" ;;
+  esac
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix" \
+     --sysconfdir="${sysconfdir=$prefix/etc}"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

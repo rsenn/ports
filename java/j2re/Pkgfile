@@ -1,0 +1,35 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:55 roman Exp $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: java-gcj-compat, libasound2, libc6, libgcj7-0, libice6, libsm6, libx11-6, libxext6, libxi6, libxt6, libxtst6
+
+name=j2re
+version=1.4.2
+release=1
+source=($mirror_sunsite/java-linux/JDK-$version/i386/03/j2re-$version-03-linux-i586.bin)
+
+build()
+{
+  install -d $ROOT
+
+  cd $ROOT
+
+  sed -i -e '/^more << EOF_LICENSE/ s,more,true,' \
+        -e '/^CRCsum/ s,3681674866,3729685730,' \
+        -e '/^MD5/ s,c0fc383ebf76d7065b34ee31d58bd2f9,7ec3caaaaff2311554f53f72bb4b0fef,' \
+    $SRC/j2re-$version-03-linux-i586.bin
+
+  echo -e "q\nyes" | sh $SRC/j2re-$version-03-linux-i586.bin
+
+  mv j2re$version j2re
+
+  find $ROOT -name "*.so" | xargs chmod 755
+
+  install -d $ROOT/share
+  mv $ROOT/j2re/man $ROOT/share/
+
+  copy_license $ROOT/j2re/{LICENSE,COPYRIGHT,THIRDPARTYLICENSEREADME.txt}
+  rm -f $ROOT/j2re/{LICENSE,COPYRIGHT,THIRDPARTYLICENSEREADME.txt}
+}

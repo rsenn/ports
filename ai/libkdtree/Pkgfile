@@ -1,0 +1,38 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A C++ template container implementation of kd-tree k-dimensional space sorting.
+# libkdtree++ is a C++ template container implementation of k-dimensional
+# space sorting, using a kd-tree. It sports a theoretically unlimited
+# number of dimensions, and can store any data structure. Provided the
+# data structure, it provides operator[0 - k-1] to access the individual
+# dimensional components (arrays, std::vector already do) and a std::less
+# implementation for the type of dimensional components. It has support
+# for custom allocators, implements iterators, and provides standard find
+# as well as range queries. It has amortised O(lg n) time (O(n lg n) worst
+# case) on most operations (insert/erase/find optimised) and worst-case O(n)
+# space, and also provides a means to rebalance and thus optimise the tree.
+#
+# URL: http://libkdtree.alioth.debian.org/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=libkdtree
+version=0.6.2
+release=1
+source=(https://alioth.debian.org/frs/download.php/2205/libkdtree++-$version.tar.bz2)
+
+build()
+{
+  cd libkdtree++_$version
+
+  ./autogen.sh
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Shell based Unix utilities
+# This project is a library of shell functions emulating the common
+# and not-so-common Unix utilities. No external compiled binaries are
+# referenced from these functions, all code is entirely shell based,
+# using built-in shell commands.
+#
+# URL: http://shunix.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=shunix
+version=20070624
+release=1
+source=($mirror_sf/shunix/shunix-$version.tar.gz)
+
+build()
+{
+  cd shunix
+
+  install -d $ROOT/share/doc/shunix/html
+  mv -f home/* $ROOT/share/doc/shunix/html
+
+  install -d $ROOT/share/shunix
+  mv -vf frenchmenus-ksh/frenchmenus-ksh.* $ROOT/share/shunix/frenchmenus-ksh
+
+  install -d $ROOT/share/shunix
+  cp -rf * $ROOT/share/shunix
+}

@@ -1,0 +1,34 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Organizes your collection of MP3s.
+#  Mp3Kult is an application for KDE 3. It organizes your MP3/Ogg collection
+#  in a MySQL database. It can read MP3/Ogg tags and song information
+#  (length, bit rate, sample rate, etc.), make playlists, play songs
+#  with an external player (xmms, gqmpeg), find a song in database (base
+#  and advanced search), and make a copy of a playlist on your hard disk
+#  (to play the playlist without inserting CDROMs). Mp3Kult can recursivly
+#  scan directories to find MP3/Ogg files, and it can automatically mount,
+#  umount, and eject a CDROM before/after a job.
+#  .
+# URL: http://mp3kult.sourceforge.net
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=mp3kult
+version=0.7
+release=1
+source=($mirror_sf/mp3kult/mp3kult-0.7.tar.gz)
+
+build()
+{
+  cd mp3kult-0.7
+./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+make
+make DESTDIR="$PKG" install
+}
+
+# EOF

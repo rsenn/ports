@@ -1,0 +1,36 @@
+diff -w -r -u gcc-2.95-debian_orig/gcc/frame.c gcc-2.95-debian/gcc/frame.c
+--- gcc-2.95-debian_orig/gcc/frame.c	2007-10-24 23:37:54.000000000 +0000
++++ gcc-2.95-debian/gcc/frame.c	2007-10-24 23:49:00.000000000 +0000
+@@ -51,7 +51,7 @@
+ #include "frame.h"
+ #include "gthr.h"
+ 
+-#ifdef __GTHREAD_MUTEX_INIT
++#if defined(__GTHREAD_MUTEX_INIT) && !defined(PTHREAD_MUTEX_INITIALIZER)
+ static __gthread_mutex_t object_mutex = __GTHREAD_MUTEX_INIT;
+ #else
+ static __gthread_mutex_t object_mutex;
+diff -w -r -u gcc-2.95-debian_orig/gcc/ginclude/stdarg.h gcc-2.95-debian/gcc/ginclude/stdarg.h
+--- gcc-2.95-debian_orig/gcc/ginclude/stdarg.h	2007-10-24 23:37:55.000000000 +0000
++++ gcc-2.95-debian/gcc/ginclude/stdarg.h	2007-10-24 23:41:24.000000000 +0000
+@@ -127,6 +127,7 @@
+ 
+ #endif /* _STDARG_H */
+ 
++#endif /* not s390 */
+ #endif /* not AVR */
+ #endif /* not TMS320C3x or TMS320C4x */
+ #endif /* not v850 */
+diff -w -r -u gcc-2.95-debian_orig/gcc/rtl.h gcc-2.95-debian/gcc/rtl.h
+--- gcc-2.95-debian_orig/gcc/rtl.h	2007-10-24 23:37:54.000000000 +0000
++++ gcc-2.95-debian/gcc/rtl.h	2007-10-24 23:42:05.000000000 +0000
+@@ -664,9 +664,6 @@
+ #define SYMBOL_REF_USED(RTX) ((RTX)->used)
+ 
+ /* 1 means a SYMBOL_REF is weak.  */
+-#define SYMBOL_REF_WEAK(RTX) ((RTX)->integrated)
+-
+-/* 1 means a SYMBOL_REF is weak.  */
+ #define SYMBOL_REF_WEAK(RTX) ((RTX)->frame_related)
+ 
+ /* For an INLINE_HEADER rtx, FIRST_FUNCTION_INSN is the first insn

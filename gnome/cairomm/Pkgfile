@@ -1,0 +1,33 @@
+# $Id: Pkgfile,v 1.7 2007/04/22 23:07:53 roman Exp $
+#
+# Description: C++ wrappers for Cairo (shared libraries)
+#  cairomm provides C++ bindings for the Cairo graphics library, a
+#  multi-platform library providing anti-aliased vector-based rendering
+#  for multiple target backends.
+#  This package contains the shared libraries.
+# URL: http://cairographics.org/cairomm/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=cairomm
+version=1.7.0
+release=1
+source=(http://cairographics.org/releases/cairomm-$version.tar.gz
+        cairomm-1.5.0-enums.patch)
+
+build()
+{
+  cd cairomm-$version
+
+#  patch -N -p1 -i $SRC/cairomm-1.5.0-enums.patch
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --${shared:=enable}-shared \
+       --${static:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+}

@@ -1,0 +1,39 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Section: universe/devel
+# Description: A SpiderMonkey glue code generator.
+#  jsapigen generates glue code for embedding Mozilla's JavaScript engine
+#  (SpiderMonkey) into C applications. A simple interface definition
+#  language is used to describe the connection between native C code and
+#  the JavaScript engine. jsapigen takes such descriptions and converts
+#  them into C code. This code is then compiled into the application.
+#  .
+# URL: http://jsapigen.sourceforge.net
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=jsapigen
+version=0.2.0
+release=1
+source=($mirror_sf/jsapigen/jsapigen-$version.tar.bz2)
+
+build()
+{
+  cd jsapigen-$version
+
+  ./configure \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/jsapigen
+  install -m 644 AUTHORS COPYING README ChangeLog INSTALL $ROOT/share/doc/jsapigen
+  install -m 644 doc/*.txt $ROOT/share/doc/jsapigen
+
+  make -C doc html
+
+  cp -rf doc/html $ROOT/share/doc/jsapigen/
+}
+
+# EOF

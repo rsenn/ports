@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An alternative to procmail for sorting and processing mail in maildirs.
+#  maildirproc is a program that processes one or several existing mail
+#  boxes in the maildir format. It is primarily focused on mail sorting,
+#  which means moving, copying, forwarding, and deleting mail according to
+#  a set of rules. It can be seen as an alternative to procmail, but instead
+#  of being a delivery agent (which wants to be part of the delivery chain),
+#  maildirproc only processes mail which has already been delivered. That
+#  is a feature, not a bug.
+#  .
+# URL: http://joel.rosdahl.net/maildirproc/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=maildirproc
+version=0.4.1
+release=1
+source=(http://joel.rosdahl.net/maildirproc/maildirproc-$version.tar.gz)
+
+build()
+{
+  cd maildirproc-$version
+
+  python setup.py install --prefix="$ROOT"
+
+  install -d $ROOT/share/doc/maildirproc
+  install -m 644 LICENSE NEWS README PKG-INFO $ROOT/share/doc/maildirproc
+}
+
+# EOF

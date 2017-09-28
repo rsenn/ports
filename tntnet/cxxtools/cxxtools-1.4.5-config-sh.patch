@@ -1,0 +1,23 @@
+Invocation of cxxtools-config must be through shell interpreter during build
+(no +x before installation).
+
+diff -u cxxtools-1.4.5_orig/demo/Makefile.am cxxtools-1.4.5/demo/Makefile.am
+--- cxxtools-1.4.5_orig/demo/Makefile.am	2007-10-25 10:19:25.000000000 +0000
++++ cxxtools-1.4.5/demo/Makefile.am	2007-10-25 10:25:03.000000000 +0000
+@@ -33,7 +33,7 @@
+ logsh_LDFLAGS = @CXXTOOLS_LOG_LDFLAGS@ $(PTHREAD_LIBS)
+ 
+ log.properties:
+-	$(top_builddir)/cxxtools-config --properties cxxtools >$@
++	$(SHELL) $(top_builddir)/cxxtools-config --properties cxxtools >$@
+ 
+ noinst_DATA = log.properties
+ CLEANFILES = log.properties
+--- cxxtools-1.4.5_orig/cxxtools-config.in	2007-10-25 15:14:25.000000000 +0200
++++ cxxtools-1.4.5/cxxtools-config.in	2007-10-25 15:34:46.000000000 +0200
+@@ -1,4 +1,4 @@
+-#! /bin/sh
++#! @SHELL@
+ 
+ prefix=@prefix@
+ exec_prefix=@exec_prefix@

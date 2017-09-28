@@ -1,0 +1,47 @@
+diff -ru -ru net-snmp-5.4_orig/agent/agent_registry.c net-snmp-5.4/agent/agent_registry.c
+--- net-snmp-5.4_orig/agent/agent_registry.c	2007-01-19 12:30:16.000000000 +0100
++++ net-snmp-5.4/agent/agent_registry.c	2007-01-19 12:27:02.000000000 +0100
+@@ -1485,7 +1485,7 @@
+      * this optimization causes a segfault on sf cf alpha-linux1.
+      * ifdef out until someone figures out why and fixes it. xxx-rks 20051117
+      */
+-#ifndef __alpha
++#if 0
+ #define WTEST_OPTIMIZATION 1
+ #endif
+ #ifdef WTEST_OPTIMIZATION
+diff -ru -ru net-snmp-5.4_orig/include/net-snmp/library/snmp_debug.h net-snmp-5.4/include/net-snmp/library/snmp_debug.h
+--- net-snmp-5.4_orig/include/net-snmp/library/snmp_debug.h	2007-01-19 12:30:16.000000000 +0100
++++ net-snmp-5.4/include/net-snmp/library/snmp_debug.h	2007-01-19 12:31:18.000000000 +0100
+@@ -118,18 +118,11 @@
+ #define __DBGMSGT(x)     debugmsgtoken x,  debugmsg x
+ #define __DBGMSG_NC(x)   debugmsg x
+ #define __DBGMSGT_NC(x)  debug_combo_nc x
+-#define __DBGMSGL_NC(x)  __DBGTRACE; debugmsg x
+-#define __DBGMSGTL_NC(x) __DBGTRACE; debug_combo_nc x
++#define __DBGMSGL_NC(x)  debugmsg x
++#define __DBGMSGTL_NC(x) debug_combo_nc x
+ 
+-#ifdef  HAVE_CPP_UNDERBAR_FUNCTION_DEFINED
+-#define __DBGTRACE       __DBGMSGT(("trace","%s(): %s, %d:\n",__FUNCTION__,\
+-                                 __FILE__,__LINE__))
+-#else
+-#define __DBGTRACE       __DBGMSGT(("trace"," %s, %d:\n", __FILE__,__LINE__))
+-#endif
+-
+-#define __DBGMSGL(x)     __DBGTRACE, debugmsg x
+-#define __DBGMSGTL(x)    __DBGTRACE, debugmsgtoken x, debugmsg x
++#define __DBGMSGL(x)       debugmsg x
++#define __DBGMSGTL(x)      debugmsgtoken x, debugmsg x
+ #define __DBGMSGOID(x)     debugmsg_oid x
+ #define __DBGMSGSUBOID(x)  debugmsg_suboid x
+ #define __DBGMSGVAR(x)     debugmsg_var x
+@@ -180,7 +173,7 @@
+ 
+ #define DEBUGMSG(x)        do {if (_DBG_IF_) {debugmsg x;} }while(0)
+ #define DEBUGMSGT(x)       do {if (_DBG_IF_) {__DBGMSGT(x);} }while(0)
+-#define DEBUGTRACE         do {if (_DBG_IF_) {__DBGTRACE;} }while(0)
++#define DEBUGTRACE
+ #define DEBUGMSGL(x)       do {if (_DBG_IF_) {__DBGMSGL(x);} }while(0)
+ #define DEBUGMSGTL(x)      do {if (_DBG_IF_) {__DBGMSGTL(x);} }while(0)
+ #define DEBUGMSGOID(x)     do {if (_DBG_IF_) {__DBGMSGOID(x);} }while(0)

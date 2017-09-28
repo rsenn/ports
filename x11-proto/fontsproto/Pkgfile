@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: X11 font extension wire protocol
+#  This package provides development headers describing the wire protocol
+#  for font-related extensions, used to control the server-side font
+#  configuration, and also the font server headers.
+#  .
+# URL: http://www.X.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=fontsproto
+version=2.0.2
+release=1
+source=(ftp://ftp.x.org/pub/individual/proto/fontsproto-$version.tar.bz2)
+
+build()
+{
+  cd fontsproto-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

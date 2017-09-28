@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A tool that reports and summarizes data about user connect times, etc.
+#  GNU Accounting Utilities is a set of utilities which reports and
+#  summarizes data about user connect times and process execution statistics
+#  under Unix.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=acct
+version=6.3.2
+release=1
+source=(ftp://ftp.gnu.org/pub/gnu/acct/acct-$version.tar.gz)
+
+build()
+{
+  cd acct-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make prefix="$ROOT" install
+}

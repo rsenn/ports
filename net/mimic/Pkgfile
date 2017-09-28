@@ -1,0 +1,19 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Munin the monitoring tool surveys all your computers and remembers what it saw. It presents all the information in graphs through a web interface. Its emphasis is on plug and play capabilities. After completing a installation a high number of monitoring plugins will be playing with no more effort.
+# URL: http://sourceforge.net/projects/mimic
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=mimic
+version=1.0
+release=1
+source=(http://mimic.sourceforge.net/mimic-$version.tar.gz)
+
+build()
+{
+  cd mimic-$version
+
+  make CC="${CC-cc} $CFLAGS"
+  make DESTDIR="$PKG" install
+}

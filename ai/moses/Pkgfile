@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Meta-optimizing semantic evolutionary search (MOSES), a system for program evolution.
+# URL: 
+#   http://code.google.com/p/moses/
+#   https://code.launchpad.net/~ngeiswei/opencog/moses
+#   http://www.opencog.org/wiki/Meta-Optimizing_Semantic_Evolutionary_Search
+#   .
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=moses
+version=0.1-20090221
+release=1
+source=(http://moses.googlecode.com/files/moses-${version%%-*}.tar.gz
+        moses-$version.diff.gz
+        moses-0.1-20090221-fixes-1.patch)
+
+build() 
+{
+  cd moses-${version%%-*}
+
+  zcat $SRC/moses-$version.diff.gz | patch -N -p1 
+
+  patch -N -p1 -i $SRC/moses-0.1-20090221-fixes-1.patch
+
+  
+  for DIR in moses moses2; do
+    make -C "$DIR"
+  done
+}
+
+# EOF

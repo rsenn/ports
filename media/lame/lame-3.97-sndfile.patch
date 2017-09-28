@@ -1,0 +1,159 @@
+diff -ru lame-3.97_orig/configure lame-3.97/configure
+--- lame-3.97_orig/configure	2006-04-17 22:47:25.021956900 +0200
++++ lame-3.97/configure	2006-04-17 22:47:50.802625000 +0200
+@@ -29530,9 +29530,9 @@
+ 
+ CONFIG_MATH_LIB="${USE_LIBM}"
+ 
+-echo "$as_me:$LINENO: checking for sf_open_read in -lsndfile" >&5
+-echo $ECHO_N "checking for sf_open_read in -lsndfile... $ECHO_C" >&6
+-if test "${ac_cv_lib_sndfile_sf_open_read+set}" = set; then
++echo "$as_me:$LINENO: checking for sf_open in -lsndfile" >&5
++echo $ECHO_N "checking for sf_open in -lsndfile... $ECHO_C" >&6
++if test "${ac_cv_lib_sndfile_sf_open+set}" = set; then
+   echo $ECHO_N "(cached) $ECHO_C" >&6
+ else
+   ac_check_lib_save_LIBS=$LIBS
+@@ -29550,11 +29550,11 @@
+ #endif
+ /* We use char because int might match the return type of a gcc2
+    builtin and then its argument prototype would still apply.  */
+-char sf_open_read ();
++char sf_open ();
+ int
+ main ()
+ {
+-sf_open_read ();
++sf_open ();
+   ;
+   return 0;
+ }
+@@ -29581,20 +29581,20 @@
+   ac_status=$?
+   echo "$as_me:$LINENO: \$? = $ac_status" >&5
+   (exit $ac_status); }; }; then
+-  ac_cv_lib_sndfile_sf_open_read=yes
++  ac_cv_lib_sndfile_sf_open=yes
+ else
+   echo "$as_me: failed program was:" >&5
+ sed 's/^/| /' conftest.$ac_ext >&5
+ 
+-ac_cv_lib_sndfile_sf_open_read=no
++ac_cv_lib_sndfile_sf_open=no
+ fi
+ rm -f conftest.err conftest.$ac_objext \
+       conftest$ac_exeext conftest.$ac_ext
+ LIBS=$ac_check_lib_save_LIBS
+ fi
+-echo "$as_me:$LINENO: result: $ac_cv_lib_sndfile_sf_open_read" >&5
+-echo "${ECHO_T}$ac_cv_lib_sndfile_sf_open_read" >&6
+-if test $ac_cv_lib_sndfile_sf_open_read = yes; then
++echo "$as_me:$LINENO: result: $ac_cv_lib_sndfile_sf_open" >&5
++echo "${ECHO_T}$ac_cv_lib_sndfile_sf_open" >&6
++if test $ac_cv_lib_sndfile_sf_open = yes; then
+   HAVE_SNDFILE="yes"
+ fi
+ 
+diff -ru lame-3.97_orig/frontend/Makefile.in lame-3.97/frontend/Makefile.in
+--- lame-3.97_orig/frontend/Makefile.in	2006-04-17 22:47:25.162581900 +0200
++++ lame-3.97/frontend/Makefile.in	2006-04-17 23:10:19.130750000 +0200
+@@ -156,7 +156,7 @@
+ 	$(top_builddir)/libmp3lame/libmp3lame.la \
+ 	@FRONTEND_LDADD@
+ 
+-LDFLAGS = @LDFLAGS@ @FRONTEND_LDFLAGS@ -static
++LDFLAGS = @LDFLAGS@ @FRONTEND_LDFLAGS@ 
+ LIBOBJS = @LIBOBJS@
+ LIBS = @LIBS@
+ LIBTOOL = @LIBTOOL@
+diff -ru lame-3.97_orig/frontend/get_audio.c lame-3.97/frontend/get_audio.c
+--- lame-3.97_orig/frontend/get_audio.c	2006-04-17 22:47:25.146956900 +0200
++++ lame-3.97/frontend/get_audio.c	2006-04-17 23:09:35.083875000 +0200
+@@ -579,14 +579,15 @@
+         /* set some defaults incase input is raw PCM */
+         gs_wfInfo.seekable = (input_format != sf_raw); /* if user specified -r, set to not seekable */
+         gs_wfInfo.samplerate = lame_get_in_samplerate( gfp );
+-        gs_wfInfo.pcmbitwidth = in_bitwidth;
++//        gs_wfInfo.format = in_bitwidth;
++        gs_wfInfo.format = 0;
+         gs_wfInfo.channels = lame_get_num_channels( gfp );
+ 
+ 	if (in_bitwidth == 8) {
+ 	    if (in_signed)
+-		gs_wfInfo.format = SF_FORMAT_RAW_S8;
++		gs_wfInfo.format |= SF_FORMAT_PCM_S8;
+ 	    else
+-		gs_wfInfo.format = SF_FORMAT_RAW_U8;
++		gs_wfInfo.format |= SF_FORMAT_PCM_U8;
+ 
+ 	} else {
+ 	    if (!in_signed) {
+@@ -595,27 +596,27 @@
+ 	    }
+ 	    if (in_endian != order_unknown) {
+ 		if (in_endian == order_littleEndian)
+-		    gs_wfInfo.format = SF_FORMAT_RAW_LE;
++		    gs_wfInfo.format |= SF_ENDIAN_LITTLE;
+ 		else
+-		    gs_wfInfo.format = SF_FORMAT_RAW_BE;
++		    gs_wfInfo.format |= SF_ENDIAN_BIG;
+ 	    } else {
+ #ifndef WORDS_BIGENDIAN
+ 		/* little endian */
+ 		if (swapbytes)
+-		    gs_wfInfo.format = SF_FORMAT_RAW_BE;
++		    gs_wfInfo.format |= SF_ENDIAN_BIG;
+ 		else
+-		    gs_wfInfo.format = SF_FORMAT_RAW_LE;
++		    gs_wfInfo.format |= SF_ENDIAN_LITTLE;
+ #else
+ 		if (swapbytes)
+-		    gs_wfInfo.format = SF_FORMAT_RAW_LE;
++		    gs_wfInfo.format = SF_ENDIAN_LITTLE;
+ 		else
+-		    gs_wfInfo.format = SF_FORMAT_RAW_BE;
++		    gs_wfInfo.format = SF_ENDIAN_BIG;
+ #endif
+ 	    }
+ 	}
+ 
+-        gs_pSndFileIn = sf_open_read(lpszFileName, &gs_wfInfo);
+-        musicin = (SNDFILE *) gs_pSndFileIn;
++        gs_pSndFileIn = sf_open(lpszFileName, SFM_READ, &gs_wfInfo);
++        musicin = (FILE *) gs_pSndFileIn;
+ 
+         /* Check result */
+         if (gs_pSndFileIn == NULL) {
+@@ -627,10 +628,10 @@
+             exit(1);
+         }
+ 
+-        if ((gs_wfInfo.format == SF_FORMAT_RAW_LE) ||
+-            (gs_wfInfo.format == SF_FORMAT_RAW_BE) ||
+-	    (gs_wfInfo.format == SF_FORMAT_RAW_S8) ||
+-	    (gs_wfInfo.format == SF_FORMAT_RAW_U8))
++        if ((gs_wfInfo.format & SF_ENDIAN_LITTLE) ||
++            (gs_wfInfo.format & SF_ENDIAN_BIG) ||
++	    (gs_wfInfo.format & SF_FORMAT_PCM_S8) ||
++	    (gs_wfInfo.format & SF_FORMAT_PCM_U8))
+ 	    input_format = sf_raw;
+ 
+ #ifdef _DEBUG_SND_FILE
+@@ -721,7 +722,7 @@
+         DEBUGF("seekable          :\n", gs_wfInfo.seekable);
+ #endif
+ 
+-        (void) lame_set_num_samples( gfp, gs_wfInfo.samples );
++        (void) lame_set_num_samples( gfp, gs_wfInfo.frames );
+         if( -1 == lame_set_num_channels( gfp, gs_wfInfo.channels ) ) {
+ 	    if( silent < 10 ) {
+ 		fprintf( stderr,
+@@ -731,7 +732,7 @@
+             exit( 1 );
+         }
+         (void) lame_set_in_samplerate( gfp, gs_wfInfo.samplerate );
+-        pcmbitwidth = gs_wfInfo.pcmbitwidth;
++        pcmbitwidth = (gs_wfInfo.format & SF_FORMAT_PCM_32) ? 32 : (gs_wfInfo.format & SF_FORMAT_PCM_16) ? 16 : 8;
+     }
+ 
+     if (lame_get_num_samples( gfp ) == MAX_U_32_NUM) {

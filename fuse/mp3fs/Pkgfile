@@ -1,0 +1,36 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: FUSE filesystem which transcodes audio formats to MP3 on the fly when opened and read
+# This was written to enable me to use my FLAC collection with software and/or
+# hardware which only understands MP3. e.g. gmediaserver to a netgear MP101
+# mp3 player.
+# It is also a novel alternative to traditional mp3 encoder applications. Just
+# use your favorite file browser to select the files you want encoded and copy
+# them somewhere!
+# URL: http://mp3fs.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libflac8, libfuse2, libid3tag0, liblame0, libogg0, libsndfile1, libvorbis0a, libvorbisenc2, zlib1g
+
+name=mp3fs
+version=0.12
+release=1
+source=($mirror_sf/mp3fs/mp3fs-$version.tar.gz
+        mp3fs-sndfile-20080613.patch)
+
+build()
+{
+  cd mp3fs-$version
+
+  patch -N -p1 -i $SRC/mp3fs-sndfile-20080613.patch
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/mp3fs
+  install -m 644 [A-Z]*[A-Z]* $ROOT/share/doc/mp3fs
+}

@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A mixer for the terminal or X11, with mouse support.
+#  aumix is a program for adjusting an audio mixer. It can run under X with
+#  GTK+, in full-screen text mode with ncurses and (if available) gpm,
+#  or non-interactively, and can store all settings in a file. It works
+#  with the OSS API.
+# URL: http://jpj.net/~trevor/aumix.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=aumix
+version=2.8
+release=1
+source=(http://www.jpj.net/~trevor/aumix/aumix-$version.tar.bz2)
+
+build()
+{
+  cd aumix-$version
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --without-gtk{,1}
+
+  make
+  make DESTDIR="$PKG" install
+}

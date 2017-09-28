@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A C++ library to manipulate MIDI sequences.
+#  libmidixx is a C++ library to manipulate MIDI sequences. It is intended
+#  for a multimedia application that handles playback, recording, and
+#  editing of MIDI sequences, though the current version just implements
+#  playback only. libmidixx supports OSS, ALSA, and serial (tty) MIDI ports,
+#  and also comes with a user-space sequencer implementation, which does
+#  a fair job on a lightly-loaded machine.
+#  .
+# URL: http://www.hypercore.co.jp/opensource/libmidixx/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=libmidixx
+version=
+release=1
+source=(http://download.linuxfront.com/libmidixx/midixx-latest/0.7-/libmidixx-0.7.19991209.tar.gz)
+
+build()
+{
+  cd libmidixx-0.7.19991209
+./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+make
+make DESTDIR="$PKG" install
+}
+
+# EOF

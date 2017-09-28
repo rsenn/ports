@@ -1,0 +1,54 @@
+# $Id: Pkgfile,v 1.42 2007/05/09 21:02:56 roman Exp $
+#
+# Description: Tools to provide an easy way to build packages for your operating system
+#   Its intention is to provide the same interface (and easy) to an
+#   administrator who wants to create site local software packages.
+#   .
+# URL: http://oss.digitall.ch/sw-utils
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libbz2-1.0, libc6, libgcc1, libstdc++6, zlib1g
+# Recommends: newfile
+# Split: libtar (libtar* tar.h tar_* th_*), libsw++ (libsw++), libswsh (sh require* sw swsh libswsh)
+
+name=sw-utils
+version=0.9.6
+release=1
+source=(http://oss.digitall.ch/sw-utils/sw-utils-$version.tar.bz2
+        sw-utils.comp
+        net_hwaddr.in)
+
+build()
+{
+  #svn co svn+ssh://digitall.ch/local/svn/sw-utils/trunk sw-utils-0 || true
+
+  cd sw-utils-$version
+
+  case $prefix in
+    "/usr") sysconfdir="/etc" localstatedir="/var" SHELL="/bin/sh" ;;
+    *) SHELL="$prefix/bin/sh"
+  esac
+
+  export SHELL
+
+  #sh build/gnu/autogen.sh
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       ${target+--target="$target"} \
+       --prefix="$prefix" \
+       --sysconfdir="${sysconfdir=$prefix/etc}" \
+       --localstatedir="${localstatedir=$prefix/var}" \
+       --mandir="$prefix/share/man" \
+       --infodir="$prefix/share/info" \
+       --program-prefix="" \
+       --without-zlib \
+       --with-bzlib="$prefix" \
+       --with-libtar="$prefix" \
+       ${SHELL:+--with-shell="$SHELL"} \
+       ${SHELL_PATH:+--with-shell-path="$SHELL_PATH"} \
+       --disable-debug
+
+  make
+  make DESTDIR="$PKG" install
+}

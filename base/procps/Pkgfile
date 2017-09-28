@@ -1,0 +1,66 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: A package of utilities including ps, vmstat, top, and w.
+#  procps is a package of utilities which includes ps, vmstat, top, w,
+#  utilities report what is running, who is logged in, how long the system
+#  processes and change run-time kernel configuration values.
+# URL: http://procps.sf.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=procps
+version=3.2.7
+release=1
+source=(http://procps.sf.net/procps-$version.tar.gz
+        procps-3.2.5-prefix.patch
+        procps-3.2.5-solink.patch
+        procps-3.2.5-paths.patch)
+
+build()
+{
+  cd procps-$version
+
+  case $prefix in
+    "/usr") bindir="/bin" libdir="/lib" sbindir="/sbin" ;;
+  esac
+
+  patch -N -p1 -i $SRC/procps-3.2.5-prefix.patch
+  patch -N -p1 -i $SRC/procps-3.2.5-solink.patch
+#  patch -N -p1 -i $SRC/procps-3.2.5-paths.patch
+
+  make \
+      prefix="$prefix" \
+      lib64="lib" \
+      man1="$prefix/share/man/man1/" \
+      man5="$prefix/share/man/man5/" \
+      man8="$prefix/share/man/man8/" \
+      DESTDIR="$PKG" \
+    install
+
+  rm -f $ROOT/bin/{kill,uptime}
+
+  if [ "${bindir=$prefix/bin}" != "$prefix/bin" ]; then
+    mkdir -p $PKG/${bindir="$prefix/bin"}
+
+    for BIN in ps snice pkill vmstat free watch top pgrep tload skill; do
+      mv -f $ROOT/bin/$BIN $PKG/$bindir
+    done
+  fi
+
+  if [ "${sbindir=$prefix/sbin}" != "$prefix/sbin" ]; then
+    mkdir -p $PKG/${sbindir="$prefix/sbin"}
+
+    for SBIN in sysctl; do
+      mv -f $ROOT/sbin/$SBIN $PKG/$sbindir
+    done
+  fi
+
+  if [ "${libdir=$prefix/lib}" != "$prefix/lib" ]; then
+    mkdir -p $PKG/${libdir="$prefix/lib"}
+
+    mv -vf $ROOT/lib/libproc.so.* $PKG/$libdir/
+
+    cd $ROOT/lib && ln -sf ../../lib/libproc.so.[0-9] libproc.so
+  fi
+}
+

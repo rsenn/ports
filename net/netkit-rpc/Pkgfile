@@ -1,0 +1,43 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: 
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=netkit-rpc
+version=0.18
+release=1
+source=(ftp://ftp.uk.linux.org/pub/linux/Networking/netkit-devel/netkit-rpc-$version-pre1.tar.gz
+        netkit-rpc-0.18-pre1-missing-break.patch)
+
+build()
+{
+  cd netkit-rpc-$version-pre1
+
+  patch -N -p1 -i $SRC/netkit-rpc-0.18-pre1-missing-break.patch
+
+  ./configure \
+       --prefix="$prefix"
+
+  sed -i -e "s/-O[0-9]/\$(OPTFLAGS)/" -e "s/\s*-O[0-9]\s*/ /g" MCONFIG
+
+  case $prefix in
+    /usr) rootbindir="/bin" ;;
+       *) rootbindir="$prefix/bin" ;;
+  esac
+
+  install -d $ROOT/{bin,sbin,share/man/man8}
+
+  make INSTALLROOT="$PKG" \
+       CC="${CC-cc}" \
+       OPTFLAGS="$CFLAGS" \
+       EXECPREFIX="$prefix" \
+       BINDIR="$prefix/bin" \
+       SBINDIR="$prefix/sbin" \
+       MANDIR="$prefix/share/man" \
+       ROOTBINDIR="$ROOTbindir" \
+       USE_GLIBC="0" \
+       all \
+       install
+}

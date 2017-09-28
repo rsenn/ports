@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A non-interactive SSH password authentication method.
+#  Sshpass is a tool for non-interactivly performing password authentication
+#  with SSH's so called "interactive keyboard password authentication". Most
+#  users should use SSH's more secure public key authentication instead.
+#  .
+# URL: http://sourceforge.net/projects/sshpass/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=sshpass
+version=1.04
+release=1
+source=($mirror_sf/sshpass/sshpass-$version.tar.gz)
+
+build()
+{
+  cd sshpass-$version
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF
+  install -d $ROOT/share/doc/sshpass
+  install -m 644 README AUTHORS NEWS COPYING ChangeLog INSTALL $ROOT/share/doc/sshpass

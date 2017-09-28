@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Simple waveform viewer for JACK
+# The waveform is displayed in realtime, so you can always see the signal
+#
+# the instant it comes through JACK's input port.
+#
+# URL: http://das.nasophon.de/jack_oscrolloscope/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=jack-oscrolloscope
+version=0.5
+release=1
+source=(http://das.nasophon.de/download/jack_oscrolloscope-$version.tar.gz)
+
+build()
+{
+  cd jack_oscrolloscope-$version
+
+  install -d $ROOT/bin
+
+  make
+  make PREFIX="$ROOT" install
+
+  install -d $ROOT/share/doc/jack-oscrolloscope
+  install -m 644 [A-Z]*[A-Z]* $ROOT/share/doc/jack-oscrolloscope
+}

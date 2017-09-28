@@ -1,0 +1,125 @@
+Binary files libspiralcore-1.0.0rc1_orig/.sconsign.dblite and libspiralcore-1.0.0rc1/.sconsign.dblite differ
+diff -ru libspiralcore-1.0.0rc1_orig/include/JackClient.h libspiralcore-1.0.0rc1/include/JackClient.h
+--- libspiralcore-1.0.0rc1_orig/include/JackClient.h	2009-02-24 03:48:13.000000000 +0100
++++ libspiralcore-1.0.0rc1/include/JackClient.h	2009-02-24 03:49:29.000000000 +0100
+@@ -67,7 +67,7 @@
+ 	class JackPort
+ 	{		
+ 		public:
+-		JackPort::JackPort() :
++		JackPort() :
+ 			Connected(false),Buf(NULL),Port(NULL) {}
+ 		
+ 		string         Name;
+diff -ru libspiralcore-1.0.0rc1_orig/include/Sample.h libspiralcore-1.0.0rc1/include/Sample.h
+--- libspiralcore-1.0.0rc1_orig/include/Sample.h	2009-02-24 03:48:13.000000000 +0100
++++ libspiralcore-1.0.0rc1/include/Sample.h	2009-02-24 03:50:20.000000000 +0100
+@@ -70,7 +70,7 @@
+ 	void Shrink(int Length);
+ 	void CropTo(int NewLength);
+ 
+-	inline AudioType &Sample::operator[](unsigned int i) const
++	inline AudioType &operator[](unsigned int i) const
+ 	{		
+ 		#ifdef DEBUG
+ 			assert(i>=0 && i<m_Length);
+@@ -78,14 +78,14 @@
+ 		return m_Data[i];
+ 	}
+ 	
+-	inline AudioType &Sample::operator[](int i) const
++	inline AudioType &operator[](int i) const
+ 	{
+ 		//return (*this)[(int)i];
+ 		return m_Data[i];
+ 	}
+ 	
+ 	// Linear interpolated
+-	inline AudioType Sample::operator[](float i) const
++	inline AudioType operator[](float i) const
+ 	{		
+ 		int ii=(int)i;
+ 		
+@@ -99,7 +99,7 @@
+ 	}
+ 
+ 
+-	inline void Sample::Set(int i, AudioType v)
++	inline void Set(int i, AudioType v)
+ 	{	
+ 		#ifdef DEBUG
+ 			assert(i>=0 && i<m_Length);
+@@ -107,7 +107,7 @@
+ 		m_Data[i]=v;
+ 	}	
+ 	
+-	inline Sample &Sample::operator=(const Sample &rhs)
++	inline Sample &operator=(const Sample &rhs)
+ 	{
+ 		if (GetLength()!=rhs.GetLength()) Allocate(rhs.GetLength());		
+ 		memcpy(m_Data,rhs.GetBuffer(),GetLengthInBytes());
+Only in libspiralcore-1.0.0rc1: libspiralcore.so
+Only in libspiralcore-1.0.0rc1/src: Allocator.os
+Only in libspiralcore-1.0.0rc1/src: AsyncSampleLoader.os
+diff -ru libspiralcore-1.0.0rc1_orig/src/ChannelHandler.cpp libspiralcore-1.0.0rc1/src/ChannelHandler.cpp
+--- libspiralcore-1.0.0rc1_orig/src/ChannelHandler.cpp	2009-02-24 03:48:13.000000000 +0100
++++ libspiralcore-1.0.0rc1/src/ChannelHandler.cpp	2009-02-24 03:48:49.000000000 +0100
+@@ -16,6 +16,8 @@
+ 
+ #include "ChannelHandler.h"
+ #include <unistd.h>
++#include <cstring>
++#include <cstdlib>
+ 
+ using namespace std;
+ using namespace spiralcore;
+Only in libspiralcore-1.0.0rc1/src: ChannelHandler.os
+Only in libspiralcore-1.0.0rc1/src: CommandRingBuffer.os
+Only in libspiralcore-1.0.0rc1/src: Event.os
+Only in libspiralcore-1.0.0rc1/src: EventQueue.os
+diff -ru libspiralcore-1.0.0rc1_orig/src/JackClient.cpp libspiralcore-1.0.0rc1/src/JackClient.cpp
+--- libspiralcore-1.0.0rc1_orig/src/JackClient.cpp	2009-02-24 03:48:13.000000000 +0100
++++ libspiralcore-1.0.0rc1/src/JackClient.cpp	2009-02-24 03:49:06.000000000 +0100
+@@ -16,6 +16,7 @@
+ 
+ #include <stdio.h>
+ #include <limits.h>
++#include <cstring>
+ 
+ #include "JackClient.h"
+ #include "NETypes.h"
+Only in libspiralcore-1.0.0rc1/src: JackClient.os
+diff -ru libspiralcore-1.0.0rc1_orig/src/OSCServer.cpp libspiralcore-1.0.0rc1/src/OSCServer.cpp
+--- libspiralcore-1.0.0rc1_orig/src/OSCServer.cpp	2009-02-24 03:48:13.000000000 +0100
++++ libspiralcore-1.0.0rc1/src/OSCServer.cpp	2009-02-24 03:54:55.000000000 +0100
+@@ -16,8 +16,14 @@
+ 
+ #include <cstdio>
+ #include <cstdlib>
++#include <cstring>
+ #include <unistd.h>
+ #include <iostream>
++#include <lo/lo.h>
++
++extern "C" {
++  size_t lo_arg_size (lo_type type, void *data);
++}
+ 
+ #include "OSCServer.h"
+ 
+Only in libspiralcore-1.0.0rc1/src: OSCServer.os
+Only in libspiralcore-1.0.0rc1/src: RingBuffer.os
+Only in libspiralcore-1.0.0rc1/src: Sample.os
+Only in libspiralcore-1.0.0rc1/src: Time.os
+diff -ru libspiralcore-1.0.0rc1_orig/src/Tuna.cpp libspiralcore-1.0.0rc1/src/Tuna.cpp
+--- libspiralcore-1.0.0rc1_orig/src/Tuna.cpp	2009-02-24 03:48:13.000000000 +0100
++++ libspiralcore-1.0.0rc1/src/Tuna.cpp	2009-02-24 03:50:53.000000000 +0100
+@@ -17,6 +17,7 @@
+ #include <stdio.h>
+ #include <math.h>
+ #include <float.h>
++#include <cstdlib>
+ #include <iostream>
+ #include "Tuna.h"
+ 
+Only in libspiralcore-1.0.0rc1/src: Tuna.os

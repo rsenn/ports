@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A cross-platform sound extension for Tcl and Python.
+#  The Snack sound extension adds commands for sound play/record and sound
+#  visualization, e.g. waveforms and spectrograms. It supports in- memory
+#  sound objects, file based audio, streaming audio, WAV, AU, AIFF, and MP3
+#  file formats, synchronous and asynchronous playback. The visualization
+#  canvas item types update in real-time and can output postscript. New
+#  commands and file formats can be added using the Snack C-API.
+# URL: http://www.speech.kth.se/snack/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=snack
+version=2.2.10
+release=1
+source=(http://www.speech.kth.se/snack/dist/snack$version.tar.gz)
+
+build()
+{
+  cd snack$version/unix
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix" \
+       --with-tcl="$prefix/lib/tcl8.5" \
+       --with-tk="$prefix/lib/tk8.5"
+
+  make
+  make DESTDIR="$ROOT" install
+}

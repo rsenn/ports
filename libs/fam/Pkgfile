@@ -1,0 +1,46 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: FAM, the File Alteration Monitor
+# URL: http://oss.sgi.com/projects/fam/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=fam
+version=2.7.0
+release=1
+source=(ftp://oss.sgi.com/projects/fam/download/stable/fam-$version.tar.gz
+        fam-2.7.0-gcc41.patch
+        fam-2.7.0-largefiles.patch
+        fam-2.7.0-limits.patch
+        fam-2.7.0-cxxincs.patch)
+
+build()
+{
+  cd fam-$version
+
+#  patch -N -p1 -i $SRC/fam-2.7.0-gcc41.patch
+  patch -N -p1 -i $SRC/fam-2.7.0-largefiles.patch
+  patch -N -p0 -i $SRC/fam-2.7.0-limits.patch
+  patch -N -p1 -i $SRC/fam-2.7.0-cxxincs.patch
+
+  libtoolize --force --copy
+  aclocal --force
+  automake -a --foreign --force --copy
+  aclocal --force
+  autoconf --force
+
+  case $prefix in
+    "/usr") sysconfdir="/etc" localstatedir="/var" ;;
+  esac
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix" \
+       --sysconfdir="${sysconfdir=$prefix/etc}" \
+       --localstatedir="${localstatedir=$prefix/var}"
+
+  make
+  make DESTDIR="$PKG" install
+}

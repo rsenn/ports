@@ -1,0 +1,37 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Userspace interface to kernel DRM services -- runtime
+#  This library implements the userspace interface to the kernel DRM
+#  services. DRM stands for "Direct Rendering Manager", which is the
+#  kernelspace portion of the "Direct Rendering Infrastructure" (DRI). The
+#  DRI is currently used on Linux to provide hardware-accelerated OpenGL
+#  drivers.
+#  This package provides the runtime environment for libdrm.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libdrm
+version=2.4.12
+release=1
+source=(http://dri.freedesktop.org/libdrm/libdrm-$version.tar.bz2)
+
+build()
+{
+  cd libdrm-$version
+
+  rm -f config.sub
+  autoreconf --force --verbose --install
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/libdrm/libdrm
+  install -m 644 README libdrm/ChangeLog libdrm/TODO $ROOT/share/doc/libdrm/libdrm
+}

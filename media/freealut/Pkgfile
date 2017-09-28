@@ -1,0 +1,40 @@
+# $Id: Pkgfile,v 1.2 2007/05/09 21:02:48 roman Exp $
+#
+# Description: OpenAL Utility Toolkit.
+#  Freealut is the OpenAL Utility Toolkit.
+# URL: http://openal.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=freealut
+version=1.1.0
+release=1
+source=(http://www.openal.org/openal_webstf/downloads/freealut-$version.tar.gz
+        alut-specs-20070615.tar.gz)
+
+build()
+{
+  cd freealut-$version
+
+  libtoolize --force --copy --install
+  aclocal --force -I admin/autotools/m4
+  autoconf --force
+
+  case $host in
+     *-mingw32*)
+       args="${args:+$args }--disable-alsa --disable-esd"
+       ;;
+  esac
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      $args
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/freealut
+  cp -r $SRC/specs $ROOT/share/doc/freealut
+}

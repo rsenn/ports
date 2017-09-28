@@ -1,0 +1,36 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: JavaScript Image Processing Library
+#  Pixastic is an experimental library which allows you to perform
+#  a variety of operations on images using just a bit of JavaScript.
+#  The effects supported out of the box include desaturation/greyscale,
+#  invert, flipping, brightness/contrast adjustment, hue/saturation,
+#  emboss, blur, and many more. For the full list, see the documentation page.
+#  .
+# URL: http://www.pixastic.com/lib/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=pixastic
+version=0.99
+release=1
+source=(http://www.pixastic.com/lib/download/pixastic-lib.latest.zip
+        apache.conf)
+
+build()
+{
+  install -d $ROOT/share/pixastic
+
+  cp -rf actions $ROOT/share/pixastic/
+
+  install -m 644 pixastic.*.js $ROOT/share/pixastic/
+
+  case $prefix in
+    "/usr") sysconfdir="/etc" ;;
+  esac
+
+  install -d $PKG/${sysconfdir="$prefix/etc"}/pixastic
+  install -m 644 $SRC/apache.conf $PKG/$sysconfdir/pixastic
+}
+
+# EOF

@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A feed-forward neural network for Python.
+# ffnet is a fast and easy-to-use feed-forward neural network training
+# solution for Python. You can use it to train, test, save, load, and use an
+# artificial neural network with sigmoid activation functions. Any network
+# connectivity without cycles is allowed (not only layered). Training
+# can be performed with several optimization schemes, including genetic
+# alorithm based optimization. There is access to exact partial derivatives
+# of network outputs versus its inputs. Normalization of data is handled
+# automatically by ffnet.
+#
+# URL: http://ffnet.sourceforge.net/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=ffnet
+version=0.6.1
+release=1
+source=($mirror_sf/ffnet/ffnet-$version.ebuild
+$mirror_sf/ffnet/ffnet-$version.tar.gz
+$mirror_sf/ffnet/ffnet-$version.win32_enthon-python2.4-1.0.0.exe
+$mirror_sf/ffnet/ffnet-$version.win32_py2.3_numpy1.0.exe
+$mirror_sf/ffnet/ffnet-$version.win32_py2.4_numpy1.0.exe
+$mirror_sf/ffnet/ffnet-$version.win32_py2.5_numpy1.0.exe
+$mirror_sf/ffnet/ffnet-$version.zip)
+
+build()
+{
+  cd ffnet-$version
+
+  python setup.py install --prefix="$ROOT"
+}

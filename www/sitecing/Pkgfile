@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A Web development engine.
+#  site-C-ing is a Web development engine that uses C++ as a development
+#  language. The source code for the Web is a mixture of HTML (or whatever
+#  is the target content-type) and embedded C++. The engine preprocesses
+#  files, compiles them using the C++ compiler and serves to the user using
+#  .so shared objects. Each "component" can be considered a C++ class with
+#  the logical consequence of being able to derive one from another, etc.
+# URL: http://kin.klever.net/sitecing/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=sitecing
+version=0.0.1
+release=1
+source=(http://kin.klever.net/dist/sitecing-$version.tar.bz2)
+
+build()
+{
+  cd sitecing-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

@@ -1,0 +1,22 @@
+diff -ru -ru expr.orig/expr.y expr/expr.y
+--- expr.orig/expr.y	2006-10-09 17:55:24.000000000 +0200
++++ expr/expr.y	2006-10-09 17:55:43.000000000 +0200
+@@ -279,8 +279,7 @@
+ 	int c;
+ 
+ 	setlocale (LC_ALL, "");
+-	if (getenv("EXPR_COMPAT") != NULL
+-	    || check_utility_compat("expr")) {
++	if (getenv("EXPR_COMPAT") != NULL) {
+ 		av = argv + 1;
+ 		eflag = 1;
+ 	} else {
+@@ -309,7 +309,7 @@
+ }
+ 
+ int
+-yyerror(const char *s __unused)
++yyerror(const char *s)
+ {
+ 	errx(ERR_EXIT, "syntax error");
+ }

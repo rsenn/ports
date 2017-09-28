@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A Library for creating MusicBrainz DiscIDs
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libdiscid
+version=0.2.2
+release=1
+source=(http://users.musicbrainz.org/~matt/libdiscid-0.2.2.tar.gz)
+
+build()
+{
+  cd libdiscid-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/libdiscid
+  install -m 644 ChangeLog README AUTHORS COPYING $ROOT/share/doc/libdiscid
+}
+
+# EOF

@@ -1,0 +1,47 @@
+diff -ru httpd-2.2.4_orig/docs/conf/extra/httpd-modules.conf.in httpd-2.2.4/docs/conf/extra/httpd-modules.conf.in
+--- httpd-2.2.4_orig/docs/conf/extra/httpd-modules.conf.in	2007-09-17 04:00:37.000000000 +0200
++++ httpd-2.2.4/docs/conf/extra/httpd-modules.conf.in	2007-09-17 04:01:09.000000000 +0200
+@@ -0,0 +1,13 @@
++#
++# Dynamic Shared Object (DSO) Support
++#
++# To be able to use the functionality of a module which was built as a DSO you
++# have to place corresponding `LoadModule' lines at this location so the
++# directives contained in it are actually available _before_ they are used.
++# Statically compiled modules (those listed by `httpd -l') do not need
++# to be loaded here.
++#
++# Example:
++# LoadModule foo_module modules/mod_foo.so
++#
++@@LoadModule@@
+diff -ru httpd-2.2.4_orig/docs/conf/httpd.conf.in httpd-2.2.4/docs/conf/httpd.conf.in
+--- httpd-2.2.4_orig/docs/conf/httpd.conf.in	2007-09-17 03:56:46.000000000 +0200
++++ httpd-2.2.4/docs/conf/httpd.conf.in	2007-09-17 04:02:47.000000000 +0200
+@@ -42,16 +42,7 @@
+ #
+ # Dynamic Shared Object (DSO) Support
+ #
+-# To be able to use the functionality of a module which was built as a DSO you
+-# have to place corresponding `LoadModule' lines at this location so the
+-# directives contained in it are actually available _before_ they are used.
+-# Statically compiled modules (those listed by `httpd -l') do not need
+-# to be loaded here.
+-#
+-# Example:
+-# LoadModule foo_module modules/mod_foo.so
+-#
+-@@LoadModule@@
++Include @rel_sysconfdir@/extra/httpd-modules.conf
+ 
+ <IfModule !mpm_netware_module>
+ #
+@@ -83,7 +74,7 @@
+ # e-mailed.  This address appears on some server-generated pages, such
+ # as error documents.  e.g. admin@your-domain.com
+ #
+-ServerAdmin you@example.com
++ServerAdmin root@localhost
+ 
+ #
+ # ServerName gives the name and port that the server uses to identify itself.

@@ -1,0 +1,45 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Software to visualize harmonics, notes, and chords in music.
+#  The aim of auch (audio-checker) is to visualize harmonics in musical
+#  recordings. Many tools show the spectrum, but this tool focuses on one or
+#  two specific octaves, with an indication of the tonica, sub-dominant(IV),
+#  and dominant(V). This way, notes, chords, and harmonics in a musical
+#  piece become clearer. It also supports other types of transformation
+#  (like wavelets, surface waves, strings, resampling, etc). Another
+#  feature is that this tool can compare incoming and outgoing audio to
+#  test external filters.
+# URL: http://www.4cko.be/auch-www/index.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: freeglut3, libc6, libfftw3-3, libgcc1, libgl1-mesa-glx, libglu1-mesa, libncurses5, libportaudio2, libreadline5, libstdc++6, nvidia-glx-new, nvidia-glx-new-envy
+
+name=auch
+version=1.7
+release=1
+source=(http://www.4cko.be/auch-www/auch-v$version.tgz
+        auch-1.6-cxxflags.patch
+        auch-1.6-portaudio.patch
+        http://www.4cko.be/auch-www/refchart.pdf)
+
+build()
+{
+  cd auch
+
+  patch -N -p1 -i $SRC/auch-1.6-cxxflags.patch
+  patch -N -p1 -i $SRC/auch-1.6-portaudio.patch
+
+  rm -rf auch/lib/portaudio
+
+  make CXX="${CXX-g++}" CXXFLAGS="${CXXFLAGS--g -O2} -Wno-write-strings" auch reconstruct fold
+
+  install -d $ROOT/bin
+  install -m 755 auch $ROOT/bin
+  install -m 755 reconstruct $ROOT/bin/auch-reconstruct
+  install -m 755 fold $ROOT/bin/auch-fold
+
+  install -d $ROOT/share/doc/auch
+  install -m 644 [A-Z]*[A-Z]* $ROOT/share/doc/auch
+  install -m 644 rel/*.rtf $ROOT/share/doc/auch
+
+  cp -rf doc/* $SRC/refchart.pdf $ROOT/share/doc/auch
+}

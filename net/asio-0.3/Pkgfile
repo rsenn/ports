@@ -1,0 +1,24 @@
+# $Id: Pkgfile,v 1.5 2007/05/09 21:02:56 roman Exp $
+#
+# Description: A cross-platform C++ library for asynchronous network programming.
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=asio
+version=0.3.9
+release=1
+source=($mirror_sf/asio/asio-$version.tar.bz2)
+
+build()
+{
+  cd asio-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

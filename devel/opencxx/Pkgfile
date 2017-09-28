@@ -1,0 +1,33 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:42 roman Exp $
+#
+# Description: C++ frontend library
+#  C++ frontend library (lexer+parser+DOM/MOP) and source-to-source
+#  translator. OpenC++ enables development of C++ language tools, extensions,
+#  domain specific compiler optimizations and runtime metaobject protocols.
+# URL: http://opencxx.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=opencxx
+version=2.8
+release=1
+source=($mirror_sf/opencxx/opencxx-$version.tar.gz
+        opencxx-2.8-cross.patch
+        opencxx-2.8-c++0x.patch)
+
+build()
+{
+  cd opencxx-$version
+
+  patch -N -p1 -i $SRC/opencxx-2.8-cross.patch
+  patch -N -p1 -i $SRC/opencxx-2.8-c++0x.patch
+
+  ./configure \
+      --prefix="$prefix" \
+      --host="$host" \
+      --build="$build" \
+      --datadir="$prefix/share/doc"
+
+  make
+  make DESTDIR="$PKG" install
+}

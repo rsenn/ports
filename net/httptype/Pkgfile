@@ -1,0 +1,37 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Identifies which HTTP server is running on a given host.
+#  httptype reads a list of http hosts and optionally the port number for
+#  each of these. It queries each host, displaying the type of HTTP server
+#  running on that host, if any. It reads the http_proxy and no_proxy
+#  environment variables to determine whether to use a proxy or not. These
+#  options may also be specified through the command line.
+#  .
+# URL: http://httptype.sourceforge.net/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=httptype
+version=1.2.3
+release=1
+source=($mirror_sf/httptype/httptype-$version.tar.gz)
+
+build()
+{
+  cd httptype-$version
+
+  sed -i -e "s,/man/man,/share&," Makefile
+
+  install -d $ROOT/bin
+  install -d $ROOT/share/man/man1
+
+  make PREFIX="$ROOT" install
+
+  rm -f $ROOT/bin/httptype
+  mv -f $ROOT/bin/httptype* $ROOT/bin/httptype
+
+  install -d $ROOT/share/doc/httptype
+  install -m 644 README Changelog Copying $ROOT/share/doc/httptype
+}
+
+# EOF

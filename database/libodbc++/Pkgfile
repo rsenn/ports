@@ -1,0 +1,25 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: libodbc++ is a C++ class library for accessing SQL databases. It is designed with standards in mind, so it provides a subset of the well-known JDBC 2.0(tm) and runs on top of ODBC on Windows and Unix/Linux. It is distributed under the LGPL.
+# URL: http://libodbcxx.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libodbc++
+version=
+release=1
+source=($mirror_sf/libodbcxx/libodbc++-0.2.4pre3.tar.bz2)
+
+build()
+{
+  cd libodbc++-0.2.4pre3
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

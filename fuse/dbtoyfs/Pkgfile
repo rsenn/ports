@@ -1,0 +1,26 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Lets you browse the contents of a relational database through a set of directories and xml files
+# You will see a directory for every schema in your db, each containing a directory for every table.
+# In the "table" dirs there are a couple of files with the table's definition and data.
+# URL: http://freshmeat.net/redir/dbtoy/39802/url_homepage/dbtoyfs
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libfuse2
+
+name=dbtoyfs
+version=0.8.1
+release=1
+source=(http://www.thesaguaros.com/beta/newsag/products/dbtoyfs/dbtoy-$version-rel.tgz)
+
+build()
+{
+  cd dbtoy-$version
+
+  make CC="${CC-cc}" CLIENT_FLAGS="$CFLAGS -include stdlib.h -include string.h"
+
+  install -d $ROOT/bin
+  install -m 755 dbtoy $ROOT/bin/dbtoyfs
+
+  install -d $ROOT/share/doc/dbtoyfs
+  install -m 644 README $ROOT/share/doc/dbtoyfs
+}

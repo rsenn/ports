@@ -1,0 +1,56 @@
+Index: httpfs.c
+===================================================================
+--- httpfs.c	(revision 17)
++++ httpfs.c	(revision 22)
+@@ -357,9 +357,8 @@
+     if (protocol == PROTO_HTTPS)
+ 	bytes = SSL_read(ssl, buf, sizeof(buf));
+     else
+-#else
++#endif
+     bytes = read(sockfd, buf, sizeof(buf));
+-#endif
+     if (bytes <= 0) {
+ 	fprintf(stderr, "%s: HEAD (read) failed\n", argv0);
+ 	return -1;
+@@ -899,13 +898,14 @@
+ };
+ 
+ int main(int argc, char *argv[]) {
++    struct fuse_args args = FUSE_ARGS_INIT(argc, argv);
+     struct stat mpstat;
+     int sr;
+     char* ri;
+-    char* fusev[4];
++    char* fusev[argc+1];
+ 	
+     argv0 = argv[0];
+-    if (argc != 3) {
++    if (argc < 3) {
+ 	(void) fprintf(stderr, "usage:  %s url mount-point\n", argv0);
+ 	(void) fprintf(stderr, ">>> Version: %s <<<\n", VERSION);
+ 	return 1;
+@@ -947,10 +947,18 @@
+     } else
+ 	strcpy(httpfs_path, ri);
+ 
+-    fusev[0] = argv0;
+-    fusev[1] = "-o";
+-    fusev[2] = "nonempty";
+-    fusev[3] = argv2;
+-    return fuse_main(argc+1, fusev, &httpfs_oper);
++    int i=0;
++    fusev[i++] = argv0;
++//    fusev[i++] = "-o";
++//    fusev[i++] = "nonempty";
++    fusev[i++] = argv2;
++    int p;
++    for(p=3; p < argc; ++p)
++    {
++      fusev[i++] = argv[p];
++      //printf("argv[%d] = \"%s\"\n", p, argv[p]);
++    }
++    fusev[i] = NULL;
++    return fuse_main(i, fusev, &httpfs_oper);
+     /*    close(sockfd);	*/
+ }

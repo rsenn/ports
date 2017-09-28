@@ -1,0 +1,32 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: An interactive high-level object-oriented language (version 2.5)
+#  ersion 2.5 of the high-level, interactive object oriented language,
+#  includes an extensive class library with lots of goodies for network
+#  programming, system administration, sounds and graphics.
+# URL: http://www.python.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=python
+version=2.5.4
+release=1
+source=(http://www.python.org/ftp/python/${version%[a-z]*}/Python-$version.tar.bz2)
+
+build()
+{
+  cd Python-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  cd $ROOT/bin && {
+    rm python
+    ln -s python${version} python
+  }
+}

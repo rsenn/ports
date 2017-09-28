@@ -1,0 +1,33 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:50 roman Exp $
+#
+# Description: A tool for scientific data visualization and analysis.
+#  Extrema, originally developed in the fields of nuclear and particle
+#  physics, is a powerful visualization and data analysis tool that
+#  enables researchers to quickly distill their large, complex data sets
+#  into meaningful information. Its flexibility, sophistication, and
+#  power allow you to easily develop your own commands and create highly
+#  customized graphs.
+# URL: http://exsitewebware.com/extrema/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=extrema
+version=4.2.4
+release=1
+source=($mirror_sf/extrema/extrema-$version.tar.gz)
+
+build()
+{
+  cd extrema-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --${shared:=enable}-shared \
+       --${static:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+}
+

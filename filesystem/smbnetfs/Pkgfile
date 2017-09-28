@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A user-space Linux/FreeBSD filesystem for browsing a Samba/Microsoft network.
+#  SMBNetFS is a user-space filesystem for Linux and FreeBSD that allows
+#  you browse a Samba/Microsoft network much like the network neighborhood
+#  in Microsoft Windows.
+# URL: http://sourceforge.net/projects/smbnetfs
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=smbnetfs
+version=0.3.11a
+release=1
+source=($mirror_sf/smbnetfs/smbnetfs-$version.tar.bz2)
+
+build()
+{
+  cd smbnetfs-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

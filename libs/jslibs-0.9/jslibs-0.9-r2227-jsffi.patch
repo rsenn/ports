@@ -1,0 +1,234 @@
+diff -ru jslibs-0.9-r1881_orig/src/jsffi/Makefile jslibs-0.9-r1881/src/jsffi/Makefile
+--- jslibs-0.9-r1881_orig/src/jsffi/Makefile	2009-02-06 05:11:22.000000000 +0100
++++ jslibs-0.9-r1881/src/jsffi/Makefile	2009-02-06 05:11:19.000000000 +0100
+@@ -0,0 +1,8 @@
++TARGET     = jsffi.so
++SRC        = $(wildcard *.cpp)
++INCLUDES   = `pkg-config js libffi --cflags`
++STATICLIBS = 
++SHAREDLIBS = `pkg-config js libffi --libs`
++DEPENDS    = 
++
++include ../rules.mk
+diff -ru jslibs-0.9-r1881_orig/src/jsffi/ffi.cpp jslibs-0.9-r1881/src/jsffi/ffi.cpp
+--- jslibs-0.9-r1881_orig/src/jsffi/ffi.cpp	2009-02-06 04:57:36.000000000 +0100
++++ jslibs-0.9-r1881/src/jsffi/ffi.cpp	2009-02-06 05:10:34.000000000 +0100
+@@ -23,6 +23,8 @@
+ #include "jsstddef.h"
+ 
+ #include <stdlib.h>
++#include <stdint.h>
++#include <errno.h>
+ #include <ffi.h>
+ 
+ //#pragma warning( disable : 4100 ) // warning C4100: 'xxx' : unreferenced formal parameter
+@@ -565,7 +567,7 @@
+     case FFI_TYPE_SINT64:
+       {
+         char val[21]; // 19digits + minus sign + \0
+-        _i64toa( ((signed __int64*)*pptr)[index], val, 10 );
++        snprintf(val, sizeof(val), "%lld", ((int64_t *)*pptr)[index]);
+         *vp = STRING_TO_JSVAL( JS_NewStringCopyZ( cx, val ) );
+       }
+       break;
+@@ -573,7 +575,7 @@
+     case FFI_TYPE_UINT64:
+       {
+         char val[20]; // 19digits + \0
+-        _ui64toa( ((unsigned __int64*)*pptr)[index], val, 10 );
++        snprintf(val, sizeof(val), "%llu", ((uint64_t *)*pptr)[index]);
+         *vp = STRING_TO_JSVAL( JS_NewStringCopyZ( cx, val ) );
+       }
+       break;
+@@ -689,7 +691,7 @@
+ 
+     case FFI_TYPE_SINT32: // PS32[0] = Number( -2147483648 to 2147483647 )
+       {
+-        signed long *pVal = &((signed long*)*pptr)[index];
++        int32_t *pVal = &((int32_t *)*pptr)[index];
+         if ( JSVAL_IS_INT( *vp ) )
+           *pVal = JSVAL_TO_INT( *vp );
+         else
+@@ -699,7 +701,7 @@
+ 
+     case FFI_TYPE_UINT32: // PU32[0] = Number( 0 to 4294967295 )
+       {
+-        unsigned long *pVal = &((unsigned long*)*pptr)[index];
++        uint32_t *pVal = &((uint32_t *)*pptr)[index];
+         if ( JSVAL_IS_INT( *vp ) )
+           *pVal = JSVAL_TO_INT( *vp );
+         else
+@@ -709,7 +711,7 @@
+ 
+     case FFI_TYPE_SINT64:
+       {
+-        signed __int64 *pVal = &((signed __int64*)*pptr)[index];
++        int64_t *pVal = &((int64_t *)*pptr)[index];
+         if ( JSVAL_IS_INT( *vp ) )
+           *pVal = JSVAL_TO_INT( *vp );
+         else {
+@@ -722,7 +724,7 @@
+ 
+     case FFI_TYPE_UINT64:   //  0 to 9223372036854775808-1  ( 19 digits )
+       {
+-        unsigned __int64 *pVal = &((unsigned __int64*)*pptr)[index];
++        uint64_t *pVal = &((uint64_t *)*pptr)[index];
+         if ( JSVAL_IS_INT( *vp ) )
+           *pVal = JSVAL_TO_INT( *vp );
+         else {
+@@ -744,7 +746,7 @@
+           if ( JSVAL_IS_INT( *vp ) )
+             *pVal = JSVAL_TO_INT( *vp );
+           else
+-            JS_ValueToECMAUint32( cx, *vp, pVal );
++            JS_ValueToECMAUint32( cx, *vp, (uint32_t *)pVal );
+         }
+       }
+       break;
+@@ -989,17 +991,26 @@
+ 
+   // Pointer to a null-terminated string that specifies the function or variable name, or the function's ordinal value.
+   // If this parameter is an ordinal value, it must be in the low-order word; the high-order word must be zero.
+-  FARPROC procAddress = ::GetProcAddress( module, JSVAL_IS_INT( id ) ? (LPCSTR) LOWORD( JSVAL_TO_INT( id ) ) : JS_GetStringBytes(JSVAL_TO_STRING(id)) );
++  LPCSTR procName =  JSVAL_IS_INT( id ) ? (LPCSTR) LOWORD( JSVAL_TO_INT( id ) ) : JS_GetStringBytes(JSVAL_TO_STRING(id));
++  FARPROC procAddress = 
++#ifdef _WIN32
++    ::GetProcAddress( module, procName );
++#else
++    (FARPROC)dlsym( module, procName );
++#endif
+ 
+   if ( procAddress == NULL ) {
+-
++#ifdef _WIN32
+     DWORD err = ::GetLastError();
++#else
++    int err = errno;
++#endif
+     JS_ReportError( cx, "GetProcAddress error, symbol not found ? module closed ? (error: 0x%X)", err );
+     return JS_FALSE;
+   }
+ 
+   ffi_cif cif;
+-  if (ffi_prep_cif( &cif, FFI_STDCALL, argc-1, ffiArgTypeList[0], ffiArgTypeList+1 ) != FFI_OK ) { // +1 because [0] is the return type
++  if (ffi_prep_cif( &cif, FFI_DEFAULT_ABI, argc-1, ffiArgTypeList[0], ffiArgTypeList+1 ) != FFI_OK ) { // +1 because [0] is the return type
+ 
+     JS_ReportError( cx, "ffi_prep_cif error" );
+     return JS_FALSE;
+@@ -1049,11 +1060,19 @@
+ 
+ // lazy mecanism...  JS_SetReservedSlot( cx, obj, 0, STRING_TO_JSVAL( JS_NewStringCopyZ( cx, libFileName ) ) ); // slot[0]
+ 
+-  HMODULE module = ::LoadLibrary(libFileName);
++  HMODULE module = 
++#ifdef _WIN32
++    ::LoadLibrary(libFileName);
++#else
++    dlopen(libFileName, RTLD_NOW);
++#endif
+ 
+ 	if ( module == NULL ) {
+-
++#ifdef _WIN32
+ 		DWORD err = ::GetLastError();
++#else
++    int err = errno;
++#endif
+ 
+     JS_ReportError( cx, "LoadLibrary error 0x%x while loading %s ", err, libFileName );
+     return JS_FALSE;
+@@ -1080,8 +1099,11 @@
+   if ( pv != NULL ) {
+ 
+     if ( !StackHas( &_loadedLibraries, pv ) ) { // manual mode
+-
++#ifdef _WIN32
+       ::FreeLibrary( (HMODULE)pv );
++#else
++      dlclose(pv);
++#endif
+     }
+ 
+   }
+@@ -1113,8 +1135,11 @@
+   - StackRemove( &_loadedLibraries, pv ); // it's not a problem if pv don't exist in the stack
+   - remove the rooted lib (obj) from _libObject
+ */
+-
++#ifdef _WIN32
+     ::FreeLibrary( (HMODULE)pv );
++#else
++    dlclose(pv);
++#endif
+     JS_SetPrivate( cx, obj, NULL ); // lib is freed
+   }
+   return JS_TRUE;
+@@ -1174,7 +1199,7 @@
+ JSBool NativeTools_PtrToJsval(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval *rval) {
+ 
+   unsigned long val;
+-  JS_ValueToECMAUint32( cx, argv[0], &val );
++  JS_ValueToECMAUint32( cx, argv[0], (uint32_t *)&val );
+   *rval = (jsval)(void*)val;
+   return JS_TRUE;
+ }
+@@ -1222,5 +1247,9 @@
+ 
+   // close the libraries that have not be closed manualy by .Close() or automaticaly by Finalize
+   while ( _loadedLibraries )
++#ifdef _WIN32
+     ::FreeLibrary( (HMODULE)StackPop( &_loadedLibraries ) );
++#else
++    dlclose(StackPop( &_loadedLibraries ));
++#endif
+ }
+diff -ru jslibs-0.9-r1881_orig/src/jsffi/main.cpp jslibs-0.9-r1881/src/jsffi/main.cpp
+--- jslibs-0.9-r1881_orig/src/jsffi/main.cpp	2009-02-06 04:57:36.000000000 +0100
++++ jslibs-0.9-r1881/src/jsffi/main.cpp	2009-02-06 05:10:52.000000000 +0100
+@@ -16,13 +16,13 @@
+ 
+ #include "ffi.h"
+ 
+-extern "C" __declspec(dllexport) JSBool ModuleInit(JSContext *cx, JSObject *obj) {
++extern "C" DLLEXPORT JSBool ModuleInit(JSContext *cx, JSObject *obj) {
+ 
+ 	Init_JSNI(cx, obj);
+ 	return JS_TRUE;
+ }
+ 
+-extern "C" __declspec(dllexport) JSBool ModuleRelease(JSContext *cx, JSObject *obj) {
++extern "C" DLLEXPORT JSBool ModuleRelease(JSContext *cx, JSObject *obj) {
+ 
+ 	// (TBD) cleanup the global object
+ 	Release_JSNI(cx);
+diff -ru jslibs-0.9-r1881_orig/src/jsffi/stdafx.h jslibs-0.9-r1881/src/jsffi/stdafx.h
+--- jslibs-0.9-r1881_orig/src/jsffi/stdafx.h	2009-02-06 04:57:36.000000000 +0100
++++ jslibs-0.9-r1881/src/jsffi/stdafx.h	2009-02-06 05:06:41.000000000 +0100
+@@ -3,10 +3,27 @@
+ // are changed infrequently
+ //
+ 
++#ifdef _MSC_VER
+ #pragma once
+ 
+ #define WIN32_LEAN_AND_MEAN		// Exclude rarely-used stuff from Windows headers
+ #include <windows.h>
++#endif
++
++#ifndef _WIN32
++
++typedef void *HMODULE;
++typedef int (*FARPROC)();
++typedef char *LPCSTR;
++
++typedef unsigned short WORD;
++typedef unsigned int DWORD;
++
++#define LOWORD(l)  ((WORD)((DWORD)(l) & 0xFFFF))
++
++#endif
++
++
+ 
+ #include "../common/platform.h"
+ 

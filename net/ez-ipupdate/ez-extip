@@ -1,0 +1,107 @@
+#!/bin/sh
+# -*-mode: shell-script-*-
+#
+# ez-extip
+#
+# Copyright (c) 2008,2009  Roman Senn <roman@digitall.ch>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2, or (at your option)
+# any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  
+# 
+# $Id: GPL@license.inc,v 1.1.1.1 2003/04/09 13:55:15 alane Exp $
+#
+#
+# 2009-03-31  <enkilo@blacksun>
+#
+#   * Initial release as standalone and bourne-shell compatible script
+#
+GETIP_SITES="
+  checkip.dyndns.org
+  getip.com
+  whatismyip.com
+  www.ip-adress.com
+  ipchicken.com
+  ip.ubergizmo.com
+  formyip.com
+  www.iphowto.com
+  www.iptect.com
+  showip.net
+  www.showmyip.com
+  www.hostip.info
+  showip.be
+  www.showmyipaddress.eu
+  show-ip.net
+"
+
+# ip_isv4 <ARG>
+#
+# Returns 0 (TRUE) when the argument is a valid IPv4 address.
+# -------------------------------------------------------------------------
+ip_isv4()
+{
+ (IFS=.
+  set -- $*
+
+  [ "$#" = 4 ] || return 1
+
+  for N; do
+    [ "$N" -ge 0 -a "$N" -le 255 ] || return 2
+  done)
+}
+
+# url_get <URL>
+#
+# Fetches an URL through HTTP/FTP.
+# -------------------------------------------------------------------------
+url_get()
+{
+ (wget --passive-ftp --no-check-certificate -O - "$1" || 
+  curl -k "$1" ||
+  fetch -p -o - "$1" ||
+  lynx -accept_all_cookies -source "$1") 2>/dev/null || {
+    echo "URL get $1 failed" 1>&2
+    return 1
+  }
+}
+
+# ip_ext <URL> [URL...]
+#
+# Gets the external IP address of the NAT router through a HTTP request
+# from an arbitrary "GetIP" website.
+# -------------------------------------------------------------------------
+ip_ext()
+{
+  RE_IP="[0-9]\\+\\.[0-9]\\+\\.[0-9]\\+\\.[0-9]\\+"
+  RE_NN="[^0-9]*"
+
+  for URL; do
+    DATA=`url_get "$URL" | sed "s/[^.0-9]\+/ /g"`
+
+    for TOK in $DATA; do
+      if ip_isv4 "$TOK"; then
+        echo "$TOK" && return 0
+      fi
+    done
+  done
+
+  return 1
+}
+
+# Shuffle target sites when possible, then call the main routine:
+# ===========================================================================
+if type shuf >/dev/null 2>/dev/null; then
+  GETIP_SITES=`echo "$GETIP_SITES" | shuf`
+fi
+
+ip_ext $GETIP_SITES

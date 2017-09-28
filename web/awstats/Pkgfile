@@ -1,0 +1,59 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Free real-time logfile analyzer to get advanced statistics (GNU GPL).
+#  AWStats is a free powerful and featureful tool that generates advanced
+#  web, streaming, ftp or mail server statistics, graphically. This log
+#  analyzer works as a CGI or from command line and shows you all possible
+#  information your log contains, in few graphical web pages. It uses a
+#  partial information file to be able to process large log files, often
+#  and quickly. It can analyze log files from all major server tools like
+#  Apache log files (NCSA combined/XLF/ELF log format or common/CLF log
+#  format), WebStar, IIS (W3C log format) and a lot of other web, proxy,
+#  wap, streaming servers, mail servers and some ftp servers.
+#  .
+# URL: http://awstats.sourceforge.net/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=awstats
+version=6.9
+release=1
+source=(http://awstats.sourceforge.net/files/awstats-$version.tar.gz
+        awstats.conf
+        awstats.conf.local
+        awstats.cron
+        apache.conf)
+
+build()
+{
+  cd awstats-$version
+
+  case "$prefix" in
+    "/usr") sysconfdir="/etc" localstatedir="/var" ;;
+  esac
+
+  install -d $ROOT/share/awstats
+  install -d $ROOT/share/doc/awstats
+  install -d $PKG${prefix}/lib/
+
+  mv -f wwwroot/cgi-bin $PKG${prefix}/lib/
+
+  cp -rf wwwroot/* $ROOT/share/awstats
+  cp -rf docs/* $ROOT/share/doc/awstats
+
+  install -d $PKG${sysconfdir="$prefix/etc"}/awstats
+
+  for FILE in $SRC/awstats.conf* $SRC/apache.conf; do
+    sed \
+        -e "s,@sysconfdir@,${sysconfdir=$prefix/etc},g" \
+        -e "s,@localstatedir@,${localstatedir=$prefix/var},g" \
+        -e "s,@prefix@,${prefix},g" \
+      "$FILE" \
+      >$PKG${sysconfdir}/awstats/${FILE##*/}
+  done
+
+  install -d $PKG${sysconfdir="$prefix/etc"}/cron.d
+  install -m 644 $SRC/awstats.cron $PKG${sysconfdir}/cron.d/awstats
+}
+
+# EOF

@@ -1,0 +1,41 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A Ruby language interface to Amazon Web Services v3.
+#  Ruby/Amazon is a simple Ruby library that allows one to retrieve
+#  information from the popular Amazon.com Website via Amazon Web Services
+#  v3. It aims to wrap the grunt work of interacting with the Amazon API
+#  behind a high-level layer of Ruby and, in so doing, make it easier to
+#  use. Ruby/Amazon is succeeded by Ruby/AWS.
+#  .
+# URL: http://www.caliban.org/ruby/
+# Maintainer:  Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=ruby-amazon
+version=0.9.2
+release=1
+source=(http://www.caliban.org/files/ruby/ruby-amazon-$version.tar.gz)
+
+build()
+{
+  cd ruby-amazon-$version
+
+  set -- `ruby --version`
+
+  rubyver=${2%.*}
+  RUBYLIBDIR=$prefix/lib/ruby
+
+  ruby setup.rb config \
+    --prefix="$prefix" \
+    --site-ruby="$RUBYLIBDIR/$rubyver"
+
+  ruby setup.rb setup
+  ruby setup.rb install --prefix="$PKG"
+
+  install -d $ROOT/share/doc/ruby-amazon
+  install -m 644 COPYING README INSTALL $ROOT/share/doc/ruby-amazon
+
+  cp -rf example $ROOT/share/doc/ruby-amazon/
+}
+
+# EOF

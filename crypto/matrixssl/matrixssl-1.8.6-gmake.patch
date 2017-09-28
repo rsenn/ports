@@ -1,0 +1,119 @@
+--- matrixssl-1-8-6-open_orig/GNUmakefile	2009-01-29 11:32:06.000000000 +0100
++++ matrixssl-1-8-6-open/GNUmakefile	2009-01-29 11:31:31.000000000 +0100
+@@ -0,0 +1,113 @@
++#
++#	GNU Makefile for MatrixSSL library
++#	Builds shared library using libtool.
++#	See comments below for building a debug library.
++#	Copyright (c) PeerSec Networks, 2002-2008. All Rights Reserved.
++#
++
++PREFIX  ?= /usr
++
++VERSION := 1.8.6
++LIBTOOL := libtool
++CC      := gcc
++O       := .lo
++A       := .la
++E       :=
++
++LIBRARY	= libmatrixssl.la
++
++OBJECTS	= \
++		src/cipherSuite$(O) \
++		src/matrixSsl$(O) \
++		src/sslDecode$(O) \
++		src/sslEncode$(O) \
++		src/sslv3$(O) \
++		src/os/debug$(O) \
++		src/os/linux/linux$(O)	\
++		src/crypto/peersec/arc4$(O) \
++		src/crypto/peersec/base64$(O) \
++		src/crypto/peersec/des3$(O) \
++		src/crypto/peersec/md5$(O) \
++		src/crypto/peersec/md2$(O) \
++		src/crypto/peersec/mpi$(O) \
++		src/crypto/peersec/rsa$(O) \
++		src/crypto/peersec/sha1$(O) \
++		src/pki/asn1$(O) \
++		src/pki/rsaPki$(O) \
++		src/pki/x509$(O)
++
++#
++#	Debug flags (Define MATRIXSSL_DEBUG in shell to build debug)
++#	bash:	export MATRIXSSL_DEBUG=1
++#			unset MATRIXSSL_DEBUG
++#	tcsh:	setenv MATRIXSSL_DEBUG 1
++#			unsetenv MATRIXSSL_DEBUG
++#
++#MATRIXSSL_DEBUG = 1
++ifdef MATRIXSSL_DEBUG
++CFLAGS := -g3 -Wall -Winline -Wdisabled-optimization -Wno-pointer-sign -Wno-sign-compare 
++CPPFLAGS := -DDEBUG
++else
++CFLAGS	:= -g -O2 
++CPPFLAGS := -DNDEBUG
++endif
++
++ifdef MATRIXSSL_PROFILE
++CFLAGS += -pg
++endif
++
++#
++#	Override variables for compilation on x86-64 (AMD64, Nacona, etc)
++#
++ifeq ($(shell uname -m),x86_64)
++CFLAGS += -march=k8
++CPPFLAGS += -DFP_64BIT -DTFM_X86_64 -DRDTSC
++endif
++
++#
++#	Compile options
++#
++CPPFLAGS += -DLINUX -I./
++
++#
++# Linker options
++# 
++LDFLAGS := -rpath $(PREFIX)/lib -version-number `echo $(VERSION) | sed s,[^0-9],:,g`
++
++#
++# Libraries
++# 
++LIBS := -lpthread
++
++
++all: compile
++
++compile: $(OBJECTS) $(LIBRARY)
++
++#
++# Compilation rule
++#
++%.lo: %.c
++	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
++
++#
++# Build the library
++#
++$(LIBRARY): $(OBJECTS)
++	$(LIBTOOL) --tag=CC --mode=link $(CC) $(LDFLAGS) $(CFLAGS) -o $@ $^ $(LIBS)
++#	$(LIBTOOL) --tag=CC --mode=finish $@
++
++
++#
++# Install the library
++#
++install:
++	mkdir -p $(DESTDIR)$(PREFIX)/lib
++	$(LIBTOOL) --tag=CC --mode=install cp $(LIBRARY) $(DESTDIR)$(PREFIX)/lib
++	mkdir -p $(DESTDIR)$(PREFIX)/include
++	cp matrixSsl.h src/matrixConfig.h $(DESTDIR)$(PREFIX)/include
++	sed '/^#include/ s,"src/matrixConfig.h",<matrixConfig.h>,' matrixCommon.h >$(DESTDIR)$(PREFIX)/include/matrixCommon.h
++
++
++#
++#	Clean up all generated files
++#
++clean:
++	rm -f $(LIBRARY) $(OBJECTS)

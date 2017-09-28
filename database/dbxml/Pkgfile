@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A native XML database with XQuery access.
+#  Berkeley DB XML is a native XML database engine for use within your
+#  product. Made available as a C++ library with language bindings for Java,
+#  Perl, Python, PHP, and Tcl, it integrates directly into your application
+#  (it is not a standalone database server). It provides XQuery access
+#  into a database of document containers. XML documents are stored and
+#  indexed in their native format using Berkeley DB as the transactional
+#  database engine.
+# URL: http://www.sleepycat.com/products/xml.shtml
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=dbxml
+version=2.4.13
+release=1
+source=(http://download.oracle.com/berkeley-db/dbxml-$version.tar.gz)
+
+build()
+{
+  cd dbxml-$version/dbxml/dist
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix" \
+       --with-berkeleydb="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

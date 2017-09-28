@@ -1,0 +1,25 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: The crawl utility starts a depth-first traversal of the web at the specified URLs. It stores all JPEG images that match the configured constraints. Crawl is fairly fast and allows for graceful termination. After terminating crawl, it is possible to restart it at exactly the same spot where it was terminated. Crawl keeps a persistent database that allows multiple crawls without revisiting sites.
+# URL: http://www.monkey.org/~provos/crawl/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=crawl
+version=0.4
+release=1
+source=(http://www.monkey.org/~provos/crawl-$version.tar.gz)
+
+build()
+{
+  cd crawl-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

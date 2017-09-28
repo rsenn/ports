@@ -1,0 +1,42 @@
+--- biew-5731_orig/biewlib/sysdep/generic/unix/keyboard.c	2009-04-17 20:13:03.000000000 +0200
++++ biew-5731/biewlib/sysdep/generic/unix/keyboard.c	2009-04-17 21:50:45.000000000 +0200
+@@ -58,6 +58,7 @@
+ unsigned rawkb_size; /* size of rawkb_buf elements 1,2 or 4*/
+ unsigned rawkb_mode=0;
+ int rawkb_escape;
++static void *nls_handle;
+ 
+ #ifdef	_VT100_
+ 
+@@ -75,7 +76,6 @@
+ static int in_fd;
+ static struct termios sattr;
+ 
+-static void *nls_handle;
+ static int is_unicode=0;
+ 
+ typedef struct {
+--- biew-5731_orig/biewlib/sysdep/generic/unix/vio.c	2009-04-17 20:13:03.000000000 +0200
++++ biew-5731/biewlib/sysdep/generic/unix/vio.c	2009-04-17 21:51:56.000000000 +0200
+@@ -48,6 +48,10 @@
+ static unsigned violen;
+ static unsigned char *viomem;
+ 
++static void *nls_handle;
++static unsigned is_unicode=0;
++static char *screen_cp;
++
+ static struct {
+     unsigned char last;
+     unsigned char color[0x10];
+@@ -206,10 +210,6 @@
+ static char *vtmp;
+ static int out_fd;
+ static int _color[8] = {0,4,2,6,1,5,3,7};
+-static char *screen_cp;
+-static unsigned is_unicode=0;
+-
+-static void *nls_handle;
+ 
+ static unsigned char frames_vt100[0x30] =
+ "aaaxuuukkuxkjjjkmvwtqnttmlvwtqnvvwwmmllnnjlaaaaa";

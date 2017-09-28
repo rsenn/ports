@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A DHCP relay agent.
+#  dhcp-helper is a DHCP relay agent. 
+#  It allows the use of DHCP across multiple subnets. 
+#  This implementation is simple, small, and easy to configure.
+#  .
+# URL: http://www.thekelleys.org.uk/dhcp-helper
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=dhcp-helper
+version=1.0
+release=1
+source=(http://www.thekelleys.org.uk/dhcp-helper/dhcp-helper-$version.tar.gz)
+
+build() 
+{
+  cd dhcp-helper-$version
+  
+  make
+  make DESTDIR="$PKG" PREFIX="$prefix" MANDIR="$prefix/share/man" install
+
+  install -d $ROOT/share/doc/dhcp-helper
+  install -m 644 CHANGELOG COPYING README COPYING-v3 $ROOT/share/doc/dhcp-helper
+}
+
+# EOF

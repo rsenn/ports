@@ -1,0 +1,31 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:52 roman Exp $
+# Name: Nemesis Utilities System
+# Description: a cross-platform C++ application development framework which
+# focus on the development of network applications, non-gui applications, cgi
+# scripts, database applications and any kind of application that needs
+# interoperability. NUS is very modular and its functionality is separated in
+# modules, as such making it easy to maintain, debug and deploy. The NUS
+# Library was greatly inspired in other libraries I have been working on the
+# latest years like, for example, Trolltech's QT.
+# It's also very important to note that NUS is Free Software, released under
+# the LGPL, and it will remain so.
+# URL: http://dev.angusyoung.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=nus
+version=0.3.0-beta1
+release=1
+source=(http://dev.angusyoung.org/downloads/nus/src/nus-$version.tar.bz2)
+
+build()
+{
+  cd nus-$version
+
+  cmake \
+      -D CMAKE_INSTALL_PREFIX="$prefix" \
+    .
+
+  make DESTDIR="$PKG" install
+}
+

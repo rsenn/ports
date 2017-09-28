@@ -1,0 +1,53 @@
+# $Id: Pkgfile,v 1.1 2007/05/10 16:59:30 roman Exp $
+#
+# Description: Library to convert Natural Language sentences into feature vectors.
+# The Fries library consists of a series of classes that make it easy to convert
+# Natural Language sentence into feature vectors, useful to apply Machine Learning
+# models.
+# URL: https://lafarga.cpl.upc.edu/frs/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libgcc1, libpcre3, libstdc++6
+
+name=libfries
+version=0.97
+release=1
+source=(https://lafarga.cpl.upc.edu/frs/download.php/167/libfries-$version.tar.gz
+        libfries-0.96-libtool.patch
+        libfries-0.97-c++0x.patch
+        libfries-0.97-pcre.patch)
+
+build()
+{
+  cd libfries-$version
+
+  patch -N -p1 -i $SRC/libfries-0.96-libtool.patch
+  patch -N -p1 -i $SRC/libfries-0.97-c++0x.patch
+  patch -N -p1 -i $SRC/libfries-0.97-pcre.patch
+
+  libtoolize --force --copy
+  aclocal --force
+  automake --force --copy --foreign --add-missing
+  aclocal --force
+  autoconf --force
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --${shared:=enable}-shared \
+      --${static:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/libfries
+  install -m 644 COPYING INSTALL README THANKS $ROOT/share/doc/libfries
+
+  make -C doc/latex
+  install -m 644 doc/latex/*.pdf $ROOT/share/doc/libfries
+
+  cd doc
+  doxygen refman.cfg
+
+  cp -rf html $ROOT/share/doc/libfries
+}

@@ -1,0 +1,72 @@
+# $Id: Pkgfile,v 1.15 2007/05/09 21:02:47 roman Exp $
+#
+# Description: GNU Gettext
+#  A well integrated set of tools and documentation to help programmers,
+#  translators, and users make other GNU packages produce multi-lingual
+#  messages. The tools include a set of conventions about how programs
+#  should be written to support message catalogs, a directory and file
+#  naming organzation for those message catalogs, a runtime library that
+#  supports retrieval of translated messages, and a few stand-alone programs
+#  to manipulate sets of strings. A special GNU Emacs mode also helps work
+#  with these strings.
+# URL: http://www.gnu.org/software/gettext/gettext.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libgcc1, libgcj8-1, mingw32-expat, mingw32-gettext, mingw32-libiconv, perl-modules, zlib1g
+
+name=gettext
+version=0.17
+release=1
+source=($mirror_gnu/gettext/gettext-$version.tar.gz
+#        gettext-0.17-mingw32.patch
+        gettext-0.17-diet.patch
+        gettext-0.17-acbootstrap.patch
+        gettext-0.17-fixes.patch)
+
+build()
+{
+  cd gettext-$version
+
+  patch -N -p1 -i $SRC/gettext-0.17-diet.patch
+  patch -N -p1 -i $SRC/gettext-0.17-acbootstrap.patch
+  patch -N -p1 -i $SRC/gettext-0.17-fixes.patch
+
+  rm -f m4/libtool.m4 build-aux/config.sub
+#  touch m4/libtool.m4
+
+  for dir in gettext-runtime gettext-tools "$PWD"; do
+   (cd $dir
+    rm -vf aclocal.m4
+    sh autogen.sh) || return $?
+  done
+
+#  libtoolize --force --copy
+#  aclocal --force -I m4
+#  automake --force --copy --add-missing
+#  aclocal --force -I m4
+#  autoconf --force
+
+#  ./autogen.sh --quick --skip-gnulib
+
+#  (echo '#!/bin/sh' && echo 'echo "$@"') >build-aux/config.sub
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --mandir="$prefix/man" \
+       --${shared:=enable}-shared \
+       --${static:=enable}-shared \
+       --disable-csharp \
+       --with-libiconv-prefix="$prefix" \
+       --with-included-gettext \
+       --with-libexpat-prefix="$prefix" \
+       --without-emacs \
+       --enable-relocatable
+
+  make
+  make DESTDIR="$PKG" install
+
+  rm -f $ROOT/info/dir
+  rm -f $ROOT/lib/charset.alias
+  rm -f $ROOT/lib/locale.alias
+}

@@ -1,0 +1,36 @@
+# $Id: Pkgfile,v 1.4 2007/04/22 23:07:52 roman Exp $
+#
+# Description: Security Enhanced Linux policy library for changing policy binaries
+#  Security-enhanced Linux is a patch of the Linux kernel and a number of
+#  utilities with enhanced security functionality designed to add mandatory
+#  access controls to Linux. The Security-enhanced Linux kernel contains new
+#  architectural components originally developed to improve the security of
+#  the Flask operating system. These architectural components provide general
+#  support for the enforcement of many kinds of mandatory access control
+#  policies, including those based on the concepts of Type Enforcement
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libsepol
+version=1.16.3
+release=1
+source=(libsepol-$version.tgz)
+
+build()
+{
+  cd libsepol-$version
+
+  sed -i "s,/usr,$prefix,g" */Makefile
+
+  make
+  make DESTDIR="$PKG" install
+
+  # probably needed from kernel-space? nevermind... not yet...
+  rm -f $ROOT/lib/libsepol.so
+
+  mv $PKG/lib/libsepol.so.1 $ROOT/lib/libsepol.so.${version%.*}
+
+  ln -sf libsepol.so.${version%.*} $ROOT/lib/libsepol.so.${version%%.*}
+  ln -sf libsepol.so.${version%%.*} $ROOT/lib/libsepol.so
+}

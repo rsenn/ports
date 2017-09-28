@@ -1,0 +1,33 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: utilities for Dell Inspiron and Latitude laptops
+#  This is a collection of utilities to control Dell Inspiron and Latitude
+#  laptops. It includes programs to turn the fan on and off, to read fan
+#  status, CPU temperature, BIOS version and to handle the volume buttons
+#  and Fn-keys.
+#  The package includes also a small Tk applet, designed to be swallowed
+#  in the gnome panel, which monitors the CPU temperature and controls
+#  automatically the fans accordingly to user defined thresholds.
+#  The programs require the kernel module i8k.o which can be compiled
+#  from the package sources or found in Linux kernel 2.4.14 and later
+#  versions. The kernel module has been tested only on Inspiron 8000 laptops
+#  but it should work on any Inspiron and Latitude laptops.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=i8kutils
+version=1.25
+release=1
+source=(http://people.debian.org/~dz/i8k/i8kutils_$version.tar.gz)
+
+build()
+{
+  cd i8kutils-$version
+
+  make CC="${CC-cc}" CFLAGS="$CFLAGS"
+
+  install -d $ROOT/bin
+
+  make PREFIX="$prefix" DESTDIR="$PKG" install
+}

@@ -1,0 +1,33 @@
+# $Id: Pkgfile,v 1.10 2007/05/10 16:59:30 roman Exp $
+#
+# Description: Library for Hydrogen, a simple real-time Drum machine/sequencer.
+# URL: http://www.hydrogen-music.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libhydrogen
+version=0.8.1beta5
+release=1
+source=($mirror_sf/hydrogen/libhydrogen-$version.tar.gz
+        libhydrogen-0.8.1-tixml-fix.patch
+        libhydrogen-0.8.1beta5-c++0x.patch)
+
+build()
+{
+  cd libhydrogen-$version
+
+  patch -N -p1 -i $SRC/libhydrogen-0.8.1-tixml-fix.patch
+  patch -N -p1 -i $SRC/libhydrogen-0.8.1beta5-c++0x.patch
+
+  libtoolize --force --copy --install
+  aclocal --force
+  autoconf --force
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

@@ -1,0 +1,85 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A cross-browser JavaScript library for building rich internet applications
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+# Split: -doc (*/doc/*)
+
+name=extjs
+version=2.1
+release=1
+source=(http://extjs.com/deploy/ext-${version}.zip
+        extjs.conf)
+
+build()
+{
+  cd ext-$version
+
+  install -d $ROOT/share/doc
+  mv -f docs $ROOT/share/doc/extjs
+  mv -f [A-Z]*[A-Z]* examples $ROOT/share/doc/extjs
+
+  install -d $ROOT/share/extjs
+  cp -rf * $ROOT/share/extjs
+  ln -sf adapter/ext/ext-base.js $ROOT/share/extjs
+
+  case $prefix in
+    "/usr") sysconfdir="/etc" ;;
+  esac
+
+  install -d $PKG${sysconfdir=$prefix/etc}/extjs
+
+  sed -e "s:@prefix@:$prefix:g" $SRC/extjs.conf >$PKG${sysconfdir}/extjs/apache.conf
+}
+
+postinst()
+{
+  case "$1" in
+    configure|upgrade)
+      WEBSERVERS="apache apache-ssl apache2"
+      for apache in $WEBSERVERS; do
+        if test -d "/etc/$apache/conf.d" && \
+           test -x "/etc/init.d/$apache" && \
+           test ! -e "/etc/$apache/conf.d/extjs.conf"
+        then
+          echo "Installing extjs configuration file for $apache.."
+          ln -sf /etc/extjs/apache.conf \
+            /etc/$apache/conf.d/extjs.conf
+          if test -f "/var/run/$apache.pid"; then
+            invoke-rc.d $apache reload
+          fi
+        fi
+      done
+      ;;
+      abort-upgrade|abort-remove|abort-deconfigure)
+      ;;
+      *)
+        echo "postinst called with unknown argument \`$1'" >&2
+        exit 0
+      ;;
+  esac
+}
+
+postrm()
+{
+  case "$1" in
+    purge|remove)
+      WEBSERVERS="apache apache-ssl apache2"
+      for apache in $WEBSERVERS; do
+        if test -f "/etc/$apache/conf.d/extjs.conf"; then
+          echo "Removing extjs configuration file for $apache.."
+          rm -f /etc/$apache/conf.d/extjs.conf
+          if test -f "/var/run/$apache.pid"; then
+            invoke-rc.d $apache reload
+          fi
+        fi
+      done
+      ;;
+    upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
+      ;;
+    *)
+      echo "postrm called with unknown argument \`$1'" >&2
+      exit 1
+  esac
+}

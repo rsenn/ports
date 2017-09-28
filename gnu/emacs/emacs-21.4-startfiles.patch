@@ -1,0 +1,255 @@
+diff -ru -ru emacs-21.4_orig/src/m/iris4d.h emacs-21.4/src/m/iris4d.h
+--- emacs-21.4_orig/src/m/iris4d.h	2007-04-16 11:18:39.000000000 +0200
++++ emacs-21.4/src/m/iris4d.h	2007-04-16 11:20:13.000000000 +0200
+@@ -148,11 +148,11 @@
+ 
+ #ifndef USG5_4
+ #ifdef HAVE_CRTN
+-/* Must define START-FILES so that the linker can find /usr/lib/crt0.o.  */
+-#define START_FILES pre-crt0.o /usr/lib/crt1.o
+-#define LIB_STANDARD -lc /usr/lib/crtn.o
++/* Must define START-FILES so that the linker can find /usr/local/lib/crt0.o.  */
++#define START_FILES pre-crt0.o /usr/local/lib/crt1.o
++#define LIB_STANDARD -lc /usr/local/lib/crtn.o
+ #else
+-#define START_FILES pre-crt0.o /usr/lib/crt0.o
++#define START_FILES pre-crt0.o /usr/local/lib/crt0.o
+ /* The entry-point label (start of text segment) is `start', not `__start'.  */
+ #define DEFAULT_ENTRY_ADDRESS start
+ #define LIB_STANDARD -lc
+diff -ru -ru emacs-21.4_orig/src/m/mips.h emacs-21.4/src/m/mips.h
+--- emacs-21.4_orig/src/m/mips.h	2007-04-16 11:18:39.000000000 +0200
++++ emacs-21.4/src/m/mips.h	2007-04-16 11:20:13.000000000 +0200
+@@ -164,8 +164,8 @@
+ #endif
+ 
+ #define LD_SWITCH_MACHINE -D 800000 -g3
+-#define START_FILES pre-crt0.o /usr/lib/crt1.o
+-#define LIB_STANDARD -lbsd -lc /usr/lib/crtn.o
++#define START_FILES pre-crt0.o /usr/local/lib/crt1.o
++#define LIB_STANDARD -lbsd -lc /usr/local/lib/crtn.o
+ #define LIBS_TERMCAP -lcurses
+ 
+ #define C_SWITCH_MACHINE -I/usr/include/bsd
+diff -ru -ru emacs-21.4_orig/src/m/mips4.h emacs-21.4/src/m/mips4.h
+--- emacs-21.4_orig/src/m/mips4.h	2007-04-16 11:18:23.000000000 +0200
++++ emacs-21.4/src/m/mips4.h	2007-04-16 11:20:13.000000000 +0200
+@@ -40,7 +40,7 @@
+    The -L is used to force second -lc to find the sysv version
+    of libc.a, which is needed because the BSD libc.a
+    doesn't have _ctype.  */
+-#define LIB_STANDARD -lmld -lc /lib/crtn.o -L/usr/lib -lc
++#define LIB_STANDARD -lmld -lc /lib/crtn.o -L/usr/local/lib -lc
+ 
+ 
+ #define COFF
+diff -ru -ru emacs-21.4_orig/src/m/pmax.h emacs-21.4/src/m/pmax.h
+--- emacs-21.4_orig/src/m/pmax.h	2007-04-16 11:18:39.000000000 +0200
++++ emacs-21.4/src/m/pmax.h	2007-04-16 11:16:32.000000000 +0200
+@@ -20,11 +20,11 @@
+ 
+ 
+ #ifdef MACH
+-#define START_FILES pre-crt0.o /usr/lib/crt0.o
++#define START_FILES pre-crt0.o /usr/local/lib/crt0.o
+ #else
+ /* This line starts being needed with ultrix 4.0.  */
+ /* You must delete it for version 3.1.  */
+-#define START_FILES pre-crt0.o /usr/lib/cmplrs/cc/crt0.o
++#define START_FILES pre-crt0.o /usr/local/lib/cmplrs/cc/crt0.o
+ #endif
+ 
+ #if defined (__NetBSD__) || defined (__OpenBSD__)
+diff -ru -ru emacs-21.4_orig/src/m/sun3-68881.h emacs-21.4/src/m/sun3-68881.h
+--- emacs-21.4_orig/src/m/sun3-68881.h	2007-04-16 11:18:39.000000000 +0200
++++ emacs-21.4/src/m/sun3-68881.h	2007-04-16 11:16:32.000000000 +0200
+@@ -25,4 +25,4 @@
+ #endif
+ 
+ #define sun_68881
+-#define START_FILES crt0.o /usr/lib/Mcrt1.o
++#define START_FILES crt0.o /usr/local/lib/Mcrt1.o
+diff -ru -ru emacs-21.4_orig/src/m/sun3-fpa.h emacs-21.4/src/m/sun3-fpa.h
+--- emacs-21.4_orig/src/m/sun3-fpa.h	2007-04-16 11:18:39.000000000 +0200
++++ emacs-21.4/src/m/sun3-fpa.h	2007-04-16 11:16:32.000000000 +0200
+@@ -25,4 +25,4 @@
+ #endif
+ 
+ #define sun_fpa
+-#define START_FILES crt0.o /usr/lib/Wcrt1.o
++#define START_FILES crt0.o /usr/local/lib/Wcrt1.o
+diff -ru -ru emacs-21.4_orig/src/m/sun3-soft.h emacs-21.4/src/m/sun3-soft.h
+--- emacs-21.4_orig/src/m/sun3-soft.h	2007-04-16 11:18:39.000000000 +0200
++++ emacs-21.4/src/m/sun3-soft.h	2007-04-16 11:16:32.000000000 +0200
+@@ -26,4 +26,4 @@
+ #endif
+ 
+ #define sun_soft
+-#define START_FILES crt0.o /usr/lib/Fcrt1.o
++#define START_FILES crt0.o /usr/local/lib/Fcrt1.o
+diff -ru -ru emacs-21.4_orig/src/m/sun3.h emacs-21.4/src/m/sun3.h
+--- emacs-21.4_orig/src/m/sun3.h	2007-04-16 11:18:39.000000000 +0200
++++ emacs-21.4/src/m/sun3.h	2007-04-16 11:16:32.000000000 +0200
+@@ -47,4 +47,4 @@
+    and the library xlib was compiled to use the 68881.
+    For maximum cleanliness, don't edit this file;
+    instead, insert this line in config.h.  */
+-/* #define START_FILES crt0.o /usr/lib/Mcrt1.o  */
++/* #define START_FILES crt0.o /usr/local/lib/Mcrt1.o  */
+diff -ru -ru emacs-21.4_orig/src/m/tandem-s2.h emacs-21.4/src/m/tandem-s2.h
+--- emacs-21.4_orig/src/m/tandem-s2.h	2007-04-16 11:18:39.000000000 +0200
++++ emacs-21.4/src/m/tandem-s2.h	2007-04-16 11:20:13.000000000 +0200
+@@ -17,5 +17,5 @@
+ #undef subprocesses
+ 
+ /* Correct some library file names.  */
+-#define START_FILES pre-crt0.o /usr/lib/crt1.o1.31
+-#define LIB_STANDARD -lbsd -lc /usr/lib/crtn.o1.31
++#define START_FILES pre-crt0.o /usr/local/lib/crt1.o1.31
++#define LIB_STANDARD -lbsd -lc /usr/local/lib/crtn.o1.31
+diff -ru -ru emacs-21.4_orig/src/s/bsdos2.h emacs-21.4/src/s/bsdos2.h
+--- emacs-21.4_orig/src/s/bsdos2.h	2007-04-16 11:18:39.000000000 +0200
++++ emacs-21.4/src/s/bsdos2.h	2007-04-16 11:16:32.000000000 +0200
+@@ -3,7 +3,7 @@
+ #include "bsd386.h"
+ 
+ #define	TEXT_START	0x1020	/* for QMAGIC */
+-#define	START_FILES	pre-crt0.o /usr/lib/crt0.o
++#define	START_FILES	pre-crt0.o /usr/local/lib/crt0.o
+ #define	HAVE_TERMIOS
+ #define	NO_TERMIO
+ 
+diff -ru -ru emacs-21.4_orig/src/s/bsdos4.h emacs-21.4/src/s/bsdos4.h
+--- emacs-21.4_orig/src/s/bsdos4.h	2007-04-16 11:18:23.000000000 +0200
++++ emacs-21.4/src/s/bsdos4.h	2007-04-16 11:20:13.000000000 +0200
+@@ -14,9 +14,9 @@
+ #define LD_SWITCH_SYSTEM
+ #undef START_FILES
+ #define START_FILES \
+-	pre-crt0.o /usr/lib/crt1.o /usr/lib/crti.o /usr/lib/crtbegin.o
++	pre-crt0.o /usr/local/lib/crt1.o /usr/local/lib/crti.o /usr/local/lib/crtbegin.o
+ #define UNEXEC unexelf.o
+-#define LIB_STANDARD -lgcc -lc -lgcc /usr/lib/crtend.o /usr/lib/crtn.o
++#define LIB_STANDARD -lgcc -lc -lgcc /usr/local/lib/crtend.o /usr/local/lib/crtn.o
+ #undef LIB_GCC
+ #define LIB_GCC
+ 
+diff -ru -ru emacs-21.4_orig/src/s/cxux.h emacs-21.4/src/s/cxux.h
+--- emacs-21.4_orig/src/s/cxux.h	2007-04-16 11:18:39.000000000 +0200
++++ emacs-21.4/src/s/cxux.h	2007-04-16 11:16:32.000000000 +0200
+@@ -48,7 +48,7 @@
+ #ifdef USING_CX_UX_7
+ #define LINKER /usr/sde/coff/usr/bin/ld
+ #define LD_SWITCH_SYSTEM -L/usr/sde/coff/usr/lib -zzero_word
+-#define START_FILES pre-crt0.o /usr/sde/coff/usr/lib/crt0.o /usr/sde/coff/usr/lib/m88100.o
++#define START_FILES pre-crt0.o /usr/sde/coff/usr/local/lib/crt0.o /usr/sde/coff/usr/local/lib/m88100.o
+ #else	/* !USING_CX_UX_7 */
+ #ifdef	_M88K
+ #define	START_FILES pre-crt0.o /lib/crt0.o
+diff -ru -ru emacs-21.4_orig/src/s/freebsd.h emacs-21.4/src/s/freebsd.h
+--- emacs-21.4_orig/src/s/freebsd.h	2007-04-16 11:18:39.000000000 +0200
++++ emacs-21.4/src/s/freebsd.h	2007-04-16 11:20:13.000000000 +0200
+@@ -79,9 +79,9 @@
+ #ifdef __ELF__
+ 
+ #define LD_SWITCH_SYSTEM_1
+-#define START_FILES pre-crt0.o /usr/lib/crt1.o /usr/lib/crti.o /usr/lib/crtbegin.o
++#define START_FILES pre-crt0.o /usr/local/lib/crt1.o /usr/local/lib/crti.o /usr/local/lib/crtbegin.o
+ #define UNEXEC unexelf.o
+-#define LIB_STANDARD -lgcc -lc -lgcc /usr/lib/crtend.o /usr/lib/crtn.o
++#define LIB_STANDARD -lgcc -lc -lgcc /usr/local/lib/crtend.o /usr/local/lib/crtn.o
+ #undef LIB_GCC
+ #define LIB_GCC
+ 
+@@ -91,9 +91,9 @@
+ #define LD_SWITCH_SYSTEM_1 -e start -dc -L/usr/local/lib
+ #define HAVE_TEXT_START		/* No need to define `start_of_text'. */
+ #if __FreeBSD_version >= 300002
+-#define START_FILES pre-crt0.o /usr/lib/aout/crt0.o
++#define START_FILES pre-crt0.o /usr/local/lib/aout/crt0.o
+ #else /* __FreeBSD_version < 300002 */
+-#define START_FILES pre-crt0.o /usr/lib/crt0.o
++#define START_FILES pre-crt0.o /usr/local/lib/crt0.o
+ #endif /* __FreeBSD_version < 300002 */
+ #define UNEXEC unexsunos4.o
+ #define RUN_TIME_REMAP
+diff -ru -ru emacs-21.4_orig/src/s/gnu-linux.h emacs-21.4/src/s/gnu-linux.h
+--- emacs-21.4_orig/src/s/gnu-linux.h	2007-04-16 11:18:39.000000000 +0200
++++ emacs-21.4/src/s/gnu-linux.h	2007-04-16 11:20:13.000000000 +0200
+@@ -171,9 +171,9 @@
+ 
+ #ifndef __ELF__
+ /* GNU/Linux usually has crt0.o in a non-standard place */
+-#define START_FILES pre-crt0.o /usr/lib/crt0.o
++#define START_FILES pre-crt0.o /usr/local/lib/crt0.o
+ #else
+-#define START_FILES pre-crt0.o /usr/lib/crt1.o /usr/lib/crti.o
++#define START_FILES pre-crt0.o /usr/local/lib/crt1.o /usr/local/lib/crti.o
+ #endif
+ 
+ #ifdef __ELF__
+@@ -225,7 +225,7 @@
+ #else
+ #undef LIB_GCC
+ #define LIB_GCC
+-#define LIB_STANDARD -lgcc -lc -lgcc /usr/lib/crtn.o
++#define LIB_STANDARD -lgcc -lc -lgcc /usr/local/lib/crtn.o
+ #endif
+ 
+ /* Don't use -g in test compiles in configure.
+diff -ru -ru emacs-21.4_orig/src/s/netbsd.h emacs-21.4/src/s/netbsd.h
+--- emacs-21.4_orig/src/s/netbsd.h	2007-04-16 11:18:39.000000000 +0200
++++ emacs-21.4/src/s/netbsd.h	2007-04-16 11:20:13.000000000 +0200
+@@ -47,7 +47,7 @@
+ /* These definitions should work for either dynamic or static linking,
+    whichever is the default for `cc -nostdlib'.  */
+ #define HAVE_TEXT_START		/* No need to define `start_of_text'.  */
+-#define START_FILES pre-crt0.o /usr/lib/crt0.o
++#define START_FILES pre-crt0.o /usr/local/lib/crt0.o
+ #define UNEXEC unexsunos4.o
+ #define RUN_TIME_REMAP
+ 
+@@ -60,9 +60,9 @@
+ #endif /* not NO_SHARED_LIBS and not ELF */
+ 
+ #if !defined (NO_SHARED_LIBS) && defined (__ELF__)
+-#define START_FILES pre-crt0.o /usr/lib/crt0.o /usr/lib/crtbegin.o
++#define START_FILES pre-crt0.o /usr/local/lib/crt0.o /usr/local/lib/crtbegin.o
+ #define UNEXEC unexelf.o
+-#define LIB_STANDARD -lgcc -lc -lgcc /usr/lib/crtend.o
++#define LIB_STANDARD -lgcc -lc -lgcc /usr/local/lib/crtend.o
+ #undef LIB_GCC
+ #define LIB_GCC
+ #endif
+@@ -89,7 +89,7 @@
+ #endif /* __ELF__ */
+ 
+ /* On post 1.3 releases of NetBSD, gcc -nostdlib also clears
+-   the library search parth, i.e. it won't search /usr/lib
++   the library search parth, i.e. it won't search /usr/local/lib
+    for libc and friends. Using -nostartfiles instead avoids
+    this problem, and will also work on earlier NetBSD releases */
+ 
+diff -ru -ru emacs-21.4_orig/src/s/umips.h emacs-21.4/src/s/umips.h
+--- emacs-21.4_orig/src/s/umips.h	2007-04-16 11:18:39.000000000 +0200
++++ emacs-21.4/src/s/umips.h	2007-04-16 11:20:13.000000000 +0200
+@@ -11,7 +11,7 @@
+ #define LIBS_SYSTEM -lmld
+ #define LIBS_DEBUG
+ #define START_FILES pre-crt0.o /lib/crt1.o
+-#define LIB_STANDARD -lc /usr/lib/crtn.o
++#define LIB_STANDARD -lc /usr/local/lib/crtn.o
+ 
+ #define COFF
+ #define TERMINFO
+@@ -24,8 +24,8 @@
+ 
+ #define LIBS_SYSTEM -lmld
+ #define LIBS_DEBUG
+-#define START_FILES pre-crt0.o /usr/lib/crt1.o
+-#define LIB_STANDARD -lbsd -lc /usr/lib/crtn.o
++#define START_FILES pre-crt0.o /usr/local/lib/crt1.o
++#define LIB_STANDARD -lbsd -lc /usr/local/lib/crtn.o
+ /* #define LIBS_TERMCAP -lcurses */
+ 
+ #define C_SWITCH_SYSTEM -I/usr/include/bsd

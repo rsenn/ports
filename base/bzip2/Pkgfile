@@ -1,0 +1,44 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: bzip2
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: mingw32-bzip2
+
+name=bzip2
+version=1.0.5
+release=1
+source=(http://www.bzip.org/$version/bzip2-$version.tar.gz
+        bzip2-1.0.5-automake.patch
+        bzip2-1.0.5-libtool.patch
+        bzip2-1.0.5-mingw32.patch)
+
+build()
+{
+  cd bzip2-$version
+
+#  patch -N -p1 -i $SRC/bzip2-1.0.5-libtool.patch
+  patch -N -p1 -i $SRC/bzip2-1.0.5-automake.patch
+  patch -N -p1 -i $SRC/bzip2-1.0.5-mingw32.patch
+
+  rm -f Makefile.in
+
+  sh autogen.sh
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/bzip2
+  install -m 644 LICENSE bzip2.txt README README.COMPILATION.PROBLEMS README.XML.STUFF CHANGES $ROOT/share/doc/bzip2
+#  cd $ROOT/bin
+#
+#  rm -f bzcmp && ln -sf bzdiff bzcmp
+#  rm -f bzegrep && ln -sf bzgrep bzegrep
+#  rm -f bzfgrep && ln -sf bzgrep bzfgrep
+#  rm -f bzless && ln -sf bzmore bzless
+}

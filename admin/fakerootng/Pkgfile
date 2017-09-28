@@ -1,0 +1,38 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Software that fools a program into thinking it is running as root.
+#  Fakeroot-ng runs a program while fooling it into thinking it is
+#  running with root privileges. When the program does something that
+#  only root can do (e.g. create a device file), fakeroot-ng emulates the
+#  appropriate system calls so that the program gets a consistent view of
+#  its actions. Unlike the original fakeroot, fakeroot-ng uses the ptrace
+#  interface, which means that it will (soon) support emulating chroot
+#  jails properly.
+# URL: http://sourceforge.net/projects/fakerootng
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=fakeroot-ng
+version=0.17
+release=1
+source=($mirror_sf/fakerootng/fakeroot-ng-$version.tar.gz)
+
+build() 
+{
+  cd fakeroot-ng-$version
+  
+  #./bootstrap
+  
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+  
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/fakerootng
+  install -m 644 README AUTHORS NEWS COPYING ChangeLog INSTALL $ROOT/share/doc/fakerootng
+}
+
+# EOF

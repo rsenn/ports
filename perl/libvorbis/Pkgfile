@@ -1,0 +1,25 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Perl extension for Ogg Vorbis streams
+# URL: http://search.cpan.org/~foof/libvorbis-perl-0.05/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=libvorbis
+version=0.05
+release=1
+source=(http://search.cpan.org/CPAN/authors/id/F/FO/FOOF/libvorbis-perl-$version.tar.gz)
+
+build()
+{
+  cd libvorbis-perl-$version
+
+  perl Makefile.PL
+  make \
+      DESTDIR="$PKG" \
+      INSTALLDIRS="vendor" \
+      PREFIX="$prefix" \
+    install
+}
+
+# EOF

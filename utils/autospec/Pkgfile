@@ -1,0 +1,23 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A program which creates Red Hat Package Manager (RPM) spec files automatically from a tar ball
+# This makes it easy to create your own RPMs.
+#
+# URL: http://www.npsnet.com/danf/software/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=autospec
+version=0.8
+release=1
+source=(http://www.npsnet.com/danf/software/pub/autospec-$version.tar.gz)
+
+build()
+{
+  cd autospec-$version
+
+  sed -i 's,/man,/share/man,g' Makefile
+
+  make
+  make prefix="$ROOT" install
+}

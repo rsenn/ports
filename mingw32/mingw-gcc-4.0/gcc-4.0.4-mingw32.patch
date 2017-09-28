@@ -1,0 +1,6005 @@
+diff -r -u -N gcc-4.0.4_orig/gcc/Makefile.in gcc-4.0.4/gcc/Makefile.in
+--- gcc-4.0.4_orig/gcc/Makefile.in	2006-09-06 12:30:49.000000000 +0200
++++ gcc-4.0.4/gcc/Makefile.in	2007-09-30 15:17:58.000000000 +0200
+@@ -468,6 +468,7 @@
+ gcc_gxx_include_dir = @gcc_gxx_include_dir@
+ # Directory to search for site-specific includes.
+ local_includedir = $(local_prefix)/include
++# local_includedir=$(libsubdir)/$(unlibsubdir)/..`echo $(exec_prefix) | sed -e 's|^$(prefix)||' -e 's|/[^/]*|/..|g'`/include
+ includedir = $(prefix)/include
+ # where the info files go
+ infodir = @infodir@
+diff -r -u -N gcc-4.0.4_orig/gcc/c-format.c gcc-4.0.4/gcc/c-format.c
+--- gcc-4.0.4_orig/gcc/c-format.c	2005-10-26 04:20:43.000000000 +0200
++++ gcc-4.0.4/gcc/c-format.c	2007-09-30 15:17:58.000000000 +0200
+@@ -294,6 +294,9 @@
+   { "Z", FMT_LEN_z, STD_EXT, NULL, 0, 0 },
+   { "t", FMT_LEN_t, STD_C99, NULL, 0, 0 },
+   { "j", FMT_LEN_j, STD_C99, NULL, 0, 0 },
++#ifdef TARGET_EXTRA_PRINTF_LENGTH_SPECIFIERS
++  TARGET_EXTRA_PRINTF_LENGTH_SPECIFIERS,
++#endif /* TARGET_EXTRA_PRINTF_LENGTH_SPECIFIERS */
+   { NULL, 0, 0, NULL, 0, 0 }
+ };
+ 
+@@ -327,6 +330,9 @@
+   { "z", FMT_LEN_z, STD_C99, NULL, 0, 0 },
+   { "t", FMT_LEN_t, STD_C99, NULL, 0, 0 },
+   { "j", FMT_LEN_j, STD_C99, NULL, 0, 0 },
++#ifdef TARGET_EXTRA_SCANF_LENGTH_SPECIFIERS
++  TARGET_EXTRA_SCANF_LENGTH_SPECIFIERS,
++#endif /* TARGET_EXTRA_SCANF_LENGTH_SPECIFIERS */
+   { NULL, 0, 0, NULL, 0, 0 }
+ };
+ 
+@@ -651,7 +657,8 @@
+ /* This must be in the same order as enum format_type.  */
+ static const format_kind_info format_types_orig[] =
+ {
+-  { "printf",   printf_length_specs,  print_char_table, " +#0-'I", NULL, 
++  { "printf",   printf_length_specs,  print_char_table, 
++    " +#0-'" TARGET_EXTRA_PRINTF_FLAG_CHARS, NULL, 
+     printf_flag_specs, printf_flag_pairs,
+     FMT_FLAG_ARG_CONVERT|FMT_FLAG_DOLLAR_MULTIPLE|FMT_FLAG_USE_DOLLAR|FMT_FLAG_EMPTY_PREC_OK,
+     'w', 0, 'p', 0, 'L',
+@@ -681,7 +688,8 @@
+     0, 0, 'p', 0, 'L',
+     NULL, &integer_type_node
+   },
+-  { "scanf",    scanf_length_specs,   scan_char_table,  "*'I", NULL, 
++    { "scanf",    scanf_length_specs,   scan_char_table,
++     "*'" TARGET_EXTRA_SCANF_FLAG_CHARS, NULL,
+     scanf_flag_specs, scanf_flag_pairs,
+     FMT_FLAG_ARG_CONVERT|FMT_FLAG_SCANF_A_KLUDGE|FMT_FLAG_USE_DOLLAR|FMT_FLAG_ZERO_WIDTH_BAD|FMT_FLAG_DOLLAR_GAP_POINTER_OK,
+     'w', 0, 0, '*', 'L',
+@@ -1658,11 +1666,12 @@
+       length_chars_std = STD_C89;
+       if (fli)
+ 	{
+-	  while (fli->name != 0 && fli->name[0] != *format_chars)
++	  while (fli->name != 0 
++		 && strncmp (fli->name, format_chars, strlen (fli->name)))
+ 	    fli++;
+ 	  if (fli->name != 0)
+ 	    {
+-	      format_chars++;
++	      format_chars += strlen (fli->name);
+ 	      if (fli->double_name != 0 && fli->name[0] == *format_chars)
+ 		{
+ 		  format_chars++;
+diff -r -u -N gcc-4.0.4_orig/gcc/c-opts.c gcc-4.0.4/gcc/c-opts.c
+--- gcc-4.0.4_orig/gcc/c-opts.c	2005-11-02 22:57:35.000000000 +0100
++++ gcc-4.0.4/gcc/c-opts.c	2007-09-30 15:17:58.000000000 +0200
+@@ -29,6 +29,7 @@
+ #include "flags.h"
+ #include "toplev.h"
+ #include "langhooks.h"
++#include "hosthooks.h"
+ #include "tree-inline.h"
+ #include "diagnostic.h"
+ #include "intl.h"
+diff -r -u -N gcc-4.0.4_orig/gcc/collect2.c gcc-4.0.4/gcc/collect2.c
+--- gcc-4.0.4_orig/gcc/collect2.c	2005-06-06 21:21:03.000000000 +0200
++++ gcc-4.0.4/gcc/collect2.c	2007-09-30 15:17:58.000000000 +0200
+@@ -30,24 +30,13 @@
+ #include "system.h"
+ #include "coretypes.h"
+ #include "tm.h"
++#include "pex-read.h"
++
+ #include <signal.h>
+ #if ! defined( SIGCHLD ) && defined( SIGCLD )
+ #  define SIGCHLD SIGCLD
+ #endif
+ 
+-#ifdef vfork /* Autoconf may define this to fork for us.  */
+-# define VFORK_STRING "fork"
+-#else
+-# define VFORK_STRING "vfork"
+-#endif
+-#ifdef HAVE_VFORK_H
+-#include <vfork.h>
+-#endif
+-#ifdef VMS
+-#define vfork() (decc$$alloc_vfork_blocks() >= 0 ? \
+-               lib$get_current_invo_context(decc$$get_vfork_jmpbuf()) : -1)
+-#endif /* VMS */
+-
+ #ifndef LIBRARY_PATH_ENV
+ #define LIBRARY_PATH_ENV "LIBRARY_PATH"
+ #endif
+@@ -251,7 +240,9 @@
+ static void add_prefix (struct path_prefix *, const char *);
+ static void prefix_from_env (const char *, struct path_prefix *);
+ static void prefix_from_string (const char *, struct path_prefix *);
++static int collect_status (const char *, int status);
+ static void do_wait (const char *);
++static void do_read_wait (const char *, FILE *);
+ static void fork_execute (const char *, char **);
+ static void maybe_unlink (const char *);
+ static void add_to_list (struct head *, const char *);
+@@ -420,7 +411,11 @@
+ #endif
+ 
+   signal (signo, SIG_DFL);
++#if HAVE_KILL
+   kill (getpid (), signo);
++#else
++  raise (signo);
++#endif
+ }
+ 
+ 
+@@ -1501,14 +1496,11 @@
+ }
+ 
+ 
+-/* Wait for a process to finish, and exit if a nonzero status is found.  */
++/* Handle error status returned by a finished process.  */
+ 
+-int
+-collect_wait (const char *prog)
++static int
++collect_status (const char *prog, int status)
+ {
+-  int status;
+-
+-  pwait (pid, &status, 0);
+   if (status)
+     {
+       if (WIFSIGNALED (status))
+@@ -1526,6 +1518,17 @@
+   return 0;
+ }
+ 
++/* Wait for a process to finish, and exit if a nonzero status is found.  */
++
++int
++collect_wait (const char *prog)
++{
++  int status;
++
++  pwait (pid, &status, 0);
++  return collect_status (prog, status);
++}
++
+ static void
+ do_wait (const char *prog)
+ {
+@@ -1537,6 +1540,19 @@
+     }
+ }
+ 
++static void
++do_read_wait (const char *prog, FILE *inf)
++{
++  int status;
++
++  pex_read_close (pid, inf, &status, 0);
++  status = collect_status (prog, status);
++  if (status != 0)
++    {
++      error ("%s returned %d exit status", prog, status);
++      collect_exit (status);
++    }
++}
+ 
+ /* Execute a program, and wait for the reply.  */
+ 
+@@ -1577,7 +1593,7 @@
+   if (redir)
+     {
+       /* Open response file.  */
+-      redir_handle = open (redir, O_WRONLY | O_TRUNC | O_CREAT);
++      redir_handle = open (redir, O_WRONLY | O_TRUNC | O_CREAT, S_IWUSR);
+ 
+       /* Duplicate the stdout and stderr file handles
+ 	 so they can be restored later.  */
+@@ -2036,13 +2052,16 @@
+ scan_prog_file (const char *prog_name, enum pass which_pass)
+ {
+   void (*int_handler) (int);
++#ifdef SIGQUIT
+   void (*quit_handler) (int);
++#endif
+   char *real_nm_argv[4];
+   const char **nm_argv = (const char **) real_nm_argv;
+   int argc = 0;
+-  int pipe_fd[2];
+   char *p, buf[1024];
+   FILE *inf;
++  char *errmsg_fmt;
++  char *errmsg_arg;
+ 
+   if (which_pass == PASS_SECOND)
+     return;
+@@ -2058,13 +2077,6 @@
+   nm_argv[argc++] = prog_name;
+   nm_argv[argc++] = (char *) 0;
+ 
+-  if (pipe (pipe_fd) < 0)
+-    fatal_perror ("pipe");
+-
+-  inf = fdopen (pipe_fd[0], "r");
+-  if (inf == (FILE *) 0)
+-    fatal_perror ("fdopen");
+-
+   /* Trace if needed.  */
+   if (vflag)
+     {
+@@ -2080,36 +2092,16 @@
+   fflush (stdout);
+   fflush (stderr);
+ 
+-  /* Spawn child nm on pipe.  */
+-  pid = vfork ();
+-  if (pid == -1)
+-    fatal_perror (VFORK_STRING);
+-
+-  if (pid == 0)			/* child context */
+-    {
+-      /* setup stdout */
+-      if (dup2 (pipe_fd[1], 1) < 0)
+-	fatal_perror ("dup2 %d 1", pipe_fd[1]);
+-
+-      if (close (pipe_fd[0]) < 0)
+-	fatal_perror ("close %d", pipe_fd[0]);
+-
+-      if (close (pipe_fd[1]) < 0)
+-	fatal_perror ("close %d", pipe_fd[1]);
+-
+-      execv (nm_file_name, real_nm_argv);
+-      fatal_perror ("execv %s", nm_file_name);
+-    }
++  inf = pex_read (nm_file_name, real_nm_argv, nm_file_name, NULL,
++		  &errmsg_fmt, &errmsg_arg, 0, &pid);
++  if (inf == (FILE *) 0)
++    fatal_perror (errmsg_fmt, errmsg_arg);
+ 
+-  /* Parent context from here on.  */
+   int_handler  = (void (*) (int)) signal (SIGINT,  SIG_IGN);
+ #ifdef SIGQUIT
+   quit_handler = (void (*) (int)) signal (SIGQUIT, SIG_IGN);
+ #endif
+ 
+-  if (close (pipe_fd[1]) < 0)
+-    fatal_perror ("close %d", pipe_fd[1]);
+-
+   if (debug)
+     fprintf (stderr, "\nnm output with constructors/destructors.\n");
+ 
+@@ -2182,10 +2174,7 @@
+   if (debug)
+     fprintf (stderr, "\n");
+ 
+-  if (fclose (inf) != 0)
+-    fatal_perror ("fclose");
+-
+-  do_wait (nm_file_name);
++  do_read_wait (nm_file_name, inf);
+ 
+   signal (SIGINT,  int_handler);
+ #ifdef SIGQUIT
+@@ -2205,13 +2194,16 @@
+   static struct head libraries;		/* list of shared libraries found */
+   struct id *list;
+   void (*int_handler) (int);
++#ifdef SIGQUIT
+   void (*quit_handler) (int);
++#endif
+   char *real_ldd_argv[4];
+   const char **ldd_argv = (const char **) real_ldd_argv;
+   int argc = 0;
+-  int pipe_fd[2];
+   char buf[1024];
+   FILE *inf;
++  char *errmsg_fmt;
++  char *errmsg_arg;
+ 
+   /* If we do not have an `ldd', complain.  */
+   if (ldd_file_name == 0)
+@@ -2246,26 +2238,10 @@
+   fflush (stdout);
+   fflush (stderr);
+ 
+-  /* Spawn child ldd on pipe.  */
+-  pid = vfork ();
+-  if (pid == -1)
+-    fatal_perror (VFORK_STRING);
+-
+-  if (pid == 0)			/* child context */
+-    {
+-      /* setup stdout */
+-      if (dup2 (pipe_fd[1], 1) < 0)
+-	fatal_perror ("dup2 %d 1", pipe_fd[1]);
+-
+-      if (close (pipe_fd[0]) < 0)
+-	fatal_perror ("close %d", pipe_fd[0]);
+-
+-      if (close (pipe_fd[1]) < 0)
+-	fatal_perror ("close %d", pipe_fd[1]);
+-
+-      execv (ldd_file_name, real_ldd_argv);
+-      fatal_perror ("execv %s", ldd_file_name);
+-    }
++  inf = pex_read (ldd_file_name, real_ldd_argv, ldd_file_name, NULL,
++		  &errmsg_fmt, &errmsg_arg, 0, &pid);
++  if (inf == (FILE *) 0)
++    fatal_perror (errmsg_fmt, errmsg_arg);
+ 
+   /* Parent context from here on.  */
+   int_handler  = (void (*) (int)) signal (SIGINT,  SIG_IGN);
+@@ -2273,9 +2249,6 @@
+   quit_handler = (void (*) (int)) signal (SIGQUIT, SIG_IGN);
+ #endif
+ 
+-  if (close (pipe_fd[1]) < 0)
+-    fatal_perror ("close %d", pipe_fd[1]);
+-
+   if (debug)
+     notice ("\nldd output with constructors/destructors.\n");
+ 
+@@ -2312,10 +2285,7 @@
+   if (debug)
+     fprintf (stderr, "\n");
+ 
+-  if (fclose (inf) != 0)
+-    fatal_perror ("fclose");
+-
+-  do_wait (ldd_file_name);
++  do_read_wait (ldd_file_name, inf);
+ 
+   signal (SIGINT,  int_handler);
+ #ifdef SIGQUIT
+diff -r -u -N gcc-4.0.4_orig/gcc/config/host-linux.c gcc-4.0.4/gcc/config/host-linux.c
+--- gcc-4.0.4_orig/gcc/config/host-linux.c	2005-08-01 20:00:10.000000000 +0200
++++ gcc-4.0.4/gcc/config/host-linux.c	2007-09-30 15:17:58.000000000 +0200
+@@ -26,6 +26,9 @@
+ #include "hosthooks.h"
+ #include "hosthooks-def.h"
+ 
++#ifndef SSIZE_MAX
++#define SSIZE_MAX 2147483647
++#endif //ndef SSIZE_MAX
+ 
+ /* Linux has a feature called exec-shield-randomize that perturbs the
+    address of non-fixed mapped segments by a (relatively) small amount.
+diff -r -u -N gcc-4.0.4_orig/gcc/config/i386/cygming.h gcc-4.0.4/gcc/config/i386/cygming.h
+--- gcc-4.0.4_orig/gcc/config/i386/cygming.h	2004-12-13 07:57:13.000000000 +0100
++++ gcc-4.0.4/gcc/config/i386/cygming.h	2007-09-30 15:17:58.000000000 +0200
+@@ -46,6 +46,27 @@
+   } while (0)
+ #endif
+ 
++#if 1 /* def HAVE_GAS_PE_SECREL32_RELOC */
++#define DWARF2_DEBUGGING_INFO 1
++
++#undef DBX_REGISTER_NUMBER
++#define DBX_REGISTER_NUMBER(n) (write_symbols == DWARF2_DEBUG   \
++                                ? svr4_dbx_register_map[n]      \
++                                : dbx_register_map[n])
++
++/* Use section relative relocations for debugging offsets.  Unlike
++   other targets that fake this by putting the section VMA at 0, PE
++   won't allow it.  */
++#define ASM_OUTPUT_DWARF_OFFSET(FILE, SIZE, LABEL)    \
++  do {                                                \
++    if (SIZE != 4)                                    \
++      abort ();                                       \
++                                                      \
++    fputs ("\t.secrel32\t", FILE);                    \
++    assemble_name (FILE, LABEL);                      \
++  } while (0)
++#endif
++
+ #define TARGET_EXECUTABLE_SUFFIX ".exe"
+ 
+ #include <stdio.h>
+@@ -297,7 +318,7 @@
+   do									\
+     {									\
+       if (TREE_CODE (DECL) == FUNCTION_DECL)				\
+-	i386_pe_record_external_function (NAME);			\
++	i386_pe_record_external_function ((DECL), (NAME));		\
+     }									\
+   while (0)
+ 
+@@ -320,7 +341,7 @@
+ /* DWARF2 Unwinding doesn't work with exception handling yet.  To make
+    it work, we need to build a libgcc_s.dll, and dcrt0.o should be
+    changed to call __register_frame_info/__deregister_frame_info.  */
+-#define DWARF2_UNWIND_INFO 0
++#define DWARF2_UNWIND_INFO 1
+ 
+ /* Don't assume anything about the header files.  */
+ #define NO_IMPLICIT_EXTERN_C
+@@ -345,7 +366,7 @@
+ 
+ /* External function declarations.  */
+ 
+-extern void i386_pe_record_external_function (const char *);
++extern void i386_pe_record_external_function (tree, const char *);
+ extern void i386_pe_declare_function_type (FILE *, const char *, int);
+ extern void i386_pe_record_exported_symbol (const char *, int);
+ extern void i386_pe_file_end (void);
+@@ -366,8 +387,10 @@
+ #define BIGGEST_ALIGNMENT 128
+ 
+ /* Native complier aligns internal doubles in structures on dword boundaries.  */
++#ifdef IN_TARGET_LIBS
+ #undef	BIGGEST_FIELD_ALIGNMENT
+ #define BIGGEST_FIELD_ALIGNMENT 64
++#endif
+ 
+ /* A bit-field declared as `int' forces `int' alignment for the struct.  */
+ #undef PCC_BITFIELD_TYPE_MATTERS
+@@ -394,6 +417,9 @@
+ 	i386_pe_declare_function_type (STREAM, alias,			\
+ 				       TREE_PUBLIC (DECL));		\
+       ASM_OUTPUT_DEF (STREAM, alias, IDENTIFIER_POINTER (TARGET));	\
++      if (i386_pe_dllexport_name_p (alias))				\
++	i386_pe_record_exported_symbol (alias,				\
++					TREE_CODE (DECL) == VAR_DECL);	\
+     } while (0)
+ 
+ /* GNU as supports weak symbols on PECOFF. */
+diff -r -u -N gcc-4.0.4_orig/gcc/config/i386/gmm_malloc.h gcc-4.0.4/gcc/config/i386/gmm_malloc.h
+--- gcc-4.0.4_orig/gcc/config/i386/gmm_malloc.h	2004-09-10 13:55:21.000000000 +0200
++++ gcc-4.0.4/gcc/config/i386/gmm_malloc.h	2007-09-30 15:17:59.000000000 +0200
+@@ -75,3 +75,80 @@
+ }
+ 
+ #endif /* _MM_MALLOC_H_INCLUDED */
++/* Copyright (C) 2004 Free Software Foundation, Inc.
++
++   This file is part of GCC.
++
++   GCC is free software; you can redistribute it and/or modify
++   it under the terms of the GNU General Public License as published by
++   the Free Software Foundation; either version 2, or (at your option)
++   any later version.
++
++   GCC is distributed in the hope that it will be useful,
++   but WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++   GNU General Public License for more details.
++
++   You should have received a copy of the GNU General Public License
++   along with GCC; see the file COPYING.  If not, write to
++   the Free Software Foundation, 59 Temple Place - Suite 330,
++   Boston, MA 02111-1307, USA.  */
++
++/* As a special exception, if you include this header file into source
++   files compiled by GCC, this header file does not by itself cause
++   the resulting executable to be covered by the GNU General Public
++   License.  This exception does not however invalidate any other
++   reasons why the executable file might be covered by the GNU General
++   Public License.  */
++
++#ifndef _MM_MALLOC_H_INCLUDED
++#define _MM_MALLOC_H_INCLUDED
++
++#include <stdlib.h>
++#include <errno.h>
++
++static __inline__ void* 
++_mm_malloc (size_t size, size_t align)
++{
++  void * malloc_ptr;
++  void * aligned_ptr;
++
++  /* Error if align is not a power of two.  */
++  if (align & (align - 1))
++    {
++      errno = EINVAL;
++      return ((void*) 0);
++    }
++
++  if (size == 0)
++    return ((void *) 0);
++
++ /* Assume malloc'd pointer is aligned at least to sizeof (void*).
++    If necessary, add another sizeof (void*) to store the value
++    returned by malloc. Effectively this enforces a minimum alignment
++    of sizeof double. */     
++    if (align < 2 * sizeof (void *))
++      align = 2 * sizeof (void *);
++
++  malloc_ptr = malloc (size + align);
++  if (!malloc_ptr)
++    return ((void *) 0);
++
++  /* Align  We have at least sizeof (void *) space below malloc'd ptr. */
++  aligned_ptr = (void *) (((size_t) malloc_ptr + align)
++			  & ~((size_t) (align) - 1));
++
++  /* Store the original pointer just before p.  */	
++  ((void **) aligned_ptr) [-1] = malloc_ptr;
++
++  return aligned_ptr;
++}
++
++static __inline__ void
++_mm_free (void * aligned_ptr)
++{
++  if (aligned_ptr)
++    free (((void **) aligned_ptr) [-1]);
++}
++
++#endif /* _MM_MALLOC_H_INCLUDED */
+diff -r -u -N gcc-4.0.4_orig/gcc/config/i386/host-mingw32.c gcc-4.0.4/gcc/config/i386/host-mingw32.c
+--- gcc-4.0.4_orig/gcc/config/i386/host-mingw32.c	2004-06-05 09:28:27.000000000 +0200
++++ gcc-4.0.4/gcc/config/i386/host-mingw32.c	2007-09-30 15:17:59.000000000 +0200
+@@ -15,6 +15,145 @@
+ 
+    You should have received a copy of the GNU General Public License
+    along with GCC; see the file COPYING.  If not, write to the
++   Free Software Foundation, 51 Franklin Street, Fifth Floor, Boston,
++   MA 02110-1301, USA.  */
++
++#include "config.h"
++#include "system.h"
++#include "coretypes.h"
++#include "hosthooks.h"
++#include "hosthooks-def.h"
++#include "toplev.h"
++#include "diagnostic.h"
++
++
++#define WIN32_LEAN_AND_MEAN  /* Not so important if we have windows.h.gch.  */
++#include <windows.h>
++
++static void * mingw32_gt_pch_get_address (size_t, int);
++static int mingw32_gt_pch_use_address (void *, size_t, int, size_t);
++
++#undef HOST_HOOKS_GT_PCH_GET_ADDRESS
++#define HOST_HOOKS_GT_PCH_GET_ADDRESS mingw32_gt_pch_get_address
++#undef HOST_HOOKS_GT_PCH_USE_ADDRESS
++#define HOST_HOOKS_GT_PCH_USE_ADDRESS mingw32_gt_pch_use_address
++
++static inline void w32_error(const char*, const char*, int, const char*);
++
++/* FIXME: Is this big enough?  */
++static const size_t pch_VA_max_size  = 128 * 1024 * 1024;
++
++/* Granularity for reserving address space.  */
++static const size_t va_granularity = 0x10000;
++
++/* Print out the GetLastError() translation.  */ 
++static inline void
++w32_error (const char* function, const char* file, int line,
++	   const char* my_msg)
++{
++  LPSTR w32_msgbuf;
++  FormatMessageA (FORMAT_MESSAGE_ALLOCATE_BUFFER
++		  | FORMAT_MESSAGE_FROM_SYSTEM
++		  | FORMAT_MESSAGE_IGNORE_INSERTS
++		  | FORMAT_MESSAGE_MAX_WIDTH_MASK,
++    		  NULL, GetLastError(),
++		  MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
++		  (LPSTR) &w32_msgbuf, 0, NULL);
++  fprintf(stderr, "internal error in %s, at %s:%d: %s: %s\n",
++	  function, trim_filename (file), line, my_msg, w32_msgbuf);
++  LocalFree ((HLOCAL)w32_msgbuf);
++}
++
++/* Identify an address that's likely to be free in a subsequent invocation
++   of the compiler.  The area should be able to hold SIZE bytes.  FD is an
++   open file descriptor if the host would like to probe with mmap.  */
++
++static void *
++mingw32_gt_pch_get_address (size_t size, int fd  ATTRIBUTE_UNUSED)
++{
++  void* res;
++  size = (size + va_granularity - 1) & ~(va_granularity - 1);
++  if (size > pch_VA_max_size)
++    return NULL;
++
++  /* FIXME: We let system determine base by setting first arg to NULL.
++     Allocating at top of available address space avoids unnecessary
++     fragmentation of "ordinary" (malloc's)  address space but may not be safe
++     with delayed load of system dll's. Preferred addresses for NT system
++     dlls is in 0x70000000 to 0x78000000 range.
++     If we allocate at bottom we need to reserve the address as early as possible
++     and at the same point in each invocation. */
++ 
++  res = VirtualAlloc (NULL, pch_VA_max_size,
++		      MEM_RESERVE | MEM_TOP_DOWN,
++		      PAGE_NOACCESS);
++  if (!res)
++    w32_error (__FUNCTION__, __FILE__, __LINE__, "VirtualAlloc");
++  else
++    /* We do not need the address space for now, so free it.  */
++    VirtualFree (res, 0, MEM_RELEASE);
++
++  return res; 
++}
++
++/* ADDR is an address returned by gt_pch_get_address.  Attempt to allocate
++   SIZE bytes at the same address and load it with the data from FD at 
++   OFFSET.  Return -1 if we couldn't allocate memory at ADDR, return 0
++   if the memory is allocated but the data not loaded, return 1 if done.  */
++
++static int
++mingw32_gt_pch_use_address (void *addr, size_t size, int fd,
++			    size_t offset)
++{
++  void * mmap_addr;
++  static HANDLE mmap_handle;
++
++  if (size == 0)
++    return 0;
++  
++  /* Offset must be also be a multiple of allocation granularity for
++     this to work.  We can't change the offset. */ 
++  if ((offset & (va_granularity - 1)) != 0 || size > pch_VA_max_size)
++    return -1;
++
++  mmap_handle = CreateFileMapping ((HANDLE) _get_osfhandle (fd),
++				   NULL, PAGE_WRITECOPY | SEC_COMMIT,
++				   0, 0,  NULL);
++  if (mmap_handle == NULL)
++    {
++      w32_error (__FUNCTION__,  __FILE__, __LINE__, "CreateFileMapping");
++      return -1; 
++    }
++  mmap_addr = MapViewOfFileEx (mmap_handle, FILE_MAP_COPY, 0, offset,
++			       size, addr);
++  if (mmap_addr != addr)
++    {
++      w32_error (__FUNCTION__, __FILE__, __LINE__, "MapViewOfFileEx");
++      CloseHandle(mmap_handle);
++      return  -1;
++    }
++
++  return 1;
++}
++
++const struct host_hooks host_hooks = HOST_HOOKS_INITIALIZER;
++/* mingw32 host-specific hook definitions.
++   Copyright (C) 2004 Free Software Foundation, Inc.
++
++   This file is part of GCC.
++
++   GCC is free software; you can redistribute it and/or modify it
++   under the terms of the GNU General Public License as published
++   by the Free Software Foundation; either version 2, or (at your
++   option) any later version.
++
++   GCC is distributed in the hope that it will be useful, but WITHOUT
++   ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
++   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
++   License for more details.
++
++   You should have received a copy of the GNU General Public License
++   along with GCC; see the file COPYING.  If not, write to the
+    Free Software Foundation, 59 Temple Place - Suite 330, Boston,
+    MA 02111-1307, USA.  */
+ 
+diff -r -u -N gcc-4.0.4_orig/gcc/config/i386/i386.c gcc-4.0.4/gcc/config/i386/i386.c
+--- gcc-4.0.4_orig/gcc/config/i386/i386.c	2006-06-12 23:39:10.000000000 +0200
++++ gcc-4.0.4/gcc/config/i386/i386.c	2007-09-30 15:18:00.000000000 +0200
+@@ -1685,6 +1685,13 @@
+     return false;
+ #endif
+ 
++#ifdef TARGET_DLLIMPORT_DECL_ATTRIBUTES
++  /* Dllimport'd functions are also called indirectly.  */
++  if (decl && lookup_attribute ("dllimport", DECL_ATTRIBUTES (decl))
++      && ix86_function_regparm (TREE_TYPE (decl), NULL) >= 3)
++    return false;
++#endif
++
+   /* Otherwise okay.  That also includes certain types of indirect calls.  */
+   return true;
+ }
+@@ -1904,7 +1911,15 @@
+ int
+ ix86_return_pops_args (tree fundecl, tree funtype, int size)
+ {
++/*
+   int rtd = TARGET_RTD && (!fundecl || TREE_CODE (fundecl) != IDENTIFIER_NODE);
++*/
++
++  /* Disable RTD for all compiler-generated calls to external functions.  */
++  int rtd = TARGET_RTD && !(fundecl
++			   && DECL_ARTIFICIAL (fundecl)
++			   && DECL_EXTERNAL (fundecl)
++			   && TREE_PUBLIC (fundecl));
+ 
+   /* Cdecl functions override -mrtd, and never pop the stack.  */
+   if (! lookup_attribute ("cdecl", TYPE_ATTRIBUTES (funtype))) {
+diff -r -u -N gcc-4.0.4_orig/gcc/config/i386/i386.md gcc-4.0.4/gcc/config/i386/i386.md
+--- gcc-4.0.4_orig/gcc/config/i386/i386.md	2006-09-18 12:14:53.000000000 +0200
++++ gcc-4.0.4/gcc/config/i386/i386.md	2007-09-30 15:18:00.000000000 +0200
+@@ -1,3 +1,4 @@
++
+ ;; GCC machine description for IA-32 and x86-64.
+ ;; Copyright (C) 1988, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
+ ;; 2001, 2002, 2003, 2004, 2005
+diff -r -u -N gcc-4.0.4_orig/gcc/config/i386/mingw32-1.c gcc-4.0.4/gcc/config/i386/mingw32-1.c
+--- gcc-4.0.4_orig/gcc/config/i386/mingw32-1.c	1970-01-01 01:00:00.000000000 +0100
++++ gcc-4.0.4/gcc/config/i386/mingw32-1.c	2007-09-30 15:18:00.000000000 +0200
+@@ -0,0 +1,41 @@
++/* This replaces the use of stat and struct stat.st_ino to determine if
++   files are different in gcc.c (do_spec_1) handling of --save-temps
++   switch.
++   Contributed by Danny Smith (dannysmith@users.sourceforge.net)
++   Copyright 2003 Free Software Foundation, Inc.
++
++This file is part of GCC.
++
++GCC is free software; you can redistribute it and/or modify it under
++the terms of the GNU General Public License as published by the Free
++Software Foundation; either version 2, or (at your option) any later
++version.
++
++GCC is distributed in the hope that it will be useful, but WITHOUT ANY
++WARRANTY; without even the implied warranty of MERCHANTABILITY or
++FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
++for more details.
++
++You should have received a copy of the GNU General Public License
++along with GCC; see the file COPYING.  If not, write to the Free
++Software Foundation, 59 Temple Place - Suite 330, Boston, MA
++02111-1307, USA.  */
++
++#include "config/i386/xm-mingw32.h"
++#define WIN32_LEAN_AND_MEAN
++#include <windows.h>
++
++/* Return non-zero if src and dst filenames do not refer to same files. */
++
++int
++w32_file_id_cmp (const char * src, const char * dst)
++{
++  char fullpath_src[MAX_PATH];
++  char fullpath_dst[MAX_PATH];
++  char* pfilename;
++
++ /* Just compare full pathnames, without regard to case. */
++  GetFullPathName (src, MAX_PATH, fullpath_src, &pfilename);
++  GetFullPathName (dst, MAX_PATH, fullpath_dst, &pfilename);
++  return  (lstrcmpi (fullpath_src, fullpath_dst));
++}
+diff -r -u -N gcc-4.0.4_orig/gcc/config/i386/mingw32.h gcc-4.0.4/gcc/config/i386/mingw32.h
+--- gcc-4.0.4_orig/gcc/config/i386/mingw32.h	2004-10-17 20:09:48.000000000 +0200
++++ gcc-4.0.4/gcc/config/i386/mingw32.h	2007-09-30 15:18:00.000000000 +0200
+@@ -58,7 +58,7 @@
+   %{shared: %{mdll: %eshared and mdll are not compatible}} \
+   %{shared: --shared} %{mdll:--dll} \
+   %{static:-Bstatic} %{!static:-Bdynamic} \
+-  %{shared|mdll: -e _DllMainCRTStartup@12}"
++  %{shared|mdll: -e _DllMainCRTStartup@12 --enable-auto-image-base}"
+ 
+ /* Include in the mingw32 libraries with libgcc */
+ #undef LIBGCC_SPEC
+@@ -67,7 +67,11 @@
+ 
+ #undef STARTFILE_SPEC
+ #define STARTFILE_SPEC "%{shared|mdll:dllcrt2%O%s} \
+-  %{!shared:%{!mdll:crt2%O%s}} %{pg:gcrt2%O%s}"
++  %{!shared:%{!mdll:crt2%O%s}} %{pg:gcrt2%O%s}  \
++  %{!fno-exceptions:crtbegin%O%s}"
++
++#undef ENDFILE_SPEC
++#define ENDFILE_SPEC "%{!fno-exceptions:crtend%O%s}"
+ 
+ /* Override startfile prefix defaults.  */
+ #ifndef STANDARD_STARTFILE_PREFIX_1
+@@ -108,3 +112,27 @@
+ /* Define as short unsigned for compatibility with MS runtime.  */
+ #undef WINT_TYPE
+ #define WINT_TYPE "short unsigned int"
++
++/* MSVCRT does not support the "I" flag provided by GLIBC.  */
++#undef TARGET_EXTRA_PRINTF_FLAG_CHARS
++#define TARGET_EXTRA_PRINTF_FLAG_CHARS ""
++#undef TARGET_EXTRA_SCANF_FLAG_CHARS
++#define TARGET_EXTRA_SCANF_FLAG_CHARS ""
++
++/* MSVCRT supports additional length specifiers for "printf".  (In
++   fact, it does not support some of the C99 specifiers, like
++   "ll".  However, we do not presently have a mechanism for disabling
++   a specifier.)  */  
++#define TARGET_EXTRA_PRINTF_LENGTH_SPECIFIERS	\
++  /* 32-bit integer */				\
++  { "I32", FMT_LEN_l, STD_EXT, NULL, 0, 0 },	\
++  /* 64-bit integer */				\
++  { "I64", FMT_LEN_ll, STD_EXT, NULL, 0, 0 },	\
++  /* size_t or ptrdiff_t */			\
++  { "I",  FMT_LEN_t,  STD_EXT, NULL, 0, 0 }
++
++#define TARGET_EXTRA_SCANF_LENGTH_SPECIFIERS	\
++  TARGET_EXTRA_PRINTF_LENGTH_SPECIFIERS
++
++#undef  NO_PROFILE_COUNTERS
++#define NO_PROFILE_COUNTERS	1
+diff -r -u -N gcc-4.0.4_orig/gcc/config/i386/pmm_malloc.h gcc-4.0.4/gcc/config/i386/pmm_malloc.h
+--- gcc-4.0.4_orig/gcc/config/i386/pmm_malloc.h	2006-01-04 13:30:13.000000000 +0100
++++ gcc-4.0.4/gcc/config/i386/pmm_malloc.h	2007-09-30 15:18:00.000000000 +0200
+@@ -1,3 +1,59 @@
++/* Copyright (C) 2004 Free Software Foundation, Inc.
++
++   This file is part of GCC.
++
++   GCC is free software; you can redistribute it and/or modify
++   it under the terms of the GNU General Public License as published by
++   the Free Software Foundation; either version 2, or (at your option)
++   any later version.
++
++   GCC is distributed in the hope that it will be useful,
++   but WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++   GNU General Public License for more details.
++
++   You should have received a copy of the GNU General Public License
++   along with GCC; see the file COPYING.  If not, write to
++   the Free Software Foundation, 59 Temple Place - Suite 330,
++   Boston, MA 02111-1307, USA.  */
++
++/* As a special exception, if you include this header file into source
++   files compiled by GCC, this header file does not by itself cause
++   the resulting executable to be covered by the GNU General Public
++   License.  This exception does not however invalidate any other
++   reasons why the executable file might be covered by the GNU General
++   Public License.  */
++
++#ifndef _MM_MALLOC_H_INCLUDED
++#define _MM_MALLOC_H_INCLUDED
++
++#include <stdlib.h>
++
++/* We can't depend on <stdlib.h> since the prototype of posix_memalign
++   may not be visible.  */
++extern int posix_memalign (void **, size_t, size_t);
++
++static __inline void *
++_mm_malloc (size_t size, size_t alignment)
++{
++  void *ptr;
++  if (alignment == 1)
++    return malloc (size);
++  if (alignment == 2 || (sizeof (void *) == 8 && alignment == 4))
++    alignment = sizeof (void *);
++  if (posix_memalign (&ptr, alignment, size) == 0)
++    return ptr;
++  else
++    return NULL;
++}
++
++static __inline void
++_mm_free (void * ptr)
++{
++  free (ptr);
++}
++
++#endif /* _MM_MALLOC_H_INCLUDED */
+ /* Copyright (C) 2004, 2006 Free Software Foundation, Inc.
+ 
+    This file is part of GCC.
+diff -r -u -N gcc-4.0.4_orig/gcc/config/i386/t-cygming gcc-4.0.4/gcc/config/i386/t-cygming
+--- gcc-4.0.4_orig/gcc/config/i386/t-cygming	2003-09-23 20:56:00.000000000 +0200
++++ gcc-4.0.4/gcc/config/i386/t-cygming	2007-09-30 15:18:00.000000000 +0200
+@@ -10,10 +10,25 @@
+ # first.
+ LIBGCC2_INCLUDES = -I$(srcdir)/../winsup/w32api/include
+ 
++LIB2FUNCS_EXTRA = $(srcdir)/config/i386/w32-shared-ptr.c
++
+ winnt.o: $(srcdir)/config/i386/winnt.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
+   $(TM_H) $(RTL_H) $(REGS_H) hard-reg-set.h output.h $(TREE_H) flags.h \
+   $(TM_P_H) toplev.h $(HASHTAB_H) $(GGC_H)
+ 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+ 	$(srcdir)/config/i386/winnt.c
+ 
++winnt-stubs.o: $(srcdir)/config/i386/winnt.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
++  $(TM_H) $(RTL_H) $(REGS_H) hard-reg-set.h output.h $(TREE_H) flags.h \
++  $(TM_P_H) toplev.h $(HASHTAB_H) $(GGC_H)
++	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
++	$(srcdir)/config/i386/winnt-stubs.c
++
++winnt-cxx.o: $(srcdir)/config/i386/winnt.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
++  $(TM_H) $(RTL_H) $(REGS_H) hard-reg-set.h output.h $(TREE_H) flags.h \
++  $(TM_P_H) toplev.h $(HASHTAB_H) $(GGC_H)
++	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
++	$(srcdir)/config/i386/winnt-cxx.c
++
++
+ STMP_FIXINC=stmp-fixinc
+diff -r -u -N gcc-4.0.4_orig/gcc/config/i386/t-gmm_malloc gcc-4.0.4/gcc/config/i386/t-gmm_malloc
+--- gcc-4.0.4_orig/gcc/config/i386/t-gmm_malloc	2004-08-03 21:52:52.000000000 +0200
++++ gcc-4.0.4/gcc/config/i386/t-gmm_malloc	2007-09-30 15:18:00.000000000 +0200
+@@ -4,3 +4,9 @@
+ mm_malloc.h: $(srcdir)/config/i386/gmm_malloc.h
+ 	rm -f $@
+ 	cat $^ > $@
++# Install gmm_malloc.h as mm_malloc.h.
++
++EXTRA_HEADERS += mm_malloc.h
++mm_malloc.h: $(srcdir)/config/i386/gmm_malloc.h
++	rm -f $@
++	cat $^ > $@
+diff -r -u -N gcc-4.0.4_orig/gcc/config/i386/t-pmm_malloc gcc-4.0.4/gcc/config/i386/t-pmm_malloc
+--- gcc-4.0.4_orig/gcc/config/i386/t-pmm_malloc	2004-08-03 21:52:52.000000000 +0200
++++ gcc-4.0.4/gcc/config/i386/t-pmm_malloc	2007-09-30 15:18:00.000000000 +0200
+@@ -4,3 +4,9 @@
+ mm_malloc.h: $(srcdir)/config/i386/pmm_malloc.h
+ 	rm -f $@
+ 	cat $^ > $@
++# Install pmm_malloc.h as mm_malloc.h.
++
++EXTRA_HEADERS += mm_malloc.h
++mm_malloc.h: $(srcdir)/config/i386/pmm_malloc.h
++	rm -f $@
++	cat $^ > $@
+diff -r -u -N gcc-4.0.4_orig/gcc/config/i386/w32-shared-ptr.c gcc-4.0.4/gcc/config/i386/w32-shared-ptr.c
+--- gcc-4.0.4_orig/gcc/config/i386/w32-shared-ptr.c	1970-01-01 01:00:00.000000000 +0100
++++ gcc-4.0.4/gcc/config/i386/w32-shared-ptr.c	2007-09-30 15:18:00.000000000 +0200
+@@ -0,0 +1,261 @@
++/*
++ * w32-shared-ptr.c
++ *
++ * Share informations between EXE/DLLs without using an
++ * additional DLL.
++ *
++ * Contributors:
++ *  Created by Adriano dos Santos Fernandes <adrianosf@uol.com.br>
++ *  Enhanced by Thomas Pfaff <tpfaff@gmx.net>
++ *
++ *  THIS SOFTWARE IS NOT COPYRIGHTED
++ *
++ *  This source code is offered for use in the public domain. You may
++ *  use, modify or distribute it freely.
++ *
++ *  This code is distributed in the hope that it will be useful but
++ *  WITHOUT ANY WARRANTY. ALL WARRENTIES, EXPRESS OR IMPLIED ARE HEREBY
++ *  DISCLAMED. This includes but is not limited to warrenties of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
++ *
++ */
++
++#ifdef __MINGW32__
++#undef _CRTIMP
++#define _CRTIMP
++#endif
++
++#include <stdlib.h>
++#include <string.h>
++#ifdef __CYGWIN__
++#include <unistd.h>
++#endif
++#ifdef DEBUG
++#include <stdio.h>
++#endif
++
++#include "tconfig.h"
++#include "tsystem.h"
++#include "gthr.h"
++
++#include "w32-shared-ptr.h"
++
++#if defined (__CYGWIN__) /* FIXME: This shouldn't be necessary. */
++typedef unsigned short ATOM;
++ATOM __attribute__ ((stdcall)) AddAtomA(const char*);
++ATOM __attribute__  ((stdcall)) FindAtomA(const char*);
++unsigned int __attribute__  ((stdcall)) GetAtomNameA(ATOM,char*,int);
++#else
++#define WIN32_LEAN_AND_MEAN
++#include <windows.h>
++#endif
++
++#include <assert.h>
++
++W32_EH_SHARED *  __w32_sharedptr;
++
++void ** __w32_sharedptr_terminate;
++void ** __w32_sharedptr_unexpected;
++
++
++#define W32_ATOM_SUFFIX "-LIBGCCW32-EH"
++
++#define VERSION_SUFFIX "-3"
++
++#ifdef __USING_SJLJ_EXCEPTIONS__
++#define SJLJ_SUFFIX "-SJLJ"
++#else
++#define SJLJ_SUFFIX
++#endif
++
++#if __GTHREADS
++#define GTHR_SUFFIX "-GTHR"
++#else
++#define GTHR_SUFFIX
++#endif
++
++#ifdef __CYGWIN__
++#define SYS_SUFFIX "-CYGWIN"
++#else
++#define SYS_SUFFIX "-MINGW32"
++#endif
++
++static const char w32_atom_suffix[]
++  = W32_ATOM_SUFFIX VERSION_SUFFIX SJLJ_SUFFIX GTHR_SUFFIX SYS_SUFFIX;
++
++#define SHAREDPTR_BIT1          'A'
++#define SHAREDPTR_BIT0          'a'
++
++#define SHAREDPTR_BITS          (sizeof(W32_EH_SHARED*)*8)
++#define SHARED_ATOM_NAME_LEN    (SHAREDPTR_BITS + sizeof(w32_atom_suffix))
++
++static ATOM __w32_sharedptr_set (W32_EH_SHARED *w32_sharedptr);
++static W32_EH_SHARED * __w32_sharedptr_get (ATOM atom);
++static void __w32_sharedptr_default_unexpected(void);
++
++#ifdef __CYGWIN__
++static void __w32_sharedptr_fixup_after_fork (void);
++#endif
++
++static void __w32_sharedptr_default_unexpected(void)
++{
++  ((void(*)(void))__w32_sharedptr->terminate)();
++}
++
++static void __w32_eh_shared_initialize (W32_EH_SHARED *w32_sharedptr)
++{
++#ifdef __GTHREAD_MUTEX_INIT
++  static __gthread_mutex_t dw2_object_mutex = __GTHREAD_MUTEX_INIT;
++#else
++  static __gthread_mutex_t dw2_object_mutex;
++#endif
++#ifdef __GTHREAD_MUTEX_INIT_FUNCTION
++  static __gthread_once_t dw2_once = __GTHREAD_ONCE_INIT;
++#endif
++
++#ifdef __USING_SJLJ_EXCEPTIONS__ 
++#if __GTHREADS
++  static __gthread_key_t sjl_fc_key;
++  static __gthread_once_t sjl_once = __GTHREAD_ONCE_INIT;
++#endif
++#endif
++
++  static struct __w32_eh_globals eh_globals_static;
++#if __GTHREADS
++  static __gthread_key_t eh_globals_key;
++  static __gthread_once_t eh_globals_once  = __GTHREAD_ONCE_INIT;
++#endif
++
++  memset (w32_sharedptr, 0, sizeof(W32_EH_SHARED));
++
++  w32_sharedptr->size = sizeof(W32_EH_SHARED);
++
++  w32_sharedptr->terminate = (void*)abort;
++  w32_sharedptr->unexpected = (void*)__w32_sharedptr_default_unexpected;
++
++  w32_sharedptr->dw2_object_mutex = dw2_object_mutex;
++#ifdef __GTHREAD_MUTEX_INIT_FUNCTION
++  w32_sharedptr->dw2_once = dw2_once;
++#endif
++
++#ifdef __USING_SJLJ_EXCEPTIONS__
++  w32_sharedptr->sjlj_fc_static = NULL;
++#if __GTHREADS
++  w32_sharedptr->sjlj_fc_key = sjl_fc_key;
++  w32_sharedptr->sjlj_use_fc_key = -1;
++  w32_sharedptr->sjlj_once = sjl_once;
++#endif
++#endif  /* __USING_SJLJ_EXCEPTIONS__ */
++
++  w32_sharedptr->eh_globals_static = eh_globals_static;
++#if __GTHREADS
++  w32_sharedptr->eh_globals_key = eh_globals_key;
++  w32_sharedptr->eh_globals_use_thread_key = -1;
++  w32_sharedptr->eh_globals_once  = eh_globals_once;
++#endif
++}
++
++void __w32_sharedptr_initialize (void) 
++{
++  W32_EH_SHARED *w32_sharedptr;
++  char s[SHARED_ATOM_NAME_LEN];
++  ATOM atom;
++
++  if (__w32_sharedptr)
++    return;
++
++  memset (s, SHAREDPTR_BIT1, SHAREDPTR_BITS);
++  memcpy (&(s[SHAREDPTR_BITS]), w32_atom_suffix, sizeof(w32_atom_suffix));
++
++  atom = FindAtomA (s);
++  if (atom)
++    w32_sharedptr = __w32_sharedptr_get (atom);
++  else
++    {
++      w32_sharedptr = (W32_EH_SHARED *) malloc (sizeof(W32_EH_SHARED));
++      if (!w32_sharedptr)
++        abort ();
++
++      __w32_eh_shared_initialize (w32_sharedptr);
++
++      if (__w32_sharedptr_set (w32_sharedptr))
++        {
++#ifdef __CYGWIN__
++          /* recreate atom after fork */
++          pthread_atfork (NULL,NULL,__w32_sharedptr_fixup_after_fork);
++#endif
++        }
++      else
++        {
++          free (w32_sharedptr);
++          w32_sharedptr = __w32_sharedptr_get (FindAtomA (s));
++        }
++    }
++
++  __w32_sharedptr_terminate  = &w32_sharedptr->terminate;
++  __w32_sharedptr_unexpected = &w32_sharedptr->unexpected;
++
++  /* THIS MUST BE THE LAST STEP */
++  __w32_sharedptr = w32_sharedptr;
++}
++
++static ATOM __w32_sharedptr_set (W32_EH_SHARED *w32_sharedptr)
++{
++  int i;
++  int bit;
++  char s[SHARED_ATOM_NAME_LEN];
++  ATOM atom;
++
++  /* This should optimize out entirely by O2 */
++  if (sizeof(bit) != sizeof(w32_sharedptr))
++    abort ();
++
++  for (i = SHAREDPTR_BITS - 1, bit = 1; i >= 0; --i, bit <<= 1)
++    s[i] = ((int)w32_sharedptr) & bit ? SHAREDPTR_BIT1 :
++      SHAREDPTR_BIT0;
++
++  memcpy (&(s[SHAREDPTR_BITS]), w32_atom_suffix, sizeof(w32_atom_suffix));
++
++  atom = AddAtomA (s);
++  /* Sanity check to avoid race by concurrent initialization */
++  if (!atom || __w32_sharedptr_get (atom) != w32_sharedptr)
++    return 0;
++
++#ifdef DEBUG
++  printf ("%s: set sharedptr: (%p):%s\n",
++          __FUNCTION__,w32_sharedptr, s);
++#endif
++
++  return atom;
++}
++
++static W32_EH_SHARED *__w32_sharedptr_get (ATOM atom)
++{
++  W32_EH_SHARED *w32_sharedptr;
++  int i;
++  int bit;
++  int address = 0;
++  char s[SHARED_ATOM_NAME_LEN];
++
++  /* If this fails something went wrong */
++   assert (GetAtomNameA (atom, s, sizeof(s)) != 0);
++
++  for (i = SHAREDPTR_BITS - 1, bit = 1; i >= 0; --i, bit <<= 1)
++    address |= s[i] == SHAREDPTR_BIT1 ? bit : 0;
++  w32_sharedptr = (W32_EH_SHARED*) address;
++
++  assert (w32_sharedptr->size == sizeof(W32_EH_SHARED));
++
++#ifdef DEBUG
++  printf ("%s: got sharedptr (%p): %s\n",
++          __FUNCTION__, w32_sharedptr, s);
++#endif
++  return w32_sharedptr;
++}
++
++#ifdef __CYGWIN__
++static void __w32_sharedptr_fixup_after_fork (void)
++{
++  assert (__w32_sharedptr_set (__w32_sharedptr) != 0);
++}
++#endif
+diff -r -u -N gcc-4.0.4_orig/gcc/config/i386/w32-shared-ptr.h gcc-4.0.4/gcc/config/i386/w32-shared-ptr.h
+--- gcc-4.0.4_orig/gcc/config/i386/w32-shared-ptr.h	1970-01-01 01:00:00.000000000 +0100
++++ gcc-4.0.4/gcc/config/i386/w32-shared-ptr.h	2007-09-30 15:18:00.000000000 +0200
+@@ -0,0 +1,78 @@
++/*
++ * w32-shared-ptr.h
++ *
++ * Contributors:
++ *  Created by Thomas Pfaff <tpfaff@gmx.net>
++ *
++ *  THIS SOFTWARE IS NOT COPYRIGHTED
++ *
++ *  This source code is offered for use in the public domain. You may
++ *  use, modify or distribute it freely.
++ *
++ *  This code is distributed in the hope that it will be useful but
++ *  WITHOUT ANY WARRANTY. ALL WARRENTIES, EXPRESS OR IMPLIED ARE HEREBY
++ *  DISCLAMED. This includes but is not limited to warrenties of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
++ *
++ */
++
++#ifndef GCC_W32_SHARED_PTR_H
++#define GCC_W32_SHARED_PTR_H
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++struct __w32_eh_globals
++{
++  void * e1;
++  unsigned int e2;
++};
++
++typedef struct
++{
++  int size;
++  
++  void *terminate;
++  void *unexpected;
++
++  void *dw2_unseen_objects;
++  void *dw2_seen_objects;
++  __gthread_mutex_t dw2_object_mutex;
++#ifdef __GTHREAD_MUTEX_INIT_FUNCTION
++  __gthread_once_t dw2_once;
++#endif
++  void *dw2_marker;
++
++#ifdef __USING_SJLJ_EXCEPTIONS__ 
++  void* sjlj_fc_static;
++#if __GTHREADS
++  int sjlj_use_fc_key;
++  __gthread_key_t sjlj_fc_key;
++  __gthread_once_t sjlj_once;
++#endif
++#endif /* __USING_SJLJ_EXCEPTIONS__ */
++
++  struct __w32_eh_globals eh_globals_static;
++#if __GTHREADS
++  int eh_globals_use_thread_key;
++  __gthread_key_t eh_globals_key;
++  __gthread_once_t eh_globals_once;
++#endif
++  
++} W32_EH_SHARED;
++
++extern W32_EH_SHARED *__w32_sharedptr;
++
++extern void ** __w32_sharedptr_terminate;
++extern void ** __w32_sharedptr_unexpected;
++
++extern void __w32_sharedptr_initialize (void);
++
++#define W32_SHAREDPTR_INITIALIZE()  if (!__w32_sharedptr) __w32_sharedptr_initialize ()
++
++#ifdef __cplusplus
++}
++#endif
++
++#endif
+diff -r -u -N gcc-4.0.4_orig/gcc/config/i386/winnt-cxx.c gcc-4.0.4/gcc/config/i386/winnt-cxx.c
+--- gcc-4.0.4_orig/gcc/config/i386/winnt-cxx.c	1970-01-01 01:00:00.000000000 +0100
++++ gcc-4.0.4/gcc/config/i386/winnt-cxx.c	2007-09-30 15:18:00.000000000 +0200
+@@ -0,0 +1,88 @@
++/* Target support for C++ classes on Windows.
++   Contributed by Danny Smith (dannysmith@users.sourceforge.net)
++   Copyright (C) 2005
++   Free Software Foundation, Inc.
++
++This file is part of GCC.
++
++GCC is free software; you can redistribute it and/or modify it under
++the terms of the GNU General Public License as published by the Free
++Software Foundation; either version 2, or (at your option) any later
++version.
++
++GCC is distributed in the hope that it will be useful, but WITHOUT ANY
++WARRANTY; without even the implied warranty of MERCHANTABILITY or
++FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
++for more details.
++
++You should have received a copy of the GNU General Public License
++along with GCC; see the file COPYING.  If not, write to the Free
++Software Foundation, 59 Temple Place - Suite 330, Boston, MA
++02111-1307, USA.  */
++
++#include "config.h"
++#include "system.h"
++#include "coretypes.h"
++#include "tm.h"
++#include "rtl.h"
++#include "regs.h"
++#include "hard-reg-set.h"
++#include "output.h"
++#include "tree.h"
++#include "flags.h"
++#include "tm_p.h"
++#include "cp/cp-tree.h"
++#include "toplev.h"
++
++int
++i386_pe_class_dllimport_p (tree decl)
++{
++      /* We ignore the dllimport attribute for inline member functions.
++	 This differs from MSVC behavior which treats it like GNUC
++	 'extern inline' extension.  Also ignore for temnlate instantiations
++         with linkonce semantics and artificial methods.  */
++       if (TREE_CODE (decl) ==  FUNCTION_DECL
++	   && (DECL_INLINE (decl)
++	       || DECL_TEMPLATE_INSTANTIATION (decl)
++	       || DECL_ARTIFICIAL (decl)))
++	  return 0;
++
++      /* Don't mark defined functions as dllimport.  If the definition
++	 itself was marked with dllimport, than ix86_handle_dll_attribute
++	 reports an error. This handles the case when the definition
++	 overrides an earlier declaration.  */
++      else if (TREE_CODE (decl) ==  FUNCTION_DECL
++		&& (DECL_INITIAL (decl)))
++	{
++	  /* Avoid multiple warnings on clones.  */
++          if (!DECL_CLONED_FUNCTION_P (decl)
++	      || DECL_NAME (decl) == complete_ctor_identifier
++	      || DECL_NAME (decl) == complete_dtor_identifier)
++	    warning ("%Jnon-inline function '%D' is defined after prior declaration "
++		     "as dllimport: attribute ignored", decl, decl);
++
++	  return 0;
++	}
++
++      /*  Don't allow definitions of static data members in dllimport class,
++	  If vtable data is marked as DECL_EXTERNAL, import it; otherwise just
++          ignore the attribute.  */
++      else if (TREE_CODE (decl) == VAR_DECL
++	       && TREE_STATIC (decl) && TREE_PUBLIC (decl)
++	       && !DECL_EXTERNAL (decl))
++	{
++	  if (!DECL_VIRTUAL_P (decl))
++            error ("%Jdefinition of static data member '%D' of "
++		   "dllimport'd class", decl, decl);
++	  return 0;
++	}
++
++      /* Since we can't treat a pointer to a dllimport'd symbol as a
++	 constant address, we turn off the attribute on C++ virtual
++	 methods to allow creation of vtables using thunks.  */
++      else if (TREE_CODE (TREE_TYPE (decl)) == METHOD_TYPE
++	       && DECL_VIRTUAL_P (decl))
++        return 0;
++
++      return 1;
++}
+diff -r -u -N gcc-4.0.4_orig/gcc/config/i386/winnt-stubs.c gcc-4.0.4/gcc/config/i386/winnt-stubs.c
+--- gcc-4.0.4_orig/gcc/config/i386/winnt-stubs.c	1970-01-01 01:00:00.000000000 +0100
++++ gcc-4.0.4/gcc/config/i386/winnt-stubs.c	2007-09-30 15:18:00.000000000 +0200
+@@ -0,0 +1,41 @@
++/* Dummy subroutines for language-specific support on Windows.
++   Contributed by Danny Smith (dannysmith@users.sourceforge.net)
++   Copyright (C) 2005
++   Free Software Foundation, Inc.
++
++This file is part of GCC.
++
++GCC is free software; you can redistribute it and/or modify it under
++the terms of the GNU General Public License as published by the Free
++Software Foundation; either version 2, or (at your option) any later
++version.
++
++GCC is distributed in the hope that it will be useful, but WITHOUT ANY
++WARRANTY; without even the implied warranty of MERCHANTABILITY or
++FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
++for more details.
++
++You should have received a copy of the GNU General Public License
++along with GCC; see the file COPYING.  If not, write to the Free
++Software Foundation, 59 Temple Place - Suite 330, Boston, MA
++02111-1307, USA.  */
++
++#include "config.h"
++#include "system.h"
++#include "coretypes.h"
++#include "tm.h"
++#include "rtl.h"
++#include "regs.h"
++#include "hard-reg-set.h"
++#include "output.h"
++#include "tree.h"
++#include "flags.h"
++#include "tm_p.h"
++#include "toplev.h"
++#include "hashtab.h"
++
++int
++i386_pe_class_dllimport_p (tree decl ATTRIBUTE_UNUSED)
++{
++  return 0;
++}
+diff -r -u -N gcc-4.0.4_orig/gcc/config/i386/xmmintrin.h gcc-4.0.4/gcc/config/i386/xmmintrin.h
+--- gcc-4.0.4_orig/gcc/config/i386/xmmintrin.h	2005-06-01 12:28:38.000000000 +0200
++++ gcc-4.0.4/gcc/config/i386/xmmintrin.h	2007-09-30 15:18:00.000000000 +0200
+@@ -40,6 +40,9 @@
+ /* Get _mm_malloc () and _mm_free ().  */
+ #include <mm_malloc.h>
+ 
++/* Get _mm_malloc () and _mm_free ().  */
++#include <mm_malloc.h>
++
+ /* The data type intended for user use.  */
+ typedef float __m128 __attribute__ ((__vector_size__ (16)));
+ 
+diff -r -u -N gcc-4.0.4_orig/gcc/config.gcc gcc-4.0.4/gcc/config.gcc
+--- gcc-4.0.4_orig/gcc/config.gcc	2006-10-16 01:59:21.000000000 +0200
++++ gcc-4.0.4/gcc/config.gcc	2007-09-30 15:18:00.000000000 +0200
+@@ -1190,6 +1190,7 @@
+ i[34567]86-*-uwin*)
+ 	tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h dbxcoff.h i386/cygwin.h i386/uwin.h"
+ 	tmake_file="i386/t-cygwin i386/t-uwin"
++	target_gtfiles="\$(srcdir)/config/i386/winnt.c"
+ 	extra_objs=winnt.o
+ 	target_gtfiles="\$(srcdir)/config/i386/winnt.c"
+ 	if test x$enable_threads = xyes; then
+@@ -2249,6 +2250,18 @@
+ 	;;
+ esac
+ 
++case ${target} in
++i[34567]86-*-linux*aout* | i[34567]86-*-linux*libc1)
++	tmake_file="${tmake_file} i386/t-gmm_malloc"
++	;;
++i[34567]86-*-linux* | x86_64-*-linux*)
++	tmake_file="${tmake_file} i386/t-pmm_malloc"
++	;;
++i[34567]86-*-* | x86_64-*-*)
++	tmake_file="${tmake_file} i386/t-gmm_malloc"
++	;;
++esac
++
+ # Support for --with-cpu and related options (and a few unrelated options,
+ # too).
+ case ${with_cpu} in
+diff -r -u -N gcc-4.0.4_orig/gcc/config.host gcc-4.0.4/gcc/config.host
+--- gcc-4.0.4_orig/gcc/config.host	2005-03-07 23:46:13.000000000 +0100
++++ gcc-4.0.4/gcc/config.host	2007-09-30 15:18:00.000000000 +0200
+@@ -149,6 +149,8 @@
+     out_host_hook_obj=host-cygwin.o
+     host_xmake_file=i386/x-cygwin
+     host_exeext=.exe
++    host_extra_gcc_objs=mingw32-1.o
++    out_host_hook_obj=host-mingw32.o
+     ;;
+   i[34567]86-*-mingw32*)
+     host_xm_file=i386/xm-mingw32.h
+diff -r -u -N gcc-4.0.4_orig/gcc/cp/method.c gcc-4.0.4/gcc/cp/method.c
+--- gcc-4.0.4_orig/gcc/cp/method.c	2006-09-09 18:11:34.000000000 +0200
++++ gcc-4.0.4/gcc/cp/method.c	2007-09-30 15:18:01.000000000 +0200
+@@ -297,7 +297,19 @@
+   SET_DECL_ASSEMBLER_NAME (alias, DECL_NAME (alias));
+   TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (alias)) = 1;
+   if (!flag_syntax_only)
++    {
++      /* Using DECL_ASSEMBLER_NAME to get the identifier for the alias
++	 target loses any decoration that targetm.encode_section_info
++	 may have added.  Use the RTL string instead.  */
++      rtx rtlname = DECL_RTL (function);
++      my_friendly_assert (GET_CODE (rtlname) == MEM, 20040705);
++      rtlname = XEXP (rtlname, 0);
++      my_friendly_assert (GET_CODE (rtlname) == SYMBOL_REF, 20040705);
++      assemble_alias (alias, get_identifier(XSTR (rtlname, 0)));
++   }
++/*
+     assemble_alias (alias, DECL_ASSEMBLER_NAME (function));
++*/
+   return alias;
+ }
+ 
+diff -r -u -N gcc-4.0.4_orig/gcc/cp/parser.c gcc-4.0.4/gcc/cp/parser.c
+--- gcc-4.0.4_orig/gcc/cp/parser.c	2006-12-03 14:11:51.000000000 +0100
++++ gcc-4.0.4/gcc/cp/parser.c	2007-09-30 15:18:01.000000000 +0200
+@@ -10055,7 +10055,7 @@
+ 	    ts = ts_global;
+ 
+  	  /* Warn about attributes. They are ignored.  */
+- 	  if (attributes)
++ 	  if (attributes && extra_warnings)
+ 	    warning ("type attributes are honored only at type definition");
+ 
+ 	  template_p = 
+diff -r -u -N gcc-4.0.4_orig/gcc/cp/typeck.c gcc-4.0.4/gcc/cp/typeck.c
+--- gcc-4.0.4_orig/gcc/cp/typeck.c	2006-12-01 23:32:00.000000000 +0100
++++ gcc-4.0.4/gcc/cp/typeck.c	2007-09-30 15:18:01.000000000 +0200
+@@ -2461,9 +2461,10 @@
+ 
+       /* Differs from default_conversion by not setting TREE_ADDRESSABLE
+ 	 (because calling an inline function does not mean the function
+-	 needs to be separately compiled).  */
++	 needs to be separately compiled, unless separate compilation
++	 has been requested).  */
+       
+-      if (DECL_INLINE (function))
++      if (DECL_INLINE (function) && !flag_keep_inline_functions)
+ 	function = inline_conversion (function);
+       else
+ 	function = build_addr_func (function);
+diff -r -u -N gcc-4.0.4_orig/gcc/crtstuff.c gcc-4.0.4/gcc/crtstuff.c
+--- gcc-4.0.4_orig/gcc/crtstuff.c	2004-11-24 15:35:31.000000000 +0100
++++ gcc-4.0.4/gcc/crtstuff.c	2007-09-30 15:18:01.000000000 +0200
+@@ -136,6 +136,8 @@
+ /* Likewise for _Jv_RegisterClasses.  */
+ extern void _Jv_RegisterClasses (void *) TARGET_ATTRIBUTE_WEAK;
+ 
++#if !(defined (__MINGW32__) || defined (__CYGWIN__))
++
+ #ifdef OBJECT_FORMAT_ELF
+ 
+ /*  Declare a pointer to void function type.  */
+@@ -554,3 +556,108 @@
+ #else /* ! CRT_BEGIN && ! CRT_END */
+ #error "One of CRT_BEGIN or CRT_END must be defined."
+ #endif
++
++#else /*__MINGW32__ || __CYGWIN__ */
++
++/* Use  __main to run ctors and dtors. This code generates a
++label for beginning of .eh_frame section in crtbegin.o and terminates
++the section in crtend.o. Registration and deregistration is done by
++installing ctor and dtor functions to do the job.  */
++
++  
++#ifdef CRT_BEGIN
++
++extern  void __w32_sharedptr_initialize(void);
++
++/* Stick a label at the beginning of the frame unwind info so we can
++   register/deregister it with the exception handling library code.  */
++#if defined (USE_EH_FRAME_REGISTRY) \
++	     && !__USING_SJLJ_EXCEPTIONS__
++char __EH_FRAME_BEGIN__[]
++     __attribute__((section(EH_FRAME_SECTION_NAME), aligned(4)))
++     = { };
++
++static struct object obj;
++
++/* These will pull in references from libgcc.a(unwind-dw2-fde.o) */
++
++void __do_frame_init (void);
++void __do_frame_fini (void);
++
++void
++__do_frame_init (void)
++{
++  __w32_sharedptr_initialize();
++  __register_frame_info (__EH_FRAME_BEGIN__, &obj);
++}
++
++void
++__do_frame_fini (void)
++{
++  __deregister_frame_info (__EH_FRAME_BEGIN__);
++}
++#else /* USE_EH_FRAME_REGISTRY && !__USING_SJLJ__EXCEPTIONS__ */
++void __do_sjlj_init (void);
++
++void
++__do_sjlj_init (void)
++{
++  __w32_sharedptr_initialize();
++}
++#endif
++
++
++#elif defined CRT_END
++
++/* Terminate the frame unwind info section with a 0 as a sentinel;
++   this would be the 'length' field in a real FDE.  */
++#if defined (USE_EH_FRAME_REGISTRY) \
++	     && !__USING_SJLJ_EXCEPTIONS__
++static int __FRAME_END__[]
++     __attribute__ ((unused, section(EH_FRAME_SECTION_NAME),
++		     aligned(4)))
++     = { 0 };
++static void __reg_frame_ctor (void) __attribute__ ((constructor));
++static void __dereg_frame_dtor (void) __attribute__ ((destructor));
++extern void __do_frame_init (void);
++extern void __do_frame_fini (void);
++
++
++/* Register the eh_frame. This has to be the first ctor to
++   be invoked so we put it in last. Since we're last, we can't
++   reference __register_frame_info in libgcc.a directly (if eh_frame
++   code has been referenced than it will have been pulled in but
++   we can't count on it) so we  call a thunk in crtbegin.o.  */
++
++static void
++__reg_frame_ctor (void)
++{
++  __do_frame_init ();
++}
++
++/* Deregister the eh_frame. This has to be the last dtor. The
++   call to __register_frame_info in crtbegin.o will have pulled in
++   libgcc.a(unwind-dw2-fde.o) if libgcc.a is static lib but not if
++   dll, so we use a thunk again to be sure.  */
++
++static void
++__dereg_frame_dtor (void)
++{
++  __do_frame_fini ();
++}
++#else
++static void __sjlj_init_ctor (void) __attribute__ ((constructor));
++void __do_sjlj_init (void);
++static void
++__sjlj_init_ctor (void)
++{
++  __do_sjlj_init ();
++}
++
++#endif /* USE_EH_FRAME_REGISTRY && !__USING_SJLJ__EXCEPTIONS__ */
++
++#else /* ! CRT_BEGIN && ! CRT_END */
++#error "One of CRT_BEGIN or CRT_END must be defined."
++#endif
++
++#endif /* __MINGW32__ || __CYGWIN__ */
+diff -r -u -N gcc-4.0.4_orig/gcc/defaults.h gcc-4.0.4/gcc/defaults.h
+--- gcc-4.0.4_orig/gcc/defaults.h	2005-02-24 22:47:26.000000000 +0100
++++ gcc-4.0.4/gcc/defaults.h	2007-09-30 15:18:01.000000000 +0200
+@@ -840,4 +840,16 @@
+ #define MAX_OFILE_ALIGNMENT BIGGEST_ALIGNMENT
+ #endif
+ 
++/* This should, in the abstract, be the empty string.  However,
++   historically, GCC has accepted GLIBC's "I" flag character on all
++   systems.  */
++#ifndef TARGET_EXTRA_PRINTF_FLAG_CHARS
++#define TARGET_EXTRA_PRINTF_FLAG_CHARS "I"
++#endif
++
++#ifndef TARGET_EXTRA_SCANF_FLAG_CHARS
++#define TARGET_EXTRA_SCANF_FLAG_CHARS "I"
++#endif
++
++
+ #endif  /* ! GCC_DEFAULTS_H */
+diff -r -u -N gcc-4.0.4_orig/gcc/doc/extend.texi gcc-4.0.4/gcc/doc/extend.texi
+--- gcc-4.0.4_orig/gcc/doc/extend.texi	2006-10-16 10:40:32.000000000 +0200
++++ gcc-4.0.4/gcc/doc/extend.texi	2007-09-30 15:18:01.000000000 +0200
+@@ -3021,7 +3021,7 @@
+ @item dllimport
+ The @code{dllimport} attribute is described in @xref{Function Attributes}.
+ 
+-@item dlexport
++@item dllexport
+ The @code{dllexport} attribute is described in @xref{Function Attributes}.
+ 
+ @end table
+diff -r -u -N gcc-4.0.4_orig/gcc/doc/invoke.texi gcc-4.0.4/gcc/doc/invoke.texi
+--- gcc-4.0.4_orig/gcc/doc/invoke.texi	2005-12-16 13:08:28.000000000 +0100
++++ gcc-4.0.4/gcc/doc/invoke.texi	2007-09-30 15:18:01.000000000 +0200
+@@ -504,7 +504,7 @@
+ -m96bit-long-double  -mregparm=@var{num}  -momit-leaf-frame-pointer @gol
+ -mno-red-zone -mno-tls-direct-seg-refs @gol
+ -mcmodel=@var{code-model} @gol
+--m32  -m64}
++-m32  -m64 -mstack-arg-probe}
+ 
+ @emph{IA-64 Options}
+ @gccoptlist{-mbig-endian  -mlittle-endian  -mgnu-as  -mgnu-ld  -mno-pic @gol
+@@ -9349,9 +9349,10 @@
+ saves one instruction in the caller since there is no need to pop
+ the arguments there.
+ 
+-This calling convention is incompatible with the one normally
+-used on Unix, so you cannot use it if you need to call libraries
+-compiled with the Unix compiler.
++@strong{Warning:} this calling convention is incompatible with the
++one normally used on Unix or with GCC, so you cannot use it if you
++need to call libraries compiled with the Unix compiler or with GCC
++without the switch.
+ 
+ Also, you must provide function prototypes for all functions that
+ take variable numbers of arguments (including @code{printf});
+diff -r -u -N gcc-4.0.4_orig/gcc/gcc.c gcc-4.0.4/gcc/gcc.c
+--- gcc-4.0.4_orig/gcc/gcc.c	2006-01-21 19:38:48.000000000 +0100
++++ gcc-4.0.4/gcc/gcc.c	2007-09-30 15:18:02.000000000 +0200
+@@ -89,7 +89,7 @@
+ #ifdef HAVE_SYS_RESOURCE_H
+ #include <sys/resource.h>
+ #endif
+-#if defined (HAVE_DECL_GETRUSAGE) && !HAVE_DECL_GETRUSAGE
++#if defined (HAVE_GETRUSAGE) && defined (HAVE_DECL_GETRUSAGE) && !HAVE_DECL_GETRUSAGE
+ extern int getrusage (int, struct rusage *);
+ #endif
+ 
+@@ -5991,10 +5991,10 @@
+   kill (getpid (), signum);
+ }
+ 
+-extern int main (int, const char **);
++extern int main (int, char **);
+ 
+ int
+-main (int argc, const char **argv)
++main (int argc, char **argv)
+ {
+   size_t i;
+   int value;
+@@ -6041,6 +6041,8 @@
+   signal (SIGCHLD, SIG_DFL);
+ #endif
+ 
++  expandargv (&argc, (char ***)&argv);
++ 
+   /* Allocate the argument vector.  */
+   alloc_args ();
+ 
+@@ -6105,7 +6107,7 @@
+      Make a table of specified input files (infiles, n_infiles).
+      Decode switches that are handled locally.  */
+ 
+-  process_command (argc, argv);
++  process_command (argc, (const char**) argv);
+ 
+   /* Initialize the vector of specs to just the default.
+      This means one element containing 0s, as a terminator.  */
+diff -r -u -N gcc-4.0.4_orig/gcc/ggc-common.c gcc-4.0.4/gcc/ggc-common.c
+--- gcc-4.0.4_orig/gcc/ggc-common.c	2004-09-12 22:14:23.000000000 +0200
++++ gcc-4.0.4/gcc/ggc-common.c	2007-09-30 15:18:02.000000000 +0200
+@@ -64,6 +64,11 @@
+ /* When set, ggc_collect will do collection.  */
+ bool ggc_force_collect;
+ 
++
++#ifndef HOST_MMAP_OFFSET_ALIGNMENT
++#define HOST_MMAP_OFFSET_ALIGNMENT getpagesize()
++#endif
++
+ /* Statistics about the allocation.  */
+ static ggc_statistics *ggc_stats;
+ 
+diff -r -u -N gcc-4.0.4_orig/gcc/ggc.h gcc-4.0.4/gcc/ggc.h
+--- gcc-4.0.4_orig/gcc/ggc.h	2004-09-02 20:32:49.000000000 +0200
++++ gcc-4.0.4/gcc/ggc.h	2007-09-30 15:18:02.000000000 +0200
+@@ -309,4 +309,8 @@
+ extern int ggc_min_heapsize_heuristic (void);
+ extern void init_ggc_heuristics (void);
+ 
++#if defined(_WIN32) && ! defined(__CYGWIN__) && ! defined (_UWIN)
++#define getpagesize() 4096
++#endif
++
+ #endif
+diff -r -u -N gcc-4.0.4_orig/gcc/ginclude/stdarg.h gcc-4.0.4/gcc/ginclude/stdarg.h
+--- gcc-4.0.4_orig/gcc/ginclude/stdarg.h	2003-03-13 03:58:40.000000000 +0100
++++ gcc-4.0.4/gcc/ginclude/stdarg.h	2007-09-30 15:18:02.000000000 +0200
+@@ -30,6 +30,7 @@
+ 
+ #ifndef _STDARG_H
+ #ifndef _ANSI_STDARG_H_
++#ifndef RC_INVOKED
+ #ifndef __need___va_list
+ #define _STDARG_H
+ #define _ANSI_STDARG_H_
+@@ -129,5 +130,6 @@
+ 
+ #endif /* _STDARG_H */
+ 
++#endif /* not RC_INVOKED */
+ #endif /* not _ANSI_STDARG_H_ */
+ #endif /* not _STDARG_H */
+diff -r -u -N gcc-4.0.4_orig/gcc/hwint.h gcc-4.0.4/gcc/hwint.h
+--- gcc-4.0.4_orig/gcc/hwint.h	2004-11-24 05:31:58.000000000 +0100
++++ gcc-4.0.4/gcc/hwint.h	2007-09-30 15:18:02.000000000 +0200
+@@ -21,6 +21,12 @@
+ #define HOST_LONG_LONG_FORMAT "ll"
+ #endif
+ 
++/* On some hosts, runtime printf does not use standard long long prefix.
++   This default can be overriden in host config file.  */
++#ifndef HOST_LL_PREFIX
++# define HOST_LL_PREFIX "ll"
++#endif
++
+ /* If HAVE_LONG_LONG and SIZEOF_LONG_LONG aren't defined, but
+    GCC_VERSION >= 3000, assume this is the second or later stage of a
+    bootstrap, we do have long long, and it's 64 bits.  (This is
+diff -r -u -N gcc-4.0.4_orig/gcc/libgcc2.c gcc-4.0.4/gcc/libgcc2.c
+--- gcc-4.0.4_orig/gcc/libgcc2.c	2005-03-21 08:24:36.000000000 +0100
++++ gcc-4.0.4/gcc/libgcc2.c	2007-09-30 15:18:02.000000000 +0200
+@@ -1852,7 +1852,7 @@
+ 
+ /* Jump to a trampoline, loading the static chain address.  */
+ 
+-#if defined(WINNT) && ! defined(__CYGWIN__) && ! defined (_UWIN)
++#if defined(_WIN32) && ! defined(__CYGWIN__) && ! defined (_UWIN)
+ 
+ int
+ getpagesize (void)
+@@ -1899,7 +1899,7 @@
+ #endif
+ #endif /* L_trampoline */
+ 
+-#ifndef __CYGWIN__
++#if !(defined  __CYGWIN__ || defined __MINGW32__)
+ #ifdef L__main
+ 
+ #include "gbl-ctors.h"
+diff -r -u -N gcc-4.0.4_orig/gcc/tlink.c gcc-4.0.4/gcc/tlink.c
+--- gcc-4.0.4_orig/gcc/tlink.c	2004-11-09 11:13:30.000000000 +0100
++++ gcc-4.0.4/gcc/tlink.c	2007-09-30 15:18:02.000000000 +0200
+@@ -41,6 +41,8 @@
+ 
+ static char initial_cwd[MAXPATHLEN + 1];
+ 
++static char initial_cwd[MAXPATHLEN + 1];
++
+ /* Hash table boilerplate for working with htab_t.  We have hash tables
+    for symbol names, file names, and demangled symbols.  */
+ 
+@@ -367,6 +369,8 @@
+       sym->file = f;
+       sym->chosen = chosen;
+     }
++
++  getcwd (initial_cwd, sizeof (initial_cwd));
+ }
+ 
+ /* Read in the repo file denoted by F, and record all its information.  */
+diff -r -u -N gcc-4.0.4_orig/gcc/unwind-dw2-fde.c gcc-4.0.4/gcc/unwind-dw2-fde.c
+--- gcc-4.0.4_orig/gcc/unwind-dw2-fde.c	2004-10-15 16:47:12.000000000 +0200
++++ gcc-4.0.4/gcc/unwind-dw2-fde.c	2007-09-30 15:18:02.000000000 +0200
+@@ -42,18 +42,32 @@
+ #include "gthr.h"
+ #endif
+ 
++#if defined (__MINGW32__ ) || defined (__CYGWIN__)
++#include "config/i386/w32-shared-ptr.h"
++#endif
++
+ /* The unseen_objects list contains objects that have been registered
+    but not yet categorized in any way.  The seen_objects list has had
+    it's pc_begin and count fields initialized at minimum, and is sorted
+    by decreasing value of pc_begin.  */
++
++#if ! (defined (__MINGW32__ ) || defined (__CYGWIN__))
+ static struct object *unseen_objects;
+ static struct object *seen_objects;
++#else
++#define unseen_objects  (*(struct object**)(&__w32_sharedptr->dw2_unseen_objects))
++#define seen_objects    (*(struct object**)(&__w32_sharedptr->dw2_seen_objects))
++#endif
+ 
++#if !(defined (__MINGW32__ ) || defined (__CYGWIN__))
+ #ifdef __GTHREAD_MUTEX_INIT
+ static __gthread_mutex_t object_mutex = __GTHREAD_MUTEX_INIT;
+ #else
+ static __gthread_mutex_t object_mutex;
+ #endif
++#else
++#define object_mutex  (__w32_sharedptr->dw2_object_mutex)
++#endif
+ 
+ #ifdef __GTHREAD_MUTEX_INIT_FUNCTION
+ static void
+@@ -65,8 +79,15 @@
+ static void
+ init_object_mutex_once (void)
+ {
++#if !(defined (__MINGW32__ ) || defined (__CYGWIN__))
+   static __gthread_once_t once = __GTHREAD_ONCE_INIT;
++#else
++#define once  (__w32_sharedptr->dw2_once)
++#endif
+   __gthread_once (&once, init_object_mutex);
++#if (defined (__MINGW32__ ) || defined (__CYGWIN__))
++#undef once
++#endif
+ }
+ #else
+ #define init_object_mutex_once()
+@@ -433,9 +454,13 @@
+ fde_split (struct object *ob, fde_compare_t fde_compare,
+ 	   struct fde_vector *linear, struct fde_vector *erratic)
+ {
+-  static const fde *marker;
+-  size_t count = linear->count;
++#if !(defined (__MINGW32__ ) || defined (__CYGWIN__))
++  static fde *marker;
++#else
++#define marker  (*(const fde **)&__w32_sharedptr->dw2_marker)
++#endif
+   const fde **chain_end = &marker;
++  size_t count = linear->count;
+   size_t i, j, k;
+ 
+   /* This should optimize out, but it is wise to make sure this assumption
+@@ -469,6 +494,9 @@
+       erratic->array[k++] = linear->array[i];
+   linear->count = j;
+   erratic->count = k;
++#if (defined (__MINGW32__ ) || defined (__CYGWIN__))
++#undef marker
++#endif
+ }
+ 
+ #define SWAP(x,y) do { const fde * tmp = x; x = y; y = tmp; } while (0)
+diff -r -u -N gcc-4.0.4_orig/gcc/unwind-sjlj.c gcc-4.0.4/gcc/unwind-sjlj.c
+--- gcc-4.0.4_orig/gcc/unwind-sjlj.c	2004-10-15 16:47:12.000000000 +0200
++++ gcc-4.0.4/gcc/unwind-sjlj.c	2007-09-30 15:18:02.000000000 +0200
+@@ -35,6 +35,10 @@
+ #include "unwind.h"
+ #include "gthr.h"
+ 
++#if defined (__MINGW32__ ) || defined (__CYGWIN__)
++#include "config/i386/w32-shared-ptr.h"
++#endif
++
+ #ifdef __USING_SJLJ_EXCEPTIONS__
+ 
+ #ifdef DONT_USE_BUILTIN_SETJMP
+@@ -95,12 +99,21 @@
+ 
+ /* Manage the chain of registered function contexts.  */
+ 
++#if !(defined (__MINGW32__ ) || defined (__CYGWIN__))
+ /* Single threaded fallback chain.  */
+ static struct SjLj_Function_Context *fc_static;
++#else
++#define fc_static  (*(struct SjLj_Function_Context**)&__w32_sharedptr->sjlj_fc_static)
++#endif
+ 
+ #if __GTHREADS
++#if !(defined (__MINGW32__ ) || defined (__CYGWIN__))
+ static __gthread_key_t fc_key;
+ static int use_fc_key = -1;
++#else
++#define fc_key      (__w32_sharedptr->sjlj_fc_key)
++#define use_fc_key  (__w32_sharedptr->sjlj_use_fc_key)
++#endif
+ 
+ static void
+ fc_key_init (void)
+@@ -111,15 +124,26 @@
+ static void
+ fc_key_init_once (void)
+ {
++#if !(defined (__MINGW32__ ) || defined (__CYGWIN__))
+   static __gthread_once_t once = __GTHREAD_ONCE_INIT;
++#else
++#define once (__w32_sharedptr->sjlj_once)
++#endif
+   if (__gthread_once (&once, fc_key_init) != 0 || use_fc_key < 0)
+     use_fc_key = 0;
++#if defined (__MINGW32__ ) || defined (__CYGWIN__)
++#undef once
++#endif
+ }
+ #endif
+ 
+ void
+ _Unwind_SjLj_Register (struct SjLj_Function_Context *fc)
+ {
++#if defined (__MINGW32__ ) || defined (__CYGWIN__)
++  W32_SHAREDPTR_INITIALIZE ();
++#endif
++
+ #if __GTHREADS
+   if (use_fc_key < 0)
+     fc_key_init_once ();
+@@ -140,6 +164,10 @@
+ static inline struct SjLj_Function_Context *
+ _Unwind_SjLj_GetContext (void)
+ {
++#if defined (__MINGW32__ ) || defined (__CYGWIN__)
++  W32_SHAREDPTR_INITIALIZE ();
++#endif
++
+ #if __GTHREADS
+   if (use_fc_key < 0)
+     fc_key_init_once ();
+@@ -153,6 +181,10 @@
+ static inline void
+ _Unwind_SjLj_SetContext (struct SjLj_Function_Context *fc)
+ {
++#if defined (__MINGW32__ ) || defined (__CYGWIN__)
++  W32_SHAREDPTR_INITIALIZE ();
++#endif
++
+ #if __GTHREADS
+   if (use_fc_key < 0)
+     fc_key_init_once ();
+diff -r -u -N gcc-4.0.4_orig/gcc/version.c gcc-4.0.4/gcc/version.c
+--- gcc-4.0.4_orig/gcc/version.c	2007-01-31 11:25:35.000000000 +0100
++++ gcc-4.0.4/gcc/version.c	2007-09-30 16:31:22.000000000 +0200
+@@ -5,7 +5,7 @@
+    please modify this string to indicate that, e.g. by putting your
+    organization's name in parentheses at the end of the string.  */
+ 
+-const char version_string[] = "4.0.4";
++const char version_string[] = "4.0.4 (mingw special)";
+ 
+ /* This is the location of the online document giving instructions for
+    reporting bugs.  If you distribute a modified version of GCC,
+@@ -14,4 +14,5 @@
+    forward us bugs reported to you, if you determine that they are
+    not bugs in your modifications.)  */
+ 
+-const char bug_report_url[] = "<URL:http://gcc.gnu.org/bugs.html>";
++const char bug_report_url[] = "<URL:http://www.mingw.org/bugs.shtml>";
++
+diff -r -u -N gcc-4.0.4_orig/include/libiberty.h gcc-4.0.4/include/libiberty.h
+--- gcc-4.0.4_orig/include/libiberty.h	2005-04-26 02:17:20.000000000 +0200
++++ gcc-4.0.4/include/libiberty.h	2007-09-30 16:24:22.000000000 +0200
+@@ -41,6 +41,8 @@
+ 
+ #include "ansidecl.h"
+ 
++#include <stdio.h>
++
+ #ifdef ANSI_PROTOTYPES
+ /* Get a definition for size_t.  */
+ #include <stddef.h>
+@@ -84,6 +86,9 @@
+ 
+ extern char **dupargv PARAMS ((char **)) ATTRIBUTE_MALLOC;
+ 
++/* Expand "@file" arguments in argv.  */
++
++extern void expandargv PARAMS ((int *,  char ***));
+ 
+ /* Return the last component of a path name.  Note that we can't use a
+    prototype here because the parameter is declared inconsistently
+@@ -96,7 +101,7 @@
+    to find the declaration so provide a fully prototyped one.  If it
+    is 1, we found it so don't provide any declaration at all.  */
+ #if !HAVE_DECL_BASENAME
+-#if defined (__GNU_LIBRARY__ ) || defined (__linux__) || defined (__FreeBSD__) || defined (__OpenBSD__) || defined(__NetBSD__) || defined (__CYGWIN__) || defined (__CYGWIN32__) || defined (__MINGW32__) || defined (HAVE_DECL_BASENAME)
++#if defined (__GNU_LIBRARY__ ) || defined (__linux__) || defined (__FreeBSD__) || defined (__OpenBSD__) || defined(__NetBSD__) || defined (__CYGWIN__) || defined (__CYGWIN32__) || defined (__MINGW32__) || defined (__sun__) || defined (HAVE_DECL_BASENAME)
+ extern char *basename PARAMS ((const char *));
+ #else
+ extern char *basename ();
+@@ -327,7 +332,7 @@
+ extern int pexecute PARAMS ((const char *, char * const *, const char *,
+ 			    const char *, char **, char **, int));
+ 
+-/* Wait for pexecute to finish.  */
++/* Wait for a process created by pexecute.  */
+ 
+ extern int pwait PARAMS ((int, int *, int));
+ 
+diff -r -u -N gcc-4.0.4_orig/include/pex-read.h gcc-4.0.4/include/pex-read.h
+--- gcc-4.0.4_orig/include/pex-read.h	1970-01-01 01:00:00.000000000 +0100
++++ gcc-4.0.4/include/pex-read.h	2007-09-30 15:18:02.000000000 +0200
+@@ -0,0 +1,41 @@
++/* Declarations of the pex-read functions for libiberty.
++   Copyright 2004 Free Software Foundation, Inc.
++
++   This program is free software; you can redistribute it and/or modify
++   it under the terms of the GNU General Public License as published by
++   the Free Software Foundation; either version 2, or (at your option)
++   any later version.
++
++   This program is distributed in the hope that it will be useful,
++   but WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++   GNU General Public License for more details.
++
++   You should have received a copy of the GNU General Public License
++   along with this program; if not, write to the Free Software
++   Foundation, Inc., 59 Temple Place - Suite 330,
++   Boston, MA 02111-1307, USA.  */
++
++#ifndef PEX_READ_H
++#define PEX_READ_H
++
++#include <stdio.h>
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++ 
++/* Execute a program and read its standard output.  */
++
++extern FILE *pex_read (const char *, char * const *, const char *,
++		       const char *, char **, char **, int, int *);
++
++/* Wait for pex_read to finish.  */
++
++extern int pex_read_close (int, FILE *, int *, int);
++
++#ifdef __cplusplus
++}
++#endif
++
++#endif /* PEX_READ_H */
+diff -r -u -N gcc-4.0.4_orig/libiberty/argv.c gcc-4.0.4/libiberty/argv.c
+--- gcc-4.0.4_orig/libiberty/argv.c	2003-04-15 22:36:33.000000000 +0200
++++ gcc-4.0.4/libiberty/argv.c	2007-09-30 15:18:02.000000000 +0200
+@@ -24,8 +24,9 @@
+ 
+ #include "ansidecl.h"
+ #include "libiberty.h"
++#include "safe-ctype.h"
+ 
+-#define ISBLANK(ch) ((ch) == ' ' || (ch) == '\t')
++#include <stdio.h>
+ 
+ /*  Routines imported from standard C runtime libraries. */
+ 
+@@ -228,7 +229,7 @@
+ 	  arg = copybuf;
+ 	  while (*input != EOS)
+ 	    {
+-	      if (ISBLANK (*input) && !squote && !dquote && !bsquote)
++	      if (ISSPACE (*input) && !squote && !dquote && !bsquote)
+ 		{
+ 		  break;
+ 		}
+@@ -294,7 +295,7 @@
+ 	  argc++;
+ 	  argv[argc] = NULL;
+ 
+-	  while (ISBLANK (*input))
++	  while (ISSPACE (*input))
+ 	    {
+ 	      input++;
+ 	    }
+@@ -304,6 +305,117 @@
+   return (argv);
+ }
+ 
++/*
++
++@deftypefn Extension void expandargv (int *@var{argcp}, char ***@var{argvp})
++
++The @var{argcp} and @code{argvp} arguments are pointers to the usual
++@code{argc} and @code{argv} arguments to @code{main}.  This function
++looks for arguments that begin with the character @samp{@@}.  Any such
++arguments are interpreted as ``response files''.  The contents of the
++response file are interpreted as additional command line options.  In
++particular, the file is separated into whitespace-separated strings;
++each such string is taken as a command-line option.  The new options
++are inserted in place of the option naming the response file, and
++@code{*argcp} and @code{*argvp} will be updated.  If the value of
++@code{*argvp} is modified by this function, then the new value has
++been dynamically allocated and can be deallocated by the caller with
++@code{freeargv}.  However, most callers will simply call
++@code{expandargv} near the beginning of @code{main} and allow the
++operating system to free the memory when the program exits.
++
++@end deftypefn
++
++*/
++
++void
++expandargv (argcp, argvp)
++     int *argcp;
++     char ***argvp;
++{
++  /* The argument we are currently processing.  */
++  int i = 0;
++  /* Non-zero if ***argvp has been dynamically allocated.  */
++  int argv_dynamic = 0;
++  /* Loop over the arguments, handling response files.  We always skip
++     ARGVP[0], as that is the name of the program being run.  */
++  while (++i < *argcp)
++    {
++      /* The name of the response file.  */
++      const char *filename;
++      /* The response file.  */
++      FILE *f;
++      /* The number of characters in the response file.  */
++      long pos;
++      /* A dynamically allocated buffer used to hold options read from a
++	 response file.  */
++      char *buffer;
++      /* Dynamically allocated storage for the options read from the
++	 response file.  */
++      char **file_argv;
++      /* The number of options read from the response file, if any.  */
++     size_t file_argc;
++      /* We are only interested in options of the form "@file".  */
++      filename = (*argvp)[i];
++      if (filename[0] != '@')
++	continue;
++      /* Read the contents of the file.  */
++      f = fopen (++filename, "r");
++      if (!f)
++	continue;
++      if (fseek (f, 0L, SEEK_END) == -1)
++	goto error;
++      pos = ftell (f);
++      if (pos == -1)
++	goto error;
++      if (fseek (f, 0L, SEEK_SET) == -1)
++	goto error;
++      buffer = (char *) xmalloc (pos * sizeof (char) + 1);
++      if (fread (buffer, sizeof (char), pos, f) != (size_t) pos)
++	goto error;
++      /* Add a NUL terminator.  */
++      buffer[pos] = '\0';
++      /* Parse the string.  */
++      file_argv = buildargv (buffer);
++      /* If *ARGVP is not already dynamically allocated, copy it.  */
++      if (!argv_dynamic)
++	{
++	  *argvp = dupargv (*argvp);
++	  if (!*argvp)
++	    {
++	      fputs ("\nout of memory\n", stderr);
++	      xexit (1);
++	    }
++	}
++      /* Count the number of arguments.  */
++      file_argc = 0;
++      while (file_argv[file_argc] && *file_argv[file_argc])
++	++file_argc;
++      /* Now, insert FILE_ARGV into ARGV.  The "+1" below handles the
++	 NULL terminator at the end of ARGV.  */ 
++      *argvp = ((char **) 
++		xrealloc (*argvp, 
++			  (*argcp + file_argc + 1) * sizeof (char *)));
++      memmove (*argvp + i + file_argc, *argvp + i + 1, 
++	       (*argcp - i) * sizeof (char *));
++      memcpy (*argvp + i, file_argv, file_argc * sizeof (char *));
++      /* The original option has been replaced by all the new
++	 options.  */
++      *argcp += file_argc - 1;
++      /* Free up memory allocated to process the response file.  We do
++	 not use freeargv because the individual options in FILE_ARGV
++	 are now in the main ARGV.  */
++      free (file_argv);
++      free (buffer);
++      /* Rescan all of the arguments just read to support response
++	 files that include other response files.  */
++      --i;
++    error:
++      /* We're all done with the file now.  */
++      fclose (f);
++    }
++}
++
+ #ifdef MAIN
+ 
+ /* Simple little test driver. */
+diff -r -u -N gcc-4.0.4_orig/libiberty/pexecute.txh gcc-4.0.4/libiberty/pexecute.txh
+--- gcc-4.0.4_orig/libiberty/pexecute.txh	2003-01-24 21:02:11.000000000 +0100
++++ gcc-4.0.4/libiberty/pexecute.txh	2007-09-30 15:18:02.000000000 +0200
+@@ -1,4 +1,4 @@
+-@deftypefn Extension int pexecute (const char *@var{program}, char * const *@var{argv}, const char *@var{this_pname}, const char *@var{temp_base}, char **@var{errmsg_fmt}, char **@var{errmsg_arg}, int flags)
++@deftypefn Extension int pexecute (const char *@var{program}, char * const *@var{argv}, const char *@var{this_pname}, const char *@var{temp_base}, char **@var{errmsg_fmt}, char **@var{errmsg_arg}, int @var{flags})
+ 
+ Executes a program.
+ 
+@@ -61,3 +61,39 @@
+ 
+ pfinish is necessary for systems like MPW where a script is generated
+ that runs the requested programs.
++
++@end undocumented
++
++@deftypefn Extension FILE* pex_read (const char *@var{program}, char * const *@var{argv}, const char *@var{this_pname}, const char *@var{temp_base}, char **@var{errmsg_fmt}, char **@var{errmsg_arg}, int @var{flags}, int *@var{pidptr})
++
++Executes a program and returns a stdio file for the program's standard
++output.  This is a safe version of the usual Unix function
++@code{popen}.
++
++The first seven parameters are the same as for @code{pexecute}.  The
++last parameter returns a process identifier to be passed to
++@code{pex_read_close}.
++
++The only flags used for the @var{flags} parameter is
++@code{PEXECUTE_SEARCH}.
++
++Upon failure, @var{errmsg_fmt} and @var{errmsg_arg} are set to the
++text of the error message with an optional argument (if not needed,
++@var{errmsg_arg} is set to @code{NULL}), and @code{NULL} is returned.
++@code{errno} is available to the caller to use.
++
++@end deftypefn
++
++@deftypefn Extension int pex_read_close (int @var{pid}, FILE *@var{file}, int *@var{status}, int @var{flags})
++
++Close a file opened by @code{pex_read}, and wait for the subprocess to
++complete.  The @var{pid} and @var{file} arguments should have been
++obtained from a call to @code{pex_read}.
++
++The result is the pid of the child reaped, or -1 for failure
++(@code{errno} says why).
++
++On a successful return, *@var{status} is set to the exit status of the
++subprocess.
++
++@end deftypefn
+diff -r -u -N gcc-4.0.4_orig/libiberty/pexrd-generic.c gcc-4.0.4/libiberty/pexrd-generic.c
+--- gcc-4.0.4_orig/libiberty/pexrd-generic.c	1970-01-01 01:00:00.000000000 +0100
++++ gcc-4.0.4/libiberty/pexrd-generic.c	2007-09-30 15:18:02.000000000 +0200
+@@ -0,0 +1,72 @@
++/* Execute a program and read stdout.  Generic version.
++   Copyright (C) 2004 Free Software Foundation, Inc.
++
++This file is part of the libiberty library.
++Libiberty is free software; you can redistribute it and/or
++modify it under the terms of the GNU Library General Public
++License as published by the Free Software Foundation; either
++version 2 of the License, or (at your option) any later version.
++
++Libiberty is distributed in the hope that it will be useful,
++but WITHOUT ANY WARRANTY; without even the implied warranty of
++MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++Library General Public License for more details.
++
++You should have received a copy of the GNU Library General Public
++License along with libiberty; see the file COPYING.LIB.  If not,
++write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
++Boston, MA 02111-1307, USA.  */
++
++#include "pex-common.h"
++#include "pex-read.h"
++
++#include <errno.h>
++#ifdef NEED_DECLARATION_ERRNO
++extern int errno;
++#endif
++#ifdef HAVE_STDLIB_H
++#include <stdlib.h>
++#endif
++
++FILE *
++pex_read (program, argv, this_pname, temp_base, errmsg_fmt, errmsg_arg, flags,
++	  pidptr)
++     const char *program;
++     char * const *argv;
++     const char *this_pname ATTRIBUTE_UNUSED;
++     const char *temp_base ATTRIBUTE_UNUSED;
++     char **errmsg_fmt;
++     char **errmsg_arg;
++     int flags ATTRIBUTE_UNUSED;
++     int *pidptr ATTRIBUTE_UNUSED;
++{
++  char *cmd;
++  int i;
++  FILE *ret;
++
++  cmd = xstrdup (program);
++  for (i = 0; argv[i] != NULL; ++i)
++    cmd = reconcat (cmd, cmd, " ", argv[i], NULL);
++
++  ret = popen (cmd, "r");
++  if (ret == NULL)
++    {
++      *errmsg_fmt = "popen";
++      *errmsg_arg = NULL;
++    }
++
++  free (cmd);
++
++  return ret;
++}
++
++int
++pex_read_close (pid, file, status, flags)
++     int pid ATTRIBUTE_UNUSED;
++     FILE *file;
++     int *status;
++     int flags ATTRIBUTE_UNUSED;
++{
++  *status = pclose (file);
++  return 0;
++}
+diff -r -u -N gcc-4.0.4_orig/libiberty/pexrd-unix.c gcc-4.0.4/libiberty/pexrd-unix.c
+--- gcc-4.0.4_orig/libiberty/pexrd-unix.c	1970-01-01 01:00:00.000000000 +0100
++++ gcc-4.0.4/libiberty/pexrd-unix.c	2007-09-30 15:18:02.000000000 +0200
+@@ -0,0 +1,164 @@
++/* Execute a program and read stdout.  Generic Unix version.
++   Copyright (C) 2004 Free Software Foundation, Inc.
++
++This file is part of the libiberty library.
++Libiberty is free software; you can redistribute it and/or
++modify it under the terms of the GNU Library General Public
++License as published by the Free Software Foundation; either
++version 2 of the License, or (at your option) any later version.
++
++Libiberty is distributed in the hope that it will be useful,
++but WITHOUT ANY WARRANTY; without even the implied warranty of
++MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++Library General Public License for more details.
++
++You should have received a copy of the GNU Library General Public
++License along with libiberty; see the file COPYING.LIB.  If not,
++write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
++Boston, MA 02111-1307, USA.  */
++
++#include "pex-common.h"
++
++#include <stdio.h>
++#include <errno.h>
++#ifdef NEED_DECLARATION_ERRNO
++extern int errno;
++#endif
++#ifdef HAVE_STRING_H
++#include <string.h>
++#endif
++#ifdef HAVE_STDLIB_H
++#include <stdlib.h>
++#endif
++#if HAVE_UNISTD_H
++#include <unistd.h>
++#endif
++#ifdef HAVE_SYS_WAIT_H
++#include <sys/wait.h>
++#endif
++
++#ifndef HAVE_WAITPID
++#define waitpid(pid, status, flags) wait(status)
++#endif
++
++#ifdef vfork /* Autoconf may define this to fork for us. */
++# define VFORK_STRING "fork"
++#else
++# define VFORK_STRING "vfork"
++#endif
++#ifdef HAVE_VFORK_H
++#include <vfork.h>
++#endif
++#ifdef VMS
++#define vfork() (decc$$alloc_vfork_blocks() >= 0 ? \
++               lib$get_current_invo_context(decc$$get_vfork_jmpbuf()) : -1)
++#endif /* VMS */
++
++/* A safe version of popen.  See pex-unix.c for notes on vfork.  */
++
++FILE *
++pex_read (program, argv, this_pname, temp_base, errmsg_fmt, errmsg_arg,
++	  flagsarg, pidptr)
++     const char *program;
++     char * const *argv;
++     const char *this_pname;
++     const char *temp_base ATTRIBUTE_UNUSED;
++     char **errmsg_fmt;
++     char **errmsg_arg;
++     int flagsarg;
++     int *pidptr;
++{
++  int flags;
++  int pid;
++  int pdes[2];
++  int in;
++  int out;
++  FILE *ret;
++  /* We declare these to be volatile to avoid warnings from gcc about
++     them being clobbered by vfork.  */
++  volatile int retries;
++  volatile int sleep_interval;
++
++  flags = flagsarg;
++
++  if (pipe (pdes) < 0)
++    {
++      *errmsg_fmt = "pipe";
++      *errmsg_arg = NULL;
++      return NULL;
++    }
++
++  in = pdes[READ_PORT];
++  out = pdes[WRITE_PORT];
++
++  sleep_interval = 1;
++  pid = -1;
++  for (retries = 0; retries < 4; retries++)
++    {
++      pid = vfork ();
++      if (pid >= 0)
++	break;
++      sleep (sleep_interval);
++      sleep_interval *= 2;
++    }
++
++  switch (pid)
++    {
++    case -1:
++      *errmsg_fmt = "fork";
++      *errmsg_arg = NULL;
++      return NULL;
++
++    case 0:
++      if (out != STDOUT_FILE_NO)
++	{
++	  close (STDOUT_FILE_NO);
++	  dup (out);
++	  close (out);
++	}
++      close (in);
++
++      if (flags & PEXECUTE_SEARCH)
++	execvp (program, argv);
++      else
++	execv (program, argv);
++
++      /* We don't want to call fprintf after vfork.  */
++#define writeerr(s) write (STDERR_FILE_NO, s, strlen (s))
++      writeerr (this_pname);
++      writeerr (": ");
++      writeerr ("installation problem, cannot exec '");
++      writeerr (program);
++      writeerr ("': ");
++      writeerr (xstrerror (errno));
++      writeerr ("\n");
++      _exit (-1);
++      /* NOTREACHED */
++      return NULL;
++
++    default:
++      close (out);
++      ret = fdopen (in, "r");
++      if (ret == NULL)
++	{
++	  *errmsg_fmt = "fdopen";
++	  *errmsg_arg = NULL;
++	  return NULL;
++	}
++      *pidptr = pid;
++      return ret;
++    }
++  /* NOTREACHED */
++}
++
++int
++pex_read_close (pid, file, status, flags)
++     int pid;
++     FILE *file;
++     int *status;
++     int flags ATTRIBUTE_UNUSED;
++{
++  /* ??? Canonicalize STATUS value?  */
++  fclose (file);
++  return waitpid (pid, status, 0);
++}
+diff -r -u -N gcc-4.0.4_orig/libiberty/strerror.c gcc-4.0.4/libiberty/strerror.c
+--- gcc-4.0.4_orig/libiberty/strerror.c	2004-04-13 21:46:01.000000000 +0200
++++ gcc-4.0.4/libiberty/strerror.c	2007-09-30 16:26:03.000000000 +0200
+@@ -468,10 +468,10 @@
+ static const char **sys_errlist;
+ 
+ #else
+-
++#ifndef __MINGW32__
+ extern int sys_nerr;
+ extern char *sys_errlist[];
+-
++#endif
+ #endif
+ 
+ /*
+diff -r -u -N gcc-4.0.4_orig/libjava/gnu/java/security/x509/GnuPKIExtension.java gcc-4.0.4/libjava/gnu/java/security/x509/GnuPKIExtension.java
+--- gcc-4.0.4_orig/libjava/gnu/java/security/x509/GnuPKIExtension.java	2004-11-15 21:02:08.000000000 +0100
++++ gcc-4.0.4/libjava/gnu/java/security/x509/GnuPKIExtension.java	1970-01-01 01:00:00.000000000 +0100
+@@ -1,59 +0,0 @@
+-/* GnuPKIExtension.java -- interface for GNU PKI extensions.
+-   Copyright (C) 2004  Free Software Foundation, Inc.
+-
+-This file is part of GNU Classpath.
+-
+-GNU Classpath is free software; you can redistribute it and/or modify
+-it under the terms of the GNU General Public License as published by
+-the Free Software Foundation; either version 2, or (at your option)
+-any later version.
+-
+-GNU Classpath is distributed in the hope that it will be useful, but
+-WITHOUT ANY WARRANTY; without even the implied warranty of
+-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+-General Public License for more details.
+-
+-You should have received a copy of the GNU General Public License
+-along with GNU Classpath; see the file COPYING.  If not, write to the
+-Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+-02111-1307 USA.
+-
+-Linking this library statically or dynamically with other modules is
+-making a combined work based on this library.  Thus, the terms and
+-conditions of the GNU General Public License cover the whole
+-combination.
+-
+-As a special exception, the copyright holders of this library give you
+-permission to link this library with independent modules to produce an
+-executable, regardless of the license terms of these independent
+-modules, and to copy and distribute the resulting executable under
+-terms of your choice, provided that you also meet, for each linked
+-independent module, the terms and conditions of the license of that
+-module.  An independent module is a module which is not derived from
+-or based on this library.  If you modify this library, you may extend
+-this exception to your version of the library, but you are not
+-obligated to do so.  If you do not wish to do so, delete this
+-exception statement from your version. */
+-
+-
+-package gnu.java.security.x509;
+-
+-import java.security.cert.X509Extension;
+-import java.util.Collection;
+-
+-import gnu.java.security.OID;
+-import gnu.java.security.x509.ext.Extension;
+-
+-public interface GnuPKIExtension extends X509Extension
+-{
+-
+-  /**
+-   * Returns the extension object for the given object identifier.
+-   *
+-   * @param oid The OID of the extension to get.
+-   * @return The extension, or null if there is no such extension.
+-   */
+-  Extension getExtension(OID oid);
+-
+-  Collection getExtensions();
+-}
+diff -r -u -N gcc-4.0.4_orig/libjava/gnu/java/security/x509/PolicyNodeImpl.java gcc-4.0.4/libjava/gnu/java/security/x509/PolicyNodeImpl.java
+--- gcc-4.0.4_orig/libjava/gnu/java/security/x509/PolicyNodeImpl.java	2004-11-15 21:02:08.000000000 +0100
++++ gcc-4.0.4/libjava/gnu/java/security/x509/PolicyNodeImpl.java	1970-01-01 01:00:00.000000000 +0100
+@@ -1,214 +0,0 @@
+-/* PolicyNodeImpl.java -- An implementation of a policy tree node.
+-   Copyright (C) 2004  Free Software Foundation, Inc.
+-
+-This file is part of GNU Classpath.
+-
+-GNU Classpath is free software; you can redistribute it and/or modify
+-it under the terms of the GNU General Public License as published by
+-the Free Software Foundation; either version 2, or (at your option)
+-any later version.
+-
+-GNU Classpath is distributed in the hope that it will be useful, but
+-WITHOUT ANY WARRANTY; without even the implied warranty of
+-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+-General Public License for more details.
+-
+-You should have received a copy of the GNU General Public License
+-along with GNU Classpath; see the file COPYING.  If not, write to the
+-Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+-02111-1307 USA.
+-
+-Linking this library statically or dynamically with other modules is
+-making a combined work based on this library.  Thus, the terms and
+-conditions of the GNU General Public License cover the whole
+-combination.
+-
+-As a special exception, the copyright holders of this library give you
+-permission to link this library with independent modules to produce an
+-executable, regardless of the license terms of these independent
+-modules, and to copy and distribute the resulting executable under
+-terms of your choice, provided that you also meet, for each linked
+-independent module, the terms and conditions of the license of that
+-module.  An independent module is a module which is not derived from
+-or based on this library.  If you modify this library, you may extend
+-this exception to your version of the library, but you are not
+-obligated to do so.  If you do not wish to do so, delete this
+-exception statement from your version. */
+-
+-
+-package gnu.java.security.x509;
+-
+-import java.security.cert.PolicyNode;
+-import java.security.cert.PolicyQualifierInfo;
+-
+-import java.util.Collection;
+-import java.util.Collections;
+-import java.util.HashSet;
+-import java.util.Iterator;
+-import java.util.Set;
+-
+-public final class PolicyNodeImpl implements PolicyNode
+-{
+-
+-  // Fields.
+-  // -------------------------------------------------------------------------
+-
+-  private String policy;
+-  private final Set expectedPolicies;
+-  private final Set qualifiers;
+-  private final Set children;
+-  private PolicyNodeImpl parent;
+-  private int depth;
+-  private boolean critical;
+-  private boolean readOnly;
+-
+-  // Constructors.
+-  // -------------------------------------------------------------------------
+-
+-  public PolicyNodeImpl()
+-  {
+-    expectedPolicies = new HashSet();
+-    qualifiers = new HashSet();
+-    children = new HashSet();
+-    readOnly = false;
+-    critical = false;
+-  }
+-
+-  // Instance methods.
+-  // -------------------------------------------------------------------------
+-
+-  public void addChild(PolicyNodeImpl node)
+-  {
+-    if (readOnly)
+-      throw new IllegalStateException("read only");
+-    if (node.getParent() != null)
+-      throw new IllegalStateException("already a child node");
+-    node.parent = this;
+-    node.setDepth(depth + 1);
+-    children.add(node);
+-  }
+-
+-  public Iterator getChildren()
+-  {
+-    return Collections.unmodifiableSet(children).iterator();
+-  }
+-
+-  public int getDepth()
+-  {
+-    return depth;
+-  }
+-
+-  public void setDepth(int depth)
+-  {
+-    if (readOnly)
+-      throw new IllegalStateException("read only");
+-    this.depth = depth;
+-  }
+-
+-  public void addAllExpectedPolicies(Set policies)
+-  {
+-    if (readOnly)
+-      throw new IllegalStateException("read only");
+-    expectedPolicies.addAll(policies);
+-  }
+-
+-  public void addExpectedPolicy(String policy)
+-  {
+-    if (readOnly)
+-      throw new IllegalStateException("read only");
+-    expectedPolicies.add(policy);
+-  }
+-
+-  public Set getExpectedPolicies()
+-  {
+-    return Collections.unmodifiableSet(expectedPolicies);
+-  }
+-
+-  public PolicyNode getParent()
+-  {
+-    return parent;
+-  }
+-
+-  public void addAllPolicyQualifiers (Collection qualifiers)
+-  {
+-    for (Iterator it = qualifiers.iterator(); it.hasNext(); )
+-      {
+-        if (!(it.next() instanceof PolicyQualifierInfo))
+-          throw new IllegalArgumentException ("can only add PolicyQualifierInfos");
+-      }
+-    qualifiers.addAll (qualifiers);
+-  }
+-
+-  public void addPolicyQualifier (PolicyQualifierInfo qualifier)
+-  {
+-    if (readOnly)
+-      throw new IllegalStateException("read only");
+-    qualifiers.add(qualifier);
+-  }
+-
+-  public Set getPolicyQualifiers()
+-  {
+-    return Collections.unmodifiableSet(qualifiers);
+-  }
+-
+-  public String getValidPolicy()
+-  {
+-    return policy;
+-  }
+-
+-  public void setValidPolicy(String policy)
+-  {
+-    if (readOnly)
+-      throw new IllegalStateException("read only");
+-    this.policy = policy;
+-  }
+-
+-  public boolean isCritical()
+-  {
+-    return critical;
+-  }
+-
+-  public void setCritical(boolean critical)
+-  {
+-    if (readOnly)
+-      throw new IllegalStateException("read only");
+-    this.critical = critical;
+-  }
+-
+-  public void setReadOnly()
+-  {
+-    if (readOnly)
+-      return;
+-    readOnly = true;
+-    for (Iterator it = getChildren(); it.hasNext(); )
+-      ((PolicyNodeImpl) it.next()).setReadOnly();
+-  }
+-
+-  public String toString()
+-  {
+-    StringBuffer buf = new StringBuffer();
+-    for (int i = 0; i < depth; i++)
+-      buf.append("  ");
+-    buf.append("(");
+-    buf.append(PolicyNodeImpl.class.getName());
+-    buf.append(" (oid ");
+-    buf.append(policy);
+-    buf.append(") (depth ");
+-    buf.append(depth);
+-    buf.append(") (qualifiers ");
+-    buf.append(qualifiers);
+-    buf.append(") (critical ");
+-    buf.append(critical);
+-    buf.append(") (expectedPolicies ");
+-    buf.append(expectedPolicies);
+-    buf.append(") (children (");
+-    final String nl = System.getProperty("line.separator");
+-    for (Iterator it = getChildren(); it.hasNext(); )
+-      {
+-        buf.append(nl);
+-        buf.append(it.next().toString());
+-      }
+-    buf.append(")))");
+-    return buf.toString();
+-  }
+-}
+diff -r -u -N gcc-4.0.4_orig/libjava/gnu/java/security/x509/X500DistinguishedName.java gcc-4.0.4/libjava/gnu/java/security/x509/X500DistinguishedName.java
+--- gcc-4.0.4_orig/libjava/gnu/java/security/x509/X500DistinguishedName.java	2005-02-17 19:26:34.000000000 +0100
++++ gcc-4.0.4/libjava/gnu/java/security/x509/X500DistinguishedName.java	1970-01-01 01:00:00.000000000 +0100
+@@ -1,550 +0,0 @@
+-/* X500DistinguishedName.java -- X.500 distinguished name.
+-   Copyright (C) 2004  Free Software Foundation, Inc.
+-
+-This file is part of GNU Classpath.
+-
+-GNU Classpath is free software; you can redistribute it and/or modify
+-it under the terms of the GNU General Public License as published by
+-the Free Software Foundation; either version 2, or (at your option)
+-any later version.
+-
+-GNU Classpath is distributed in the hope that it will be useful, but
+-WITHOUT ANY WARRANTY; without even the implied warranty of
+-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+-General Public License for more details.
+-
+-You should have received a copy of the GNU General Public License
+-along with GNU Classpath; see the file COPYING.  If not, write to the
+-Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+-02111-1307 USA.
+-
+-Linking this library statically or dynamically with other modules is
+-making a combined work based on this library.  Thus, the terms and
+-conditions of the GNU General Public License cover the whole
+-combination.
+-
+-As a special exception, the copyright holders of this library give you
+-permission to link this library with independent modules to produce an
+-executable, regardless of the license terms of these independent
+-modules, and to copy and distribute the resulting executable under
+-terms of your choice, provided that you also meet, for each linked
+-independent module, the terms and conditions of the license of that
+-module.  An independent module is a module which is not derived from
+-or based on this library.  If you modify this library, you may extend
+-this exception to your version of the library, but you are not
+-obligated to do so.  If you do not wish to do so, delete this
+-exception statement from your version. */
+-
+-
+-package gnu.java.security.x509;
+-
+-import java.io.EOFException;
+-import java.io.InputStream;
+-import java.io.IOException;
+-import java.io.Reader;
+-import java.io.StringReader;
+-
+-import java.security.Principal;
+-
+-import java.util.ArrayList;
+-import java.util.Collections;
+-import java.util.HashSet;
+-import java.util.Iterator;
+-import java.util.LinkedHashMap;
+-import java.util.LinkedList;
+-import java.util.List;
+-import java.util.Map;
+-import java.util.Set;
+-
+-import gnu.java.security.der.DER;
+-import gnu.java.security.der.DERReader;
+-import gnu.java.security.der.DERValue;
+-import gnu.java.security.OID;
+-
+-public class X500DistinguishedName implements Principal
+-{
+-
+-  // Constants and fields.
+-  // -------------------------------------------------------------------------
+-
+-  public static final OID CN         = new OID("2.5.4.3");
+-  public static final OID C          = new OID("2.5.4.6");
+-  public static final OID L          = new OID("2.5.4.7");
+-  public static final OID ST         = new OID("2.5.4.8");
+-  public static final OID STREET     = new OID("2.5.4.9");
+-  public static final OID O          = new OID("2.5.4.10");
+-  public static final OID OU         = new OID("2.5.4.11");
+-  public static final OID T          = new OID("2.5.4.12");
+-  public static final OID DNQ        = new OID("2.5.4.46");
+-  public static final OID NAME       = new OID("2.5.4.41");
+-  public static final OID GIVENNAME  = new OID("2.5.4.42");
+-  public static final OID INITIALS   = new OID("2.5.4.43");
+-  public static final OID GENERATION = new OID("2.5.4.44");
+-  public static final OID EMAIL      = new OID("1.2.840.113549.1.9.1");
+-  public static final OID DC         = new OID("0.9.2342.19200300.100.1.25");
+-  public static final OID UID        = new OID("0.9.2342.19200300.100.1.1");
+-
+-  private List components;
+-  private Map currentRdn;
+-  private boolean fixed;
+-  private String stringRep;
+-  private byte[] encoded;
+-
+-  // Constructors.
+-  // -------------------------------------------------------------------------
+-
+-  public X500DistinguishedName()
+-  {
+-    components = new LinkedList();
+-    currentRdn = new LinkedHashMap();
+-    components.add(currentRdn);
+-  }
+-
+-  public X500DistinguishedName(String name)
+-  {
+-    this();
+-    try
+-      {
+-        parseString(name);
+-      }
+-    catch (IOException ioe)
+-      {
+-        throw new IllegalArgumentException(ioe.toString());
+-      }
+-  }
+-
+-  public X500DistinguishedName(byte[] encoded) throws IOException
+-  {
+-    this();
+-    parseDer(new DERReader(encoded));
+-  }
+-
+-  public X500DistinguishedName(InputStream encoded) throws IOException
+-  {
+-    this();
+-    parseDer(new DERReader(encoded));
+-  }
+-
+-  // Instance methods.
+-  // -------------------------------------------------------------------------
+-
+-  public String getName()
+-  {
+-    return toString();
+-  }
+-
+-  public void newRelativeDistinguishedName()
+-  {
+-    if (fixed || currentRdn.isEmpty()) return;
+-    currentRdn = new LinkedHashMap();
+-    components.add(currentRdn);
+-  }
+-
+-  public int size()
+-  {
+-    return components.size();
+-  }
+-
+-  public int countComponents()
+-  {
+-    int count = 0;
+-    for (Iterator it = components.iterator(); it.hasNext(); )
+-      {
+-        count += ((Map) it.next()).size();
+-      }
+-    return count;
+-  }
+-
+-  public boolean containsComponent(OID oid, String value)
+-  {
+-    for (Iterator it = components.iterator(); it.hasNext(); )
+-      {
+-        Map rdn = (Map) it.next();
+-        String s = (String) rdn.get(oid);
+-        if (s == null)
+-          continue;
+-        if (compressWS(value).equalsIgnoreCase(compressWS(s)))
+-          return true;
+-      }
+-    return false;
+-  }
+-
+-  public String getComponent(OID oid)
+-  {
+-    for (Iterator it = components.iterator(); it.hasNext(); )
+-      {
+-        Map rdn = (Map) it.next();
+-        if (rdn.containsKey(oid))
+-          return (String) rdn.get(oid);
+-      }
+-    return null;
+-  }
+-
+-  public String getComponent(OID oid, int rdn)
+-  {
+-    if (rdn >= size())
+-      return null;
+-    return (String) ((Map) components.get(rdn)).get(oid);
+-  }
+-
+-  public void putComponent(OID oid, String value)
+-  {
+-    currentRdn.put(oid, value);
+-  }
+-
+-  public void putComponent(String name, String value)
+-  {
+-    name = name.trim().toLowerCase();
+-    if (name.equals("cn"))
+-      putComponent(CN, value);
+-    else if (name.equals("c"))
+-      putComponent(C, value);
+-    else if (name.equals("l"))
+-      putComponent(L, value);
+-    else if (name.equals("street"))
+-      putComponent(STREET, value);
+-    else if (name.equals("st"))
+-      putComponent(ST, value);
+-    else if (name.equals("t"))
+-      putComponent(T, value);
+-    else if (name.equals("dnq"))
+-      putComponent(DNQ, value);
+-    else if (name.equals("name"))
+-      putComponent(NAME, value);
+-    else if (name.equals("givenname"))
+-      putComponent(GIVENNAME, value);
+-    else if (name.equals("initials"))
+-      putComponent(INITIALS, value);
+-    else if (name.equals("generation"))
+-      putComponent(GENERATION, value);
+-    else if (name.equals("email"))
+-      putComponent(EMAIL, value);
+-    else if (name.equals("dc"))
+-      putComponent(DC, value);
+-    else if (name.equals("uid"))
+-      putComponent(UID, value);
+-    else
+-      putComponent(new OID(name), value);
+-  }
+-
+-  public void setUnmodifiable()
+-  {
+-    if (fixed) return;
+-    fixed = true;
+-    List newComps = new ArrayList(components.size());
+-    for (Iterator it = components.iterator(); it.hasNext(); )
+-      {
+-        Map rdn = (Map) it.next();
+-        rdn = Collections.unmodifiableMap(rdn);
+-        newComps.add(rdn);
+-      }
+-    components = Collections.unmodifiableList(newComps);
+-    currentRdn = Collections.EMPTY_MAP;
+-  }
+-
+-  public int hashCode()
+-  {
+-    int sum = 0;
+-    for (Iterator it = components.iterator(); it.hasNext(); )
+-      {
+-        Map m = (Map) it.next();
+-        for (Iterator it2 = m.entrySet().iterator(); it2.hasNext(); )
+-          {
+-            Map.Entry e = (Map.Entry) it2.next();
+-            sum += e.getKey().hashCode();
+-            sum += e.getValue().hashCode();
+-          }
+-      }
+-    return sum;
+-  }
+-
+-  public boolean equals(Object o)
+-  {
+-    if (!(o instanceof X500DistinguishedName))
+-      return false;
+-    if (size() != ((X500DistinguishedName) o).size())
+-      return false;
+-    for (int i = 0; i < size(); i++)
+-      {
+-        Map m = (Map) components.get(i);
+-        for (Iterator it2 = m.entrySet().iterator(); it2.hasNext(); )
+-          {
+-            Map.Entry e = (Map.Entry) it2.next();
+-            OID oid = (OID) e.getKey();
+-            String v1 = (String) e.getValue();
+-            String v2 = ((X500DistinguishedName) o).getComponent(oid, i);
+-            if (!compressWS(v1).equalsIgnoreCase(compressWS(v2)))
+-              return false;
+-          }
+-      }
+-    return true;
+-  }
+-
+-  public String toString()
+-  {
+-    if (fixed && stringRep != null)
+-      return stringRep;
+-    StringBuffer str = new StringBuffer();
+-    for (Iterator it = components.iterator(); it.hasNext(); )
+-      {
+-        Map m = (Map) it.next();
+-        for (Iterator it2 = m.entrySet().iterator(); it2.hasNext(); )
+-          {
+-            Map.Entry entry = (Map.Entry) it2.next();
+-            OID oid = (OID) entry.getKey();
+-            String value = (String) entry.getValue();
+-            if (oid.equals(CN))
+-              str.append("CN");
+-            else if (oid.equals(C))
+-              str.append("C");
+-            else if (oid.equals(L))
+-              str.append("L");
+-            else if (oid.equals(ST))
+-              str.append("ST");
+-            else if (oid.equals(STREET))
+-              str.append("STREET");
+-            else if (oid.equals(O))
+-              str.append("O");
+-            else if (oid.equals(OU))
+-              str.append("OU");
+-            else if (oid.equals(T))
+-              str.append("T");
+-            else if (oid.equals(DNQ))
+-              str.append("DNQ");
+-            else if (oid.equals(NAME))
+-              str.append("NAME");
+-            else
+-              str.append(oid.toString());
+-            str.append('=');
+-            str.append(value);
+-            if (it2.hasNext())
+-              str.append("+");
+-          }
+-        if (it.hasNext())
+-          str.append(',');
+-      }
+-    return (stringRep = str.toString());
+-  }
+-
+-  public byte[] getDer()
+-  {
+-    if (fixed && encoded != null)
+-      return (byte[]) encoded.clone();
+-    ArrayList name = new ArrayList(components.size());
+-    for (Iterator it = components.iterator(); it.hasNext(); )
+-      {
+-        Map m = (Map) it.next();
+-        if (m.isEmpty())
+-          continue;
+-        Set rdn = new HashSet();
+-        for (Iterator it2 = m.entrySet().iterator(); it2.hasNext(); )
+-          {
+-            Map.Entry e = (Map.Entry) it.next();
+-            ArrayList atav = new ArrayList(2);
+-            atav.add(new DERValue(DER.OBJECT_IDENTIFIER, e.getKey()));
+-            atav.add(new DERValue(DER.UTF8_STRING, e.getValue()));
+-            rdn.add(new DERValue(DER.SEQUENCE|DER.CONSTRUCTED, atav));
+-          }
+-        name.add(new DERValue(DER.SET|DER.CONSTRUCTED, rdn));
+-      }
+-    DERValue val = new DERValue(DER.SEQUENCE|DER.CONSTRUCTED, name);
+-    return (byte[]) (encoded = val.getEncoded()).clone();
+-  }
+-
+-  // Own methods.
+-  // -------------------------------------------------------------------------
+-
+-  private int sep;
+-
+-  private void parseString(String str) throws IOException
+-  {
+-    Reader in = new StringReader(str);
+-    while (true)
+-      {
+-        String key = readAttributeType(in);
+-        if (key == null)
+-          break;
+-        String value = readAttributeValue(in);
+-        putComponent(key, value);
+-        if (sep == ',')
+-          newRelativeDistinguishedName();
+-      }
+-    setUnmodifiable();
+-  }
+-
+-  private String readAttributeType(Reader in) throws IOException
+-  {
+-    StringBuffer buf = new StringBuffer();
+-    int ch;
+-    while ((ch = in.read()) != '=')
+-      {
+-        if (ch == -1)
+-          {
+-            if (buf.length() > 0)
+-              throw new EOFException();
+-            return null;
+-          }
+-        if (ch > 127)
+-          throw new IOException("Invalid char: " + (char) ch);
+-        if (Character.isLetterOrDigit((char) ch) || ch == '-' || ch == '.')
+-          buf.append((char) ch);
+-        else
+-          throw new IOException("Invalid char: " + (char) ch);
+-      }
+-    return buf.toString();
+-  }
+-
+-  private String readAttributeValue(Reader in) throws IOException
+-  {
+-    StringBuffer buf = new StringBuffer();
+-    int ch = in.read();
+-    if (ch == '#')
+-      {
+-        while (true)
+-          {
+-            ch = in.read();
+-            if (('a' <= ch && ch <= 'f') || ('A' <= ch && ch <= 'F')
+-                || Character.isDigit((char) ch))
+-              buf.append((char) ch);
+-            else if (ch == '+' || ch == ',')
+-              {
+-                sep = ch;
+-                String hex = buf.toString();
+-                return new String(Util.toByteArray(hex));
+-              }
+-            else
+-              throw new IOException("illegal character: " + (char) ch);
+-          }
+-      }
+-    else if (ch == '"')
+-      {
+-        while (true)
+-          {
+-            ch = in.read();
+-            if (ch == '"')
+-              break;
+-            else if (ch == '\\')
+-              {
+-                ch = in.read();
+-                if (ch == -1)
+-                  throw new EOFException();
+-                if (('a' <= ch && ch <= 'f') || ('A' <= ch && ch <= 'F')
+-                    || Character.isDigit((char) ch))
+-                  {
+-                    int i = Character.digit((char) ch, 16) << 4;
+-                    ch = in.read();
+-                    if (!(('a' <= ch && ch <= 'f') || ('A' <= ch && ch <= 'F')
+-                          || Character.isDigit((char) ch)))
+-                      throw new IOException("illegal hex char");
+-                    i |= Character.digit((char) ch, 16);
+-                    buf.append((char) i);
+-                  }
+-                else
+-                  buf.append((char) ch);
+-              }
+-            else
+-              buf.append((char) ch);
+-          }
+-        sep = in.read();
+-        if (sep != '+' || sep != ',')
+-          throw new IOException("illegal character: " + (char) ch);
+-        return buf.toString();
+-      }
+-    else
+-      {
+-        while (true)
+-          {
+-            switch (ch)
+-              {
+-              case '+':
+-              case ',':
+-                sep = ch;
+-                return buf.toString();
+-              case '\\':
+-                ch = in.read();
+-                if (ch == -1)
+-                  throw new EOFException();
+-                if (('a' <= ch && ch <= 'f') || ('A' <= ch && ch <= 'F')
+-                    || Character.isDigit((char) ch))
+-                  {
+-                    int i = Character.digit((char) ch, 16) << 4;
+-                    ch = in.read();
+-                    if (!(('a' <= ch && ch <= 'f') || ('A' <= ch && ch <= 'F')
+-                          || Character.isDigit((char) ch)))
+-                      throw new IOException("illegal hex char");
+-                    i |= Character.digit((char) ch, 16);
+-                    buf.append((char) i);
+-                  }
+-                else
+-                  buf.append((char) ch);
+-                break;
+-              case '=':
+-              case '<':
+-              case '>':
+-              case '#':
+-              case ';':
+-                throw new IOException("illegal character: " + (char) ch);
+-              case -1:
+-                throw new EOFException();
+-              default:
+-                buf.append((char) ch);
+-              }
+-          }
+-      }
+-  }
+-
+-  private void parseDer(DERReader der) throws IOException
+-  {
+-    DERValue name = der.read();
+-    if (!name.isConstructed())
+-      throw new IOException("malformed Name");
+-    encoded = name.getEncoded();
+-    int len = 0;
+-    while (len < name.getLength())
+-      {
+-        DERValue rdn = der.read();
+-        if (!rdn.isConstructed())
+-          throw new IOException("badly formed RDNSequence");
+-        int len2 = 0;
+-        while (len2 < rdn.getLength())
+-          {
+-            DERValue atav = der.read();
+-            if (!atav.isConstructed())
+-              throw new IOException("badly formed AttributeTypeAndValue");
+-            DERValue val = der.read();
+-            if (val.getTag() != DER.OBJECT_IDENTIFIER)
+-              throw new IOException("badly formed AttributeTypeAndValue");
+-            OID oid = (OID) val.getValue();
+-            val = der.read();
+-            if (!(val.getValue() instanceof String))
+-              throw new IOException("badly formed AttributeTypeAndValue");
+-            String value = (String) val.getValue();
+-            putComponent(oid, value);
+-            len2 += atav.getEncodedLength();
+-          }
+-        len += rdn.getEncodedLength();
+-        if (len < name.getLength())
+-          newRelativeDistinguishedName();
+-      }
+-    setUnmodifiable();
+-  }
+-
+-  private static String compressWS(String str)
+-  {
+-    StringBuffer buf = new StringBuffer();
+-    char lastChar = 0;
+-    for (int i = 0; i < str.length(); i++)
+-      {
+-        char c = str.charAt(i);
+-        if (Character.isWhitespace(c))
+-          {
+-            if (!Character.isWhitespace(lastChar))
+-              buf.append(' ');
+-          }
+-        else
+-          buf.append(c);
+-        lastChar = c;
+-      }
+-    return buf.toString().trim();
+-  }
+-}
+diff -r -u -N gcc-4.0.4_orig/libjava/gnu/java/security/x509/X509CRL.java gcc-4.0.4/libjava/gnu/java/security/x509/X509CRL.java
+--- gcc-4.0.4_orig/libjava/gnu/java/security/x509/X509CRL.java	2005-02-17 19:26:34.000000000 +0100
++++ gcc-4.0.4/libjava/gnu/java/security/x509/X509CRL.java	1970-01-01 01:00:00.000000000 +0100
+@@ -1,476 +0,0 @@
+-/* X509CRL.java -- X.509 certificate revocation list.
+-   Copyright (C) 2003, 2004  Free Software Foundation, Inc.
+-
+-This file is part of GNU Classpath.
+-
+-GNU Classpath is free software; you can redistribute it and/or modify
+-it under the terms of the GNU General Public License as published by
+-the Free Software Foundation; either version 2, or (at your option)
+-any later version.
+-
+-GNU Classpath is distributed in the hope that it will be useful, but
+-WITHOUT ANY WARRANTY; without even the implied warranty of
+-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+-General Public License for more details.
+-
+-You should have received a copy of the GNU General Public License
+-along with GNU Classpath; see the file COPYING.  If not, write to the
+-Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+-02111-1307 USA.
+-
+-Linking this library statically or dynamically with other modules is
+-making a combined work based on this library.  Thus, the terms and
+-conditions of the GNU General Public License cover the whole
+-combination.
+-
+-As a special exception, the copyright holders of this library give you
+-permission to link this library with independent modules to produce an
+-executable, regardless of the license terms of these independent
+-modules, and to copy and distribute the resulting executable under
+-terms of your choice, provided that you also meet, for each linked
+-independent module, the terms and conditions of the license of that
+-module.  An independent module is a module which is not derived from
+-or based on this library.  If you modify this library, you may extend
+-this exception to your version of the library, but you are not
+-obligated to do so.  If you do not wish to do so, delete this
+-exception statement from your version. */
+-
+-
+-package gnu.java.security.x509;
+-
+-import gnu.java.security.OID;
+-import gnu.java.security.der.BitString;
+-import gnu.java.security.der.DER;
+-import gnu.java.security.der.DERReader;
+-import gnu.java.security.der.DERValue;
+-import gnu.java.security.x509.ext.Extension;
+-
+-import java.io.InputStream;
+-import java.io.IOException;
+-import java.math.BigInteger;
+-import java.security.InvalidKeyException;
+-import java.security.NoSuchAlgorithmException;
+-import java.security.NoSuchProviderException;
+-import java.security.PublicKey;
+-import java.security.Principal;
+-import java.security.Signature;
+-import java.security.SignatureException;
+-import java.security.cert.Certificate;
+-import java.security.cert.CRLException;
+-import java.util.Collection;
+-import java.util.Collections;
+-import java.util.Date;
+-import java.util.HashSet;
+-import java.util.HashMap;
+-import java.util.Iterator;
+-import java.util.Set;
+-
+-import javax.security.auth.x500.X500Principal;
+-
+-/**
+- * X.509 certificate revocation lists.
+- *
+- * @author Casey Marshall (rsdio@metastatic.org)
+- */
+-public class X509CRL extends java.security.cert.X509CRL
+-  implements GnuPKIExtension
+-{
+-
+-  // Constants and fields.
+-  // ------------------------------------------------------------------------
+-
+-  private static final boolean DEBUG = false;
+-  private static void debug(String msg)
+-  {
+-    if (DEBUG)
+-      {
+-        System.err.print(">> X509CRL: ");
+-        System.err.println(msg);
+-      }
+-  }
+-
+-  private static final OID ID_DSA = new OID("1.2.840.10040.4.1");
+-  private static final OID ID_DSA_WITH_SHA1 = new OID("1.2.840.10040.4.3");
+-  private static final OID ID_RSA = new OID("1.2.840.113549.1.1.1");
+-  private static final OID ID_RSA_WITH_MD2 = new OID("1.2.840.113549.1.1.2");
+-  private static final OID ID_RSA_WITH_MD5 = new OID("1.2.840.113549.1.1.4");
+-  private static final OID ID_RSA_WITH_SHA1 = new OID("1.2.840.113549.1.1.5");
+-
+-  private byte[] encoded;
+-
+-  private byte[] tbsCRLBytes;
+-  private int version;
+-  private OID algId;
+-  private byte[] algParams;
+-  private Date thisUpdate;
+-  private Date nextUpdate;
+-  private X500DistinguishedName issuerDN;
+-  private HashMap revokedCerts;
+-  private HashMap extensions;
+-
+-  private OID sigAlg;
+-  private byte[] sigAlgParams;
+-  private byte[] rawSig;
+-  private byte[] signature;
+-
+-  // Constructors.
+-  // ------------------------------------------------------------------------
+-
+-  /**
+-   * Create a new X.509 CRL.
+-   *
+-   * @param encoded The DER encoded CRL.
+-   * @throws CRLException If the input bytes are incorrect.
+-   * @throws IOException  If the input bytes cannot be read.
+-   */
+-  public X509CRL(InputStream encoded) throws CRLException, IOException
+-  {
+-    super();
+-    revokedCerts = new HashMap();
+-    extensions = new HashMap();
+-    try
+-      {
+-        parse(encoded);
+-      }
+-    catch (IOException ioe)
+-      {
+-        ioe.printStackTrace();
+-        throw ioe;
+-      }
+-    catch (Exception x)
+-      {
+-        x.printStackTrace();
+-        throw new CRLException(x.toString());
+-      }
+-  }
+-
+-  // X509CRL methods.
+-  // ------------------------------------------------------------------------
+-
+-  public boolean equals(Object o)
+-  {
+-    if (!(o instanceof X509CRL))
+-      return false;
+-    return ((X509CRL) o).getRevokedCertificates().equals(revokedCerts.values());
+-  }
+-
+-  public int hashCode()
+-  {
+-    return revokedCerts.hashCode();
+-  }
+-
+-  public byte[] getEncoded() throws CRLException
+-  {
+-    return (byte[]) encoded.clone();
+-  }
+-
+-  public void verify(PublicKey key)
+-    throws CRLException, NoSuchAlgorithmException, InvalidKeyException,
+-           NoSuchProviderException, SignatureException
+-  {
+-    Signature sig = Signature.getInstance(sigAlg.toString());
+-    doVerify(sig, key);
+-  }
+-
+-  public void verify(PublicKey key, String provider)
+-    throws CRLException, NoSuchAlgorithmException, InvalidKeyException,
+-           NoSuchProviderException, SignatureException
+-  {
+-    Signature sig = Signature.getInstance(sigAlg.toString(), provider);
+-    doVerify(sig, key);
+-  }
+-
+-  public int getVersion()
+-  {
+-    return version;
+-  }
+-
+-  public Principal getIssuerDN()
+-  {
+-    return issuerDN;
+-  }
+-
+-  public X500Principal getIssuerX500Principal()
+-  {
+-    return new X500Principal(issuerDN.getDer());
+-  }
+-
+-  public Date getThisUpdate()
+-  {
+-    return (Date) thisUpdate.clone();
+-  }
+-
+-  public Date getNextUpdate()
+-  {
+-    if (nextUpdate != null)
+-      return (Date) nextUpdate.clone();
+-    return null;
+-  }
+-
+-  public java.security.cert.X509CRLEntry getRevokedCertificate(BigInteger serialNo)
+-  {
+-    return (java.security.cert.X509CRLEntry) revokedCerts.get(serialNo);
+-  }
+-
+-  public Set getRevokedCertificates()
+-  {
+-    return Collections.unmodifiableSet(new HashSet(revokedCerts.values()));
+-  }
+-
+-  public byte[] getTBSCertList() throws CRLException
+-  {
+-    return (byte[]) tbsCRLBytes.clone();
+-  }
+-
+-  public byte[] getSignature()
+-  {
+-    return (byte[]) rawSig.clone();
+-  }
+-
+-  public String getSigAlgName()
+-  {
+-    if (sigAlg.equals(ID_DSA_WITH_SHA1))
+-      return "SHA1withDSA";
+-    if (sigAlg.equals(ID_RSA_WITH_MD2))
+-      return "MD2withRSA";
+-    if (sigAlg.equals(ID_RSA_WITH_MD5))
+-      return "MD5withRSA";
+-    if (sigAlg.equals(ID_RSA_WITH_SHA1))
+-      return "SHA1withRSA";
+-    return "unknown";
+-  }
+-
+-  public String getSigAlgOID()
+-  {
+-    return sigAlg.toString();
+-  }
+-
+-  public byte[] getSigAlgParams()
+-  {
+-    if (sigAlgParams != null)
+-      return (byte[]) sigAlgParams.clone();
+-    return null;
+-  }
+-
+-  // X509Extension methods.
+-  // ------------------------------------------------------------------------
+-
+-  public boolean hasUnsupportedCriticalExtension()
+-  {
+-    for (Iterator it = extensions.values().iterator(); it.hasNext(); )
+-      {
+-        Extension e = (Extension) it.next();
+-        if (e.isCritical() && !e.isSupported())
+-          return true;
+-      }
+-    return false;
+-  }
+-
+-  public Set getCriticalExtensionOIDs()
+-  {
+-    HashSet s = new HashSet();
+-    for (Iterator it = extensions.values().iterator(); it.hasNext(); )
+-      {
+-        Extension e = (Extension) it.next();
+-        if (e.isCritical())
+-          s.add(e.getOid().toString());
+-      }
+-    return Collections.unmodifiableSet(s);
+-  }
+-
+-  public Set getNonCriticalExtensionOIDs()
+-  {
+-    HashSet s = new HashSet();
+-    for (Iterator it = extensions.values().iterator(); it.hasNext(); )
+-      {
+-        Extension e = (Extension) it.next();
+-        if (!e.isCritical())
+-          s.add(e.getOid().toString());
+-      }
+-    return Collections.unmodifiableSet(s);
+-  }
+-
+-  public byte[] getExtensionValue(String oid)
+-  {
+-    Extension e = getExtension(new OID(oid));
+-    if (e != null)
+-      {
+-        return e.getValue().getEncoded();
+-      }
+-    return null;
+-  }
+-
+-  // GnuPKIExtension method.
+-  // -------------------------------------------------------------------------
+-
+-  public Extension getExtension(OID oid)
+-  {
+-    return (Extension) extensions.get(oid);
+-  }
+-
+-  public Collection getExtensions()
+-  {
+-    return extensions.values();
+-  }
+-
+-  // CRL methods.
+-  // -------------------------------------------------------------------------
+-
+-  public String toString()
+-  {
+-    return X509CRL.class.getName();
+-  }
+-
+-  public boolean isRevoked(Certificate cert)
+-  {
+-    if (!(cert instanceof java.security.cert.X509Certificate))
+-      throw new IllegalArgumentException("not a X.509 certificate");
+-    BigInteger certSerial =
+-      ((java.security.cert.X509Certificate) cert).getSerialNumber();
+-    X509CRLEntry ent = (X509CRLEntry) revokedCerts.get(certSerial);
+-    if (ent == null)
+-      return false;
+-    return ent.getRevocationDate().compareTo(new Date()) < 0;
+-  }
+-
+-  // Own methods.
+-  // ------------------------------------------------------------------------
+-
+-  private void doVerify(Signature sig, PublicKey key)
+-    throws CRLException, InvalidKeyException, SignatureException
+-  {
+-    sig.initVerify(key);
+-    sig.update(tbsCRLBytes);
+-    if (!sig.verify(signature))
+-      throw new CRLException("signature not verified");
+-  }
+-
+-  private void parse(InputStream in) throws Exception
+-  {
+-    // CertificateList ::= SEQUENCE {
+-    DERReader der = new DERReader(in);
+-    DERValue val = der.read();
+-    debug("start CertificateList len == " + val.getLength());
+-    if (!val.isConstructed())
+-      throw new IOException("malformed CertificateList");
+-    encoded = val.getEncoded();
+-
+-    //   tbsCertList ::= SEQUENCE {  -- TBSCertList
+-    val = der.read();
+-    if (!val.isConstructed())
+-      throw new IOException("malformed TBSCertList");
+-    debug("start tbsCertList  len == " + val.getLength());
+-    tbsCRLBytes = val.getEncoded();
+-
+-    //     version    Version OPTIONAL,
+-    //                  -- If present must be v2
+-    val = der.read();
+-    if (val.getValue() instanceof BigInteger)
+-      {
+-        version = ((BigInteger) val.getValue()).intValue() + 1;
+-        val = der.read();
+-      }
+-    else
+-      version = 1;
+-    debug("read version == " + version);
+-
+-    //     signature   AlgorithmIdentifier,
+-    debug("start AlgorithmIdentifier len == " + val.getLength());
+-    if (!val.isConstructed())
+-      throw new IOException("malformed AlgorithmIdentifier");
+-    DERValue algIdVal = der.read();
+-    algId = (OID) algIdVal.getValue();
+-    debug("read object identifier == " + algId);
+-    if (val.getLength() > algIdVal.getEncodedLength())
+-      {
+-        val = der.read();
+-        debug("read parameters  len == " + val.getEncodedLength());
+-        algParams = val.getEncoded();
+-        if (val.isConstructed())
+-          in.skip(val.getLength());
+-      }
+-
+-    //     issuer   Name,
+-    val = der.read();
+-    issuerDN = new X500DistinguishedName(val.getEncoded());
+-    der.skip(val.getLength());
+-    debug("read issuer == " + issuerDN);
+-
+-    //     thisUpdate   Time,
+-    thisUpdate = (Date) der.read().getValue();
+-    debug("read thisUpdate == " + thisUpdate);
+-
+-    //     nextUpdate   Time OPTIONAL,
+-    val = der.read();
+-    if (val.getValue() instanceof Date)
+-      {
+-        nextUpdate = (Date) val.getValue();
+-        debug("read nextUpdate == " + nextUpdate);
+-        val = der.read();
+-      }
+-
+-    //     revokedCertificates SEQUENCE OF SEQUENCE {
+-    //       -- X509CRLEntry objects...
+-    //     } OPTIONAL,
+-    if (val.getTag() != 0)
+-      {
+-        int len = 0;
+-        while (len < val.getLength())
+-          {
+-            X509CRLEntry entry = new X509CRLEntry(version, der);
+-            revokedCerts.put(entry.getSerialNumber(), entry);
+-            len += entry.getEncoded().length;
+-          }
+-        val = der.read();
+-      }
+-
+-    //    crlExtensions   [0] EXPLICIT Extensions OPTIONAL
+-    //                        -- if present MUST be v2
+-    if (val.getTagClass() != DER.UNIVERSAL && val.getTag() == 0)
+-      {
+-        if (version < 2)
+-          throw new IOException("extra data in CRL");
+-        DERValue exts = der.read();
+-        if (!exts.isConstructed())
+-          throw new IOException("malformed Extensions");
+-        debug("start Extensions  len == " + exts.getLength());
+-        int len = 0;
+-        while (len < exts.getLength())
+-          {
+-            DERValue ext = der.read();
+-            if (!ext.isConstructed())
+-              throw new IOException("malformed Extension");
+-            Extension e = new Extension(ext.getEncoded());
+-            extensions.put(e.getOid(), e);
+-            der.skip(ext.getLength());
+-            len += ext.getEncodedLength();
+-            debug("current count == " + len);
+-          }
+-        val = der.read();
+-      }
+-
+-    debug("read tag == " + val.getTag());
+-    if (!val.isConstructed())
+-      throw new IOException("malformed AlgorithmIdentifier");
+-    debug("start AlgorithmIdentifier  len == " + val.getLength());
+-    DERValue sigAlgVal = der.read();
+-    debug("read tag == " + sigAlgVal.getTag());
+-    if (sigAlgVal.getTag() != DER.OBJECT_IDENTIFIER)
+-      throw new IOException("malformed AlgorithmIdentifier");
+-    sigAlg = (OID) sigAlgVal.getValue();
+-    debug("signature id == " + sigAlg);
+-    debug("sigAlgVal length == " + sigAlgVal.getEncodedLength());
+-    if (val.getLength() > sigAlgVal.getEncodedLength())
+-      {
+-        val = der.read();
+-        debug("sig params tag = " + val.getTag() + " len == " + val.getEncodedLength());
+-        sigAlgParams = (byte[]) val.getEncoded();
+-        if (val.isConstructed())
+-          in.skip(val.getLength());
+-      }
+-    val = der.read();
+-    debug("read tag = " + val.getTag());
+-    rawSig = val.getEncoded();
+-    signature = ((BitString) val.getValue()).toByteArray();
+-  }
+-}
+diff -r -u -N gcc-4.0.4_orig/libjava/gnu/java/security/x509/X509CRLEntry.java gcc-4.0.4/libjava/gnu/java/security/x509/X509CRLEntry.java
+--- gcc-4.0.4_orig/libjava/gnu/java/security/x509/X509CRLEntry.java	2005-02-17 19:26:34.000000000 +0100
++++ gcc-4.0.4/libjava/gnu/java/security/x509/X509CRLEntry.java	1970-01-01 01:00:00.000000000 +0100
+@@ -1,280 +0,0 @@
+-/* X509CRLEntry.java -- an entry in a X.509 CRL.
+-   Copyright (C) 2003, 2004  Free Software Foundation, Inc.
+-
+-This file is part of GNU Classpath.
+-
+-GNU Classpath is free software; you can redistribute it and/or modify
+-it under the terms of the GNU General Public License as published by
+-the Free Software Foundation; either version 2, or (at your option)
+-any later version.
+-
+-GNU Classpath is distributed in the hope that it will be useful, but
+-WITHOUT ANY WARRANTY; without even the implied warranty of
+-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+-General Public License for more details.
+-
+-You should have received a copy of the GNU General Public License
+-along with GNU Classpath; see the file COPYING.  If not, write to the
+-Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+-02111-1307 USA.
+-
+-Linking this library statically or dynamically with other modules is
+-making a combined work based on this library.  Thus, the terms and
+-conditions of the GNU General Public License cover the whole
+-combination.
+-
+-As a special exception, the copyright holders of this library give you
+-permission to link this library with independent modules to produce an
+-executable, regardless of the license terms of these independent
+-modules, and to copy and distribute the resulting executable under
+-terms of your choice, provided that you also meet, for each linked
+-independent module, the terms and conditions of the license of that
+-module.  An independent module is a module which is not derived from
+-or based on this library.  If you modify this library, you may extend
+-this exception to your version of the library, but you are not
+-obligated to do so.  If you do not wish to do so, delete this
+-exception statement from your version. */
+-
+-
+-package gnu.java.security.x509;
+-
+-import java.io.IOException;
+-
+-import java.math.BigInteger;
+-
+-import java.security.cert.CRLException;
+-
+-import java.util.Collection;
+-import java.util.Collections;
+-import java.util.Date;
+-import java.util.HashMap;
+-import java.util.HashSet;
+-import java.util.Iterator;
+-import java.util.Set;
+-
+-import gnu.java.security.OID;
+-import gnu.java.security.der.*;
+-import gnu.java.security.x509.ext.*;
+-
+-/**
+- * A single entry in a X.509 certificate revocation list.
+- *
+- * @see X509CRL
+- * @author Casey Marshall
+- */
+-class X509CRLEntry extends java.security.cert.X509CRLEntry
+-  implements GnuPKIExtension
+-{
+-
+-  // Constants and fields.
+-  // ------------------------------------------------------------------------
+-
+-  private static final boolean DEBUG = false;
+-  private static void debug(String msg)
+-  {
+-    if (DEBUG)
+-      {
+-        System.err.print(">> X509CRLEntry: ");
+-        System.err.println(msg);
+-      }
+-  }
+-
+-  /** The DER encoded form of this CRL entry. */
+-  private byte[] encoded;
+-
+-  /** The revoked certificate's serial number. */
+-  private BigInteger serialNo;
+-
+-  /** The date the certificate was revoked. */
+-  private Date revocationDate;
+-
+-  /** The CRL entry extensions. */
+-  private HashMap extensions;
+-
+-  // Constructor.
+-  // ------------------------------------------------------------------------
+-
+-  /**
+-   * Create a new X.509 certificate revocation list entry from the given
+-   * input stream and CRL version number.
+-   *
+-   * @param version The CRL version.
+-   * @param encoded The stream of DER bytes.
+-   * @throws CRLException If the ASN.1 structure is invalid.
+-   * @throws IOException  If the bytes cannot be read.
+-   */
+-  X509CRLEntry(int version, DERReader encoded)
+-    throws CRLException, IOException
+-  {
+-    super();
+-    extensions = new HashMap();
+-    try
+-      {
+-        parse(version, encoded);
+-      }
+-    catch (IOException ioe)
+-      {
+-        throw ioe;
+-      }
+-    catch (Exception x)
+-      {
+-        throw new CRLException(x.toString());
+-      }
+-  }
+-
+-  // X509CRLEntry methods.
+-  // ------------------------------------------------------------------------
+-
+-  public boolean equals(Object o)
+-  {
+-    if (!(o instanceof X509CRLEntry))
+-      return false;
+-    return ((X509CRLEntry) o).getSerialNumber().equals(serialNo) &&
+-           ((X509CRLEntry) o).getRevocationDate().equals(revocationDate);
+-  }
+-
+-  public int hashCode()
+-  {
+-    return serialNo.hashCode();
+-  }
+-
+-  public byte[] getEncoded() throws CRLException
+-  {
+-    return (byte[]) encoded.clone();
+-  }
+-
+-  public BigInteger getSerialNumber()
+-  {
+-    return serialNo;
+-  }
+-
+-  public Date getRevocationDate()
+-  {
+-    return (Date) revocationDate.clone();
+-  }
+-
+-  public boolean hasExtensions()
+-  {
+-    return ! extensions.isEmpty();
+-  }
+-
+-  public String toString()
+-  {
+-    return "X509CRLEntry serial=" + serialNo + " revocation date="
+-      + revocationDate + " ext=" + extensions;
+-  }
+-
+-  // X509Extension methods.
+-  // -------------------------------------------------------------------------
+-
+-  public boolean hasUnsupportedCriticalExtension()
+-  {
+-    for (Iterator it = extensions.values().iterator(); it.hasNext(); )
+-      {
+-        Extension e = (Extension) it.next();
+-        if (e.isCritical() && !e.isSupported())
+-          return true;
+-      }
+-    return false;
+-  }
+-
+-  public Set getCriticalExtensionOIDs()
+-  {
+-    HashSet s = new HashSet();
+-    for (Iterator it = extensions.values().iterator(); it.hasNext(); )
+-      {
+-        Extension e = (Extension) it.next();
+-        if (e.isCritical())
+-          s.add(e.getOid().toString());
+-      }
+-    return Collections.unmodifiableSet(s);
+-  }
+-
+-  public Set getNonCriticalExtensionOIDs()
+-  {
+-    HashSet s = new HashSet();
+-    for (Iterator it = extensions.values().iterator(); it.hasNext(); )
+-      {
+-        Extension e = (Extension) it.next();
+-        if (!e.isCritical())
+-          s.add(e.getOid().toString());
+-      }
+-    return Collections.unmodifiableSet(s);
+-  }
+-
+-  public byte[] getExtensionValue(String oid)
+-  {
+-    Extension e = getExtension(new OID(oid));
+-    if (e != null)
+-      {
+-        return e.getValue().getEncoded();
+-      }
+-    return null;
+-  }
+-
+-  // GnuPKIExtension method.
+-  // -------------------------------------------------------------------------
+-
+-  public Extension getExtension(OID oid)
+-  {
+-    return (Extension) extensions.get(oid);
+-  }
+-
+-  public Collection getExtensions()
+-  {
+-    return extensions.values();
+-  }
+-
+-  // Own methods.
+-  // -------------------------------------------------------------------------
+-
+-  private void parse(int version, DERReader der) throws Exception
+-  {
+-    // RevokedCertificate ::= SEQUENCE {
+-    DERValue entry = der.read();
+-    debug("start CRL entry   len == " + entry.getLength());
+-    if (!entry.isConstructed())
+-      throw new IOException("malformed revokedCertificate");
+-    encoded = entry.getEncoded();
+-    int len = 0;
+-
+-    debug("encoded entry:\n" + Util.hexDump(encoded, ">>>> "));
+-
+-    //   userCertificate   CertificateSerialNumber,
+-    DERValue val = der.read();
+-    serialNo = (BigInteger) val.getValue();
+-    len += val.getEncodedLength();
+-    debug("userCertificate == " + serialNo + "  current count == " + len);
+-
+-    //   revocationDate   Time,
+-    val = der.read();
+-    revocationDate = (Date) val.getValue();
+-    len += val.getEncodedLength();
+-    debug("revocationDate == " + revocationDate + "  current count == " + len);
+-
+-    //   crlEntryExtensions   Extensions OPTIONAL
+-    //                          -- if present MUST be v2
+-    if (len < entry.getLength())
+-      {
+-        if (version < 2)
+-          throw new IOException("extra data in CRL entry");
+-        DERValue exts = der.read();
+-        if (!exts.isConstructed())
+-          throw new IOException("malformed Extensions");
+-        debug("start Extensions  len == " + exts.getLength());
+-        len = 0;
+-        while (len < exts.getLength())
+-          {
+-            val = der.read();
+-            if (!val.isConstructed())
+-              throw new IOException("malformed Extension");
+-            debug("start Extension  len == " + val.getLength());
+-            Extension e = new Extension(val.getEncoded());
+-            extensions.put(e.getOid(), e);
+-            der.skip(val.getLength());
+-            len += val.getEncodedLength();
+-            debug("current count == " + len);
+-          }
+-      }
+-  }
+-}
+diff -r -u -N gcc-4.0.4_orig/libjava/gnu/java/security/x509/X509CRLSelectorImpl.java gcc-4.0.4/libjava/gnu/java/security/x509/X509CRLSelectorImpl.java
+--- gcc-4.0.4_orig/libjava/gnu/java/security/x509/X509CRLSelectorImpl.java	2004-11-15 21:02:08.000000000 +0100
++++ gcc-4.0.4/libjava/gnu/java/security/x509/X509CRLSelectorImpl.java	1970-01-01 01:00:00.000000000 +0100
+@@ -1,138 +0,0 @@
+-/* X509CRLSelectorImpl.java -- implementation of an X509CRLSelector.
+-   Copyright (C) 2004  Free Software Foundation, Inc.
+-
+-This file is part of GNU Classpath.
+-
+-GNU Classpath is free software; you can redistribute it and/or modify
+-it under the terms of the GNU General Public License as published by
+-the Free Software Foundation; either version 2, or (at your option)
+-any later version.
+-
+-GNU Classpath is distributed in the hope that it will be useful, but
+-WITHOUT ANY WARRANTY; without even the implied warranty of
+-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+-General Public License for more details.
+-
+-You should have received a copy of the GNU General Public License
+-along with GNU Classpath; see the file COPYING.  If not, write to the
+-Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+-02111-1307 USA.
+-
+-Linking this library statically or dynamically with other modules is
+-making a combined work based on this library.  Thus, the terms and
+-conditions of the GNU General Public License cover the whole
+-combination.
+-
+-As a special exception, the copyright holders of this library give you
+-permission to link this library with independent modules to produce an
+-executable, regardless of the license terms of these independent
+-modules, and to copy and distribute the resulting executable under
+-terms of your choice, provided that you also meet, for each linked
+-independent module, the terms and conditions of the license of that
+-module.  An independent module is a module which is not derived from
+-or based on this library.  If you modify this library, you may extend
+-this exception to your version of the library, but you are not
+-obligated to do so.  If you do not wish to do so, delete this
+-exception statement from your version. */
+-
+-
+-package gnu.java.security.x509;
+-
+-import java.io.IOException;
+-
+-import java.security.Principal;
+-import java.security.cert.CRL;
+-import java.security.cert.CRLSelector;
+-import java.security.cert.X509CRL;
+-
+-import java.util.Collection;
+-import java.util.Collections;
+-import java.util.HashSet;
+-import java.util.Iterator;
+-import java.util.Set;
+-
+-import javax.security.auth.x500.X500Principal;
+-
+-/**
+- * Sun's implementation of X509CRLSelector sucks. This one tries to work
+- * better.
+- */
+-public class X509CRLSelectorImpl implements CRLSelector
+-{
+-
+-  // Fields.
+-  // -------------------------------------------------------------------------
+-
+-  private Set issuerNames;
+-
+-  // Constructor.
+-  // -------------------------------------------------------------------------
+-
+-  public X509CRLSelectorImpl()
+-  {
+-    issuerNames = new HashSet();
+-  }
+-
+-  // Instance methods.
+-  // -------------------------------------------------------------------------
+-
+-  public void addIssuerName(byte[] issuerName) throws IOException
+-  {
+-    issuerNames.add(new X500DistinguishedName(issuerName));
+-  }
+-
+-  public void addIssuerName(String issuerName)
+-  {
+-    issuerNames.add(new X500DistinguishedName(issuerName));
+-  }
+-
+-  public void addIssuerName(Principal issuerName) throws IOException
+-  {
+-    if (issuerName instanceof X500DistinguishedName)
+-      issuerNames.add(issuerName);
+-    else if (issuerName instanceof X500Principal)
+-      issuerNames.add(new X500DistinguishedName(((X500Principal) issuerName).getEncoded()));
+-    else
+-      issuerNames.add(new X500DistinguishedName(issuerName.getName()));
+-  }
+-
+-  public Collection getIssuerNames()
+-  {
+-    return Collections.unmodifiableSet(issuerNames);
+-  }
+-
+-  public Object clone()
+-  {
+-    X509CRLSelectorImpl copy = new X509CRLSelectorImpl();
+-    copy.issuerNames.addAll(issuerNames);
+-    return copy;
+-  }
+-
+-  public boolean match(CRL crl)
+-  {
+-    if (!(crl instanceof X509CRL))
+-      return false;
+-    try
+-      {
+-        Principal p = ((X509CRL) crl).getIssuerDN();
+-        X500DistinguishedName thisName = null;
+-        if (p instanceof X500DistinguishedName)
+-          thisName = (X500DistinguishedName) p;
+-        else if (p instanceof X500Principal)
+-          thisName = new X500DistinguishedName(((X500Principal) p).getEncoded());
+-        else
+-          thisName = new X500DistinguishedName(p.getName());
+-        for (Iterator it = issuerNames.iterator(); it.hasNext(); )
+-          {
+-            X500DistinguishedName name = (X500DistinguishedName) it.next();
+-            if (thisName.equals(name))
+-              return true;
+-          }
+-      }
+-    catch (Exception x)
+-      {
+-      }
+-    return false;
+-  }
+-}
+-
+diff -r -u -N gcc-4.0.4_orig/libjava/gnu/java/security/x509/X509CertSelectorImpl.java gcc-4.0.4/libjava/gnu/java/security/x509/X509CertSelectorImpl.java
+--- gcc-4.0.4_orig/libjava/gnu/java/security/x509/X509CertSelectorImpl.java	2004-11-15 21:02:08.000000000 +0100
++++ gcc-4.0.4/libjava/gnu/java/security/x509/X509CertSelectorImpl.java	1970-01-01 01:00:00.000000000 +0100
+@@ -1,199 +0,0 @@
+-/* X509CertSelectorImpl.java -- implementation of an X509CertSelector.
+-   Copyright (C) 2004  Free Software Foundation, Inc.
+-
+-This file is part of GNU Classpath.
+-
+-GNU Classpath is free software; you can redistribute it and/or modify
+-it under the terms of the GNU General Public License as published by
+-the Free Software Foundation; either version 2, or (at your option)
+-any later version.
+-
+-GNU Classpath is distributed in the hope that it will be useful, but
+-WITHOUT ANY WARRANTY; without even the implied warranty of
+-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+-General Public License for more details.
+-
+-You should have received a copy of the GNU General Public License
+-along with GNU Classpath; see the file COPYING.  If not, write to the
+-Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+-02111-1307 USA.
+-
+-Linking this library statically or dynamically with other modules is
+-making a combined work based on this library.  Thus, the terms and
+-conditions of the GNU General Public License cover the whole
+-combination.
+-
+-As a special exception, the copyright holders of this library give you
+-permission to link this library with independent modules to produce an
+-executable, regardless of the license terms of these independent
+-modules, and to copy and distribute the resulting executable under
+-terms of your choice, provided that you also meet, for each linked
+-independent module, the terms and conditions of the license of that
+-module.  An independent module is a module which is not derived from
+-or based on this library.  If you modify this library, you may extend
+-this exception to your version of the library, but you are not
+-obligated to do so.  If you do not wish to do so, delete this
+-exception statement from your version. */
+-
+-
+-package gnu.java.security.x509;
+-
+-import java.io.IOException;
+-
+-import java.security.Principal;
+-import java.security.cert.Certificate;
+-import java.security.cert.CertSelector;
+-import java.security.cert.X509Certificate;
+-
+-import java.util.Collection;
+-import java.util.Collections;
+-import java.util.HashSet;
+-import java.util.Iterator;
+-import java.util.Set;
+-
+-import javax.security.auth.x500.X500Principal;
+-
+-/**
+- * Sun's implementation of X509CertSelector sucks. This one tries to work
+- * better.
+- */
+-public class X509CertSelectorImpl implements CertSelector
+-{
+-
+-  // Fields.
+-  // -------------------------------------------------------------------------
+-
+-  private Set issuerNames;
+-  private Set subjectNames;
+-
+-  // Constructor.
+-  // -------------------------------------------------------------------------
+-
+-  public X509CertSelectorImpl()
+-  {
+-    issuerNames = new HashSet();
+-    subjectNames = new HashSet();
+-  }
+-
+-  // Instance methods.
+-  // -------------------------------------------------------------------------
+-
+-  public void addIssuerName(byte[] issuerName) throws IOException
+-  {
+-    issuerNames.add(new X500DistinguishedName(issuerName));
+-  }
+-
+-  public void addIssuerName(String issuerName)
+-  {
+-    issuerNames.add(new X500DistinguishedName(issuerName));
+-  }
+-
+-  public void addIssuerName(Principal issuerName) throws IOException
+-  {
+-    if (issuerName instanceof X500DistinguishedName)
+-      issuerNames.add(issuerName);
+-    else if (issuerName instanceof X500Principal)
+-      issuerNames.add(new X500DistinguishedName(((X500Principal) issuerName).getEncoded()));
+-    else
+-      issuerNames.add(new X500DistinguishedName(issuerName.getName()));
+-  }
+-
+-  public Collection getIssuerNames()
+-  {
+-    return Collections.unmodifiableSet(issuerNames);
+-  }
+-
+-  public void addSubjectName(byte[] subjectName) throws IOException
+-  {
+-    subjectNames.add(new X500DistinguishedName(subjectName));
+-  }
+-
+-  public void addSubjectName(String subjectName) throws IOException
+-  {
+-    subjectNames.add(new X500DistinguishedName(subjectName));
+-  }
+-
+-  public void addSubjectName(Principal subjectName) throws IOException
+-  {
+-    if (subjectName instanceof X500DistinguishedName)
+-      subjectNames.add(subjectName);
+-    else if (subjectName instanceof X500Principal)
+-      subjectNames.add(new X500DistinguishedName(((X500Principal) subjectName).getEncoded()));
+-    else
+-      subjectNames.add(new X500DistinguishedName(subjectName.getName()));
+-  }
+-
+-  public Collection getSubjectNames()
+-  {
+-    return Collections.unmodifiableSet(subjectNames);
+-  }
+-
+-  public Object clone()
+-  {
+-    X509CertSelectorImpl copy = new X509CertSelectorImpl();
+-    copy.issuerNames.addAll(issuerNames);
+-    copy.subjectNames.addAll(subjectNames);
+-    return copy;
+-  }
+-
+-  public boolean match(Certificate cert)
+-  {
+-    if (!(cert instanceof X509Certificate))
+-      return false;
+-    boolean matchIssuer = false;
+-    boolean matchSubject = false;
+-    try
+-      {
+-        Principal p = ((X509Certificate) cert).getIssuerDN();
+-        X500DistinguishedName thisName = null;
+-        if (p instanceof X500DistinguishedName)
+-          thisName = (X500DistinguishedName) p;
+-        else if (p instanceof X500Principal)
+-          thisName = new X500DistinguishedName(((X500Principal) p).getEncoded());
+-        else
+-          thisName = new X500DistinguishedName(p.getName());
+-        if (issuerNames.isEmpty())
+-          matchIssuer = true;
+-        else
+-          {
+-            for (Iterator it = issuerNames.iterator(); it.hasNext(); )
+-              {
+-                X500DistinguishedName name = (X500DistinguishedName) it.next();
+-                if (thisName.equals(name))
+-                  {
+-                    matchIssuer = true;
+-                    break;
+-                  }
+-              }
+-          }
+-
+-        p = ((X509Certificate) cert).getSubjectDN();
+-        thisName = null;
+-        if (p instanceof X500DistinguishedName)
+-          thisName = (X500DistinguishedName) p;
+-        else if (p instanceof X500Principal)
+-          thisName = new X500DistinguishedName(((X500Principal) p).getEncoded());
+-        else
+-          thisName = new X500DistinguishedName(p.getName());
+-        if (subjectNames.isEmpty())
+-          matchSubject = true;
+-        else
+-          {
+-            for (Iterator it = subjectNames.iterator(); it.hasNext(); )
+-              {
+-                X500DistinguishedName name = (X500DistinguishedName) it.next();
+-                if (thisName.equals(name))
+-                  {
+-                    matchSubject = true;
+-                    break;
+-                  }
+-              }
+-          }
+-      }
+-    catch (Exception x)
+-      {
+-      }
+-    return matchIssuer && matchSubject;
+-  }
+-}
+-
+diff -r -u -N gcc-4.0.4_orig/libjava/gnu/java/security/x509/X509Certificate.java gcc-4.0.4/libjava/gnu/java/security/x509/X509Certificate.java
+--- gcc-4.0.4_orig/libjava/gnu/java/security/x509/X509Certificate.java	2005-02-17 19:26:34.000000000 +0100
++++ gcc-4.0.4/libjava/gnu/java/security/x509/X509Certificate.java	1970-01-01 01:00:00.000000000 +0100
+@@ -1,741 +0,0 @@
+-/* X509Certificate.java -- X.509 certificate.
+-   Copyright (C) 2003, 2004  Free Software Foundation, Inc.
+-
+-This file is part of GNU Classpath.
+-
+-GNU Classpath is free software; you can redistribute it and/or modify
+-it under the terms of the GNU General Public License as published by
+-the Free Software Foundation; either version 2, or (at your option)
+-any later version.
+-
+-GNU Classpath is distributed in the hope that it will be useful, but
+-WITHOUT ANY WARRANTY; without even the implied warranty of
+-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+-General Public License for more details.
+-
+-You should have received a copy of the GNU General Public License
+-along with GNU Classpath; see the file COPYING.  If not, write to the
+-Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+-02111-1307 USA.
+-
+-Linking this library statically or dynamically with other modules is
+-making a combined work based on this library.  Thus, the terms and
+-conditions of the GNU General Public License cover the whole
+-combination.
+-
+-As a special exception, the copyright holders of this library give you
+-permission to link this library with independent modules to produce an
+-executable, regardless of the license terms of these independent
+-modules, and to copy and distribute the resulting executable under
+-terms of your choice, provided that you also meet, for each linked
+-independent module, the terms and conditions of the license of that
+-module.  An independent module is a module which is not derived from
+-or based on this library.  If you modify this library, you may extend
+-this exception to your version of the library, but you are not
+-obligated to do so.  If you do not wish to do so, delete this
+-exception statement from your version. */
+-
+-
+-package gnu.java.security.x509;
+-
+-import java.io.InputStream;
+-import java.io.IOException;
+-import java.io.PrintWriter;
+-import java.io.Serializable;
+-import java.io.StringWriter;
+-
+-import java.math.BigInteger;
+-
+-import java.security.AlgorithmParameters;
+-import java.security.InvalidKeyException;
+-import java.security.KeyFactory;
+-import java.security.NoSuchAlgorithmException;
+-import java.security.NoSuchProviderException;
+-import java.security.Principal;
+-import java.security.PublicKey;
+-import java.security.Signature;
+-import java.security.SignatureException;
+-
+-import java.security.cert.CertificateEncodingException;
+-import java.security.cert.CertificateException;
+-import java.security.cert.CertificateExpiredException;
+-import java.security.cert.CertificateNotYetValidException;
+-import java.security.cert.CertificateParsingException;
+-
+-import java.security.interfaces.DSAParams;
+-import java.security.interfaces.DSAPublicKey;
+-import java.security.spec.DSAParameterSpec;
+-import java.security.spec.X509EncodedKeySpec;
+-
+-import java.util.Arrays;
+-import java.util.ArrayList;
+-import java.util.Collection;
+-import java.util.Collections;
+-import java.util.Date;
+-import java.util.HashMap;
+-import java.util.HashSet;
+-import java.util.Iterator;
+-import java.util.List;
+-import java.util.Map;
+-import java.util.Set;
+-
+-import javax.security.auth.x500.X500Principal;
+-
+-import gnu.java.security.OID;
+-import gnu.java.security.der.*;
+-import gnu.java.security.x509.ext.*;
+-
+-/**
+- * An implementation of X.509 certificates.
+- *
+- * @author Casey Marshall (rsdio@metastatic.org)
+- */
+-public class X509Certificate extends java.security.cert.X509Certificate
+-  implements Serializable, GnuPKIExtension
+-{
+-
+-  // Constants and fields.
+-  // ------------------------------------------------------------------------
+-
+-  private static final boolean DEBUG = false;
+-  private static void debug(String msg)
+-  {
+-    if (DEBUG)
+-      {
+-        System.err.print(">> X509Certificate: ");
+-        System.err.println(msg);
+-      }
+-  }
+-  private static void debug(Throwable t)
+-  {
+-    if (DEBUG)
+-      {
+-        System.err.print(">> X509Certificate: ");
+-        t.printStackTrace();
+-      }
+-  }
+-
+-  protected static final OID ID_DSA = new OID ("1.2.840.10040.4.1");
+-  protected static final OID ID_DSA_WITH_SHA1 = new OID ("1.2.840.10040.4.3");
+-  protected static final OID ID_RSA = new OID ("1.2.840.113549.1.1.1");
+-  protected static final OID ID_RSA_WITH_MD2 = new OID ("1.2.840.113549.1.1.2");
+-  protected static final OID ID_RSA_WITH_MD5 = new OID ("1.2.840.113549.1.1.4");
+-  protected static final OID ID_RSA_WITH_SHA1 = new OID ("1.2.840.113549.1.1.5");
+-  protected static final OID ID_ECDSA_WITH_SHA1 = new OID ("1.2.840.10045.4.1");
+-
+-  // This object SHOULD be serialized with an instance of
+-  // java.security.cert.Certificate.CertificateRep, thus all fields are
+-  // transient.
+-
+-  // The encoded certificate.
+-  protected transient byte[] encoded;
+-
+-  // TBSCertificate part.
+-  protected transient byte[] tbsCertBytes;
+-  protected transient int version;
+-  protected transient BigInteger serialNo;
+-  protected transient OID algId;
+-  protected transient byte[] algVal;
+-  protected transient X500DistinguishedName issuer;
+-  protected transient Date notBefore;
+-  protected transient Date notAfter;
+-  protected transient X500DistinguishedName subject;
+-  protected transient PublicKey subjectKey;
+-  protected transient BitString issuerUniqueId;
+-  protected transient BitString subjectUniqueId;
+-  protected transient Map extensions;
+-
+-  // Signature.
+-  protected transient OID sigAlgId;
+-  protected transient byte[] sigAlgVal;
+-  protected transient byte[] signature;
+-
+-  // Constructors.
+-  // ------------------------------------------------------------------------
+-
+-  /**
+-   * Create a new X.509 certificate from the encoded data. The input
+-   * data are expected to be the ASN.1 DER encoding of the certificate.
+-   *
+-   * @param encoded The encoded certificate data.
+-   * @throws IOException If the certificate cannot be read, possibly
+-   * from a formatting error.
+-   * @throws CertificateException If the data read is not an X.509
+-   * certificate.
+-   */
+-  public X509Certificate(InputStream encoded)
+-    throws CertificateException, IOException
+-  {
+-    super();
+-    extensions = new HashMap();
+-    try
+-      {
+-        parse(encoded);
+-      }
+-    catch (IOException ioe)
+-      {
+-        debug(ioe);
+-        throw ioe;
+-      }
+-    catch (Exception e)
+-      {
+-        debug(e);
+-        CertificateException ce = new CertificateException(e.getMessage());
+-        ce.initCause (e);
+-        throw ce;
+-      }
+-  }
+-
+-  protected X509Certificate()
+-  {
+-    extensions = new HashMap();
+-  }
+-
+-  // X509Certificate methods.
+-  // ------------------------------------------------------------------------
+-
+-  public void checkValidity()
+-    throws CertificateExpiredException, CertificateNotYetValidException
+-  {
+-    checkValidity(new Date());
+-  }
+-
+-  public void checkValidity(Date date)
+-    throws CertificateExpiredException, CertificateNotYetValidException
+-  {
+-    if (date.compareTo(notBefore) < 0)
+-      {
+-        throw new CertificateNotYetValidException();
+-      }
+-    if (date.compareTo(notAfter) > 0)
+-      {
+-        throw new CertificateExpiredException();
+-      }
+-  }
+-
+-  public int getVersion()
+-  {
+-    return version;
+-  }
+-
+-  public BigInteger getSerialNumber()
+-  {
+-    return serialNo;
+-  }
+-
+-  public Principal getIssuerDN()
+-  {
+-    return issuer;
+-  }
+-
+-  public X500Principal getIssuerX500Principal()
+-  {
+-    return new X500Principal(issuer.getDer());
+-  }
+-
+-  public Principal getSubjectDN()
+-  {
+-    return subject;
+-  }
+-
+-  public X500Principal getSubjectX500Principal()
+-  {
+-    return new X500Principal(subject.getDer());
+-  }
+-
+-  public Date getNotBefore()
+-  {
+-    return (Date) notBefore.clone();
+-  }
+-
+-  public Date getNotAfter()
+-  {
+-    return (Date) notAfter.clone();
+-  }
+-
+-  public byte[] getTBSCertificate() throws CertificateEncodingException
+-  {
+-    return (byte[]) tbsCertBytes.clone();
+-  }
+-
+-  public byte[] getSignature()
+-  {
+-    return (byte[]) signature.clone();
+-  }
+-
+-  public String getSigAlgName()
+-  {
+-    if (sigAlgId.equals(ID_DSA_WITH_SHA1))
+-      {
+-        return "SHA1withDSA";
+-      }
+-    if (sigAlgId.equals(ID_RSA_WITH_MD2))
+-      {
+-        return "MD2withRSA";
+-      }
+-    if (sigAlgId.equals(ID_RSA_WITH_MD5))
+-      {
+-        return "MD5withRSA";
+-      }
+-    if (sigAlgId.equals(ID_RSA_WITH_SHA1))
+-      {
+-        return "SHA1withRSA";
+-      }
+-    return "unknown";
+-  }
+-
+-  public String getSigAlgOID()
+-  {
+-    return sigAlgId.toString();
+-  }
+-
+-  public byte[] getSigAlgParams()
+-  {
+-    return (byte[]) sigAlgVal.clone();
+-  }
+-
+-  public boolean[] getIssuerUniqueID()
+-  {
+-    if (issuerUniqueId != null)
+-      {
+-        return issuerUniqueId.toBooleanArray();
+-      }
+-    return null;
+-  }
+-
+-  public boolean[] getSubjectUniqueID()
+-  {
+-    if (subjectUniqueId != null)
+-      {
+-        return subjectUniqueId.toBooleanArray();
+-      }
+-    return null;
+-  }
+-
+-  public boolean[] getKeyUsage()
+-  {
+-    Extension e = getExtension(KeyUsage.ID);
+-    if (e != null)
+-      {
+-        KeyUsage ku = (KeyUsage) e.getValue();
+-        boolean[] result = new boolean[9];
+-        boolean[] b = ku.getKeyUsage().toBooleanArray();
+-        System.arraycopy(b, 0, result, 0, b.length);
+-        return result;
+-      }
+-    return null;
+-  }
+-
+-  public List getExtendedKeyUsage() throws CertificateParsingException
+-  {
+-    Extension e = getExtension(ExtendedKeyUsage.ID);
+-    if (e != null)
+-      {
+-        List a = ((ExtendedKeyUsage) e.getValue()).getPurposeIds();
+-        List b = new ArrayList(a.size());
+-        for (Iterator it = a.iterator(); it.hasNext(); )
+-          {
+-            b.add(it.next().toString());
+-          }
+-        return Collections.unmodifiableList(b);
+-      }
+-    return null;
+-  }
+-
+-  public int getBasicConstraints()
+-  {
+-    Extension e = getExtension(BasicConstraints.ID);
+-    if (e != null)
+-      {
+-        return ((BasicConstraints) e.getValue()).getPathLengthConstraint();
+-      }
+-    return -1;
+-  }
+-
+-  public Collection getSubjectAlternativeNames()
+-    throws CertificateParsingException
+-  {
+-    Extension e = getExtension(SubjectAlternativeNames.ID);
+-    if (e != null)
+-      {
+-        return ((SubjectAlternativeNames) e.getValue()).getNames();
+-      }
+-    return null;
+-  }
+-
+-  public Collection getIssuerAlternativeNames()
+-    throws CertificateParsingException
+-  {
+-    Extension e = getExtension(IssuerAlternativeNames.ID);
+-    if (e != null)
+-      {
+-        return ((IssuerAlternativeNames) e.getValue()).getNames();
+-      }
+-    return null;
+-  }
+-
+-// X509Extension methods.
+-  // ------------------------------------------------------------------------
+-
+-  public boolean hasUnsupportedCriticalExtension()
+-  {
+-    for (Iterator it = extensions.values().iterator(); it.hasNext(); )
+-      {
+-        Extension e = (Extension) it.next();
+-        if (e.isCritical() && !e.isSupported())
+-          return true;
+-      }
+-    return false;
+-  }
+-
+-  public Set getCriticalExtensionOIDs()
+-  {
+-    HashSet s = new HashSet();
+-    for (Iterator it = extensions.values().iterator(); it.hasNext(); )
+-      {
+-        Extension e = (Extension) it.next();
+-        if (e.isCritical())
+-          s.add(e.getOid().toString());
+-      }
+-    return Collections.unmodifiableSet(s);
+-  }
+-
+-  public Set getNonCriticalExtensionOIDs()
+-  {
+-    HashSet s = new HashSet();
+-    for (Iterator it = extensions.values().iterator(); it.hasNext(); )
+-      {
+-        Extension e = (Extension) it.next();
+-        if (!e.isCritical())
+-          s.add(e.getOid().toString());
+-      }
+-    return Collections.unmodifiableSet(s);
+-  }
+-
+-  public byte[] getExtensionValue(String oid)
+-  {
+-    Extension e = getExtension(new OID(oid));
+-    if (e != null)
+-      {
+-        return e.getValue().getEncoded();
+-      }
+-    return null;
+-  }
+-
+-  // GnuPKIExtension method.
+-  // -------------------------------------------------------------------------
+-
+-  public Extension getExtension(OID oid)
+-  {
+-    return (Extension) extensions.get(oid);
+-  }
+-
+-  public Collection getExtensions()
+-  {
+-    return extensions.values();
+-  }
+-
+-  // Certificate methods.
+-  // -------------------------------------------------------------------------
+-
+-  public byte[] getEncoded() throws CertificateEncodingException
+-  {
+-    return (byte[]) encoded.clone();
+-  }
+-
+-  public void verify(PublicKey key)
+-    throws CertificateException, NoSuchAlgorithmException,
+-           InvalidKeyException, NoSuchProviderException, SignatureException
+-  {
+-    Signature sig = Signature.getInstance(sigAlgId.toString());
+-    doVerify(sig, key);
+-  }
+-
+-  public void verify(PublicKey key, String provider)
+-    throws CertificateException, NoSuchAlgorithmException,
+-           InvalidKeyException, NoSuchProviderException, SignatureException
+-  {
+-    Signature sig = Signature.getInstance(sigAlgId.toString(), provider);
+-    doVerify(sig, key);
+-  }
+-
+-  public String toString()
+-  {
+-    StringWriter str = new StringWriter();
+-    PrintWriter out = new PrintWriter(str);
+-    out.println(X509Certificate.class.getName() + " {");
+-    out.println("  TBSCertificate {");
+-    out.println("    version = " + version + ";");
+-    out.println("    serialNo = " + serialNo + ";");
+-    out.println("    signature = {");
+-    out.println("      algorithm = " + getSigAlgName() + ";");
+-    out.print("      parameters =");
+-    if (sigAlgVal != null)
+-      {
+-        out.println();
+-        out.print(Util.hexDump(sigAlgVal, "        "));
+-      }
+-    else
+-      {
+-        out.println(" null;");
+-      }
+-    out.println("    }");
+-    out.println("    issuer = " + issuer.getName() + ";");
+-    out.println("    validity = {");
+-    out.println("      notBefore = " + notBefore + ";");
+-    out.println("      notAfter  = " + notAfter + ";");
+-    out.println("    }");
+-    out.println("    subject = " + subject.getName() + ";");
+-    out.println("    subjectPublicKeyInfo = {");
+-    out.println("      algorithm = " + subjectKey.getAlgorithm());
+-    out.println("      key =");
+-    out.print(Util.hexDump(subjectKey.getEncoded(), "        "));
+-    out.println("    };");
+-    out.println("    issuerUniqueId  = " + issuerUniqueId + ";");
+-    out.println("    subjectUniqueId = " + subjectUniqueId + ";");
+-    out.println("    extensions = {");
+-    for (Iterator it = extensions.values().iterator(); it.hasNext(); )
+-      {
+-        out.println("      " + it.next());
+-      }
+-    out.println("    }");
+-    out.println("  }");
+-    out.println("  signatureAlgorithm = " + getSigAlgName() + ";");
+-    out.println("  signatureValue =");
+-    out.print(Util.hexDump(signature, "    "));
+-    out.println("}");
+-    return str.toString();
+-  }
+-
+-  public PublicKey getPublicKey()
+-  {
+-    return subjectKey;
+-  }
+-
+-  public boolean equals(Object other)
+-  {
+-    if (!(other instanceof X509Certificate))
+-      return false;
+-    try
+-      {
+-        if (other instanceof X509Certificate)
+-          return Arrays.equals(encoded, ((X509Certificate) other).encoded);
+-        byte[] enc = ((X509Certificate) other).getEncoded();
+-        if (enc == null)
+-          return false;
+-        return Arrays.equals(encoded, enc);
+-      }
+-    catch (CertificateEncodingException cee)
+-      {
+-        return false;
+-      }
+-  }
+-
+-  // Own methods.
+-  // ------------------------------------------------------------------------
+-
+-  /**
+-   * Verify this certificate's signature.
+-   */
+-  private void doVerify(Signature sig, PublicKey key)
+-    throws CertificateException, InvalidKeyException, SignatureException
+-  {
+-    debug("verifying sig=" + sig + " key=" + key);
+-    sig.initVerify(key);
+-    sig.update(tbsCertBytes);
+-    if (!sig.verify(signature))
+-      {
+-        throw new CertificateException("signature not validated");
+-      }
+-  }
+-
+-  /**
+-   * Parse a DER stream into an X.509 certificate.
+-   *
+-   * @param encoded The encoded bytes.
+-   */
+-  private void parse(InputStream encoded) throws Exception
+-  {
+-    DERReader der = new DERReader(encoded);
+-
+-    // Certificate ::= SEQUENCE {
+-    DERValue cert = der.read();
+-    debug("start Certificate  len == " + cert.getLength());
+-
+-    this.encoded = cert.getEncoded();
+-    if (!cert.isConstructed())
+-      {
+-        throw new IOException("malformed Certificate");
+-      }
+-
+-    // TBSCertificate ::= SEQUENCE {
+-    DERValue tbsCert = der.read();
+-    if (tbsCert.getValue() != DER.CONSTRUCTED_VALUE)
+-      {
+-        throw new IOException("malformed TBSCertificate");
+-      }
+-    tbsCertBytes = tbsCert.getEncoded();
+-    debug("start TBSCertificate  len == " + tbsCert.getLength());
+-
+-    // Version ::= INTEGER [0] { v1(0), v2(1), v3(2) }
+-    DERValue val = der.read();
+-    if (val.getTagClass() == DER.CONTEXT && val.getTag() == 0)
+-      {
+-        version = ((BigInteger) der.read().getValue()).intValue() + 1;
+-        val = der.read();
+-      }
+-    else
+-      {
+-        version = 1;
+-      }
+-    debug("read version == " + version);
+-
+-    // SerialNumber ::= INTEGER
+-    serialNo = (BigInteger) val.getValue();
+-    debug("read serial number == " + serialNo);
+-
+-    // AlgorithmIdentifier ::= SEQUENCE {
+-    val = der.read();
+-    if (!val.isConstructed())
+-      {
+-        throw new IOException("malformed AlgorithmIdentifier");
+-      }
+-    int certAlgLen = val.getLength();
+-    debug("start AlgorithmIdentifier  len == " + certAlgLen);
+-    val = der.read();
+-
+-    //   algorithm    OBJECT IDENTIFIER,
+-    algId = (OID) val.getValue();
+-    debug("read algorithm ID == " + algId);
+-
+-    //   parameters   ANY DEFINED BY algorithm OPTIONAL }
+-    if (certAlgLen > val.getEncodedLength())
+-      {
+-        val = der.read();
+-        if (val == null)
+-          {
+-            algVal = null;
+-          }
+-        else
+-          {
+-            algVal = val.getEncoded();
+-          }
+-        if (val.isConstructed())
+-          {
+-            encoded.skip(val.getLength());
+-          }
+-        debug("read algorithm parameters == " + algVal);
+-      }
+-
+-    // issuer   Name,
+-    val = der.read();
+-    issuer = new X500DistinguishedName(val.getEncoded());
+-    der.skip(val.getLength());
+-    debug("read issuer == " + issuer);
+-
+-    // Validity ::= SEQUENCE {
+-    //   notBefore   Time,
+-    //   notAfter    Time }
+-    if (!der.read().isConstructed())
+-      {
+-        throw new IOException("malformed Validity");
+-      }
+-    notBefore = (Date) der.read().getValue();
+-    notAfter  = (Date) der.read().getValue();
+-    debug("read notBefore == " + notBefore);
+-    debug("read notAfter == " + notAfter);
+-
+-    // subject   Name,
+-    val = der.read();
+-    subject = new X500DistinguishedName(val.getEncoded());
+-    der.skip(val.getLength());
+-    debug("read subject == " + subject);
+-
+-    // SubjectPublicKeyInfo ::= SEQUENCE {
+-    //   algorithm         AlgorithmIdentifier,
+-    //   subjectPublicKey  BIT STRING }
+-    DERValue spki = der.read();
+-    if (!spki.isConstructed())
+-      {
+-        throw new IOException("malformed SubjectPublicKeyInfo");
+-      }
+-    KeyFactory spkFac = KeyFactory.getInstance("X.509");
+-    subjectKey = spkFac.generatePublic(new X509EncodedKeySpec(spki.getEncoded()));
+-    der.skip(spki.getLength());
+-    debug("read subjectPublicKey == " + subjectKey);
+-
+-    if (version > 1)
+-      {
+-        val = der.read();
+-      }
+-    if (version >= 2 && val.getTagClass() != DER.UNIVERSAL && val.getTag() == 1)
+-      {
+-        byte[] b = (byte[]) val.getValue();
+-        issuerUniqueId = new BitString(b, 1, b.length-1, b[0] & 0xFF);
+-        debug("read issuerUniqueId == " + issuerUniqueId);
+-        val = der.read();
+-      }
+-    if (version >= 2 && val.getTagClass() != DER.UNIVERSAL && val.getTag() == 2)
+-      {
+-        byte[] b = (byte[]) val.getValue();
+-        subjectUniqueId = new BitString(b, 1, b.length-1, b[0] & 0xFF);
+-        debug("read subjectUniqueId == " + subjectUniqueId);
+-        val = der.read();
+-      }
+-    if (version >= 3 && val.getTagClass() != DER.UNIVERSAL && val.getTag() == 3)
+-      {
+-        val = der.read();
+-        debug("start Extensions  len == " + val.getLength());
+-        int len = 0;
+-        while (len < val.getLength())
+-          {
+-            DERValue ext = der.read();
+-            debug("start extension  len == " + ext.getLength());
+-            Extension e = new Extension(ext.getEncoded());
+-            extensions.put(e.getOid(), e);
+-            der.skip(ext.getLength());
+-            len += ext.getEncodedLength();
+-            debug("count == " + len);
+-          }
+-      }
+-
+-    val = der.read();
+-    if (!val.isConstructed())
+-      {
+-        throw new IOException("malformed AlgorithmIdentifier");
+-      }
+-    int sigAlgLen = val.getLength();
+-    debug("start AlgorithmIdentifier  len == " + sigAlgLen);
+-    val = der.read();
+-    sigAlgId = (OID) val.getValue();
+-    debug("read algorithm id == " + sigAlgId);
+-    if (sigAlgLen > val.getEncodedLength())
+-      {
+-        val = der.read();
+-        if (val.getValue() == null)
+-          {
+-            if (subjectKey instanceof DSAPublicKey)
+-              {
+-                AlgorithmParameters params =
+-                  AlgorithmParameters.getInstance("DSA");
+-                DSAParams dsap = ((DSAPublicKey) subjectKey).getParams();
+-                DSAParameterSpec spec =
+-                  new DSAParameterSpec(dsap.getP(), dsap.getQ(), dsap.getG());
+-                params.init(spec);
+-                sigAlgVal = params.getEncoded();
+-              }
+-          }
+-        else
+-          {
+-            sigAlgVal = (byte[]) val.getEncoded();
+-          }
+-        if (val.isConstructed())
+-          {
+-            encoded.skip(val.getLength());
+-          }
+-        debug("read parameters == " + sigAlgVal);
+-      }
+-    signature = ((BitString) der.read().getValue()).toByteArray();
+-    debug("read signature ==\n" + Util.hexDump(signature, ">>>> "));
+-  }
+-}
+diff -r -u -N gcc-4.0.4_orig/libjava/java/nio/DoubleBuffer.java gcc-4.0.4/libjava/java/nio/DoubleBuffer.java
+--- gcc-4.0.4_orig/libjava/java/nio/DoubleBuffer.java	2004-10-22 19:14:29.000000000 +0200
++++ gcc-4.0.4/libjava/java/nio/DoubleBuffer.java	1970-01-01 01:00:00.000000000 +0100
+@@ -1,383 +0,0 @@
+-/* DoubleBuffer.java -- 
+-   Copyright (C) 2002, 2003, 2004  Free Software Foundation, Inc.
+-
+-This file is part of GNU Classpath.
+-
+-GNU Classpath is free software; you can redistribute it and/or modify
+-it under the terms of the GNU General Public License as published by
+-the Free Software Foundation; either version 2, or (at your option)
+-any later version.
+-
+-GNU Classpath is distributed in the hope that it will be useful, but
+-WITHOUT ANY WARRANTY; without even the implied warranty of
+-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+-General Public License for more details.
+-
+-You should have received a copy of the GNU General Public License
+-along with GNU Classpath; see the file COPYING.  If not, write to the
+-Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+-02111-1307 USA.
+-
+-Linking this library statically or dynamically with other modules is
+-making a combined work based on this library.  Thus, the terms and
+-conditions of the GNU General Public License cover the whole
+-combination.
+-
+-As a special exception, the copyright holders of this library give you
+-permission to link this library with independent modules to produce an
+-executable, regardless of the license terms of these independent
+-modules, and to copy and distribute the resulting executable under
+-terms of your choice, provided that you also meet, for each linked
+-independent module, the terms and conditions of the license of that
+-module.  An independent module is a module which is not derived from
+-or based on this library.  If you modify this library, you may extend
+-this exception to your version of the library, but you are not
+-obligated to do so.  If you do not wish to do so, delete this
+-exception statement from your version. */
+-
+-
+-package java.nio;
+-
+-/**
+- * @since 1.4
+- */
+-public abstract class DoubleBuffer extends Buffer
+-  implements Comparable
+-{
+-  int array_offset;
+-  double[] backing_buffer;
+-
+-  DoubleBuffer (int capacity, int limit, int position, int mark)
+-  {
+-    super (capacity, limit, position, mark);
+-    array_offset = 0;
+-  }
+-
+-  /**
+-   * Allocates a new <code>DoubleBuffer</code> object with a given capacity.
+-   */
+-  public static DoubleBuffer allocate (int capacity)
+-  {
+-    return new DoubleBufferImpl (capacity);
+-  }
+-
+-  /**
+-   * Wraps a <code>double</code> array into a <code>DoubleBuffer</code>
+-   * object.
+-   *
+-   * @exception IndexOutOfBoundsException If the preconditions on the offset
+-   * and length parameters do not hold
+-   */
+-  public static final DoubleBuffer wrap (double[] array, int offset, int length)
+-  {
+-    return new DoubleBufferImpl (array, 0, array.length, offset + length, offset, -1, false);
+-  }
+-
+-  /**
+-   * Wraps a <code>double</code> array into a <code>DoubleBuffer</code>
+-   * object.
+-   */
+-  public static final DoubleBuffer wrap (double[] array)
+-  {
+-    return wrap (array, 0, array.length);
+-  }
+-  
+-  /**
+-   * This method transfers <code>double</code>s from this buffer into the given
+-   * destination array. Before the transfer, it checks if there are fewer than
+-   * length <code>double</code>s remaining in this buffer. 
+-   *
+-   * @param dst The destination array
+-   * @param offset The offset within the array of the first <code>double</code>
+-   * to be written; must be non-negative and no larger than dst.length.
+-   * @param length The maximum number of bytes to be written to the given array;
+-   * must be non-negative and no larger than dst.length - offset.
+-   *
+-   * @exception BufferUnderflowException If there are fewer than length
+-   * <code>double</code>s remaining in this buffer.
+-   * @exception IndexOutOfBoundsException If the preconditions on the offset
+-   * and length parameters do not hold.
+-   */
+-  public DoubleBuffer get (double[] dst, int offset, int length)
+-  {
+-    checkArraySize(dst.length, offset, length);
+-    checkForUnderflow(length);
+-
+-    for (int i = offset; i < offset + length; i++)
+-      {
+-        dst [i] = get ();
+-      }
+-
+-    return this;
+-  }
+-
+-  /**
+-   * This method transfers <code>double</code>s from this buffer into the given
+-   * destination array.
+-   *
+-   * @param dst The byte array to write into.
+-   *
+-   * @exception BufferUnderflowException If there are fewer than dst.length
+-   * <code>double</code>s remaining in this buffer.
+-   */
+-  public DoubleBuffer get (double[] dst)
+-  {
+-    return get (dst, 0, dst.length);
+-  }
+-
+-  /**
+-   * Writes the content of the the <code>DoubleBUFFER</code> src
+-   * into the buffer. Before the transfer, it checks if there is fewer than
+-   * <code>src.remaining()</code> space remaining in this buffer.
+-   *
+-   * @param src The source data.
+-   *
+-   * @exception BufferOverflowException If there is insufficient space in this
+-   * buffer for the remaining <code>double</code>s in the source buffer.
+-   * @exception IllegalArgumentException If the source buffer is this buffer.
+-   * @exception ReadOnlyBufferException If this buffer is read-only.
+-   */
+-  public DoubleBuffer put (DoubleBuffer src)
+-  {
+-    if (src == this)
+-      throw new IllegalArgumentException ();
+-
+-    checkForOverflow(src.remaining ());
+-
+-    if (src.remaining () > 0)
+-      {
+-        double[] toPut = new double [src.remaining ()];
+-        src.get (toPut);
+-        put (toPut);
+-      }
+-
+-    return this;
+-  }
+-
+-  /**
+-   * Writes the content of the the <code>double array</code> src
+-   * into the buffer. Before the transfer, it checks if there is fewer than
+-   * length space remaining in this buffer.
+-   *
+-   * @param src The array to copy into the buffer.
+-   * @param offset The offset within the array of the first byte to be read;
+-   * must be non-negative and no larger than src.length.
+-   * @param length The number of bytes to be read from the given array;
+-   * must be non-negative and no larger than src.length - offset.
+-   * 
+-   * @exception BufferOverflowException If there is insufficient space in this
+-   * buffer for the remaining <code>double</code>s in the source array.
+-   * @exception IndexOutOfBoundsException If the preconditions on the offset
+-   * and length parameters do not hold
+-   * @exception ReadOnlyBufferException If this buffer is read-only.
+-   */
+-  public DoubleBuffer put (double[] src, int offset, int length)
+-  {
+-    checkArraySize(src.length, offset, length);
+-    checkForOverflow(length);
+-
+-    for (int i = offset; i < offset + length; i++)
+-      put (src [i]);
+-
+-    return this;
+-  }
+-
+-  /**
+-   * Writes the content of the the <code>double array</code> src
+-   * into the buffer.
+-   *
+-   * @param src The array to copy into the buffer.
+-   * 
+-   * @exception BufferOverflowException If there is insufficient space in this
+-   * buffer for the remaining <code>double</code>s in the source array.
+-   * @exception ReadOnlyBufferException If this buffer is read-only.
+-   */
+-  public final DoubleBuffer put (double[] src)
+-  {
+-    return put (src, 0, src.length);
+-  }
+-
+-  /**
+-   * Tells whether ot not this buffer is backed by an accessible
+-   * <code>double</code> array.
+-   */
+-  public final boolean hasArray ()
+-  {
+-    return (backing_buffer != null
+-            && !isReadOnly ());
+-  }
+-
+-  /**
+-   * Returns the <code>double</code> array that backs this buffer.
+-   *
+-   * @exception ReadOnlyBufferException If this buffer is read-only.
+-   * @exception UnsupportedOperationException If this buffer is not backed
+-   * by an accessible array.
+-   */
+-  public final double[] array ()
+-  {
+-    if (backing_buffer == null)
+-      throw new UnsupportedOperationException ();
+-
+-    checkIfReadOnly();
+-    
+-    return backing_buffer;
+-  }
+-
+-  /**
+-   * Returns the offset within this buffer's backing array of the first element.
+-   *
+-   * @exception ReadOnlyBufferException If this buffer is read-only.
+-   * @exception UnsupportedOperationException If this buffer is not backed
+-   * by an accessible array.
+-   */
+-  public final int arrayOffset ()
+-  {
+-    if (backing_buffer == null)
+-      throw new UnsupportedOperationException ();
+-
+-    checkIfReadOnly();
+-    
+-    return array_offset;
+-  }
+-
+-  /**
+-   * Calculates a hash code for this buffer.
+-   *
+-   * This is done with <code>long</code> arithmetic,
+-   * where ** represents exponentiation, by this formula:<br>
+-   * <code>s[position()] + 31 + (s[position()+1] + 30)*31**1 + ... +
+-   * (s[limit()-1]+30)*31**(limit()-1)</code>.
+-   * Where s is the buffer data, in Double.doubleToLongBits() form
+-   * Note that the hashcode is dependent on buffer content, 
+-   * and therefore is not useful if the buffer content may change.
+-   *
+-   * @return the hash code (casted to int)
+-   */
+-  public int hashCode ()
+-  {
+-    long hashCode = Double.doubleToLongBits(get(position())) + 31;
+-    long multiplier = 1;
+-    for (int i = position() + 1; i < limit(); ++i)
+-      {
+-	  multiplier *= 31;
+-	  hashCode += (Double.doubleToLongBits(get(i)) + 30)*multiplier;
+-      }
+-    return ((int)hashCode);
+-  }
+-
+-  /**
+-   * Checks if this buffer is equal to obj.
+-   */
+-  public boolean equals (Object obj)
+-  {
+-    if (obj instanceof DoubleBuffer)
+-      {
+-        return compareTo (obj) == 0;
+-      }
+-
+-    return false;
+-  }
+-
+-  /**
+-   * Compares two <code>DoubleBuffer</code> objects.
+-   *
+-   * @exception ClassCastException If obj is not an object derived from
+-   * <code>DoubleBuffer</code>.
+-   */
+-  public int compareTo (Object obj)
+-  {
+-    DoubleBuffer other = (DoubleBuffer) obj;
+-
+-    int num = Math.min(remaining(), other.remaining());
+-    int pos_this = position();
+-    int pos_other = other.position();
+-    
+-    for (int count = 0; count < num; count++)
+-      {
+-	double a = get(pos_this++);
+-	double b = other.get(pos_other++);
+-      	 
+-	if (a == b)
+-	  continue;
+-      	   
+-	if (a < b)
+-	  return -1;
+-      	   
+-	return 1;
+-      }
+-      
+-    return remaining() - other.remaining();
+-  }
+-
+-  /**
+-   * Returns the byte order of this buffer.
+-   */
+-  public abstract ByteOrder order ();
+-
+-  /**
+-   * Reads the <code>double</code> at this buffer's current position,
+-   * and then increments the position.
+-   *
+-   * @exception BufferUnderflowException If there are no remaining
+-   * <code>double</code>s in this buffer.
+-   */
+-  public abstract double get ();
+-
+-  /**
+-   * Writes the <code>double</code> at this buffer's current position,
+-   * and then increments the position.
+-   *
+-   * @exception BufferOverflowException If there no remaining 
+-   * <code>double</code>s in this buffer.
+-   * @exception ReadOnlyBufferException If this buffer is read-only.
+-   */
+-  public abstract DoubleBuffer put (double b);
+-
+-  /**
+-   * Absolute get method.
+-   *
+-   * @exception IndexOutOfBoundsException If index is negative or not smaller
+-   * than the buffer's limit.
+-   */
+-  public abstract double get (int index);
+-  
+-  /**
+-   * Absolute put method.
+-   *
+-   * @exception IndexOutOfBoundsException If index is negative or not smaller
+-   * than the buffer's limit.
+-   * @exception ReadOnlyBufferException If this buffer is read-only.
+-   */
+-  public abstract DoubleBuffer put (int index, double b);
+-
+-  /**
+-   * Compacts this buffer.
+-   * 
+-   * @exception ReadOnlyBufferException If this buffer is read-only.
+-   */
+-  public abstract DoubleBuffer compact ();
+-
+-  /**
+-   * Tells wether or not this buffer is direct.
+-   */
+-  public abstract boolean isDirect ();
+-
+-  /**
+-   * Creates a new <code>DoubleBuffer</code> whose content is a shared
+-   * subsequence of this buffer's content.
+-   */
+-  public abstract DoubleBuffer slice ();
+-
+-  /**
+-   * Creates a new <code>DoubleBuffer</code> that shares this buffer's
+-   * content.
+-   */
+-  public abstract DoubleBuffer duplicate ();
+-
+-  /**
+-   * Creates a new read-only <code>DoubleBuffer</code> that shares this
+-   * buffer's content.
+-   */
+-  public abstract DoubleBuffer asReadOnlyBuffer ();
+-}
+diff -r -u -N gcc-4.0.4_orig/libjava/java/nio/IntViewBufferImpl.java gcc-4.0.4/libjava/java/nio/IntViewBufferImpl.java
+--- gcc-4.0.4_orig/libjava/java/nio/IntViewBufferImpl.java	2005-02-17 19:13:07.000000000 +0100
++++ gcc-4.0.4/libjava/java/nio/IntViewBufferImpl.java	1970-01-01 01:00:00.000000000 +0100
+@@ -1,173 +0,0 @@
+-/* IntViewBufferImpl.java -- 
+-   Copyright (C) 2003, 2004 Free Software Foundation, Inc.
+-
+-This file is part of GNU Classpath.
+-
+-GNU Classpath is free software; you can redistribute it and/or modify
+-it under the terms of the GNU General Public License as published by
+-the Free Software Foundation; either version 2, or (at your option)
+-any later version.
+-
+-GNU Classpath is distributed in the hope that it will be useful, but
+-WITHOUT ANY WARRANTY; without even the implied warranty of
+-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+-General Public License for more details.
+-
+-You should have received a copy of the GNU General Public License
+-along with GNU Classpath; see the file COPYING.  If not, write to the
+-Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+-02111-1307 USA.
+-
+-Linking this library statically or dynamically with other modules is
+-making a combined work based on this library.  Thus, the terms and
+-conditions of the GNU General Public License cover the whole
+-combination.
+-
+-As a special exception, the copyright holders of this library give you
+-permission to link this library with independent modules to produce an
+-executable, regardless of the license terms of these independent
+-modules, and to copy and distribute the resulting executable under
+-terms of your choice, provided that you also meet, for each linked
+-independent module, the terms and conditions of the license of that
+-module.  An independent module is a module which is not derived from
+-or based on this library.  If you modify this library, you may extend
+-this exception to your version of the library, but you are not
+-obligated to do so.  If you do not wish to do so, delete this
+-exception statement from your version. */
+-
+-
+-package java.nio;
+-
+-final class IntViewBufferImpl extends IntBuffer
+-{
+-  /** Position in bb (i.e. a byte offset) where this buffer starts. */
+-  private int offset;
+-  private ByteBuffer bb;
+-  private boolean readOnly;
+-  private ByteOrder endian;
+-  
+-  IntViewBufferImpl (ByteBuffer bb, int capacity)
+-  {
+-    super (capacity, capacity, 0, -1);
+-    this.bb = bb;
+-    this.offset = bb.position();
+-    this.readOnly = bb.isReadOnly();
+-    this.endian = bb.order();
+-    if (bb.isDirect())
+-      this.address = VMDirectByteBuffer.adjustAddress(bb.address, offset);
+-  }
+-  
+-  public IntViewBufferImpl (ByteBuffer bb, int offset, int capacity,
+-			    int limit, int position, int mark,
+-			    boolean readOnly, ByteOrder endian)
+-  {
+-    super (capacity, limit, position, mark);
+-    this.bb = bb;
+-    this.offset = offset;
+-    this.readOnly = readOnly;
+-    this.endian = endian;
+-    if (bb.isDirect())
+-      this.address = VMDirectByteBuffer.adjustAddress(bb.address, offset);
+-  }
+-
+-  /**
+-   * Reads the <code>int</code> at this buffer's current position,
+-   * and then increments the position.
+-   *
+-   * @exception BufferUnderflowException If there are no remaining
+-   * <code>ints</code> in this buffer.
+-   */
+-  public int get ()
+-  {
+-    int p = position();
+-    int result = ByteBufferHelper.getInt(bb, (p << 2) + offset, endian);
+-    position(p + 1);
+-    return result;
+-  }
+-
+-  /**
+-   * Absolute get method. Reads the <code>int</code> at position
+-   * <code>index</code>.
+-   *
+-   * @exception IndexOutOfBoundsException If index is negative or not smaller
+-   * than the buffer's limit.
+-   */
+-  public int get (int index)
+-  {
+-    return ByteBufferHelper.getInt(bb, (index << 2) + offset, endian);
+-  }
+-
+-  public IntBuffer put (int value)
+-  {
+-    int p = position();
+-    ByteBufferHelper.putInt(bb, (p << 2) + offset, value, endian);
+-    position(p + 1);
+-    return this;
+-  }
+-  
+-  public IntBuffer put (int index, int value)
+-  {
+-    ByteBufferHelper.putInt(bb, (index << 2) + offset, value, endian);
+-    return this;
+-  }
+-
+-  public IntBuffer compact ()
+-  {
+-    if (position () > 0)
+-      {
+-        int count = limit () - position ();
+-	bb.shiftDown(offset, offset + 4 * position(), 4 * count);
+-        position (count);
+-        limit (capacity ());
+-      }
+-    else
+-      {
+-	position(limit());
+-	limit(capacity());
+-      }
+-    return this;
+-  }
+-  
+-  public IntBuffer slice ()
+-  {
+-    // Create a sliced copy of this object that shares its content.
+-    return new IntViewBufferImpl (bb, (position () >> 2) + offset,
+-				  remaining(), remaining(), 0, -1,
+-				  readOnly, endian);
+-  }
+-  
+-  IntBuffer duplicate (boolean readOnly)
+-  {
+-    int pos = position();
+-    reset();
+-    int mark = position();
+-    position(pos);
+-    return new IntViewBufferImpl (bb, offset, capacity(), limit(),
+-				  pos, mark, readOnly, endian);
+-  }
+-  
+-  public IntBuffer duplicate ()
+-  {
+-    return duplicate(readOnly);
+-  }
+-
+-  public IntBuffer asReadOnlyBuffer ()
+-  {
+-    return duplicate(true);
+-  }
+-
+-  public boolean isReadOnly ()
+-  {
+-    return readOnly;
+-  }
+-  
+-  public boolean isDirect ()
+-  {
+-    return bb.isDirect ();
+-  }
+-  
+-  public ByteOrder order ()
+-  {
+-    return endian;
+-  }
+-}
+diff -r -u -N gcc-4.0.4_orig/libjava/java/nio/LongBufferImpl.java gcc-4.0.4/libjava/java/nio/LongBufferImpl.java
+--- gcc-4.0.4_orig/libjava/java/nio/LongBufferImpl.java	2005-02-17 19:13:07.000000000 +0100
++++ gcc-4.0.4/libjava/java/nio/LongBufferImpl.java	1970-01-01 01:00:00.000000000 +0100
+@@ -1,172 +0,0 @@
+-/* LongBufferImpl.java -- 
+-   Copyright (C) 2002, 2003, 2004, 2005  Free Software Foundation, Inc.
+-
+-This file is part of GNU Classpath.
+-
+-GNU Classpath is free software; you can redistribute it and/or modify
+-it under the terms of the GNU General Public License as published by
+-the Free Software Foundation; either version 2, or (at your option)
+-any later version.
+-
+-GNU Classpath is distributed in the hope that it will be useful, but
+-WITHOUT ANY WARRANTY; without even the implied warranty of
+-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+-General Public License for more details.
+-
+-You should have received a copy of the GNU General Public License
+-along with GNU Classpath; see the file COPYING.  If not, write to the
+-Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+-02111-1307 USA.
+-
+-Linking this library statically or dynamically with other modules is
+-making a combined work based on this library.  Thus, the terms and
+-conditions of the GNU General Public License cover the whole
+-combination.
+-
+-As a special exception, the copyright holders of this library give you
+-permission to link this library with independent modules to produce an
+-executable, regardless of the license terms of these independent
+-modules, and to copy and distribute the resulting executable under
+-terms of your choice, provided that you also meet, for each linked
+-independent module, the terms and conditions of the license of that
+-module.  An independent module is a module which is not derived from
+-or based on this library.  If you modify this library, you may extend
+-this exception to your version of the library, but you are not
+-obligated to do so.  If you do not wish to do so, delete this
+-exception statement from your version. */
+-
+-
+-package java.nio;
+-
+-/**
+- * This is a Heap memory implementation
+- */
+-final class LongBufferImpl extends LongBuffer
+-{
+-  private boolean readOnly;
+-
+-  LongBufferImpl (int capacity)
+-  {
+-    this (new long [capacity], 0, capacity, capacity, 0, -1, false);
+-  }
+-  
+-  LongBufferImpl (long[] buffer, int offset, int capacity, int limit, int position, int mark, boolean readOnly)
+-  {
+-    super (capacity, limit, position, mark);
+-    this.backing_buffer = buffer;
+-    this.array_offset = offset;
+-    this.readOnly = readOnly;
+-  }
+-  
+-  public boolean isReadOnly ()
+-  {
+-    return readOnly;
+-  }
+-  
+-  public LongBuffer slice ()
+-  {
+-    return new LongBufferImpl (backing_buffer, array_offset + position (), remaining (), remaining (), 0, -1, isReadOnly ());
+-  }
+-  
+-  public LongBuffer duplicate ()
+-  {
+-    return new LongBufferImpl (backing_buffer, array_offset, capacity (), limit (), position (), mark, isReadOnly ());
+-  }
+-  
+-  public LongBuffer asReadOnlyBuffer ()
+-  {
+-    return new LongBufferImpl (backing_buffer, array_offset, capacity (), limit (), position (), mark, true);
+-  }
+-  
+-  public LongBuffer compact ()
+-  {
+-    checkIfReadOnly();
+-    mark = -1;
+-    int copied = 0;
+-    
+-    while (remaining () > 0)
+-      {
+-	put (copied, get ());
+-	copied++;
+-      }
+-
+-    position (copied);
+-    limit(capacity());
+-    return this;
+-  }
+-  
+-  public boolean isDirect ()
+-  {
+-    return false;
+-  }
+-
+-  /**
+-   * Reads the <code>long</code> at this buffer's current position,
+-   * and then increments the position.
+-   *
+-   * @exception BufferUnderflowException If there are no remaining
+-   * <code>longs</code> in this buffer.
+-   */
+-  public long get ()
+-  {
+-    checkForUnderflow();
+-
+-    long result = backing_buffer [position ()];
+-    position (position () + 1);
+-    return result;
+-  }
+-  
+-  /**
+-   * Relative put method. Writes <code>value</code> to the next position
+-   * in the buffer.
+-   *
+-   * @exception BufferOverflowException If there is insufficient space in this
+-   * buffer.
+-   * @exception ReadOnlyBufferException If this buffer is read-only.
+-   */
+-  public LongBuffer put (long value)
+-  {
+-    checkIfReadOnly();
+-    checkForOverflow();
+-
+-    backing_buffer [position ()] = value;
+-    position (position () + 1);
+-    return this;
+-  }
+-  
+-  /**
+-   * Absolute get method. Reads the <code>long</code> at position
+-   * <code>index</code>.
+-   *
+-   * @exception IndexOutOfBoundsException If index is negative or not smaller
+-   * than the buffer's limit.
+-   */
+-  public long get (int index)
+-  {
+-    checkIndex(index);
+-
+-    return backing_buffer [index];
+-  }
+-  
+-  /**
+-   * Absolute put method. Writes <code>value</code> to position
+-   * <code>index</code> in the buffer.
+-   *
+-   * @exception IndexOutOfBoundsException If index is negative or not smaller
+-   * than the buffer's limit.
+-   * @exception ReadOnlyBufferException If this buffer is read-only.
+-   */
+-  public LongBuffer put (int index, long value)
+-  {
+-    checkIfReadOnly();
+-    checkIndex(index);
+-
+-    backing_buffer [index] = value;
+-    return this;
+-  }
+-  
+-  public ByteOrder order ()
+-  {
+-    return ByteOrder.nativeOrder ();
+-  }
+-}

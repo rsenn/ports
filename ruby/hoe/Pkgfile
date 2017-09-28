@@ -1,0 +1,36 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Hoe extends rake to provide full project automation.
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=hoe
+version=1.9.0
+release=1
+source=($mirror_rubyforge/seattlerb/hoe-$version.tgz)
+
+build()
+{
+#  mkdir -p ${srcdir=$SRC/hoe-$version} && cd $srcdir
+
+#  tar -xvzf $SRC/data.tar.gz
+#  gzip -dc $SRC/metadata.gz >metadata
+  cd hoe-$version
+
+  rake
+
+  set `ruby --version`
+
+  RUBYVERSION="$2"
+  RUBYLIBDIR="$prefix/lib/ruby/${RUBYVERSION%.*}"
+
+  install -d $ROOT/bin
+  install -m 755 bin/* $ROOT/bin
+
+  install -d $PKG$RUBYLIBDIR
+  cp -rf lib/* $PKG$RUBYLIBDIR
+
+  install -d $ROOT/share/doc/hoe
+  cp -rf *.txt test $ROOT/share/doc/hoe/
+#  rake install DESTDIR="$PKG"
+}

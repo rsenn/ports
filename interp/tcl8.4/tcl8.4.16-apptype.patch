@@ -1,0 +1,63 @@
+diff -ru tcl8.4.16_orig/ChangeLog tcl8.4.16/ChangeLog
+--- tcl8.4.16_orig/ChangeLog	2007-12-06 05:37:46.000000000 +0100
++++ tcl8.4.16/ChangeLog	2007-12-06 05:43:48.000000000 +0100
+@@ -9867,7 +9867,7 @@
+ 	* win/tclWinFile.c (TclpFindExecutable,TclpMatchInDirectory)
+ 	(NativeIsExec,NativeStat):
+ 	* win/tclWinLoad.c (TclpLoadFile):
+-	* win/tclWinPipe.c (TclpOpenFile,ApplicationType):
++	* win/tclWinPipe.c (TclpOpenFile,AppType):
+ 	* win/tclWinReg.c (regConnectRegistryProc,RecursiveDeleteKey,DeleteKey)
+ 	(GetKeyNames,GetType,GetValue,OpenSubKey,SetValue):
+ 	* win/tclWinSerial.c (SerialSetOptionProc): Update callers.
+diff -ru tcl8.4.16_orig/win/tclWinFile.c tcl8.4.16/win/tclWinFile.c
+--- tcl8.4.16_orig/win/tclWinFile.c	2007-12-06 05:37:46.000000000 +0100
++++ tcl8.4.16/win/tclWinFile.c	2007-12-06 05:43:48.000000000 +0100
+@@ -19,7 +19,7 @@
+ #include "tclWinInt.h"
+ #include <winioctl.h>
+ #include <sys/stat.h>
+-#include <shlobj.h>
++//#include <shlobj.h>
+ #include <lmaccess.h>		/* For TclpGetUserHome(). */
+ 
+ /*
+diff -ru tcl8.4.16_orig/win/tclWinPipe.c tcl8.4.16/win/tclWinPipe.c
+--- tcl8.4.16_orig/win/tclWinPipe.c	2007-12-06 05:37:46.000000000 +0100
++++ tcl8.4.16/win/tclWinPipe.c	2007-12-06 05:43:48.000000000 +0100
+@@ -179,7 +179,7 @@
+  * Declarations for functions used only in this file.
+  */
+ 
+-static int		ApplicationType(Tcl_Interp *interp,
++static int		AppType(Tcl_Interp *interp,
+ 			    const char *fileName, char *fullName);
+ static void		BuildCommandLine(const char *executable, int argc, 
+ 			    CONST char **argv, Tcl_DString *linePtr);
+@@ -966,7 +966,7 @@
+ 
+     PipeInit();
+ 
+-    applType = ApplicationType(interp, argv[0], execPath);
++    applType = AppType(interp, argv[0], execPath);
+     if (applType == APPL_NONE) {
+ 	return TCL_ERROR;
+     }
+@@ -1325,7 +1325,7 @@
+ /*
+  *--------------------------------------------------------------------
+  *
+- * ApplicationType --
++ * AppType --
+  *
+  *	Search for the specified program and identify if it refers to a DOS,
+  *	Windows 3.X, or Win32 program.  Used to determine how to invoke 
+@@ -1359,7 +1359,7 @@
+  */
+ 
+ static int
+-ApplicationType(interp, originalName, fullName)
++AppType(interp, originalName, fullName)
+     Tcl_Interp *interp;		/* Interp, for error message. */
+     const char *originalName;	/* Name of the application to find. */
+     char fullName[];		/* Filled with complete path to 

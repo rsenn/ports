@@ -1,0 +1,134 @@
+.TH logrotate 1 "Nov 2006" "nexbyte GmbH"
+
+.SH NAME
+logrotate is a bash script which can rotate log files and multilog log directories and archive them in a central location.
+
+logrotate requires GNU bash, GNU gzip and GNU date.
+
+.SH DESCRIPTION
+logrotate rotates log files into an archive. The name of the archived file is based on the date, so the ssh log would be saved to /archives/2003/ssh/2003-01-01.gz, for example.
+
+logrotate handles multilog directories by concatenating all fully processed logs and saving the combined contents.
+
+After rotating each log, logrotate will normally delete it (you can tell it not to) and may optionally touch the file (useful for Solaris syslog, which expects to log to an existing file!) and/or run a script of your choice (useful to send a HUP signal, for example). logrotate can optionally be told to do something before it starts work and/or do something when it has finished.
+Configuration
+
+.SH OPTIONS
+Edit the logrotate script and set the global variables listed at the top.
+
+.TP
+.B archive
+Specifies the root for the archived logs. 
+
+.nf
+Default:\ /archives
+.fi
+
+.TP
+.B firstly
+Commands to be executed before doing anything else.
+
+.nf
+Example: svc -d /service/mysql 
+Default: <nothing>
+.fi
+
+.TP
+.B finally
+Commands to be executed immediately before exiting.
+
+.nf
+Example: svc -u /service/mysql
+Default: <nothing>
+.fi
+
+.TP
+.B verbose
+Set this to anything and logrotate will be verbose. You can also use the -v flag when running the script.
+
+.TP
+Then set the paths to needed tools if necessary. In some cases you may need to set custom paths to the GNU versions of tools.
+
+.TP
+.B date
+Path to GNU date.
+
+.nf
+Example: /usr/local/bin/gdate
+Default: date
+.fi
+
+.TP
+.B gzip
+Path to GNU gzip.
+
+.nf
+Example: /usr/local/bin/gzip
+Default: gzip
+.fi
+
+.TP
+Next you need to define which services are going to be rotated. Edit the logs variable for that. Each entry in logs is just a label and can be named anything you like. For example, you might say:
+
+.nf
+logs="qmail mysql"
+.fi
+.TP
+This would tell logrotate to expect directives defining how to rotate qmail and MySQL logs.
+
+.TP
+For each entry in the logs line, you must define two variables: path_xxx and files_xxx. The path variable tells logrotate where the logs are stored. Using the qmail example above, you might write
+
+.nf
+path_qmail=/var/log/qmail
+.fi
+.TP
+The files variable lists the files (or multilog directories) which should be rotated. You can put wildcards and other shell stuff in here if you want.
+
+.TP
+Example:
+
+.nf
+files_qmail="send smtpd pop3d"
+.fi
+.TP
+logrotate uses the path and files variables together to determine what to rotate. Still with the example above, it would rotate /var/log/qmail/send, /var/log/qmail/smtpd and /var/log/qmail/pop3d.
+
+The archived files would be stored in /archives/year/send/year-month-day.gz etc.
+
+There are some optional variables which you can set for each log target.
+
+.TP
+keep_xxx
+If this is set, logrotate won't delete files after archiving them. In any case, logrotate will never delete files if the archive operation failed.
+
+.TP
+touch_xxx
+If this is set, logrotate will touch files after archiving and (maybe) deleting the originals.
+
+.TP
+.B hup_xxx
+Commands to be run before rotating files.
+Example: hup_apache="killall -1 httpd"
+
+.TP
+.B copy_xxx
+If this is set, logrotate will copy files and then operate on the copies. This is not the default because it means using up much more disk space but it is useful to rotate logs from a program which keeps filehandles open but which you don't want to HUP.
+
+.TP
+.B prefix_xxx
+Subdirectory of $archive where logs should be be rotated.
+Example: prefix_qmail=qmail
+qmail logs would now be archived under /archives/year/qmail.
+
+.TP
+.B suffix_xxx
+Appended to filename when choosing path for archived log.
+Example: suffix_qmail=.log
+qmail logs would now be archived under /archives/year/xxx.log.
+
+.TP
+.B old_xxx
+Suffix appended when logs are kept (keep_xxx is set). Defaults to .old when unset.
+Example: old_apache=.yesterday
+

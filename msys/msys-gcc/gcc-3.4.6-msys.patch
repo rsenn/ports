@@ -1,0 +1,33 @@
+diff -r -u gcc-3.4.6_orig/libstdc++-v3/configure gcc-3.4.6/libstdc++-v3/configure
+--- gcc-3.4.6_orig/libstdc++-v3/configure	2007-09-05 01:19:57.000000000 +0200
++++ gcc-3.4.6/libstdc++-v3/configure	2007-09-05 01:21:40.000000000 +0200
+@@ -3924,7 +3924,7 @@
+   lt_cv_file_magic_test_file=/shlib/libc.so
+   ;;
+ 
+-cygwin* | mingw* |pw32*)
++cygwin* | mingw* | pw32* | msys*)
+   lt_cv_deplibs_check_method='file_magic file format pei*-i386(.*architecture: i386)?'
+   lt_cv_file_magic_cmd='$OBJDUMP -f'
+   ;;
+@@ -94545,7 +94545,7 @@
+       enable_abi_check=no
+     else
+       case "$host" in
+-        *-*-cygwin*)
++        *-*-cygwin* | *-*-msys*)
+           enable_abi_check=no ;;
+         *)
+           enable_abi_check=yes ;;
+diff -r -u gcc-3.4.6_orig/libstdc++-v3/configure.host gcc-3.4.6/libstdc++-v3/configure.host
+--- gcc-3.4.6_orig/libstdc++-v3/configure.host	2007-09-05 01:19:59.000000000 +0200
++++ gcc-3.4.6/libstdc++-v3/configure.host	2007-09-05 01:23:06.000000000 +0200
+@@ -152,7 +152,7 @@
+     # Plain BSD attempts to share FreeBSD files.
+     os_include_dir="os/bsd/freebsd"
+     ;;
+-  cygwin*)
++  cygwin* | msys*)
+     os_include_dir="os/newlib"
+     ;;
+   *djgpp*)      # leading * picks up "msdosdjgpp"

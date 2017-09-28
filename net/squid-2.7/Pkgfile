@@ -1,0 +1,177 @@
+# $Id: Pkgfile,v 1.38 2007/04/22 23:07:57 roman Exp $
+#
+# Description: squid
+# URL: http://www.squid-cache.org
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: openssl zlib
+
+name=squid
+version=2.7
+release=6
+date=20090731
+
+source=(http://www.squid-cache.org/Versions/v2/$version/squid-$version.STABLE$release-$date.tar.bz2
+        squid.conf)
+
+build()
+{
+  cd squid-$version*
+
+  case $prefix in
+    /usr) sysconfdir="/etc" localstatedir="/var" ;;
+  esac
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --libexecdir="$prefix/lib/cgi-bin" \
+       --sysconfdir="${sysconfdir=$prefix/etc}" \
+       --localstatedir="${localstatedir=$prefix/var}" \
+       --enable-ssl \
+       --enable-snmp \
+       --enable-linux-netfilter \
+       --enable-linux-tproxy \
+       --disable-ident-lookups \
+       --with-dl
+
+  make
+  make -C src DEFAULT_LOG_PREFIX="$localstatedir/log/squid"
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/etc
+#  install -m 644 src/squid.conf.default $ROOT/etc/squid.conf~
+  install -m 644 $SRC/squid.conf $PKG${sysconfdir}/squid.conf
+}
+
+postinst()
+{
+  if test ! -e ${sysconfdir}/squid.conf; then
+    $bindir/sed -e \
+      "s,@prefix@,$prefix,g
+       s,@squid_user@,${squid_user:-squid},g
+       s,@squid_group@,${squid_group:-squid},g
+       s,@squid_host@,${squid_host:-0.0.0.0},g
+       s,@squid_port@,${squid_port:-22},g" ${sysconfdir}/squid.conf~ >${sysconfdir}/squid.conf
+  fi
+
+  mkdir -p ${prefix}/srv
+
+  if isin "$services_run" "squid"; then
+    mkdir -p $prefix/srv
+    ln -sf $sysconfdir/srv/squid $prefix/srv/squid
+  fi
+
+  # check if there is a user 'squid', if not create it
+  if ! grep -q "^${squid_user:-squid}:" /etc/passwd; then
+    echo "No user '${squid_user:-squid}' found, creating it..."
+
+    # check if there is a group 'squid', if not create it
+    if ! grep -q "^${squid_user:-squid}:" /etc/group; then
+      echo "No group '${squid_user:-squid}' found, creating it..."
+      groupadd ${squid_user:-squid} || exit 1
+    fi
+
+    useradd -d $prefix/var/empty \
+           -g ${squid_user:-squid} \
+           -m \
+           -s /bin/false \
+      ${squid_user:-squid} || exit 1
+  fi
+}
+
+# package configuration
+# --------------------------------------------------------------------------------
+config()
+{
+  # add the main-menu entry "squid"
+  config_branch 'squid'     'Squid-Cache server configuration'
+
+    config_value 'user'    'Squid-Cache server user'
+      config_description   'User the Squid-Cache server will run under'
+      config_default       '$(user_find ssh daemon nobody)'
+      config_function      'eval choose $(user_table)'
+    config_end
+
+    config_value 'group'   'Squid-Cache server group'
+      config_description   'Group the Squid-Cache server will run under'
+      config_default       '$(user_group $(config_getvalue squid_user) || group_find ssh daemon nogroup)'
+      config_function      'eval choose $(group_table)'
+    config_end
+
+    config_value 'host'    'Squid-Cache server host'
+      config_description   'Address the Squid-Cache server will listen to'
+      config_default       '$(config_getvalue global_ipaddr)'
+    config_end
+
+    config_value 'port'    'Squid-Cache server port'
+      config_description   'Port the Squid-Cache server will listen to'
+      config_default       '8080'
+    config_end
+
+  config_end
+
+  # enhance daemontools package configuration
+  config_enter 'services' 'run' 'squid'
+
+    config_label   'Run squid at boot'
+    config_default 'no'
+
+  config_leave
+}
+
+# set up the service for squid
+# -----------------------------------------------------------------------------
+services()
+{
+  config_branch 'squid'
+
+    config_set 'TITLE'   'Squid-Cache server'
+    config_set 'PIDFILE' "$prefix/var/run/squid.pid"
+    config_set 'BIN'     "$prefix/sbin/squid"
+    config_set 'START'   "Server listening"
+    config_set 'STOP'    "terminating."
+
+  config_end
+}
+
+# the run-script which is called from supervise
+squid()
+{
+  exec 2>&1
+
+  # set default values
+  host=${squid_host:-0.0.0.0}
+  port=${squid_port:-22}
+  user=${squid_user:-nobody}
+
+  # check if the user is available to setuidgid
+  if ! user_avail $user; then
+    service_error "no such user:" $user
+  fi
+
+  if test ! -f $prefix/etc/ssh_host_rsa_key; then
+    echo "Missing squid host key, creating one..."
+    $prefix/bin/ssh-hostkeygen
+  fi
+
+  # check if there's already an instance of squid
+  if test -f $squid_PIDFILE; then
+    pid=$(cat $squid_PIDFILE)
+
+    if test -d $prefix/proc/$pid; then
+      service_msg "squid already running, restarting..."
+      kill $pid
+      sleep 1
+      exit 1
+    fi
+  fi
+
+  # check whether host:port is bindable
+  if proc=$(inet_bound tcp $host:$port); then
+    service_error $host:$port "already bound"
+  fi
+
+  # finally execute squid
+  exec -a squid $prefix/bin/squid -N
+}

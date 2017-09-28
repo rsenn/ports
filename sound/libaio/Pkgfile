@@ -1,0 +1,40 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A portable sound architecture abstraction.
+#  libaio is meant to solve the problem of differing digital audio platforms
+#  once and for all. JACK is unnecessarily complex for most applications,
+#  and while libao's support for file output is cool, it limits what
+#  the API can do and is therefore inadequate for any kind of real time
+#  application. libaio provides a clean application interface and a simple
+#  compile-time driver switching decision, yielding a lightweight way to
+#  use the local sound hardware without having to care what it is.
+#  .
+# URL: http://sourceforge.net/projects/libaio/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libaio
+version=0.2.0
+release=1
+source=($mirror_sf/libaio/libaio-$version.tar.bz2
+        libaio-0.2.0-m4.patch)
+
+build()
+{
+  cd libaio-$version
+
+  patch -N -p1 -i $SRC/libaio-0.2.0-m4.patch
+
+  #./autogen.sh
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" docdir="$prefix/share/doc/libaio" install
+}
+
+# EOF

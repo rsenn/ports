@@ -1,0 +1,25 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Oscal is an engine for evaluating sequence graphs. A sequence graph is like a scene graph but allows the user to position objects in the temporal dimension.
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=oscal
+version=oscal_0.8.2
+release=1
+source=($mirror_sf/oscal/oscal_0.8.2.tar.gz)
+
+build()
+{
+  cd $version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

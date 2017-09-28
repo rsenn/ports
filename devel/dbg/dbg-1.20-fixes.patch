@@ -1,0 +1,58 @@
+diff -ru dbg-1.20/Makefile dbg-1.20/Makefile
+--- dbg-1.20/Makefile	2003-09-16 12:46:07.000000000 +0000
++++ dbg-1.20/Makefile	2008-04-05 12:31:06.000000000 +0000
+@@ -10,7 +10,7 @@
+ ##############################################################################
+ # Initial rules
+ 
+-CFLAGS    = -O4 -Wall -s
++CFLAGS    = $(CXXFLAGS)
+ VERSION   = $(shell cat VERSION)
+ DBGNAME   = dbg-${VERSION}
+ TARBALL   = ${DBGNAME}.tgz
+@@ -30,22 +30,25 @@
+ 	rm -rf core a.out *.o test test-dbg test-nothing dbg*.tgz www.tgz SRC1.out SRC2.out www/*.pdf dbg*.tgz dbg.h.html dbg.cpp.html test.cpp.html
+ 
+ dbg.o: dbg.h dbg.cpp
+-	g++ $(CFLAGS) -c dbg.cpp
++	$(CXX) $(CFLAGS) -c dbg.cpp
++
++libdbg.a: dbg.o
++	$(AR) rcs $@ $^
+ 
+ ##############################################################################
+ # Building the test files
+ 
+-test-dbg: dbg.o test.cpp
+-	g++ $(CFLAGS) -DDBG_ENABLED test.cpp -c -o test-dbg.o
+-	g++ $(CFLAGS) -o test-dbg test-dbg.o dbg.o
++test-dbg: libdbg.a test.cpp
++	$(CXX) $(CFLAGS) -DDBG_ENABLED test.cpp -c -o test-dbg.o
++	$(CXX) $(CFLAGS) -o test-dbg test-dbg.o libdbg.a
+ 
+ test: test.cpp
+-	g++ $(CFLAGS) test.cpp -c -o test.o
+-	g++ $(CFLAGS) -o test test.o
++	$(CXX) $(CFLAGS) test.cpp -c -o test.o
++	$(CXX) $(CFLAGS) -o test test.o
+ 
+ test-nothing: test.cpp
+-	g++ $(CFLAGS) -DTEST_WITHOUT_ANY_LIBRARY_USAGE test.cpp -c -o test.o
+-	g++ $(CFLAGS) -o test-nothing test.o
++	$(CXX) $(CFLAGS) -DTEST_WITHOUT_ANY_LIBRARY_USAGE test.cpp -c -o test.o
++	$(CXX) $(CFLAGS) -o test-nothing test.o
+ 
+ ##############################################################################
+ # Building the distribution
+diff -ru dbg-1.20/dbg.cpp dbg-1.20/dbg.cpp
+--- dbg-1.20/dbg.cpp	2003-09-16 12:46:07.000000000 +0000
++++ dbg-1.20/dbg.cpp	2008-04-05 12:29:20.000000000 +0000
+@@ -423,7 +423,7 @@
+             typedef map_type::iterator                 iterator;
+             typedef map_type::key_type                 key_type;
+ #ifndef _MSC_VER
+-            typedef map_type::data_type                data_type; // pre 3.3
++//            typedef map_type::data_type                data_type; // pre 3.3
+             typedef map_type::mapped_type              data_type; // gcc 3.3
+ #else
+             // MSVC. Just don't ask.

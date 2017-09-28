@@ -1,0 +1,45 @@
+diff -ru daemontools-0.76_orig/src/sig_catch.c daemontools-0.76/src/sig_catch.c
+--- daemontools-0.76_orig/src/sig_catch.c	2006-05-15 12:00:19.665177792 +0200
++++ daemontools-0.76/src/sig_catch.c	2006-05-15 12:00:30.142584984 +0200
+@@ -9,7 +9,7 @@
+ #ifdef HASSIGACTION
+   struct sigaction sa;
+   sa.sa_handler = f;
+-  sa.sa_flags = 0;
++  sa.sa_flags = SA_SIGINFO;
+   sigemptyset(&sa.sa_mask);
+   sigaction(sig,&sa,(struct sigaction *) 0);
+ #else
+diff -ru daemontools-0.76_orig/src/supervise.c daemontools-0.76/src/supervise.c
+--- daemontools-0.76_orig/src/supervise.c	2006-05-15 12:00:19.670177032 +0200
++++ daemontools-0.76/src/supervise.c	2006-05-15 12:01:12.222187912 +0200
+@@ -16,6 +16,7 @@
+ #include "iopause.h"
+ #include "taia.h"
+ #include "deepsleep.h"
++#include "fmt.h"
+ 
+ #define FATAL "supervise: fatal: "
+ #define WARNING "supervise: warning: "
+@@ -85,6 +86,13 @@
+   write(selfpipe[1],"",1);
+ }
+ 
++void terminate(int s, siginfo_t *info)
++{
++  char pidstr[FMT_ULONG];
++  pidstr[fmt_ulong(pidstr, info->si_pid)] = '\0';
++  strerr_die4sys(111,FATAL,"received a SIGTERM from ",pidstr,": ");
++}
++
+ const char *run[2] = { "./run", 0 };
+ 
+ void trystart(void)
+@@ -223,6 +231,7 @@
+ 
+   sig_block(sig_child);
+   sig_catch(sig_child,trigger);
++  sig_catch(sig_term,terminate);
+ 
+   if (chdir(dir) == -1)
+     strerr_die4sys(111,FATAL,"unable to chdir to ",dir,": ");

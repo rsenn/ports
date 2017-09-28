@@ -1,0 +1,27 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Textpow is a library to parse and process Textmate bundles.
+# Although created created for their use in a word processor, these bundles
+# have many other uses. For example, we have used them to create a syntax
+# highligting utility and also the markup rendering engine used to render this
+# documentation.
+# URL: http://textpow.rubyforge.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=gitorious
+version=20090918
+release=1
+source=(gitorious-$version.tar.bz2)
+
+build()
+{
+  cd gitorious-$version
+
+  set -- $(ruby --version)
+
+  RUBYVERSION="$2"
+  RUBYLIBDIR="$prefix/lib/ruby/${RUBYVERSION%.*}"
+
+  rake
+}

@@ -1,0 +1,37 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A C++ library that expands "variables" in text buffers.
+#  libvarexp is a C++ library that allows its users to detach any kind of
+#  information from the representation of that information by providing a
+#  simple-to-use but powerful text-template mechanism. It offers application
+#  developers two functions that parse "variable" expressions in text buffers
+#  and replace them with the variable's contents. Additionally, the enduser
+#  has numerous ways not only to insert variables into his template files
+#  but to modify the variables contents on the fly, do full-blown regular
+#  expression search-and-replaces, or loop over the contents of arrays of
+#  variables. These variables are not limited to "environment variables". The
+#  programmer is free to provide a callback function to libvarexp that will
+#  be used to map a variable name to its contents. Thus, the variables your
+#  application provides can reside completely internally.
+# URL: http://cryp.to/libvarexp/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libvarexp
+version=1.1
+release=1
+source=(http://cryp.to/libvarexp/libvarexp-$version.tar.gz)
+
+build()
+{
+  cd libvarexp-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

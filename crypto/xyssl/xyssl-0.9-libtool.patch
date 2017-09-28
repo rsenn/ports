@@ -1,0 +1,229 @@
+diff -ru xyssl-0.9_orig/GNUmakefile xyssl-0.9/GNUmakefile
+--- xyssl-0.9_orig/GNUmakefile	2009-02-20 02:12:39.000000000 +0100
++++ xyssl-0.9/GNUmakefile	2009-02-20 02:32:32.000000000 +0100
+@@ -0,0 +1,28 @@
++DESTDIR=/usr/local
++PREFIX=xyssl_
++LIBTOOL=libtool --tag=CC
++
++all:
++	cd library  && make all && cd ..
++	cd programs && make all && cd ..
++
++install:
++	mkdir -p $(DESTDIR)/include/xyssl
++	cp -r include/xyssl $(DESTDIR)/include
++	
++	mkdir -p $(DESTDIR)/lib
++	$(LIBTOOL) --mode=install cp library/libxyssl.la $(DESTDIR)/lib
++	
++	mkdir -p $(DESTDIR)/bin
++	for p in programs/*/* ; do              \
++	    if [ -x $$p ] && [ ! -d $$p ] ;     \
++	    then                                \
++	        f=$(PREFIX)`basename $$p` ;     \
++	        $(LIBTOOL) --mode=install cp $$p $(DESTDIR)/bin/$$f ;     \
++	    fi                                  \
++	done
++
++clean:
++	cd library  && make clean && cd ..
++	cd programs && make clean && cd ..
++
+Only in xyssl-0.9/library: .libs
+diff -ru xyssl-0.9_orig/library/GNUmakefile xyssl-0.9/library/GNUmakefile
+--- xyssl-0.9_orig/library/GNUmakefile	2009-02-20 02:12:51.000000000 +0100
++++ xyssl-0.9/library/GNUmakefile	2009-02-20 02:31:48.000000000 +0100
+@@ -0,0 +1,25 @@
++CFLAGS	= -I../include -D_FILE_OFFSET_BITS=64
++OFLAGS	= -O2
++LIBTOOL = libtool --tag=CC
++LDFLAGS = -rpath $(DESTDIR)/lib -version-number 0:9
++
++OBJS=	aes.lo		arc4.lo		base64.lo	\
++	bignum.lo	certs.lo		debug.lo		\
++	des.lo		dhm.lo		havege.lo	\
++	md2.lo		md4.lo		md5.lo		\
++	net.lo		padlock.lo	rsa.lo		\
++	sha1.lo		sha2.lo		sha4.lo		\
++	ssl_cli.lo	ssl_srv.lo	ssl_tls.lo	\
++	timing.lo	x509parse.lo
++
++all: libxyssl.la
++
++libxyssl.la: $(OBJS)
++	$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -o $@ $^
++
++%.lo: %.c
++	$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) $(OFLAGS) -c -o $@ $<
++
++clean:
++	rm -f *.lo libxyssl.*
++
+Only in xyssl-0.9/library: aes.lo
+Binary files xyssl-0.9_orig/library/aes.o and xyssl-0.9/library/aes.o differ
+Only in xyssl-0.9/library: arc4.lo
+Binary files xyssl-0.9_orig/library/arc4.o and xyssl-0.9/library/arc4.o differ
+Only in xyssl-0.9/library: base64.lo
+Binary files xyssl-0.9_orig/library/base64.o and xyssl-0.9/library/base64.o differ
+Only in xyssl-0.9/library: bignum.lo
+Binary files xyssl-0.9_orig/library/bignum.o and xyssl-0.9/library/bignum.o differ
+Only in xyssl-0.9/library: certs.lo
+Only in xyssl-0.9/library: debug.lo
+Binary files xyssl-0.9_orig/library/debug.o and xyssl-0.9/library/debug.o differ
+Only in xyssl-0.9_orig/library: des.o
+Binary files xyssl-0.9_orig/library/dhm.o and xyssl-0.9/library/dhm.o differ
+Binary files xyssl-0.9_orig/library/havege.o and xyssl-0.9/library/havege.o differ
+Only in xyssl-0.9_orig/library: libxyssl.a
+Binary files xyssl-0.9_orig/library/md5.o and xyssl-0.9/library/md5.o differ
+Binary files xyssl-0.9_orig/library/net.o and xyssl-0.9/library/net.o differ
+Binary files xyssl-0.9_orig/library/padlock.o and xyssl-0.9/library/padlock.o differ
+Binary files xyssl-0.9_orig/library/rsa.o and xyssl-0.9/library/rsa.o differ
+Binary files xyssl-0.9_orig/library/sha1.o and xyssl-0.9/library/sha1.o differ
+Binary files xyssl-0.9_orig/library/sha2.o and xyssl-0.9/library/sha2.o differ
+Binary files xyssl-0.9_orig/library/sha4.o and xyssl-0.9/library/sha4.o differ
+Binary files xyssl-0.9_orig/library/ssl_cli.o and xyssl-0.9/library/ssl_cli.o differ
+Binary files xyssl-0.9_orig/library/ssl_srv.o and xyssl-0.9/library/ssl_srv.o differ
+Binary files xyssl-0.9_orig/library/ssl_tls.o and xyssl-0.9/library/ssl_tls.o differ
+Binary files xyssl-0.9_orig/library/timing.o and xyssl-0.9/library/timing.o differ
+Binary files xyssl-0.9_orig/library/x509parse.o and xyssl-0.9/library/x509parse.o differ
+diff -ru xyssl-0.9_orig/programs/GNUmakefile xyssl-0.9/programs/GNUmakefile
+--- xyssl-0.9_orig/programs/GNUmakefile	2009-02-20 02:12:55.000000000 +0100
++++ xyssl-0.9/programs/GNUmakefile	2009-02-20 02:31:36.000000000 +0100
+@@ -0,0 +1,77 @@
++CFLAGS	= -I../include -D_FILE_OFFSET_BITS=64
++OFLAGS	= -O2
++LIBTOOL = libtool --tag=CC
++LDFLAGS	= -rpath $(DESTDIR)/lib
++
++APPS =	aes/aescrypt2		hash/hello		\
++	hash/md5sum		hash/sha1sum		\
++	hash/sha2sum		pkey/dh_client		\
++	pkey/dh_genprime	pkey/dh_server		\
++	pkey/mpi_demo		pkey/rsa_genkey		\
++	pkey/rsa_sign		pkey/rsa_verify		\
++	ssl/ssl_client1		ssl/ssl_client2		\
++	ssl/ssl_server		test/benchmark		\
++	test/selftest		test/ssl_test
++
++all: $(APPS)
++
++aes/aescrypt2: aes/aescrypt2.lo ../library/libxyssl.la
++	$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -o $@ $^
++
++hash/hello: hash/hello.lo ../library/libxyssl.la
++	$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -o $@ $^
++
++hash/md5sum: hash/md5sum.lo ../library/libxyssl.la
++	$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -o $@ $^
++
++hash/sha1sum: hash/sha1sum.lo ../library/libxyssl.la
++	$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -o $@ $^
++
++hash/sha2sum: hash/sha2sum.lo ../library/libxyssl.la
++	$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -o $@ $^
++
++pkey/dh_client: pkey/dh_client.lo ../library/libxyssl.la
++	$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -o $@ $^
++
++pkey/dh_genprime: pkey/dh_genprime.lo ../library/libxyssl.la
++	$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -o $@ $^
++
++pkey/dh_server: pkey/dh_server.lo ../library/libxyssl.la
++	$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -o $@ $^
++
++pkey/mpi_demo: pkey/mpi_demo.lo ../library/libxyssl.la
++	$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -o $@ $^
++
++pkey/rsa_genkey: pkey/rsa_genkey.lo ../library/libxyssl.la
++	$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -o $@ $^
++
++pkey/rsa_sign: pkey/rsa_sign.lo ../library/libxyssl.la
++	$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -o $@ $^
++
++pkey/rsa_verify: pkey/rsa_verify.lo ../library/libxyssl.la
++	$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -o $@ $^
++
++ssl/ssl_client1: ssl/ssl_client1.lo ../library/libxyssl.la
++	$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -o $@ $^
++
++ssl/ssl_client2: ssl/ssl_client2.lo ../library/libxyssl.la
++	$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -o $@ $^
++
++ssl/ssl_server: ssl/ssl_server.lo ../library/libxyssl.la
++	$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -o $@ $^
++
++test/benchmark: test/benchmark.lo ../library/libxyssl.la
++	$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -o $@ $^
++
++test/selftest: test/selftest.lo ../library/libxyssl.la
++	$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -o $@ $^
++
++test/ssl_test: test/ssl_test.lo ../library/libxyssl.la
++	$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -o $@ $^
++
++%.lo: %.c
++	$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) $(OFLAGS) -c -o $@ $<
++
++clean:
++	rm -f $(APPS)
++
+Only in xyssl-0.9/programs/aes: .libs
+Only in xyssl-0.9_orig/programs/aes: aescrypt2
+Only in xyssl-0.9/programs/aes: aescrypt2.lo
+Only in xyssl-0.9/programs/aes: aescrypt2.o
+Only in xyssl-0.9/programs/hash: .libs
+Only in xyssl-0.9_orig/programs/hash: hello
+Only in xyssl-0.9/programs/hash: hello.lo
+Only in xyssl-0.9/programs/hash: hello.o
+Only in xyssl-0.9_orig/programs/hash: md5sum
+Only in xyssl-0.9/programs/hash: md5sum.lo
+Only in xyssl-0.9/programs/hash: md5sum.o
+Only in xyssl-0.9_orig/programs/hash: sha1sum
+Only in xyssl-0.9/programs/hash: sha1sum.lo
+Only in xyssl-0.9/programs/hash: sha1sum.o
+Only in xyssl-0.9_orig/programs/hash: sha2sum
+Only in xyssl-0.9/programs/hash: sha2sum.lo
+Only in xyssl-0.9/programs/hash: sha2sum.o
+Only in xyssl-0.9/programs/pkey: .libs
+Only in xyssl-0.9_orig/programs/pkey: dh_client
+Only in xyssl-0.9/programs/pkey: dh_client.lo
+Only in xyssl-0.9/programs/pkey: dh_client.o
+Only in xyssl-0.9_orig/programs/pkey: dh_genprime
+Only in xyssl-0.9/programs/pkey: dh_genprime.lo
+Only in xyssl-0.9/programs/pkey: dh_genprime.o
+Only in xyssl-0.9_orig/programs/pkey: dh_server
+Only in xyssl-0.9/programs/pkey: dh_server.lo
+Only in xyssl-0.9/programs/pkey: dh_server.o
+Only in xyssl-0.9_orig/programs/pkey: mpi_demo
+Only in xyssl-0.9/programs/pkey: mpi_demo.lo
+Only in xyssl-0.9/programs/pkey: mpi_demo.o
+Only in xyssl-0.9_orig/programs/pkey: rsa_genkey
+Only in xyssl-0.9/programs/pkey: rsa_genkey.lo
+Only in xyssl-0.9/programs/pkey: rsa_genkey.o
+Only in xyssl-0.9_orig/programs/pkey: rsa_sign
+Only in xyssl-0.9/programs/pkey: rsa_sign.lo
+Only in xyssl-0.9/programs/pkey: rsa_sign.o
+Only in xyssl-0.9_orig/programs/pkey: rsa_verify
+Only in xyssl-0.9/programs/pkey: rsa_verify.lo
+Only in xyssl-0.9/programs/pkey: rsa_verify.o
+Only in xyssl-0.9/programs/ssl: .libs
+Only in xyssl-0.9_orig/programs/ssl: ssl_client1
+Only in xyssl-0.9/programs/ssl: ssl_client1.lo
+Only in xyssl-0.9/programs/ssl: ssl_client1.o
+Only in xyssl-0.9_orig/programs/ssl: ssl_client2
+Only in xyssl-0.9/programs/ssl: ssl_client2.lo
+Only in xyssl-0.9/programs/ssl: ssl_client2.o
+Only in xyssl-0.9_orig/programs/ssl: ssl_server
+Only in xyssl-0.9/programs/ssl: ssl_server.lo
+Only in xyssl-0.9/programs/ssl: ssl_server.o
+Only in xyssl-0.9/programs/test: .libs
+Only in xyssl-0.9_orig/programs/test: benchmark
+Only in xyssl-0.9/programs/test: benchmark.lo
+Only in xyssl-0.9/programs/test: benchmark.o
+Only in xyssl-0.9_orig/programs/test: selftest
+Only in xyssl-0.9/programs/test: selftest.lo
+Only in xyssl-0.9/programs/test: selftest.o
+Only in xyssl-0.9_orig/programs/test: ssl_test
+Only in xyssl-0.9/programs/test: ssl_test.lo
+Only in xyssl-0.9/programs/test: ssl_test.o

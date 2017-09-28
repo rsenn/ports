@@ -1,0 +1,25 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+# Package: libclutter-vala
+# Description: vala bindings for libclutter
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=clutter-vala
+version=0.6.2
+release=1
+source=(http://www.clutter-project.org/sources/clutter-vala/0.6/clutter-vala-$version.tar.bz2)
+
+build()
+{
+  cd clutter-vala-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

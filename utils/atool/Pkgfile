@@ -1,0 +1,40 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A script for managing file archives of various types.
+#  atool is a script for managing file archives of various types (tar,
+#  tar+gzip, zip etc). The main command is aunpack, which extracts
+#  files from an archive. It overcomes the problem of extracting files
+#  from an archive without checking whether the files were located in a
+#  subdirectory or in the top directory of the archive, resulting in files
+#  scattered all over the place by first extracting to a new directory. If
+#  there was only a single file in the archive, that file is moved to the
+#  original directory. It also prevents local files from being overwritten
+#  by mistake. The other commands are apack for creating archives, als for
+#  listing files in archives, and acat for extracting files to standard out.
+#  .
+# URL: http://www.nongnu.org/atool/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=atool
+version=0.37.0
+release=1
+source=(http://savannah.nongnu.org/download/atool/atool-$version.tar.gz)
+
+build()
+{
+  cd atool-$version
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/atool
+  install -m 644 README AUTHORS COPYING ChangeLog INSTALL NEWS TODO $ROOT/share/doc/atool
+}
+
+# EOF

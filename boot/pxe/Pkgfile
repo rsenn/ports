@@ -1,0 +1,59 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: Allows you to boot a PXE-enabled machine over a network.
+#  The PXE daemon allows network managers to boot PXE-enabled machines
+#  over the network. It was implemented from the specification on Intel's
+#  WfM site.
+# URL: http://www.kano.org.uk/projects/pxe/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=pxe
+version=1.4.2
+release=1
+source=(http://www.kano.org.uk/projects/pxe/pxe-$version.tar.gz)
+
+build()
+{
+  cd pxe-$version
+
+  case $prefix in
+    /usr) sysconfdir="/etc" ;;
+       *) sysconfdir="$prefix/etc" ;;
+  esac
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix" \
+       --sysconfdir="$sysconfdir"
+
+  make
+
+  install -d $ROOT/sbin
+  install -m 755 pxe $ROOT/sbin
+
+  install -d $PKG/$sysconfdir
+  install -m 644 pxe.conf $PKG/$sysconfdir
+}
+
+# ---------------------------------------------------------------------------
+services()
+{
+  config_branch pxe
+
+    config_branch log
+    config_end
+
+    config_set TITLE "PXE Boot Daemon"
+    config_set BIN   "${sbindir}/pxe"
+
+  config_end
+}
+
+# ---------------------------------------------------------------------------
+pxe()
+{
+  exec pxe -d
+}

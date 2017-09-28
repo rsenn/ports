@@ -1,0 +1,39 @@
+# $Id: Pkgfile,v 1.5 2007/04/22 23:07:53 roman Exp $
+#
+# Description:
+# URL: http://www.wie-auch-immer.de/mtree/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=mtree
+version=6.2
+release=1
+source=(mtree-freebsd6.2.tar.gz
+        mtree-linux.patch
+        etc-mtree-freebsd6.2.tar.gz
+        crc.c
+        crcextern.h)
+
+build()
+{
+  cd mtree
+
+  case $host in
+    *linux*)
+      patch -N -p1 -i $SRC/mtree-linux.patch
+      make
+      ;;
+    *)
+      cp $SRC/crc*.[ch] .
+      pmake
+      ;;
+  esac
+
+  install -d $ROOT/bin
+  install -m 755 mtree $ROOT/bin
+
+  cd $SRC/etc/mtree
+
+  install -d $ROOT/etc/mtree
+  pmake BINGRP=0 FILESDIR=$ROOT/etc/mtree install
+}

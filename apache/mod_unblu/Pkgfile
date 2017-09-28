@@ -1,0 +1,30 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=mod_unblu
+version=1.0
+release=2
+source=
+
+build()
+{
+  svn co svn+ssh://data/svn/mod_unblu/trunk
+
+  cd trunk
+  make
+
+  install -d "$ROOT/lib/apache2"
+  install -m 755 .libs/mod_unblu.so "$ROOT/lib/apache2"
+
+  install -d "$ROOT/doc/mod_unblu"
+  install -m 644 README "$ROOT/doc/mod_unblu"
+
+  install -d "$ROOT/local/config"
+  install -m 644 unblu.conf "$ROOT/local/config"
+
+  copy_license "LICENSE.txt"
+}

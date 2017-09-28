@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A utility which converts flat ASCII text to the man page format.
+#  Txt2man converts flat ASCII text into the man page format. This allows
+#  man pages to be authored without knowledge of nroff macros. It is a
+#  shell script that uses GNU awk, and it should run on any Unix-like system.
+#  .
+# URL: http://mvertes.free.fr/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=txt2man
+version=1.5.5
+release=1
+source=(http://mvertes.free.fr/download/txt2man-$version.tar.gz)
+
+build()
+{
+  cd txt2man-$version
+
+  sed -i "s,/man/man1,/share&," Makefile
+
+  make
+  make prefix="$ROOT" install
+
+  install -d $ROOT/share/doc/txt2man
+  install -m 644 README COPYING Changelog $ROOT/share/doc/txt2man
+}
+
+# EOF

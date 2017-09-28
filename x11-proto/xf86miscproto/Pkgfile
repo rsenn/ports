@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: X11 XFree86-Miscellaneous extension wire protocol
+#  This package provides development headers describing the wire protocol
+#  for the XFree86-Misc extension, which provides a means to access input
+#  device configuration settings specific to the XFree86/Xorg DDX.
+#  This package is built from the X.org xf86miscproto proto module.
+# URL: http://www.X.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=xf86miscproto
+version=0.9.2
+release=1
+source=(ftp://ftp.x.org/pub/individual/proto/xf86miscproto-$version.tar.bz2)
+
+build()
+{
+  cd xf86miscproto-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

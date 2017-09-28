@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A Web template engine, scripting language, and shell.
+#  BUSH (Business Shell) combines the capabilities of BASH, PHP, GCC, and
+#  databases into a uniform design for rapidly building secure, reliable
+#  Web sites. Based on an ISO standard, it promotes code reuse: scripts
+#  and templates can be compiled with GCC or ported to JVM or .Net using
+#  third party tools with only minor changes. It can also replace BASH as
+#  an interactive command shell with SQL support, and is a general purpose
+#  scripting language.
+# URL: http://www.pegasoft.ca/bush.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=bush
+version=1.0.3-2
+release=1
+source=(http://www.pegasoft.ca/downloads/bush-$version-src.tgz)
+
+build()
+{
+  cd bush-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

@@ -1,0 +1,45 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A Physical Modelling Sound Synthesis Program
+#  Tao is a software package for sound synthesis using physical models. It
+#  provides a virtual acoustic material constructed from masses and springs
+#  which can be used as the basis for building quite complex virtual musical
+#  instruments. Tao comes with a synthesis language for creating and playing
+#  instruments and a fully documented (eventually) C++ API for those who
+#  would like to use it as an object library. The main features are:
+#    * Ability to create complex virtual instruments from primitive acoustic
+#      building blocks.
+#    * OpenGL animated visualisations showing the acoustic waves propagating
+#      through the instruments.
+#    * WAV format output files.
+#    * Comprehensive documentation including a user manual, tutorials
+#      (eventually) and various examples. All documentation is available in
+#      either LaTeX (dvi, ps) or HTML formats.
+#    * Available under GNU general public license.
+# URL: http://web.ukonline.co.uk/taosynth/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=tao
+version=1.0
+release=1
+source=(http://web.ukonline.co.uk/taosynth/download/tao-$version-beta-30Apr2000.tar.gz
+        tao-1.0-beta-c++0x.patch)
+
+build()
+{
+  cd tao-$version-beta-30Apr2000
+
+  patch -N -p1 -i $SRC/tao-1.0-beta-c++0x.patch
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/tao
+  install -m 644 README AUTHORS COPYING ChangeLog INSTALL README.FIRST $ROOT/share/doc/tao
+}

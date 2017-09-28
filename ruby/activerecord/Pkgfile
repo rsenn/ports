@@ -1,0 +1,35 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: ActiveRecord pattern (Fowler, PoEAA) for ORM
+#  Implements the ActiveRecord pattern (Fowler, PoEAA) for ORM.
+#  It ties database tables and classes together for business objects,
+#  like Customer or Subscription, that can find, save, and destroy
+#  themselves without resorting to manual SQL.
+#  .
+# URL: http://rubyforge.org/projects/activerecord/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=activerecord
+version=2.2.2
+release=1
+source=($mirror_rubyforge/activerecord/activerecord-$version.tgz)
+
+build()
+{
+  cd activerecord-$version
+
+  set -- `ruby --version`
+
+  RUBYVERSION=$2
+  RUBYLIBDIR=$prefix/lib/ruby/${RUBYVERSION%.*}
+
+  install -d $PKG/$RUBYLIBDIR
+  cp -rf lib/* $PKG/$RUBYLIBDIR/
+
+  install -d $ROOT/share/doc/activerecord
+  install -m 644 CHANGELOG README $ROOT/share/doc/activerecord/
+  cp -rf examples $ROOT/share/doc/activerecord/
+}
+
+# EOF

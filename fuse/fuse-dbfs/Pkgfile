@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Uses Berkeley DB transactions to provide a full-fledged POSIX compliant filesystem
+# URL: http://www.kernel.org/pub/linux/kernel/people/jgarzik/fs/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=fuse-dbfs
+version=0.7
+release=1
+source=(http://www.kernel.org/pub/linux/kernel/people/jgarzik/fs/fuse-dbfs-$version.tar.bz2)
+
+build()
+{
+  cd fuse-dbfs-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  rm -f ChangeLog
+
+  install -d $ROOT/share/doc/fuse-dbfs
+  install -m 644 [A-Z]*[A-Z]* $ROOT/share/doc/fuse-dbfs
+}

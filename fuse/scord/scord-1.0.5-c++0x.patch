@@ -1,0 +1,82 @@
+diff -ru scord-1.0.5_orig/src/.deps/root_lock.Po scord-1.0.5/src/.deps/root_lock.Po
+diff -ru scord-1.0.5_orig/src/.deps/scord-fuse_serve.Po scord-1.0.5/src/.deps/scord-fuse_serve.Po
+diff -ru scord-1.0.5_orig/src/.deps/scord-logger.Po scord-1.0.5/src/.deps/scord-logger.Po
+diff -ru scord-1.0.5_orig/src/.deps/scord-root_lock.Po scord-1.0.5/src/.deps/scord-root_lock.Po
+diff -ru scord-1.0.5_orig/src/.deps/scord-util.Po scord-1.0.5/src/.deps/scord-util.Po
+diff -ru scord-1.0.5_orig/src/.deps/scord-vfs_attr_cache.Po scord-1.0.5/src/.deps/scord-vfs_attr_cache.Po
+diff -ru scord-1.0.5_orig/src/.deps/scord-vfs_breakpoint.Po scord-1.0.5/src/.deps/scord-vfs_breakpoint.Po
+diff -ru scord-1.0.5_orig/src/.deps/scord-vfs_close.Po scord-1.0.5/src/.deps/scord-vfs_close.Po
+diff -ru scord-1.0.5_orig/src/.deps/scord-vfs_count.Po scord-1.0.5/src/.deps/scord-vfs_count.Po
+diff -ru scord-1.0.5_orig/src/.deps/scord-vfs_fs.Po scord-1.0.5/src/.deps/scord-vfs_fs.Po
+diff -ru scord-1.0.5_orig/src/.deps/scord-vfs_hide.Po scord-1.0.5/src/.deps/scord-vfs_hide.Po
+diff -ru scord-1.0.5_orig/src/.deps/scord-vfs_prefix.Po scord-1.0.5/src/.deps/scord-vfs_prefix.Po
+diff -ru scord-1.0.5_orig/src/.deps/scord-vfs_print.Po scord-1.0.5/src/.deps/scord-vfs_print.Po
+diff -ru scord-1.0.5_orig/src/.deps/scord-vfs_rename.Po scord-1.0.5/src/.deps/scord-vfs_rename.Po
+diff -ru scord-1.0.5_orig/src/.deps/scord-vfs_share_text.Po scord-1.0.5/src/.deps/scord-vfs_share_text.Po
+diff -ru scord-1.0.5_orig/src/.deps/scordstatus.Po scord-1.0.5/src/.deps/scordstatus.Po
+diff -ru scord-1.0.5_orig/src/.deps/startscord.Po scord-1.0.5/src/.deps/startscord.Po
+diff -ru scord-1.0.5_orig/src/fuse_serve.cc scord-1.0.5/src/fuse_serve.cc
+--- scord-1.0.5_orig/src/fuse_serve.cc	2009-03-13 06:53:37.000000000 +0100
++++ scord-1.0.5/src/fuse_serve.cc	2009-03-13 07:05:05.000000000 +0100
+@@ -16,6 +16,7 @@
+ #include <unistd.h>
+ #include <libgen.h>
+ #include <fuse.h>
++#include <cstring>
+ 
+ #include "vfs.h"
+ #include "vfs_fs.h"
+diff -ru scord-1.0.5_orig/src/root_lock.cc scord-1.0.5/src/root_lock.cc
+--- scord-1.0.5_orig/src/root_lock.cc	2009-03-13 06:53:37.000000000 +0100
++++ scord-1.0.5/src/root_lock.cc	2009-03-13 07:06:38.000000000 +0100
+@@ -15,6 +15,8 @@
+ #include <unistd.h>
+ #include <stdlib.h>
+ #include <errno.h>
++#include <cstring>
++#include <climits>
+ 
+ #include "compat.h"
+ #include "logger.h"
+Only in scord-1.0.5/src: root_lock.o
+Only in scord-1.0.5/src: scord
+Only in scord-1.0.5/src: scord-fuse_serve.o
+Only in scord-1.0.5/src: scord-logger.o
+Only in scord-1.0.5/src: scord-root_lock.o
+Only in scord-1.0.5/src: scord-util.o
+Only in scord-1.0.5/src: scord-vfs_attr_cache.o
+Only in scord-1.0.5/src: scord-vfs_breakpoint.o
+Only in scord-1.0.5/src: scord-vfs_close.o
+Only in scord-1.0.5/src: scord-vfs_count.o
+Only in scord-1.0.5/src: scord-vfs_fs.o
+Only in scord-1.0.5/src: scord-vfs_hide.o
+Only in scord-1.0.5/src: scord-vfs_prefix.o
+Only in scord-1.0.5/src: scord-vfs_print.o
+Only in scord-1.0.5/src: scord-vfs_rename.o
+Only in scord-1.0.5/src: scord-vfs_share_text.o
+Only in scord-1.0.5/src: scordstatus
+diff -ru scord-1.0.5_orig/src/scordstatus.cc scord-1.0.5/src/scordstatus.cc
+--- scord-1.0.5_orig/src/scordstatus.cc	2009-03-13 06:53:37.000000000 +0100
++++ scord-1.0.5/src/scordstatus.cc	2009-03-13 07:07:35.000000000 +0100
+@@ -28,6 +28,7 @@
+ 
+ #include <iostream>
+ #include <string>
++#include <cstdlib>
+ 
+ using std::cin;
+ using std::string;
+Only in scord-1.0.5/src: scordstatus.o
+Only in scord-1.0.5/src: startscord
+diff -ru scord-1.0.5_orig/src/startscord.cc scord-1.0.5/src/startscord.cc
+--- scord-1.0.5_orig/src/startscord.cc	2009-03-13 06:53:37.000000000 +0100
++++ scord-1.0.5/src/startscord.cc	2009-03-13 07:07:09.000000000 +0100
+@@ -21,6 +21,7 @@
+ #include <iostream>
+ #include <fstream>
+ #include <string>
++#include <cstdlib>
+ 
+ #include "root_lock.h"
+ 
+Only in scord-1.0.5/src: startscord.o

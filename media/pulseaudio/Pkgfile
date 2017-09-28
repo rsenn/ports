@@ -1,0 +1,40 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:50 roman Exp $
+#
+# Description: A sound server for Unix.
+#  PulseAudio is a sound server for Linux and other Unix-like operating
+#  systems. It is intended to be an improved drop-in replacement for the
+#  Enlightened Sound Daemon (esound or esd). In addition to the features
+#  esound provides, PulseAudio has an extensible plugin architecture,
+#  support for more than one sink per source, better low-latency behavior,
+#  the ability to be embedded into other software, a completely asynchronous
+#  C API, a simple command line interface for reconfiguring the daemon while
+#  running, flexible and implicit sample type conversion and resampling,
+#  and a "Zero-Copy" architecture.
+# URL: http://pulseaudio.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=pulseaudio
+version=0.9.14
+release=1
+source=(http://0pointer.de/lennart/projects/pulseaudio/pulseaudio-$version.tar.gz)
+
+build()
+{
+  cd pulseaudio-$version
+
+#  libtoolize --force --copy
+#  aclocal --force
+#  autoconf --force
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --disable-shared \
+       --${static:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+}
+

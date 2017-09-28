@@ -1,0 +1,25 @@
+# $Id: Pkgfile,v 1.12 2007/05/09 21:02:55 roman Exp $
+#
+# Description: A privileged helper for utmp/wtmp updates.
+#  libutempter provides a library interface for terminal emulators such as
+#  screen and xterm to record user sessions to utmp and wtmp files.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libutempter
+version=1.1.5
+release=1
+source=(ftp://ftp.altlinux.org/pub/people/ldv/utempter/libutempter-$version.tar.bz2)
+
+build()
+{
+  cd libutempter-$version
+
+  make
+  make \
+    libdir="$ROOT/lib" \
+    libexecdir="$ROOT/lib" \
+    includedir="$ROOT/include" \
+    install
+}

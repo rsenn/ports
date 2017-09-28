@@ -1,0 +1,34 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: dbg
+#  The dbg library is a set of C++ utilities to facilitate modern debugging
+#  idioms. It has been designed to support defensive programming techniques
+#  in modern C++ code. It integrates well with standard library usage and
+#  has been carefully designed to be easy to write, easy to read and very
+#  easy to use.
+#  'dbg' provides various constraint checking utilities together with an
+#  integrated error logging facility. These utilities can be enabled and
+#  disabled at runtime, and in release builds, dbg library use can be
+#  compiled away to nothing.
+# URL: http://dbg.sf.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=dbg
+version=1.20
+release=1
+source=(http://dbg.sourceforge.net/dbg-$version.tgz
+        dbg-1.20-fixes.patch)
+
+build()
+{
+  cd dbg-$version
+
+  patch -N -p1 -i $SRC/dbg-1.20-fixes.patch
+
+  make CFLAGS="$CXXFLAGS"
+
+  install -d $ROOT/{include,lib}
+  install -m 644 dbg.h $ROOT/include
+  install -m 644 libdbg.a $ROOT/lib
+}

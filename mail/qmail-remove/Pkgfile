@@ -1,0 +1,35 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A tool which cleans a Qmail queue of unwanted mail.
+#  Qmail Remove is a utility to help Qmail administrators clean their
+#  queues of unwanted or undeliverable mail by defining a search string
+#  in the email messages they wish to remove. Options include only reading
+#  the first nn bytes, temporarily moving the mail to a "yanked" directory,
+#  a reporting-only mode, and more.
+#  .
+# URL: http://www.linuxmagic.com/opensource/qmail/qmail-remove
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=qmail-remove
+version=0.95
+release=1
+source=(http://www.linuxmagic.com/opensource/qmail/qmail-remove/qmail-remove-$version.tar.gz)
+
+build()
+{
+  cd qmail-remove-$version
+
+  make
+
+  install -d $ROOT/bin
+  install -m 755 qmail-remove $ROOT/bin
+
+  install -d $ROOT/share/qmail-remove
+  install -m 755 populate.pl $ROOT/share/qmail-remove
+
+  install -d $ROOT/share/doc/qmail-remove
+  install -m 755 Changelog INSTALL LICENSE README TODO $ROOT/share/doc/qmail-remove
+}
+
+# EOF

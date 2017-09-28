@@ -1,0 +1,23 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Python client library for mpd (Music Player Daemon)
+# URL: http://pypi.python.org/simple/py-libmpdclient/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=py-libmpdclient
+version=0.10.0
+release=1
+source=($mirror_freebsd/ports/distfiles/py-libmpdclient-$version.tar.gz)
+
+build() 
+{
+  cd py-libmpdclient-$version
+  
+  python setup.py install --prefix="$ROOT"
+
+  install -d $ROOT/share/doc/py-libmpdclient
+  install -m 644 COPYING.txt INSTALL.txt PKG-INFO $ROOT/share/doc/py-libmpdclient
+}
+
+# EOF

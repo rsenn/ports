@@ -1,0 +1,27 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Interactive text-mode tools, closely integrated with the shell.
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=gnuit
+version=4.9.4
+release=1
+source=(ftp://ftp.gnu.org/pub/gnu/git/gnuit-$version.tar.gz)
+
+build()
+{
+  cd gnuit-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  rm -f $ROOT/bin/git
+}

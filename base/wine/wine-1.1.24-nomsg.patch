@@ -1,0 +1,90 @@
+diff -ru wine-1.1.24_orig/dlls/mshtml/nsembed.c wine-1.1.24/dlls/mshtml/nsembed.c
+--- wine-1.1.24_orig/dlls/mshtml/nsembed.c	2009-06-22 09:25:34.000000000 +0200
++++ wine-1.1.24/dlls/mshtml/nsembed.c	2009-06-22 09:27:18.000000000 +0200
+@@ -514,8 +514,10 @@
+         if(load_wine_gecko(gre_path)
+            || (install_wine_gecko(silent) && load_wine_gecko(gre_path)))
+             ret = init_xpcom(gre_path);
++#ifdef DUMP_AUX_INFO
+         else
+            MESSAGE("Could not load wine-gecko. HTML rendering will be disabled.\n");
++#endif
+     }else {
+         ret = pCompMgr != NULL;
+     }
+diff -ru wine-1.1.24_orig/dlls/ntdll/actctx.c wine-1.1.24/dlls/ntdll/actctx.c
+--- wine-1.1.24_orig/dlls/ntdll/actctx.c	2009-06-22 09:25:34.000000000 +0200
++++ wine-1.1.24/dlls/ntdll/actctx.c	2009-06-22 09:26:17.000000000 +0200
+@@ -778,7 +778,9 @@
+     return TRUE;
+ 
+ error:
++#ifdef DUMP_AUX_INFO
+     FIXME( "Wrong version definition in manifest file (%s)\n", debugstr_xmlstr(str) );
++#endif
+     return FALSE;
+ }
+ 
+@@ -1431,11 +1433,13 @@
+                 if (assembly->type == ASSEMBLY_MANIFEST &&
+                     memcmp(&assembly->id.version, &expected_ai->version, sizeof(assembly->id.version)))
+                 {
++#ifdef DUMP_AUX_INFO
+                     FIXME("wrong version for assembly manifest: %u.%u.%u.%u / %u.%u.%u.%u\n",
+                           expected_ai->version.major, expected_ai->version.minor,
+                           expected_ai->version.build, expected_ai->version.revision,
+                           assembly->id.version.major, assembly->id.version.minor,
+                           assembly->id.version.build, assembly->id.version.revision);
++#endif
+                     ret = FALSE;
+                 }
+                 else if (assembly->type == ASSEMBLY_SHARED_MANIFEST &&
+@@ -1480,7 +1484,9 @@
+ 
+     if (!parse_assembly_elem(xmlbuf, acl, assembly, ai))
+     {
++#ifdef DUMP_AUX_INFO
+         FIXME("failed to parse manifest %s\n", debugstr_w(assembly->manifest.info) );
++#endif
+         return STATUS_SXS_CANT_GEN_ACTCTX;
+     }
+ 
+@@ -2022,9 +2028,11 @@
+         {
+             if (!acl->dependencies[i].optional)
+             {
++#ifdef DUMP_AUX_INFO
+                 FIXME( "Could not find dependent assembly %s (%s)\n",
+                     debugstr_w(acl->dependencies[i].name),
+                     debugstr_version(&acl->dependencies[i].version) );
++#endif
+                 status = STATUS_SXS_CANT_GEN_ACTCTX;
+                 break;
+             }
+diff -ru wine-1.1.24_orig/libs/wine/debug.c wine-1.1.24/libs/wine/debug.c
+--- wine-1.1.24_orig/libs/wine/debug.c	2009-06-22 09:25:51.000000000 +0200
++++ wine-1.1.24/libs/wine/debug.c	2009-06-22 09:26:17.000000000 +0200
+@@ -34,7 +34,7 @@
+ 
+ #define MAX_DEBUG_OPTIONS 256
+ 
+-static unsigned char default_flags = (1 << __WINE_DBCL_ERR) | (1 << __WINE_DBCL_FIXME);
++static unsigned char default_flags = (1 << __WINE_DBCL_ERR);
+ static int nb_debug_options = -1;
+ static struct __wine_debug_channel debug_options[MAX_DEBUG_OPTIONS];
+ 
+diff -ru wine-1.1.24_orig/loader/preloader.c wine-1.1.24/loader/preloader.c
+--- wine-1.1.24_orig/loader/preloader.c	2009-06-22 09:25:51.000000000 +0200
++++ wine-1.1.24/loader/preloader.c	2009-06-22 09:26:17.000000000 +0200
+@@ -1086,9 +1086,11 @@
+                       MAP_FIXED | MAP_PRIVATE | MAP_ANON | MAP_NORESERVE, -1, 0 ) == (void *)-1)
+         {
+             /* don't warn for low 64k */
++#ifdef DUMP_AUX_INFO
+             if (preload_info[i].addr >= (void *)0x10000)
+                 wld_printf( "preloader: Warning: failed to reserve range %p-%p\n",
+                             preload_info[i].addr, (char *)preload_info[i].addr + preload_info[i].size );
++#endif
+             remove_preload_range( i );
+             i--;
+         }

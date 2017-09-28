@@ -1,0 +1,62 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:47 roman Exp $
+#
+# Description: Audio and video streaming solution.
+#  FFmpeg is a complete, cross-platform solution to record, convert and stream 
+#  audio and video. It includes libavcodec - the leading audio/video codec 
+#  library. 
+#  .
+# URL: http://ffmpeg.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=ffmpeg
+version=0.4.9-p20090201
+release=1
+source=(#http://ffmpeg.org/ffmpeg-export-snapshot.tar.bz2?`date +%Y%m%d`
+        $mirror_gentoo/ffmpeg-$version.tar.bz2
+        ffmpeg-20081204-no-std-c99.patch
+        ffmpeg-20090207-instdir.patch
+        ffmpeg-20090207-imgconvert.patch)
+
+build()
+{
+  cd ffmpeg
+
+  patch -N -p1 -i $SRC/ffmpeg-20081204-no-std-c99.patch
+  patch -N -p1 -i $SRC/ffmpeg-20090207-instdir.patch
+  patch -N -p1 -i $SRC/ffmpeg-20090207-imgconvert.patch
+
+  ./configure \
+      --prefix="$prefix" \
+      --enable-memalign-hack \
+      --${shared:=enable}-shared \
+      --${static:=enable}-shared \
+      --enable-pthreads \
+      --enable-gpl \
+      --enable-postproc \
+      --enable-swscale \
+      --enable-avfilter \
+      --disable-avisynth \
+      --enable-libdirac \
+      --enable-libfaac \
+      --enable-libfaad \
+      --enable-libgsm \
+      --enable-libmp3lame \
+      --enable-libschroedinger \
+      --enable-libspeex \
+      --enable-libvorbis \
+      --enable-libtheora \
+      --enable-libx264 \
+      --enable-libxvid
+
+
+  make
+  make INCINSTDIR='$(INCDIR)/ffmpeg' DESTDIR="$PKG" install
+
+  install -m 644 libavcodec/imgconvert.h $ROOT/include/ffmpeg
+
+  sed -i '/#include/ s,"[^/]\+/,"ffmpeg/,' $ROOT/include/ffmpeg/*.h
+
+  install -d $ROOT/share/doc/ffmpeg
+  install -m 644 doc/swscale.txt doc/avutil.txt doc/TODO doc/issue_tracker.txt doc/soc.txt doc/snow.txt doc/optimization.txt doc/ffmpeg_powerpc_performance_evaluation_howto.txt COPYING.GPL Changelog CREDITS README COPYING.LGPL INSTALL MAINTAINERS $ROOT/share/doc/ffmpeg
+}

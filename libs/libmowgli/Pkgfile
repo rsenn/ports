@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: High-performance C development framework
+# libmowgli is a class library containing performance and usability oriented
+# extensions to C. It is designed to work in conjunction with GTK+'s GLib,
+# but also functions well as a standalone library.
+#
+# URL: http://www.atheme.org/Projects/Libmowgli
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=libmowgli
+version=0.7.0
+release=1
+source=(http://distfiles.atheme.org/libmowgli-$version.tbz2)
+
+build()
+{
+  cd libmowgli-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

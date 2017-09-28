@@ -1,0 +1,43 @@
+# $Id: Pkgfile,v 1.9 2007/04/22 23:07:53 roman Exp $
+#
+# Package: libpng12-0
+# Section: libs
+# Description: PNG library - runtime
+#  libpng is a library implementing an interface for reading and writing
+#  .
+#  using libpng.
+# URL: http://www.libpng.org/pub/png/libpng.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+# Split: libpng12-dev (*/libpng12/*.h */man3 */lib/pkgconfig *.a *.so)
+
+name=libpng
+version=1.2.32
+release=1
+source=($mirror_sf/libpng/libpng-$version.tar.bz2
+        libpng-1.2.18-png12.patch
+        libpng-1.4.0-automake-fixes.patch)
+
+build()
+{
+  cd libpng-$version
+
+#  patch -N -p1 -i $SRC/libpng-1.2.18-png12.patch
+#  patch -N -p1 -i $SRC/libpng-1.4.0-automake-fixes.patch
+
+  libtoolize --force --copy
+  aclocal --force
+  automake --force --copy --foreign --add-missing
+  aclocal --force
+  autoconf --force
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --${shared:=enable}-shared \
+       --${static:=enable}-static
+
+  make
+  make DESTDIR="$PKG" install
+}

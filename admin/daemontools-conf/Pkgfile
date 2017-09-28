@@ -1,0 +1,39 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: Configuration package for daemontools
+# URL: http://js.hu/package/daemontools-conf.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6
+
+name=daemontools-conf
+version=0.15
+release=2
+source=(http://js.hu/package/daemontools-conf/daemontools-conf-$version.tar.gz
+        daemontools-conf-0.15-no-command-path.patch)
+
+build()
+{
+  cd admin/daemontools-conf-$version
+
+  patch -N -p0 -i $SRC/daemontools-conf-0.15-no-command-path.patch
+
+  package/compile
+
+  install -d $ROOT/bin
+
+  sed "s,^SHARED=.*,SHARED=$prefix/share/daemontools-conf," \
+      command/daemontools-conf \
+     >$ROOT/bin/daemontools-conf
+
+  chmod 755 $ROOT/bin/daemontools-conf
+  install -m 755 command/linkname $ROOT/bin
+
+  install -d $ROOT/share/daemontools-conf
+  install -m 644 etc/* $ROOT/share/daemontools-conf
+
+  install -d $ROOT/share/doc/daemontools-conf
+  install -m 644 src/CHANGES src/COPYING src/COPYRIGHT $ROOT/share/doc/daemontools-conf
+
+  install -d $ROOT/share/doc/daemontools-conf/html
+  install -m 644 doc/daemontools-conf/*.html $ROOT/share/doc/daemontools-conf/html
+}

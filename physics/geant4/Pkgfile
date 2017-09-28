@@ -1,0 +1,39 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:52 roman Exp $
+#
+# Description: Particle Simulator
+#  Geant4 is a toolkit for the simulation of the passage of particles
+#  through matter. Its application areas include high energy physics and
+#  nuclear experiments, medical, accelerator, and space physics studies.
+# URL: http://geant4.web.cern.ch/geant4/index.shtml
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=geant4
+version=4.9.0
+release=1
+source=(http://geant4.cern.ch/support/source/geant$version.gtar.gz
+        http://geant4.cern.ch/support/source/G4RadioactiveDecay.3.2.tar.gz
+        http://geant4.cern.ch/support/source/PhotonEvaporation.2.0.tar.gz
+        http://geant4.cern.ch/support/source/G4EMLOW.4.3.tar.gz
+        http://geant4.cern.ch/support/source/G4NDL.0.2.tar.gz)
+
+build()
+{
+  cd geant$version
+
+  mkdir -p data
+  for s in ${sources[@]}; do
+    case $s in
+      *.tar.gz)
+        name=${s##*/}
+        ln -sf $PKGMK_DISTFILES_DIR/$name data
+        ;;
+    esac
+  done
+
+  yes "" | sh Configure -build -s -d -e # -E
+
+#  make
+#  make DESTDIR="$PKG" install
+}
+

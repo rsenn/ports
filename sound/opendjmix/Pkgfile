@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: $'A VIRTUAL DJ SYSTEM WHICH ALLOWS YOU TO MIX MP3 FILES AND AUDIO CD TRACKS.\NOPENDJMIX IS A VIRTUAL DJ SYSTEM WHICH ALLOWS YOU TO MIX MP3 FILES AND AUDIO CD TRACKS'A virtual DJ system which allows you to mix MP3 files and audio CD tracks.\nOpenDJMix is a virtual DJ system which allows you to mix MP3 files and audio CD tracks
+#  It consists of a C++ API that manages a virtual sound bus with its I/O
+#  and a Qt GUI that enables a user to mix 4 MP3 or audio CD tracks. The
+#  API has been designed to be used in all multitrack sound tools.'
+#  .
+# URL: http://www.opendjmix.info/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=opendjmix
+version=1.0
+release=1
+source=(http://www.opendjmix.info/src/OpenDJMix-1.0_Beta-20090218.tar.gz)
+
+build()
+{
+  cd OpenDJMix-Beta-$version
+
+  #./autogen.sh
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --enable-jack
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

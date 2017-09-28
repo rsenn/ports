@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An ncurses-based multiplayer space conquest game
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=makrokosmos
+version=0.2.5
+release=1
+source=(http://deekoo.net/technocracy/makrokosmos/makrokosmos-$version-src.tar.gz
+        makrokosmos-0.2.5-fixes.patch)
+
+build() 
+{
+  cd makrokosmos-$version
+
+  patch -p1 -i $SRC/makrokosmos-0.2.5-fixes.patch
+  
+  make
+
+  install -d $ROOT/bin
+  install -m 755 obj/makrokosmos $ROOT/bin
+
+  install -d $PKG/var/lib/makrokosmos
+  cp -rL data/* $PKG/var/lib/makrokosmos
+
+  install -d $ROOT/share/doc/makrokosmos
+  install -m 644 BUGS Changes Technical_Manual INSTALL $ROOT/share/doc/makrokosmos
+}
+
+# EOF

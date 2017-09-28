@@ -1,0 +1,41 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:50 roman Exp $
+#
+# Description: an partial implementation of IEC 61883
+#  This library is an implementation of IEC 61883, part 1 (CIP, plug
+#  registers, and CMP), part 2 (DV-SD), part 4 (MPEG2-TS), and part 6
+#  (AMDTP). Outside of IIDC, nearly all FireWire multimedia devices use
+#  IEC 61883 protocols.
+#  The libiec61883 library provides a higher level API for streaming DV,
+#  MPEG-2 and audio over Linux IEEE 1394. This includes both reception
+#  and transmission. It uses the new "rawiso" API of libraw1394, which
+#  transparently provides mmap-ed DMA for efficient data transfer. It also
+#  represents the third generation of I/O technology for Linux 1394 for
+#  these media types thereby removing the complexities of additional kernel
+#  modules, /dev nodes, and procfs. It also consolidates features for plug
+#  control registers and connection management that previously existed in
+#  experimental form in an unreleased version of libavc1394.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libiec61883
+version=1.1.0
+release=1
+source=(http://www.linux1394.org/dl/libiec61883-$version.tar.gz)
+
+build()
+{
+  cd libiec61883-$version
+
+  libtoolize --force --copy --install
+  aclocal --force
+  autoconf --force
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix"
+
+  make 
+  make DESTDIR="$PKG" install
+}

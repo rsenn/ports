@@ -1,0 +1,218 @@
+# $Id: Pkgfile,v 1.27 2007/05/09 21:02:54 roman Exp $
+#
+# Description: A dynamic DNS updating client for several DDNS services.
+#  ez-ipupdate is a client for automaticly updating your IP address
+#  on the EZ-IP.net, justlinux.com, dhs.org, dyndns.org, ods.org,
+#  gnudip.cheapnet.net, tzo.com, and easydns.com dynamic hostname services.
+# URL: http://www.ez-ipupdate.com/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=ez-ipupdate
+version=3.0.11b7
+release=7
+source=(http://ez-ipupdate.com/dist/ez-ipupdate-$version.tar.gz
+        ez-ipupdate-3.0.11b7-script-2.patch
+        ez-ipupdate-3.0.11b7-configfile.patch
+        ez-ipupdate-3.0.11b7-fixes.patch
+        ez-ipupdate-3.0.11b7-defservice.patch
+        ez-ipupdate-3.0.11b7-examplecfg.patch
+        ipupdate.conf.in
+        ez-extip
+        ez-ipupdate.cron)
+
+build()
+{
+  cd ez-ipupdate-$version
+
+  patch -N -p1 -i $SRC/ez-ipupdate-3.0.11b7-script-2.patch
+  patch -N -p1 -i $SRC/ez-ipupdate-3.0.11b7-fixes.patch
+  patch -N -p1 -i $SRC/ez-ipupdate-3.0.11b7-configfile.patch
+  patch -N -p1 -i $SRC/ez-ipupdate-3.0.11b7-defservice.patch
+  patch -N -p1 -i $SRC/ez-ipupdate-3.0.11b7-examplecfg.patch
+
+  case "$prefix" in
+    "/usr") sysconfdir="/etc" bindir="/bin" localstatedir="/var" ;;
+  esac
+
+#  CPPFLAGS="-include errno.h" \
+
+  aclocal --force
+  automake --force --copy --add-missing --foreign
+  autoheader --force
+  autoconf --force
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       ${sysconfdir+--sysconfdir="$sysconfdir"} \
+       --prefix="$prefix" \
+       --bindir="$prefix/sbin" \
+       --enable-debug \
+       --enable-default-service="dyndns"
+
+  make
+  make DESTDIR="$PKG" install
+
+  if [ -e "${bindir=$prefix/bin}/sh" ]; then
+    SHELL="$bindir/sh"
+  else
+    SHELL="/bin/sh"
+  fi
+
+  # install the ez-extip helper script
+  install -d $ROOT/bin
+  install -m 755 $SRC/ez-extip $ROOT/bin
+
+  # install global configuration file
+  install -d $PKG${sysconfdir="$prefix/etc"}
+  install -m 644 $SRC/ipupdate.conf.in $PKG${sysconfdir}/ez-ipupdate.conf
+
+  #install example configs and documentation
+  install -d $ROOT/share/doc/ez-ipupdate
+  install -m 644 example*.conf CHANGELOG COPYING README INSTALL $ROOT/share/doc/ez-ipupdate
+
+  # create directory for ip address cache files  
+  install -d $PKG${localstatedir="$prefix/var"}/cache/ez-ipupdate
+
+  # install global crontab entry for ez-ipupdate
+  install -d $PKG${sysconfdir="$prefix/etc"}/cron.d
+  install -m 644 $SRC/ez-ipupdate.cron $PKG${sysconfdir}/cron.d
+}
+
+# -----------------------------------------------------------------------------
+postinst()
+{
+  case "$prefix" in
+    "/usr") sysconfdir="/etc" bindir="/bin" ;;
+  esac
+
+  if [ ! -f "${sysconfdir=$prefix/etc}/ez-ipupdate.conf" ]; then
+    sed -i \
+        -e "s|@prefix@|${prefix}|g" \
+        -e "s|@bindir@|${bindir}|g" \
+        -e "s|@sysconfdir@|${sysconfdir}|g" \
+        -e "s|@ipupdate_username@|${ipupdate_username}|g" \
+        -e "s|@ipupdate_password@|${ipupdate_password}|g" \
+        -e "s|@ipupdate_service@|${ipupdate_service}|g" \
+        -e "s|@ipupdate_host@|${ipupdate_host}|g" \
+        -e "s|@ipupdate_user@|${ipupdate_user}|g" \
+        -e "s|@ipupdate_interface@|${ipupdate_interface}|g" \
+        -e "s|@ipupdate_script@|${ipupdate_script}|g" \
+        -e "s|@ipupdate_interval@|${ipupdate_interval}|g" \
+      "${sysconfdir}/ez-ipupdate.conf"
+
+    chmod 600 "${sysconfdir}/ez-ipupdate.conf"
+  fi
+}
+
+# package configuration
+# --------------------------------------------------------------------------------
+config()
+{
+  # add the main-menu entry "ipupdate"
+  config_branch 'ipupdate'    'ez-ipupdate configuration'
+
+    config_value 'service'    'ipupdate service'
+      config_description      'Your dynamic DNS service'
+      config_default          'dyndns'
+      config_function         '$(choose null ezip pgpow dhs dyndns dyndns-static dyndns-custom ods tzo easydns easydns-partner gnudip justlinux dyns hn zoneedit heipv6tb)'
+    config_end
+
+    config_value 'username'   'ipupdate username'
+      config_description      'Username of your dynamic DNS account'
+      config_default          ''
+    config_end
+
+    config_value 'password'   'ipupdate password'
+      config_description      'Password of your dynamic DNS account'
+      config_default          ''
+    config_end
+
+    config_value 'interface'  'ipupdate interface'
+      config_description      'The interface ipupdate will take the address from'
+      config_default          'eth0'
+    config_end
+
+    config_value 'script'     'ipupdate script'
+      config_description      'The script used to determine the ip-address'
+      config_default          'bin/ez-extip'
+    config_end
+
+    config_value 'user'       'ipupdate username'
+      config_description      'User account the ipupdate service will run as.'
+      config_default          '$(user_find ipupdate daemon nobody)'
+      config_function         'choose --help-{button,label} Create $(user_list)'
+      config_extra            'input'
+    config_end
+
+    config_value 'host'       'ipupdate host'
+      config_description      'The dyndns hostname you want to update'
+      config_default          '$(config_value global_hostname).ath.cx'
+    config_end
+
+    config_value 'interval'   'ipupdate check interval'
+      config_description      'Max. interval to check for new IP'
+      config_default          '2073600'
+    config_end
+
+  config_end
+
+  # enhance daemontools package configuration
+  config_enter     'services' 'run' 'ipupdate'
+
+    config_label   'Run ipupdate at boot'
+    config_default 'yes'
+    config_type    'value'
+
+  config_leave
+}
+
+# --------------------------------------------------------------------------------
+#services()
+#{
+#  config_branch "ipupdate"
+#
+#    config_branch 'log'
+#    config_end
+#
+#    config_set 'TITLE'   'ipupdate server'
+#    config_set 'PIDFILE' '$prefix/var/run/ipupdate.pid'
+#    config_set 'START'   'resuming normal operations'
+#    config_set 'STOP'    'caught SIGTERM, shutting down'
+#
+#  config_leave
+#}
+
+# script to start ipupdate from supervise
+# --------------------------------------------------------------------------------
+ipupdate()
+{
+  exec 2>&1
+
+  # set default values
+  host=${ipupdate_host:-0.0.0.0}
+  user=${ipupdate_user:-nobody}
+
+  # check if the user is available to setuidgid
+  if ! user_avail "$user"; then
+    service_error "no such user:" "$user"
+  fi
+
+  # check if there's already an instance of ipupdate
+  if [ -f "$ipupdate_PIDFILE" ]; then
+    pid=$(cat "$ipupdate_PIDFILE")
+
+    if [ "$pid" -a -d "$prefix/proc/$pid" ]; then
+      service_msg "ipupdate already running, restarting..."
+      kill "$pid"
+      sleep 2
+      exit 1
+    fi
+  fi
+
+  # finally execute ipupdate
+  cd "$prefix"
+
+  exec -a ez-ipupdate "$bindir/ez-ipupdate" -c etc/ez-ipupdate.conf
+}

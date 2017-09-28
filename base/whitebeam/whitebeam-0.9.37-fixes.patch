@@ -1,0 +1,47 @@
+diff -ru -ru whitebeam_0_9_37_orig/common/Parser/rbTagArray.h whitebeam_0_9_37/common/Parser/rbTagArray.h
+--- whitebeam_0_9_37_orig/common/Parser/rbTagArray.h	2006-11-15 09:23:37.000000000 +0100
++++ whitebeam_0_9_37/common/Parser/rbTagArray.h	2006-11-15 09:24:19.000000000 +0100
+@@ -103,7 +103,7 @@
+    void Clean();
+    void Flush() {m_Array.Empty();}
+ 
+-   BOOL CrbXmlTagPtrArray::InsertAt(INT_32 index, CrbXmlGenTag *value) {
++   BOOL InsertAt(INT_32 index, CrbXmlGenTag *value) {
+       return m_Array.InsertAt(index, (void *)value);
+    }
+    /**********************************************************
+diff -ru -ru whitebeam_0_9_37_orig/js/Makefile.in whitebeam_0_9_37/js/Makefile.in
+--- whitebeam_0_9_37_orig/js/Makefile.in	2006-11-15 09:23:38.000000000 +0100
++++ whitebeam_0_9_37/js/Makefile.in	2006-11-15 09:23:44.000000000 +0100
+@@ -38,8 +38,8 @@
+ 	@${INSTALL} -d @toplevel@/lib
+ 	@${INSTALL} -d @toplevel@/include
+ 	cd src; ${MAKE} XCFLAGS="$(XCFLAGS) -fPIC -DPIC" -f Makefile.ref
+-	${INSTALL} -m 644 -C -c src/@rb_js_arch@$(OBJDIR_TAG).OBJ/libjs.a @toplevel@/lib
+-	${INSTALL} -m 644 -C -c src/*.h src/jsopcode.tbl src/js.msg src/@rb_js_arch@$(OBJDIR_TAG).OBJ/*.h @toplevel@/include
++	${INSTALL} -m 644 -c src/@rb_js_arch@$(OBJDIR_TAG).OBJ/libjs.a @toplevel@/lib
++	${INSTALL} -m 644 -c src/*.h src/jsopcode.tbl src/js.msg src/@rb_js_arch@$(OBJDIR_TAG).OBJ/*.h @toplevel@/include
+ 
+ clean:
+ 	cd src; ${MAKE} -f Makefile.ref clean
+diff -ru -ru whitebeam_0_9_37_orig/presentation/TemplateIf/TemplClassDef.h whitebeam_0_9_37/presentation/TemplateIf/TemplClassDef.h
+--- whitebeam_0_9_37_orig/presentation/TemplateIf/TemplClassDef.h	2006-11-15 09:23:38.000000000 +0100
++++ whitebeam_0_9_37/presentation/TemplateIf/TemplClassDef.h	2006-11-15 09:31:47.000000000 +0100
+@@ -436,7 +436,7 @@
+ 
+    JSObject *GetResultObject(JSContext *cx, jsval *rval, CrbXmlTag *resp);
+ 
+-   virtual void CrbTemplateMethod::describeCall(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, CrbString &description, jsval *rval);
++   virtual void describeCall(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, CrbString &description, jsval *rval);
+    virtual JSBool invoke(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval *rval);
+    virtual JSBool ProcessMethodErrors(CrbTemplateRequest &request, JSContext *cx, CrbXmlTag *resp);
+ 
+@@ -570,7 +570,7 @@
+ 
+    virtual BOOL   CreateJSModel(JSContext *cx, JSObject *parent);
+ 
+-   static JSClass CrbTemplateType::type_class;
++   static JSClass type_class;
+ 
+ protected:
+    // Methods registered with the JS class structure for associative arrays.

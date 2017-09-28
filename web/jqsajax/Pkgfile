@@ -1,0 +1,34 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A class to call PHP functions/methods from Javascript.
+#  jqSajax is PHP Class to build jQuery Plugin. This class can be used
+#  to call PHP functions/methods from Javascript using AJAX to avoid
+#  page reloading. It can generate Javascript code to make AJAX requests
+#  using the Jquery library to execute PHP functions/methods on the server
+#  side. The class can register a PHP callback function that will be called
+#  when the AJAX requests are sent. jQuery AJAX returns a page (with a data
+#  type of XML, JSON, text, script, HTML, etc.), and jqSajax returns the
+#  result of the PHP function/method you call. The variable type is the
+#  same as the variable type in PHP, and you can pass all variable types,
+#  including arrays.
+#  .
+# URL: http://satoewarna.com/jqsajax
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=jqsajax
+version=1.0.1
+release=1
+source=(http://satoewarna.com/jqsajax/jqSajax_$version.zip)
+
+build()
+{
+  install -d $ROOT/share/doc/jqsajax
+  install -m 644 ajax-loader.gif doc.html download.html job.html release.txt $ROOT/share/doc/jqsajax
+
+  install -d $ROOT/share/jqsajax
+  install -m 644 index.php jqSajax.class.php jquery-1.2.2.pack.js json.js phpserializer_latest.js screen.css example_*.php $ROOT/share/jqsajax
+
+}
+
+# EOF

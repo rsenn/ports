@@ -1,0 +1,27 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Perl extension to test methods for warnings.
+# URL: http://search.cpan.org/dist/Test-Warn/
+# Maintainer: 
+# Depends on: 
+
+name=test-warn
+version=0.11
+release=1
+source=(http://search.cpan.org/CPAN/authors/id/C/CH/CHORNY/Test-Warn-$version.tar.gz)
+
+build() 
+{
+  cd Test-Warn-$version
+  
+  perl Makefile.PL installdirs=vendor
+  
+  make \
+       DESTDIR="$PKG" \
+       install
+
+  install -d $ROOT/share/doc/test-warn
+  install -m 644 Changes MANIFEST README $ROOT/share/doc/test-warn
+}
+
+# EOF

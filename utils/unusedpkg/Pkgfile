@@ -1,0 +1,27 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: diagnostic tool to search the oldest unused packages in your Linux system
+# UnusedPkg prints a sorted list with the size and number of days that
+# a package has been idle. This helps you determine what packages can
+# be manually removed to clean the system. It supports any apt-based
+# distribution (tested on Debian and Ubuntu) and Slackware.
+#
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: bash
+
+name=unusedpkg
+version=0.4
+release=1
+source=(http://emilio.plugs.it/unusedpkg-$version.tar.gz)
+
+build()
+{
+  cd unusedpkg-$version
+
+  install -d $ROOT/bin
+  install -m 755 unusedpkg $ROOT/bin
+
+  install -d $ROOT/share/doc/unusedpkg
+  install -m 644 README $ROOT/share/doc/unusedpkg
+}

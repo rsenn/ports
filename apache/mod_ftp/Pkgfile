@@ -1,0 +1,36 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Serve httpd content over the FTP protocol
+#  mod_ftp is a FTP Protocol module to serve httpd content over the
+#  FTP protocol (whereever the HTTP protocol could also be used). It
+#  provides both RETR/REST retrieval and STOR/APPE upload, using the
+#  same user/permissions model as httpd (so it shares the same security
+#  considerations as mod_dav plus mod_dav_fs).
+#  .
+# URL: http://httpd.apache.org/mod_ftp/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=mod_ftp
+version=0.9.2
+release=1
+source=(http://mirror.switch.ch/mirror/apache/dist/httpd/mod_ftp/mod_ftp-$version-beta.tar.gz
+        mod_ftp-0.9.2-apxs.patch)
+
+build()
+{
+  cd mod_ftp-$version
+
+  patch -N -p1 -i $SRC/mod_ftp-0.9.2-apxs.patch
+
+  APXS=`echo $prefix/*bin/apxs*`
+
+  for apxs in $APXS; do
+   (export APXS="$apxs"
+    ./configure.apxs &&
+    make &&
+    make distclean) || break
+  done
+}
+
+# EOF

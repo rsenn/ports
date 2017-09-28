@@ -1,0 +1,25 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=bash-builtins
+version=svn
+release=1
+source=(svn+ssh://svn.adfinis.com/local/svn/adfinis/bash-builtins/trunk:bash-builtins-svn)
+
+build()
+{
+  cd bash-builtins-svn
+
+  cmake \
+      -D CMAKE_INSTALL_PREFIX="$prefix" \
+      -D CMAKE_BUILD_TYPE="RelWithDebug" \
+    .
+
+  make
+  make DESTDIR="$PKG" install
+
+}

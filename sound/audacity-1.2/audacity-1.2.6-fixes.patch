@@ -1,0 +1,34 @@
+diff -r -u audacity-src-1.2.6_orig/src/effects/Equalization.h audacity-src-1.2.6/src/effects/Equalization.h
+--- audacity-src-1.2.6_orig/src/effects/Equalization.h	2007-08-14 01:56:22.000000000 +0200
++++ audacity-src-1.2.6/src/effects/Equalization.h	2007-08-14 02:05:33.000000000 +0200
+@@ -120,7 +120,9 @@
+ #define ID_FILTERPANEL 10001
+ #define ID_CLEAR 10002
+ #define ID_LOADCURVE 10003
++#ifndef ID_BUTTON_PREVIEW
+ #define ID_BUTTON_PREVIEW 10004
++#endif
+ 
+ wxSizer *MakeEqualizationDialog( double loFreq, double hiFreq,
+ 				 Envelope *env,
+diff -r -u audacity-src-1.2.6_orig/src/effects/Phaser.h audacity-src-1.2.6/src/effects/Phaser.h
+--- audacity-src-1.2.6_orig/src/effects/Phaser.h	2007-08-14 01:56:21.000000000 +0200
++++ audacity-src-1.2.6/src/effects/Phaser.h	2007-08-14 02:05:48.000000000 +0200
+@@ -90,6 +90,7 @@
+ 
+ // Declare window functions
+ 
++#undef ID_BUTTON_PREVIEW
+ #define ID_BUTTON_PREVIEW 10000
+ #define ID_STAGES 10001
+ #define ID_DRYWET 10002
+--- audacity-src-1.2.6_orig/lib-src/soundtouch/source/example/SoundStretch/WavFile.cpp	2007-08-14 02:15:23.000000000 +0200
++++ audacity-src-1.2.6/lib-src/soundtouch/source/example/SoundStretch/WavFile.cpp	2007-08-14 02:15:42.000000000 +0200
+@@ -48,6 +48,7 @@
+ #include <stdio.h>
+ #include <stdexcept>
+ #include <string>
++#include <cstring>
+ #include <assert.h>
+ #include <limits.h>
+ 

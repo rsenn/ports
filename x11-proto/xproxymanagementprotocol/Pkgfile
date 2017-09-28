@@ -1,0 +1,24 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Xorg Proxy Management protocol headers 
+# URL: http://www.X.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=xproxymanagementprotocol
+version=1.0.2
+release=1
+source=(ftp://ftp.x.org/pub/individual/proto/xproxymanagementprotocol-$version.tar.bz2)
+
+build()
+{
+  cd xproxymanagementprotocol-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

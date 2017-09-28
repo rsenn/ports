@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: S sudo shell, filter and can be used as a login shell
+# Sudosh records all keystrokes and output and can play back the session
+# as just like a VCR.
+#
+# URL: http://sourceforge.net/projects/sudosh
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, perl-modules
+
+name=sudosh
+version=1.6.3
+release=1
+source=($mirror_sf/sudosh/sudosh-$version.tar.bz2)
+
+build()
+{
+  cd sudosh-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix" \
+       --mandir="$prefix/share/man" \
+       --program-prefix=""
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/sudosh
+  install -m 644 [A-Z]*[A-Z]* $ROOT/share/doc/sudosh
+}

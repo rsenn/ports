@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A utility which automates some steps to undelete a file.
+#  recover automates some steps as described in the Ext2fs-Undeletion-howto
+#  in order to recover a lost file. This utility will greatly increase
+#  your file recover rate. People who do not know how to undelete a file
+#  are encouraged to use this utility.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=recover
+version=1.3c
+release=1
+source=(http://recover.sourceforge.net/linux/recover/download/recover-$version.tar.gz)
+
+build()
+{
+  cd recover-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

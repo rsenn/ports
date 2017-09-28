@@ -1,0 +1,81 @@
+diff -r -u -- libnn_orig/core/training/backpercolation/backpercolation.c libnn/core/training/backpercolation/backpercolation.c
+--- libnn_orig/core/training/backpercolation/backpercolation.c	2007-05-31 17:27:27.000000000 +0200
++++ libnn/core/training/backpercolation/backpercolation.c	2007-05-31 17:29:49.000000000 +0200
+@@ -153,7 +153,7 @@
+ 	}
+ 	
+ 	b->ptr[i]=NULL;
+-	(struct back*)n->var = b;
++	*((struct back**)&n->var) = b;
+ }
+ 	
+ 		
+@@ -186,7 +186,7 @@
+ 
+ 	for (k=0; k<i; k++) {
+ 		if (array[k]->typ != 1) {
+-			(struct v*)array[k]->var = &z[j++];
++			*((struct v**)&array[k]->var) = &z[j++];
+ 			((struct v*)array[k]->var)->anz = 0;
+ 			((struct v*)array[k]->var)->inp = 0;
+ 		}
+diff -r -u -- libnn_orig/core/training/backpropagation/elman/elman.c libnn/core/training/backpropagation/elman/elman.c
+--- libnn_orig/core/training/backpropagation/elman/elman.c	2007-05-31 17:27:27.000000000 +0200
++++ libnn/core/training/backpropagation/elman/elman.c	2007-05-31 17:29:07.000000000 +0200
+@@ -47,7 +47,7 @@
+ 
+ void el_context_cell (struct neuron *context, struct neuron *sender, double lambda) {
+   context->typ = 3;
+-  (struct v_context *)context->var = (struct v_context *)malloc(sizeof(struct v_context));
++  *((struct v_context **)&context->var) = (struct v_context *)malloc(sizeof(struct v_context));
+   ((struct v_context*)context->var)->send = sender;
+   ((struct v_context*)context->var)->lambda = lambda;
+   printf("%d\n", context->typ);
+diff -r -u -- libnn_orig/core/training/backpropagation/momentum/momentum.c libnn/core/training/backpropagation/momentum/momentum.c
+--- libnn_orig/core/training/backpropagation/momentum/momentum.c	2007-05-31 17:27:27.000000000 +0200
++++ libnn/core/training/backpropagation/momentum/momentum.c	2007-05-31 17:28:23.000000000 +0200
+@@ -67,7 +67,7 @@
+ 	j=0;
+ 	for(k=0; k<i; k++) {
+ 		if (array[k]->typ != 1) {
+-			(float*)array[k]->var = &deltas[j++];
++			*((float**)&array[k]->var) = &deltas[j++];
+ 			*((float*)array[k]->var)=1;
+ 			*((float*)array[k]->var+1)=0;
+ 			j++;
+diff -r -u -- libnn_orig/core/training/backpropagation/standard/standard.c libnn/core/training/backpropagation/standard/standard.c
+--- libnn_orig/core/training/backpropagation/standard/standard.c	2007-05-31 17:27:27.000000000 +0200
++++ libnn/core/training/backpropagation/standard/standard.c	2007-05-31 17:28:04.000000000 +0200
+@@ -67,7 +67,7 @@
+ 	j=0;
+ 	for(k=0; k<i; k++) {
+ 		if (array[k]->typ == 2 || array[k]->typ == 0) {
+-			(float*)array[k]->var = &deltas[j++];
++			*((float**)&array[k]->var) = &deltas[j++];
+ 			(*(float*)array[k]->var) = 0;
+ 		}
+ 	}			
+diff -r -u -- libnn_orig/core/training/backpropagation/weight_decay/weight_decay.c libnn/core/training/backpropagation/weight_decay/weight_decay.c
+--- libnn_orig/core/training/backpropagation/weight_decay/weight_decay.c	2007-05-31 17:27:27.000000000 +0200
++++ libnn/core/training/backpropagation/weight_decay/weight_decay.c	2007-05-31 17:28:39.000000000 +0200
+@@ -142,7 +142,7 @@
+ 	j=0;
+ 	for(k=0; k<i; k++) {
+ 		if (array[k]->typ != 1) {
+-			(float*)array[k]->var = &bwd_deltas[j++];
++			*((float**)&array[k]->var) = &bwd_deltas[j++];
+ 			*((float*)array[k]->var)=1;
+ 			*((float*)array[k]->var+1)=0;
+ 			j++;
+diff -r -u -- libnn_orig/core/training/rbf/rbf.c libnn/core/training/rbf/rbf.c
+--- libnn_orig/core/training/rbf/rbf.c	2007-05-31 17:27:27.000000000 +0200
++++ libnn/core/training/rbf/rbf.c	2007-05-31 17:29:22.000000000 +0200
+@@ -40,7 +40,7 @@
+   mul = (float*)malloc(sizeof(float)*j);
+   for (j=0; j<i; j++) {
+       if (array[j]->typ == 0) {
+-        (float*)array[j]->var = &mul[k++];
++        *((float**)&array[j]->var) = &mul[k++];
+         *(float*)array[j]->var = 0;
+       }
+   }

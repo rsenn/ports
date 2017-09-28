@@ -1,0 +1,40 @@
+# $Id: Pkgfile,v 1.15 2007/05/09 21:02:55 roman Exp $
+#
+# Description: Recovers damaged ext2 filesystems.
+#  e2salvage is a utility which tries to recover a data from damaged ext2
+#  filesystems. Unlike e2fsck, it does not look for the data at particular
+#  places and it don't tend to believe the data it finds; thus it can
+#  handle much more damaged filesystem. Moreover, fsck connects the found
+#  i-nodes to lost+found directory. e2salvage instead tries to recover the
+#  directory structure.
+# URL: http://e2salvage.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=e2salvage
+version=0.0.8a
+release=1
+source=($mirror_sf/e2salvage/e2salvage-$version.tbz2
+        e2salvage-0.0.8a-fixes.patch)
+
+build()
+{
+  cd e2salvage-$version
+
+  patch -N -p1 -i $SRC/e2salvage-0.0.8a-fixes.patch
+
+  aclocal --force
+  automake --force -a --foreign
+  autoconf --force
+
+  LDFLAGS="-static" \
+  ./configure \
+        --build="$build" \
+        --host="$host" \
+        --prefix="$prefix" \
+        --${shared:=enable}-shared \
+        --${static:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+}

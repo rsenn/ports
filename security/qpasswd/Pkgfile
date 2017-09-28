@@ -1,0 +1,38 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A collection of authentication programs that are compatible with checkpassword.
+#  The qpasswd tools are a collection of various tools (checkpasswd,
+#  checkqpasswd, multicheckpw, and others). They are meant for use with
+#  checkpassword-compatible authentication programs like qmail-popup and
+#  qmail-smtpd. Currently, the following auth mechanism are supported:
+#  plain, login, apop, cram-md5, cram-sha1, cram-ripemd, and digest-md5. No
+#  special libraries are required, and it compiles against dietlibc.
+#  .
+# URL: http://www.mcmilk.de/projects/qpasswd/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=qpasswd
+version=0.5
+release=1
+source=(http://www.mcmilk.de/projects/qpasswd/dl/qpasswd-$version.tar.bz2)
+
+build()
+{
+  cd qpasswd-$version
+
+  make
+
+  mkdir -p $ROOT/bin
+  mkdir -p $ROOT/share/man
+
+  make GROUP="root" DEST="$ROOT/bin" MANDIR="$ROOT/share/man" install
+
+  install -d $ROOT/share/doc/qpasswd
+  install -m 644 doc/* $ROOT/share/doc/qpasswd
+  cp -rf rfc $ROOT/share/doc/qpasswd
+
+  chmod 4755 $ROOT/bin/multicheckpw
+}
+
+# EOF

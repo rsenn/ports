@@ -1,0 +1,59 @@
+diff -ru cdwrite-2.2_orig/Makefile cdwrite-2.2/Makefile
+--- cdwrite-2.2_orig/Makefile	2009-03-09 16:10:36.000000000 +0100
++++ cdwrite-2.2/Makefile	2009-03-09 16:29:23.000000000 +0100
+@@ -3,28 +3,33 @@
+ 
+ BINDIR=$(PREFIX)/bin
+ ETCDIR=$(PREFIX)/etc
+-DOCDIR=$(PREFIX)/doc/$(PACKAGE)
+-MANDIR=$(PREFIX)/man/man1
++DOCDIR=$(PREFIX)/share/doc/$(PACKAGE)
++MANDIR=$(PREFIX)/share/man/man1
+ 
+-install:
+-	if [ ! -d $(BINDIR) ]; then install -d $(BINDIR); fi
+-	cp cdwrite $(BINDIR)
+-	cp cdwr $(BINDIR)
+-	if [ ! -e $(BINDIR)/liteon ]; then ln -s $(BINDIR)/cdwr $(BINDIR)/liteon; fi
+-	if [ ! -e $(BINDIR)/toshiba ]; then ln -s $(BINDIR)/cdwr $(BINDIR)/toshiba; fi
+-	if [ ! -d $(ETCDIR) ]; then install -d $(ETCDIR); fi
+-	cp cdwriterc $(ETCDIR)
+-	if [ ! -d $(DOCDIR) ]; then install -d $(DOCDIR); fi
+-	cp README INSTALL HELP CHANGELOG COPYING $(DOCDIR)
+-	if [ ! -d $(MANDIR) ]; then install -d $(MANDIR); fi
+-	cp cdwrite.1 $(MANDIR)
++all: cdwrite.sh
++
++cdwrite.sh: cdwrite
++	sed <cdwrite "/^global=/ s,=.*/etc/,=$(ETCDIR)/," >cdwrite.sh
++
++install: all
++	if [ ! -d $(DESTDIR)$(BINDIR) ]; then install -d $(DESTDIR)$(BINDIR); fi
++	install -m 755 cdwrite.sh $(DESTDIR)$(BINDIR)/cdwrite
++	cp cdwr $(DESTDIR)$(BINDIR)
++	if [ ! -e $(DESTDIR)$(BINDIR)/liteon ]; then ln -s cdwr $(DESTDIR)$(BINDIR)/liteon; fi
++	if [ ! -e $(DESTDIR)$(BINDIR)/toshiba ]; then ln -s cdwr $(DESTDIR)$(BINDIR)/toshiba; fi
++	if [ ! -d $(DESTDIR)$(ETCDIR) ]; then install -d $(DESTDIR)$(ETCDIR); fi
++	cp cdwriterc $(DESTDIR)$(ETCDIR)
++	if [ ! -d $(DESTDIR)$(DOCDIR) ]; then install -d $(DESTDIR)$(DOCDIR); fi
++	cp README INSTALL HELP CHANGELOG COPYING $(DESTDIR)$(DOCDIR)
++	if [ ! -d $(DESTDIR)$(MANDIR) ]; then install -d $(DESTDIR)$(MANDIR); fi
++	cp cdwrite.1 $(DESTDIR)$(MANDIR)
+ 
+ uninstall:
+-	rm -f $(BINDIR)/cdwrite
+-	rm -f $(BINDIR)/cdwr
+-	rm -f $(BINDIR)/liteon
+-	rm -f $(BINDIR)/toshiba
+-	rm -f $(ETCDIR)/cdwriterc
+-	rm -f $(DOCDIR)/README $(DOCDIR)/INSTALL $(DOCDIR)/HELP $(DOCDIR)/CHANGELOG $(DOCDIR)/COPYING
+-	if [ -d $(DOCDIR) ]; then rmdir $(DOCDIR); fi
+-	rm -f $(MANDIR)/cdwrite.1
++	rm -f $(DESTDIR)$(BINDIR)/cdwrite
++	rm -f $(DESTDIR)$(BINDIR)/cdwr
++	rm -f $(DESTDIR)$(BINDIR)/liteon
++	rm -f $(DESTDIR)$(BINDIR)/toshiba
++	rm -f $(DESTDIR)$(ETCDIR)/cdwriterc
++	rm -f $(DOCDIR)/README $(DESTDIR)$(DOCDIR)/INSTALL $(DESTDIR)$(DOCDIR)/HELP $(DESTDIR)$(DOCDIR)/CHANGELOG $(DESTDIR)$(DOCDIR)/COPYING
++	if [ -d $(DESTDIR)$(DOCDIR) ]; then rmdir $(DESTDIR)$(DOCDIR); fi
++	rm -f $(DESTDIR)$(MANDIR)/cdwrite.1

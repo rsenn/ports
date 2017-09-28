@@ -1,0 +1,41 @@
+# $Id: Pkgfile,v 1.7 2007/05/09 21:03:13 roman Exp $
+#
+# Description: high level programming interface for IEEE1394 digital camera.
+#  libdc1394 is a library that is intended to provide a high level
+#  programming interface for application developers who wish to control
+#  IEEE 1394 based cameras that conform to the 1394-based Digital Camera
+#  Specification (found at http://www.1394ta.org/).
+# URL: http://damien.douxchamps.net/ieee1394/libdc1394/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libdc1394
+version=1.2.2
+release=1
+source=($mirror_sf/libdc1394/libdc1394-$version.tar.gz)
+
+build()
+{
+  cd libdc1394-$version
+
+  libtoolize --force --copy --install
+  aclocal --force
+  automake --force --copy --foreign --add-missing
+  aclocal --force
+  autoconf --force
+
+  ./configure \
+      --prefix="$prefix" \
+      --build="$build" \
+      --host="$host" \
+      --${shared:=enable}-shared \
+      --${static:=enable}-shared \
+      --disable-dependency-tracking
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/libdc1394
+  install -m 644 INSTALL README AUTHORS NEWS $ROOT/share/doc/libdc1394
+}
+

@@ -1,0 +1,35 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+# Package: libnet-pleskexpand-perl
+# Description: Perl extension for Plesk XML Remote API
+# This module implements a client interface to SWSOFT's Plesk Remote API,
+# enabling a perl application to talk to a Plesk managed server. This
+# documentation assumes that you are familiar with the Plesk documentation
+# available from SWSOFT (API 1.4.0.0 or later).
+#
+# A new Net::Plesk object must be created with the new method. Once this has
+# been done, all Plesk commands are accessed via method calls on the object.
+#
+# URL: http://search.cpan.org/~jef/Net-Plesk-0.03/lib/Net/Plesk.pm
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libnet-plesk-perl, libxml-simple-perl, libxml-xpath-perl
+
+name=net-plesk
+version=0.03
+release=1
+source=(http://search.cpan.org/CPAN/authors/id/J/JE/JEF/Net-Plesk-$version.tar.gz)
+
+build()
+{
+  cd Net-Plesk-$version
+
+  perl Makefile.PL
+
+  make \
+       DESTDIR="$PKG" \
+       INSTALLDIRS="vendor" \
+       PREFIX="$prefix" \
+       install
+
+  install -d $ROOT/share/doc/libnet-plesk-perl
+  install -m 644 Changes MANIFEST README $ROOT/share/doc/libnet-plesk-perl
+}

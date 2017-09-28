@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A smart filtering HTTP proxy.
+#  BFilter is a smart filtering HTTP proxy. Its primary purpose is removing
+#  banner ads. Unlike the majority of similar tools, it doesn't rely on a
+#  list of blocked URLs, but instead parses HTML on the fly, and detects
+#  ads using a set of heuristic rules. BFilter has a built-in Javascript
+#  engine that detects js-generated ads.
+#  .
+# URL: http://bfilter.sourceforge.net/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=bfilter
+version=1.1.2
+release=1
+source=(http://kent.dl.sourceforge.net/sourceforge/bfilter/bfilter-1.1.2.tar.gz)
+
+build()
+{
+  cd bfilter-$version
+./bootstrap
+./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+make
+make DESTDIR="$PKG" install
+}
+
+# EOF

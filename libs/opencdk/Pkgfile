@@ -1,0 +1,27 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: The OpenCDK library implement basic parts of the OpenPGP message
+# format.  Due to some possible security problems, the library also
+# implements parts of draft-ietf-openpgp-rfc2440bis-08.txt.
+# URL: http://www.gnu.org/software/gnutls/releases/opencdk/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=opencdk
+version=0.6.6
+release=1
+source=(ftp://ftp.gnutls.org/pub/gnutls/opencdk/opencdk-$version.tar.bz2)
+
+build()
+{
+  cd opencdk-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

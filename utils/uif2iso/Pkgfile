@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: UIF (Universal Image Format) to uncompressed ISO image converter.
+#  Program for converting the UIF files (Universal Image Format, used
+#  by MagicISO) to uncompressed images depending by the input file: ISO,
+#  BIN/CUE, MDS/MDF, CCD/IMG/SUB, NRG.
+#  on Windows the tool works from both command-line and GUI (double-click
+#  on uif2iso.exe & use).
+#  the following is a quick document about some proofs of GPL violations
+#  in MagicISO.
+# URL: http://aluigi.org/mytoolz.htm#daa2iso
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=uif2iso
+version=0.1.7a
+release=1
+source=(http://aluigi.org/mytoolz/uif2iso.zip)
+
+build()
+{
+  make -C src
+
+  install -d $ROOT/bin
+  install -m 755 src/uif2iso $ROOT/bin
+
+  install -d $ROOT/share/doc/uif2iso
+  install -m 644 INSTALL README uif2iso.txt $ROOT/share/doc/uif2iso
+}

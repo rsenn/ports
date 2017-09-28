@@ -1,0 +1,34 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A script to organize a directory containing Ogg and MP3 files.
+#  songanizer is a script to organize a directory containing Ogg and MP3
+#  files. The script accepts a list of directories in which the real Ogg
+#  and MP3 files reside. It then reads information like author, album, and
+#  genre from the files' ID3 tags and creates parallel directory structures
+#  which just contain symbolic links to the directories in which the real
+#  files live. The goal is to create virtual directory structures which
+#  give different views of the data without having redundant copies of the
+#  files themselves.
+# URL: http://savannah.gnu.org/projects/songanizer/
+# Maintainer: 
+# Depends on: 
+
+name=songanizer
+version=1.0
+release=1
+source=(http://ftp.gnu.org/gnu/songanizer/v$version/songanizer-$version.tar.bz2)
+
+build() 
+{
+  cd songanizer-$version
+  
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+  
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

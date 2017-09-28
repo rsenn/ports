@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Omnifont OCR software for KDE.
+# Kognition is an omnifont OCR software for KDE. It is the result of two
+# diploma theses about omnifont optical character recognition which are
+# included as documentation (in German). Due to the fact that each step
+# of the OCR process can be visualized you can get a quick idea of how OCR
+# works and where the problems lie. However the program may be of minor/no
+# use for end users in its current state.
+#
+# URL: http://kognition.sf.net/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=kognition
+version=0.1.1
+release=1
+source=(http://prdownloads.sf.net/kognition/kognition-$version.tar.bz2)
+
+build()
+{
+  cd kognition-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --program-prefix=""
+
+  make
+  make DESTDIR="$PKG" install
+}

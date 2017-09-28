@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A VNC server for real X displays.
+#  x11vnc is a program that allows one to remotely view and interact with
+#  keyboard, and mouse) with any VNC viewer. It is similar to WinVNC and
+#  small set of standard libraries. It supports a growing number of command
+#  part of the LibVNCServer project.
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=x11vnc
+version=0.9.7
+release=1
+source=($mirror_sf/libvncserver/x11vnc-$version.tar.gz)
+
+build()
+{
+  cd x11vnc-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

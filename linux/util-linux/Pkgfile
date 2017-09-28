@@ -1,0 +1,42 @@
+# $Id: Pkgfile,v 1.12 2007/05/09 21:03:02 roman Exp $
+#
+# Description: util-linux
+# URL: http://www.kernel.org/pub/linux/utils/util-linux/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=util-linux
+version=2.13-pre7
+release=1
+source=(http://www.kernel.org/pub/linux/utils/util-linux/testing/util-linux-$version.tar.bz2)
+
+build()
+{
+  cd util-linux-$version
+
+  ./configure \
+       --prefix="$prefix"
+
+  make \
+       OPT="$CFLAGS -DLINE_MAX=2048" \
+       LDFLAGS="" \
+       SUBDIRS='po lib getopt login-utils misc-utils mount fdisk hwclock sys-utils text-utils' \
+       DEV_DIR="$prefix/dev" \
+       ETC_DIR="$prefix/etc" \
+       SBIN_DIR="$prefix/sbin" \
+       USRSBIN_DIR="$prefix/sbin" \
+       USRLIB_DIR="$prefix/lib" \
+       USRBIN_DIR="$prefix/bin" \
+       USRGAMES_DIR="$prefix/usr/games" \
+       USRSHAREMISC_DIR="$prefix/usr/share/misc" \
+       LOCALE_DIR="$prefix/usr/share/locale" \
+       BIN_DIR="$prefix/bin" \
+       VAR_PATH="$prefix/var" \
+       LOG_DIR="$prefix/var/log" \
+       MAN_DIR="$prefix/usr/man" \
+       INFO_DIR="$prefix/usr/info" \
+       DESTDIR="$PKG" all install
+
+  rm -f $ROOT/bin/{column,getopt,kill} \
+        $ROOT/sbin/sln
+}

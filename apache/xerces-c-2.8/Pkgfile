@@ -1,0 +1,132 @@
+# $Id: Pkgfile,v 1.2 2007/05/09 21:02:53 roman Exp $
+#
+# Package: libxerces
+# Description: XML Parsing library from the Apache Project
+# URL:
+# Depends on: libc6, libgcc1, libstdc++6
+# Provides: libxerces
+# Replaces: libxerces27
+# Maintainer: Roman Senn <rs@adfinis.com>
+
+name=xerces-c
+version=2.8.0
+release=3adfinis1
+source=(ftp://mirror.switch.ch/mirror/apache/dist/xerces/c/2/sources/xerces-c-src_${version//./_}.tar.gz
+        xerces-c-2.7.0-mingw32.patch
+        xerces-c-2.7.0-transcode.patch
+        xerces-c-2.7.0-iconv.patch
+        xerces-c-2.7.0-libiconv.patch
+        xerces-c-2.7.0-namespace.patch
+        xerces-c-2.7.0-strange-fix.patch
+        xerces-c-2.8.0-xqilla.patch)
+
+build()
+{
+  cd xerces-c-src_${version//./_}
+
+  case $host in
+    *cygwin*|*linux*)
+#      patch -N -p1 -i $SRC/xerces-c-2.7.0-iconv.patch
+      ;;
+    *)
+      patch -N -p1 -i $SRC/xerces-c-2.7.0-mingw32.patch
+      patch -N -p1 -i $SRC/xerces-c-2.7.0-transcode.patch
+      patch -N -p1 -i $SRC/xerces-c-2.7.0-strange-fix.patch
+      ;;
+  esac
+
+  patch -N -p1 -i $SRC/xerces-c-2.8.0-xqilla.patch
+
+  export XERCESCROOT="$SRC/xerces-c-src_${version//./_}"
+
+  case $host in
+    *mingw*)
+      platform="mingw-msys"
+      sockets="winsock"
+      transcode="IconvGNU"
+    ;;
+
+    *cygwin*)
+      platform="cygwin"
+      sockets="socket"
+      transcode="native"
+
+      export CXX="$host-g++"
+
+    ;;
+
+    *linux*)
+      platform="linux"
+      sockets="socket"
+      transcode="IconvGNU"
+
+#      if set -- $prefix/lib/libiconv.* && test -e "$1"; then
+#        export LIBS="${LIBS:+$LIBS }-liconv"
+#      fi
+    ;;
+  esac
+
+  if set -- $prefix/lib/libintl.* && [ -e "$1" ]; then
+    LIBS="${LIBS:+$LIBS }-lintl"
+  fi
+  if set -- $prefix/lib/libiconv.* && [ -e "$1" ]; then
+    LIBS="${LIBS:+$LIBS }-liconv"
+  fi
+  if set -- $prefix/lib/libpthread.* && [ -e "$1" ]; then
+    LIBS="${LIBS:+$LIBS }-lpthread"
+  fi
+
+  (cd src/xercesc &&
+   ./runConfigure \
+       -p "$platform" \
+       -c "${CC-cc}" \
+       -x "${CXX-c++}" \
+       -n "$sockets" \
+       -t IconvGNU \
+       -r pthread \
+       -z \
+       -I"$XERCESCROOT" \
+       -C --build="$build" \
+       -C --host="$host" \
+       -P "$prefix")
+
+#       ALLLIBS="$LIBS" \
+#       PLATFORM_LIBRARIES="$LIBS" \
+
+   make -C src/xercesc \
+       PLATFORM_COMPILE_OPTIONS="-D__\${PLATFORM}__ -I$prefix/include -I$prefix/include/w32api" \
+       DESTDIR="$PKG" \
+       all install
+
+   chown -R 0:0 "$PKG"
+
+   install -m 644 $XERCESCROOT/src/xercesc/dom/impl/*.hpp $ROOT/include/xercesc/dom/impl
+
+#   for lib in lib/*
+#   do
+#     mv $lib $ROOT/lib
+#   done
+
+#   for lib in lib/*
+#   do
+#     test -h "$lib" || continue
+#
+#     t=$(readlink "$lib")
+#     ln -sf "${t#$XERCESCROOT/lib/}" $lib#
+#   done
+   find lib -type l -exec rm -f '{}' ';'
+
+   install -d $ROOT/lib
+   mv lib/* $ROOT/lib
+
+   cd $ROOT/lib
+
+   for lib in *.so.*.*
+   do
+     ln -sf ${lib} ${lib%.*}
+     ln -sf ${lib} ${lib%.*.*}
+   done
+
+#   sed -e "s,@libdir@,$libdir,g" $SRC/libxerces-c.la >$ROOT/lib/libxerces-c.la
+#   sed -e "s,@libdir@,$libdir,g" $SRC/libxerces-depdom.la >$ROOT/lib/libxerces-depdom.la
+}

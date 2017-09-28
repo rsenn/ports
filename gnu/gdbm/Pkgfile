@@ -1,0 +1,27 @@
+# $Id: Pkgfile,v 1.9 2007/04/22 23:07:54 roman Exp $
+#
+# Description: GNU dbm is a set of database routines that use extensible
+# hashing. It works similar to the standard Unix dbm routines.
+# URL: http://www.gnu.org/software/gdbm
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=gdbm
+version=1.8.3
+release=1
+source=($mirror_gnu/gdbm/gdbm-$version.tar.gz
+        gdbm-1.8.3-rpath.patch)
+
+build()
+{
+  cd gdbm-$version
+
+  patch -N -p1 -i $SRC/gdbm-1.8.3-rpath.patch
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix"
+  make
+  make prefix="$ROOT" install
+}

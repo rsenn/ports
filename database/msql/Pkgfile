@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: The Mini SQL database system.
+#  Mini SQL is a lightweight database engine offering a subset of SQL as
+#  its query language.
+#  .
+# URL: http://www.hughes.com.au/
+# Maintainer: 
+# Depends on: 
+
+name=msql
+version=3.8
+release=1
+source=(http://www.wa.apana.org.au/~dean/sources/msql-$version.tar.gz)
+
+build() 
+{
+  cd msql-$version
+
+  ./setup
+
+  make INST_DIR="$prefix/lib/msql3"
+  make INST_DIR="$ROOT/lib/msql3" install
+
+  mv -f $ROOT/lib/msql3/bin $ROOT/
+  rm -rf $ROOT/lib/msql3/doc
+
+  install -d $ROOT/share/doc/msql
+  install -m 644 INSTALL BUGS README RELEASE_NOTES $ROOT/share/doc/msql
+}
+
+# EOF

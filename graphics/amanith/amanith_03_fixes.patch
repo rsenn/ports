@@ -1,0 +1,273 @@
+diff -r -u amanith_orig/GNUmakefile amanith/GNUmakefile
+--- amanith_orig/GNUmakefile	2007-07-28 04:26:01.000000000 +0200
++++ amanith/GNUmakefile	2007-07-28 03:13:23.000000000 +0200
+@@ -0,0 +1,18 @@
++prefix = /usr/local
++libdir = $(prefix)/lib
++
++LIBTOOL = libtool
++CXXFLAGS += -I../include
++LDFLAGS = -shared -no-undefined -version-info 0:3 -rpath $(libdir)
++SUBDIRS = src plugins
++
++.PHONY: clean distclean maintainer-clean
++
++all: all-recursive
++clean: clean-recursive
++install: install-recursive
++
++%-recursive:
++	for dir in $(SUBDIRS); do \
++		$(MAKE) -C $$dir $* || exit 1; \
++	done			
+diff -r -u amanith_orig/plugins/GNUmakefile amanith/plugins/GNUmakefile
+--- amanith_orig/plugins/GNUmakefile	2007-07-28 04:26:01.000000000 +0200
++++ amanith/plugins/GNUmakefile	2007-07-28 03:14:09.000000000 +0200
+@@ -0,0 +1,25 @@
++PLUGINS = fonts.la jpeg.la png.la
++
++all: $(PLUGINS)
++
++%.lo: %.cpp
++	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(CXXFLAGS) -c -o $@ $<
++
++%.la: $(patsubst %.cpp,%.lo,$(wildcard $*/*.cpp))
++	$(LIBTOOL) --tag=CXX --mode=link $(CXX) $(LDFLAGS) -o $@ $^
++
++prefix = /usr/local
++libdir = $(prefix)/lib
++
++LIBTOOL = libtool
++CXXFLAGS += -I../include
++LDFLAGS = -shared -module -avoid-version -rpath $(libdir)
++
++LTOBJECTS = \
++  $(patsubst %.cpp,%.lo,$(wildcard */*.cpp))
++
++.PHONY: clean
++
++clean:
++	$(RM) $(LTOBJECTS) $(PLUGINS)
++
+diff -r -u amanith_orig/src/GNUmakefile amanith/src/GNUmakefile
+--- amanith_orig/src/GNUmakefile	2007-07-28 04:26:01.000000000 +0200
++++ amanith/src/GNUmakefile	2007-07-28 02:58:23.000000000 +0200
+@@ -0,0 +1,71 @@
++all: libamanith.la
++
++prefix = /usr/local
++libdir = $(prefix)/lib
++
++LIBTOOL = libtool
++CXXFLAGS += -I../include
++LDFLAGS = -shared -no-undefined -version-info 0:3 -rpath $(libdir)
++
++LTOBJECTS = $(OBJECTS:%.o=%.lo)
++OBJECTS = \
++	1d/gbeziercurve1d.o \
++	1d/gbsplinecurve1d.o \
++	1d/gcurve1d.o \
++	1d/gmulticurve1d.o \
++	1d/ghermitecurve1d.o \
++	1d/gpolylinecurve1d.o \
++	2d/gfont2d.o \
++	2d/ganimtrsnode2d.o \
++	2d/gpixelmap.o \
++	2d/gbsplinecurve2d.o \
++	2d/gpolylinecurve2d.o \
++	2d/ghermitecurve2d.o \
++	2d/gmesh2d.o \
++	2d/gpath2d.o \
++	2d/gtesselator2d.o \
++	2d/gmulticurve2d.o \
++	2d/gbeziercurve2d.o \
++	2d/gcurve2d.o \
++	2d/gellipsecurve2d.o \
++	2d/gtracer2d.o \
++	gelement.o \
++	geometry/gaffineparts.o \
++	gerror.o \
++	gimpexp.o \
++	gkernel.o \
++	gmultiproperty.o \
++	gopenglext.o \
++	gpluglib.o \
++	gproperty.o \
++	numerics/geigen.o \
++	numerics/gintegration.o \
++	rendering/gopenglstroke.o \
++	rendering/gdrawboard.o \
++	rendering/gopenglboard.o \
++	rendering/gopenglradialgrad.o \
++	rendering/gopenglgeometries.o \
++	rendering/gopenglconicalgrad.o \
++	rendering/gopenglgroups.o \
++	rendering/gopenglmasks.o \
++	rendering/gopenglstyles.o \
++	rendering/gopenglcache.o \
++	rendering/gdrawstyle.o \
++	rendering/gopenglcompositing.o \
++	support/gsvgpathtokenizer.o \
++	support/gavltree.o \
++	support/gutilities.o
++
++.PHONY: clean
++
++clean:
++	$(RM) $(LTOBJECTS)
++
++libamanith.a: $(OBJECTS)
++
++%.lo: %.cpp
++	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(CXXFLAGS) -c -o $@ $<
++
++libamanith.la: $(LTOBJECTS)
++	$(LIBTOOL) --tag=CXX --mode=link $(CXX) $(LDFLAGS) -o $@ $^
++
+diff -r -u amanith_orig/src/rendering/gopenglboard.cpp amanith/src/rendering/gopenglboard.cpp
+--- amanith_orig/src/rendering/gopenglboard.cpp	2007-07-28 01:03:43.000000000 +0200
++++ amanith/src/rendering/gopenglboard.cpp	2007-07-28 01:44:44.000000000 +0200
+@@ -29,6 +29,7 @@
+ #include "amanith/rendering/gopenglboard.h"
+ #include "amanith/geometry/gxform.h"
+ #include "amanith/geometry/gxformconv.h"
++#include <string.h>
+ 
+ /*!
+ 	\file gopenglboard.cpp
+@@ -934,7 +935,7 @@
+ 
+ void GOpenGLBoard::BuildHTMLMask() {
+ 
+-	std::memset(gHTMLMask, 0, 32);
++	memset(gHTMLMask, 0, 32);
+ 	const GChar8 *charSet = HTMLColorMask;
+ 
+ 	while (*charSet) {
+@@ -1085,7 +1086,7 @@
+ 		#if defined(G_OS_WIN) && _MSC_VER >= 1400
+ 			strncpy_s(col.Name, 21, (const GChar8 *)cStr, 21);
+ 		#else
+-			std::strncpy(col.Name, (const GChar8 *)cStr, 21);
++			strncpy(col.Name, (const GChar8 *)cStr, 21);
+ 		#endif
+ 		GNamedSVGcolor* foundCol = (GNamedSVGcolor *)std::bsearch(&col, SVGColors, 147, sizeof(GNamedSVGcolor), CompareSVGColor);
+ 		if (foundCol == NULL)
+diff -r -u amanith_orig/src/rendering/gopenglcompositing.cpp amanith/src/rendering/gopenglcompositing.cpp
+--- amanith_orig/src/rendering/gopenglcompositing.cpp	2007-07-28 01:03:43.000000000 +0200
++++ amanith/src/rendering/gopenglcompositing.cpp	2007-07-28 01:52:28.000000000 +0200
+@@ -27,6 +27,7 @@
+ **********************************************************************/
+ 
+ #include "amanith/rendering/gopenglboard.h"
++#include <string.h>
+ 
+ /*!
+ 	\file gopenglcompositing.cpp
+@@ -459,7 +460,7 @@
+ 	GLuint progID;
+ 	glGenProgramsARB(1, &progID);
+ 	glBindProgramARB(GL_FRAGMENT_PROGRAM_ARB, progID);
+-	glProgramStringARB(GL_FRAGMENT_PROGRAM_ARB, GL_PROGRAM_FORMAT_ASCII_ARB, (GLsizei)std::strlen(ProgramString), (const GLbyte *)ProgramString);
++	glProgramStringARB(GL_FRAGMENT_PROGRAM_ARB, GL_PROGRAM_FORMAT_ASCII_ARB, (GLsizei)strlen(ProgramString), (const GLbyte *)ProgramString);
+ 
+ 	// if the program is over the hardware's limits, print out some information
+ 	GLint isUnderNativeLimits;
+@@ -559,7 +560,7 @@
+ 		return 0;
+ 
+ 	// clear program string
+-	std::memset((void *)prg, 0, 4096);
++	memset((void *)prg, 0, 4096);
+ 
+ #if defined(G_OS_WIN) && _MSC_VER >= 1400
+ 	if (TextureTarget == TEXTURE_POW2)
+@@ -574,15 +575,15 @@
+ 	strcat_s(prg, 4096, END_PROGRAM_RGBA);
+ #else
+ 	if (TextureTarget == TEXTURE_POW2)
+-		std::strcpy(prg, PutTextureProgram_POW2);
++		strcpy(prg, PutTextureProgram_POW2);
+ 	else
+-		std::strcpy(prg, PutTextureProgram_RECT);
++		strcpy(prg, PutTextureProgram_RECT);
+ 
+ 	if (TexString)
+-		std::strcat(prg, TexString);
++		strcat(prg, TexString);
+ 	if (OpString)
+-		std::strcat(prg, OpString);
+-	std::strcat(prg, END_PROGRAM_RGBA);
++		strcat(prg, OpString);
++	strcat(prg, END_PROGRAM_RGBA);
+ #endif
+ 
+ 	// generate and bind the program
+@@ -608,7 +609,7 @@
+ 		return 0;
+ 
+ 	// clear program string
+-	std::memset((void *)prg, 0, 4096);
++	memset((void *)prg, 0, 4096);
+ 
+ #if defined(G_OS_WIN) && _MSC_VER >= 1400
+ 	switch (PaintType) {
+@@ -639,29 +640,29 @@
+ #else
+ 	switch (PaintType) {
+ 		case COLOR:
+-			std::strcpy(prg, ColorProgram);
++			strcpy(prg, ColorProgram);
+ 			break;
+ 		case LINGRAD:
+-			std::strcpy(prg, LinearProgram);
++			strcpy(prg, LinearProgram);
+ 			break;
+ 		case RADGRAD:
+-			std::strcpy(prg, RadialProgram);
++			strcpy(prg, RadialProgram);
+ 			break;
+ 		case CONGRAD:
+-			std::strcpy(prg, ConicalProgram);
++			strcpy(prg, ConicalProgram);
+ 			break;
+ 		case PATTERN:
+-			std::strcpy(prg, PatternProgram);
++			strcpy(prg, PatternProgram);
+ 			break;
+ 		default:
+-			std::strcpy(prg, ColorProgram);
++			strcpy(prg, ColorProgram);
+ 			break;
+ 	}
+ 	if (TexString)
+-		std::strcat(prg, TexString);
++		strcat(prg, TexString);
+ 	if (OpString)
+-		std::strcat(prg, OpString);
+-	std::strcat(prg, END_PROGRAM_RGBA);
++		strcat(prg, OpString);
++	strcat(prg, END_PROGRAM_RGBA);
+ #endif
+ 
+ 
+diff -r -u amanith_orig/src/support/gsvgpathtokenizer.cpp amanith/src/support/gsvgpathtokenizer.cpp
+--- amanith_orig/src/support/gsvgpathtokenizer.cpp	2007-07-28 01:03:43.000000000 +0200
++++ amanith/src/support/gsvgpathtokenizer.cpp	2007-07-28 01:52:55.000000000 +0200
+@@ -28,6 +28,7 @@
+ 
+ #include "amanith/support/gsvgpathtokenizer.h"
+ #include "amanith/support/gutilities.h"
++#include <string.h>
+ 
+ /*!
+ 	\file gsvgpathtokenizer.cpp
+@@ -89,7 +90,7 @@
+ 
+ void GSVGPathTokenizer::InitCharMask(GChar8* Mask, const GChar8* CharSet) {
+ 
+-	std::memset(Mask, 0, 256 / 8);
++	 memset(Mask, 0, 256 / 8);
+ 
+     while (*CharSet) {
+ 

@@ -1,0 +1,30 @@
+diff -r -u gcc-4.2.1_orig/libstdc++-v3/include/ext/codecvt_specializations.h gcc-4.2.1/libstdc++-v3/include/ext/codecvt_specializations.h
+--- gcc-4.2.1_orig/libstdc++-v3/include/ext/codecvt_specializations.h	2007-08-06 23:29:54.000000000 +0000
++++ gcc-4.2.1/libstdc++-v3/include/ext/codecvt_specializations.h	2007-08-06 23:31:55.000000000 +0000
+@@ -128,7 +128,7 @@
+     bool
+     good() const throw()
+     { 
+-      const descriptor_type __err = reinterpret_cast<iconv_t>(-1);
++      const descriptor_type __err = descriptor_type(-1);
+       bool __test = _M_in_desc && _M_in_desc != __err; 
+       __test &=  _M_out_desc && _M_out_desc != __err;
+       return __test;
+@@ -166,7 +166,7 @@
+     void
+     init()
+     {
+-      const descriptor_type __err = reinterpret_cast<iconv_t>(-1);
++      const descriptor_type __err = iconv_t(-1);
+       const bool __have_encodings = _M_int_enc.size() && _M_ext_enc.size();
+       if (!_M_in_desc && __have_encodings)
+ 	{
+@@ -199,7 +199,7 @@
+     void
+     destroy() throw()
+     {
+-      const descriptor_type __err = reinterpret_cast<iconv_t>(-1);
++      const descriptor_type __err = iconv_t(-1);
+       if (_M_in_desc && _M_in_desc != __err) 
+ 	{
+ 	  iconv_close(_M_in_desc);

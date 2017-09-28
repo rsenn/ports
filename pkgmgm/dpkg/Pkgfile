@@ -1,0 +1,70 @@
+# $Id: Pkgfile,v 1.22 2007/05/09 21:02:55 roman Exp $
+#
+# Description: The debian package manager.
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: dpkg-dev, libbz2-1.0, libc6, libfile-temp-perl, libgcc1, libncursesw5, libstdc++6, libtimedate-perl, perl-base, perl-modules, zlib1g
+
+name=dpkg
+version=1.15.3.1
+release=1
+source=(http://ftp.de.debian.org/debian/pool/main/d/dpkg/dpkg_$version.tar.gz
+        dpkg-1.14.7-stat.patch
+        #ChangeLog.pm Control.pm ControlLib.pm Dsc.pm Files.pm
+       )
+
+build()
+
+{
+  cd dpkg-$version*
+
+  patch -N -p1 -i $SRC/dpkg-1.14.7-stat.patch
+
+  case $prefix in
+    /usr) sysconfdir="/etc" localstatedir="/var/lib" ;;
+  esac
+
+  ./configure \
+        --build="$build" \
+        --host="$host" \
+        --prefix="$prefix" \
+        --mandir="$prefix/share/man" \
+        --infodir="$prefix/share/info" \
+        --libdir="$prefix/lib" \
+        --localstatedir="${localstatedir=$prefix/var/lib}" \
+        --sysconfdir="${sysconfdir=$prefix/etc}" \
+        --without-selinux
+
+  make
+  make \
+      prefix="$ROOT" \
+      mandir="$ROOT/share/man" \
+      infodir="$ROOT/info/man" \
+      libdir="$ROOT/lib" \
+      localstatedir="$localstatedir" \
+   install
+
+  eval "perl_`perl -V:privlib`"
+  install -d $PKG${perl_privlib}
+
+  if [ -e scripts/controllib.pl ]; then
+    sed -e "s:\$pkgdatadir:$ROOT/share/dpkg:g" \
+        -e "s:\$version:$version:g" \
+        -e "s:\$progname:$name:g" \
+       scripts/controllib.pl >$PKG${perl_privlib}/controllib.pl
+
+    chmod 755 $PKG${perl_privlib}/controllib.pl
+  fi
+
+  eval "perl_`perl -V:sitelib`"
+  install -d $PKG${perl_sitelib}
+
+  if [ -e $ROOT/Dpkg.pm ]; then
+    mv $ROOT/Dpkg* $PKG${perl_sitelib}/
+ #   mv $SRC/{ChangeLog,Control,ControlLib,Dsc,Files}.pm $PKG${perl_sitelib}/Dpkg/
+  fi
+
+ sed -i "s,$PKG,,g" $PKG${perl_sitelib}/Dpkg{.pm,/*.pm}
+
+ #ln -sf Dpkg/ControlLib.pm $PKG${perl_sitelib}/controllib.pm
+}

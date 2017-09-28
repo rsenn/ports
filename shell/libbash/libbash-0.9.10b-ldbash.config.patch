@@ -1,0 +1,78 @@
+Index: src/ldbashconfig.in
+===================================================================
+--- src/ldbashconfig.in	(.../tags/libbash-0.9.10b)	(revision 34)
++++ src/ldbashconfig.in	(.../branches/libbash-ld.bash.conf)	(revision 34)
+@@ -15,13 +15,20 @@
+ prefix=@prefix@
+ exec_prefix=@exec_prefix@
+ 
+-LD_BASH_PATH=@libdir@/bash
++if test -r @sysconfdir@/ldbash.conf; then
++  LD_BASH_PATH=$(
++    set -- `sed -e 's/^#.*//' -e 's/\s#.*//' -e '/^\s*$/d' @sysconfdir@/ldbash.conf`
++    IFS=:
++    echo "${*:-@libdir@/bash}"
++  )
++fi
+ 
+-LD_BASH_CACHE=@sysconfdir@/ldbash.cache
++: ${LD_BASH_PATH=@libdir@/bash}
++: ${LD_BASH_CACHE=@sysconfdir@/ldbash.cache}
+ 
+ # We want to use getopt_long...
+-source $LD_BASH_PATH/getopts.sh
+-source $LD_BASH_PATH/hashstash.sh
++source @libdir@/bash/getopts.sh
++source @libdir@/bash/hashstash.sh
+ 
+ #############################################################
+ ###################       FUNCTIONS      ####################
+@@ -92,6 +99,15 @@
+ # Keep the existing file (for a case there will be errors)
+ cp -f $LD_BASH_CACHE ${LD_BASH_CACHE}.prev$$ 2> /dev/null || echo "" > $LD_BASH_CACHE ${LD_BASH_CACHE}.prev$$
+ 
++# truncate the ldbash.cache file
++echo -n >$LD_BASH_CACHE
++
++IFS_prev="$IFS"
++IFS=":"
++
++for LD_BASH_PATH in $LD_BASH_PATH; do
++  IFS="$IFS_prev"
++
+ # grep the lines that define exports					(output looks like: ./script.sh: # EXPORT=func1 func2	)
+ # replace the .sh<white-space>#<white-space> with a _ 	(output looks like: ./script_EXPORT=func1 func2			)
+ # replace the dirname of the script with a _			(output looks like: _script_EXPORT=func1 func2			)
+@@ -101,15 +117,17 @@
+ 	sed -e 's/\.sh:[ |\t]*#[ |\t]*/_/g'	\
+ 		-e 's/^.*\///g' 				\
+ 		-e 's/=/=" /g'					\
+-		-e 's/$/ "/g' 						> $LD_BASH_CACHE
++		-e 's/$/ "/g' 						>>$LD_BASH_CACHE
+ 
+ # This does the same for requirements
+ grep -H REQUIRE= $LD_BASH_PATH/*.sh | 		\
+ 	sed -e 's/\.sh:[ |\t]*#[ |\t]*/_/g'	\
+ 		-e 's/^.*\///g' 				\
+ 		-e 's/=/=" /g' 					\
+-		-e 's/$/ "/g'						>> $LD_BASH_CACHE
++		-e 's/$/ "/g'						>>$LD_BASH_CACHE
+ 
++done
++
+ # Get the names of all the functions exported in the file.
+ # Step by step:
+ # Get the lines that define EXPORT variables
+Index: lib/locks.sh
+===================================================================
+--- lib/locks.sh	(.../tags/libbash-0.9.10b)	(revision 34)
++++ lib/locks.sh	(.../branches/libbash-ld.bash.conf)	(revision 34)
+@@ -30,7 +30,7 @@
+ #REQUIRE=
+ 
+ prefix=/usr
+-__locks_LOCKS_DIR=${prefix}/var/lock/dirlocks
++__locks_LOCKS_DIR=/var/lock/dirlocks
+ __locks_DEFAULT_SLEEP_TIME=0.01
+ 
+ __locks_ERR_DIR_IS_LOCKED=1

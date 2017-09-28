@@ -1,0 +1,31 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: A powerful real-time, pattern-based MIDI sequencer for Linux
+#  Filling the void left by countless DAWs, piano-roll editors, and other
+#  purely performance based solutions, it is a compositional tool--one that
+#  transforms MIDI music-making on Linux from a complex nightmare into a
+#  pleasurable, efficient, and streamlined process.
+#  .
+# URL: http://non.tuxfamily.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libasound2, libc6, libfltk1.1, libgcc1, libjack0, liblash2, libsigc++-2.0-0c2a, libstdc++6
+
+name=non-sequencer
+version=20081111
+release=1
+source=(sequencer-$version.tar.bz2)
+
+build()
+{
+  cd sequencer-$version
+
+  ./configure \
+      --prefix="$prefix" \
+      --enable-lash \
+      --disable-debug
+
+  install -d $ROOT/bin
+
+  make
+  make prefix="$ROOT" install
+}

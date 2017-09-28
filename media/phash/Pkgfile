@@ -1,0 +1,42 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A perceptual hash library.
+#  pHash is an implementation of various perceptual hashing algorithms. A
+#  perceptual hash is a fingerprint of an audio, video, or image file
+#  that is mathematically based on the audio or visual content contained
+#  within. Unlike cryptographic hash functions that rely on the avalanche
+#  effect of small changes in input leading to drastic changes in the output,
+#  perceptual hashes are "close" to one another if the inputs are visually
+#  or auditorily similar. As a result, perceptual hashes must also be robust
+#  enough to take into account transformations that could have been performed
+#  on the input.
+# URL: http://www.phash.org/
+# Maintainer:  Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=phash
+version=0.3
+release=1
+source=(http://www.phash.org/releases/pHash-$version.tar.gz)
+
+build()
+{
+  cd $version
+
+  make
+
+  install -d $ROOT/lib
+  install -m 755 libpHash.so.0.$version $ROOT/lib
+  install -m 755 libpHash.so $ROOT/lib
+
+  install -d $ROOT/include
+  install -m 644 pHash.h $ROOT/include
+
+  install -d $ROOT/bin
+  install -m 755 pHash $ROOT/bin
+
+  install -d $ROOT/share/doc/phash
+  install -m 644 LICENSE ChangeLog $ROOT/share/doc/phash
+}
+
+# EOF

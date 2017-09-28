@@ -1,0 +1,25 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A Python-based xmldiff tool to figure out the differences between two xml files.
+#  Xmldiff is a Python tool that finds the differences between two similar
+#  XML files in the same way the diff utility does for text files. A
+#  description of the changes found can be displayed using Xmldiff's syntax
+#  or as an XUpdate script that can be used to "patch" the original document.
+# URL: http://www.logilab.org/projects/xmldiff/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=xmldiff
+version=0.6.8
+release=1
+source=(ftp://ftp.logilab.fr/pub/xmldiff/xmldiff-$version.tar.gz
+        xmldiff-0.6.8-setup.patch)
+
+build()
+{
+  cd xmldiff-$version
+
+  patch -N -p1 -i $SRC/xmldiff-0.6.8-setup.patch
+
+  python setup.py install --prefix="$ROOT"
+}

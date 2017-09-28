@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An RFC 3986 URI parsing library.
+#  uriparser is a strictly RFC 3986 compliant URI parsing library. It is
+#  cross-platform, fast, and supports Unicode.
+#  .
+# URL: http://uriparser.sourceforge.net/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=uriparser
+version=0.7.2
+release=1
+source=($mirror_sf/uriparser/uriparser-0.7.2.tar.bz2)
+
+build()
+{
+  cd uriparser-0.7.2
+./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+make
+make DESTDIR="$PKG" install
+}
+
+# EOF

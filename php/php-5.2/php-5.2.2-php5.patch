@@ -1,0 +1,1548 @@
+diff -r -u -- php-5.2.2_orig/Makefile.global php-5.2.2/Makefile.global
+--- php-5.2.2_orig/Makefile.global	2007-05-22 14:21:37.000000000 +0200
++++ php-5.2.2/Makefile.global	2007-05-22 14:21:38.000000000 +0200
+@@ -93,7 +93,7 @@
+ 
+ distclean: clean
+ 	rm -f config.cache config.log config.status Makefile.objects Makefile.fragments libtool main/php_config.h stamp-h php5.spec sapi/apache/libphp5.module buildmk.stamp
+-	$(EGREP) define'.*include/php' $(top_srcdir)/configure | $(SED) 's/.*>//'|xargs rm -f
++	$(EGREP) define'.*include/php5' $(top_srcdir)/configure | $(SED) 's/.*>//'|xargs rm -f
+ 	find . -name Makefile | xargs rm -f
+ 
+ .PHONY: all clean install distclean test
+diff -r -u -- php-5.2.2_orig/acinclude.m4 php-5.2.2/acinclude.m4
+--- php-5.2.2_orig/acinclude.m4	2007-05-22 14:21:38.000000000 +0200
++++ php-5.2.2/acinclude.m4	2007-05-22 14:21:38.000000000 +0200
+@@ -143,7 +143,7 @@
+ > Makefile.fragments
+ dnl We need to play tricks here to avoid matching the grep line itself
+ pattern=define
+-$EGREP $pattern'.*include/php' $srcdir/configure|$SED 's/.*>//'|xargs touch 2>/dev/null
++$EGREP $pattern'.*include/php5' $srcdir/configure|$SED 's/.*>//'|xargs touch 2>/dev/null
+ ])
+ 
+ dnl
+@@ -2560,12 +2560,12 @@
+ AC_DEFUN([PHP_CHECK_PDO_INCLUDES],[
+   AC_CACHE_CHECK([for PDO includes], pdo_inc_path, [
+     AC_MSG_CHECKING([for PDO includes])
+-    if test -f $abs_srcdir/include/php/ext/pdo/php_pdo_driver.h; then
++    if test -f $abs_srcdir/include/php5/ext/pdo/php_pdo_driver.h; then
+       pdo_inc_path=$abs_srcdir/ext
+     elif test -f $abs_srcdir/ext/pdo/php_pdo_driver.h; then
+       pdo_inc_path=$abs_srcdir/ext
+-    elif test -f $prefix/include/php/ext/pdo/php_pdo_driver.h; then
+-      pdo_inc_path=$prefix/include/php/ext
++    elif test -f $prefix/include/php5/ext/pdo/php_pdo_driver.h; then
++      pdo_inc_path=$prefix/include/php5/ext
+     fi
+   ])
+   if test -n "$pdo_inc_path"; then
+diff -r -u -- php-5.2.2_orig/aclocal.m4 php-5.2.2/aclocal.m4
+--- php-5.2.2_orig/aclocal.m4	2007-05-22 14:21:37.000000000 +0200
++++ php-5.2.2/aclocal.m4	2007-05-22 14:21:38.000000000 +0200
+@@ -143,7 +143,7 @@
+ > Makefile.fragments
+ dnl We need to play tricks here to avoid matching the grep line itself
+ pattern=define
+-$EGREP $pattern'.*include/php' $srcdir/configure|$SED 's/.*>//'|xargs touch 2>/dev/null
++$EGREP $pattern'.*include/php5' $srcdir/configure|$SED 's/.*>//'|xargs touch 2>/dev/null
+ ])
+ 
+ dnl
+@@ -2560,12 +2560,12 @@
+ AC_DEFUN([PHP_CHECK_PDO_INCLUDES],[
+   AC_CACHE_CHECK([for PDO includes], pdo_inc_path, [
+     AC_MSG_CHECKING([for PDO includes])
+-    if test -f $abs_srcdir/include/php/ext/pdo/php_pdo_driver.h; then
++    if test -f $abs_srcdir/include/php5/ext/pdo/php_pdo_driver.h; then
+       pdo_inc_path=$abs_srcdir/ext
+     elif test -f $abs_srcdir/ext/pdo/php_pdo_driver.h; then
+       pdo_inc_path=$abs_srcdir/ext
+-    elif test -f $prefix/include/php/ext/pdo/php_pdo_driver.h; then
+-      pdo_inc_path=$prefix/include/php/ext
++    elif test -f $prefix/include/php5/ext/pdo/php_pdo_driver.h; then
++      pdo_inc_path=$prefix/include/php5/ext
+     fi
+   ])
+   if test -n "$pdo_inc_path"; then
+diff -r -u -- php-5.2.2_orig/configure php-5.2.2/configure
+--- php-5.2.2_orig/configure	2007-05-22 14:21:38.000000000 +0200
++++ php-5.2.2/configure	2007-05-22 14:22:05.000000000 +0200
+@@ -946,7 +946,7 @@
+ 
+ # Defaults:
+ ac_help=
+-ac_default_prefix=/usr/local
++ac_default_prefix=/usr/local
+ # Any additions from configure.in:
+ ac_help="$ac_help
+   --with-libdir=NAME      Look for libraries in .../NAME rather than .../lib"
+@@ -961,7 +961,7 @@
+                           pathname to the Apache apxs tool [apxs]"
+ ac_help="$ac_help
+   --with-apache[=DIR]     Build Apache 1.x module. DIR is the top-level Apache
+-                          build directory [/usr/local/apache]"
++                          build directory [/usr/local/apache]"
+ ac_help="$ac_help
+   --with-mod_charset      Enable transfer tables for mod_charset (Rus Apache)"
+ ac_help="$ac_help
+@@ -978,12 +978,12 @@
+ ac_help="$ac_help
+   --with-apache-hooks-static[=DIR]     
+                           EXPERIMENTAL: Build Apache 1.x module. DIR is the top-level Apache
+-                          build directory [/usr/local/apache]"
++                          build directory [/usr/local/apache]"
+ ac_help="$ac_help
+   --with-mod_charset      Enable transfer tables for mod_charset (Rus Apache)"
+ ac_help="$ac_help
+   --with-caudium[=DIR]    Build PHP as a Pike module for use with Caudium.
+-                          DIR is the Caudium server dir [/usr/local/caudium/server]"
++                          DIR is the Caudium server dir [/usr/local/caudium/server]"
+ ac_help="$ac_help
+   --disable-cli           Disable building CLI version of PHP
+                           (this forces --without-pear)"
+@@ -1005,7 +1005,7 @@
+   --with-pi3web[=DIR]     Build PHP as Pi3Web module"
+ ac_help="$ac_help
+   --with-roxen=DIR        Build PHP as a Pike module. DIR is the base Roxen
+-                          directory, normally /usr/local/roxen/server"
++                          directory, normally /usr/local/roxen/server"
+ ac_help="$ac_help
+   --enable-roxen-zts      Build the Roxen module using Zend Thread Safety"
+ ac_help="$ac_help
+@@ -1054,7 +1054,7 @@
+   --enable-safe-mode      Enable safe mode by default"
+ ac_help="$ac_help
+   --with-exec-dir[=DIR]   Only allow executables in DIR under safe-mode
+-                          [/usr/local/php/bin]"
++                          [/usr/local/php/bin]"
+ ac_help="$ac_help
+   --enable-sigchild       Enable PHP's own SIGCHLD handler"
+ ac_help="$ac_help
+@@ -1083,10 +1083,10 @@
+   
+     NOTE: Not all extensions can be build as 'shared'.
+ 
+-    Example: --with-foobar=shared,/usr/local/foobar/
++    Example: --with-foobar=shared,/usr/local/foobar/
+ 
+       o Builds the foobar extension as shared extension.
+-      o foobar package install prefix is /usr/local/foobar/
++      o foobar package install prefix is /usr/local/foobar/
+ 
+ "
+ ac_help="$ac_help
+@@ -1230,10 +1230,10 @@
+   --with-ming[=DIR]       Include MING support"
+ ac_help="$ac_help
+   --with-msql[=DIR]       Include mSQL support.  DIR is the mSQL base
+-                          install directory, defaults to /usr/local/Hughes"
++                          install directory, defaults to /usr/local/Hughes"
+ ac_help="$ac_help
+   --with-mssql[=DIR]      Include MSSQL-DB support.  DIR is the FreeTDS home
+-                          directory, defaults to /usr/local/freetds"
++                          directory, defaults to /usr/local/freetds"
+ ac_help="$ac_help
+   --with-mysql[=DIR]      Include MySQL support. DIR is the MySQL base directory"
+ ac_help="$ac_help
+@@ -1255,13 +1255,13 @@
+                           to use an Oracle Instant Client installation"
+ ac_help="$ac_help
+   --with-adabas[=DIR]     Include Adabas D support.  DIR is the Adabas base
+-                          install directory [/usr/local]"
++                          install directory [/usr/local]"
+ ac_help="$ac_help
+   --with-sapdb[=DIR]      Include SAP DB support.  DIR is SAP DB base
+-                          install directory [/usr/local]"
++                          install directory [/usr/local]"
+ ac_help="$ac_help
+   --with-solid[=DIR]      Include Solid support.  DIR is the Solid base
+-                          install directory, defaults to /usr/local/solid"
++                          install directory, defaults to /usr/local/solid"
+ ac_help="$ac_help
+   --with-ibm-db2[=DIR]    Include IBM DB2 support.  DIR is the DB2 base
+                           install directory, defaults to /home/db2inst1/sqllib"
+@@ -1280,12 +1280,12 @@
+                           [\$EMPRESSPATH]"
+ ac_help="$ac_help
+   --with-birdstep[=DIR]   Include Birdstep support.  DIR is the Birdstep base
+-                          install directory [/usr/local/birdstep]"
++                          install directory [/usr/local/birdstep]"
+ ac_help="$ac_help
+   --with-custom-odbc[=DIR]      
+                           Include a user defined ODBC support.
+                           The DIR is ODBC install base directory, 
+-                          which defaults to /usr/local.
++                          which defaults to /usr/local.
+                           Make sure to define CUSTOM_ODBC_LIBS and
+                           have some odbc.h in your include dirs.
+                           E.g., you should define following for 
+@@ -1296,13 +1296,13 @@
+                               CUSTOM_ODBC_LIBS=\"-ldblib -lodbc\""
+ ac_help="$ac_help
+   --with-iodbc[=DIR]      Include iODBC support.  DIR is the iODBC base
+-                          install directory [/usr/local]"
++                          install directory [/usr/local]"
+ ac_help="$ac_help
+   --with-esoob[=DIR]      Include Easysoft OOB support. DIR is the OOB base
+-                          install directory [/usr/local/easysoft/oob/client]"
++                          install directory [/usr/local/easysoft/oob/client]"
+ ac_help="$ac_help
+   --with-unixODBC[=DIR]   Include unixODBC support.  DIR is the unixODBC base
+-                          install directory [/usr/local]"
++                          install directory [/usr/local]"
+ ac_help="$ac_help
+   --with-dbmaker[=DIR]    Include DBMaker support.  DIR is the DBMaker base
+                           install directory, defaults to where the latest 
+@@ -1338,7 +1338,7 @@
+                             
+                               --with-pdo-odbc=unixODBC
+                               
+-                            will check for unixODBC under /usr/local. You may attempt 
++                            will check for unixODBC under /usr/local. You may attempt 
+                             to use an otherwise unsupported driver using the \"generic\" 
+                             flavour.  The syntax for generic ODBC support is:
+                             
+@@ -2488,7 +2488,7 @@
+ > Makefile.objects
+ > Makefile.fragments
+ pattern=define
+-$EGREP $pattern'.*include/php' $srcdir/configure|$SED 's/.*>//'|xargs touch 2>/dev/null
++$EGREP $pattern'.*include/php5' $srcdir/configure|$SED 's/.*>//'|xargs touch 2>/dev/null
+ 
+ 
+ test -z "$CFLAGS" && auto_cflags=1
+@@ -4673,7 +4673,7 @@
+ 
+   if test "$withval" = "yes"; then
+     # Apache's default directory
+-    withval=/usr/local/apache
++    withval=/usr/local/apache
+   fi
+   if test "$withval" != "no"; then
+     cat >> confdefs.h <<\EOF
+@@ -7619,7 +7619,7 @@
+ 
+   if test "$withval" = "yes"; then
+     # Apache's default directory
+-    withval=/usr/local/apache
++    withval=/usr/local/apache
+   fi
+   if test "$withval" != "no"; then
+     cat >> confdefs.h <<\EOF
+@@ -8595,10 +8595,10 @@
+ if test "${with_caudium+set}" = set; then
+   withval="$with_caudium"
+   
+-    if test "$prefix" = "NONE"; then CPREF=/usr/local/; fi
++    if test "$prefix" = "NONE"; then CPREF=/usr/local/; fi
+ 	if test ! -d $withval ; then
+       if test "$prefix" = "NONE"; then
+-	     withval=/usr/local/caudium/server/
++	     withval=/usr/local/caudium/server/
+ 	  else
+ 	     withval=$prefix/caudium/server/
+       fi
+@@ -8659,7 +8659,7 @@
+ 		if test "$prefix" != "NONE"; then
+ 		   PIKE_C_INCLUDE=$prefix/include/`basename $PIKE`
+ 		else
+-		   PIKE_C_INCLUDE=/usr/local/include/`basename $PIKE`
++		   PIKE_C_INCLUDE=/usr/local/include/`basename $PIKE`
+ 		fi
+ 		echo $ac_n "checking for C includes in $PIKE_C_INCLUDE""... $ac_c" 1>&6
+ echo "configure:8666: checking for C includes in $PIKE_C_INCLUDE" >&5
+@@ -9456,7 +9456,7 @@
+   withval="$with_isapi"
+   
+ 	if test "$withval" = "yes"; then
+-		ZEUSPATH=/usr/local/zeus # the default
++		ZEUSPATH=/usr/local/zeus # the default
+ 	else
+ 		ZEUSPATH=$withval
+ 	fi
+@@ -18806,10 +18806,10 @@
+   if test "$withval" != "no"; then
+     if test "$withval" = "yes"; then
+       cat >> confdefs.h <<\EOF
+-#define PHP_SAFE_MODE_EXEC_DIR "/usr/local/php/bin"
++#define PHP_SAFE_MODE_EXEC_DIR "/usr/local/php/bin"
+ EOF
+ 
+-      echo "$ac_t""/usr/local/php/bin" 1>&6
++      echo "$ac_t""/usr/local/php/bin" 1>&6
+     else
+       cat >> confdefs.h <<EOF
+ #define PHP_SAFE_MODE_EXEC_DIR "$withval"
+@@ -18819,19 +18819,19 @@
+     fi
+   else
+     cat >> confdefs.h <<\EOF
+-#define PHP_SAFE_MODE_EXEC_DIR "/usr/local/php/bin"
++#define PHP_SAFE_MODE_EXEC_DIR "/usr/local/php/bin"
+ EOF
+ 
+-    echo "$ac_t""/usr/local/php/bin" 1>&6
++    echo "$ac_t""/usr/local/php/bin" 1>&6
+   fi
+ 
+ else
+   
+   cat >> confdefs.h <<\EOF
+-#define PHP_SAFE_MODE_EXEC_DIR "/usr/local/php/bin"
++#define PHP_SAFE_MODE_EXEC_DIR "/usr/local/php/bin"
+ EOF
+ 
+-  echo "$ac_t""/usr/local/php/bin" 1>&6
++  echo "$ac_t""/usr/local/php/bin" 1>&6
+ 
+ fi
+ 
+@@ -19321,7 +19321,7 @@
+   echo $ac_n "(cached) $ac_c" 1>&6
+ else
+   
+-  for i in $PHP_LIBXML_DIR /usr/local /usr; do
++  for i in $PHP_LIBXML_DIR /usr/local /usr; do
+     if test -x "$i/bin/xml2-config"; then
+       ac_cv_php_xml2_config_path="$i/bin/xml2-config"
+       break
+@@ -20230,7 +20230,7 @@
+   ;;
+   *)
+   IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS=":"
+-  ac_dummy="$PATH:/usr/kerberos/bin:/usr/local/bin"
++  ac_dummy="$PATH:/usr/kerberos/bin:/usr/local/bin"
+   for ac_dir in $ac_dummy; do 
+     test -z "$ac_dir" && ac_dir=.
+     if test -f $ac_dir/$ac_word; then
+@@ -20392,7 +20392,7 @@
+     if test "$found_kerberos" = "no"; then
+ 
+     if test "$PHP_KERBEROS" = "yes"; then
+-      PHP_KERBEROS="/usr/kerberos /usr/local /usr"
++      PHP_KERBEROS="/usr/kerberos /usr/local /usr"
+     fi
+ 
+     for i in $PHP_KERBEROS; do
+@@ -20816,7 +20816,7 @@
+     if test "$found_openssl" = "no"; then
+   
+     if test "$PHP_OPENSSL_DIR" = "yes"; then
+-      PHP_OPENSSL_DIR="/usr/local/ssl /usr/local /usr /usr/local/openssl"
++      PHP_OPENSSL_DIR="/usr/local/ssl /usr/local /usr /usr/local/openssl"
+     fi
+ 
+     for i in $PHP_OPENSSL_DIR; do
+@@ -22503,7 +22503,7 @@
+       ZLIB_INCDIR=$ZLIB_DIR/include
+     fi
+   else 
+-    for i in /usr/local /usr $PHP_ZLIB_DIR; do
++    for i in /usr/local /usr $PHP_ZLIB_DIR; do
+       if test -f $i/include/zlib/zlib.h; then
+         ZLIB_DIR=$i
+         ZLIB_INCDIR=$i/include/zlib
+@@ -23182,7 +23182,7 @@
+   else
+     echo $ac_n "checking for BZip2 in default path""... $ac_c" 1>&6
+ echo "configure:23185: checking for BZip2 in default path" >&5
+-    for i in /usr/local /usr; do
++    for i in /usr/local /usr; do
+       if test -r $i/include/bzlib.h; then
+         BZIP_DIR=$i
+         echo "$ac_t""found in $i" 1>&6
+@@ -24511,7 +24511,7 @@
+   else
+     echo $ac_n "checking for cURL in default path""... $ac_c" 1>&6
+ echo "configure:24514: checking for cURL in default path" >&5
+-    for i in /usr/local /usr; do
++    for i in /usr/local /usr; do
+       if test -r $i/include/curl/easy.h; then
+         CURL_DIR=$i
+         echo "$ac_t""found in $i" 1>&6
+@@ -26522,7 +26522,7 @@
+     
+   unset THIS_INCLUDE THIS_LIBS THIS_LFLAGS THIS_PREFIX THIS_RESULT
+ 
+-    for i in $withval /usr/local /usr; do
++    for i in $withval /usr/local /usr; do
+       if test -f "$i/include/depot.h"; then
+         THIS_PREFIX=$i
+         THIS_INCLUDE=$i/include/depot.h
+@@ -26862,7 +26862,7 @@
+   unset THIS_RESULT THIS_NAME THIS_FULL_NAME
+ 
+     fi
+-    for i in $withval /usr/local /usr; do
++    for i in $withval /usr/local /usr; do
+       if test -f "$i/include/gdbm.h"; then
+         THIS_PREFIX=$i
+         THIS_INCLUDE=$i/include/gdbm.h
+@@ -27174,7 +27174,7 @@
+     
+   unset THIS_INCLUDE THIS_LIBS THIS_LFLAGS THIS_PREFIX THIS_RESULT
+ 
+-    for i in $withval /usr/local /usr; do
++    for i in $withval /usr/local /usr; do
+       if test -f "$i/include/ndbm.h"; then
+         THIS_PREFIX=$i
+         THIS_INCLUDE=$i/include/ndbm.h
+@@ -27497,7 +27497,7 @@
+     
+   unset THIS_INCLUDE THIS_LIBS THIS_LFLAGS THIS_PREFIX THIS_RESULT
+ 
+-    for i in $withval /usr/local/BerkeleyDB.4.2 /usr/local/BerkeleyDB.4.1 /usr/local/BerkeleyDB.4.0 /usr/local /usr; do
++    for i in $withval /usr/local/BerkeleyDB.4.2 /usr/local/BerkeleyDB.4.1 /usr/local/BerkeleyDB.4.0 /usr/local /usr; do
+       if test -f "$i/db4/db.h"; then
+         THIS_PREFIX=$i
+         THIS_INCLUDE=$i/db4/db.h
+@@ -27823,7 +27823,7 @@
+   unset THIS_RESULT THIS_NAME THIS_FULL_NAME
+ 
+     fi
+-    for i in $withval /usr/local/BerkeleyDB.3.3 /usr/local/BerkeleyDB.3.2 /usr/local/BerkeleyDB.3.1 /usr/local/BerkeleyDB.3.0 /usr/local /usr; do
++    for i in $withval /usr/local/BerkeleyDB.3.3 /usr/local/BerkeleyDB.3.2 /usr/local/BerkeleyDB.3.1 /usr/local/BerkeleyDB.3.0 /usr/local /usr; do
+       if test -f "$i/db3/db.h"; then
+         THIS_PREFIX=$i
+         THIS_INCLUDE=$i/include/db3/db.h
+@@ -28149,7 +28149,7 @@
+   unset THIS_RESULT THIS_NAME THIS_FULL_NAME
+ 
+     fi
+-    for i in $withval $withval/BerkeleyDB /usr/BerkeleyDB /usr/local /usr; do
++    for i in $withval $withval/BerkeleyDB /usr/BerkeleyDB /usr/local /usr; do
+       if test -f "$i/db2/db.h"; then
+         THIS_PREFIX=$i
+         THIS_INCLUDE=$i/db2/db.h
+@@ -28482,7 +28482,7 @@
+ #define DB1_VERSION "Unknown DB1"
+ EOF
+ 
+-      for i in $withval /usr/local /usr; do
++      for i in $withval /usr/local /usr; do
+         if test -f "$i/db1/db.h"; then
+           THIS_PREFIX=$i
+           THIS_INCLUDE=$i/db1/db.h
+@@ -28719,7 +28719,7 @@
+   unset THIS_RESULT THIS_NAME THIS_FULL_NAME
+ 
+     fi
+-    for i in $withval /usr/local /usr; do
++    for i in $withval /usr/local /usr; do
+       if test -f "$i/include/dbm.h"; then
+         THIS_PREFIX=$i
+         THIS_INCLUDE=$i/include/dbm.h
+@@ -29074,7 +29074,7 @@
+     
+   unset THIS_INCLUDE THIS_LIBS THIS_LFLAGS THIS_PREFIX THIS_RESULT
+ 
+-    for i in $withval /usr/local /usr; do
++    for i in $withval /usr/local /usr; do
+       if test -f "$i/include/cdb.h"; then
+         THIS_PREFIX=$i
+         THIS_INCLUDE=$i/include/cdb.h
+@@ -30245,7 +30245,7 @@
+   echo $ac_n "(cached) $ac_c" 1>&6
+ else
+   
+-  for i in $PHP_LIBXML_DIR /usr/local /usr; do
++  for i in $PHP_LIBXML_DIR /usr/local /usr; do
+     if test -x "$i/bin/xml2-config"; then
+       ac_cv_php_xml2_config_path="$i/bin/xml2-config"
+       break
+@@ -31504,7 +31504,7 @@
+   FBSQL_INSTALLATION_DIR=""
+   if test "$PHP_FBSQL" = "yes"; then
+ 
+-    for i in /Local/Library /usr/local /usr /opt /Library /usr/lib; do
++    for i in /Local/Library /usr/local /usr /opt /Library /usr/lib; do
+       if test -f $i/FrontBase/include/FBCAccess/FBCAccess.h; then
+         FBSQL_INSTALLATION_DIR=$i/FrontBase
+         break
+@@ -31725,7 +31725,7 @@
+   esac
+ 
+   if test "$PHP_FDFTK" = "yes"; then 
+-    PHP_FDFTK="/usr/local /usr ../FDFToolkitForUNIX ext/fdf/FDFToolkitForUNIX ../fdftk ext/fdf/fdftk"
++    PHP_FDFTK="/usr/local /usr ../FDFToolkitForUNIX ext/fdf/FDFToolkitForUNIX ../fdftk ext/fdf/fdftk"
+   fi
+ 
+   for dir in $PHP_FDFTK; do
+@@ -33489,7 +33489,7 @@
+     if test "$found_openssl" = "no"; then
+   
+     if test "$PHP_OPENSSL_DIR" = "yes"; then
+-      PHP_OPENSSL_DIR="/usr/local/ssl /usr/local /usr /usr/local/openssl"
++      PHP_OPENSSL_DIR="/usr/local/ssl /usr/local /usr /usr/local/openssl"
+     fi
+ 
+     for i in $PHP_OPENSSL_DIR; do
+@@ -34355,7 +34355,7 @@
+ 			{ echo "configure: error: Can't find zlib headers under "$PHP_ZLIB_DIR"" 1>&2; exit 1; }
+ 		fi
+ 	else
+-		for i in /usr/local /usr; do
++		for i in /usr/local /usr; do
+ 			if test -f "$i/include/zlib/zlib.h"; then
+ 				PHP_ZLIB_DIR="$i"
+ 				PHP_ZLIB_INCDIR="$i/include/zlib"
+@@ -34382,7 +34382,7 @@
+   
+   if test "$PHP_JPEG_DIR" != "no"; then
+ 
+-    for i in $PHP_JPEG_DIR /usr/local /usr; do
++    for i in $PHP_JPEG_DIR /usr/local /usr; do
+       test -f $i/$PHP_LIBDIR/libjpeg.$SHLIB_SUFFIX_NAME || test -f $i/$PHP_LIBDIR/libjpeg.a && GD_JPEG_DIR=$i && break
+     done
+ 
+@@ -34673,7 +34673,7 @@
+   
+   if test "$PHP_PNG_DIR" != "no"; then
+ 
+-    for i in $PHP_PNG_DIR /usr/local /usr; do
++    for i in $PHP_PNG_DIR /usr/local /usr; do
+       test -f $i/$PHP_LIBDIR/libpng.$SHLIB_SUFFIX_NAME || test -f $i/$PHP_LIBDIR/libpng.a && GD_PNG_DIR=$i && break
+     done
+ 
+@@ -35069,7 +35069,7 @@
+   
+   if test "$PHP_XPM_DIR" != "no"; then
+ 
+-    for i in $PHP_XPM_DIR /usr/local /usr/X11R6 /usr; do
++    for i in $PHP_XPM_DIR /usr/local /usr/X11R6 /usr; do
+       test -f $i/$PHP_LIBDIR/libXpm.$SHLIB_SUFFIX_NAME || test -f $i/$PHP_LIBDIR/libXpm.a && GD_XPM_DIR=$i && break
+     done
+ 
+@@ -35464,7 +35464,7 @@
+   
+   if test "$PHP_FREETYPE_DIR" != "no"; then
+ 
+-    for i in $PHP_FREETYPE_DIR /usr/local /usr; do
++    for i in $PHP_FREETYPE_DIR /usr/local /usr; do
+       if test -f "$i/include/freetype2/freetype/freetype.h"; then
+         FREETYPE2_DIR=$i
+         FREETYPE2_INC_DIR=$i/include/freetype2
+@@ -35650,7 +35650,7 @@
+   if test "$PHP_TTF" != "no"; then
+     if test "$PHP_FREETYPE_DIR" = "no" || test "$PHP_FREETYPE_DIR" = ""; then
+       if test -n "$PHP_TTF"; then
+-        for i in $PHP_TTF /usr/local /usr; do
++        for i in $PHP_TTF /usr/local /usr; do
+           if test -f "$i/include/freetype.h"; then
+             TTF_DIR=$i
+             unset TTF_INC_DIR
+@@ -35812,7 +35812,7 @@
+   
+   if test "$PHP_T1LIB" != "no"; then
+ 
+-    for i in $PHP_T1LIB /usr/local /usr; do
++    for i in $PHP_T1LIB /usr/local /usr; do
+       test -f "$i/include/t1lib.h" && GD_T1_DIR=$i && break
+     done
+ 
+@@ -36249,7 +36249,7 @@
+ 			{ echo "configure: error: Can't find zlib headers under "$PHP_ZLIB_DIR"" 1>&2; exit 1; }
+ 		fi
+ 	else
+-		for i in /usr/local /usr; do
++		for i in /usr/local /usr; do
+ 			if test -f "$i/include/zlib/zlib.h"; then
+ 				PHP_ZLIB_DIR="$i"
+ 				PHP_ZLIB_INCDIR="$i/include/zlib"
+@@ -36271,7 +36271,7 @@
+   
+   if test "$PHP_JPEG_DIR" != "no"; then
+ 
+-    for i in $PHP_JPEG_DIR /usr/local /usr; do
++    for i in $PHP_JPEG_DIR /usr/local /usr; do
+       test -f $i/$PHP_LIBDIR/libjpeg.$SHLIB_SUFFIX_NAME || test -f $i/$PHP_LIBDIR/libjpeg.a && GD_JPEG_DIR=$i && break
+     done
+ 
+@@ -36562,7 +36562,7 @@
+   
+   if test "$PHP_PNG_DIR" != "no"; then
+ 
+-    for i in $PHP_PNG_DIR /usr/local /usr; do
++    for i in $PHP_PNG_DIR /usr/local /usr; do
+       test -f $i/$PHP_LIBDIR/libpng.$SHLIB_SUFFIX_NAME || test -f $i/$PHP_LIBDIR/libpng.a && GD_PNG_DIR=$i && break
+     done
+ 
+@@ -36958,7 +36958,7 @@
+   
+   if test "$PHP_XPM_DIR" != "no"; then
+ 
+-    for i in $PHP_XPM_DIR /usr/local /usr/X11R6 /usr; do
++    for i in $PHP_XPM_DIR /usr/local /usr/X11R6 /usr; do
+       test -f $i/$PHP_LIBDIR/libXpm.$SHLIB_SUFFIX_NAME || test -f $i/$PHP_LIBDIR/libXpm.a && GD_XPM_DIR=$i && break
+     done
+ 
+@@ -37353,7 +37353,7 @@
+   
+   if test "$PHP_FREETYPE_DIR" != "no"; then
+ 
+-    for i in $PHP_FREETYPE_DIR /usr/local /usr; do
++    for i in $PHP_FREETYPE_DIR /usr/local /usr; do
+       if test -f "$i/include/freetype2/freetype/freetype.h"; then
+         FREETYPE2_DIR=$i
+         FREETYPE2_INC_DIR=$i/include/freetype2
+@@ -37539,7 +37539,7 @@
+   if test "$PHP_TTF" != "no"; then
+     if test "$PHP_FREETYPE_DIR" = "no" || test "$PHP_FREETYPE_DIR" = ""; then
+       if test -n "$PHP_TTF"; then
+-        for i in $PHP_TTF /usr/local /usr; do
++        for i in $PHP_TTF /usr/local /usr; do
+           if test -f "$i/include/freetype.h"; then
+             TTF_DIR=$i
+             unset TTF_INC_DIR
+@@ -37701,7 +37701,7 @@
+   
+   if test "$PHP_T1LIB" != "no"; then
+ 
+-    for i in $PHP_T1LIB /usr/local /usr; do
++    for i in $PHP_T1LIB /usr/local /usr; do
+       test -f "$i/include/t1lib.h" && GD_T1_DIR=$i && break
+     done
+ 
+@@ -42232,7 +42232,7 @@
+ 
+ 
+ if test "$PHP_GETTEXT" != "no"; then
+-  for i in $PHP_GETTEXT /usr/local /usr; do
++  for i in $PHP_GETTEXT /usr/local /usr; do
+     test -r $i/include/libintl.h && GETTEXT_DIR=$i && break
+   done
+ 
+@@ -42981,7 +42981,7 @@
+ 
+ if test "$PHP_GMP" != "no"; then
+ 
+-  for i in $PHP_GMP /usr/local /usr; do
++  for i in $PHP_GMP /usr/local /usr; do
+     test -f $i/include/gmp.h && GMP_DIR=$i && break
+   done
+ 
+@@ -44454,7 +44454,7 @@
+ 
+         if test "$found_iconv" = "no"; then
+ 
+-    for i in $PHP_ICONV /usr/local /usr; do
++    for i in $PHP_ICONV /usr/local /usr; do
+       if test -r $i/include/giconv.h; then
+         cat >> confdefs.h <<\EOF
+ #define HAVE_GICONV_H 1
+@@ -44932,7 +44932,7 @@
+ 
+   if test "$iconv_avail" != "no"; then
+     if test -z "$ICONV_DIR"; then
+-      for i in /usr/local /usr; do
++      for i in /usr/local /usr; do
+         if test -f "$i/include/iconv.h" || test -f "$i/include/giconv.h"; then
+           PHP_ICONV_PREFIX="$i"
+           break
+@@ -46007,7 +46007,7 @@
+ EOF
+ 
+ 
+-    for i in $PHP_IMAP /usr/local /usr; do
++    for i in $PHP_IMAP /usr/local /usr; do
+       if test -r "$i/c-client.h"; then
+     cat >> confdefs.h <<\EOF
+ #define HAVE_IMAP2000 1
+@@ -46729,7 +46729,7 @@
+   ;;
+   *)
+   IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS=":"
+-  ac_dummy="$PATH:/usr/kerberos/bin:/usr/local/bin"
++  ac_dummy="$PATH:/usr/kerberos/bin:/usr/local/bin"
+   for ac_dir in $ac_dummy; do 
+     test -z "$ac_dir" && ac_dir=.
+     if test -f $ac_dir/$ac_word; then
+@@ -46891,7 +46891,7 @@
+     if test "$found_kerberos" = "no"; then
+ 
+     if test "$PHP_KERBEROS" = "yes"; then
+-      PHP_KERBEROS="/usr/kerberos /usr/local /usr"
++      PHP_KERBEROS="/usr/kerberos /usr/local /usr"
+     fi
+ 
+     for i in $PHP_KERBEROS; do
+@@ -47076,7 +47076,7 @@
+ else 
+       { echo "configure: error: Kerberos libraries not found. 
+       
+-      Check the path given to --with-kerberos (if no path is given, searches in /usr/kerberos, /usr/local and /usr )
++      Check the path given to --with-kerberos (if no path is given, searches in /usr/kerberos, /usr/local and /usr )
+       " 1>&2; exit 1; }
+     
+   fi
+@@ -47304,7 +47304,7 @@
+     if test "$found_openssl" = "no"; then
+   
+     if test "$PHP_OPENSSL_DIR" = "yes"; then
+-      PHP_OPENSSL_DIR="/usr/local/ssl /usr/local /usr /usr/local/openssl"
++      PHP_OPENSSL_DIR="/usr/local/ssl /usr/local /usr /usr/local/openssl"
+     fi
+ 
+     for i in $PHP_OPENSSL_DIR; do
+@@ -49674,7 +49674,7 @@
+ 
+ 
+   if test "$PHP_LDAP" = "yes"; then
+-    for i in /usr/local /usr; do
++    for i in /usr/local /usr; do
+       
+   if test -f $i/include/ldap.h; then
+     LDAP_DIR=$i
+@@ -51773,7 +51773,7 @@
+         if test "$PHP_LDAP_SASL" != "no"; then
+     
+   if test "$PHP_LDAP_SASL" = "yes"; then
+-    SEARCH_DIRS="/usr/local /usr"
++    SEARCH_DIRS="/usr/local /usr"
+   else
+     SEARCH_DIRS=$PHP_LDAP_SASL
+   fi
+@@ -53907,7 +53907,7 @@
+ 
+ 
+ if test "$PHP_MCRYPT" != "no"; then
+-  for i in $PHP_MCRYPT /usr/local /usr; do
++  for i in $PHP_MCRYPT /usr/local /usr; do
+     test -f $i/include/mcrypt.h && MCRYPT_DIR=$i && break
+   done
+ 
+@@ -54738,7 +54738,7 @@
+ 
+ 
+ if test "$PHP_MHASH" != "no"; then
+-  for i in $PHP_MHASH /usr/local /usr /opt/mhash; do
++  for i in $PHP_MHASH /usr/local /usr /opt/mhash; do
+     test -f $i/include/mhash.h && MHASH_DIR=$i && break
+   done
+ 
+@@ -55504,7 +55504,7 @@
+       { echo "configure: error: File '$PHP_MIME_MAGIC' not found!" 1>&2; exit 1; }
+     fi
+   else
+-    MAGIC_MIME_LOCATIONS="/usr/local/apache/conf/magic /usr/local/etc/apache/conf/magic /etc/apache/magic /etc/httpd/conf/magic /usr/share/magic.mime /usr/share/misc/magic.mime /etc/magic.mime"
++    MAGIC_MIME_LOCATIONS="/usr/local/apache/conf/magic /usr/local/etc/apache/conf/magic /etc/apache/magic /etc/httpd/conf/magic /usr/share/magic.mime /usr/share/misc/magic.mime /etc/magic.mime"
+ 
+     for i in $MAGIC_MIME_LOCATIONS; do
+       if test -f $i; then
+@@ -55617,7 +55617,7 @@
+ fi
+ 
+ 
+-  for i in $PHP_MING /usr/local /usr; do
++  for i in $PHP_MING /usr/local /usr; do
+     if test -f $i/$PHP_LIBDIR/libming.$SHLIB_SUFFIX_NAME || test -f $i/$PHP_LIBDIR/libming.a; then
+       MING_DIR=$i
+       break
+@@ -56796,8 +56796,8 @@
+ 
+   if test "$PHP_MSQL" != "no"; then
+     if test "$PHP_MSQL" = "yes"; then
+-      MSQL_INCDIR=/usr/local/Hughes/include
+-      MSQL_LIBDIR=/usr/local/Hughes/lib
++      MSQL_INCDIR=/usr/local/Hughes/include
++      MSQL_LIBDIR=/usr/local/Hughes/lib
+     else
+       MSQL_INCDIR=$PHP_MSQL/include
+       MSQL_LIBDIR=$PHP_MSQL/lib
+@@ -57308,7 +57308,7 @@
+ if test "$PHP_MSSQL" != "no"; then
+ 
+   if test "$PHP_MSSQL" = "yes"; then
+-    for i in /usr/local /usr; do
++    for i in /usr/local /usr; do
+       if test -f $i/include/tds.h; then
+         FREETDS_INSTALLATION_DIR=$i
+         FREETDS_INCLUDE_DIR=$i/include
+@@ -58031,7 +58031,7 @@
+     /var/run/mysql/mysql.sock \
+     /var/lib/mysql/mysql.sock \
+     /var/mysql/mysql.sock \
+-    /usr/local/mysql/var/mysql.sock \
++    /usr/local/mysql/var/mysql.sock \
+     /Private/tmp/mysql.sock \
+     /private/tmp/mysql.sock \
+     /tmp/mysql.sock \
+@@ -58059,7 +58059,7 @@
+   MYSQL_DIR=
+   MYSQL_INC_DIR=
+ 
+-  for i in $PHP_MYSQL /usr/local /usr; do
++  for i in $PHP_MYSQL /usr/local /usr; do
+     if test -r $i/include/mysql/mysql.h; then
+       MYSQL_DIR=$i
+       MYSQL_INC_DIR=$i/include/mysql
+@@ -59979,7 +59979,7 @@
+ 
+ if test "$PHP_NCURSES" != "no"; then
+ 
+-   SEARCH_PATH="$PHP_NCURSES /usr/local /usr"     
++   SEARCH_PATH="$PHP_NCURSES /usr/local /usr"     
+ 
+    for dir in $SEARCH_PATH; do
+     for subdir in include/ncurses include; do
+@@ -65297,7 +65297,7 @@
+   unset ext_shared ext_output
+ 
+   if test "$withval" = "yes"; then
+-    withval=/usr/local
++    withval=/usr/local
+   fi
+   if test "$withval" != "no"; then
+     
+@@ -65495,7 +65495,7 @@
+   unset ext_shared ext_output
+ 
+   if test "$withval" = "yes"; then
+-    withval=/usr/local
++    withval=/usr/local
+   fi
+   if test "$withval" != "no"; then
+     
+@@ -65625,7 +65625,7 @@
+   unset ext_shared ext_output
+ 
+   if test "$withval" = "yes"; then
+-    withval=/usr/local/solid
++    withval=/usr/local/solid
+   fi
+   if test "$withval" != "no"; then
+     ODBC_INCDIR=$withval/include
+@@ -66106,8 +66106,8 @@
+ 
+   if test "$withval" != "no"; then
+     if test "$withval" = "yes"; then
+-        ODBC_INCDIR=/usr/local/birdstep/include
+-        ODBC_LIBDIR=/usr/local/birdstep/lib
++        ODBC_INCDIR=/usr/local/birdstep/include
++        ODBC_LIBDIR=/usr/local/birdstep/lib
+     else
+         ODBC_INCDIR=$withval/include
+         ODBC_LIBDIR=$withval/$PHP_LIBDIR
+@@ -66188,7 +66188,7 @@
+   withval="$with_custom_odbc"
+   
+   if test "$withval" = "yes"; then
+-    withval=/usr/local
++    withval=/usr/local
+   fi
+   if test "$withval" != "no"; then
+     ODBC_INCDIR=$withval/include
+@@ -66248,7 +66248,7 @@
+   unset ext_shared ext_output
+ 
+   if test "$withval" = "yes"; then
+-    withval=/usr/local
++    withval=/usr/local
+   fi
+   if test "$withval" != "no"; then
+     
+@@ -66390,7 +66390,7 @@
+   unset ext_shared ext_output
+ 
+   if test "$withval" = "yes"; then
+-    withval=/usr/local/easysoft/oob/client
++    withval=/usr/local/easysoft/oob/client
+   fi
+   if test "$withval" != "no"; then
+     ODBC_INCDIR=$withval/include
+@@ -66450,7 +66450,7 @@
+   unset ext_shared ext_output
+ 
+   if test "$withval" = "yes"; then
+-    withval=/usr/local
++    withval=/usr/local
+   fi
+   if test "$withval" != "no"; then
+     ODBC_INCDIR=$withval/include
+@@ -68117,7 +68117,7 @@
+ 
+   if test "$PHP_PDO_DBLIB" = "yes"; then
+ 
+-    for i in /usr/local /usr; do
++    for i in /usr/local /usr; do
+       if test -f $i/include/tds.h; then
+         PDO_FREETDS_INSTALLATION_DIR=$i
+         PDO_FREETDS_INCLUDE_DIR=$i/include
+@@ -69843,7 +69843,7 @@
+       { echo "configure: error: can not find mysql under the "$PHP_PDO_MYSQL" that you specified" 1>&2; exit 1; }
+     fi
+   else
+-    for i in /usr/local /usr ; do
++    for i in /usr/local /usr ; do
+       if test -x "$i/bin/mysql_config" ; then
+         PDO_MYSQL_CONFIG="$i/bin/mysql_config"
+         break;
+@@ -73886,8 +73886,8 @@
+         ;;
+ 
+     unixODBC|unixodbc)
+-        pdo_odbc_def_libdir=/usr/local/lib
+-        pdo_odbc_def_incdir=/usr/local/include
++        pdo_odbc_def_libdir=/usr/local/lib
++        pdo_odbc_def_incdir=/usr/local/include
+         pdo_odbc_def_lib=odbc
+         ;;
+ 
+@@ -73914,7 +73914,7 @@
+                             
+                               --with-pdo-odbc=unixODBC
+                               
+-                            will check for unixODBC under /usr/local. You may attempt 
++                            will check for unixODBC under /usr/local. You may attempt 
+                             to use an otherwise unsupported driver using the \"generic\" 
+                             flavour.  The syntax for generic ODBC support is:
+                             
+@@ -74963,7 +74963,7 @@
+ 
+   echo $ac_n "checking for pg_config""... $ac_c" 1>&6
+ echo "configure:74966: checking for pg_config" >&5
+-  for i in $PHP_PDO_PGSQL $PHP_PDO_PGSQL/bin /usr/local/pgsql/bin /usr/local/bin /usr/bin ""; do
++  for i in $PHP_PDO_PGSQL $PHP_PDO_PGSQL/bin /usr/local/pgsql/bin /usr/local/bin /usr/bin ""; do
+ 	if test -x $i/pg_config; then
+       PG_CONFIG="$i/pg_config"
+       break;
+@@ -74981,7 +74981,7 @@
+   else
+     echo "$ac_t""not found" 1>&6
+     if test "$PHP_PDO_PGSQL" = "yes"; then
+-      PGSQL_SEARCH_PATHS="/usr /usr/local /usr/local/pgsql"
++      PGSQL_SEARCH_PATHS="/usr /usr/local /usr/local/pgsql"
+     else
+       PGSQL_SEARCH_PATHS=$PHP_PDO_PGSQL
+     fi
+@@ -76239,7 +76239,7 @@
+   php_pdo_sqlite_sources_core="pdo_sqlite.c sqlite_driver.c sqlite_statement.c"
+ 
+   if test "$PHP_PDO_SQLITE" != "yes"; then
+-    SEARCH_PATH="$PHP_PDO_SQLITE /usr/local /usr"     # you might want to change this
++    SEARCH_PATH="$PHP_PDO_SQLITE /usr/local /usr"     # you might want to change this
+     SEARCH_FOR="/include/sqlite3.h"  # you most likely want to change this
+     if test -r $PHP_PDO_SQLITE/$SEARCH_FOR; then # path given as parameter
+       PDO_SQLITE_DIR=$PHP_PDO_SQLITE
+@@ -77703,7 +77703,7 @@
+ 
+   echo $ac_n "checking for pg_config""... $ac_c" 1>&6
+ echo "configure:77706: checking for pg_config" >&5
+-  for i in $PHP_PGSQL $PHP_PGSQL/bin /usr/local/pgsql/bin /usr/local/bin /usr/bin ""; do
++  for i in $PHP_PGSQL $PHP_PGSQL/bin /usr/local/pgsql/bin /usr/local/bin /usr/bin ""; do
+ 	if test -x $i/pg_config; then
+       PG_CONFIG="$i/pg_config"
+       break;
+@@ -77723,7 +77723,7 @@
+   else
+     echo "$ac_t""not found" 1>&6
+     if test "$PHP_PGSQL" = "yes"; then
+-      PGSQL_SEARCH_PATHS="/usr /usr/local /usr/local/pgsql"
++      PGSQL_SEARCH_PATHS="/usr /usr/local /usr/local/pgsql"
+     else
+       PGSQL_SEARCH_PATHS=$PHP_PGSQL
+     fi
+@@ -80070,7 +80070,7 @@
+ 	if test "$PHP_PSPELL" != "yes"; then
+ 	    PSPELL_SEARCH_DIRS=$PHP_PSPELL
+ 	else
+-	    PSPELL_SEARCH_DIRS="/usr/local /usr"
++	    PSPELL_SEARCH_DIRS="/usr/local /usr"
+ 	fi
+ 	for i in $PSPELL_SEARCH_DIRS; do
+ 		if test -f $i/include/pspell/pspell.h; then
+@@ -80565,7 +80565,7 @@
+ fi
+ 
+ if test "$PHP_READLINE" && test "$PHP_READLINE" != "no"; then
+-  for i in $PHP_READLINE /usr/local /usr; do
++  for i in $PHP_READLINE /usr/local /usr; do
+     test -f $i/include/readline/readline.h && READLINE_DIR=$i && break
+   done
+ 
+@@ -81390,7 +81390,7 @@
+ 
+ elif test "$PHP_LIBEDIT" != "no"; then
+ 
+-  for i in $PHP_LIBEDIT /usr/local /usr; do
++  for i in $PHP_LIBEDIT /usr/local /usr; do
+     test -f $i/include/readline/readline.h && LIBEDIT_DIR=$i && break
+   done
+ 
+@@ -82203,7 +82203,7 @@
+ 
+ 
+ if test "$PHP_RECODE" != "no"; then
+-  RECODE_LIST="$PHP_RECODE /usr/local /usr /opt"
++  RECODE_LIST="$PHP_RECODE /usr/local /usr /opt"
+ 
+   for i in $RECODE_LIST; do
+     if test -f $i/include/recode.h; then
+@@ -83905,7 +83905,7 @@
+ fi
+ 
+ if test "$PHP_MM" != "no"; then
+-  for i in $PHP_MM /usr/local /usr; do
++  for i in $PHP_MM /usr/local /usr; do
+     test -f "$i/include/mm.h" && MM_DIR=$i && break
+   done
+ 
+@@ -84485,7 +84485,7 @@
+   echo $ac_n "(cached) $ac_c" 1>&6
+ else
+   
+-  for i in $PHP_LIBXML_DIR /usr/local /usr; do
++  for i in $PHP_LIBXML_DIR /usr/local /usr; do
+     if test -x "$i/bin/xml2-config"; then
+       ac_cv_php_xml2_config_path="$i/bin/xml2-config"
+       break
+@@ -85127,7 +85127,7 @@
+   ;;
+   *)
+   IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS=":"
+-  ac_dummy="/usr/local/bin:$PATH"
++  ac_dummy="/usr/local/bin:$PATH"
+   for ac_dir in $ac_dummy; do 
+     test -z "$ac_dir" && ac_dir=.
+     if test -f $ac_dir/$ac_word; then
+@@ -85287,13 +85287,13 @@
+ 
+             
+     if test "$PHP_SNMP" = "yes"; then
+-      for i in /usr/include /usr/local/include; do
++      for i in /usr/include /usr/local/include; do
+         test -f $i/snmp.h                       && SNMP_INCDIR=$i
+         test -f $i/ucd-snmp/snmp.h              && SNMP_INCDIR=$i/ucd-snmp
+         test -f $i/snmp/snmp.h                  && SNMP_INCDIR=$i/snmp
+         test -f $i/snmp/include/ucd-snmp/snmp.h && SNMP_INCDIR=$i/snmp/include/ucd-snmp
+       done
+-      for i in /usr /usr/snmp /usr/local /usr/local/snmp; do
++      for i in /usr /usr/snmp /usr/local /usr/local/snmp; do
+         test -f $i/lib/libsnmp.a || test -f $i/lib/libsnmp.$SHLIB_SUFFIX_NAME && SNMP_LIBDIR=$i/lib
+       done
+     else
+@@ -85589,7 +85589,7 @@
+     if test "$found_openssl" = "no"; then
+   
+     if test "$PHP_OPENSSL_DIR" = "yes"; then
+-      PHP_OPENSSL_DIR="/usr/local/ssl /usr/local /usr /usr/local/openssl"
++      PHP_OPENSSL_DIR="/usr/local/ssl /usr/local /usr /usr/local/openssl"
+     fi
+ 
+     for i in $PHP_OPENSSL_DIR; do
+@@ -86968,7 +86968,7 @@
+   echo $ac_n "(cached) $ac_c" 1>&6
+ else
+   
+-  for i in $PHP_LIBXML_DIR /usr/local /usr; do
++  for i in $PHP_LIBXML_DIR /usr/local /usr; do
+     if test -x "$i/bin/xml2-config"; then
+       ac_cv_php_xml2_config_path="$i/bin/xml2-config"
+       break
+@@ -88736,7 +88736,7 @@
+   fi  
+ 
+   if test "$PHP_SQLITE" != "yes"; then
+-    SEARCH_PATH="/usr/local /usr"
++    SEARCH_PATH="/usr/local /usr"
+     SEARCH_FOR="/include/sqlite.h"
+     if test -r $PHP_SQLITE/; then # path given as parameter
+       SQLITE_DIR=$PHP_SQLITE
+@@ -95879,7 +95879,7 @@
+   if test "$PHP_TIDY" != "yes"; then
+     TIDY_SEARCH_DIRS=$PHP_TIDY
+   else
+-    TIDY_SEARCH_DIRS="/usr/local /usr"
++    TIDY_SEARCH_DIRS="/usr/local /usr"
+   fi
+ 
+   for i in $TIDY_SEARCH_DIRS; do
+@@ -96918,7 +96918,7 @@
+   echo $ac_n "(cached) $ac_c" 1>&6
+ else
+   
+-  for i in $PHP_LIBXML_DIR /usr/local /usr; do
++  for i in $PHP_LIBXML_DIR /usr/local /usr; do
+     if test -x "$i/bin/xml2-config"; then
+       ac_cv_php_xml2_config_path="$i/bin/xml2-config"
+       break
+@@ -97194,7 +97194,7 @@
+   fi
+ 
+         if test "$PHP_LIBEXPAT_DIR" != "no"; then
+-    for i in $PHP_XML $PHP_LIBEXPAT_DIR /usr /usr/local; do
++    for i in $PHP_XML $PHP_LIBEXPAT_DIR /usr /usr/local; do
+       if test -f "$i/$PHP_LIBDIR/libexpat.a" || test -f "$i/$PHP_LIBDIR/libexpat.$SHLIB_SUFFIX_NAME"; then
+         EXPAT_DIR=$i
+         break
+@@ -97761,7 +97761,7 @@
+   echo $ac_n "(cached) $ac_c" 1>&6
+ else
+   
+-  for i in $PHP_LIBXML_DIR /usr/local /usr; do
++  for i in $PHP_LIBXML_DIR /usr/local /usr; do
+     if test -x "$i/bin/xml2-config"; then
+       ac_cv_php_xml2_config_path="$i/bin/xml2-config"
+       break
+@@ -98007,7 +98007,7 @@
+   fi
+   
+         if test "$PHP_LIBEXPAT_DIR" != "no"; then
+-    for i in $PHP_XML $PHP_LIBEXPAT_DIR /usr /usr/local; do
++    for i in $PHP_XML $PHP_LIBEXPAT_DIR /usr /usr/local; do
+       if test -f "$i/$PHP_LIBDIR/libexpat.a" || test -f "$i/$PHP_LIBDIR/libexpat.$SHLIB_SUFFIX_NAME"; then
+         EXPAT_DIR=$i
+         break
+@@ -98546,7 +98546,7 @@
+   echo $ac_n "(cached) $ac_c" 1>&6
+ else
+   
+-  for i in $PHP_LIBXML_DIR /usr/local /usr; do
++  for i in $PHP_LIBXML_DIR /usr/local /usr; do
+     if test -x "$i/bin/xml2-config"; then
+       ac_cv_php_xml2_config_path="$i/bin/xml2-config"
+       break
+@@ -99257,7 +99257,7 @@
+   echo $ac_n "(cached) $ac_c" 1>&6
+ else
+   
+-  for i in $PHP_LIBXML_DIR /usr/local /usr; do
++  for i in $PHP_LIBXML_DIR /usr/local /usr; do
+     if test -x "$i/bin/xml2-config"; then
+       ac_cv_php_xml2_config_path="$i/bin/xml2-config"
+       break
+@@ -99532,7 +99532,7 @@
+ 
+   else
+     testval=no
+-    for i in $PHP_LIBEXPAT_DIR $XMLRPC_DIR /usr/local /usr; do
++    for i in $PHP_LIBEXPAT_DIR $XMLRPC_DIR /usr/local /usr; do
+       if test -f $i/$PHP_LIBDIR/libexpat.a || test -f $i/$PHP_LIBDIR/libexpat.$SHLIB_SUFFIX_NAME; then
+         cat >> confdefs.h <<\EOF
+ #define HAVE_LIBEXPAT 1
+@@ -99812,7 +99812,7 @@
+ 
+         if test "$found_iconv" = "no"; then
+ 
+-    for i in $PHP_ICONV /usr/local /usr; do
++    for i in $PHP_ICONV /usr/local /usr; do
+       if test -r $i/include/giconv.h; then
+         cat >> confdefs.h <<\EOF
+ #define HAVE_GICONV_H 1
+@@ -101162,7 +101162,7 @@
+   else
+     echo $ac_n "checking for XMLRPC-EPI in default path""... $ac_c" 1>&6
+ echo "configure:101165: checking for XMLRPC-EPI in default path" >&5
+-    for i in /usr/local /usr; do
++    for i in /usr/local /usr; do
+       if test -r $i/include/xmlrpc.h; then
+         XMLRPC_DIR=$i/include
+         echo "$ac_t""found in $i" 1>&6
+@@ -101674,7 +101674,7 @@
+   echo $ac_n "(cached) $ac_c" 1>&6
+ else
+   
+-  for i in $PHP_LIBXML_DIR /usr/local /usr; do
++  for i in $PHP_LIBXML_DIR /usr/local /usr; do
+     if test -x "$i/bin/xml2-config"; then
+       ac_cv_php_xml2_config_path="$i/bin/xml2-config"
+       break
+@@ -102244,7 +102244,7 @@
+     { echo "configure: error: XSL extension requires DOM extension, add --enable-dom" 1>&2; exit 1; }
+   fi
+ 
+-  for i in $PHP_XSL /usr/local /usr; do
++  for i in $PHP_XSL /usr/local /usr; do
+     if test -x "$i/bin/xslt-config"; then
+       XSLT_CONFIG=$i/bin/xslt-config
+       break
+@@ -102394,7 +102394,7 @@
+       
+       echo $ac_n "checking for EXSLT support""... $ac_c" 1>&6
+ echo "configure:102397: checking for EXSLT support" >&5
+-      for i in $PHP_XSL /usr/local /usr; do
++      for i in $PHP_XSL /usr/local /usr; do
+         if test -r "$i/include/libexslt/exslt.h"; then
+           PHP_XSL_EXSL_DIR=$i
+           break
+@@ -102939,7 +102939,7 @@
+ 			{ echo "configure: error: Can't find zlib headers under "$PHP_ZLIB_DIR"" 1>&2; exit 1; }
+ 		fi
+ 	else
+-		for i in /usr/local /usr; do
++		for i in /usr/local /usr; do
+ 			if test -f "$i/include/zlib/zlib.h"; then
+ 				PHP_ZLIB_DIR="$i"
+ 				PHP_ZLIB_INCDIR="$i/include/zlib"
+@@ -105547,19 +105547,19 @@
+ EXTRA_LIBS="$EXTRA_LIBS $LIBS"
+ unset LIBS LDFLAGS
+ 
+-test "$prefix" = "NONE" && prefix=/usr/local
++test "$prefix" = "NONE" && prefix=/usr/local
+ test "$exec_prefix" = "NONE" && exec_prefix='${prefix}'
+ test "$program_prefix" = "NONE" && program_prefix=
+ test "$program_suffix" = "NONE" && program_suffix=
+ 
+ case $libdir in
+   '${exec_prefix}/lib')
+-    libdir=$libdir/php
++    libdir=$libdir/php5
+     ;;
+ esac
+ case $datadir in
+   '${prefix}/share')
+-    datadir=$datadir/php
++    datadir=$datadir/php5
+     ;;
+   *) ;;
+ esac
+@@ -105592,7 +105592,7 @@
+       part2=non-zts
+     fi
+     extbasedir=$part1-$part2-$extbasedir
+-    EXTENSION_DIR=$libdir/extensions/$extbasedir
++    EXTENSION_DIR=$libdir/extensions
+   else
+     if test "$enable_maintainer_zts" = "yes"; then
+       extbasedir=$extbasedir-zts
+@@ -105601,7 +105601,7 @@
+     if test "$PHP_DEBUG" = "1"; then
+       extbasedir=$extbasedir-debug
+     fi
+-    EXTENSION_DIR=$libdir/$extbasedir
++    EXTENSION_DIR=$libdir
+   fi
+ fi
+ 
+@@ -109165,7 +109165,7 @@
+     sys_lib_search_path_spec=`echo "$sys_lib_search_path_spec" | $SED  -e "s/$PATH_SEPARATOR/ /g"`
+   fi
+ else
+-  sys_lib_search_path_spec="/lib /usr/lib /usr/local/lib"
++  sys_lib_search_path_spec="/lib /usr/lib /usr/local/lib"
+ fi
+ need_lib_prefix=unknown
+ hardcode_into_libs=no
+@@ -109247,8 +109247,8 @@
+   soname_spec='${libname}${release}${shared_ext}$major'
+   finish_cmds='PATH="\$PATH:/sbin" ldconfig $libdir'
+   shlibpath_var=LD_LIBRARY_PATH
+-  sys_lib_search_path_spec="/shlib /usr/lib /usr/X11/lib /usr/contrib/lib /lib /usr/local/lib"
+-  sys_lib_dlsearch_path_spec="/shlib /usr/lib /usr/local/lib"
++  sys_lib_search_path_spec="/shlib /usr/lib /usr/X11/lib /usr/contrib/lib /lib /usr/local/lib"
++  sys_lib_dlsearch_path_spec="/shlib /usr/lib /usr/local/lib"
+   # the default ld.so.conf also contains /usr/contrib/lib and
+   # /usr/X11R6/lib (/usr/X11 is a link to /usr/X11R6), but let us allow
+   # libtool to hard-code these into programs
+@@ -109279,7 +109279,7 @@
+     cygwin*)
+       # Cygwin DLLs use 'cyg' prefix rather than 'lib'
+       soname_spec='`echo ${libname} | sed -e 's/^lib/cyg/'``echo ${release} | $SED -e 's/[.]/-/g'`${versuffix}${shared_ext}'
+-      sys_lib_search_path_spec="/usr/lib /lib/w32api /lib /usr/local/lib"
++      sys_lib_search_path_spec="/usr/lib /lib/w32api /lib /usr/local/lib"
+       ;;
+     mingw*)
+       # MinGW DLLs use traditional 'lib' prefix
+@@ -109325,11 +109325,11 @@
+   shrext_cmds='`test .$module = .yes && echo .so || echo .dylib`'
+   # Apple's gcc prints 'gcc -print-search-dirs' doesn't operate the same.
+   if test "$GCC" = yes; then
+-    sys_lib_search_path_spec=`$CC -print-search-dirs | tr "\n" "$PATH_SEPARATOR" | sed -e 's/libraries:/@libraries:/' | tr "@" "\n" | grep "^libraries:" | sed -e "s/^libraries://" -e "s,=/,/,g" -e "s,$PATH_SEPARATOR, ,g" -e "s,.*,& /lib /usr/lib /usr/local/lib,g"`
++    sys_lib_search_path_spec=`$CC -print-search-dirs | tr "\n" "$PATH_SEPARATOR" | sed -e 's/libraries:/@libraries:/' | tr "@" "\n" | grep "^libraries:" | sed -e "s/^libraries://" -e "s,=/,/,g" -e "s,$PATH_SEPARATOR, ,g" -e "s,.*,& /lib /usr/lib /usr/local/lib,g"`
+   else
+-    sys_lib_search_path_spec='/lib /usr/lib /usr/local/lib'
++    sys_lib_search_path_spec='/lib /usr/lib /usr/local/lib'
+   fi
+-  sys_lib_dlsearch_path_spec='/usr/local/lib /lib /usr/lib'
++  sys_lib_dlsearch_path_spec='/usr/local/lib /lib /usr/lib'
+   ;;
+ 
+ dgux*)
+@@ -109422,9 +109422,9 @@
+     library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}$major $libname${shared_ext}'
+     soname_spec='${libname}${release}${shared_ext}$major'
+     if test "X$HPUX_IA64_MODE" = X32; then
+-      sys_lib_search_path_spec="/usr/lib/hpux32 /usr/local/lib/hpux32 /usr/local/lib"
++      sys_lib_search_path_spec="/usr/lib/hpux32 /usr/local/lib/hpux32 /usr/local/lib"
+     else
+-      sys_lib_search_path_spec="/usr/lib/hpux64 /usr/local/lib/hpux64"
++      sys_lib_search_path_spec="/usr/lib/hpux64 /usr/local/lib/hpux64"
+     fi
+     sys_lib_dlsearch_path_spec=$sys_lib_search_path_spec
+     ;;
+@@ -109484,7 +109484,7 @@
+   esac
+   shlibpath_var=LD_LIBRARY${shlibsuff}_PATH
+   shlibpath_overrides_runpath=no
+-  sys_lib_search_path_spec="/usr/lib${libsuff} /lib${libsuff} /usr/local/lib${libsuff}"
++  sys_lib_search_path_spec="/usr/lib${libsuff} /lib${libsuff} /usr/local/lib${libsuff}"
+   sys_lib_dlsearch_path_spec="/usr/lib${libsuff} /lib${libsuff}"
+   hardcode_into_libs=yes
+   ;;
+@@ -109518,7 +109518,7 @@
+       case `/usr/bin/file conftest.$ac_objext` in
+       *64-bit*)
+         libsuff=64
+-        sys_lib_search_path_spec="/lib${libsuff} /usr/lib${libsuff} /usr/local/lib${libsuff}"
++        sys_lib_search_path_spec="/lib${libsuff} /usr/lib${libsuff} /usr/local/lib${libsuff}"
+         ;;
+       esac
+     fi
+@@ -109629,7 +109629,7 @@
+   soname_spec='${libname}${release}${shared_ext}$major'
+   library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}$major $libname${shared_ext}'
+   shlibpath_var=LD_LIBRARY_PATH
+-  sys_lib_search_path_spec="/usr/shlib /usr/ccs/lib /usr/lib/cmplrs/cc /usr/lib /usr/local/lib /var/shlib"
++  sys_lib_search_path_spec="/usr/shlib /usr/ccs/lib /usr/lib/cmplrs/cc /usr/lib /usr/local/lib /var/shlib"
+   sys_lib_dlsearch_path_spec="$sys_lib_search_path_spec"
+   ;;
+ 
+@@ -112637,7 +112637,7 @@
+     sys_lib_search_path_spec=`echo "$sys_lib_search_path_spec" | $SED  -e "s/$PATH_SEPARATOR/ /g"`
+   fi
+ else
+-  sys_lib_search_path_spec="/lib /usr/lib /usr/local/lib"
++  sys_lib_search_path_spec="/lib /usr/lib /usr/local/lib"
+ fi
+ need_lib_prefix=unknown
+ hardcode_into_libs=no
+@@ -112719,8 +112719,8 @@
+   soname_spec='${libname}${release}${shared_ext}$major'
+   finish_cmds='PATH="\$PATH:/sbin" ldconfig $libdir'
+   shlibpath_var=LD_LIBRARY_PATH
+-  sys_lib_search_path_spec="/shlib /usr/lib /usr/X11/lib /usr/contrib/lib /lib /usr/local/lib"
+-  sys_lib_dlsearch_path_spec="/shlib /usr/lib /usr/local/lib"
++  sys_lib_search_path_spec="/shlib /usr/lib /usr/X11/lib /usr/contrib/lib /lib /usr/local/lib"
++  sys_lib_dlsearch_path_spec="/shlib /usr/lib /usr/local/lib"
+   # the default ld.so.conf also contains /usr/contrib/lib and
+   # /usr/X11R6/lib (/usr/X11 is a link to /usr/X11R6), but let us allow
+   # libtool to hard-code these into programs
+@@ -112751,7 +112751,7 @@
+     cygwin*)
+       # Cygwin DLLs use 'cyg' prefix rather than 'lib'
+       soname_spec='`echo ${libname} | sed -e 's/^lib/cyg/'``echo ${release} | $SED -e 's/[.]/-/g'`${versuffix}${shared_ext}'
+-      sys_lib_search_path_spec="/usr/lib /lib/w32api /lib /usr/local/lib"
++      sys_lib_search_path_spec="/usr/lib /lib/w32api /lib /usr/local/lib"
+       ;;
+     mingw*)
+       # MinGW DLLs use traditional 'lib' prefix
+@@ -112797,11 +112797,11 @@
+   shrext_cmds='`test .$module = .yes && echo .so || echo .dylib`'
+   # Apple's gcc prints 'gcc -print-search-dirs' doesn't operate the same.
+   if test "$GCC" = yes; then
+-    sys_lib_search_path_spec=`$CC -print-search-dirs | tr "\n" "$PATH_SEPARATOR" | sed -e 's/libraries:/@libraries:/' | tr "@" "\n" | grep "^libraries:" | sed -e "s/^libraries://" -e "s,=/,/,g" -e "s,$PATH_SEPARATOR, ,g" -e "s,.*,& /lib /usr/lib /usr/local/lib,g"`
++    sys_lib_search_path_spec=`$CC -print-search-dirs | tr "\n" "$PATH_SEPARATOR" | sed -e 's/libraries:/@libraries:/' | tr "@" "\n" | grep "^libraries:" | sed -e "s/^libraries://" -e "s,=/,/,g" -e "s,$PATH_SEPARATOR, ,g" -e "s,.*,& /lib /usr/lib /usr/local/lib,g"`
+   else
+-    sys_lib_search_path_spec='/lib /usr/lib /usr/local/lib'
++    sys_lib_search_path_spec='/lib /usr/lib /usr/local/lib'
+   fi
+-  sys_lib_dlsearch_path_spec='/usr/local/lib /lib /usr/lib'
++  sys_lib_dlsearch_path_spec='/usr/local/lib /lib /usr/lib'
+   ;;
+ 
+ dgux*)
+@@ -112894,9 +112894,9 @@
+     library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}$major $libname${shared_ext}'
+     soname_spec='${libname}${release}${shared_ext}$major'
+     if test "X$HPUX_IA64_MODE" = X32; then
+-      sys_lib_search_path_spec="/usr/lib/hpux32 /usr/local/lib/hpux32 /usr/local/lib"
++      sys_lib_search_path_spec="/usr/lib/hpux32 /usr/local/lib/hpux32 /usr/local/lib"
+     else
+-      sys_lib_search_path_spec="/usr/lib/hpux64 /usr/local/lib/hpux64"
++      sys_lib_search_path_spec="/usr/lib/hpux64 /usr/local/lib/hpux64"
+     fi
+     sys_lib_dlsearch_path_spec=$sys_lib_search_path_spec
+     ;;
+@@ -112956,7 +112956,7 @@
+   esac
+   shlibpath_var=LD_LIBRARY${shlibsuff}_PATH
+   shlibpath_overrides_runpath=no
+-  sys_lib_search_path_spec="/usr/lib${libsuff} /lib${libsuff} /usr/local/lib${libsuff}"
++  sys_lib_search_path_spec="/usr/lib${libsuff} /lib${libsuff} /usr/local/lib${libsuff}"
+   sys_lib_dlsearch_path_spec="/usr/lib${libsuff} /lib${libsuff}"
+   hardcode_into_libs=yes
+   ;;
+@@ -112990,7 +112990,7 @@
+       case `/usr/bin/file conftest.$ac_objext` in
+       *64-bit*)
+         libsuff=64
+-        sys_lib_search_path_spec="/lib${libsuff} /usr/lib${libsuff} /usr/local/lib${libsuff}"
++        sys_lib_search_path_spec="/lib${libsuff} /usr/lib${libsuff} /usr/local/lib${libsuff}"
+         ;;
+       esac
+     fi
+@@ -113101,7 +113101,7 @@
+   soname_spec='${libname}${release}${shared_ext}$major'
+   library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}$major $libname${shared_ext}'
+   shlibpath_var=LD_LIBRARY_PATH
+-  sys_lib_search_path_spec="/usr/shlib /usr/ccs/lib /usr/lib/cmplrs/cc /usr/lib /usr/local/lib /var/shlib"
++  sys_lib_search_path_spec="/usr/shlib /usr/ccs/lib /usr/lib/cmplrs/cc /usr/lib /usr/local/lib /var/shlib"
+   sys_lib_dlsearch_path_spec="$sys_lib_search_path_spec"
+   ;;
+ 
+Only in php-5.2.2: configure~
+diff -r -u -- php-5.2.2_orig/ext/pdo/Makefile.frag php-5.2.2/ext/pdo/Makefile.frag
+--- php-5.2.2_orig/ext/pdo/Makefile.frag	2007-05-22 14:21:37.000000000 +0200
++++ php-5.2.2/ext/pdo/Makefile.frag	2007-05-22 14:21:38.000000000 +0200
+@@ -1,4 +1,4 @@
+-phpincludedir=$(prefix)/include/php
++phpincludedir=$(prefix)/include/php5
+ 
+ PDO_HEADER_FILES= \
+ 	php_pdo.h \
+diff -r -u -- php-5.2.2_orig/ext/pdo_dblib/config.m4 php-5.2.2/ext/pdo_dblib/config.m4
+--- php-5.2.2_orig/ext/pdo_dblib/config.m4	2007-05-22 14:21:37.000000000 +0200
++++ php-5.2.2/ext/pdo_dblib/config.m4	2007-05-22 14:21:38.000000000 +0200
+@@ -57,12 +57,12 @@
+     PHP_CHECK_PDO_INCLUDES
+   ],[
+     AC_MSG_CHECKING([for PDO includes])
+-    if test -f $abs_srcdir/include/php/ext/pdo/php_pdo_driver.h; then
++    if test -f $abs_srcdir/include/php5/ext/pdo/php_pdo_driver.h; then
+       pdo_inc_path=$abs_srcdir/ext
+     elif test -f $abs_srcdir/ext/pdo/php_pdo_driver.h; then
+       pdo_inc_path=$abs_srcdir/ext
+-    elif test -f $prefix/include/php/ext/pdo/php_pdo_driver.h; then
+-      pdo_inc_path=$prefix/include/php/ext
++    elif test -f $prefix/include/php5/ext/pdo/php_pdo_driver.h; then
++      pdo_inc_path=$prefix/include/php5/ext
+     else
+       AC_MSG_ERROR([Cannot find php_pdo_driver.h.])
+     fi
+diff -r -u -- php-5.2.2_orig/ext/pdo_mysql/config.m4 php-5.2.2/ext/pdo_mysql/config.m4
+--- php-5.2.2_orig/ext/pdo_mysql/config.m4	2007-05-22 14:21:37.000000000 +0200
++++ php-5.2.2/ext/pdo_mysql/config.m4	2007-05-22 14:21:38.000000000 +0200
+@@ -137,12 +137,12 @@
+     PHP_CHECK_PDO_INCLUDES
+   ],[
+     AC_MSG_CHECKING([for PDO includes])
+-    if test -f $abs_srcdir/include/php/ext/pdo/php_pdo_driver.h; then
++    if test -f $abs_srcdir/include/php5/ext/pdo/php_pdo_driver.h; then
+       pdo_inc_path=$abs_srcdir/ext
+     elif test -f $abs_srcdir/ext/pdo/php_pdo_driver.h; then
+       pdo_inc_path=$abs_srcdir/ext
+-    elif test -f $prefix/include/php/ext/pdo/php_pdo_driver.h; then
+-      pdo_inc_path=$prefix/include/php/ext
++    elif test -f $prefix/include/php5/ext/pdo/php_pdo_driver.h; then
++      pdo_inc_path=$prefix/include/php5/ext
+     else
+       AC_MSG_ERROR([Cannot find php_pdo_driver.h.])
+     fi
+Only in php-5.2.2/ext/pdo_mysql: config.m4~
+diff -r -u -- php-5.2.2_orig/ext/pdo_oci/config.m4 php-5.2.2/ext/pdo_oci/config.m4
+--- php-5.2.2_orig/ext/pdo_oci/config.m4	2007-05-22 14:21:37.000000000 +0200
++++ php-5.2.2/ext/pdo_oci/config.m4	2007-05-22 14:21:38.000000000 +0200
+@@ -220,12 +220,12 @@
+     PHP_CHECK_PDO_INCLUDES
+   ],[
+     AC_MSG_CHECKING([for PDO includes])
+-    if test -f $abs_srcdir/include/php/ext/pdo/php_pdo_driver.h; then
++    if test -f $abs_srcdir/include/php5/ext/pdo/php_pdo_driver.h; then
+       pdo_inc_path=$abs_srcdir/ext
+     elif test -f $abs_srcdir/ext/pdo/php_pdo_driver.h; then
+       pdo_inc_path=$abs_srcdir/ext
+-    elif test -f $prefix/include/php/ext/pdo/php_pdo_driver.h; then
+-      pdo_inc_path=$prefix/include/php/ext
++    elif test -f $prefix/include/php5/ext/pdo/php_pdo_driver.h; then
++      pdo_inc_path=$prefix/include/php5/ext
+     else
+       AC_MSG_ERROR([Cannot find php_pdo_driver.h.])
+     fi
+diff -r -u -- php-5.2.2_orig/ext/pdo_odbc/config.m4 php-5.2.2/ext/pdo_odbc/config.m4
+--- php-5.2.2_orig/ext/pdo_odbc/config.m4	2007-05-22 14:21:37.000000000 +0200
++++ php-5.2.2/ext/pdo_odbc/config.m4	2007-05-22 14:21:38.000000000 +0200
+@@ -45,12 +45,12 @@
+     PHP_CHECK_PDO_INCLUDES
+   ],[
+     AC_MSG_CHECKING([for PDO includes])
+-    if test -f $abs_srcdir/include/php/ext/pdo/php_pdo_driver.h; then
++    if test -f $abs_srcdir/include/php5/ext/pdo/php_pdo_driver.h; then
+       pdo_inc_path=$abs_srcdir/ext
+     elif test -f $abs_srcdir/ext/pdo/php_pdo_driver.h; then
+       pdo_inc_path=$abs_srcdir/ext
+-    elif test -f $prefix/include/php/ext/pdo/php_pdo_driver.h; then
+-      pdo_inc_path=$prefix/include/php/ext
++    elif test -f $prefix/include/php5/ext/pdo/php_pdo_driver.h; then
++      pdo_inc_path=$prefix/include/php5/ext
+     else
+       AC_MSG_ERROR([Cannot find php_pdo_driver.h.])
+     fi
+diff -r -u -- php-5.2.2_orig/ext/pdo_pgsql/config.m4 php-5.2.2/ext/pdo_pgsql/config.m4
+--- php-5.2.2_orig/ext/pdo_pgsql/config.m4	2007-05-22 14:21:37.000000000 +0200
++++ php-5.2.2/ext/pdo_pgsql/config.m4	2007-05-22 14:21:38.000000000 +0200
+@@ -111,12 +111,12 @@
+   	PHP_CHECK_PDO_INCLUDES
+   ],[
+     AC_MSG_CHECKING([for PDO includes])
+-    if test -f $abs_srcdir/include/php/ext/pdo/php_pdo_driver.h; then
++    if test -f $abs_srcdir/include/php5/ext/pdo/php_pdo_driver.h; then
+       pdo_inc_path=$abs_srcdir/ext
+     elif test -f $abs_srcdir/ext/pdo/php_pdo_driver.h; then
+       pdo_inc_path=$abs_srcdir/ext
+-    elif test -f $prefix/include/php/ext/pdo/php_pdo_driver.h; then
+-      pdo_inc_path=$prefix/include/php/ext
++    elif test -f $prefix/include/php5/ext/pdo/php_pdo_driver.h; then
++      pdo_inc_path=$prefix/include/php5/ext
+     else
+       AC_MSG_ERROR([Cannot find php_pdo_driver.h.])
+     fi
+diff -r -u -- php-5.2.2_orig/ext/pdo_sqlite/config.m4 php-5.2.2/ext/pdo_sqlite/config.m4
+--- php-5.2.2_orig/ext/pdo_sqlite/config.m4	2007-05-22 14:21:37.000000000 +0200
++++ php-5.2.2/ext/pdo_sqlite/config.m4	2007-05-22 14:21:38.000000000 +0200
+@@ -14,12 +14,12 @@
+     PHP_CHECK_PDO_INCLUDES
+   ],[
+     AC_MSG_CHECKING([for PDO includes])
+-    if test -f $abs_srcdir/include/php/ext/pdo/php_pdo_driver.h; then
++    if test -f $abs_srcdir/include/php5/ext/pdo/php_pdo_driver.h; then
+       pdo_inc_path=$abs_srcdir/ext
+     elif test -f $abs_srcdir/ext/pdo/php_pdo_driver.h; then
+       pdo_inc_path=$abs_srcdir/ext
+-    elif test -f $prefix/include/php/ext/pdo/php_pdo_driver.h; then
+-      pdo_inc_path=$prefix/include/php/ext
++    elif test -f $prefix/include/php5/ext/pdo/php_pdo_driver.h; then
++      pdo_inc_path=$prefix/include/php5/ext
+     else
+       AC_MSG_ERROR([Cannot find php_pdo_driver.h.])
+     fi
+diff -r -u -- php-5.2.2_orig/scripts/Makefile.frag php-5.2.2/scripts/Makefile.frag
+--- php-5.2.2_orig/scripts/Makefile.frag	2007-05-22 14:21:38.000000000 +0200
++++ php-5.2.2/scripts/Makefile.frag	2007-05-22 14:21:38.000000000 +0200
+@@ -3,8 +3,8 @@
+ # Build environment install
+ #
+ 
+-phpincludedir = $(includedir)/php
+-phpbuilddir = $(libdir)/build
++phpincludedir = $(includedir)/php5
++phpbuilddir = $(prefix)/lib/php5/build
+ 
+ BUILD_FILES = \
+ 	scripts/phpize.m4 \
+diff -r -u -- php-5.2.2_orig/scripts/php-config.in php-5.2.2/scripts/php-config.in
+--- php-5.2.2_orig/scripts/php-config.in	2007-05-22 14:21:38.000000000 +0200
++++ php-5.2.2/scripts/php-config.in	2007-05-22 14:21:38.000000000 +0200
+@@ -4,7 +4,7 @@
+ exec_prefix="@exec_prefix@"
+ version="@PHP_VERSION@"
+ version_id="@PHP_VERSION_ID@"
+-includedir="@includedir@/php"
++includedir="@includedir@/php5"
+ includes="-I$includedir -I$includedir/main -I$includedir/TSRM -I$includedir/Zend -I$includedir/ext -I$includedir/ext/date/lib"
+ ldflags="@PHP_LDFLAGS@"
+ libs="@EXTRA_LIBS@"
+diff -r -u -- php-5.2.2_orig/scripts/phpize.in php-5.2.2/scripts/phpize.in
+--- php-5.2.2_orig/scripts/phpize.in	2007-05-22 14:21:38.000000000 +0200
++++ php-5.2.2/scripts/phpize.in	2007-05-22 14:21:38.000000000 +0200
+@@ -4,7 +4,7 @@
+ prefix='@prefix@'
+ exec_prefix="`eval echo @exec_prefix@`"
+ phpdir="`eval echo @libdir@`/build"
+-includedir="`eval echo @includedir@`/php"
++includedir="`eval echo @includedir@`/php5"
+ builddir="`pwd`"
+ 
+ FILES_BUILD="mkdep.awk scan_makefile_in.awk shtool libtool.m4"

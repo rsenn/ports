@@ -1,0 +1,51 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A dark theme.
+#  A dark theme.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=wire
+version=0.16
+release=1
+source=(http://www.cwr.cl/projects/WIRE/releases/WIRE-$version.tar.gz)
+
+build()
+{
+  cd WIRE-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix" \
+       --${shared:=enable}-shared \
+       --${static:=enable}-shared
+
+  make
+  make prefix="$ROOT" install
+
+  install -d $ROOT/share/doc/$name-$version
+
+  find doc -type f -maxdepth 1 -not -name "Makefile*" -exec mv '{}' $ROOT/share/doc/$name-$version/ ';'
+  find . -type f -maxdepth 1 -name "[A-Z]*" -and -not -name "Makefile*" -exec mv '{}' $ROOT/share/doc/$name-$version/ ';'
+
+  install -d $ROOT/include/wire
+  install -m 644 config.h $ROOT/include/wire/config-wire.h
+  install -m 644 lib/*.h $ROOT/include/wire/
+  install -m 644 wirudiko/*.h $ROOT/include/wire
+
+  install -d $ROOT/include/univchardet
+  install -m 644 universalchardet/*.h $ROOT/include/univchardet
+
+  sed -i -e 's,\(config\)\.h,\1-wire.h,g' -e '\,^\s*$, {
+    :lp
+    N
+    \,\*/$,! b lp
+    N
+    /\n#define PACKAGE/ d
+    /\n#define VERSION/ d
+  }' \
+    $ROOT/include/wire/config-wire.h
+}

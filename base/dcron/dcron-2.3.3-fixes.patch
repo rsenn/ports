@@ -1,0 +1,243 @@
+diff -ru dcron-2.3.3_orig/Makefile dcron-2.3.3/Makefile
+--- dcron-2.3.3_orig/Makefile	2006-02-23 14:16:13.000000000 +0100
++++ dcron-2.3.3/Makefile	2006-02-23 13:32:27.000000000 +0100
+@@ -1,8 +1,18 @@
+ # Makefile for dillon's cron and crontab
+ #
+ 
++prefix = /usr
++bindir = ${prefix}/bin
++sbindir = ${prefix}/sbin
++localstatedir = ${prefix}/var
++tmpdir = ${prefix}/tmp
++
++DESTDIR =
++
+ CC  = gcc
+-CFLAGS = -O2 -Wall -Wstrict-prototypes
++CFLAGS = -fno-builtin -Wall -Wstrict-prototypes 
++INCLUDES = -I.
++DEFS = -DLOCALSTATEDIR=\"$(localstatedir)\" -DTMPDIR=\"$(tmpdir)\" -DSBINDIR=\"$(sbindir)\" -DBINDIR=\"$(bindir)\"
+ LIB = 
+ SRCS = main.c subs.c database.c job.c
+ OBJS = main.o subs.o database.o job.o
+@@ -10,18 +20,19 @@
+ D_OBJS = crontab.o subs.o
+ PROTOS= protos.h
+ 
+-all:	${PROTOS} crond crontab
++all:	$(PROTOS) crond crontab
++
++.c.o:
++	$(CC) $(CFLAGS) $(INCLUDES) $(DEFS) -c $<
+ 
+-crond:	${OBJS}
+-	${CC} ${CFLAGS} -o crond ${OBJS} ${LIB}
+-	strip crond
+-
+-crontab:  ${D_OBJS}
+-	${CC} ${CFLAGS} -o crontab ${D_OBJS}
+-	strip crontab
++crond:	$(OBJS)
++	$(CC) $(CFLAGS) $(DEFS) -o crond $(OBJS) $(LIB) $(LDFLAGS)
+ 
+-protos.h: ${SRCS} ${D_SRCS}
+-	fgrep -h Prototype ${SRCS} ${D_SRCS} >protos.h
++crontab:  $(D_OBJS)
++	$(CC) $(CFLAGS) $(DEFS) -o crontab $(D_OBJS) $(LDFLAGS)
++
++protos.h: $(SRCS) $(D_SRCS)
++	fgrep -h Prototype $(SRCS) $(D_SRCS) >protos.h
+ 
+ clean:  cleano
+ 	rm -f crond crontab
+@@ -30,12 +41,18 @@
+ 	rm -f *.o dcron.tgz $(PROTOS)
+ 
+ install: crond crontab
+-	install -o root -g root -m 0755 crond /usr/sbin
+-	install -o root -g root -m 4755 crontab /usr/bin
+-	install -o root -g root crontab.1 /usr/man/man1
+-	install -o root -g root  crond.8 /usr/man/man8
++	install -o root -g root -m 0755 -D crond $(DESTDIR)$(prefix)/sbin/crond
++	install -o root -g root -m 4755 -D crontab $(DESTDIR)$(prefix)/bin/crontab
++	install -o root -g root -m 0644 -D crontab.1 $(DESTDIR)$(prefix)/man/man1/crontab.1
++	install -o root -g root -m 0644 -D crond.8 $(DESTDIR)$(prefix)/man/man8/crond.8
+ 
+ tar: cleano
+ 	(cd ..; tar cvf - dcron | gzip -9 >dcron.tgz.tmp)
+ 	mv -f ../dcron.tgz.tmp dcron.tgz
+ 
++crontab.o: crontab.c defs.h protos.h
++database.o: database.c defs.h protos.h
++job.o: job.c defs.h protos.h
++main.o: main.c defs.h protos.h
++subs.o: subs.c defs.h protos.h
++
+diff -ru dcron-2.3.3_orig/crontab.c dcron-2.3.3/crontab.c
+--- dcron-2.3.3_orig/crontab.c	2006-02-23 14:16:06.000000000 +0100
++++ dcron-2.3.3/crontab.c	2006-02-23 14:22:49.000000000 +0100
+@@ -311,7 +311,7 @@
+ 	    ptr = PATH_VI;
+ 
+ 	snprintf(visual, sizeof(visual), "%s %s", ptr, file);
+-	execl("/bin/sh", "/bin/sh", "-c", visual, NULL);
++	execl(BINDIR"/sh", BINDIR"/sh", "-c", visual, NULL);
+ 	perror("exec");
+ 	exit(0);
+     }
+diff -ru dcron-2.3.3_orig/database.c dcron-2.3.3/database.c
+--- dcron-2.3.3_orig/database.c	2006-02-23 14:16:06.000000000 +0100
++++ dcron-2.3.3/database.c	2006-02-23 14:37:16.000000000 +0100
+@@ -537,6 +537,9 @@
+ 		    int status;
+ 		    int r = wait4(line->cl_Pid, &status, WNOHANG, NULL);
+ 
++        if(r == line->cl_Pid)
++          line->cl_ExitCode = WEXITSTATUS(status);
++      
+ 		    if (r < 0 || r == line->cl_Pid) {
+ 		        EndJob(file, line);
+ 		        if (line->cl_Pid)
+diff -ru dcron-2.3.3_orig/defs.h dcron-2.3.3/defs.h
+--- dcron-2.3.3_orig/defs.h	2006-02-23 14:16:13.000000000 +0100
++++ dcron-2.3.3/defs.h	2006-02-23 15:07:51.000000000 +0100
+@@ -26,19 +26,19 @@
+ #define arysize(ary)	(sizeof(ary)/sizeof((ary)[0]))
+ 
+ #ifndef CRONTABS
+-#define CRONTABS	"/var/spool/cron/crontabs"
++#define CRONTABS	LOCALSTATEDIR"/cron/crontabs"
+ #endif
+ #ifndef TMPDIR
+-#define TMPDIR		"/tmp"
++#define TMPDIR		TMPDIR
+ #endif
+ #ifndef OPEN_MAX
+ #define OPEN_MAX	256
+ #endif
+ #ifndef SENDMAIL
+-#define SENDMAIL	"/usr/lib/sendmail"
++#define SENDMAIL	SBINDIR"/sendmail"
+ #endif
+ #ifndef SENDMAIL_ARGS
+-#define SENDMAIL_ARGS	"-t", "-oem", "-i"
++#define SENDMAIL_ARGS	"-t"
+ #endif
+ #ifndef CRONUPDATE
+ #define CRONUPDATE	"cron.update"
+@@ -47,7 +47,7 @@
+ #define MAXLINES	256		/* max lines in non-root crontabs */
+ #endif
+ #ifndef PATH_VI
+-#define PATH_VI		"/usr/bin/vi"	/* location of vi	*/
++#define PATH_VI		BINDIR"/nano"	/* location of vi	*/
+ #endif
+ 
+ 
+@@ -64,20 +64,24 @@
+ 
+ typedef struct CronLine {
+     struct CronLine *cl_Next;
+-    char	*cl_Shell;	/* shell command			*/
+-    int		cl_Pid;		/* running pid, 0, or armed (-1)	*/
++    char	*cl_Shell;	  /* shell command			*/
++    int		cl_Pid;	  	  /* running pid, 0, or armed (-1)	*/
++    int   cl_ExitCode;  /* exit code */
+     int		cl_MailFlag;	/* running pid is for mail		*/
+-    int		cl_MailPos;	/* 'empty file' size			*/
++    int		cl_MailPos;	  /* 'empty file' size			*/
+     char	cl_Mins[60];	/* 0-59 				*/
+-    char	cl_Hrs[24];	/* 0-23					*/
++    char	cl_Hrs[24];	  /* 0-23					*/
+     char	cl_Days[32];	/* 1-31					*/
+     char	cl_Mons[12];	/* 0-11 				*/
+-    char	cl_Dow[7];	/* 0-6, beginning sunday		*/
++    char	cl_Dow[7];	  /* 0-6, beginning sunday		*/
+ } CronLine;
+ 
+ #define RUN_RANOUT	1
+ #define RUN_RUNNING	2
+ #define RUN_FAILED	3
+ 
++#define MAIL_ALWAYS 0
++#define MAIL_FAILED 1
++
+ #include "protos.h"
+ 
+diff -ru dcron-2.3.3_orig/job.c dcron-2.3.3/job.c
+--- dcron-2.3.3_orig/job.c	2006-02-23 14:16:06.000000000 +0100
++++ dcron-2.3.3/job.c	2006-02-23 14:47:07.000000000 +0100
+@@ -78,12 +78,12 @@
+ 	        mailFile
+ 	    );
+ 	}
+-	execl("/bin/sh", "/bin/sh", "-c", line->cl_Shell, NULL, NULL);
+-	logfd(8, "unable to exec, user %s cmd /bin/sh -c %s\n", 
++	execl(BINDIR"/sh", "sh", "-c", line->cl_Shell, NULL, NULL);
++	logfd(8, "unable to exec, user %s cmd "BINDIR"/sh -c %s\n", 
+ 	    file->cf_User,
+ 	    line->cl_Shell
+ 	);
+-	fdprintf(1, "Exec failed: /bin/sh -c %s\n", line->cl_Shell);
++	fdprintf(1, "Exec failed: "BINDIR"/sh -c %s\n", line->cl_Shell);
+ 	exit(0);
+     } else if (line->cl_Pid < 0) {
+ 	/*
+@@ -134,6 +134,12 @@
+         return;
+     }
+ 
++    if (line->cl_MailFlag == 1)
++      log(8, "USER %s pid %3d exit %u\n",
++          file->cf_User,
++          line->cl_Pid,
++          line->cl_ExitCode);
++  
+     /*
+      * End of job and no mail file
+      * End of sendmail job
+diff -ru dcron-2.3.3_orig/subs.c dcron-2.3.3/subs.c
+--- dcron-2.3.3_orig/subs.c	2006-02-23 14:16:13.000000000 +0100
++++ dcron-2.3.3/subs.c	2006-02-23 13:32:27.000000000 +0100
+@@ -15,7 +15,7 @@
+ Prototype int ChangeUser(const char *user, short dochdir);
+ Prototype void vlog(int level, int fd, const char *ctl, va_list va);
+ Prototype int slog(char *buf, size_t sz, const char *ctl, va_list va, short useDate);
+-Prototype char *strdup(const char *);
++/*Prototype char *strdup(const char *);*/
+ 
+ void 
+ log9(const char *ctl, ...)
+@@ -80,7 +80,7 @@
+ 
+     buf[0] = 0;
+     if (useDate)
+-	strftime(buf, 128, "%d-%b-%y %H:%M  ", tp);
++	strftime(buf, 128, "%d-%b-%Y %H:%M  ", tp);
+     vsnprintf(buf + strlen(buf), sz - strlen(buf), ctl, va);
+     return(strlen(buf));
+ }
+@@ -100,7 +100,7 @@
+     }
+     setenv("USER", pas->pw_name, 1);
+     setenv("HOME", pas->pw_dir, 1);
+-    setenv("SHELL", "/bin/sh", 1);
++    setenv("SHELL", BINDIR"/sh", 1);
+ 
+     /*
+      * Change running state to the user in question
+@@ -131,6 +131,7 @@
+     return(pas->pw_uid);
+ }
+ 
++/*
+ char *
+ strdup(const char *str)
+ {
+@@ -140,4 +141,4 @@
+         strcpy(ptr, str);
+     return(ptr);
+ }
+-
++*/

@@ -1,0 +1,76 @@
+diff -r -u -- reflex_orig/inc/Reflex/Kernel.h reflex/inc/Reflex/Kernel.h
+--- reflex_orig/inc/Reflex/Kernel.h	2007-06-13 12:11:29.000000000 +0200
++++ reflex/inc/Reflex/Kernel.h	2007-06-13 12:11:56.000000000 +0200
+@@ -95,7 +95,7 @@
+ #include <limits>
+ 
+ // Large integer definition depends of the platform
+-#if defined(_WIN32) && !defined(__CINT__)
++#if defined(_WIN32) && !defined(__CINT__) && defined(_MSC_VER)
+ typedef __int64 longlong;
+ typedef unsigned __int64 ulonglong;
+ #elif defined(__linux) || defined(sun) || defined(__APPLE__) || (defined(__CYGWIN__)&&defined(__GNUC__)) || defined(_AIX) || (defined(__alpha)&&!defined(__linux)) || defined(__sgi) || defined(__FreeBSD__)
+diff -r -u -- reflex_orig/src/Class.cxx reflex/src/Class.cxx
+--- reflex_orig/src/Class.cxx	2007-06-13 12:11:29.000000000 +0200
++++ reflex/src/Class.cxx	2007-06-13 12:14:30.000000000 +0200
+@@ -27,7 +27,7 @@
+ #include <iostream>
+ #include <sstream>
+ #include <algorithm>
+-#if defined (__linux) || defined (__APPLE__)
++#if defined (__GNUC__)
+ #include <cxxabi.h>
+ #endif
+ 
+@@ -90,12 +90,12 @@
+    if ( to.HasBase( t ) ) {  // down cast
+       // use the internal dynamic casting of the compiler (e.g. libstdc++.so)
+       void * obj3 = 0;
+-#if defined (__linux) || defined (__APPLE__)
++#if defined (__GNUC__)
+       obj3 = abi::__dynamic_cast(obj.Address(),
+                                  (const abi::__class_type_info*)&this->TypeInfo(),
+                                  (const abi::__class_type_info*)&to.TypeInfo(),
+                                  -1); 
+-#elif defined (_WIN32)
++#elif defined (_WIN32) && defined(_MSC_VER)
+       obj3 = __RTDynamicCast(obj.Address(),
+                              0,
+                              (void*)&this->TypeInfo(),
+diff -r -u -- reflex_orig/src/Kernel.cxx reflex/src/Kernel.cxx
+--- reflex_orig/src/Kernel.cxx	2007-06-13 12:11:29.000000000 +0200
++++ reflex/src/Kernel.cxx	2007-06-13 12:23:00.000000000 +0200
+@@ -154,16 +154,16 @@
+ 
+    // non fundamental types but also supported at initialisation
+    tb = new Fundamental( "longlong", 
+-                         sizeof( longlong ), 
+-                         typeid( longlong ));
++                         sizeof( long long ),
++                         typeid( long long ));
+    tb->Properties().AddProperty( "Description", "fundamental type" );
+    t = tb->ThisType();
+    new Typedef( "long long", t, FUNDAMENTAL, t );
+    new Typedef( "long long int", t, FUNDAMENTAL, t );
+ 
+-   tb = new Fundamental( "ulonglong", 
+-                         sizeof( ulonglong ), 
+-                         typeid( ulonglong ));
++   tb = new Fundamental( "ulonglong",
++                         sizeof( unsigned long long ), 
++                         typeid( unsigned long long ));
+    tb->Properties().AddProperty( "Description", "fundamental type" );
+    t = tb->ThisType();
+    new Typedef( "long long unsigned", t, FUNDAMENTAL, t );
+diff -r -u -- reflex_orig/src/stl_hash.h reflex/src/stl_hash.h
+--- reflex_orig/src/stl_hash.h	2007-06-13 12:11:29.000000000 +0200
++++ reflex/src/stl_hash.h	2007-06-13 12:26:52.000000000 +0200
+@@ -49,7 +49,7 @@
+ #include <cstring>
+ 
+ 
+-#if defined (_WIN32)
++#if defined (_WIN32) && defined(_MSC_VER)
+ 
+ namespace __gnu_cxx {
+    

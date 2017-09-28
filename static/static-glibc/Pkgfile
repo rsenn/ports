@@ -1,0 +1,107 @@
+# $Id: Pkgfile,v 1.19 2007/05/09 21:02:47 roman Exp $
+#
+# Description: glibc
+# URL: http://glibc.gnu.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=glibc
+version=2.6.1
+release=1
+source=($mirror_gnu/glibc/glibc-$version.tar.bz2
+        $mirror_gnu/glibc/glibc-libidn-$version.tar.bz2
+        $mirror_gnu/glibc/glibc-ports-$version.tar.bz2
+        http://distfiles.gentoo.org/distfiles/glibc-2.6.1-patches-1.1.tar.bz2)
+
+build()
+{
+  mv $SRC/glibc-libidn-$version $src/$name-$version/libidn
+  mv $SRC/glibc-ports-$version $src/$name-$version/ports
+
+  cd $SRC/$name-$version
+
+  patch -N -p1 -i $SRC/patches/1505_all_glibc-hppa-elf-relocs.patch
+  patch -N -p1 -i $SRC/patches/1035_all_glibc-respect-build-programs.patch
+  patch -N -p1 -i $SRC/patches/1075_all_glibc-section-comments.patch
+  patch -N -p1 -i $SRC/patches/1530_all_glibc-m68k-sys-user.patch
+  patch -N -p0 -i $SRC/patches/1100_all_glibc-2.3.3-china.patch
+  patch -N -p1 -i $SRC/patches/1045_all_glibc-handle-long-kernel-versions.patch
+  patch -N -p1 -i $SRC/patches/1055_all_glibc-resolv-dynamic.patch
+  patch -N -p0 -i $SRC/patches/6415_all_sh-glibc-2.5-no-asm-user-header.patch
+  patch -N -p0 -i $SRC/patches/6400_all_sh-glibc-2.3.2-fpscr_values.patch
+  patch -N -p1 -i $SRC/patches/6016_all_alpha-glibc-2.5-no-asm-elf-header.patch
+  patch -N -p1 -i $SRC/patches/1018_all_glibc-awk-in-C-locale.patch
+  patch -N -p1 -i $SRC/patches/4010_all_2.3.5-hardened-iconvconfig-unnest.patch
+  patch -N -p0 -i $SRC/patches/1130_all_glibc-2.4-undefine-__i686.patch
+  patch -N -p1 -i $SRC/patches/1060_all_glibc-cvs-getcwd-path-max.patch
+  patch -N -p1 -i $SRC/patches/1020_all_glibc-inet-headers.patch
+  patch -N -p1 -i $SRC/patches/6645_all_glibc-mips_shn_undef-hack.patch
+  patch -N -p0 -i $SRC/patches/1025_all_glibc-gcc-4.3-include-fixed.patch
+  patch -N -p1 -i $SRC/patches/1040_all_2.3.3-localedef-fix-trampoline.patch
+  patch -N -p0 -i $SRC/patches/6416_all_sh-glibc-2.5-no-asm-elf-header.patch
+  patch -N -p1 -i $SRC/patches/1030_all_glibc-manual-no-perl.patch
+  patch -N -p0 -i $SRC/patches/3010_all_2.3.3_pre20040117-pt_pax.patch
+  patch -N -p0 -i $SRC/patches/6001_all_alpha-glibc-2.4-xstat.patch
+  patch -N -p0 -i $SRC/patches/3000_all_2.3.6-dl_execstack-PaX-support.patch
+  patch -N -p1 -i $SRC/patches/5070_all_cross-compile-nptl.patch
+  patch -N -p1 -i $SRC/patches/5063_all_glibc-dont-build-timezone.patch
+  patch -N -p1 -i $SRC/patches/0030_all_glibc-respect-env-CPPFLAGS.patch
+  patch -N -p1 -i $SRC/patches/0010_all_glibc-ssp-compat.patch
+  patch -N -p1 -i $SRC/patches/1090_all_glibc-2.3.6-fix-pr631.patch
+  patch -N -p0 -i $SRC/patches/1103_all_glibc-new-valencian-locale.patch
+  patch -N -p1 -i $SRC/patches/3020_all_glibc-tests-sandbox-libdl-paths.patch
+  patch -N -p0 -i $SRC/patches/6015_all_alpha-glibc-2.5-no-page-header.patch
+  patch -N -p0 -i $SRC/patches/1510_all_glibc-hppa-no-asm-elf-header.patch
+  patch -N -p0 -i $SRC/patches/6235_all_arm-glibc-RTLD_SINGLE_THREAD_P.patch
+  patch -N -p1 -i $SRC/patches/6650_all_glibc-mips_gnu-hash_support.patch
+  patch -N -p0 -i $SRC/patches/6220_all_glibc-2.4-arm-cirrus-ep93xx-maverick-crunch-fpu.patch
+  patch -N -p0 -i $SRC/patches/6605_all_glibc-2.4-fpu-cw-mips.patch
+  patch -N -p0 -i $SRC/patches/6230_all_arm-glibc-2.5-no-page-header.patch
+
+  # build in separate directory
+  mkdir -p $SRC/$name-$version-build && cd $src/$name-$version-build
+
+  unset LD_LIBRARY_PATH LDFLAGS CFLAGS
+
+  export CFLAGS="${CFLAGS:+${CFLAGS//-Os/-O2} }-march=i686 -mtune=pentium4"
+
+  CONFIG_SHELL="$prefix/bin/sh" \
+  $SRC/$name-$version/configure \
+       --build="$build" \
+       --host="$host" \
+       ${target+--target="$target"} \
+       --prefix="$prefix" \
+       --sysconfdir="$prefix/etc" \
+       --${shared:=enable}-shared \
+       --${static:=enable}-shared \
+       --disable-profile \
+       --enable-add-ons \
+       --enable-kernel="2.6.0" \
+       --without-gd \
+       --with-binutils="$prefix/$host/bin" \
+       --with-elf \
+       --without-selinux \
+       --without-cvs \
+       --with-headers="$prefix/include" \
+       --disable-dev-erandom \
+       --with-tls \
+       --with-__thread \
+       --disable-sanity-checks \
+       --enable-versioning
+
+  make
+
+  # create an initial ld.so.conf
+  install -d $ROOT/etc
+
+  echo $prefix/lib >$ROOT/etc/ld.so.conf
+
+  # install the package into the pkg root
+  make install_root="$PKG" install
+
+  install -d $ROOT/include/bits
+
+  test -f $ROOT/include/lowlevellock.h || install -m 644 $SRC/glibc-$version/nptl/lowlevellock.h $ROOT/include/
+  test -f $ROOT/include/atomic.h || install -m 644 $SRC/glibc-$version/include/atomic.h $ROOT/include/
+  test -f $ROOT/include/bits/atomic.h || install -m 644 $SRC/glibc-$version/bits/atomic.h $ROOT/include/bits/
+}

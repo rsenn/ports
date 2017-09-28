@@ -1,0 +1,24 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A small boolean expression library.
+#  nobel is a small ANSI C boolean expression parsing library and program
+#  for projects that need boolean expression parsing support built in,
+#  but bigger tools are overkill in size or options.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=nobel
+version=0.2
+release=1
+source=($mirror_sf/nobel/nobel-$version.tar.gz)
+
+build()
+{
+  cd nobel-$version
+
+  sed -i 's:/usr:$(prefix):g' Makefile
+
+  make CC="${CC-cc}" CFLAGS="$CFLAGS" prefix="$ROOT" install
+
+}

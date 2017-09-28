@@ -1,0 +1,26 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A midlayer library, with user utilities and debug tools.
+#  The cpufrequtils package consists of a library which offers an unified
+#  access method for userspace tools and programs to the CPU frequency
+#  and voltage scaling (cpufreq) subsystem in the Linux kernel, the
+#  "cpufreq-info" and "cpufreq-set" tools to determine and set cpufreq
+#  settings, and debug tools helpful if frequency scaling doesn't work
+#  as expected.
+# URL: http://kernel.org/pub/linux/utils/kernel/cpufreq/cpufrequtils.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=cpufrequtils
+version=002
+release=1
+source=(ftp://ftp.kernel.org/pub/linux/utils/kernel/cpufreq/cpufrequtils-$version.tar.bz2
+        ftp://ftp.kernel.org/pub/linux/utils/kernel/cpufreq/cpufrequtils-0.4.tar.bz2)
+
+build()
+{
+  cd cpufrequtils-$version
+
+  make
+  make DESTDIR="$PKG" install
+}

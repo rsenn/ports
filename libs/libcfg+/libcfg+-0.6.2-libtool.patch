@@ -1,0 +1,279 @@
+diff -r -u -- libcfg+-0.6.2_orig/Rules.make.in libcfg+-0.6.2/Rules.make.in
+--- libcfg+-0.6.2_orig/Rules.make.in	2007-05-10 16:06:57.000000000 +0200
++++ libcfg+-0.6.2/Rules.make.in	2007-05-10 16:14:06.000000000 +0200
+@@ -24,7 +24,7 @@
+ DISTFILES         +=
+ 
+ LIBSTATIC          = $(PACKAGE).a
+-LIBDYNAMIC         = $(PACKAGE).so
++LIBDYNAMIC         = $(PACKAGE).la
+ LIBDYNAMICV        = $(PACKAGE).so.$(VERSION)
+ 
+ install_LIB        = $(LIBSTATIC) $(LIBDYNAMICV)
+@@ -87,11 +87,16 @@
+ DEFS     = @DEFS@
+ INCLUDES = -I. -I$(srcdir) -I$(top_builddir)
+ 
++host = @host_alias@
+ 
+-COMPILE      = $(CC)  $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)
+-COMPILE_CXX  = $(CXX) $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)
+-CCLD         = $(CC)
+-LINK         = $(CCLD) $(CFLAGS) $(LDFLAGS) -o $@
++LIBTOOL       = $(top_builddir)/libtool
++COMPILE       = $(CC)  $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)
++LTCOMPILE     = $(LIBTOOL) --mode=compile --tag=C $(CC)  $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)
++COMPILE_CXX   = $(CXX) $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)
++LTCOMPILE_CXX = $(LIBTOOL) --mode=compile --tag=CXX $(CXX) $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)
++CCLD          = $(CC)
++LINK          = $(CCLD) $(CFLAGS) $(LDFLAGS) -o $@
++LTLINK        = $(LIBTOOL) --mode=link --tag=C $(CCLD) $(CFLAGS) $(LDFLAGS) -o $@
+ 
+ # }}} Programs
+ 
+@@ -159,21 +164,21 @@
+ $(LIBSTATIC):	$(OBJECTS)
+ 	$(AR) r $@ $(OBJECTS)
+ 
+-$(LIBDYNAMICV):	$(OBJECTS)
+-	$(LD) $(LDFLAGS) -shared -o $@ $(OBJECTS)
++$(LIBDYNAMIC):	$(LT_OBJECTS)
++	$(LTLINK) $(LDFLAGS) -rpath $(libdir) -no-undefined -shared -o $@ $(LT_OBJECTS)
+ 
+-%.o: %.c $(CONFIG_HEADER)
++%.lo: %.c $(CONFIG_HEADER)
+ 	@echo '$(COMPILE) -c $<'; \
+-	$(COMPILE) -Wp,-MD,.deps/$(*F).pp -o $@ -c $<
++	$(LTCOMPILE) -Wp,-MD,.deps/$(*F).pp -o $@ -c $<
+ 	@-cp .deps/$(*F).pp .deps/$(*F).P; \
+ 	tr ' ' '\012' < .deps/$(*F).pp \
+ 	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+ 	    >> .deps/$(*F).P; \
+ 	rm .deps/$(*F).pp
+ 
+-%.o: %.cpp $(CONFIG_HEADER)
++%.lo: %.cpp $(CONFIG_HEADER)
+ 	@echo '$(COMPILE_CXX) -c $<'; \
+-	$(COMPILE_CXX) -Wp,-MD,.deps/$(*F).pp -o $@ -c $<
++	$(LTCOMPILE_CXX) -Wp,-MD,.deps/$(*F).pp -o $@ -c $<
+ 	@-cp .deps/$(*F).pp .deps/$(*F).P; \
+ 	tr ' ' '\012' < .deps/$(*F).pp \
+ 	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+Only in libcfg+-0.6.2: aclocal.m4
+diff -r -u -- libcfg+-0.6.2_orig/config.h.in libcfg+-0.6.2/config.h.in
+--- libcfg+-0.6.2_orig/config.h.in	2007-05-10 16:06:57.000000000 +0200
++++ libcfg+-0.6.2/config.h.in	2007-05-10 16:09:55.000000000 +0200
+@@ -1,44 +1,77 @@
+-/* config.h.in.  Generated automatically from configure.in by autoheader.  */
++/* config.h.in.  Generated from configure.in by autoheader.  */
+ #ifndef _CONFIG_H
+ #define _CONFIG_H
+ 
+ 
+-/* Define if you have the ANSI C header files.  */
+-#undef STDC_HEADERS
+-
+-/* Define if you have the <ctype.h> header file.  */
++/* Define to 1 if you have the <ctype.h> header file. */
+ #undef HAVE_CTYPE_H
+ 
+-/* Define if you have the <errno.h> header file.  */
++/* Define to 1 if you have the <dlfcn.h> header file. */
++#undef HAVE_DLFCN_H
++
++/* Define to 1 if you have the <errno.h> header file. */
+ #undef HAVE_ERRNO_H
+ 
+-/* Define if you have the <float.h> header file.  */
++/* Define to 1 if you have the <float.h> header file. */
+ #undef HAVE_FLOAT_H
+ 
+-/* Define if you have the <limits.h> header file.  */
++/* Define to 1 if you have the <inttypes.h> header file. */
++#undef HAVE_INTTYPES_H
++
++/* Define to 1 if you have the <limits.h> header file. */
+ #undef HAVE_LIMITS_H
+ 
+-/* Define if you have the <math.h> header file.  */
++/* Define to 1 if you have the <math.h> header file. */
+ #undef HAVE_MATH_H
+ 
+-/* Define if you have the <stdarg.h> header file.  */
++/* Define to 1 if you have the <memory.h> header file. */
++#undef HAVE_MEMORY_H
++
++/* Define to 1 if you have the <stdarg.h> header file. */
+ #undef HAVE_STDARG_H
+ 
+-/* Define if you have the <stdio.h> header file.  */
++/* Define to 1 if you have the <stdint.h> header file. */
++#undef HAVE_STDINT_H
++
++/* Define to 1 if you have the <stdio.h> header file. */
+ #undef HAVE_STDIO_H
+ 
+-/* Define if you have the <stdlib.h> header file.  */
++/* Define to 1 if you have the <stdlib.h> header file. */
+ #undef HAVE_STDLIB_H
+ 
+-/* Define if you have the <string.h> header file.  */
++/* Define to 1 if you have the <strings.h> header file. */
++#undef HAVE_STRINGS_H
++
++/* Define to 1 if you have the <string.h> header file. */
+ #undef HAVE_STRING_H
+ 
+-/* Define if you have the <strings.h> header file.  */
+-#undef HAVE_STRINGS_H
++/* Define to 1 if you have the <sys/stat.h> header file. */
++#undef HAVE_SYS_STAT_H
+ 
+-/* Define if you have the <unistd.h> header file.  */
++/* Define to 1 if you have the <sys/types.h> header file. */
++#undef HAVE_SYS_TYPES_H
++
++/* Define to 1 if you have the <unistd.h> header file. */
+ #undef HAVE_UNISTD_H
+ 
++/* Define to the address where bug reports for this package should be sent. */
++#undef PACKAGE_BUGREPORT
++
++/* Define to the full name of this package. */
++#undef PACKAGE_NAME
++
++/* Define to the full name and version of this package. */
++#undef PACKAGE_STRING
++
++/* Define to the one symbol short name of this package. */
++#undef PACKAGE_TARNAME
++
++/* Define to the version of this package. */
++#undef PACKAGE_VERSION
++
++/* Define to 1 if you have the ANSI C header files. */
++#undef STDC_HEADERS
++
+ /* Macros for generating function name with prefix 'cfg_' */
+ #ifndef PLATON_FUNC
+ # define PLATON_FUNC(_name) cfg_ ## _name
+Only in libcfg+-0.6.2: config.h.in~
+diff -r -u -- libcfg+-0.6.2_orig/configure.in libcfg+-0.6.2/configure.in
+--- libcfg+-0.6.2_orig/configure.in	2007-05-10 16:06:57.000000000 +0200
++++ libcfg+-0.6.2/configure.in	2007-05-10 16:09:37.000000000 +0200
+@@ -26,7 +26,8 @@
+ LN_S="$LN_S -f" # adds '-f' parameter to 'ln'
+ AC_PROG_MAKE_SET
+ AC_PROG_INSTALL
+-AC_PROG_RANLIB
++dnl AC_PROG_RANLIB
++AC_PROG_LIBTOOL
+ 
+ # AC_CHECK_PROG STRIP {{{
+ # Don't strip if we don't have it
+diff -r -u -- libcfg+-0.6.2_orig/src/Makefile.in libcfg+-0.6.2/src/Makefile.in
+--- libcfg+-0.6.2_orig/src/Makefile.in	2007-05-10 16:06:57.000000000 +0200
++++ libcfg+-0.6.2/src/Makefile.in	2007-05-10 16:13:24.000000000 +0200
+@@ -71,6 +71,8 @@
+ 		  $(top_builddir)/src/platon/str/strdyn.o \
+ 		  $(top_builddir)/src/platon/str/dynfgets.o
+ 
++LT_OBJECTS = $(OBJECTS:%.o=%.lo)
++
+ # SunOS 4 make does not allow multiple makefiles to be specified in one ­include directive.
+ DEP_FILES = $(top_builddir)/src/.deps/cfg+.P \
+ 			$(top_builddir)/src/.deps/parse.P \
+@@ -97,7 +99,7 @@
+ 				  platon/str/strplus.h
+ 
+ LIBSTATIC   = $(PACKAGE).a
+-LIBDYNAMIC  = $(PACKAGE).so
++LIBDYNAMIC  = $(PACKAGE).la
+ LIBDYNAMICV = $(PACKAGE).so.$(VERSION)
+ 
+ install_LIB     = $(LIBSTATIC) $(LIBDYNAMICV)
+@@ -135,7 +137,7 @@
+ 
+ dynamic:	$(LIBDYNAMICV)
+ 
+-lib:		$(LIBSTATIC) $(LIBDYNAMICV)
++lib:		$(LIBDYNAMIC)
+ 
+ # Section: Install {{{
+ install: all installdirs install-exec install-data install-symlinks
+Binary files libcfg+-0.6.2_orig/src/libcfg+.so.0.6.2 and libcfg+-0.6.2/src/libcfg+.so.0.6.2 differ
+diff -r -u -- libcfg+-0.6.2_orig/Rules.make.in libcfg+-0.6.2/Rules.make.in
+--- libcfg+-0.6.2_orig/Rules.make.in	2007-05-10 16:16:31.000000000 +0200
++++ libcfg+-0.6.2/Rules.make.in	2007-05-10 16:19:39.000000000 +0200
+@@ -25,7 +25,7 @@
+ 
+ LIBSTATIC          = $(PACKAGE).a
+ LIBDYNAMIC         = $(PACKAGE).la
+-LIBDYNAMICV        = $(PACKAGE).so.$(VERSION)
++LIBDYNAMICV        = $(PACKAGE).la
+ 
+ install_LIB        = $(LIBSTATIC) $(LIBDYNAMICV)
+ SCRIPTS            =
+@@ -97,6 +97,7 @@
+ CCLD          = $(CC)
+ LINK          = $(CCLD) $(CFLAGS) $(LDFLAGS) -o $@
+ LTLINK        = $(LIBTOOL) --mode=link --tag=C $(CCLD) $(CFLAGS) $(LDFLAGS) -o $@
++LTINSTALL     = $(LIBTOOL) --mode=install $(INSTALL)
+ 
+ # }}} Programs
+ 
+@@ -159,13 +160,13 @@
+ 
+ static:		$(LIBSTATIC)
+ 
+-dynamic:	$(LIBDYNAMICV)
++dynamic:	$(LIBDYNAMIC)
+ 
+ $(LIBSTATIC):	$(OBJECTS)
+ 	$(AR) r $@ $(OBJECTS)
+ 
+ $(LIBDYNAMIC):	$(LT_OBJECTS)
+-	$(LTLINK) $(LDFLAGS) -rpath $(libdir) -no-undefined -shared -o $@ $(LT_OBJECTS)
++	$(LTLINK) $(LDFLAGS) -version-number $(subst .,:,$(VERSION)) -rpath $(libdir) -no-undefined -shared -o $@ $(LT_OBJECTS)
+ 
+ %.lo: %.c $(CONFIG_HEADER)
+ 	@echo '$(COMPILE) -c $<'; \
+diff -r -u -- libcfg+-0.6.2_orig/src/Makefile.in libcfg+-0.6.2/src/Makefile.in
+--- libcfg+-0.6.2_orig/src/Makefile.in	2007-05-10 16:16:31.000000000 +0200
++++ libcfg+-0.6.2/src/Makefile.in	2007-05-10 16:17:43.000000000 +0200
+@@ -100,9 +100,9 @@
+ 
+ LIBSTATIC   = $(PACKAGE).a
+ LIBDYNAMIC  = $(PACKAGE).la
+-LIBDYNAMICV = $(PACKAGE).so.$(VERSION)
++#LIBDYNAMICV = $(PACKAGE).so.$(VERSION)
+ 
+-install_LIB     = $(LIBSTATIC) $(LIBDYNAMICV)
++install_LIB     = $(LIBDYNAMIC)
+ 
+ CONFIG_CLEAN_FILES = Makefile
+ SCRIPTS            =
+@@ -135,12 +135,12 @@
+ 
+ static:		$(LIBSTATIC)
+ 
+-dynamic:	$(LIBDYNAMICV)
++dynamic:	$(LIBDYNAMIC)
+ 
+ lib:		$(LIBDYNAMIC)
+ 
+ # Section: Install {{{
+-install: all installdirs install-exec install-data install-symlinks
++install: all installdirs install-exec install-data 
+ uninstall: uninstall-includeHEADERS uninstall-exec uninstall-symlinks uninstall-dirs
+ 
+ installcheck:
+@@ -168,7 +168,7 @@
+ 	@list='$(install_LIB)'; for p in $$list; do \
+ 	  if test -f "$$p"; then d= ; else d="$(srcdir)/"; fi; \
+ 	  echo "	Installing file $(DESTDIR)$(libdir)/$$p"; \
+-	  $(INSTALL_DATA) $$d$$p $(DESTDIR)$(libdir)/$$p; \
++	  $(LTINSTALL) $$d$$p $(DESTDIR)$(libdir)/$$p; \
+ 	done
+ uninstall-lib:
+ 	@$(NORMAL_UNINSTALL)

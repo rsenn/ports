@@ -1,0 +1,34 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A tool that reduces the disk space used by a Subversion working copy.
+# URL: 
+# Maintainer: 
+# Depends on: 
+
+name=scord
+version=1.0.5
+release=1
+source=($mirror_sf/scord/scord-$version.tar.gz
+        scord-1.0.5-c++0x.patch)
+
+build() 
+{
+  cd scord-$version
+
+  patch -p1 -i $SRC/scord-1.0.5-c++0x.patch
+  
+  #./bootstrap
+  
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+  
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/scord
+  install -m 644 README AUTHORS COPYING ChangeLog INSTALL NEWS THANKS TODO HACKING $ROOT/share/doc/scord
+}
+
+# EOF

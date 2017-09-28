@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Three pipeable shell utilities for dealing with paths and filenames.
+#  The Aardvark Shell Utils is a collection of three utilities designed
+#  to aid the user when working with shell scripts or from the command
+#  line. All three accept input on the command line or from standard input,
+#  and thus they can be piped with other commands. All commands come with
+#  their own man page. Included are realpath, filebase, and fileext.
+#  .
+# URL: http://www.laffeycomputer.com/shellutils.html
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=aardvark
+version=1.0
+release=1
+source=(http://downloads.laffeycomputer.com/current_builds/shellutils/aardvark_shell_utils-$version.tar.gz)
+
+build()
+{
+  cd aardvark_shell_utils-$version
+
+  ./configure \
+     --prefix="$prefix" \
+     --mandir="$prefix/share/man"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

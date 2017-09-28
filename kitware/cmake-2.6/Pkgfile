@@ -1,0 +1,97 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:40 roman Exp $
+#
+# Package: cmake
+# Section: devel
+# Description: CMake is a cross-platform build system
+#  CMake is a cross-platform, open-source build system. It is used to
+#  compiler independent configuration files. It generates native makefiles
+#  choice. CMake is quite sophisticated: it is possible to support complex
+#  and code generation.
+#  .
+# URL: http://www.cmake.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+
+name=cmake-2.6
+version=2.6.3
+release=1
+source=(http://www.cmake.org/files/v${version%.*}/cmake-${version//rc/-RC-}.tar.gz
+        cmake-2.6-msvc.patch)
+
+build()
+{
+  cd cmake-${version//rc/-RC-}
+
+  if type cmake; then
+    patch -N -p1 -i $SRC/cmake-2.6-msvc.patch
+
+    cmake \
+        -D CMAKE_INSTALL_PREFIX="$prefix" \
+      .
+  else
+    find * -type f \
+          -name "*.cmake" \
+      -or -name "*.cmake.in" \
+      -or -name "*.txt" \
+      -or -name "*.cxx" \
+      -exec sed -i -e "s:/usr/local:$prefix:g" \
+                    -e "s:/usr/bin:$prefix/bin:g" \
+                    -e "s:/usr/sbin:$prefix/sbin:g" \
+                    -e "s:/usr/lib:$prefix/lib:g" \
+                    -e "s:/usr/include:$prefix/include:g" \
+                    '{}' \
+                    ';'
+
+    ./configure \
+        --build="$build" \
+        --host="$host" \
+        --prefix="$prefix"
+  fi
+
+  make
+  make DESTDIR="$PKG" install
+
+  mkdir -p $ROOT/share
+  mv $ROOT/doc $ROOT/share
+
+ (cd $ROOT/bin && for FILE in *; do
+    mv -f $FILE $FILE-2.6
+  done)
+
+ (mkdir -p $ROOT/share
+  mv -f $ROOT/man $ROOT/share
+
+  cd $ROOT/share/man && for man in */*; do
+    stem=${man%.[0-9]}
+    sect=${man#$stem.}
+
+    mv -f $stem.$sect ${stem}26.$sect
+  done)
+}
+
+postinst()
+{
+  case "$1" in
+    configure)
+      update-alternatives --quiet --install /usr/bin/cmake cmake \
+        /usr/bin/cmake 30 \
+        --slave /usr/share/man/man1/cmake26.1.gz cmake.1.gz /usr/share/man/man1/cmake.1.gz \
+        --slave /usr/share/man/man1/ccmake26.1.gz ccmake.1.gz /usr/share/man/man1/ccmake.1.gz \
+        --slave /usr/share/man/man1/ctest26.1.gz ctest.1.gz /usr/share/man/man1/ctest.1.gz
+
+      # Purge the debconf database we no longer need.
+      if [ -e /usr/share/debconf/confmodule ]; then
+        . /usr/share/debconf/confmodule
+        db_version 2.0
+        db_purge
+      fi
+    ;;
+
+    abort-upgrade|abort-remove|abort-deconfigure)
+    ;;
+
+    *)
+      echo "postinst called with unknown argument \`$1'" >&2
+      exit 0
+    ;;
+  esac
+}

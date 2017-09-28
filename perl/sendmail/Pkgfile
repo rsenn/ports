@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Send email from a perl script
+#  Simple platform independent e-mail from your perl script. Only requires
+#  Perl 5 and a network connection.
+#  .
+# URL: http://search.cpan.org/~mivkovic/Mail-Sendmail-0.79/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=sendmail
+version=0.79
+release=1
+source=(http://search.cpan.org/CPAN/authors/id/M/MI/MIVKOVIC/Mail-Sendmail-$version.tar.gz)
+
+build()
+{
+  cd Mail-Sendmail-$version
+
+  perl Makefile.PL
+  make \
+       DESTDIR="$PKG" \
+       INSTALLDIRS="vendor" \
+       PREFIX="$prefix" \
+     install
+}
+
+# EOF

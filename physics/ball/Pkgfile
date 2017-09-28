@@ -1,0 +1,37 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A framework for rapid application development in structural bioinformatics.
+#  The Biochemical ALgorithms Library (BALL) is a framework for
+#  rapid application development in molecular modeling and structural
+#  bioinformatics. BALL provides an extensive set of data structures as
+#  well as classes for molecular mechanics, advanced solvation methods,
+#  comparison and analysis of protein structures, file import/export, NMR
+#  shift prediction, and visualization. Its extensibility results from an
+#  object-oriented and generic programming approach.
+#  .
+# URL: http://www.ball-project.org/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=ball
+version=1.2
+release=1
+source=(http://www.ball-project.org/Downloads/Releases/BALL-$version.tar.gz)
+
+build()
+{
+  cd BALL-$version/source
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix" \
+     --with-qt-libs="$prefix/lib/qt4" \
+     --with-threadsafe-qt
+
+  make
+  make BALL_PATH="$ROOT" install
+}
+
+# EOF

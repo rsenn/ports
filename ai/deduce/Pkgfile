@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A deductive reasoning AI.
+# Deduce is an artificial intelligence program which accepts natural
+# language sentences as input. These sentences describe properties
+# and relationships between objects, (for example, amp;quot;Spot
+# is a dogamp;quot;, amp;quot;A liquid will evaporateamp;quot;, or
+# amp;quot;Water does not flow uphillamp;quot;). The user can then ask
+# questions against that input, to which Deduce will attempt to answer
+# using deductive reasoning techniques.
+#
+# URL: http://deduce.sourceforge.net
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=deduce
+version=1.3.0
+release=1
+source=($mirror_sf/deduce/deduce-$version.tar.gz)
+
+build()
+{
+  cd deduce-$version
+
+  install -d $ROOT/bin
+  install -m 755 deduce.py $ROOT/bin
+
+  install -d $ROOT/share/deduce
+  install -m 644 knowledge.txt $ROOT/share/deduce
+
+  install -d $ROOT/share/doc/deduce
+  install -m 644 COPYING ChangeLog README $ROOT/share/doc/deduce
+}

@@ -1,0 +1,38 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Utilities to change scheduling/priority of processes.
+#  Scheduling Utils are a collection of tools related to realtime scheduling,
+#  working much like 'nice' and 'renice', except they change the priority and
+#  scheduler. This enables a process to run in soft realtime, as specified
+#  by POSIX.1b.
+# URL: http://sourceforge.net/projects/schedutils
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=schedutils
+version=0.7.2
+release=1
+source=($mirror_sf/schedutils/schedutils-$version.tar.gz)
+
+build() 
+{
+  cd schedutils-$version
+  
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+  
+  make
+
+  install -d $ROOT/bin
+  install -d $ROOT/sbin
+  install -d $ROOT/share/man/man8
+
+  make prefix="$ROOT" mandir="$ROOT/share/man" install
+
+  install -d $ROOT/share/doc/schedutils
+  install -m 644 ChangeLog README TODO $ROOT/share/doc/schedutils
+}
+
+# EOF

@@ -1,0 +1,28 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: A tool for reading Windows Address Book files and generating ldif output.
+#  libwab is a tool that can read binary .wab files produced by the Windows
+#  Address Book application and output the data in ldif format. It can also
+#  read broken files and recover deleted addresses.
+# URL: http://lilith.tec-man.com/libwab/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libwab
+version=060901
+release=1
+source=(http://lilith.tec-man.com/libwab/files/libwab-$version.tar.gz)
+
+build()
+{
+  cd libwab-${version}
+  ./configure \
+    --build=$target \
+    --host=$target \
+    --prefix=$prefix \
+    --${static:=enable}-shared \
+    --${shared:=enable}-shared
+
+  make
+  make DESTDIR=$PKG install
+}

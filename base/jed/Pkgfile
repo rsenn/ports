@@ -1,0 +1,71 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+# Version: 2:0.99.18-4
+# Description: Powerful editor, terminal and X11 interface
+#  Jed is a powerful editor, terminal and X11 interface. Color syntax
+#  Emacs, Wordstar, EDT and Brief. It also supports use of GPM on Linux
+#  Slang library for powerful extensions.
+# URL: http://www.jedsoft.org/jed/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libncurses5, libslang1, libslang2
+# Replaces: jed-common
+
+name=jed
+version=0.99.18
+release=5
+source=(ftp://space.mit.edu/pub/davis/jed/v0.99/jed-${version%.[0-9]*}-${version##*[0-9].}.tar.bz2
+        jed-0.99-18-enki.patch
+        jed-0.99-16-idl.patch
+        jed-0.99-18-userinfo.patch)
+
+build()
+{
+  cd ${srcdir=$SRC/jed-${version%.[0-9]*}-${version##*[0-9].}}
+
+
+  patch -N -p1 -i $SRC/jed-0.99-18-enki.patch
+#  diff -wruN ${srcdir}{_orig,} | filterdiff -x '*~' >/tmp/jed-0.99-16-enki.patch
+  patch -N -p1 -i $SRC/jed-0.99-16-idl.patch
+
+#  fs_duplicate "$srcdir"
+  patch -N -p1 -i $SRC/jed-0.99-18-userinfo.patch
+
+  case $prefix in
+    "/usr") sysconfdir="/etc" ;;
+  esac
+
+  sed -i \
+      -e "s,termcap,terminfo,g" \
+      -e "s,/usr/local/lib,$prefix/lib,g" configure
+
+  TERMCAP="ncurses"
+
+  LIBS="-ldl" \
+  LDFLAGS="${LDFLAGS:+$LDFLAGS }-ldl" \
+  JED_ROOT="$prefix" \
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --sysconfdir="${sysconfdir=$prefix/etc}" \
+      --mandir="$prefix/share/man"
+
+  sed -i "/HAVE_GRANTPT/ d" \
+    src/sysconf.h
+
+  make TERMCAP_LIB="-L$prefix/lib -l$TERMCAP"
+
+  install -d $ROOT/lib/jed
+  install -d $ROOT/lib/jed/colors
+  install -d $ROOT/lib/jed/colors/Xjed
+
+  make -C src DESTDIR="$PKG" install
+
+  install -d $PKG/$sysconfdir
+  install -m 644 lib/jed.conf $PKG/$sysconfdir
+
+  sed -i -e "s#\[\"/etc/jed.conf\", \"/usr/local/etc/jed.conf\", \"/usr/etc/jed.conf\"\]#\[\"$sysconfdir/jed.conf\"\]#" $ROOT/lib/jed/site.sl
+
+  rm -f $ROOT/bin/rgrep
+  rm -f $ROOT/share/man/man1/rgrep.*
+  rm -f $ROOT/info/dir
+}

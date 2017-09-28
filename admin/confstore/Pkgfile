@@ -1,0 +1,41 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A configuration backup utility that makes backups of configuration.
+#  Confstore is a configuration backup utility. It scans a system
+#  for all recognised configuration files and then stores them in a
+#  simple archive. It knows what to scan for by reading a definitions
+#  file. Confstore can also restore configuration from backup archives it
+#  has previously created.
+# URL: http://confstore.sourceforge.net
+# Maintainer: 
+# Depends on: 
+
+name=confstore
+version=0.5.4
+release=1
+source=(http://heanet.dl.sourceforge.net/sourceforge/confstore/confstore-$version.tar.gz)
+
+build() 
+{
+  cd confstore
+  
+  case $prefix in
+    "/usr") sysconfdir="/etc" ;;
+  esac
+
+  sed <confstore.pl >confstore \
+      -e "/^.CS_CONFIG_PATH/ s,\\.,${sysconfdir=$prefix/etc}," \
+      -e "s,=modules/,=$prefix/share/confstore/modules/,"
+
+  install -d $ROOT/bin
+  install -m 755 confstore $ROOT/bin
+
+  install -d $PKG/${sysconfdir="$prefix/etc"}
+  sed <cs.conf >$PKG/$sysconfdir/cs.conf \
+      -e "s,=defs/,=$prefix/share/confstore/defs/,"
+
+  install -d $ROOT/share/confstore
+  cp -r defs modules $ROOT/share/confstore
+}
+
+# EOF

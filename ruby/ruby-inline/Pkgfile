@@ -1,0 +1,35 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Ruby library for embedding C/++ external module code.
+#  Ruby Inline is an analog to Perl's Inline::C. Out of the box, it allows
+#  you to embed C/++ external module code in your ruby script directly. By
+#  writing simple builder classes, you can teach how to cope with new
+#  languages (fortran, perl, whatever).
+# URL: http://rubyforge.org/projects/rubyinline/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=ruby-inline
+version=3.6.7
+release=1
+source=($mirror_rubyforge/rubyinline/RubyInline-$version.tgz)
+
+build()
+{
+  cd RubyInline-$version
+
+  set -- `ruby --version`
+
+  RUBYVERSION="$2"
+  RUBYLIBDIR="$prefix/lib/ruby/${RUBYVERSION%.*}"
+
+  rake
+
+  install -d $PKG/$RUBYLIBDIR
+  cp -rf lib/* $PKG/$RUBYLIBDIR
+
+  install -d $ROOT/share/doc/ruby-inline
+  install -m 644 History.txt Manifest.txt README.txt $ROOT/share/doc/ruby-inline
+
+  cp -rf demo tutorial $ROOT/share/doc/ruby-inline
+}

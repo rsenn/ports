@@ -1,0 +1,42 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Artificial neural network library for C++
+# The library currently has support for training, saving and executing
+# multi-layer perceptron, radial-basis-function, kohonen maps, Hopfield
+# and general recurrent Networks. Along with a library, also included
+# are some example applications and binary utilities to help you construct
+# training sets, train the network, visualise etc.
+#
+# URL: http://annie.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libgcc1, libgl1-mesa-glx, libglu1-mesa, libjpeg62, libpng12-0, libsdl-image1.2, libsdl1.2debian-pulseaudio, libstdc++6, libtiff4, libx11-6, libxext6, nvidia-glx-new, zlib1g
+
+name=annie
+version=0.71a
+release=1
+source=($mirror_sf/annie/annie-$version-src.tar.gz
+        annie-0.71a-c++0x.patch
+        annie-0.71a-libtool.patch)
+
+build()
+{
+  cd annie
+
+  patch -N -p1 -i $SRC/annie-0.71a-c++0x.patch
+  patch -N -p1 -i $SRC/annie-0.71a-libtool.patch
+
+  libtoolize --force --copy
+
+  ./autogen.sh
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix" \
+       --enable-shared \
+       --enable-static
+
+  make
+  make DESTDIR="$PKG" install
+}

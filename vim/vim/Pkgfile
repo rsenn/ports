@@ -1,0 +1,47 @@
+# $Id: Pkgfile,v 1.20 2007/05/09 21:02:55 roman Exp $
+#
+# Description: A popular vi clone that features syntax highlighting, a GUI, and much more.
+#  Vim is an almost fully-compatible version of the Unix editor Vi. Many new
+#  commandline history, online help, filename completion, and block
+#  and runs on many systems, including Unix, MS Windows, OS/2, Macintosh,
+# URL: http://www.vim.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=vim
+version=7.1
+release=8
+source=(ftp://ftp.vim.org/pub/vim/unix/vim-$version.tar.bz2
+        ftp://ftp.vim.org/pub/vim/extra/vim-$version-extra.tar.gz
+        http://wiki.linuxfromscratch.org/patches/browser/trunk/vim/vim-$version-fixes-$release.patch?format=raw)
+
+build()
+{
+  cd ${srcdir=$SRC/vim${version//./}}
+
+  patch -N -p1 -i $SRC/vim-$version-fixes-$release.patch?format=raw
+
+  for p in $SRC/7.1.*; do
+    [ -f "$p" ] && patch -N -p0 -i $p
+  done
+
+  case ${prefix="/usr"} in
+    /usr) sysconfdir="/etc" localstatedir="/var" ;;
+  esac
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --mandir="$prefix/share/man" \
+       --infodir="$prefix/share/info" \
+       --sysconfdir="${sysconfdir=$prefix/etc}" \
+       --localstatedir="${localstatedir=$prefix/var}" \
+       --disable-gui \
+       --without-x \
+       --without-gnome \
+       --enable-rubyinterp
+
+  make
+  make DESTDIR="$PKG" install
+}

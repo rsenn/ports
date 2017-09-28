@@ -1,0 +1,113 @@
+Only in ode-0.8_orig/: Makefile
+diff -r -u -- ode-0.8_orig/configure ode-0.8/configure
+--- ode-0.8_orig/configure	2007-06-15 15:01:22.000000000 +0000
++++ ode-0.8/configure	2007-06-15 15:05:25.000000000 +0000
+@@ -7748,6 +7748,9 @@
+ dinfinity=FLT_MAX
+ fi
+ fi
++if test -z "$dinfinity"; then
++  dinfinity=HUGE_VAL
++fi
+ { echo "$as_me:$LINENO: result: $precision" >&5
+ echo "${ECHO_T}$precision" >&6; }
+ 
+diff -r -u -- ode-0.8_orig/configure.in ode-0.8/configure.in
+--- ode-0.8_orig/configure.in	2007-06-15 15:01:22.000000000 +0000
++++ ode-0.8/configure.in	2007-06-15 15:05:14.000000000 +0000
+@@ -215,6 +215,9 @@
+ dinfinity=FLT_MAX
+ fi
+ fi
++if test -z "$dinfinity"; then
++  dinfinity=HUGE_VAL
++fi
+ AC_MSG_RESULT($precision)
+ AC_DEFINE_UNQUOTED(dInfinity,${dinfinity},[dInfinity Constant])
+ AC_MSG_CHECKING(for appropriate dInfinity constant)
+Only in ode-0.8_orig/drawstuff: Makefile
+Only in ode-0.8_orig/drawstuff/dstest: Makefile
+Only in ode-0.8_orig/drawstuff/src: Makefile
+Only in ode-0.8_orig/include: Makefile
+Only in ode-0.8_orig/include/ode: Makefile
+Only in ode-0.8_orig/include/ode: config.h
+Only in ode-0.8_orig/include/ode: stamp-h1
+Only in ode-0.8_orig/ode: Makefile
+Only in ode-0.8_orig/ode/src: Makefile
+Only in ode-0.8_orig/ode/test: Makefile
+diff -r -u -- ode-0.8_orig/ode/src/Makefile.am ode-0.8/ode/src/Makefile.am
+--- ode-0.8_orig/ode/src/Makefile.am	2007-06-15 15:10:39.000000000 +0000
++++ ode-0.8/ode/src/Makefile.am	2007-06-15 15:13:00.000000000 +0000
+@@ -4,31 +4,31 @@
+ lib_LIBRARIES = libode.a
+ libode_a_CPPFLAGS = -O2
+ 
+-libode_a_CPPFLAGS += -fPIC
++#libode_a_CPPFLAGS += -fPIC
+ 
+ # Fake an executable in order to get a shared library
+ # Note the elegant and cunning way to trick Autotools to install a program
+ # in a lib directory. --Rodrigo
+-traplibdir=$(libdir)
++traplibdir=$(bindir)
+ EXEEXT=@so_ext@
+-traplib_PROGRAMS=libode
+-libode_SOURCES=
+-libode_DEPENDENCIES = libfast.a libode.a
+-libode_LDFLAGS= @SHARED_LDFLAGS@
++traplib_PROGRAMS=ode
++ode_SOURCES=
++ode_DEPENDENCIES = libfast.a libode.a
++ode_LDFLAGS= @SHARED_LDFLAGS@
+ if USE_SONAME
+-libode_LDFLAGS+=-Wl,-soname,@ODE_SONAME@
++ode_LDFLAGS+=-Wl,-soname,@ODE_SONAME@
+ endif
+-libode_LDADD=$(libode_a_OBJECTS) $(libfast_a_OBJECTS)
++ode_LDADD=$(ode_a_OBJECTS) $(libfast_a_OBJECTS)
+ 
+ if OPCODE
+-libode_DEPENDENCIES+= libOPCODE.a
+-libode_LDADD+=$(libOPCODE_a_OBJECTS)
++ode_DEPENDENCIES+= libOPCODE.a
++ode_LDADD+=$(libOPCODE_a_OBJECTS)
+ endif
+ 
+ 
+ if GIMPACT
+-libode_DEPENDENCIES+= libGIMPACT.a
+-libode_LDADD+=$(libGIMPACT_a_OBJECTS)
++ode_DEPENDENCIES+= libGIMPACT.a
++ode_LDADD+=$(libGIMPACT_a_OBJECTS)
+ endif
+ 
+ 
+@@ -37,7 +37,7 @@
+ libfast_a_CFLAGS= -O1
+ libfast_a_SOURCES= fastldlt.c fastltsolve.c fastdot.c fastlsolve.c
+ 
+-libfast_a_CFLAGS += -fPIC
++#libfast_a_CFLAGS += -fPIC
+ 
+ libode_a_DEPENDENCIES = libfast.a
+ libode_a_LIBADD= $(libfast_a_OBJECTS)
+@@ -105,7 +105,8 @@
+ 
+ if GIMPACT
+ noinst_LIBRARIES+= libGIMPACT.a
+-libGIMPACT_a_CPPFLAGS= -O2 -fno-strict-aliasing -fPIC
++libGIMPACT_a_CPPFLAGS= -O2 -fno-strict-aliasing 
++#-fPIC
+ 
+ libode_a_SOURCES+= collision_trimesh_gimpact.cpp
+ 
+@@ -148,7 +149,8 @@
+ 
+ if OPCODE
+ noinst_LIBRARIES+= libOPCODE.a
+-libOPCODE_a_CPPFLAGS= -O2 -fno-strict-aliasing -fPIC
++libOPCODE_a_CPPFLAGS= -O2 -fno-strict-aliasing 
++#-fPIC
+ 
+ 
+ libOPCODE_a_SOURCES=	@TOPDIR@/OPCODE/OPC_AABBCollider.cpp \

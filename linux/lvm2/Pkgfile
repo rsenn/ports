@@ -1,0 +1,38 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: The Linux Logical Volume Manager
+#  This is LVM2, the rewrite of The Linux Logical Volume Manager. LVM
+#  supports enterprise level volume management of disk and disk subsystems
+#  by grouping arbitrary disks into volume groups. The total capacity of
+#  volume groups can be allocated to logical volumes, which are accessed
+#  as regular block devices.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=lvm2
+version=2.02.36
+release=1
+source=(ftp://sources.redhat.com/pub/lvm2/LVM2.$version.tgz)
+
+build()
+{
+  cd LVM2.$version
+
+  case $prefix in
+    "/usr") sysconfdir="/etc" sbindir="/sbin" ;;
+  esac
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix" \
+       --sysconfdir="${sysconfdir=$prefix/etc}" \
+       --sbindir="${sbindir=$prefix/sbin}"
+
+  make
+  make DESTDIR="$PKG" install
+
+  make -C tools/fsadm DESTDIR="$PKG" install || true
+}

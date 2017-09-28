@@ -1,0 +1,22 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: LZOlayer Filesystem is a filesystem which allows you to use transparently compressed files, just as they would be normal files.
+# URL: http://north.one.pl/~kazik/pub/LZOlayer/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=lzolayer-fs
+version=20060306
+release=1
+source=(http://north.one.pl/~kazik/pub/LZOlayer/LZOlayer_fs-$version.tar.gz)
+
+build()
+{
+  cd LZOlayer_fs-$version
+
+  make CC="${CC-cc}" CFLAGS="$CFLAGS -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64"
+
+  install -d $ROOT/bin
+  install -m 755 lzo_fs $ROOT/bin
+  #  -D__USE_LARGEFILE64
+}

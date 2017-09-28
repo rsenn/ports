@@ -1,0 +1,36 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Mbot is an IRC bot coded in C++
+# Its main advantage is that several bots can run simultaneously in the
+# same process, making it ideal for shells where the background processes
+# are limited, but not the connections. It also features IPv6 support,
+# TCL scripting partially compatible with eggdrop, and lots of modules
+# with the most commonly needed functions.
+#
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=mbot
+version=5.2.0.tgz
+release=1
+source=(http://darksun.com.pt/mbot/sources/mbot-$version)
+
+build()
+{
+  cd mbot
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+
+  install -d $ROOT/bin
+  install -d $ROOT/lib/mbot
+
+  install -m 755 mbot $ROOT/bin
+  install -m 755 mod/*.so $ROOT/lib/mbot
+}

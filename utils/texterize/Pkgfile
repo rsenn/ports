@@ -1,0 +1,35 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Text and metadata extraction tool
+# Extraction tool which can be used to quickly get the text content of a file.
+#  It currently supports file formats like PDF, Excel, Powerpoint, Word, RTF,
+#  WordPerfect, MP3, Ogg, and all OpenDocument file formats. The output of
+#  texterize is either text or XML. It is also designed to work with Unicode
+#  input and output, and the default output character set is UTF-8. Texterize
+#  also has a recursive mode so that whole directories (or whole filesystems)
+#  can be converted to text. This recursion also works through archive files
+#  and compressed files like zip, tar, and gz files.
+#
+# URL: http://texterize.org/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=texterize
+category=utils
+version=0.1.2
+release=1
+source=(http://texterize.org/files/texterize-$version.tar.gz)
+
+build()
+{
+  cd texterize-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

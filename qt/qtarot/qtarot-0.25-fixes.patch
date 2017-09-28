@@ -1,0 +1,42 @@
+diff -r -u qtarot-0.25_orig/document.cpp qtarot-0.25/document.cpp
+--- qtarot-0.25_orig/document.cpp	2007-11-08 14:48:03.000000000 +0100
++++ qtarot-0.25/document.cpp	2007-11-08 14:49:04.000000000 +0100
+@@ -3,6 +3,7 @@
+ #include "document.h"
+ #include "factory.h"
+ #include "qtarot.h"
++#include <qpushbutton.h>
+ 
+ Document::Document(QString path, QString doc) : path(path), doc(doc)
+ {
+diff -r -u qtarot-0.25_orig/qtarot.h qtarot-0.25/qtarot.h
+--- qtarot-0.25_orig/qtarot.h	2007-11-08 14:48:03.000000000 +0100
++++ qtarot-0.25/qtarot.h	2007-11-08 14:49:46.000000000 +0100
+@@ -4,6 +4,7 @@
+ #define __QTAROT_H__
+ 
+ #include "qt.h"
++//#include <QObject>
+ 
+ #define APP_NAME "Qtarot"
+ 
+diff -r -u qtarot-0.25_orig/Makefile qtarot-0.25/Makefile
+--- qtarot-0.25_orig/Makefile	2007-11-08 14:48:03.000000000 +0100
++++ qtarot-0.25/Makefile	2007-11-08 15:01:40.000000000 +0100
+@@ -1,13 +1,14 @@
+ CXXFLAGS	=	-g -I/usr/include/qt
+ LDLIBS		=	-lqt
++MOC				= moc
+ 
+ qtarot: qtarot.o deck.o document.o factory.o slots-qtarot.o slots-document.o spread.o
+ 
+ slots-qtarot.cpp: qtarot.h
+-	moc -o slots-qtarot.cpp qtarot.h
++	$(MOC) -o slots-qtarot.cpp qtarot.h
+ 
+ slots-document.cpp: document.h
+-	moc -o slots-document.cpp document.h
++	$(MOC) -o slots-document.cpp document.h
+ 
+ depend:
+ 	makedepend -Y qtarot.cpp deck.cpp document.cpp factory.cpp spread.cpp

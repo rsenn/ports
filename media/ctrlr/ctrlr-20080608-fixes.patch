@@ -1,0 +1,62 @@
+diff -ru ctrlr-20080608_orig/CtrlrControllerUi.cpp ctrlr-20080608/CtrlrControllerUi.cpp
+--- ctrlr-20080608_orig/CtrlrControllerUi.cpp	2008-06-08 06:57:22.000000000 +0200
++++ ctrlr-20080608/CtrlrControllerUi.cpp	2008-06-08 06:58:10.000000000 +0200
+@@ -1,7 +1,7 @@
+ #include "CtrlrControllerUi.h"
+ #include "CtrlrController.h"
+ 
+-CtrlrControllerUi::CtrlrControllerUi(CtrlrController *p, XmlElement *e)
++CtrlrControllerUi::CtrlrControllerUi(CtrlrController *p, XmlElement *e) throw()
+ {
+ 	logger = new CtrlrLog ("controllerUi");
+ 	logger->log ("constructor with target");
+@@ -18,7 +18,7 @@
+ 	glow.setGlowProperties (1.0f, Colours::red);
+ }
+ 
+-CtrlrControllerUi::CtrlrControllerUi(XmlElement *e)
++CtrlrControllerUi::CtrlrControllerUi(XmlElement *e) throw()
+ {
+ 	logger = new CtrlrLog ("controllerUi");
+ 	logger->log ("constructor without target");
+@@ -240,4 +240,4 @@
+ void CtrlrControllerUi::comboBoxChanged (ComboBox *comboBoxThatHasChanged)
+ {
+ 	core->setControllerValue (comboBoxThatHasChanged->getSelectedId()-1);
+-}
++}
+diff -ru ctrlr-20080608_orig/CtrlrPanelUi.cpp ctrlr-20080608/CtrlrPanelUi.cpp
+--- ctrlr-20080608_orig/CtrlrPanelUi.cpp	2008-06-08 06:57:22.000000000 +0200
++++ ctrlr-20080608/CtrlrPanelUi.cpp	2008-06-08 06:59:29.000000000 +0200
+@@ -38,7 +38,7 @@
+ 		}
+ 	}
+ 	
+-	for (x=0; x<inputDevice->getNumItems(); x++)
++	for (int x=0; x<inputDevice->getNumItems(); x++)
+ 	{
+ 		String k = inputDevice->getItemText (x);
+ 
+@@ -226,7 +226,7 @@
+ 
+ 	outputDevice->setSelectedId (indexInput);
+ 
+-	for (x=0; x<l.size(); x++)
++	for (int x=0; x<l.size(); x++)
+ 	{
+ 		inputDevice->addItem (l[x], x+1);
+ 	}
+diff -ru ctrlr-20080608_orig/CtrlrSetupComponent.cpp ctrlr-20080608/CtrlrSetupComponent.cpp
+--- ctrlr-20080608_orig/CtrlrSetupComponent.cpp	2008-06-08 06:57:22.000000000 +0200
++++ ctrlr-20080608/CtrlrSetupComponent.cpp	2008-06-08 07:00:06.000000000 +0200
+@@ -23,8 +23,8 @@
+ //[/Headers]
+ 
+ #include "CtrlrSetupComponent.h"
+-#include "C:\devel\ctrlr\CtrlrMidiSetupInputs.h"
+-#include "C:\devel\ctrlr\CtrlrMidiSetupOutputs.h"
++#include "CtrlrMidiSetupInputs.h"
++#include "CtrlrMidiSetupOutputs.h"
+ 
+ 
+ //[MiscUserDefs] You can add your own user definitions and misc code here...

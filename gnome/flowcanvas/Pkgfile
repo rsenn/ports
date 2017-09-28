@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An interactive Gtkmm/Gnomecanvasmm widget for graph based interfaces
+#  FlowCanvas is an interactive Gtkmm/Gnomecanvasmm widget for "boxes
+#  and lines" environments (ie modular synths or interactive finite state
+#  automata diagrams).
+#  It is used by Ingen and Patchage (among other things).
+#  .
+# URL: http://wiki.drobilla.net/FlowCanvas
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libart-2.0-2, libatk1.0-0, libc6, libcairo-directfb2, libcairo2, libcairomm-1.0-1, libexpat1, libfontconfig1, libfreetype6, libgcc1, libglib2.0-0, libglibmm-2.4-1c2a, libglitz1, libgnomecanvas2-0, libgnomecanvasmm-2.6-1c2a, libgraphviz4, libgtk2.0-0, libgtkmm-2.4-1c2a, libpango1.0-0, libpixman-1-0, libpng12-0, libsigc++-2.0-0c2a, libstdc++6, libx11-6, libxrender1, zlib1g
+
+name=flowcanvas
+version=0.5.0svn20080728
+release=1
+source=(flowcanvas-${version#*svn}.tar.gz)
+
+build()
+{
+  cd flowcanvas-${version#*svn}
+
+  #./autogen.sh
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

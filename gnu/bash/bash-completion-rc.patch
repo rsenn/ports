@@ -1,0 +1,40 @@
+--- bash_completion/bash_completion.sh	2006-02-25 01:37:15.000000000 +0000
++++ bash_completion_orig/bash_completion.sh	2008-04-20 08:31:47.000000000 +0000
+@@ -1,18 +1,27 @@
+ # $Id: bash_completion.sh,v 1.2 2006/02/25 01:21:33 ianmacd Exp $
+ 
+ # Check for bash (and that we haven't already been sourced).
+-[ -z "$BASH_VERSION" -o -n "$BASH_COMPLETION" ] && return
++if test -n "$BASH_VERSION" -a -z "$BASH_COMPLETION"
++then
++  # Check for recent enough version of bash.
++  bversion=${BASH_VERSION%.*}
+ 
+-# Check for recent enough version of bash.
+-bash=${BASH_VERSION%.*}; bmajor=${bash%.*}; bminor=${bash#*.}
++  bmajor=${bversion%.*}
++  bminor=${bversion#*.}
+ 
+-# Check for interactive shell.
+-if [ -n "$PS1" ]; then
+-  if [ $bmajor -eq 2 -a $bminor '>' 04 ] || [ $bmajor -gt 2 ]; then
+-    if [ -r /etc/bash_completion ]; then
+-      # Source completion code.
+-      . /etc/bash_completion
++  # Check for interactive shell.
++  if test -n "$PS1"
++  then
++    if test $((bmajor)) -ge 3 ||                    # version >= 3.0
++       test $((bmajor)) -eq 2 -a $((bminor)) -gt 4  # version >2.04
++    then
++      if test -r @sysconfdir@/bash_completion
++      then
++        # Source completion code.
++        . @sysconfdir@/bash_completion
++      fi
+     fi
+   fi
+ fi
+-unset bash bminor bmajor
++
++unset b{release,{min,maj}or}

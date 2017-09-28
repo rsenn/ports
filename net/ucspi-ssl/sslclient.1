@@ -1,0 +1,244 @@
+.TH sslclient 1 "" "" ucspi-ssl
+.SH NAME
+.LP
+sslclient
+.SH SYNOPSIS
+.LP
+sslclient
+[
+.B \-3hHrRdDqQveEsSnNxX
+]
+[
+.B \-i\fIlocalip
+]
+[
+.B \-p\fIlocalport
+]
+[
+.B \-T\fItimeoutconn
+]
+[
+.B \-l\fIlocalname
+]
+[
+.B \-t\fItimeoutinfo
+]
+[
+.B \-a\fIcafile
+]
+[
+.B \-A\fIcadir
+]
+[
+.B \-c\fIcertfile
+]
+[
+.B \-C\fIciphers
+]
+[
+.B \-k\fIkeyfile
+]
+[
+.B \-V\fIverifydepth
+]
+[
+.B \-w\fIprogtimeout
+]
+.I host
+.I port
+.I program
+[
+.I arg ...
+]
+.SH DESCRIPTION
+.LP
+tcpclient attempts to connect to a TCP server at \fIhost port\fR.  If the
+connection succeeds, sslclient runs \fIprog\fR, with file descriptors 6
+and 7 reading from and writing to a child process \fIssl\fR.  The \fIssl\fR
+process attempts an SSL connect via the network.  If it succeeds, it translates
+data between \fIprog\fR and the network, performing any necessary SSL encoding
+and decoding.
+
+Before running \fIprog\fR, sslclient sets certain
+environment variables.
+
+\fBOptions\fR
+
+General Options:
+
+.TP
+.B \-q
+Quiet.  Do not print error messages.
+.TP
+.B \-Q
+(Default.)  Print error messages.
+.TP
+.B \-v
+Verbose.  Print error messages and status messages.
+.LP
+
+Connection options:
+
+.TP
+.B \-T\fIx\fR+\fIy\fR
+Give up on the connection attempt or SSL connection attempt
+after \fIx\fR+\fIy\fR seconds.
+The default value is: 2+58.
+When a host has several IP addresses,
+sslclient tries to connect to the first IP address,
+waits \fIx\fR seconds,
+tries to connect to the second IP address,
+waits \fIx\fR seconds, etc.;
+then it retries each address that timed out,
+waiting \fIy\fR seconds per address.
+You may omit +\fIy\fR to skip the second try.
+
+.TP
+.B \-i\fIlocalip\fR
+Use \fIlocalip\fR
+as the IP address for the local side of the connection;
+quit if \fIlocalip\fR is not available.
+Normally sslclient lets the operating system choose an address.
+
+.TP
+.B \-p\fIlocalport\fR
+Use \fIlocalport\fR
+as the TCP port for the local side of the connection;
+quit if \fIlocalport\fR is not available.
+Normally sslclient lets the operating system choose a port.
+
+.TP
+.B \-d
+Delay sending data for a fraction of a second
+whenever the remote host is responding slowly.
+This is currently the default, but it may not be in the future;
+if you want it, set it explicitly.
+
+.TP
+.B \-D
+Never delay sending data; enable TCP_NODELAY.
+
+.TP
+.B \-3
+Read a null-terminated key password from file descriptor 3.
+
+.TP
+.B \-a\fIcafile\fR
+Override the compiled-in CA file name.  The
+CA file contains the list of CAs used to verify the server
+certificate.
+
+.TP
+.B \-A\fIcadir\fR
+Override the compiled-in CA directory name.
+The CA directory contains certificates files used to verify the client
+certificate.  This list augments the list from -a \fIcafile\fR.
+
+.TP
+.B \-c\fIcertfile\fR
+Use the client certificate in \fIcertfile\fR.
+
+.TP
+.B \-k\fIkeyfile\fR
+Use the client certificate key in \fIkeyfile\fR.
+
+.TP
+.B \-V\fIverifydepth\fR
+Verify the server certificate chain to depth
+\fIverifydepth\fR.  The default value is&nbsp;1.
+
+.TP
+.B \-C\fIciphers\fR
+Use the cipher list specified in \fIciphers\fR.
+
+.TP
+.B \-x
+(Default.) Verify the server certificate.
+
+.TP
+.B \-X
+Do not verify the server certificate.
+.LP
+
+Data-gathering options:
+
+.TP
+.B \-h
+(Default.)
+Look up the remote host name in DNS
+to set the environment variable $SSLREMOTEHOST.
+
+.TP
+.B \-H
+Do not look up the remote host name in DNS;
+remove the environment variable $SSLREMOTEHOST.
+
+.TP
+.B \-n
+(Default.)
+Verify that the server host name matches the server certificate common
+name.
+
+.TP
+.B \-N
+Do not verify that the server host name matches the server certificate common
+name.
+
+.TP
+.B \-l\fIlocalname\fR
+Do not look up the local host name in DNS;
+use \fIlocalname\fR for the environment variable $SSLLOCALHOST.
+A common choice for \fIlocalname\fR is&nbsp;0.
+
+.TP
+.B \-r
+(Default.)
+Attempt to obtain $SSLREMOTEINFO from the remote host.
+
+.TP
+.B \-R
+Do not attempt to obtain $SSLREMOTEINFO from the remote host.
+
+.TP
+.B \-t\fIn\fR
+Give up on the $SSLREMOTEINFO connection attempt
+after \fIn\fR seconds.
+The default value is: 26.
+
+.TP
+.B \-w\fIn\fR
+Give up on a connection or program after waiting \fIn\fR seconds for read or
+write.  The default value is: 3600.
+
+.TP
+.B \-s
+Store client and server certificate information in the environment, a la
+mod_ssl
+
+.TP
+.B \-S
+(Default.)
+Do not store client and server certificate information in the environment.
+
+.TP
+.B \-e
+Set protocol environment a la
+tcpserver.  Set
+$TCPLOCALIP, $TCPLOCALPORT, $TCPLOCALHOST,
+$TCPREMOTEIP, $TCPREMOTEPORT, $TCPREMOTEHOST, and
+$TCPREMOTEINFO from the corresponding $SSL variables.
+
+.TP
+.B \-E
+(Default.)
+Do not set any tcpserver environment variables.
+.LP
+
+.SH AUTHORS
+.LP
+SuperScript Technology, Inc.
+
+.SH SEE ALSO
+sslserver(1),
+tcpclient(1)
+

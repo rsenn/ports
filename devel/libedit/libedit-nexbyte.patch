@@ -1,0 +1,37 @@
+diff -ru -ru libedit-20060829-2.9_orig/src/vi.c libedit-20060829-2.9/src/vi.c
+--- libedit-20060829-2.9_orig/src/vi.c	2006-10-09 11:31:19.000000000 +0200
++++ libedit-20060829-2.9/src/vi.c	2006-10-09 11:36:54.000000000 +0200
+@@ -919,11 +919,10 @@
+ /*ARGSUSED*/
+ vi_alias(EditLine *el, int c)
+ {
+-#ifdef __weak_reference
++#if 0
+ 	char alias_name[3];
+ 	char *alias_text;
+-	extern char *get_alias_text(const char *)
+-	    __weak_reference(get_alias_text);
++	extern char *get_alias_text(const char *);
+ 
+ 	if (get_alias_text == 0) {
+ 		return CC_ERROR;
+--- libedit-20060829-2.9_orig/src/Makefile.in	2006-10-09 11:40:47.000000000 +0200
++++ libedit-20060829-2.9/src/Makefile.in	2006-10-09 11:42:14.000000000 +0200
+@@ -57,7 +57,7 @@
+ am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(includedir)"
+ libLTLIBRARIES_INSTALL = $(INSTALL)
+ LTLIBRARIES = $(lib_LTLIBRARIES)
+-libedit_la_LIBADD =
++libedit_la_LIBADD = -lterminfo
+ am_libedit_la_OBJECTS = chared.lo common.lo el.lo emacs.lo hist.lo \
+ 	key.lo map.lo parse.lo prompt.lo read.lo refresh.lo search.lo \
+ 	sig.lo term.lo tty.lo vi.lo fgetln.lo strlcat.lo strlcpy.lo \
+@@ -122,7 +122,7 @@
+ INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
+ LDFLAGS = @LDFLAGS@
+ LIBOBJS = @LIBOBJS@
+-LIBS = @LIBS@
++LIBS =
+ LIBTOOL = @LIBTOOL@
+ LN_S = @LN_S@
+ LTLIBOBJS = @LTLIBOBJS@

@@ -1,0 +1,573 @@
+Index: Makefile
+===================================================================
+--- Makefile	(.../tags/libowfat-0_25)	(revision 61)
++++ Makefile	(.../branches/signal-lib)	(revision 61)
+@@ -12,7 +12,7 @@
+ 
+ LIBS=byte.a fmt.a scan.a str.a uint.a open.a stralloc.a unix.a socket.a \
+ buffer.a mmap.a taia.a tai.a dns.a case.a mult.a array.a io.a \
+-textcode.a cdb.a
++textcode.a cdb.a sig.a
+ 
+ all: t $(LIBS) libowfat.a libsocket
+ 
+@@ -353,6 +353,15 @@
+ scan_ip6_flat.o: socket/scan_ip6_flat.c scan.h
+ scan_ip6if.o: socket/scan_ip6if.c ip6.h byte.h uint32.h byte.h socket.h \
+   uint16.h
++sig_block.o: sig/sig_block.c sig.h havesigprocmask.h
++sig_unblock.o: sig/sig_unblock.c sig.h havesigprocmask.h
++sig_blocknone.o: sig/sig_blocknone.c sig.h havesigprocmask.h
++sig_catch.o: sig/sig_catch.c sig.h havesigaction.h
++sig_bugcatch.o: sig/sig_bugcatch.c sig.h
++sig_miscignore.o: sig/sig_miscignore.c sig.h
++sig_default.o: sig/sig_default.c sig.h
++sig_ignore.o: sig/sig_ignore.c sig.h
++sig_pause.o: sig/sig_pause.c sig.h havesigprocmask.h
+ socket_accept4.o: socket/socket_accept4.c windoze.h socket.h uint16.h \
+   uint32.h havesl.h
+ socket_accept6.o: socket/socket_accept6.c windoze.h byte.h socket.h \
+@@ -546,6 +555,7 @@
+ IO_OBJS=io_appendfile.o io_block.o io_canread.o io_canwrite.o io_check.o io_close.o io_closeonexec.o io_createfile.o io_dontwantread.o io_dontwantwrite.o io_eagain.o io_fd.o io_finishandshutdown.o io_getcookie.o io_mmapwritefile.o io_nonblock.o io_passfd.o io_pipe.o io_readfile.o io_readwritefile.o io_receivefd.o io_sendfile.o io_setcookie.o io_sigpipe.o io_socketpair.o io_timeout.o io_timeouted.o io_tryread.o io_tryreadtimeout.o io_trywrite.o io_trywritetimeout.o io_wait.o io_waitread.o io_waituntil.o io_waituntil2.o io_waitwrite.o io_wantread.o io_wantwrite.o iob_addbuf.o iob_addbuf_free.o iob_addbuf_internal.o iob_addfile.o iob_addfile_close.o iob_adds.o iob_adds_free.o iob_bytesleft.o iob_free.o iob_new.o iob_prefetch.o iob_reset.o iob_send.o iob_write.o 
+ TEXTCODE_OBJS=base64.o fmt_base64.o fmt_cescape.o fmt_foldwhitespace.o fmt_hexdump.o fmt_html.o fmt_ldapescape.o fmt_quotedprintable.o fmt_to_array.o fmt_to_sa.o fmt_tofrom_array.o fmt_urlencoded.o fmt_uuencoded.o fmt_yenc.o scan_base64.o scan_cescape.o scan_hexdump.o scan_html.o scan_ldapescape.o scan_quotedprintable.o scan_to_array.o scan_to_sa.o scan_tofrom_array.o scan_urlencoded.o scan_uuencoded.o scan_yenc.o 
+ CDB_OBJS=cdb.o cdb_hash.o cdb_make.o cdb_traverse.o 
++SIG_OBJS=sig_block.o sig_unblock.o sig_blocknone.o sig_miscignore.o sig_catch.o sig_bugcatch.o sig_default.o sig_ignore.o sig_pause.o
+ 
+ byte.a: $(BYTE_OBJS)
+ fmt.a: $(FMT_OBJS)
+@@ -567,12 +577,13 @@
+ mult.a: $(MULT_OBJS)
+ io.a: $(IO_OBJS)
+ cdb.a: $(CDB_OBJS)
++sig.a: $(SIG_OBJS)
+ 
+ ALL_OBJS=$(DNS_OBJS) $(BYTE_OBJS) $(FMT_OBJS) $(SCAN_OBJS) \
+ $(STR_OBJS) $(UINT_OBJS) $(OPEN_OBJS) $(STRALLOC_OBJS) $(UNIX_OBJS) \
+ $(SOCKET_OBJS) $(BUFFER_OBJS) $(MMAP_OBJS) $(TEXTCODE_OBJS) \
+ $(TAIA_OBJS) $(TAI_OBJS) $(CASE_OBJS) $(ARRAY_OBJS) $(MULT_OBJS) \
+-$(IO_OBJS) $(CDB_OBJS)
++$(IO_OBJS) $(CDB_OBJS) $(SIG_OBJS)
+ 
+ libowfat.a: $(ALL_OBJS)
+ 	$(CROSS)ar cr $@ $(ALL_OBJS)
+@@ -596,7 +607,7 @@
+ clean:
+ 	rm -f *.o *.a *.da *.bbg *.bb core t haveip6.h haven2i.h \
+ havesl.h haveinline.h iopause.h select.h havekqueue.h haveepoll.h \
+-libepoll havesigio.h havebsdsf.h havesendfile.h havescope.h havedevpoll.h \
++libepoll havesigio.h havesigprocmask.h havesigaction.h havebsdsf.h havesendfile.h havescope.h havedevpoll.h \
+ dep libsocket havealloca.h
+ 
+ INCLUDES=buffer.h byte.h fmt.h ip4.h ip6.h mmap.h scan.h socket.h str.h stralloc.h \
+@@ -684,6 +695,16 @@
+ 	if $(DIET) $(CC) $(CFLAGS) -c trysigio.c >/dev/null 2>&1; then echo "#define HAVE_SIGIO"; fi > $@
+ 	-rm -f trysigio.o
+ 
++havesigprocmask.h: trysigprocmask.c
++	-rm -f $@
++	if $(DIET) $(CC) $(CFLAGS) -c trysigprocmask.c >/dev/null 2>&1; then echo "#define HAVE_SIGPROCMASK"; fi > $@
++	-rm -f trysigprocmask.o
++
++havesigaction.h: trysigaction.c
++	-rm -f $@
++	if $(DIET) $(CC) $(CFLAGS) -c trysigaction.c >/dev/null 2>&1; then echo "#define HAVE_SIGACTION"; fi > $@
++	-rm -f trysigaction.o
++
+ havealloca.h: tryalloca.c
+ 	-rm -f $@
+ 	echo "#include <stdlib.h>" > $@
+@@ -725,7 +746,7 @@
+ 
+ iob_send.o scan_ip6if.o: havealloca.h
+ 
+-dep: haveip6.h haven2i.h havesl.h haveinline.h iopause.h select.h haveepoll.h havekqueue.h havedevpoll.h havescope.h havesigio.h havebsdsf.h havesendfile.h
++dep: haveip6.h haven2i.h havesl.h haveinline.h iopause.h select.h haveepoll.h havekqueue.h havedevpoll.h havescope.h havesigio.h havesigprocmask.h havebsdsf.h havesendfile.h
+ 	gcc -I. -MM `ls */*.c | grep -v test` t.c | sed -e 's@ \./@ @g' > dep
+ 
+ libdep:
+Index: sig/sig_pause.c
+===================================================================
+--- sig/sig_pause.c	(.../tags/libowfat-0_25)	(revision 0)
++++ sig/sig_pause.c	(.../branches/signal-lib)	(revision 61)
+@@ -0,0 +1,13 @@
++#include <signal.h>
++#include "sig.h"
++#include "havesigprocmask.h"
++
++void sig_pause() {
++#ifdef HAVE_SIGPROCMASK
++  sigset_t ss;
++  sigemptyset(&ss);
++  sigsuspend(&ss);
++#else
++  sigpause(0);
++#endif
++}
+Index: sig/sig_unblock.c
+===================================================================
+--- sig/sig_unblock.c	(.../tags/libowfat-0_25)	(revision 0)
++++ sig/sig_unblock.c	(.../branches/signal-lib)	(revision 61)
+@@ -0,0 +1,14 @@
++#include <signal.h>
++#include "sig.h"
++#include "havesigprocmask.h"
++
++void sig_unblock(int sig) {
++#ifdef HAVE_SIGPROCMASK
++  sigset_t ss;
++  sigemptyset(&ss);
++  sigaddset(&ss,sig);
++  sigprocmask(SIG_UNBLOCK,&ss,(sigset_t*)0);
++#else
++  sigsetmask(sigsetmask(~0)&~(1<<(sig-1)));
++#endif
++}
+Index: sig/sig_miscignore.c
+===================================================================
+--- sig/sig_miscignore.c	(.../tags/libowfat-0_25)	(revision 0)
++++ sig/sig_miscignore.c	(.../branches/signal-lib)	(revision 61)
+@@ -0,0 +1,16 @@
++#include <signal.h>
++#include "sig.h"
++
++void sig_miscignore() {
++  sig_ignore(SIGHUP);
++  sig_ignore(SIGINT);
++  sig_ignore(SIGQUIT);
++#ifdef SIGXCPU
++  sig_ignore(SIGXCPU);
++#endif
++#ifdef SIGXFSZ
++  sig_ignore(SIGXFSZ);
++#endif
++  sig_ignore(SIGVTALRM);
++  sig_ignore(SIGPROF);
++}
+Index: sig/sig_bugcatch.c
+===================================================================
+--- sig/sig_bugcatch.c	(.../tags/libowfat-0_25)	(revision 0)
++++ sig/sig_bugcatch.c	(.../branches/signal-lib)	(revision 61)
+@@ -0,0 +1,19 @@
++#include <signal.h>
++#include "sig.h"
++
++void sig_bugcatch(sigrtn* f) {
++  sig_catch(SIGILL,f);
++  sig_catch(SIGABRT,f);
++  sig_catch(SIGBUS,f);
++  sig_catch(SIGFPE,f);
++  sig_catch(SIGSEGV,f);
++#ifdef SIGSTKFLT
++  sig_catch(SIGSTKFLT,f);
++#endif
++#ifdef SIGSYS
++  sig_catch(SIGSYS,f);
++#endif
++#ifdef SIGEMT
++  sig_catch(SIGEMT,f);
++#endif
++}
+Index: sig/sig_catch.3
+===================================================================
+--- sig/sig_catch.3	(.../tags/libowfat-0_25)	(revision 0)
++++ sig/sig_catch.3	(.../branches/signal-lib)	(revision 61)
+@@ -0,0 +1,39 @@
++.TH sig_catch 3
++.SH NAME
++sig_catch \- sets a user-defined handler routine for a signal
++.SH SYNTAX
++.B #include <sig.h>
++
++void \fBsig_catch\fP(int \fIsig\fR,sigrtn* \fIrt\fR);
++.SH DESCRIPTION
++Sets a user-defined function which is called by the system on the reception of
++a signal. When no such handler is installed, the kernel will be responsible
++to either take the default action or to ignore the signal (see
++\fIsig_default\fR(3) and \fIsig_ignore\fR(3)).
++
++The presence of a handler for a particular signal will return control to the
++provided function within the program. 
++
++The handler routine \fIrt\fR is just a pointer to any C function.
++It can optionally declare an integer argument which corresponds to the signal number
++of the actual event.
++
++.SH EXAMPLE
++  #include <sig.h>
++  #include <unistd.h>
++
++  volatile int ret = 0;  /* however, modifying a global var from 
++                            a signal handler is a bad example */
++  void \fIhup\fR() {
++    ++ret;
++  }
++
++  int \fImain\fR() {
++    sig_catch(1,hup);
++    sleep(10);         /* sending a -HUP here will interrupt the sleep() and
++                          cause hup() to increment the return value once... */
++    return ret;
++  }
++
++.SH "SEE ALSO"
++sig_default(3), sig_ignore(3), signal(2), sigaction(2), sigaltstack(2)
+Index: sig/sig_catch.c
+===================================================================
+--- sig/sig_catch.c	(.../tags/libowfat-0_25)	(revision 0)
++++ sig/sig_catch.c	(.../branches/signal-lib)	(revision 61)
+@@ -0,0 +1,15 @@
++#include <signal.h>
++#include "sig.h"
++#include "havesigaction.h"
++
++void sig_catch(int sig,sigrtn* f) {
++#ifdef HAVE_SIGACTION
++  struct sigaction sa;
++  sa.sa_handler=f;
++  sa.sa_flags=0;
++  sigemptyset(&sa.sa_mask);
++  sigaction(sig,&sa,(struct sigaction*)0);
++#else
++  signal(sig,f);
++#endif
++}
+Index: sig/sig_ignore.3
+===================================================================
+--- sig/sig_ignore.3	(.../tags/libowfat-0_25)	(revision 0)
++++ sig/sig_ignore.3	(.../branches/signal-lib)	(revision 61)
+@@ -0,0 +1,26 @@
++.TH sig_ignore 3
++.SH NAME
++sig_ignore \- set a signal to be ignored
++.SH SYNTAX
++.B #include <sig.h>
++
++void \fBsig_ignore\fP(int \fIsig\fR);
++.SH DESCRIPTION
++
++The sig_ignore() function sets a signal to be ignored. In this state the program still receives the
++signal (unlike when blocked) and can thus be interrupted, but thereafter no
++action will be taken.
++
++.SH EXAMPLE
++  #include <sig.h>
++  #include <unistd.h>
++
++  int \fImain\fR() {
++    sig_ignore(1);
++    sleep(10);     /* delivery of a HUP signal here will cause syscall interruption
++                     (on linux it will even be restarted) but no program termination */
++    return 0;
++  }
++
++.SH "SEE ALSO"
++sig_default(3), sig_catch(3), signal(2), sigaction(2)
+Index: sig/sig_ignore.c
+===================================================================
+--- sig/sig_ignore.c	(.../tags/libowfat-0_25)	(revision 0)
++++ sig/sig_ignore.c	(.../branches/signal-lib)	(revision 61)
+@@ -0,0 +1,6 @@
++#include <signal.h>
++#include "sig.h"
++
++void sig_ignore(int sig) {
++  sig_catch(sig,SIG_IGN);
++}
+Index: sig/sig_default.3
+===================================================================
+--- sig/sig_default.3	(.../tags/libowfat-0_25)	(revision 0)
++++ sig/sig_default.3	(.../branches/signal-lib)	(revision 61)
+@@ -0,0 +1,16 @@
++.TH sig_default 3
++.SH NAME
++sig_default \- set the signal handler back to the system default
++.SH SYNTAX
++.B #include <sig.h>
++
++void \fBsig_default\fP(int \fIsig\fR);
++.SH DESCRIPTION
++
++The sig_default() function sets a signals handler back to the default
++action, which is in most prominent examples: program termination
++See signal(7) for a detailed explanation of the default signal handling
++behaviour.
++
++.SH "SEE ALSO"
++sig_catch(3), sig_ignore(3), signal(7), sigaction(2)
+Index: sig/sig_default.c
+===================================================================
+--- sig/sig_default.c	(.../tags/libowfat-0_25)	(revision 0)
++++ sig/sig_default.c	(.../branches/signal-lib)	(revision 61)
+@@ -0,0 +1,6 @@
++#include <signal.h>
++#include "sig.h"
++
++void sig_default(int sig) {
++  sig_catch(sig,SIG_DFL);
++}
+Index: sig/sig_block.c
+===================================================================
+--- sig/sig_block.c	(.../tags/libowfat-0_25)	(revision 0)
++++ sig/sig_block.c	(.../branches/signal-lib)	(revision 61)
+@@ -0,0 +1,15 @@
++#include <signal.h>
++#include "sig.h"
++#include "havesigprocmask.h"
++
++void sig_block(int sig) {
++#ifdef HAVE_SIGPROCMASK
++  sigset_t ss;
++  sigemptyset(&ss);
++  sigaddset(&ss,sig);
++  sigprocmask(SIG_BLOCK,&ss,(sigset_t*)0);
++#else
++  sigblock(1<<(sig-1));
++#endif
++}
++
+Index: sig/sig_blocknone.3
+===================================================================
+--- sig/sig_blocknone.3	(.../tags/libowfat-0_25)	(revision 0)
++++ sig/sig_blocknone.3	(.../branches/signal-lib)	(revision 61)
+@@ -0,0 +1,12 @@
++.TH sig_blocknone 3
++.SH NAME
++sig_blocknone \- unblocks all signals
++.SH SYNTAX
++.B #include <sig.h>
++
++void \fBsig_blocknone\fP();
++.SH DESCRIPTION
++Unblocks any blocked signal. Will fire any pending signal.
++
++.SH "SEE ALSO"
++sig_block(3), sig_unblock(3), sig_pause(3)
+Index: sig/sig_blocknone.c
+===================================================================
+--- sig/sig_blocknone.c	(.../tags/libowfat-0_25)	(revision 0)
++++ sig/sig_blocknone.c	(.../branches/signal-lib)	(revision 61)
+@@ -0,0 +1,13 @@
++#include <signal.h>
++#include "sig.h"
++#include "havesigprocmask.h"
++
++void sig_blocknone() {
++#ifdef HAVE_SIGPROCMASK
++  sigset_t ss;
++  sigemptyset(&ss);
++  sigprocmask(SIG_SETMASK,&ss,(sigset_t*)0);
++#else
++  sigsetmask(0);
++#endif
++}
+Index: GNUmakefile
+===================================================================
+--- GNUmakefile	(.../tags/libowfat-0_25)	(revision 61)
++++ GNUmakefile	(.../branches/signal-lib)	(revision 61)
+@@ -11,7 +11,7 @@
+ 
+ LIBS=byte.a fmt.a scan.a str.a uint.a open.a stralloc.a unix.a socket.a \
+ buffer.a mmap.a taia.a tai.a dns.a case.a mult.a array.a io.a \
+-textcode.a cdb.a
++textcode.a cdb.a sig.a
+ 
+ all: t $(LIBS) libowfat.a libsocket
+ 
+@@ -54,7 +54,7 @@
+ # to build without diet libc support, use $ make DIET=
+ # see http://www.fefe.de/dietlibc/ for details about the diet libc
+ 
+-VPATH=str:byte:fmt:scan:uint:open:stralloc:unix:socket:buffer:mmap:textcode:taia:tai:dns:case:array:mult:io:cdb
++VPATH=str:byte:fmt:scan:uint:open:stralloc:unix:socket:buffer:mmap:textcode:taia:tai:dns:case:array:mult:io:cdb:sig
+ 
+ BYTE_OBJS=$(patsubst byte/%.c,%.o,$(wildcard byte/*.c))
+ FMT_OBJS=$(patsubst fmt/%.c,%.o,$(wildcard fmt/*.c))
+@@ -76,6 +76,7 @@
+ MULT_OBJS=$(patsubst mult/%.c,%.o,$(wildcard mult/*.c))
+ IO_OBJS=$(patsubst io/%.c,%.o,$(wildcard io/*.c))
+ CDB_OBJS=$(patsubst cdb/%.c,%.o,$(wildcard cdb/*.c))
++SIG_OBJS=$(patsubst sig/%.c,%.o,$(wildcard sig/*.c))
+ 
+ $(BYTE_OBJS): byte.h
+ $(FMT_OBJS): fmt.h
+@@ -95,6 +96,7 @@
+ $(MULT_OBJS): uint64.h uint32.h uint16.h safemult.h
+ $(IO_OBJS): uint64.h array.h io.h io_internal.h taia.h tai.h haveepoll.h havekqueue.h havesigio.h havebsdsf.h havedevpoll.h havesendfile.h
+ $(CDB_OBJS): cdb.h uint32.h
++$(SIG_OBJS): sig.h havesigprocmask.h havesigaction.h
+ 
+ 
+ iob_addbuf.o iob_addfile.o iob_new.o iob_reset.o iob_send.o: iob_internal.h iob.h
+@@ -124,12 +126,13 @@
+ mult.a: $(MULT_OBJS)
+ io.a: $(IO_OBJS)
+ cdb.a: $(CDB_OBJS)
++sig.a: $(SIG_OBJS)
+ 
+ ALL_OBJS=$(DNS_OBJS) $(BYTE_OBJS) $(FMT_OBJS) $(SCAN_OBJS) \
+ $(STR_OBJS) $(UINT_OBJS) $(OPEN_OBJS) $(STRALLOC_OBJS) $(UNIX_OBJS) \
+ $(SOCKET_OBJS) $(BUFFER_OBJS) $(MMAP_OBJS) $(TEXTCODE_OBJS) \
+ $(TAIA_OBJS) $(TAI_OBJS) $(CASE_OBJS) $(ARRAY_OBJS) $(MULT_OBJS) \
+-$(IO_OBJS) $(CDB_OBJS)
++$(IO_OBJS) $(CDB_OBJS) $(SIG_OBJS)
+ 
+ libowfat.a: $(ALL_OBJS)
+ 	$(CROSS)ar cr $@ $(ALL_OBJS)
+@@ -153,13 +156,13 @@
+ clean:
+ 	rm -f *.o *.a *.da *.bbg *.bb core t haveip6.h haven2i.h \
+ havesl.h haveinline.h iopause.h select.h havekqueue.h haveepoll.h \
+-libepoll havesigio.h havebsdsf.h havesendfile.h havescope.h havedevpoll.h \
++libepoll havesigio.h havesigprocmask.h havebsdsf.h havesendfile.h havescope.h havedevpoll.h havesigaction.h \
+ dep libsocket havealloca.h
+ 
+ INCLUDES=buffer.h byte.h fmt.h ip4.h ip6.h mmap.h scan.h socket.h str.h stralloc.h \
+ uint16.h uint32.h uint64.h open.h textcode.h tai.h taia.h dns.h iopause.h case.h \
+ openreadclose.h readclose.h ndelay.h array.h io.h safemult.h iob.h havealloca.h \
+-errmsg.h cdb.h cdb_make.h rangecheck.h
++errmsg.h cdb.h cdb_make.h rangecheck.h sig.h
+ 
+ install: libowfat.a
+ 	install -d $(INCLUDEDIR) $(MAN3DIR) $(LIBDIR)
+@@ -241,6 +244,16 @@
+ 	if $(DIET) $(CC) $(CFLAGS) -c trysigio.c >/dev/null 2>&1; then echo "#define HAVE_SIGIO"; fi > $@
+ 	-rm -f trysigio.o
+ 
++havesigprocmask.h: trysigprocmask.c
++	-rm -f $@
++	if $(DIET) $(CC) $(CFLAGS) -c trysigprocmask.c >/dev/null 2>&1; then echo "#define HAVE_SIGPROCMASK"; fi > $@
++	-rm -f trysigprocmask.o
++
++havesigaction.h: trysigaction.c
++	-rm -f $@
++	if $(DIET) $(CC) $(CFLAGS) -c trysigaction.c >/dev/null 2>&1; then echo "#define HAVE_SIGACTION"; fi > $@
++	-rm -f trysigaction.o
++
+ havealloca.h: tryalloca.c
+ 	-rm -f $@
+ 	echo "#include <stdlib.h>" > $@
+@@ -282,7 +295,7 @@
+ 
+ iob_send.o scan_ip6if.o: havealloca.h
+ 
+-dep: haveip6.h haven2i.h havesl.h haveinline.h iopause.h select.h haveepoll.h havekqueue.h havedevpoll.h havescope.h havesigio.h havebsdsf.h havesendfile.h
++dep: haveip6.h haven2i.h havesl.h haveinline.h iopause.h select.h haveepoll.h havekqueue.h havedevpoll.h havescope.h havesigio.h havesigprocmask.h havesigaction.h havebsdsf.h havesendfile.h
+ 	gcc -I. -MM `ls */*.c | grep -v test` t.c | sed -e 's@ \./@ @g' > dep
+ 
+ libdep:
+Index: sig.h
+===================================================================
+--- sig.h	(.../tags/libowfat-0_25)	(revision 0)
++++ sig.h	(.../branches/signal-lib)	(revision 61)
+@@ -0,0 +1,39 @@
++#ifndef SIG_H
++#define SIG_H
++
++/* type of signal handler routines.. it doesn't matter how many arguments 
++ * such a function takes. 
++ * if you declare the first argument as int, it will hold the signal number. 
++ * any further arguments are not guaranteed, but they can appear when we make
++ * use of SA_SIGINFO (see sigaction manpage). */
++typedef void sigrtn();
++
++/* sets the signal handler routine which is 
++ * called upon reception of the specified signal */
++void sig_catch(int sig,sigrtn* rt);
++
++/* block a signal; we won't be interrupted by that 
++ * specific signal before it is unblocked again. */
++void sig_block(int sig);
++void sig_unblock(int sig);
++
++/* unblock all signals */
++void sig_blocknone(void);
++
++/* sleep until the reception of a signal? */
++void sig_pause(void);
++
++/* set the default handler for the specified signal */
++void sig_default(int sig);
++
++/* ignore the specified signal */
++void sig_ignore(int sig);
++
++/* ignore signals triggered by interactive terminal session 
++ * and those related to operating system limits */
++void sig_miscignore(void);
++
++/* catches signals which arise from coding errors... */
++void sig_bugcatch(sigrtn* rt);
++
++#endif
+Index: select.h
+===================================================================
+--- select.h	(.../tags/libowfat-0_25)	(revision 0)
++++ select.h	(.../branches/signal-lib)	(revision 61)
+@@ -0,0 +1,15 @@
++#ifndef SELECT_H
++#define SELECT_H
++
++/* sysdep: +sysselect */
++
++#include <sys/types.h>
++#include <sys/time.h>
++#include <sys/select.h>
++
++/* braindead BSD uses bzero in FD_ZERO but doesn't #include string.h */
++#include <string.h>
++
++extern int select();
++
++#endif
+Index: iopause.h
+===================================================================
+--- iopause.h	(.../tags/libowfat-0_25)	(revision 0)
++++ iopause.h	(.../branches/signal-lib)	(revision 61)
+@@ -0,0 +1,18 @@
++#ifndef IOPAUSE_H
++#define IOPAUSE_H
++
++/* sysdep: +poll */
++#define IOPAUSE_POLL
++
++#include <sys/types.h>
++#include <sys/poll.h>
++
++typedef struct pollfd iopause_fd;
++#define IOPAUSE_READ POLLIN
++#define IOPAUSE_WRITE POLLOUT
++
++#include "taia.h"
++
++extern void iopause(iopause_fd *,unsigned int,struct taia *,struct taia *);
++
++#endif
+Index: trysigaction.c
+===================================================================
+--- trysigaction.c	(.../tags/libowfat-0_25)	(revision 0)
++++ trysigaction.c	(.../branches/signal-lib)	(revision 61)
+@@ -0,0 +1,10 @@
++#include <sys/types.h>
++#include <signal.h>
++
++int main() {
++  struct sigaction sa;
++  sa.sa_handler=0;
++  sa.sa_flags=0;
++  sigemptyset(&sa.sa_mask);
++  sigaction(0,&sa,(struct sigaction*)0);
++}
+Index: trysigprocmask.c
+===================================================================
+--- trysigprocmask.c	(.../tags/libowfat-0_25)	(revision 0)
++++ trysigprocmask.c	(.../branches/signal-lib)	(revision 61)
+@@ -0,0 +1,9 @@
++#include <sys/types.h>
++#include <signal.h>
++
++int main() {
++  sigset_t ss;
++  sigemptyset(&ss);
++  sigaddset(&ss,SIGPIPE);
++  sigprocmask(SIG_BLOCK,&ss,0);
++}

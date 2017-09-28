@@ -1,0 +1,161 @@
+diff -ru bash-3.2_orig/Makefile.in bash-3.2/Makefile.in
+--- bash-3.2_orig/Makefile.in	2008-03-24 04:08:56.000000000 +0000
++++ bash-3.2/Makefile.in	2008-03-24 04:09:07.000000000 +0000
+@@ -37,6 +37,11 @@
+ includedir = @includedir@
+ datadir = @datadir@
+ localedir = $(datadir)/locale
++procdir = @procdir@
++tmpdir = @tmpdir@
++devdir = @devdir@
++localstatedir = @localstatedir@
++sysconfdir = @sysconfdir@
+ 
+ mandir = @mandir@
+ manpfx = man
+@@ -121,7 +126,7 @@
+ CPPFLAGS = @CPPFLAGS@
+ CPPFLAGS_FOR_BUILD = @CPPFLAGS_FOR_BUILD@
+ LOCAL_CFLAGS = @LOCAL_CFLAGS@ ${DEBUG} ${MALLOC_DEBUG}
+-DEFS = @DEFS@
++DEFS = @DEFS@ -DLOCALSTATEDIR=\"$(localstatedir)\" -DBINDIR=\"$(bindir)\" -DSBINDIR=\"$(sbindir)\" -DTMPDIR=\"$(tmpdir)\" -DPROCDIR=\"$(procdir)\" -DDEVDIR=\"$(devdir)\" -DSYSCONFDIR=\"$(sysconfdir)\"
+ LOCAL_DEFS = @LOCAL_DEFS@
+ 
+ LOCALE_DEFS = -DLOCALEDIR='"$(localedir)"' -DPACKAGE='"$(PACKAGE)"'
+diff -ru bash-3.2_orig/builtins/Makefile.in bash-3.2/builtins/Makefile.in
+--- bash-3.2_orig/builtins/Makefile.in	2008-03-24 04:08:56.000000000 +0000
++++ bash-3.2/builtins/Makefile.in	2008-03-24 04:09:09.000000000 +0000
+@@ -43,6 +43,9 @@
+ datadir = @datadir@
+ localedir = $(datadir)/locale
+ 
++bindir = @bindir@
++sbindir = @sbindir@
++
+ # Support an alternate destination root directory for package building
+ DESTDIR =
+ 
+@@ -58,7 +61,7 @@
+ CPPFLAGS = @CPPFLAGS@
+ CPPFLAGS_FOR_BUILD = @CPPFLAGS_FOR_BUILD@
+ LOCAL_CFLAGS = @LOCAL_CFLAGS@ ${DEBUG}
+-DEFS = @DEFS@
++DEFS = @DEFS@ -DBINDIR=\"$(bindir)\" -DSBINDIR=\"$(sbindir)\"
+ LOCAL_DEFS = @LOCAL_DEFS@
+ 
+ LIBS = @LIBS@
+diff -ru bash-3.2_orig/config-top.h bash-3.2/config-top.h
+--- bash-3.2_orig/config-top.h	2008-03-24 04:08:57.000000000 +0000
++++ bash-3.2/config-top.h	2008-03-24 04:09:09.000000000 +0000
+@@ -52,14 +52,14 @@
+ /* The default value of the PATH variable. */
+ #ifndef DEFAULT_PATH_VALUE
+ #define DEFAULT_PATH_VALUE \
+-  "/usr/gnu/bin:/usr/local/bin:/bin:/usr/bin:."
++  BINDIR ":" SBINDIR ":."
+ #endif
+ 
+ /* The value for PATH when invoking `command -p'.  This is only used when
+    the Posix.2 confstr () function, or CS_PATH define are not present. */
+ #ifndef STANDARD_UTILS_PATH
+ #define STANDARD_UTILS_PATH \
+-  "/bin:/usr/bin:/sbin:/usr/sbin:/etc:/usr/etc"
++  BINDIR ":" SBINDIR ":."
+ #endif
+ 
+ /* Default primary and secondary prompt strings. */
+@@ -73,10 +73,10 @@
+ #define KSH_COMPATIBLE_SELECT
+ 
+ /* System-wide .bashrc file for interactive shells. */
+-/* #define SYS_BASHRC "/etc/bash.bashrc" */
++/* #define SYS_BASHRC SYSCONFDIR "/bash.bashrc" */
+ 
+ /* System-wide .bash_logout for login shells. */
+-/* #define SYS_BASH_LOGOUT "/etc/bash.bash_logout" */
++/* #define SYS_BASH_LOGOUT SYSCONFDIR "/bash.bash_logout" */
+ 
+ /* Define this to make non-interactive shells begun with argv[0][0] == '-'
+    run the startup files when not in posix mode. */
+diff -ru bash-3.2_orig/configure bash-3.2/configure
+--- bash-3.2_orig/configure	2008-03-24 04:08:56.000000000 +0000
++++ bash-3.2/configure	2008-03-24 04:09:09.000000000 +0000
+@@ -1693,7 +1711,7 @@
+ fi
+ 
+ if test -z "${DEBUGGER_START_FILE}"; then
+-	DEBUGGER_START_FILE=${ac_default_prefix}/share/bashdb/bashdb-main.inc
++	 DEBUGGER_START_FILE=${prefix}/lib/bashdb/bashdb-main.inc
+ fi
+ 
+ opt_minimal_config=no
+diff -ru bash-3.2_orig/lib/sh/Makefile.in bash-3.2/lib/sh/Makefile.in
+--- bash-3.2_orig/lib/sh/Makefile.in	2008-03-24 04:08:56.000000000 +0000
++++ bash-3.2/lib/sh/Makefile.in	2008-03-24 04:09:10.000000000 +0000
+@@ -31,6 +31,9 @@
+ topdir = @top_srcdir@
+ BUILD_DIR = @BUILD_DIR@
+ 
++prefix = @prefix@
++localstatedir = @localstatedir@
++
+ LIBBUILD = ${BUILD_DIR}/lib
+ 
+ BASHINCDIR = ${topdir}/include
+@@ -61,7 +65,7 @@
+ 
+ PROFILE_FLAGS = @PROFILE_FLAGS@
+ 
+-DEFS = @DEFS@
++DEFS = @DEFS@ -DLOCALSTATEDIR=\"$(localstatedir)\"
+ LOCAL_DEFS = @LOCAL_DEFS@
+ 
+ INCLUDES = -I. -I../.. -I$(topdir) -I$(topdir)/lib -I$(BASHINCDIR) -I$(srcdir) $(INTL_INC)
+diff -ru bash-3.2_orig/lib/termcap/termcap.c bash-3.2/lib/termcap/termcap.c
+--- bash-3.2_orig/lib/termcap/termcap.c	2008-03-24 04:08:56.000000000 +0000
++++ bash-3.2/lib/termcap/termcap.c	2008-03-24 04:09:10.000000000 +0000
+@@ -100,7 +100,7 @@
+ #include "ltcap.h"
+ 
+ #ifndef TERMCAP_FILE
+-#define TERMCAP_FILE "/etc/termcap"
++#define TERMCAP_FILE SYSCONFDIR "/termcap"
+ #endif
+ 
+ #ifndef emacs
+diff -ru bash-3.2_orig/pathnames.h.in bash-3.2/pathnames.h.in
+--- bash-3.2_orig/pathnames.h.in	2008-03-24 04:08:57.000000000 +0000
++++ bash-3.2/pathnames.h.in	2008-03-24 04:09:10.000000000 +0000
+@@ -22,10 +22,10 @@
+ #define _PATHNAMES_H_
+ 
+ /* The default file for hostname completion. */
+-#define DEFAULT_HOSTS_FILE "/etc/hosts"
++#define DEFAULT_HOSTS_FILE SYSCONFDIR "/hosts"
+ 
+ /* The default login shell startup file. */
+-#define SYS_PROFILE "/etc/profile"
++#define SYS_PROFILE SYSCONFDIR "/profile"
+ 
+ /* The default location of the bash debugger initialization/startup file. */
+ #define DEBUGGER_START_FILE	"@DEBUGGER_START_FILE@"
+diff -ru bash-3.2_orig/shell.c bash-3.2/shell.c
+--- bash-3.2_orig/shell.c	2008-03-24 04:08:56.000000000 +0000
++++ bash-3.2/shell.c	2008-03-24 04:09:11.000000000 +0000
+@@ -1592,14 +1592,14 @@
+ 	  current_user.user_name = savestring (entry->pw_name);
+ 	  current_user.shell = (entry->pw_shell && entry->pw_shell[0])
+ 				? savestring (entry->pw_shell)
+-				: savestring ("/bin/sh");
++				: savestring (BINDIR"/sh");
+ 	  current_user.home_dir = savestring (entry->pw_dir);
+ 	}
+       else
+ 	{
+ 	  current_user.user_name = _("I have no name!");
+ 	  current_user.user_name = savestring (current_user.user_name);
+-	  current_user.shell = savestring ("/bin/sh");
++	  current_user.shell = savestring (BINDIR"/sh");
+ 	  current_user.home_dir = savestring ("/");
+ 	}
+       endpwent ();

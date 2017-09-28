@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Glues together Hpricot with Rubys RSS library to transform web pages into RSS feeds.
+# URL: http://rubyforge.org/projects/feedalizer/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=feedalizer
+version=0.1.1
+release=1
+source=($mirror_rubyforge/feedalizer/feedalizer-$version.tgz)
+
+build()
+{
+  cd feedalizer-$version
+
+  set `ruby --version`
+
+  RUBYVERSION=$2
+  RUBYLIBDIR=$prefix/lib/ruby/${RUBYVERSION%.*}
+
+  install -d $PKG/$RUBYLIBDIR
+  cp -rf lib/* $PKG/$RUBYLIBDIR
+
+  install -d $ROOT/bin
+  install -m 755 bin/* $ROOT/bin
+
+  install -d $ROOT/share/doc/feedalizer
+  install -m 644 CHANGELOG.txt COPYING.txt Manifest.txt README.txt TODO.txt logo.svg $ROOT/share/doc/feedalizer
+
+  cp -rf examples tests $ROOT/share/doc/feedalizer
+}

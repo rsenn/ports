@@ -1,0 +1,38 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Package: libmml
+# Description: One of mm's C libraries
+#  'mml' is a library of general-purpose C headers and functions that I use
+#  in various software projects. It's possible that others might make some
+#  use of mml, but most people will probably simply visit here in order to
+#  build some other package that requires it.
+#  .
+# URL: http://www.geezer.org/sw/mml/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=mml
+version=20070908
+release=1
+source=(http://www.geezer.org/sw/mml/mml-$version.tar.gz)
+
+build()
+{
+  cd mml-$version
+
+  #./autogen.sh
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/libmml
+  install -m 644 BUILD.MV ChangeLog INSTALL LICENSE NEWS README TODO $ROOT/share/doc/libmml
+}
+
+# EOF

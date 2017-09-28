@@ -1,0 +1,321 @@
+diff -wru jslibs-0.9-r1881_orig/src/jssvg/Makefile jslibs-0.9-r1881/src/jssvg/Makefile
+--- jslibs-0.9-r1881_orig/src/jssvg/Makefile	2009-02-06 08:27:57.000000000 +0100
++++ jslibs-0.9-r1881/src/jssvg/Makefile	2009-02-06 08:51:29.000000000 +0100
+@@ -0,0 +1,7 @@
++TARGET     = jssvg.so
++SRC        = $(wildcard *.cpp)
++INCLUDES   = `pkg-config js libxml-2.0 pango librsvg-2.0 --cflags`
++STATICLIBS =
++SHAREDLIBS = `pkg-config js libxml-2.0 pango librsvg-2.0 --libs`
++
++include ../rules.mk
+diff -wru jslibs-0.9-r1881_orig/src/jssvg/stdafx.h jslibs-0.9-r1881/src/jssvg/stdafx.h
+--- jslibs-0.9-r1881_orig/src/jssvg/stdafx.h	2009-02-06 08:18:57.000000000 +0100
++++ jslibs-0.9-r1881/src/jssvg/stdafx.h	2009-02-06 08:29:03.000000000 +0100
+@@ -17,5 +17,5 @@
+ #include "../common/jsConfiguration.h"
+ 
+ 
+-#include <rsvg.h>
+-#include <rsvg-cairo.h>
++#include <librsvg/rsvg.h>
++#include <librsvg/rsvg-cairo.h>
+diff -wru jslibs-0.9-r1881_orig/src/jssvg/svg.cpp jslibs-0.9-r1881/src/jssvg/svg.cpp
+--- jslibs-0.9-r1881_orig/src/jssvg/svg.cpp	2009-02-06 08:18:57.000000000 +0100
++++ jslibs-0.9-r1881/src/jssvg/svg.cpp	2009-02-06 09:16:48.000000000 +0100
+@@ -13,8 +13,8 @@
+  * ***** END LICENSE BLOCK ***** */
+ 
+ #include "stdafx.h"
+-#include <rsvg-private.h>
+-#include "rsvg-structure.h"
++#include <librsvg/rsvg-private.h>
++#include <librsvg/rsvg-structure.h>
+ 
+ //#include <libxml/xpath.h>
+ //#include <libxml/parser.h>
+@@ -29,6 +29,12 @@
+ 	JSObject *obj;
+ };
+ 
++static __inline__
++unsigned int _rotl(unsigned int value, unsigned int shift)
++{
++  return ((value << (shift & 0x1f)) | (value >> (32 - (shift & 0x1f))));
++}
++
+ 
+ JSBool RequestPixbufImage(JSContext *cx, JSObject *obj, const char *name, GdkPixbuf **pixbuf) {
+ 
+@@ -52,7 +58,7 @@
+ 			const char *sBuffer;
+ 			size_t bufferLength;
+ 			J_CHK( JsvalToStringAndLength(cx, &image, &sBuffer, &bufferLength ) ); // warning: GC on the returned buffer !
+-			J_S_ASSERT( bufferLength == sWidth * sHeight * sChannels * 1, "Invalid image format." );
++			J_S_ASSERT( bufferLength == (unsigned)(sWidth * sHeight * sChannels * 1), "Invalid image format." );
+ 			*pixbuf = gdk_pixbuf_new_from_data((const guchar *)sBuffer, GDK_COLORSPACE_RGB, sChannels == 4, 8, sWidth, sHeight, sWidth*sChannels, NULL, NULL);
+ 			J_S_ASSERT( *pixbuf == NULL, "Unable to create the pixbuf." );
+ 		}
+@@ -102,11 +108,11 @@
+   Constructs a new SVG object.
+ **/
+ DEFINE_CONSTRUCTOR() {
+-
++  Private *pv;
+ 	J_S_ASSERT_CONSTRUCTING();
+ 	J_S_ASSERT_THIS_CLASS();
+ 
+-	Private *pv = (Private*)JS_malloc(cx, sizeof(Private));
++	pv = (Private*)JS_malloc(cx, sizeof(Private));
+ 	J_S_ASSERT_ALLOC(pv);
+ 	pv->handle = rsvg_handle_new();
+ 	J_S_ASSERT( pv->handle != NULL, "Unable to create rsvg handler." );
+@@ -134,16 +140,18 @@
+   }}}
+ **/
+ DEFINE_FUNCTION_FAST( Write ) {
+-
++  GError *error;
++  gchar *tmp;
++	RsvgHandle *handle;
+ 	Private *pv = (Private*)JS_GetPrivate(cx, J_FOBJ);
+ 	J_S_ASSERT_RESOURCE(pv);
+-	RsvgHandle *handle = pv->handle;
++	handle = pv->handle;
+ 
+ 	const char *data;
+ 	size_t length;
+ 	J_CHK( JsvalToStringAndLength(cx, &J_FARG(1), &data, &length) );
+ 
+-	GError *error = NULL;
++	error = NULL;
+ 	gboolean status;
+ 
+ //	rsvg_handle_new_from_file
+@@ -151,7 +159,7 @@
+ 
+ //	rsvg_handle_set_base_uri(handle, "123"); // This can only be called before rsvg_handle_write()
+ 
+-	gchar *tmp = handle->priv->base_uri;
++	tmp = handle->priv->base_uri;
+ 	CxObj cxobj;
+ 	cxobj.cx = cx;
+ 	cxobj.obj = J_FOBJ;
+@@ -237,14 +245,20 @@
+   }}}
+ **/
+ DEFINE_FUNCTION_FAST( RenderImage ) { // using cairo
+-
++  void *image, *buffer;
++  size_t length, pixelCount;
++  int width, height;
++  cairo_t *cr;
++  cairo_surface_t *surface;
++  GError *error;
++  RsvgHandle *handle;
+ 	Private *pv = (Private*)JS_GetPrivate(cx, J_FOBJ);
+ 	J_S_ASSERT_RESOURCE(pv);
+-	RsvgHandle *handle = pv->handle;
++	handle = pv->handle;
+ 
+ 	gboolean status;
+ 
+-	GError *error = NULL;
++	error = NULL;
+ 	status = rsvg_handle_close(handle, &error);
+ 	if ( !status )
+ 		J_REPORT_ERROR_1( "SVG error: %s", error->message );
+@@ -323,9 +337,9 @@
+ 			J_REPORT_ERROR("Unsupported output image format.");
+ 	}
+ 
+-	cairo_surface_t *surface = cairo_image_surface_create(surfaceFormat, imageWidth, imageHeight);
++	surface = cairo_image_surface_create(surfaceFormat, imageWidth, imageHeight);
+ 	J_S_ASSERT( cairo_surface_status(surface) == CAIRO_STATUS_SUCCESS, "Unable to create a drawing surface." );
+-	cairo_t *cr = cairo_create(surface);
++	cr = cairo_create(surface);
+ 	J_S_ASSERT( cairo_status(cr) == CAIRO_STATUS_SUCCESS, "Unable to create drawing state." );
+ 
+ 	//cairo_set_antialias(cr, CAIRO_ANTIALIAS_DEFAULT);
+@@ -338,14 +352,14 @@
+ 
+ //	cairo_format_t surfaceFormat = cairo_image_surface_get_format(surface);
+ 
+-	int width = cairo_image_surface_get_width(surface);
+-	int height = cairo_image_surface_get_height(surface);
+-	void *buffer = cairo_image_surface_get_data(surface);
++	width = cairo_image_surface_get_width(surface);
++	height = cairo_image_surface_get_height(surface);
++	buffer = cairo_image_surface_get_data(surface);
+ 
+-	size_t pixelCount = width * height;
+-	size_t length = pixelCount * channels;
++	pixelCount = width * height;
++	length = pixelCount * channels;
+ 
+-	void *image = JS_malloc(cx, length);
++	image = JS_malloc(cx, length);
+ 	J_S_ASSERT_ALLOC(image);
+ 
+ 
+@@ -364,7 +378,7 @@
+ 			for ( size_t i = 0; i < pixelCount; i++ ) { // 3 2 1 4  ->  1 2 3 4
+ 
+ 				u_int32_t p = ((u_int32_t*)buffer)[i];
+-				((u_int32_t*)image)[i] = p & 0xff00ff00 | _rotl(p, 16) & 0x00ff00ff; // use SSE2 instructions ?
++				((u_int32_t*)image)[i] = (p & 0xff00ff00) | (_rotl(p, 16) & 0x00ff00ff); // use SSE2 instructions ?
+ 			}
+ 			break;
+ 		case CAIRO_FORMAT_A8:
+@@ -431,21 +445,24 @@
+    true if the element visibility has been set, otherwise false.
+ **/
+ DEFINE_FUNCTION_FAST( SetVisible ) {
+-
++  Private *pv;
++  RsvgHandle *handle;
++  RsvgNode *drawsub;
++  bool visible;
+ 	J_S_ASSERT_ARG_MIN(2);
+ 
+-	Private *pv = (Private*)JS_GetPrivate(cx, J_FOBJ);
++	pv = (Private*)JS_GetPrivate(cx, J_FOBJ);
+ 	J_S_ASSERT_RESOURCE(pv);
+-	RsvgHandle *handle = pv->handle;
++	handle = pv->handle;
+ 
+ 	const char *id;
+ 	J_CHK( JsvalToString(cx, &J_FARG(1), &id) );
+ 	J_S_ASSERT( id != NULL && id[0] == '#', "Invalid id." );
+ 
+-	bool visible;
++	visible = true;
+ 	JsvalToBool(cx, J_FARG(2), &visible);
+ 
+-	RsvgNode *drawsub = rsvg_defs_lookup (handle->priv->defs, id);
++	drawsub = rsvg_defs_lookup (handle->priv->defs, id);
+ 
+ 	if ( drawsub == NULL ) {
+ 
+@@ -468,9 +485,9 @@
+   then apply the original transformation to the coordinates.
+ **/
+ DEFINE_FUNCTION_FAST( Scale ) {
+-
++  Private *pv;
+ 	J_S_ASSERT_ARG_MIN(2);
+-	Private *pv = (Private*)JS_GetPrivate(cx, J_FOBJ);
++	pv = (Private*)JS_GetPrivate(cx, J_FOBJ);
+ 	J_S_ASSERT_RESOURCE(pv);
+ 	double sx, sy;
+ 	J_CHK( JsvalToDouble(cx, J_FARG(1), &sx) );
+@@ -487,9 +504,9 @@
+   then apply the original transformation to the coordinates.
+ **/
+ DEFINE_FUNCTION_FAST( Rotate ) {
+-
++  Private *pv;
+ 	J_S_ASSERT_ARG_MIN(1);
+-	Private *pv = (Private*)JS_GetPrivate(cx, J_FOBJ);
++	pv = (Private*)JS_GetPrivate(cx, J_FOBJ);
+ 	J_S_ASSERT_RESOURCE(pv);
+ 	double angle;
+ 	J_CHK( JsvalToDouble(cx, J_FARG(1), &angle) );
+@@ -505,9 +522,9 @@
+   then apply the original transformation to the coordinates.
+ **/
+ DEFINE_FUNCTION_FAST( Translate ) {
+-
++  Private *pv;
+ 	J_S_ASSERT_ARG_MIN(2);
+-	Private *pv = (Private*)JS_GetPrivate(cx, J_FOBJ);
++	pv = (Private*)JS_GetPrivate(cx, J_FOBJ);
+ 	J_S_ASSERT_RESOURCE(pv);
+ 	double tx, ty;
+ 	J_CHK( JsvalToDouble(cx, J_FARG(1), &tx) );
+@@ -529,8 +546,9 @@
+ DEFINE_PROPERTY(dpi) {
+ 
+ 	Private *pv = (Private*)JS_GetPrivate(cx, obj);
++  RsvgHandle *handle;
+ 	J_S_ASSERT_RESOURCE(pv);
+-	RsvgHandle *handle = pv->handle;
++	handle = pv->handle;
+ 
+ 	if ( JSVAL_IS_VOID(*vp) ) {
+ 
+@@ -562,10 +580,10 @@
+   Is the default width of the SVG.
+ **/
+ DEFINE_PROPERTY(width) {
+-
+ 	Private *pv = (Private*)JS_GetPrivate(cx, obj);
++  RsvgHandle *handle;
+ 	J_S_ASSERT_RESOURCE(pv);
+-	RsvgHandle *handle = pv->handle;
++	handle = pv->handle;
+ 
+ 	RsvgDimensionData dim;
+ 	rsvg_handle_get_dimensions(handle, &dim);
+@@ -581,8 +599,9 @@
+ DEFINE_PROPERTY(height) {
+ 
+ 	Private *pv = (Private*)JS_GetPrivate(cx, obj);
++  RsvgHandle *handle;
+ 	J_S_ASSERT_RESOURCE(pv);
+-	RsvgHandle *handle = pv->handle;
++	handle = pv->handle;
+ 
+ 	RsvgDimensionData dim;
+ 	rsvg_handle_get_dimensions(handle, &dim);
+@@ -596,12 +615,13 @@
+   Is the title of the SVG.
+ **/
+ DEFINE_PROPERTY(title) {
+-
++  const char *title;
+ 	Private *pv = (Private*)JS_GetPrivate(cx, obj);
++  RsvgHandle *handle;
+ 	J_S_ASSERT_RESOURCE(pv);
+-	RsvgHandle *handle = pv->handle;
++	handle = pv->handle;
+ 
+-	const char *title = rsvg_handle_get_title(handle);
++	title = rsvg_handle_get_title(handle);
+ 	if ( title != NULL )
+ 		J_CHK( StringToJsval(cx, title, vp) );
+ 	else
+@@ -615,12 +635,13 @@
+   Is the metadata string of the SVG.
+ **/
+ DEFINE_PROPERTY(metadata) {
+-
++  const char *metadata;
+ 	Private *pv = (Private*)JS_GetPrivate(cx, obj);
++  RsvgHandle *handle;
+ 	J_S_ASSERT_RESOURCE(pv);
+-	RsvgHandle *handle = pv->handle;
++	handle = pv->handle;
+ 
+-	const char *metadata = rsvg_handle_get_metadata(handle);
++	metadata = rsvg_handle_get_metadata(handle);
+ 	if ( metadata != NULL )
+ 		J_CHK( StringToJsval(cx, metadata, vp) );
+ 	else
+@@ -634,12 +655,13 @@
+   Is the description string of the SVG.
+ **/
+ DEFINE_PROPERTY(description) {
+-
++  const char *description;
+ 	Private *pv = (Private*)JS_GetPrivate(cx, obj);
++  RsvgHandle *handle;
+ 	J_S_ASSERT_RESOURCE(pv);
+-	RsvgHandle *handle = pv->handle;
++	handle = pv->handle;
+ 
+-	const char *description = rsvg_handle_get_desc(handle);
++	description = rsvg_handle_get_desc(handle);
+ 	if ( description != NULL )
+ 		J_CHK( StringToJsval(cx, description, vp) );
+ 	else

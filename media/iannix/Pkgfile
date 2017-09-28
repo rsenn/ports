@@ -1,0 +1,26 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Rosace  IanniX is a graphical editor of multidimensional and multi-formal scores, a kind of poly-temporal meta-sequencer, based on the former UPIC created by Iannis Xenakis.
+# URL: http://iannix.la-kitchen.fr/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=iannix
+version=0.640b
+release=1
+source=($mirror_sf/iannix/IanniX-$version-SRC-LittleEndian.tgz)
+
+build()
+{
+  cd IanniX\ SRC\ Little\ Endian
+
+  qmake-qt4 *.pro
+
+  make
+
+  install -d $ROOT/bin
+  install -m 755 bin/IanniX $ROOT/bin
+
+  install -d $ROOT/share/doc/iannix
+  install -m 644 *.txt $ROOT/share/doc/iannix
+}

@@ -1,0 +1,63 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: A TeX distribution for Unix.
+#  teTeX is the de facto standard TeX distribution for a wide range
+#  of Unix-type operating systems, and serves as a building block for
+#  others. It's easy to install and customize. teTeX is not maintained
+#  anymore; instead, TeX users should migrate to TeXlive.
+# URL: http://tug.org/teTeX/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=tetex
+version=3.0
+release=1
+source=(ftp://dante.ctan.org/tex-archive/systems/unix/teTeX/current/distrib/tetex-{src,texmf}-$version.tar.gz)
+
+build()
+{
+  mkdir texmf
+  mv \
+    ChangeLog \
+    LICENSE.texmf \
+    aliases \
+    bibtex \
+    context \
+    doc \
+    dvipdfm \
+    dvips \
+    fonts \
+    ls-R \
+    makeindex \
+    metafont \
+    metapost \
+    mft \
+    omega \
+    release-tetex-texmf.txt \
+    scripts \
+    tex \
+    texdoctk \
+    web2c \
+    texmf
+
+  install -d $ROOT/share
+  mv $SRC/texmf $ROOT/share
+
+  cd tetex-src-$version
+  ./configure \
+       --host="$host" \
+       --build="$build" \
+       --prefix="$prefix" \
+       --datadir="$prefix/share" \
+       --disable-multiplatform \
+       --with-editor="nano -w %s" \
+       --with-system-ncurses \
+       --with-system-pnglib \
+       --with-system-t1lib \
+       --with-system-zlib \
+       --with-system-gd \
+       --${shared:=enable}-shared
+
+  make
+  make prefix="$ROOT" install
+}

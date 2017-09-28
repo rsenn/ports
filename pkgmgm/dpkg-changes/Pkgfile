@@ -1,0 +1,27 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A tool that reports on changes to a Debian GNU/Linux packaging system.
+#  dpkg-changes is a simple script designed to run from a daily crontab upon
+#  a Debian GNU/Linux system. It will report to the system administrators
+#  any packages which are added or removed to the system via the dpkg system.
+#  .
+# URL: http://www.steve.org.uk/Software/dpkg-changes/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=dpkg-changes
+version=1.2
+release=1
+source=(http://www.steve.org.uk/Software/dpkg-changes/dpkg-changes-$version.tar.gz)
+
+build()
+{
+  cd dpkg-changes-$version
+
+  install -d $ROOT/sbin
+
+  make
+  make DESTDIR="$PKG" DIST_PREFIX="$ROOT" install
+}
+
+# EOF

@@ -1,0 +1,27 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Userspace utilities for squashfs
+# URL: 
+# Maintainer: 
+# Depends on: 
+
+name=squashfs-tools
+version=4.0
+release=1
+source=($mirror_sf/squashfs/squashfs$version/squashfs$version.tar.gz)
+
+build() 
+{
+  cd squashfs$version/squashfs-tools
+  
+  make
+  make INSTALL_DIR="$ROOT/bin" install
+
+  cd ..
+
+  install -d $ROOT/share/doc/squashfs-tools
+  install -m 644 INSTALL PERFORMANCE.README README COPYING CHANGES ACKNOWLEDGEMENTS $ROOT/share/doc/squashfs-tools
+
+}
+
+# EOF

@@ -1,0 +1,49 @@
+# $Id: Pkgfile,v 1.13 2007/05/09 21:02:55 roman Exp $
+# 
+# Description: 
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=freetype
+version=2.3.8
+release=1
+source=(http://download.savannah.gnu.org/releases/freetype/freetype-$version.tar.bz2
+        http://download.savannah.gnu.org/releases/freetype/freetype-doc-$version.tar.bz2)
+
+build()
+{
+  cd ${srcdir=$SRC/freetype-$version}
+
+  sh autogen.sh
+#  ln -sf builds/unix/* .
+#  libtoolize --force --copy
+#  aclocal --force
+#  autoconf --force
+
+  if [ "$host" != "$build" ]; then
+    export CC_BUILD="$build-gcc"
+  fi
+
+#  (echo "#!/bin/sh" && echo 'echo "$@"') >builds/unix/config.sub
+#  (echo "#!/bin/sh" && echo '${CC-gcc} -dumpmachine') >builds/unix/config.guess
+
+  set -- --build="$build" \
+        --host="$host" \
+        --prefix="$prefix" \
+        --${shared:=enable}-shared \
+        --${static:=enable}-shared
+
+  make CFG="$*"
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/include/freetype2/freetype/internal
+  cp include/freetype/internal/*.h $ROOT/include/freetype2/freetype/internal
+
+  install -d $ROOT/share/doc/freetype2
+  install -m 644 README.CVS ChangeLog README $ROOT/share/doc/freetype2
+
+  install -d $ROOT/share/doc/freetype2/docs
+  install -m 644 docs/formats.txt docs/PROBLEMS docs/LICENSE.TXT docs/INSTALL docs/VERSION.DLL docs/UPGRADE.UNIX docs/MAKEPP docs/INSTALL.CROSS docs/INSTALL.GNU docs/TRUETYPE docs/TODO docs/FTL.TXT docs/PATENTS docs/raster.txt docs/GPL.TXT docs/INSTALL.UNIX docs/CUSTOMIZE docs/DEBUG docs/INSTALL.MAC docs/CHANGES docs/INSTALL.ANY docs/INSTALL.VMS $ROOT/share/doc/freetype2/docs
+
+}

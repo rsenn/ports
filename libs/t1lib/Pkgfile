@@ -1,0 +1,43 @@
+# $Id: Pkgfile,v 1.8 2007/04/23 17:39:08 roman Exp $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libpng
+
+name=t1lib
+version=5.1.2
+release=1
+source=(ftp://sunsite.unc.edu/pub/Linux/libs/graphics/t1lib-$version.tar.gz
+        t1lib-5.1.0-libm.patch
+#         t1lib-5.1.0-libversion.patch
+        )
+
+build()
+{
+  cd t1lib-$version
+
+#  patch -N -p1 -i $SRC/t1lib-5.1.0-libm.patch
+#  patch -N -p1 -i $SRC/t1lib-5.1.0-libversion.patch
+
+  libtoolize --force
+  aclocal --force
+  autoconf --force
+#  ltupdate --force-version="$version" --run-aclocal --run-autoconf --aux-dir='ac-tools'
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --includedir=$prefix/include \
+      --oldincludedir=$prefix/include \
+      --without-x
+
+  make without_doc
+  make DESTDIR="$PKG" install
+
+  copy_license "LICENSE"
+
+  install -d "$ROOT/share"
+  mv "$PKG/t1lib" "$ROOT/share"
+}

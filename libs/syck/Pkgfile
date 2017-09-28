@@ -1,0 +1,38 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:50 roman Exp $
+#
+# Description: A YAML parser library.
+#  Syck is a YAML parser library that is designed to load data into scripting
+#  languages. Extensions for Ruby, PHP, and Python are included.
+# URL: http://www.whytheluckystiff.net/syck/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=syck
+version=0.61
+release=1
+source=(http://pyyaml.org/download/pysyck/syck-$version+svn231+patches.tar.gz
+        syck-0.61-libtool.patch)
+
+build()
+{
+  cd syck-$version*
+
+  libtoolize --force
+  aclocal --force
+  autoconf --force
+  autoheader --force
+  automake --add-missing --foreign --copy --force
+
+  patch -N -p1 -i $SRC/syck-0.61-libtool.patch
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --${shared:=enable}-shared \
+      --${static:=enable}-shared
+
+  make VERSION_INFO="${version//./:}"
+  make DESTDIR="$PKG" install
+}
+

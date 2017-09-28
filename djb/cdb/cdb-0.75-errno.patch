@@ -1,0 +1,97 @@
+--- cdb-0.75_orig/cdb.c	2007-08-23 15:33:43.000000000 +0200
++++ cdb-0.75/cdb.c	2007-08-23 15:34:22.000000000 +0200
+@@ -3,6 +3,7 @@
+ #include <sys/types.h>
+ #include <sys/stat.h>
+ #include <sys/mman.h>
++#include <errno.h>
+ #include "readwrite.h"
+ #include "error.h"
+ #include "seek.h"
+diff -ru cdb-0.75_orig/alloc.c cdb-0.75/alloc.c
+--- cdb-0.75_orig/alloc.c	2007-08-23 15:36:06.000000000 +0200
++++ cdb-0.75/alloc.c	2007-08-23 15:38:35.000000000 +0200
+@@ -1,5 +1,7 @@
+ #include "alloc.h"
+ #include "error.h"
++#include <errno.h>
++
+ extern char *malloc();
+ extern void free();
+ 
+diff -ru cdb-0.75_orig/buffer_get.c cdb-0.75/buffer_get.c
+--- cdb-0.75_orig/buffer_get.c	2007-08-23 15:36:06.000000000 +0200
++++ cdb-0.75/buffer_get.c	2007-08-23 15:38:48.000000000 +0200
+@@ -1,6 +1,7 @@
+ #include "buffer.h"
+ #include "byte.h"
+ #include "error.h"
++#include <errno.h>
+ 
+ static int oneread(int (*op)(),int fd,char *buf,unsigned int len)
+ {
+diff -ru cdb-0.75_orig/buffer_put.c cdb-0.75/buffer_put.c
+--- cdb-0.75_orig/buffer_put.c	2007-08-23 15:36:06.000000000 +0200
++++ cdb-0.75/buffer_put.c	2007-08-23 15:37:35.000000000 +0200
+@@ -2,6 +2,7 @@
+ #include "str.h"
+ #include "byte.h"
+ #include "error.h"
++#include <errno.h>
+ 
+ static int allwrite(int (*op)(),int fd,char *buf,unsigned int len)
+ {
+diff -ru cdb-0.75_orig/cdb_make.c cdb-0.75/cdb_make.c
+--- cdb-0.75_orig/cdb_make.c	2007-08-23 15:36:06.000000000 +0200
++++ cdb-0.75/cdb_make.c	2007-08-23 15:38:25.000000000 +0200
+@@ -6,6 +6,7 @@
+ #include "alloc.h"
+ #include "cdb.h"
+ #include "cdb_make.h"
++#include <errno.h>
+ 
+ int cdb_make_start(struct cdb_make *c,int fd)
+ {
+diff -ru cdb-0.75_orig/cdbmake.c cdb-0.75/cdbmake.c
+--- cdb-0.75_orig/cdbmake.c	2007-08-23 15:36:06.000000000 +0200
++++ cdb-0.75/cdbmake.c	2007-08-23 15:37:52.000000000 +0200
+@@ -3,6 +3,7 @@
+ #include "strerr.h"
+ #include "cdb_make.h"
+ #include "cdb.h"
++#include <errno.h>
+ 
+ #define FATAL "cdbmake: fatal: "
+ 
+diff -ru cdb-0.75_orig/install.c cdb-0.75/install.c
+--- cdb-0.75_orig/install.c	2007-08-23 15:36:06.000000000 +0200
++++ cdb-0.75/install.c	2007-08-23 15:39:07.000000000 +0200
+@@ -4,6 +4,7 @@
+ #include "open.h"
+ #include "readwrite.h"
+ #include "exit.h"
++#include <errno.h>
+ 
+ extern void hier();
+ 
+diff -ru cdb-0.75_orig/instcheck.c cdb-0.75/instcheck.c
+--- cdb-0.75_orig/instcheck.c	2007-08-23 15:36:06.000000000 +0200
++++ cdb-0.75/instcheck.c	2007-08-23 15:39:17.000000000 +0200
+@@ -4,6 +4,7 @@
+ #include "error.h"
+ #include "readwrite.h"
+ #include "exit.h"
++#include <errno.h>
+ 
+ extern void hier();
+ 
+diff -ru cdb-0.75_orig/strerr_sys.c cdb-0.75/strerr_sys.c
+--- cdb-0.75_orig/strerr_sys.c	2007-08-23 15:36:06.000000000 +0200
++++ cdb-0.75/strerr_sys.c	2007-08-23 15:37:23.000000000 +0200
+@@ -1,5 +1,6 @@
+ #include "error.h"
+ #include "strerr.h"
++#include <errno.h>
+ 
+ struct strerr strerr_sys;
+ 

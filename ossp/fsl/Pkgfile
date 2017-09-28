@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A faking/flexible syslog library.
+#  OSSP fsl offers the syslog API otherwise provided by libc. Instead of
+#  writing to the syslogd process, it uses the powerful OSSP l2 logging
+#  capabilities. It is a drop-in link-time replacement which enables any
+#  syslog consumer to take advantage of OSSP l2 by just linking this library
+#  in before libc. The program is intended to apply OSSP l2 functionality
+#  to existing syslog-based third-party programs without the requirement
+#  to change the source code of the program.
+#  .
+# URL: http://www.ossp.org/pkg/lib/fsl/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=fsl
+version=1.3.0
+release=1
+source=(ftp://ftp.ossp.org/pkg/lib/fsl/fsl-1.3.0.tar.gz)
+
+build()
+{
+  cd fsl-1.3.0
+./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+make
+make DESTDIR="$PKG" install
+}
+
+# EOF

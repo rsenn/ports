@@ -1,0 +1,39 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: SpiderMonkey(Javascript engine) Ruby binding
+#  SpiderMonkey is the code-name for the Mozilla's C implementation of
+#  JavaScript. Ruby/SpiderMonkey is SpiderMonkey Ruby binding.
+#  .
+# URL: http://code.google.com/p/ruby-spidermonkey/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=ruby-spidermonkey
+version=20090219
+release=1
+source=(ruby-spidermonkey-20090219.tar.bz2)
+
+build()
+{
+  cd ruby-spidermonkey
+
+  IFS="$IFS[]"
+  set `ruby --version`
+
+  RUBYVERSION=$2
+  eval RUBYARCH="\${$#}"
+
+  RUBYLIBDIR=$prefix/lib/ruby/${RUBYVERSION%.*}
+  ruby extconf.rb
+
+  make
+  make DESTDIR="$PKG" RUBYLIBDIR="$PKG/$RUBYLIBDIR" sitedir='$(libdir)/ruby' install
+
+  install -d $ROOT/share/doc/ruby-spidermonkey
+  install -m 644 ChangeLog README.ja.txt $ROOT/share/doc/ruby-spidermonkey
+
+  install -d $ROOT/share/ruby-spidermonkey
+  cp -rf env jspec $ROOT/share/ruby-spidermonkey
+}
+
+# EOF

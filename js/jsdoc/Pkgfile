@@ -1,0 +1,41 @@
+# $Id: Pkgfile,v 1.8 2007/04/22 23:07:53 roman Exp $
+#
+# Description: JSDoc is a tool that parses inline documentation in JavaScript
+# source files, and produces an documentation of the JavaScript code. This is
+# typically in the form of HTML (example), but XML and XMI (UML) export are
+# also supported. JSDoc is based on the (very successful) javadoc tool that
+# was created for the same purpose for the Java programming language.
+# URL: http://jsdoc.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: perl5
+
+name=jsdoc
+version=1.9.9.2
+release=2
+source=($mirror_sf/jsdoc/JSDoc-$version.tgz)
+
+build()
+{
+  cd JSDoc-$version
+
+  install -d $ROOT/bin
+  install -m 755 jsdoc.pl $ROOT/bin/jsdoc
+
+  sed -i \
+      -e "s,/usr,$prefix,g" \
+      -e "s,dirname(\$0) . '/','$prefix/lib/JSDoc/'," \
+    $ROOT/bin/jsdoc
+
+  sed -i '/use constant RECURSION/ s,=>.*\;,=> 5\;,' JSDoc.pm
+
+  perlver=$(perl --version | sed -n 's,.*perl[^a-z]\+v\?\([0-9]\).*,\1,p')
+
+  install -d $ROOT/lib/perl$perlver
+  cp -rf JSDoc* JavaScript $ROOT/lib/perl$perlver
+
+  install -d $ROOT/lib/JSDoc
+  cp *.tmpl *.css $ROOT/lib/JSDoc
+
+  install -d $ROOT/share/doc/jsdoc
+  cp test.js CHANGES README TODO TestJSDoc.pl $ROOT/share/doc/jsdoc
+}

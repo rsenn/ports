@@ -1,0 +1,49 @@
+diff -ru -ru magickwand_orig/magickwand.c magickwand/magickwand.c
+--- magickwand_orig/magickwand.c	2006-12-05 13:34:10.000000000 +0100
++++ magickwand/magickwand.c	2006-12-05 13:40:53.000000000 +0100
+@@ -789,6 +789,7 @@
+ 	ZEND_FE( magickcompositeimage, NULL )
+ 	ZEND_FE( magickconstituteimage, NULL )
+ 	ZEND_FE( magickcontrastimage, NULL )
++	ZEND_FE( magicksigmoidalcontrastimage, NULL )
+ 
+ 	ZEND_FE( magickconvolveimage, NULL )
+ 	ZEND_FE( magickremapimage, NULL )
+@@ -4501,6 +4502,26 @@
+ }
+ /* }}} */
+ 
++/* {{{ proto bool MagickSigmoidalContrastImage( MagickWand mgck_wnd, bool sharpen, double alpha, double beta )
++*/
++ZEND_FUNCTION( magicksigmoidalcontrastimage )
++{
++	MW_PRINT_DEBUG_INFO
++
++	MagickWand *mgck_wnd;
++	zval *mgck_wnd_rsrc_zvl_p;
++	zend_bool sharpen = TRUE;
++  double alpha;
++  double beta;
++
++	MW_GET_4_ARG( "rbdd", &mgck_wnd_rsrc_zvl_p, &sharpen, &alpha, &beta );
++
++	MW_GET_POINTER_FROM_RSRC( MagickWand, mgck_wnd, &mgck_wnd_rsrc_zvl_p );
++
++	MW_BOOL_FUNC_RETVAL_BOOL( MagickSigmoidalContrastImage( mgck_wnd, MW_MK_MGCK_BOOL(sharpen), alpha, beta ) );
++}
++/* }}} */
++
+ /* {{{ proto bool MagickConvolveImage( MagickWand mgck_wnd, array kernel_array [, int channel_type] )
+ */
+ ZEND_FUNCTION( magickconvolveimage )
+diff -ru -ru magickwand_orig/magickwand.h magickwand/magickwand.h
+--- magickwand_orig/magickwand.h	2006-12-05 13:34:10.000000000 +0100
++++ magickwand/magickwand.h	2006-12-05 13:41:05.000000000 +0100
+@@ -226,6 +226,7 @@
+ 	ZEND_FUNCTION( magickcompositeimage );
+ 	ZEND_FUNCTION( magickconstituteimage );
+ 	ZEND_FUNCTION( magickcontrastimage );
++	ZEND_FUNCTION( magicksigmoidalcontrastimage );
+ 
+ 	ZEND_FUNCTION( magickconvolveimage );
+ 	ZEND_FUNCTION( magickremapimage );

@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+# Version: 1:0.9.1-1
+# Description: A real-time MPEG encoder.
+# FAME is a project to bring real-time MPEG encoding to personal computers.
+# It is fast and configurable, and allows encoding to a file or a network
+# stream.
+# URL: http://fame.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+# Replaces: libfame, libfame-dev
+
+name=libfame
+version=0.9.1
+release=1
+source=($mirror_sf/fame/libfame-$version.tar.gz
+        libfame-0.9.1-m4.patch)
+
+build()
+{
+  cd libfame-$version
+
+  patch -N -p1 -i $SRC/libfame-0.9.1-m4.patch
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix" \
+       --mandir="$prefix/share/man"
+
+  make
+  make DESTDIR="$PKG" install
+}

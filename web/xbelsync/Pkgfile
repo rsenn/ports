@@ -1,0 +1,45 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: xbelSync - bookmark manager
+#  Bookmark manager that synchronizes bookmarks stored on same or different
+#  computers. Supported bookmarks formats: XBEL, IE, Mozilla, Netscape,
+#  Firefox, Opera. Bookmark synchronization over network is implemented
+#  using standard protocols (HTTP and FTP)
+# URL: 
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on: 
+
+name=xbelsync
+version=0.8.a7
+release=1
+source=($mirror_sf/xbelsync/xbelSync.$version.tgz
+        xbelsync-0.8.a7-c++0x.patch
+        xbelsync.desktop)
+
+build() 
+{
+  cd xbelSync.$version
+
+  patch -p1 -i $SRC/xbelsync-0.8.a7-c++0x.patch
+
+  sh autogen.sh
+  
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+  
+  make
+  make DESTDIR="$PKG" install
+
+  convert xbelSync.ico xbelSync.png
+
+  install -d $ROOT/share/pixmaps
+  install -m 644 xbelSync-0.png $ROOT/share/pixmaps/xbelsync-16.png
+  install -m 644 xbelSync-1.png $ROOT/share/pixmaps/xbelsync-32.png
+
+  install -d $ROOT/share/applications
+  install -m 644 $SRC/xbelsync.desktop $ROOT/share/applications
+}
+
+# EOF

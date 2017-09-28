@@ -1,0 +1,88 @@
+# $Id: Pkgfile,v 1.19 2007/05/09 21:02:47 roman Exp $
+#
+# Description: glibc
+# URL: http://glibc.gnu.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=glibc-2.5
+version=2.5
+release=1
+source=($mirror_gnu/glibc/glibc-$version.tar.bz2
+        $mirror_gnu/glibc/glibc-libidn-$version.tar.bz2
+#         glibc-$version-patches-1.17.tar.bz2
+#         glibc-2.3.6-inotify-1.patch
+        )
+
+build()
+{
+  # Add the threading library.
+  mv glibc-libidn-$version glibc-$version/libidn
+
+  cd ${srcdir=$SRC/glibc-$version}
+
+  # Build in separate directory.
+  rm -rf ${builddir=$SRC/$name-build-$version} &&
+  mkdir -p $builddir &&
+  cd $builddir
+
+  unset LD_LIBRARY_PATH LDFLAGS
+
+#  export CFLAGS="$CFLAGS -std=gnu99 -fgnu89-inline"
+
+  $srcdir/configure \
+        --build="$build" \
+        --host="$host" \
+        ${target+--target="$target"} \
+        --prefix="$prefix" \
+        --sysconfdir="$prefix/etc" \
+        --${shared:=enable}-shared \
+        --${static:=enable}-shared \
+        --disable-profile \
+        --enable-add-ons="nptl,libidn" \
+        --enable-kernel="2.6.0" \
+        --without-gd \
+        --with-binutils="$prefix/$host/bin" \
+        --with-elf \
+        --without-selinux \
+        --without-cvs \
+        --with-headers="$prefix/include" \
+        --disable-dev-erandom \
+        --with-tls \
+        --with-__thread \
+        --disable-sanity-checks \
+        --enable-versioning
+
+  make
+
+  # Create an initial ld.so.conf
+  install -d $ROOT/etc
+  echo $prefix/lib >$ROOT/etc/ld.so.conf
+
+  # Install the package into the pkg-root.
+  make install_root="$PKG" install
+
+  cd $SRC/$name-$version
+
+#  copy_license "COPYING" "COPYING.LIB"
+
+  ln -sf $prefix/share/zoneinfo/CET $ROOT/etc/localtime
+
+  # Replace paths
+  sed -i \
+      -e "s,SBINDIR[ \t]*\",\"$prefix/sbin," \
+      -e "s,\"SBINDIR,$prefix/sbin\"," \
+      -e "s,BINDIR[ \t]*\",\"$prefix/bin," \
+      -e "s,DEVDIR[ \t]*\",\"$prefix/dev," \
+      -e "s,LOCALSTATEDIR[ \t]*\",\"$prefix/var," \
+      -e "s,MANDIR[ \t]*\",\"$prefix/man," \
+      -e "s,PROCDIR[ \t]*\",\"$prefix/proc," \
+      -e "s,SYSCONFDIR[ \t]*\",\"$prefix/etc," \
+      -e "s,TMPDIR[ \t]*\",\"$prefix/tmp," \
+    $ROOT/include/{paths,stdio}.h \
+    $ROOT/include/sys/{mtio,syslog}.h
+
+  rm -f $ROOT/info/dir
+  rm $ROOT/bin/iconv
+  rm $ROOT/include/iconv.h
+}

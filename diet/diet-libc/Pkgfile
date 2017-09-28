@@ -1,0 +1,211 @@
+# $Id: Pkgfile,v 1.7 2007/05/09 21:02:40 roman Exp $
+# Package: dietlibc
+# Section: universe/libs
+# Description: A library for creating small, statically-linked binaries.
+# diet libc contains the system call wrappers and the most commonly-used
+# functions you expect from a libc. It can be used to create small,
+# statically-linked binaries under x86, AMD64, SPARC, SPARC64, PPC, PPC64,
+# ARM, MIPS, MIPS64, PA-RISC, S/390, S/390x (64-bit S/390), and Alpha-Linux.
+# URL: http://www.fefe.de/dietlibc/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: dietlibc, libc6, libc6-dev, libklibc-dev, python-pyxine
+# Split: -dev (*.[aho] *.la */diet/include* */bin/* */man/*), -doc (*/doc/*)
+
+name=diet-libc
+version=0.32
+release=1
+source=(http://www.kernel.org/pub/linux/libs/dietlibc/dietlibc-$version.tar.bz2
+        dietlibc-0.30-ilibdir.patch
+        dietlibc-0.31-syscall-fixes.patch
+        dietlibc-0.31-wctob.patch
+        #dietlibc-0.31-20080411.diff
+        )
+
+build()
+{
+  cd dietlibc-$version
+
+  #patch -N -p1 -i $SRC/dietlibc-0.31-20080411.diff
+
+
+  patch -N -p1 -i $SRC/dietlibc-0.30-ilibdir.patch
+  #patch -N -p1 -i $SRC/dietlibc-0.31-20080418.patch
+  patch -N -p1 -i $SRC/dietlibc-0.31-syscall-fixes.patch
+  patch -N -p1 -i $SRC/dietlibc-0.31-wctob.patch
+
+
+#  if test ! -e ${prefix%/$host}/bin/$host-gcc
+#  then
+    host_arch_os=${host%-*}
+
+    case $(gcc -dumpmachine) in
+#      $host_arch_os-*)
+#        CC="gcc"
+#        ;;
+      *)
+        CC=$(
+          if test -d $prefix/bin; then
+            cd $prefix/bin &&
+            for x in $host-gcc $target-gcc gcc; do
+              if test -e "$x"; then
+                echo "$x" && break
+              fi
+            done
+          fi
+        )
+        ;;
+    esac
+#  fi
+
+  CROSS="${CC%gcc}"
+  CC="gcc"
+
+  sed -i '/^$([^)]\+)\/diet[^:]*:/ {
+    s:\s\+\$(OBJDIR)/dietlibc\.a: |&:
+    s:diet\.c:& lib/write12.c:
+
+    N; N
+
+    s/ \+[^ ]*start\.o/ /g
+    s/ \+[^ ]*stop\.o/ /g
+    s/ \+[^ ]*dynamic-linker[^ ]* / /g
+
+#    s/[^\n]*\?$(CROSS)strip[^\n]*\?/ /
+    s/[^\n\t]*\?strip[^\n]*\?//
+    s/-R.*//
+    s/-L[^\s]\+//g
+#    s:-l[^\s]\+:lib/write12.c:g
+
+    s/$(CROSS)//
+    s/ -isystem include//
+    s/ -nostdlib//
+    s/ -lgcc//
+  }' \
+     Makefile
+
+  sed -i 's,__extension__\s\+,,g' include/math.h
+
+#  export CFLAGS="${CFLAGS//-O[0-9]/-Os -fomit-frame-pointer -falign-functions=4 -falign-jumps=1 -falign-loops=1}"
+
+  if test "$build" = "$host"
+  then
+    LD_UNSET=""
+  fi
+
+  # Determine directory structure
+  case $prefix in
+    "/usr")
+      sysconfdir="/etc"
+      libdir="$prefix/lib/diet/lib"
+      includedir="$prefix/include/diet"
+      ;;
+    *)
+      unset libdir includedir
+      ;;
+  esac
+
+  # Get host processor architecture
+  host_cpu=${host%%-*}
+
+  case $host_cpu in
+    i[3-7]86) host_cpu="i386" ;;
+  esac
+
+  mkdir -p pic-${host_cpu}
+  mkdir -p $PKG/etc
+
+  # Prepare installation directories
+  install -d \
+    "$PKG$prefix" \
+    "$PKG${sysconfdir=$prefix/etc}" \
+    "$PKG${includedir=$prefix/include}"
+
+  CFLAGS="${CFLAGS//-O[0-9]/-Os} -falign-functions=1 -falign-jumps=1 -falign-loops=1 -mpreferred-stack-boundary=2 -Iinclude"
+
+  # Build and install everything
+  make \
+       __CC="${CC-cc}" \
+       __CFLAGS="$CFLAGS" \
+       __CROSS="$CROSS" \
+       ${LD_UNSET+LD_UNSET="$LD_UNSET"} \
+       prefix="$prefix" \
+       ILIBDIR="${libdir=$prefix/lib}" \
+       MAN1DIR="\$(prefix)/share/man/man1" \
+       DESTDIR="$PKG" \
+       COMMENT="#" \
+     all \
+     dyn \
+     profiling \
+     install
+
+#  cp -rf include/* "$PKG$includedir"
+
+  if test "$prefix" != "${prefix%/$host}"
+  then
+    mv -vf $ROOT/{bin,share} ${root%/$host}
+  fi
+
+  if test "$includedir" &&
+     test "$includedir" != "$prefix/include"
+  then
+    mv -vf $ROOT/include $ROOT/include.tmp
+
+    mkdir -p $PKG${includedir%/*}
+
+    mv -vf $ROOT/include.tmp $PKG$includedir
+  fi
+
+  if test "$libdir" &&
+     test "$libdir" != "$prefix/lib"
+  then
+    mkdir -p $PKG${libdir}/../{bin,include}
+
+    mv -vf $ROOT/bin/{elftrunc,dnsd} $PKG${libdir}/../bin
+
+    ln -sf ../../../bin/diet $PKG${libdir}/../bin
+    ln -sf ../../../bin/diet-dyn $PKG${libdir}/../bin
+  fi
+
+  for lib in c compat dl m pthread
+  do
+    case $lib in
+      dl) alib= ;;
+      *) alib=lib$lib.a ;;
+    esac
+
+    cat >$PKG$libdir/lib$lib.la <<EOF
+# lib$lib.la - a libtool library file
+#
+# Please DO NOT delete this file!
+# It is necessary for linking the library.
+
+# The name that we can dlopen(3).
+dlname='lib$lib.so'
+
+# Names of this library.
+library_names='lib$lib.so'
+
+# The name of the static archive.
+old_library='$alib'
+
+# Libraries that this one depends upon.
+dependency_libs=''
+
+# Version information for lib$lib.
+current=0
+age=0
+revision=0
+
+# Is this an already installed library?
+installed=yes
+
+# Files to dlopen/dlpreopen
+dlopen=''
+dlpreopen=''
+
+# Directory that this library needs to be installed in:
+libdir='${libdir=$prefix/lib}'
+EOF
+  done
+#  rm -f $ROOT/include/wchar.h
+}

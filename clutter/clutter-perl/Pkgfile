@@ -1,0 +1,24 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Open GL based interactive canvas library - perl bindings
+#  Clutter is an Open GL based interactive canvas library, designed for
+#  creating fast, mainly 2D single window applications such as media box UIs,
+#  presentations, kiosk style applications and so on.
+#  This package contains the Perl bindings.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=clutter-perl
+version=0.8.0.1
+release=1
+source=(http://www.clutter-project.org/sources/clutter-perl/${version%.*.*}/clutter-perl-$version.tar.bz2)
+
+build()
+{
+  cd Clutter-$(IFS="." && set -- $version && echo $1.$2$3$4)
+
+  perl Makefile.PL installdirs="vendor"
+
+  make DESTDIR="$PKG" install
+}

@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Free Firewire Audio Drivers.
+#  The FFADO project aims to provide a generic, open-source solution for the 
+#  support of FireWire based audio devices for the Linux platform. 
+#  It is the successor of the FreeBoB project.
+#  .
+# URL: http://www.ffado.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=libffado
+version=2.0-rc1
+release=1
+source=(http://www.ffado.org/files/libffado-$version.tar.gz)
+
+build() 
+{
+  cd libffado-$version
+
+  scons configure \
+      release="yes" \
+      verbose="yes" \
+      prefix="$ROOT"
+
+  scons install
+}
+
+# EOF

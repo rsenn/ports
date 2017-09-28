@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A set of tools that are useful in analyzing or producing logs from qmail and other packages
+# URL: http://www.untroubled.org/qlogtools/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6
+
+name=qlogtools
+version=3.1
+release=1
+source=(http://www.untroubled.org/qlogtools/qlogtools-$version.tar.gz)
+
+build()
+{
+  cd qlogtools-$version
+
+  echo "$prefix" >conf-home
+  echo "${CC-cc} $CFLAGS -include errno.h" >conf-cc
+  echo "${CC-cc} $LDFLAGS" >conf-ld
+  echo "$prefix/share/man" >conf-man
+
+  make
+
+  install -d $ROOT/bin
+  install -m 755 multipipe multitail qfilelog spipe tai2tai64n tai64n2tai teepipe $ROOT/bin
+
+  install -d $ROOT/share/man/man1
+  install -m 644 *.1 $ROOT/share/man/man1
+
+  install -d $ROOT/share/doc/qlogtools
+  install -m 644 [A-Z]*[A-Z]* $ROOT/share/doc/qlogtools
+}

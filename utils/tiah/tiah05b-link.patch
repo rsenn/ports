@@ -1,0 +1,24 @@
+diff -r -u .src/i686-pc-linux-gnu_orig/tiah05b/Makefile .src/i686-pc-linux-gnu/tiah05b/Makefile
+--- .src/i686-pc-linux-gnu_orig/tiah05b/Makefile	2007-07-29 14:28:32.000000000 +0200
++++ .src/i686-pc-linux-gnu/tiah05b/Makefile	2007-07-29 14:29:59.000000000 +0200
+@@ -23,7 +23,7 @@
+ 
+ .cc:
+ 	@echo compiling $(SRC) .
+-	@$(CC) $(LIBS) $(SRC) -o$(PRGFILE)
++	@$(CC) $(LDFLAGS) -o $(PRGFILE) $(SRC) $(LIBS)
+ 
+ install:
+ 	@install -s -g users -m 755 -o root $(PRGFILE) $(INSTPATH)
+diff -r -u .src/i686-pc-linux-gnu_orig/tiah05b/tiah.cc .src/i686-pc-linux-gnu/tiah05b/tiah.cc
+--- .src/i686-pc-linux-gnu_orig/tiah05b/tiah.cc	2007-07-29 14:28:32.000000000 +0200
++++ .src/i686-pc-linux-gnu/tiah05b/tiah.cc	2007-07-29 14:30:32.000000000 +0200
+@@ -40,7 +40,7 @@
+ 
+ char insovr='O';			// Isert/Override-Mode
+ int mode=1;
+-WINDOW *stdscr,*woffs,*whex, *wascii, *wtop, *wbot;
++WINDOW *woffs,*whex, *wascii, *wtop, *wbot;
+ const char *topline= " Offset    Hex                                                ASCII           ";
+ char xoffs[]  = "12345678",*soffs;
+ char xhex[]   = " 14 15 16 32 32 34 20 54 61 67 65 73 61 6D 74 0D  ",*shex;

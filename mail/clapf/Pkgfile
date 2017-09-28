@@ -1,0 +1,25 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: clapf is an open source email content filter application. It includes a statistical (inverse chi-square) antispam module, interface to several anti-virus products, a minefield (blackhole), spam quarantine, support for various RBL lists, training utilities and many more.
+# URL: http://clapf.acts.hu/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=clapf
+version=0.3.30
+release=1
+source=(http://clapf.acts.hu/clapf-$version.tar.gz)
+
+build()
+{
+  cd clapf-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

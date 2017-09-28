@@ -1,0 +1,179 @@
+# $Id: Pkgfile,v 1.27 2007/04/22 23:07:53 roman Exp $
+#
+# Description: An RRDTool frontend written with PHP/MySQL.
+#  Cacti is a complete frontend to RRDTool. It stores all of the necessary
+#  information to create graphs and populate them with data in a MySQL
+#  database. The frontend is completely PHP driven. Along with being able to
+#  maintain graphs, data sources, and round robin archives in a database,
+#  Cacti also handles the data gathering. There is SNMP support for those
+#  used to creating traffic graphs with MRTG.
+# URL: http://www.cacti.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=cacti
+version=0.8.6i
+release=4
+source=(http://www.cacti.net/downloads/cacti-$version.tar.gz
+        cacti-0.8.6i-epiphyte.patch
+        cacti-db-epiphyte.sql
+        init-rrds.sh
+        sql.sh
+        htaccess)
+
+build()
+{
+  cactidir="$prefix/$name"; cactiroot="$ROOT/$name"
+
+  install -d "$cactiroot"
+
+  cd cacti-${version}
+  patch -N -p1 -i $SRC/cacti-0.8.6i-epiphyte.patch
+  sed -i "/\"snmp_community\"/ { :lp; n; /\"default\"/! b lp; s,\"public\",\"${snmpd_community:-epiphyte}\", }" \
+    include/config_settings.php
+
+  cp -rvf . "$cactiroot"
+  cd ${cactiroot}
+
+  mv -vf log logs
+  cp $SRC/htaccess .
+  cp $SRC/cacti-db-epiphyte.sql cacti-epiphyte.sql
+
+  sed -i "s,/usr/bin/perl,@bindir@/perl,g" scripts/*.pl
+
+  install -m 755 $SRC/sql.sh scripts/
+  install -m 755 $SRC/init-rrds.sh rra/
+}
+
+config()
+{
+  # add the main-menu entry "cacti"
+  config_branch 'cacti'  'Cacti - Graphical statistics'
+
+    config_value 'username' 'Cacti username'
+      config_description    'Username for the cacti web-frontend'
+      config_default        'admin'
+    config_end
+
+    config_value 'password' 'Cacti password'
+      config_description    'Password for the cacti web-frontend'
+      config_default        'admin'
+    config_end
+
+    config_value 'loglevel' 'Cacti loglevel'
+      config_description    'Loglevel for the logfile in logs/cacti.log (1: none, 2: low, 3: medium, 4: high, 5: debug)'
+      config_default        '2'
+    config_end
+
+    config_value 'cronuser' 'Cacti cronuser'
+      config_description    'The user-account under which we will execute the poller cronjob'
+      config_default        '${httpd_user:-$(user_find nobody)}'
+    config_end
+
+    config_value 'dbuser'   'Cacti DB dbuser'
+      config_description    'Username which will be used to connect to the cacti database'
+      config_default        'cacti'
+    config_end
+
+    config_value 'dbpass'   'Cacti DB dbpass'
+      config_description    'Username which will be used to connect to the cacti database'
+      config_default        '$(string_random 10)'
+    config_end
+
+    config_value 'dbname'   'Cacti DB database'
+      config_description    'Name of the database which cacti will use (and eventually create)'
+      config_default        'cacti'
+    config_end
+
+  config_end
+}
+
+postmerge()
+{
+  dir=${prefix}
+  cactidir=${prefix}/${name}
+
+  export dir cactidir
+
+  # replace installer default values
+  $bindir/sed -i "s,@bindir@,$bindir,g;;s,@sbindir@,$sbindir,g" \
+      $cactidir/install/index.php
+
+  # relocate perl
+  "$bindir/sed" -i "s,@bindir@,$bindir,g" \
+     $cactidir/scripts/*.pl
+
+  # set configuration
+  "$bindir/sed" -i \
+  "s,@cacti_cronuser@,$cacti_cronuser,g
+   s,@cacti_dbhost@,$mysql_host,g
+   s,@cacti_dbport@,$mysql_port,g
+   s,@cacti_dbuser@,$cacti_dbuser,g
+   s,@cacti_dbpass@,$cacti_dbpass,g
+   s,@cacti_dbname@,$cacti_dbname,g" \
+      $cactidir/include/config.php
+
+  # subst sql
+  sed -i "s,@root@,$dir,g
+         s,@prefix@,$prefix,g
+         s,@cacti_loglevel@,$cacti_loglevel,g" \
+    $cactidir/cacti-epiphyte.sql
+
+  # create the database user
+  service_runs 'mysqld' || pid=$(mysql_daemon)
+
+  mysql_query "CREATE DATABASE \`$cacti_dbname\`" &&
+    {
+    mysql_client "$cacti_dbname" < $cactidir/cacti-epiphyte.sql &&
+    mysql_query "DELETE FROM $cacti_dbname.user_auth WHERE username='guest';" || true
+
+    cacti_dballow="$mysql_host"
+
+    for host in $mysqld_host 127.0.0.1 localhost
+    do
+      if [ "$mysql_host" = "$host" ]; then
+        cacti_dballow="$host"
+      fi
+    done
+
+    mysql_grant 'ALL' "$cacti_dbname.*" "'$cacti_dbuser'@'$cacti_dballow' IDENTIFIED BY '$cacti_dbpass'" || true
+
+    mysql_query "UPDATE $cacti_dbname.user_auth" \
+        "SET username='$cacti_username'," \
+        "must_change_password=''," \
+        "password='$(echo -n "$cacti_password"|md5sum|sed 's,[- ]*,,g')'" \
+        "WHERE username='admin';" || true
+    }
+
+  ${pid:+kill %1}
+  ${pid:+wait %1}
+
+  # add poller crontab entry to the crontab of cacti_cronuser
+  crontab_add "*/5 * * * * $bindir/php $cactidir/poller.php >/dev/null 2>&1" \
+       ${cacti_cronuser}
+
+  # set permissions of the log and rra dir
+  chown -R $httpd2_user.$httpd2_group $cactidir/{logs,rra}
+
+  # initialize RRDs
+  msg "Initializing default RRDs..."
+  $bindir/setuidgid $httpd2_user $bindir/sh $cactidir/rra/init-rrds.sh
+
+  # add an alias to the httpd2 config
+  if ! grep -q '^Alias /cacti' $prefix/local/config/products2.conf; then
+    cat >>$prefix/local/config/products2.conf <<EOF
+# Cacti directory
+<Directory "/usr/local/cacti">
+  Options Indexes FollowSymLinks
+  AllowOverride All
+  Order allow,deny
+  Allow from all
+</Directory>
+
+Alias /cacti /usr/local/cacti
+EOF
+  fi
+
+  chmod 640 $prefix/etc/epiphyte.conf
+  chgrp $httpd2_group $prefix/etc/epiphyte.conf
+}

@@ -1,0 +1,26 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Transfer vector for app.so linkage on Linux/x86
+# Elfvector is a package for generating and using a transfer vector for
+# subroutine linkage between an ELF executable and an ELF shared library
+# under Linux on x86, in order to save space and application startup
+# time. At runtime, only the name of the vector is looked up dynamically, no
+# matter how many symbols are used from the vector. Elfvector also includes
+# vectool for managing groups of shared libraries at fixed addresses.
+#
+# URL: http://www.BitWagon.com/elfvector.html
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=elfvector
+version=0.7a
+release=1
+source=(http://www.BitWagon.com/elfvector-0.7.tgz)
+
+build()
+{
+  cd elfvector-$version
+
+  make
+  make PREFIX="$ROOT" install
+}

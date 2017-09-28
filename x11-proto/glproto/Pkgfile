@@ -1,0 +1,26 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: 
+# URL: 
+# Maintainer: 
+# Depends on: 
+
+name=glproto
+version=1.4.10
+release=1
+source=(ftp://ftp.x.org/pub/individual/proto/glproto-$version.tar.bz2)
+
+build() 
+{
+  cd glproto-$version
+  
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+  
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

@@ -1,0 +1,37 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A CD-ROM read and control library with an ISO 9660 library, cdparanoia, and MMC.
+#  The GNU Compact Disc Input and Control library encapsulates CD-ROM
+#  reading and control for applications wishing to be oblivious to the OS-
+#  and device-dependent properties of a CD-ROM. It provides an API for access
+#  to SCSI-MMC (multimedia commands) and support for CD image types like
+#  BIN/CUE, cdrdao's TOC, and Nero's NRG, which gives applications using the
+#  library the ability to read disc images as though they were CDs. ISO-9660
+#  filesystem support is included, as are utility programs for displaying CD
+#  and CD-ROM drive information, reading the blocks of a CD, and extracting
+#  files from an ISO-9660 filesytem image. cdparanoia is also included.
+#  .
+# URL: http://www.gnu.org/software/libcdio/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=libcdio
+version=0.81
+release=1
+source=(ftp://ftp.gnu.org/pub/gnu/libcdio/libcdio-$version.tar.gz)
+
+build()
+{
+  cd libcdio-$version
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

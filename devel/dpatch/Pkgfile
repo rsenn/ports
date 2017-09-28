@@ -1,0 +1,30 @@
+# $Id: Pkgfile,v 1.11 2007/04/22 23:07:53 roman Exp $
+#
+# Description: 
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=dpatch
+version=2.0.30
+release=1
+source=(http://ftp.debian.org/debian/pool/main/d/dpatch/dpatch_$version.tar.gz)
+
+build()
+{
+  cd dpatch-$version
+
+  install -d $ROOT/{bin,share/man/man{1,7}}
+
+  if test -f $prefix/bin/awk
+  then
+    AWK="$prefix/bin/awk"
+  else
+    AWK="/usr/bin/awk"
+  fi
+
+  sed -i "s:/usr/bin/nawk:$AWK:" tools/shpp.awk
+
+  make prefix="$prefix"
+  make prefix="$ROOT" install
+}

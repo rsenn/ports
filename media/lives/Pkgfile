@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Multitrack editor in LiVES LiVES is a Video Editing System
+# It is designed to be simple to use, yet powerful. It is small in size,
+# yet has many advanced features. LiVES is part editor, part VJ tool. It
+# will run under Linux, BSD and UNIX. See http://lives.sourcefourge.net.
+#
+# URL: http://www.xs4all.nl/~salsaman/lives/current/LiVES-0.9.8.12.tar.bz2
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=lives
+version=0.9.8.12
+release=1
+source=(http://www.xs4all.nl/~salsaman/lives/current/LiVES-$version.tar.bz2)
+
+build()
+{
+  cd lives-$version
+
+  ./autogen.sh
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libx1f4i2
+version=0.40
+release=1
+source=($mirror_sf/mylene/libx1f4i2-$version.tar.gz)
+
+build()
+{
+  cd libx1f4i2-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/libx1f4i2
+  install -m 644 COPYING INSTALL $ROOT/share/doc/libx1f4i2
+}

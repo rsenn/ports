@@ -1,0 +1,49 @@
+diff -wru crampass-1.0.1_orig/Makefile crampass-1.0.1/Makefile
+--- crampass-1.0.1_orig/Makefile	2009-02-07 07:30:56.000000000 +0100
++++ crampass-1.0.1/Makefile	2009-02-07 07:32:46.000000000 +0100
+@@ -4,7 +4,7 @@
+ INSTROOT=/usr/local
+ 
+ INSTDIR=$(INSTROOT)/bin
+-MAN1DIR=$(INSTROOT)/man/man1
++MAN1DIR=$(INSTROOT)/share/man/man1
+ 
+ CFGPATH=$(CFGDIR)/cram-md5.pwd
+ TMPPATH=$(CFGDIR)/cram-md5.tmp
+@@ -12,20 +12,23 @@
+ TAR=tar
+ GZIP=gzip
+ CC=gcc
+-CFLAGS=-O -g -DPATH_CRAM_MD5_PWD=\"$(CFGPATH)\" -DPATH_CRAM_MD5_TMP=\"$(TMPPATH)\"
++CFLAGS=-g -O2 -Wall -DPATH_CRAM_MD5_PWD=\"$(CFGPATH)\" -DPATH_CRAM_MD5_TMP=\"$(TMPPATH)\"
++LIBS=-lcrypt
+ 
+ INSTALL=./install-sh
+ 
+ all: crampass
+ 
+ crampass: crampass.o
+-	$(CC) -o crampass crampass.o
++	$(CC) $(LDFLAGS) $(CFLAGS) -o crampass crampass.o $(LIBS)
+ 
+ clean:
+ 	-rm -f core crampass *.o *~ \#*
+ 
+ install: crampass
++	$(INSTALL) -d $(INSTDIR)
+ 	$(INSTALL) -c -m 4711 crampass $(INSTDIR)
++	$(INSTALL) -d $(MAN1DIR)
+ 	$(INSTALL) -c -m 644 crampass.1 $(MAN1DIR)
+ 
+ dist:	clean
+diff -wru crampass-1.0.1_orig/crampass.c crampass-1.0.1/crampass.c
+--- crampass-1.0.1_orig/crampass.c	2009-02-07 07:30:56.000000000 +0100
++++ crampass-1.0.1/crampass.c	2009-02-07 07:31:13.000000000 +0100
+@@ -26,6 +26,7 @@
+ #include <pwd.h>
+ #include <signal.h>
+ #include <setjmp.h>
++#include <unistd.h>
+ 
+ #ifndef PATH_CRAM_MD5_PWD
+ #define PATH_CRAM_MD5_PWD "/etc/cram-md5.pwd"

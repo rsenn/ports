@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Library for userspace access to USB devices
+#  libusb is a library to provide userspace access to USB devices. It
+#  supports Linux 2.6/2.4/2.2, FreeBSD/OpenBSD/NetBSD, and Darwin/MacOS X.
+# URL: http://libusb.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libusb
+version=0.1.12
+release=1
+source=($mirror_sf/libusb/libusb-$version.tar.gz)
+
+build()
+{
+  cd libusb-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/libusb
+  install -m 644 README AUTHORS COPYING ChangeLog NEWS LICENSE $ROOT/share/doc/libusb
+}

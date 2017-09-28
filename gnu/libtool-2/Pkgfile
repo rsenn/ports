@@ -1,0 +1,55 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Package: libtool
+# Section: devel
+# Replaces: libtool, libltdl-dev, libltdl3-dev, libltdl, libltdl3
+# Provides: libtool, libltdl-dev, libltdl
+# Description: A generic library support script
+# Libtool hides the complexity of using shared libraries behind a
+# consistent, portable interface.
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: autoconf, automake, libc6, m4
+
+name=libtool-2
+version=2.2.4
+release=1
+source=(ftp://ftp.gnu.org/gnu/libtool/libtool-$version.tar.bz2
+        libtool-2.2.4-version-info.patch
+        libtool-2.2.4-diet.patch
+        libtool-2.2.4-no-exec-la.patch
+#        libtool-2.2.4-msvc.patch
+        libtool-2.2.4-msvc-2.patch
+        libtool-2.2.4-exts.patch
+        libtool-2.2.4-lt-unset.patch
+        libtool-2.2.4-var-append.patch
+        libtool-2.2.4-config-guess.patch
+        libtool-2.2.4-config-sub.patch
+        libtool-2.2.4-pthreadGC2.patch)
+
+build()
+{
+  cd libtool-$version
+
+  patch -N -p1 -i $SRC/libtool-2.2.4-version-info.patch
+  patch -N -p1 -i $SRC/libtool-2.2.4-diet.patch
+  patch -N -p1 -i $SRC/libtool-2.2.4-no-exec-la.patch
+#  patch -N -p1 -i $SRC/libtool-2.2.4-msvc.patch
+  patch -N -p1 -i $SRC/libtool-2.2.4-msvc-2.patch
+  patch -N -p1 -i $SRC/libtool-2.2.4-exts.patch
+  patch -N -p1 -i $SRC/libtool-2.2.4-lt-unset.patch
+  patch -N -p1 -i $SRC/libtool-2.2.4-var-append.patch
+  patch -N -p1 -i $SRC/libtool-2.2.4-config-guess.patch
+  patch -N -p1 -i $SRC/libtool-2.2.4-config-sub.patch
+  patch -N -p1 -i $SRC/libtool-2.2.4-pthreadGC2.patch
+
+  ./bootstrap
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

@@ -1,0 +1,35 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Changes xterm title, font, colors and size from the command line
+# xtermset is a command line utility to change several characteristics
+# of an xterm. These are things like title, foreground color, background
+# color, geometry and position. Furthermore the xterm can be iconified,
+# restored to normal size, or refreshed.
+#
+# URL:
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=xtermset
+version=0.5.2
+release=1
+source=($mirror_sf/clts/xtermset-$version.tar.gz)
+
+build()
+{
+  cd xtermset-$version
+
+  aclocal --force
+  automake --force --copy --add-missing
+  aclocal --force
+  autoconf --force
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

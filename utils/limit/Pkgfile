@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A tool to run a process and kill it after a specified time.
+#  limit runs a specified command and sends it a signal after a specified
+#  time (by default, SIGTERM). It is useful to limit the amount of time a
+#  certain program runs.
+# URL: http://www.isotton.com/software/unix/limit/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=limit
+version=0.1
+release=1
+source=(http://www.isotton.com/software/unix/limit/download/limit-$version.tar.gz)
+
+build()
+{
+  cd limit-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

@@ -1,0 +1,58 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: IMAP server for maildirs
+#  Courier-IMAP is a lightweight server that provides IMAP access to
+#  maildir mailboxes. It supports folders, custom authentication modules,
+#  and virtual mailboxes. A compatible POP3 server is also provided. The
+#  source code is based on the IMAP module in the Courier Mail Server,
+#  but this build is independently repackaged to work with any other MTA
+#  that delivers to maildir format mailboxes.
+#  .
+# URL: http://www.courier-mta.org/imap/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=courier-imap
+version=4.5.1
+release=1
+source=($mirror_sf/courier/courier-imap-$version.tar.bz2
+        courier-imap-4.4.1-imaplogin-execlp.patch)
+
+build()
+{
+  cd courier-imap-$version
+
+  patch -N -p1 -i $SRC/courier-imap-4.4.1-imaplogin-execlp.patch
+
+  case "$prefix" in
+    "/usr") sysconfdir="/etc" localstatedir="/var" ;;
+  esac
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix" \
+     ${sysconfdir+--sysconfdir="$sysconfdir"} \
+     ${localstatedir+--localstatedir="$localstatedir"} \
+     --libexecdir="$prefix/lib/courier" \
+     --disable-root-check
+
+  sed -i "/#define.*HAVE_FAM/ s,^,//," maildir/config.h
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/courier-imap
+  install -m 644 00README.NOW.OR.SUFFER  COPYING* ChangeLog INSTALL INSTALL.html NEWS NEWS.html README README.cygwin pgpkeys.txt quotawarnmsg.example $ROOT/share/doc/courier-imap
+
+  chmod ug+s $ROOT/bin/imapd
+
+}
+
+postinst()
+{
+  chmod ug+s ${prefix}/bin/imapd
+}
+
+# EOF

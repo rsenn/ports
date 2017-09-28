@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A shared memory allocation library.
+#  OSSP mm is a 2-layer abstraction library which simplifies the usage of
+#  shared memory between related processed under Unix platforms. It both
+#  hides all platform dependent implementation details (allocation, locking,
+#  etc.) when dealing with shared memory segments and provides a high-level
+#  malloc-style API for a convenient way to work with data-structures inside
+#  those shared memory segments.
+#  .
+# URL: http://www.ossp.org/pkg/lib/mm/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=mm
+version=1.4.2
+release=1
+source=(ftp://ftp.ossp.org/pkg/lib/mm/mm-1.4.2.tar.gz)
+
+build()
+{
+  cd mm-1.4.2
+./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+make
+make DESTDIR="$PKG" install
+}
+
+# EOF

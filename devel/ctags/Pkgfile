@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Exuberant Ctags is a multilanguage reimplementation of the Unix ctags utility
+# Ctags generates an index of source code definitions which is used by
+# numerous editors and utilities to instantly locate the definitions.
+#
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=ctags
+version=5.7
+release=1
+source=($mirror_sf/ctags/ctags-$version.tar.gz)
+
+build()
+{
+  cd ctags-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

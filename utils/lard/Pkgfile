@@ -1,0 +1,36 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A generic syslog and log file rotation daemon.
+#  Lard is a Logging and Rotation Daemon that can replace the functionality
+#  of sysklogd and logrotate together. Logging is done almost exactly the
+#  same as syslogd, with added features such as regex matching and command
+#  triggers. Rotation can be triggered while the daemon is running safely
+#  by sending it a simple signal.
+# URL: http://lard.foo-projects.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=lard
+version=0.1.6
+release=1
+source=(http://lard.foo-projects.org/download/lard-$version.tar.bz2)
+
+build()
+{
+  cd lard-$version
+
+  case $prefix in
+    "/usr") sysconfdir="/etc" ;;
+  esac
+
+  sed -i \
+      -e "s,/usr,\$(prefix)," \
+      -e "s,/etc,\$(sysconfdir)," \
+    Makefile
+
+  install -d $ROOT/sbin
+  install -d $ROOT/share/man/man{5,8}
+
+  make
+  make prefix="$ROOT" sysconfdir="$pkg${sysconfdir=$prefix/etc}" install
+}

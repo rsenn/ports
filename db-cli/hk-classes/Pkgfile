@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: C++ library which allows rapid development of database
+# applications with all features a modern database application should
+# have like forms an reports. hk_classes is database and GUI independent.
+# In combination with hk_kdeclasses (which is part of the knoda package)
+# it supports the rapid development of database applications for KDE.
+# URL: http://hk-classes.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=hk-classes
+version=0.8.3
+release=1
+source=($mirror_sf/hk-classes/hk_classes-$version.tar.bz2)
+
+build()
+{
+  cd hk_classes-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

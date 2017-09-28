@@ -1,0 +1,21 @@
+diff -r -u src_orig/gc6.7/Makefile.am src/gc6.7/Makefile.am
+--- src_orig/gc6.7/Makefile.am	2007-04-22 18:54:12.000000000 +0200
++++ src/gc6.7/Makefile.am	2007-04-22 18:54:49.000000000 +0200
+@@ -57,7 +57,7 @@
+ # linuxthread semaphore functions get linked:
+ libgc_la_LIBADD = @addobjs@ $(THREADDLLIBS) $(UNWINDLIBS)
+ libgc_la_DEPENDENCIES = @addobjs@
+-libgc_la_LDFLAGS = -version-info 1:2:0
++libgc_la_LDFLAGS = -version-info 1:2:0 -no-undefined -rpath $(libdir)
+ 
+ EXTRA_libgc_la_SOURCES = alpha_mach_dep.S \
+     mips_sgi_mach_dep.s mips_ultrix_mach_dep.s powerpc_darwin_mach_dep.s \
+@@ -66,7 +66,7 @@
+ 
+ libgccpp_la_SOURCES = gc_cpp.cc
+ libgccpp_la_LIBADD = $(THREADDLLIBS) $(UNWINDLIBS)
+-libgccpp_la_LDFLAGS = -version-info 1:2:0
++libgccpp_la_LDFLAGS = -version-info 1:2:0 -no-undefined -rpath $(libdir)
+ 
+ EXTRA_DIST += alpha_mach_dep.S mips_sgi_mach_dep.s sparc_mach_dep.S
+ 

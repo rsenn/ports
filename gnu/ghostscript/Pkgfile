@@ -1,0 +1,37 @@
+# $Id: Pkgfile,v 1.9 2007/05/09 21:02:55 roman Exp $
+#
+# Description: An interpreter for the PostScript (TM) language.
+#  Ghostscript is a processor for PostScript and PDF files. It can rasterize
+#  these files to a wide variety of printers, devices for screen preview,
+#  and image file formats. Since applications tend to prepare pages for
+#  printing in a high-level format such as PostScript, most Unix users with
+#  low-level bitmap printers, such as inkjets, use GhostScript as part of
+#  the printing process. In addition, Ghostscript is capable of converting
+#  PostScript files, functionality comparable to Adobe Acrobat Distiller, but
+#  on the command line. In addition, Ghostscript is used for file import and
+#  viewing by a great many other applications, including xv, ImageMagick,
+#  gimp, and xdvi. Several GUI wrappers for viewing PostScript and PDF
+#  files exist, including GSview, ghostview, gv, ggv, and kghostview. This
+#  is far from a comprehensive list.
+# URL: http://www.ghostscript.com/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libpng
+
+name=ghostscript
+version=8.60
+release=1
+source=(ftp://mirror.cs.wisc.edu/pub/mirrors/ghost/GPL/gs860/ghostscript-$version.tar.bz2)
+
+build()
+{
+  cd ghostscript-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --without-x
+
+  make
+  make DESTDIR="$PKG" install
+}

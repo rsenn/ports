@@ -1,0 +1,39 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Section: universe/sound
+# Description: An instrument tuner.
+#  Pitchtune (Precise Instrument Tweaking for Crispy Harmony tuner) is an
+#  oscilloscope-style musical instrument tuning program. It can also be
+#  used to find the frequency of sounds. Pitchtune uses the GTK+ toolkit.
+#  .
+# URL: http://pitchtune.sourceforge.net/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on: libasound2, libatk1.0-0, libc6, libcairo2, libglib2.0-0, libgtk2.0-0, libpango1.0-0
+
+name=pitchtune
+version=0.0.4
+release=1
+source=($mirror_sf/pitchtune/pitchtune-$version.tar.gz
+        pitchtune-0.0.4-nogz.patch
+        pitchtune-0.0.4-autotools.patch)
+
+build()
+{
+  cd pitchtune-$version
+
+  patch -N -p1 -i $SRC/pitchtune-0.0.4-nogz.patch
+  patch -N -p1 -i $SRC/pitchtune-0.0.4-autotools.patch
+
+  sh autogen.sh
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" docdir="$prefix/share/doc/pitchtune" install
+}
+
+# EOF

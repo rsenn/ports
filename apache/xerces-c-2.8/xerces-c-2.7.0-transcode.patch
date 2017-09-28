@@ -1,0 +1,104 @@
+diff -r -u -- xerces-c-src_2_7_0_orig/src/xercesc/util/XMLString.cpp xerces-c-src_2_7_0/src/xercesc/util/XMLString.cpp
+--- xerces-c-src_2_7_0_orig/src/xercesc/util/XMLString.cpp	2007-05-09 10:05:29.000000000 +0200
++++ xerces-c-src_2_7_0/src/xercesc/util/XMLString.cpp	2007-05-09 10:52:43.000000000 +0200
+@@ -547,6 +547,17 @@
+     return gTranscoder->transcode(toTranscode, manager);
+ }
+ 
++char* XMLString::transcode(const wchar_t* const toTranscode)
++{
++    return gTranscoder->transcode((const XMLCh *const)toTranscode);
++}
++
++char* XMLString::transcode(const wchar_t* const toTranscode,
++                           MemoryManager* const manager)
++{
++    return gTranscoder->transcode((const XMLCh *const)toTranscode, manager);
++}
++
+ bool XMLString::transcode(  const   XMLCh* const    toTranscode
+                             ,       char* const     toFill
+                             , const unsigned int    maxChars
+@@ -557,6 +568,16 @@
+     return true;
+ }
+ 
++bool XMLString::transcode(  const wchar_t* const    toTranscode
++                            ,       char* const     toFill
++                            , const unsigned int    maxChars
++                            , MemoryManager* const  manager)
++{
++    if (!gTranscoder->transcode((const XMLCh *const)toTranscode, toFill, maxChars, manager))
++        return false;
++    return true;
++}
++
+ XMLCh* XMLString::transcode(const char* const toTranscode)
+ {
+     return gTranscoder->transcode(toTranscode);
+@@ -578,6 +599,16 @@
+     return true;
+ }
+ 
++bool XMLString::transcode(  const   char* const     toTranscode
++                            ,     wchar_t* const    toFill
++                            , const unsigned int    maxChars
++                            , MemoryManager* const  manager)
++{
++    if (!gTranscoder->transcode(toTranscode, (XMLCh *const)toFill, maxChars, manager))
++        return false;
++    return true;
++}
++
+ 
+ void XMLString::trim(char* const toTrim)
+ {
+diff -r -u -- xerces-c-src_2_7_0_orig/src/xercesc/util/XMLString.hpp xerces-c-src_2_7_0/src/xercesc/util/XMLString.hpp
+--- xerces-c-src_2_7_0_orig/src/xercesc/util/XMLString.hpp	2007-05-09 10:05:29.000000000 +0200
++++ xerces-c-src_2_7_0/src/xercesc/util/XMLString.hpp	2007-05-09 10:52:23.000000000 +0200
+@@ -1379,6 +1379,15 @@
+         const   XMLCh* const         toTranscode
+         ,       MemoryManager* const manager
+     );
++    static char* transcode
++    (
++        const   wchar_t* const toTranscode
++    );
++    static char* transcode
++    (
++        const   wchar_t* const        toTranscode
++        ,       MemoryManager* const  manager
++    );
+ 
+     /** Transcodes a string to native code-page
+       *
+@@ -1403,6 +1412,14 @@
+         , MemoryManager* const  manager = XMLPlatformUtils::fgMemoryManager
+     );
+ 
++    static bool transcode
++    (
++        const   wchar_t* const    toTranscode
++        ,       char* const     toFill
++        , const unsigned int    maxChars
++        , MemoryManager* const  manager = XMLPlatformUtils::fgMemoryManager
++    );
++
+     /** Transcodes a string to native code-page
+       *
+       * NOTE: The returned buffer is dynamically allocated and is the
+@@ -1441,6 +1458,14 @@
+         , MemoryManager* const  manager = XMLPlatformUtils::fgMemoryManager
+     );
+ 
++    static bool transcode
++    (
++        const   char* const     toTranscode
++        ,     wchar_t* const    toFill
++        , const unsigned int    maxChars
++        , MemoryManager* const  manager = XMLPlatformUtils::fgMemoryManager
++    );
++
+     /** Trims off extra space characters from the start and end of the string,
+       * moving the non-space string content back to the start.
+       * @param toTrim The string to be trimmed. On return this contains the

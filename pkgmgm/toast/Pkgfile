@@ -1,0 +1,21 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: @description@
+# URL: @url@
+# Maintainer: @maintainer@
+# Depends on: @deps@
+
+name=toast
+version=1.453
+release=1
+source=(http://www.toastball.net/toast/toast-$version.tar.gz)
+
+build()
+{
+  cd toast-$version
+
+  ./configure \
+      --prefix="$prefix"
+
+  make DESTDIR="$PKG" mandir="$prefix/share/man" install
+}

@@ -1,0 +1,52 @@
+# $Id: Pkgfile,v 1.4 2007/05/09 21:02:44 roman Exp $
+#
+# Description: A framework for native XML programming.
+#  RefleX is a Java tool that allows people that have no particular knowledge
+#  of Java to write smart programs entirely in XML. The concepts of native
+#  XML programming used in RefleX have been designed separately, so that
+#  other implementations on other platforms/languages can be considered. As
+#  the tags used are considered "active", the underlying concepts have been
+#  named "Active Tags". Programming in XML allows developers to efficiently
+#  produce batch scripts as well as Web applications. With Active Tags,
+#  you can dramatically decrease the number of lines you have to code.
+# URL: http://reflex.gforge.inria.fr/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=reflex
+version=cvs
+release=1
+source=(reflex-cvs-automake.patch
+        reflex-cvs-mingw32.patch)
+
+build()
+{
+  export HOME=$(pwd)
+
+  # password is 'cvs'
+  echo "/1 :pserver:cvs@root.cern.ch:2401/user/cvs Ah<Z" >>.cvspass
+
+  cvs -z9 -d:pserver:cvs@root.cern.ch:/user/cvs co reflex
+
+  cd reflex
+
+  patch -N -p1 -i $SRC/reflex-cvs-automake.patch
+  patch -N -p1 -i $SRC/reflex-cvs-mingw32.patch
+
+  build/autogen
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  (cd doc && doxygen)
+
+  version=`isodate`
+
+  install -d $ROOT/share/doc/$name-$version
+  cp -rvf doc/{html,latex} $ROOT/share/doc/$name-$version/
+}

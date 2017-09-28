@@ -1,0 +1,36 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A text-image distortion library.
+#  libtholoura is a text-image distortion library, which is useful for sites
+#  that want to ensure that a human (and not a bot) is viewing pages. It is
+#  optimized to produce images of strings distorted in a way that makes it
+#  impossible for an OCR to read, but humans can. The library takes a string
+#  (preferably ASCII) string and is able to dynamically produce PNG indexed
+#  images. The distortion filters are external plugins.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libtholoura
+version=0.1.0
+release=1
+source=(http://www.panayotis.com/files/libtholoura/libtholoura-$version.tar.bz2
+        libtholoura-0.1.0-plugins.patch)
+
+build()
+{
+  cd libtholoura-$version
+
+  patch -p1 -i $SRC/libtholoura-0.1.0-plugins.patch
+
+  case $prefix in
+    "/usr") sysconfdir="/etc" ;;
+  esac
+
+  make PREFIX="$prefix" ETC="${sysconfdir=$prefix/etc}"
+  yes "" |make PREFIX="$ROOT" ETC="$PKG${sysconfdir=$prefix/etc}" install
+
+  install -d $ROOT/share/doc/libtholoura
+  install -m 644 doc/LICENCE doc/README doc/AUTHORS $ROOT/share/doc/libtholoura
+}
+

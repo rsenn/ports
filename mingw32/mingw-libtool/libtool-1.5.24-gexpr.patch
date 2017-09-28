@@ -1,0 +1,490 @@
+diff -r -u libtool-1.5.24_orig/ltmain.in libtool-1.5.24/ltmain.in
+--- libtool-1.5.24_orig/ltmain.in	2007-09-30 16:01:12.000000000 +0200
++++ libtool-1.5.24/ltmain.in	2007-09-30 16:03:19.000000000 +0200
+@@ -360,7 +360,7 @@
+       while :; do
+         case " $extracted_archives " in
+ 	*" $my_xlib_u "*)
+-	  extracted_serial=`expr $extracted_serial + 1`
++	  extracted_serial=`gexpr $extracted_serial + 1`
+ 	  my_xlib_u=lt$extracted_serial-$my_xlib ;;
+ 	*) break ;;
+ 	esac
+@@ -2284,7 +2284,7 @@
+ 	    case $deplibs_check_method in
+ 	      match_pattern*)
+ 		set dummy $deplibs_check_method
+-	        match_pattern_regex=`expr "$deplibs_check_method" : "$2 \(.*\)"`
++	        match_pattern_regex=`gexpr "$deplibs_check_method" : "$2 \(.*\)"`
+ 		if eval $echo \"$deplib\" 2>/dev/null \
+ 		    | $SED 10q \
+ 		    | $EGREP "$match_pattern_regex" > /dev/null; then
+@@ -2659,7 +2659,7 @@
+ 	      # bleh windows
+ 	      case $host in
+ 	      *cygwin* | mingw*)
+-		major=`expr $current - $age`
++		major=`gexpr $current - $age`
+ 		versuffix="${major:+-$major}"
+ 		;;
+ 	      esac
+@@ -3257,7 +3257,7 @@
+ 	    age="0"
+ 	    ;;
+ 	  irix|nonstopux)
+-	    current=`expr $number_major + $number_minor`
++	    current=`gexpr $number_major + $number_minor`
+ 	    age="$number_minor"
+ 	    revision="$number_minor"
+ 	    lt_irix_increment=no
+@@ -3315,10 +3315,10 @@
+ 	darwin)
+ 	  # Like Linux, but with the current version available in
+ 	  # verstring for coding it into the library header
+-	  major=.`expr $current - $age`
++	  major=.`gexpr $current - $age`
+ 	  versuffix="$major.$age.$revision"
+ 	  # Darwin ld doesn't like 0 for these options...
+-	  minor_current=`expr $current + 1`
++	  minor_current=`gexpr $current + 1`
+ 	  xlcverstring="${wl}-compatibility_version ${wl}$minor_current ${wl}-current_version ${wl}$minor_current.$revision"
+ 	  verstring="-compatibility_version $minor_current -current_version $minor_current.$revision"
+ 	  ;;
+@@ -3330,9 +3330,9 @@
+ 
+ 	irix | nonstopux)
+ 	  if test "X$lt_irix_increment" = "Xno"; then
+-	    major=`expr $current - $age`
++	    major=`gexpr $current - $age`
+ 	  else
+-	    major=`expr $current - $age + 1`
++	    major=`gexpr $current - $age + 1`
+ 	  fi
+ 	  case $version_type in
+ 	    nonstopux) verstring_prefix=nonstopux ;;
+@@ -3343,8 +3343,8 @@
+ 	  # Add in all the interfaces that we are compatible with.
+ 	  loop=$revision
+ 	  while test "$loop" -ne 0; do
+-	    iface=`expr $revision - $loop`
+-	    loop=`expr $loop - 1`
++	    iface=`gexpr $revision - $loop`
++	    loop=`gexpr $loop - 1`
+ 	    verstring="$verstring_prefix$major.$iface:$verstring"
+ 	  done
+ 
+@@ -3354,20 +3354,20 @@
+ 	  ;;
+ 
+ #	linux)
+-#	  major=.`expr $current - $age`
++#	  major=.`gexpr $current - $age`
+ #	  versuffix="$major.$age.$revision"
+ #	  ;;
+ 
+ 	osf)
+-	  major=.`expr $current - $age`
++	  major=.`gexpr $current - $age`
+ 	  versuffix=".$current.$age.$revision"
+ 	  verstring="$current.$age.$revision"
+ 
+ 	  # Add in all the interfaces that we are compatible with.
+ 	  loop=$age
+ 	  while test "$loop" -ne 0; do
+-	    iface=`expr $current - $loop`
+-	    loop=`expr $loop - 1`
++	    iface=`gexpr $current - $loop`
++	    loop=`gexpr $loop - 1`
+ 	    verstring="$verstring:${iface}.0"
+ 	  done
+ 
+@@ -3383,7 +3383,7 @@
+ 	windows)
+ 	  # Use '-' rather than '.', since we only want one
+ 	  # extension on DOS 8.3 filesystems.
+-	  major=`expr $current - $age`
++	  major=`gexpr $current - $age`
+ 	  versuffix="-$major"
+ 	  ;;
+ 
+@@ -3578,7 +3578,7 @@
+ 	  if $LTCC $LTCFLAGS -o conftest conftest.c $deplibs; then
+ 	    ldd_output=`ldd conftest`
+ 	    for i in $deplibs; do
+-	      name=`expr $i : '-l\(.*\)'`
++	      name=`gexpr $i : '-l\(.*\)'`
+ 	      # If $name is empty we are operating on a -L argument.
+               if test "$name" != "" && test "$name" != "0"; then
+ 		if test "X$allow_libtool_libs_with_static_runtimes" = "Xyes" ; then
+@@ -3594,7 +3594,7 @@
+ 		  deplib_matches=`eval \\$echo \"$library_names_spec\"`
+ 		  set dummy $deplib_matches
+ 		  deplib_match=$2
+-		  if test `expr "$ldd_output" : ".*$deplib_match"` -ne 0 ; then
++		  if test `gexpr "$ldd_output" : ".*$deplib_match"` -ne 0 ; then
+ 		    newdeplibs="$newdeplibs $i"
+ 		  else
+ 		    droppeddeps=yes
+@@ -3615,7 +3615,7 @@
+ 	    # Error occurred in the first compile.  Let's try to salvage
+ 	    # the situation: Compile a separate program for each library.
+ 	    for i in $deplibs; do
+-	      name=`expr $i : '-l\(.*\)'`
++	      name=`gexpr $i : '-l\(.*\)'`
+ 	      # If $name is empty we are operating on a -L argument.
+               if test "$name" != "" && test "$name" != "0"; then
+ 		$rm conftest
+@@ -3634,7 +3634,7 @@
+ 		    deplib_matches=`eval \\$echo \"$library_names_spec\"`
+ 		    set dummy $deplib_matches
+ 		    deplib_match=$2
+-		    if test `expr "$ldd_output" : ".*$deplib_match"` -ne 0 ; then
++		    if test `gexpr "$ldd_output" : ".*$deplib_match"` -ne 0 ; then
+ 		      newdeplibs="$newdeplibs $i"
+ 		    else
+ 		      droppeddeps=yes
+@@ -3663,9 +3663,9 @@
+ 	  ;;
+ 	file_magic*)
+ 	  set dummy $deplibs_check_method
+-	  file_magic_regex=`expr "$deplibs_check_method" : "$2 \(.*\)"`
++	  file_magic_regex=`gexpr "$deplibs_check_method" : "$2 \(.*\)"`
+ 	  for a_deplib in $deplibs; do
+-	    name=`expr $a_deplib : '-l\(.*\)'`
++	    name=`gexpr $a_deplib : '-l\(.*\)'`
+ 	    # If $name is empty we are operating on a -L argument.
+             if test "$name" != "" && test  "$name" != "0"; then
+ 	      if test "X$allow_libtool_libs_with_static_runtimes" = "Xyes" ; then
+@@ -3732,9 +3732,9 @@
+ 	  ;;
+ 	match_pattern*)
+ 	  set dummy $deplibs_check_method
+-	  match_pattern_regex=`expr "$deplibs_check_method" : "$2 \(.*\)"`
++	  match_pattern_regex=`gexpr "$deplibs_check_method" : "$2 \(.*\)"`
+ 	  for a_deplib in $deplibs; do
+-	    name=`expr $a_deplib : '-l\(.*\)'`
++	    name=`gexpr $a_deplib : '-l\(.*\)'`
+ 	    # If $name is empty we are operating on a -L argument.
+ 	    if test -n "$name" && test "$name" != "0"; then
+ 	      if test "X$allow_libtool_libs_with_static_runtimes" = "Xyes" ; then
+@@ -4000,7 +4000,7 @@
+ 	    for cmd in $cmds; do
+ 	      IFS="$save_ifs"
+ 	      eval cmd=\"$cmd\"
+-	      if len=`expr "X$cmd" : ".*"` &&
++	      if len=`gexpr "X$cmd" : ".*"` &&
+ 	       test "$len" -le "$max_cmd_len" || test "$max_cmd_len" -le -1; then
+ 	        $show "$cmd"
+ 	        $run eval "$cmd" || exit $?
+@@ -4082,7 +4082,7 @@
+ 	fi
+ 
+ 	if test "X$skipped_export" != "X:" &&
+-	   len=`expr "X$test_cmds" : ".*" 2>/dev/null` &&
++	   len=`gexpr "X$test_cmds" : ".*" 2>/dev/null` &&
+ 	   test "$len" -le "$max_cmd_len" || test "$max_cmd_len" -le -1; then
+ 	  :
+ 	else
+@@ -4117,7 +4117,7 @@
+ 	  do
+ 	    eval test_cmds=\"$reload_cmds $objlist $last_robj\"
+ 	    if test "X$objlist" = X ||
+-	       { len=`expr "X$test_cmds" : ".*" 2>/dev/null` &&
++	       { len=`gexpr "X$test_cmds" : ".*" 2>/dev/null` &&
+ 		 test "$len" -le "$max_cmd_len"; }; then
+ 	      objlist="$objlist $obj"
+ 	    else
+@@ -4132,7 +4132,7 @@
+ 		eval concat_cmds=\"\$concat_cmds~$reload_cmds $objlist $last_robj\"
+ 	      fi
+ 	      last_robj=$output_objdir/$output_la-${k}.$objext
+-	      k=`expr $k + 1`
++	      k=`gexpr $k + 1`
+ 	      output=$output_objdir/$output_la-${k}.$objext
+ 	      objlist=$obj
+ 	      len=1
+@@ -4158,7 +4158,7 @@
+ 	  i=0
+ 	  while test "$i" -lt "$k"
+ 	  do
+-	    i=`expr $i + 1`
++	    i=`gexpr $i + 1`
+ 	    delfiles="$delfiles $output_objdir/$output_la-${i}.$objext"
+ 	  done
+ 
+@@ -5560,7 +5560,7 @@
+ 		# Make sure we don't pick an alternate name that also
+ 		# overlaps.
+ 		newobj=lt$counter-$objbase
+-		counter=`expr $counter + 1`
++		counter=`gexpr $counter + 1`
+ 		case " $oldobjs " in
+ 		*[\ /]"$newobj "*) ;;
+ 		*) if test ! -f "$gentop/$newobj"; then break; fi ;;
+@@ -5578,7 +5578,7 @@
+ 
+ 	eval cmds=\"$old_archive_cmds\"
+ 
+-	if len=`expr "X$cmds" : ".*"` &&
++	if len=`gexpr "X$cmds" : ".*"` &&
+ 	     test "$len" -le "$max_cmd_len" || test "$max_cmd_len" -le -1; then
+ 	  cmds=$old_archive_cmds
+ 	else
+@@ -5600,7 +5600,7 @@
+ 	    oldobjs="$objlist $obj"
+ 	    objlist="$objlist $obj"
+ 	    eval test_cmds=\"$old_archive_cmds\"
+-	    if len=`expr "X$test_cmds" : ".*" 2>/dev/null` &&
++	    if len=`gexpr "X$test_cmds" : ".*" 2>/dev/null` &&
+ 	       test "$len" -le "$max_cmd_len"; then
+ 	      :
+ 	    else
+--- libtool-1.5.24_orig/ltmain.sh	2007-09-30 16:01:12.000000000 +0200
++++ libtool-1.5.24/ltmain.sh	2007-09-30 16:10:42.000000000 +0200
+@@ -349,7 +349,7 @@
+       while :; do
+         case " $extracted_archives " in
+ 	*" $my_xlib_u "*)
+-	  extracted_serial=`expr $extracted_serial + 1`
++	  extracted_serial=`gexpr $extracted_serial + 1`
+ 	  my_xlib_u=lt$extracted_serial-$my_xlib ;;
+ 	*) break ;;
+ 	esac
+@@ -2262,7 +2262,7 @@
+ 	    case $deplibs_check_method in
+ 	      match_pattern*)
+ 		set dummy $deplibs_check_method
+-	        match_pattern_regex=`expr "$deplibs_check_method" : "$2 \(.*\)"`
++	        match_pattern_regex=`gexpr "$deplibs_check_method" : "$2 \(.*\)"`
+ 		if eval $echo \"$deplib\" 2>/dev/null \
+ 		    | $SED 10q \
+ 		    | $EGREP "$match_pattern_regex" > /dev/null; then
+@@ -2637,7 +2637,7 @@
+ 	      # bleh windows
+ 	      case $host in
+ 	      *cygwin* | mingw*)
+-		major=`expr $current - $age`
++		major=`gexpr $current - $age`
+ 		versuffix="-$major"
+ 		;;
+ 	      esac
+@@ -3229,7 +3229,7 @@
+ 	  #
+ 	  case $version_type in
+ 	  darwin|linux|osf|windows|none)
+-	    current=`expr $number_major + $number_minor`
++	    current=`gexpr $number_major + $number_minor`
+ 	    age="$number_minor"
+ 	    revision="$number_revision"
+ 	    ;;
+@@ -3239,7 +3239,7 @@
+ 	    age="0"
+ 	    ;;
+ 	  irix|nonstopux)
+-	    current=`expr $number_major + $number_minor`
++	    current=`gexpr $number_major + $number_minor`
+ 	    age="$number_minor"
+ 	    revision="$number_minor"
+ 	    lt_irix_increment=no
+@@ -3297,10 +3297,10 @@
+ 	darwin)
+ 	  # Like Linux, but with the current version available in
+ 	  # verstring for coding it into the library header
+-	  major=.`expr $current - $age`
++	  major=.`gexpr $current - $age`
+ 	  versuffix="$major.$age.$revision"
+ 	  # Darwin ld doesn't like 0 for these options...
+-	  minor_current=`expr $current + 1`
++	  minor_current=`gexpr $current + 1`
+ 	  xlcverstring="${wl}-compatibility_version ${wl}$minor_current ${wl}-current_version ${wl}$minor_current.$revision"
+ 	  verstring="-compatibility_version $minor_current -current_version $minor_current.$revision"
+ 	  ;;
+@@ -3317,9 +3317,9 @@
+ 
+ 	irix | nonstopux)
+ 	  if test "X$lt_irix_increment" = "Xno"; then
+-	    major=`expr $current - $age`
++	    major=`gexpr $current - $age`
+ 	  else
+-	    major=`expr $current - $age + 1`
++	    major=`gexpr $current - $age + 1`
+ 	  fi
+ 	  case $version_type in
+ 	    nonstopux) verstring_prefix=nonstopux ;;
+@@ -3330,8 +3330,8 @@
+ 	  # Add in all the interfaces that we are compatible with.
+ 	  loop=$revision
+ 	  while test "$loop" -ne 0; do
+-	    iface=`expr $revision - $loop`
+-	    loop=`expr $loop - 1`
++	    iface=`gexpr $revision - $loop`
++	    loop=`gexpr $loop - 1`
+ 	    verstring="$verstring_prefix$major.$iface:$verstring"
+ 	  done
+ 
+@@ -3341,20 +3341,20 @@
+ 	  ;;
+ 
+ 	linux)
+-	  major=.`expr $current - $age`
++	  major=.`gexpr $current - $age`
+ 	  versuffix="$major.$age.$revision"
+ 	  ;;
+ 
+ 	osf)
+-	  major=.`expr $current - $age`
++	  major=.`gexpr $current - $age`
+ 	  versuffix=".$current.$age.$revision"
+ 	  verstring="$current.$age.$revision"
+ 
+ 	  # Add in all the interfaces that we are compatible with.
+ 	  loop=$age
+ 	  while test "$loop" -ne 0; do
+-	    iface=`expr $current - $loop`
+-	    loop=`expr $loop - 1`
++	    iface=`gexpr $current - $loop`
++	    loop=`gexpr $loop - 1`
+ 	    verstring="$verstring:${iface}.0"
+ 	  done
+ 
+@@ -3370,7 +3370,7 @@
+ 	windows)
+ 	  # Use '-' rather than '.', since we only want one
+ 	  # extension on DOS 8.3 filesystems.
+-	  major=`expr $current - $age`
++	  major=`gexpr $current - $age`
+ 	  versuffix="-$major"
+ 	  ;;
+ 
+@@ -3565,7 +3565,7 @@
+ 	  if $LTCC $LTCFLAGS -o conftest conftest.c $deplibs; then
+ 	    ldd_output=`ldd conftest`
+ 	    for i in $deplibs; do
+-	      name=`expr $i : '-l\(.*\)'`
++	      name=`gexpr $i : '-l\(.*\)'`
+ 	      # If $name is empty we are operating on a -L argument.
+               if test "$name" != "" && test "$name" != "0"; then
+ 		if test "X$allow_libtool_libs_with_static_runtimes" = "Xyes" ; then
+@@ -3581,7 +3581,7 @@
+ 		  deplib_matches=`eval \\$echo \"$library_names_spec\"`
+ 		  set dummy $deplib_matches
+ 		  deplib_match=$2
+-		  if test `expr "$ldd_output" : ".*$deplib_match"` -ne 0 ; then
++		  if test `gexpr "$ldd_output" : ".*$deplib_match"` -ne 0 ; then
+ 		    newdeplibs="$newdeplibs $i"
+ 		  else
+ 		    droppeddeps=yes
+@@ -3602,7 +3602,7 @@
+ 	    # Error occurred in the first compile.  Let's try to salvage
+ 	    # the situation: Compile a separate program for each library.
+ 	    for i in $deplibs; do
+-	      name=`expr $i : '-l\(.*\)'`
++	      name=`gexpr $i : '-l\(.*\)'`
+ 	      # If $name is empty we are operating on a -L argument.
+               if test "$name" != "" && test "$name" != "0"; then
+ 		$rm conftest
+@@ -3621,7 +3621,7 @@
+ 		    deplib_matches=`eval \\$echo \"$library_names_spec\"`
+ 		    set dummy $deplib_matches
+ 		    deplib_match=$2
+-		    if test `expr "$ldd_output" : ".*$deplib_match"` -ne 0 ; then
++		    if test `gexpr "$ldd_output" : ".*$deplib_match"` -ne 0 ; then
+ 		      newdeplibs="$newdeplibs $i"
+ 		    else
+ 		      droppeddeps=yes
+@@ -3650,9 +3650,9 @@
+ 	  ;;
+ 	file_magic*)
+ 	  set dummy $deplibs_check_method
+-	  file_magic_regex=`expr "$deplibs_check_method" : "$2 \(.*\)"`
++	  file_magic_regex=`gexpr "$deplibs_check_method" : "$2 \(.*\)"`
+ 	  for a_deplib in $deplibs; do
+-	    name=`expr $a_deplib : '-l\(.*\)'`
++	    name=`gexpr $a_deplib : '-l\(.*\)'`
+ 	    # If $name is empty we are operating on a -L argument.
+             if test "$name" != "" && test  "$name" != "0"; then
+ 	      if test "X$allow_libtool_libs_with_static_runtimes" = "Xyes" ; then
+@@ -3719,9 +3719,9 @@
+ 	  ;;
+ 	match_pattern*)
+ 	  set dummy $deplibs_check_method
+-	  match_pattern_regex=`expr "$deplibs_check_method" : "$2 \(.*\)"`
++	  match_pattern_regex=`gexpr "$deplibs_check_method" : "$2 \(.*\)"`
+ 	  for a_deplib in $deplibs; do
+-	    name=`expr $a_deplib : '-l\(.*\)'`
++	    name=`gexpr $a_deplib : '-l\(.*\)'`
+ 	    # If $name is empty we are operating on a -L argument.
+ 	    if test -n "$name" && test "$name" != "0"; then
+ 	      if test "X$allow_libtool_libs_with_static_runtimes" = "Xyes" ; then
+@@ -3986,7 +3986,7 @@
+ 	    for cmd in $cmds; do
+ 	      IFS="$save_ifs"
+ 	      eval cmd=\"$cmd\"
+-	      if len=`expr "X$cmd" : ".*"` &&
++	      if len=`gexpr "X$cmd" : ".*"` &&
+ 	       test "$len" -le "$max_cmd_len" || test "$max_cmd_len" -le -1; then
+ 	        $show "$cmd"
+ 	        $run eval "$cmd" || exit $?
+@@ -4068,7 +4068,7 @@
+ 	fi
+ 
+ 	if test "X$skipped_export" != "X:" &&
+-	   len=`expr "X$test_cmds" : ".*" 2>/dev/null` &&
++	   len=`gexpr "X$test_cmds" : ".*" 2>/dev/null` &&
+ 	   test "$len" -le "$max_cmd_len" || test "$max_cmd_len" -le -1; then
+ 	  :
+ 	else
+@@ -4103,7 +4103,7 @@
+ 	  do
+ 	    eval test_cmds=\"$reload_cmds $objlist $last_robj\"
+ 	    if test "X$objlist" = X ||
+-	       { len=`expr "X$test_cmds" : ".*" 2>/dev/null` &&
++	       { len=`gexpr "X$test_cmds" : ".*" 2>/dev/null` &&
+ 		 test "$len" -le "$max_cmd_len"; }; then
+ 	      objlist="$objlist $obj"
+ 	    else
+@@ -4118,7 +4118,7 @@
+ 		eval concat_cmds=\"\$concat_cmds~$reload_cmds $objlist $last_robj\"
+ 	      fi
+ 	      last_robj=$output_objdir/$output_la-${k}.$objext
+-	      k=`expr $k + 1`
++	      k=`gexpr $k + 1`
+ 	      output=$output_objdir/$output_la-${k}.$objext
+ 	      objlist=$obj
+ 	      len=1
+@@ -4144,7 +4144,7 @@
+ 	  i=0
+ 	  while test "$i" -lt "$k"
+ 	  do
+-	    i=`expr $i + 1`
++	    i=`gexpr $i + 1`
+ 	    delfiles="$delfiles $output_objdir/$output_la-${i}.$objext"
+ 	  done
+ 
+@@ -5546,7 +5546,7 @@
+ 		# Make sure we don't pick an alternate name that also
+ 		# overlaps.
+ 		newobj=lt$counter-$objbase
+-		counter=`expr $counter + 1`
++		counter=`gexpr $counter + 1`
+ 		case " $oldobjs " in
+ 		*[\ /]"$newobj "*) ;;
+ 		*) if test ! -f "$gentop/$newobj"; then break; fi ;;
+@@ -5564,7 +5564,7 @@
+ 
+ 	eval cmds=\"$old_archive_cmds\"
+ 
+-	if len=`expr "X$cmds" : ".*"` &&
++	if len=`gexpr "X$cmds" : ".*"` &&
+ 	     test "$len" -le "$max_cmd_len" || test "$max_cmd_len" -le -1; then
+ 	  cmds=$old_archive_cmds
+ 	else
+@@ -5586,7 +5586,7 @@
+ 	    oldobjs="$objlist $obj"
+ 	    objlist="$objlist $obj"
+ 	    eval test_cmds=\"$old_archive_cmds\"
+-	    if len=`expr "X$test_cmds" : ".*" 2>/dev/null` &&
++	    if len=`gexpr "X$test_cmds" : ".*" 2>/dev/null` &&
+ 	       test "$len" -le "$max_cmd_len"; then
+ 	      :
+ 	    else

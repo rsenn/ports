@@ -1,0 +1,39 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:50 roman Exp $
+#
+# Package: audacity
+# Description: A cross-platform multitrack audio editor.
+#  Audacity is a cross-platform multitrack audio editor. It allows you to
+#  files. It features a few simple effects, all of the editing features
+#  which fully supports OSS, Mac OS X CoreAudio, and Windows WMME, and can
+#  be compiled with support for ALSA and Jack.
+# URL: http://audacity.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=audacity
+version=cvs
+release=1
+source=(cvs://audacity.cvs.sourceforge.net/cvsroot/audacity/audacity-src
+        cvs://audacity.cvs.sourceforge.net/cvsroot/audacity/lib-src)
+
+build()
+{
+  cd audacity-src
+
+  ln -sf ../lib-src .
+
+  cp -f install-sh config.sub config.guess lib-src
+#  cp -f install-sh lib-src/lib-widget-extra/
+
+  WX_CONFIG="wxgtk-2.4-config" \
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --${shared:=enable}-shared \
+       --${static:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+}
+

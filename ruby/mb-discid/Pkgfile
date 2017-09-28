@@ -1,0 +1,37 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Ruby bindings for the MusicBrainz DiscID library libdiscid.
+# URL: http://rbrainz.rubyforge.org/mbdiscid/api/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=mb-discid
+version=0.1.2
+release=1
+source=($mirror_rubyforge/rbrainz/mb-discid-$version.tar.gz)
+
+build()
+{
+  cd mb-discid-$version
+
+  IFS="$IFS[]"
+  set `ruby --version`
+
+  RUBYVERSION=$2
+  eval RUBYARCH="\${$#}"
+
+  RUBYLIBDIR=$prefix/lib/ruby/${RUBYVERSION%.*}
+
+  install -d $PKG/$RUBYLIBDIR
+  cp -rf lib/* $PKG/$RUBYLIBDIR
+
+  ruby ext/extconf.rb
+
+  make
+  make DESTDIR="$PKG" RUBYLIBDIR="$PKG/$RUBYLIBDIR" sitedir='$(libdir)/ruby' install
+
+  install -d $ROOT/share/doc/mb-discid
+  install -m 644 LICENSE README CHANGES $ROOT/share/doc/mb-discid
+}
+
+# EOF

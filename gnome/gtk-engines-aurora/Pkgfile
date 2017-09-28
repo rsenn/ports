@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=gtk-engines-aurora
+version=1.1
+release=1
+source=(http://art4linux.org/system/files/Aurora-$version.tar.bz2)
+
+build()
+{
+  tar -xvzf aurora-1.1.tar.gz
+
+  cd aurora-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/themes
+
+  tar -C $ROOT/share/themes -xvjf $SRC/gtkrc_themes.tar.bz2
+}

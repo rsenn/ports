@@ -1,0 +1,29 @@
+# $Id: Pkgfile,v 1.13 2007/05/09 21:02:51 roman Exp $
+#
+# Description: A package centralizing the public-domain C development
+# files I use for building other software: it contains essentially
+# general-purpose libraries. You will need to install skalibs if you plan to
+# build skarnet.org software. The point is that you won't have to download
+# and compile big libraries everytime you need to build a package: do it
+# only once.
+#
+# URL: http://www.skarnet.org/software/skalibs/
+# Maintainer: Roman Senn <rs@adfinis.com>
+
+name=skalibs
+version=0.46
+release=1
+source=(http://www.skarnet.org/software/skalibs/skalibs-$version.tar.gz)
+
+build()
+{
+  cd prog/skalibs-$version
+
+  package/compile
+
+  echo "$ROOT" >compile/export/conf-home
+
+  package/upgrade
+  package/compat
+  package/run
+}

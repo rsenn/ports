@@ -1,0 +1,52 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: 
+# URL: 
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=phoenix-bin
+version=0.5
+release=4
+source=(ftp://ftp.mozilla.org/pub/phoenix/releases/$version/phoenix-$version-i686-pc-linux-gnu.tar.gz
+        phoenix.xpm
+        phoenix.desktop
+        phoenix.menu
+        ftp://ftp.tau.ac.il/pub/OS/RedHat/FC2/Fedora/RPMS/compat-libstdc++-7.3-2.96.126.i386.rpm
+
+        #ftp://rpmfind.net/linux/fedora/releases/9/Everything/i386/os/Packages/compat-libstdc++-296-2.96-140.i386.rpm
+        )
+
+
+build()
+{
+  rpm2cpio compat-libstdc++-7.3-2.96.126.i386.rpm | cpio -di
+
+  mv -vf usr/lib/libstdc++-{3,libc6.2}-* phoenix
+
+  cd phoenix
+
+  install -d $ROOT/lib/phoenix
+  cp -rf * $ROOT/lib/phoenix
+
+  install -d $ROOT/bin
+  ln -sf ../lib/phoenix/phoenix $ROOT/bin
+
+  install -d $ROOT/share/pixmaps
+  install -m 644 $SRC/phoenix.xpm $ROOT/share/pixmaps
+
+  install -d $ROOT/share/app-install/desktop
+  install -m 644 $SRC/phoenix.desktop $ROOT/share/app-install/desktop
+
+  install -d $ROOT/share/menu
+  install -m 644 $SRC/phoenix.menu $ROOT/share/menu/phoenix
+}
+
+postinst()
+{
+  if [ "$1" = "configure" ] && [ -x "`which update-menus 2>/dev/null`" ]; then
+    update-menus
+  fi
+}
+
+# EOF

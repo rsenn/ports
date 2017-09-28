@@ -1,0 +1,127 @@
+diff -ru ragnarok-20090222_orig/Makefile ragnarok-20090222/Makefile
+--- ragnarok-20090222_orig/Makefile	2009-02-22 04:16:50.000000000 +0100
++++ ragnarok-20090222/Makefile	2009-02-22 04:27:36.000000000 +0100
+@@ -2,14 +2,27 @@
+ OBJS = $(SRCS:%.c=%.o)
+ DEST = ragnarok
+ 
+-CFLAGS = -Wall -O0 `pkg-config --cflags gtk+-2.0 libmpd`
++prefix ?= /usr
++bindir = $(prefix)/bin
++libdir = $(prefix)/lib
++pkglibdir = $(libdir)/ragnarok
++
++CFLAGS = -Wall -O2 `pkg-config --cflags gtk+-2.0 libmpd`
+ CFLAGS += -DGTK_DISABLE_DEPRECATED -g
++CFLAGS += -DPKGLIBDIR=\"$(pkglibdir)\"
+ LDFLAGS = -Wall `pkg-config --libs gtk+-2.0 libmpd` -g
+ 
+ SUBDIRS = plugins/playlist plugins/timebar plugins/toolbar plugins/trayicon
+ 
+ all: $(DEST) plugin
+ 
++install: all
++	install -d $(DESTDIR)$(bindir)
++	install -m 755 ragnarok $(DESTDIR)$(bindir)
++	list='$(SUBDIRS)'; for subdir in $$list; do \
++	  (cd $$subdir && $(MAKE) DESTDIR="$(DESTDIR)" prefix="$(prefix)" libdir="$(libdir)" pkglibdir="$(pkglibdir)" install); \
++  done;
++
+ plugin:
+ 	@target=`echo $@ | sed s/-recursive//`; \
+ 	list='$(SUBDIRS)'; for subdir in $$list; do \
+Binary files ragnarok-20090222_orig/about.o and ragnarok-20090222/about.o differ
+Binary files ragnarok-20090222_orig/config.o and ragnarok-20090222/config.o differ
+Binary files ragnarok-20090222_orig/menubar.o and ragnarok-20090222/menubar.o differ
+Binary files ragnarok-20090222_orig/plugin.o and ragnarok-20090222/plugin.o differ
+diff -ru ragnarok-20090222_orig/plugins/playlist/Makefile ragnarok-20090222/plugins/playlist/Makefile
+--- ragnarok-20090222_orig/plugins/playlist/Makefile	2009-02-22 04:16:50.000000000 +0100
++++ ragnarok-20090222/plugins/playlist/Makefile	2009-02-22 04:26:49.000000000 +0100
+@@ -4,6 +4,10 @@
+ 
+ plugin: $(DEST)
+ 
++install:
++	install -d $(DESTDIR)$(pkglibdir)/plugins/playlist
++	install -m 755 $(DEST) $(DESTDIR)$(pkglibdir)/plugins/playlist
++
+ $(DEST): $(OBJS)
+ 	@echo "LD	$@"
+ 	@$(CC) $(LDFLAGS) -shared -Wl,-soname,$(DEST) -o $@ $(OBJS)
+Binary files ragnarok-20090222_orig/plugins/playlist/current_playlist.o and ragnarok-20090222/plugins/playlist/current_playlist.o differ
+Binary files ragnarok-20090222_orig/plugins/playlist/current_playlist_widget.o and ragnarok-20090222/plugins/playlist/current_playlist_widget.o differ
+Binary files ragnarok-20090222_orig/plugins/playlist/file_system.o and ragnarok-20090222/plugins/playlist/file_system.o differ
+Binary files ragnarok-20090222_orig/plugins/playlist/playlist.o and ragnarok-20090222/plugins/playlist/playlist.o differ
+Binary files ragnarok-20090222_orig/plugins/playlist/playlist.so and ragnarok-20090222/plugins/playlist/playlist.so differ
+diff -ru ragnarok-20090222_orig/plugins/timebar/Makefile ragnarok-20090222/plugins/timebar/Makefile
+--- ragnarok-20090222_orig/plugins/timebar/Makefile	2009-02-22 04:16:50.000000000 +0100
++++ ragnarok-20090222/plugins/timebar/Makefile	2009-02-22 04:26:49.000000000 +0100
+@@ -4,6 +4,10 @@
+ 
+ plugin: $(DEST)
+ 
++install:
++	install -d $(DESTDIR)$(pkglibdir)/plugins/timebar
++	install -m 755 $(DEST) $(DESTDIR)$(pkglibdir)/plugins/timebar
++
+ $(DEST): $(OBJS)
+ 	@echo "LD	$@"
+ 	@$(CC) $(LDFLAGS) -shared -Wl,-soname,$(DEST) -o $@ $(OBJS)
+Binary files ragnarok-20090222_orig/plugins/timebar/timebar.o and ragnarok-20090222/plugins/timebar/timebar.o differ
+Binary files ragnarok-20090222_orig/plugins/timebar/timebar.so and ragnarok-20090222/plugins/timebar/timebar.so differ
+diff -ru ragnarok-20090222_orig/plugins/toolbar/Makefile ragnarok-20090222/plugins/toolbar/Makefile
+--- ragnarok-20090222_orig/plugins/toolbar/Makefile	2009-02-22 04:16:50.000000000 +0100
++++ ragnarok-20090222/plugins/toolbar/Makefile	2009-02-22 04:26:49.000000000 +0100
+@@ -4,6 +4,10 @@
+ 
+ plugin: $(DEST)
+ 
++install:                                                                          install -d $(DESTDIR)$(pkglibdir)/plugins/timebar
++	install -d $(DESTDIR)$(pkglibdir)/plugins/toolbar
++	install -m 755 $(DEST) $(DESTDIR)$(pkglibdir)/plugins/toolbar
++
+ $(DEST): $(OBJS)
+ 	@echo "LD	$@"
+ 	@$(CC) $(LDFLAGS) -shared -Wl,-soname,$(DEST) -o $@ $(OBJS)
+Binary files ragnarok-20090222_orig/plugins/toolbar/toolbar.o and ragnarok-20090222/plugins/toolbar/toolbar.o differ
+Binary files ragnarok-20090222_orig/plugins/toolbar/toolbar.so and ragnarok-20090222/plugins/toolbar/toolbar.so differ
+diff -ru ragnarok-20090222_orig/plugins/trayicon/Makefile ragnarok-20090222/plugins/trayicon/Makefile
+--- ragnarok-20090222_orig/plugins/trayicon/Makefile	2009-02-22 04:16:50.000000000 +0100
++++ ragnarok-20090222/plugins/trayicon/Makefile	2009-02-22 04:26:49.000000000 +0100
+@@ -4,6 +4,10 @@
+ 
+ plugin: $(DEST)
+ 
++install:
++	install -d $(DESTDIR)$(pkglibdir)/plugins/trayicon
++	install -m 755 $(DEST) $(DESTDIR)$(pkglibdir)/plugins/trayicon
++
+ $(DEST): $(OBJS)
+ 	@echo "LD	$@"
+ 	@$(CC) $(LDFLAGS) -shared -Wl,-soname,$(DEST) -o $@ $(OBJS)
+Binary files ragnarok-20090222_orig/plugins/trayicon/trayicon.o and ragnarok-20090222/plugins/trayicon/trayicon.o differ
+Binary files ragnarok-20090222_orig/plugins/trayicon/trayicon.so and ragnarok-20090222/plugins/trayicon/trayicon.so differ
+Binary files ragnarok-20090222_orig/ragnarok and ragnarok-20090222/ragnarok differ
+diff -ru ragnarok-20090222_orig/ragnarok.c ragnarok-20090222/ragnarok.c
+--- ragnarok-20090222_orig/ragnarok.c	2009-02-22 04:16:50.000000000 +0100
++++ ragnarok-20090222/ragnarok.c	2009-02-22 04:28:18.000000000 +0100
+@@ -20,6 +20,7 @@
+ 
+ #include <libmpd/libmpd.h>
+ #include <gtk/gtk.h>
++#include <glib/gstdio.h>
+ #include "ragnarok.h"
+ #include "menubar.h"
+ #include "plugin.h"
+@@ -151,7 +152,9 @@
+ 
+ int main (int argc, char *argv[]){
+ 	GtkWidget *menubar;
+-	
++
++  g_chdir(PKGLIBDIR);
++
+ 	gtk_init(&argc, &argv);
+ 	
+ 	config_load();
+Binary files ragnarok-20090222_orig/ragnarok.o and ragnarok-20090222/ragnarok.o differ

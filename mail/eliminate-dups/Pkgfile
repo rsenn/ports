@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Eliminate duplicate messages.
+#  Reads an email message on standard input and calculates a fingerprint
+#  based on the mail headers. If the fingerprint already exists in the
+#  hashfile, then the message is a duplicate. If the fingerprint does not
+#  exist, save the fingerprint in the hashfile and deliver the message.
+# URL: http://search.cpan.org/~budney/Email-Fingerprint-0.24/bin/eliminate-dups
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=eliminate-dups
+version=2.2
+release=1
+source=(http://www.gormand.com.au/peters/tools/qmail/eliminate-dups-$version.tar.gz)
+
+build()
+{
+  cd eliminate-dups-$version
+
+  sed <eliminate-dups.pl >eliminate-dups "s,xPERLx,$prefix/bin/perl,"
+
+  install -d $ROOT/bin
+  install -m 755 eliminate-dups $ROOT/bin
+
+  install -d $ROOT/share/man/man1
+  install -m 644 eliminate-dups.1 $ROOT/share/man/man1
+
+  install -d $ROOT/share/doc/eliminate-dups
+  install -m 644 CHANGES COPYING INSTALL README UPGRADING $ROOT/share/doc/eliminate-dups
+}

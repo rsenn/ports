@@ -1,0 +1,37 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A tool that dynamically creates symbolic links to disk/partition names.
+# URL: http://linux.dell.com/devlabel/devlabel.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=devlabel
+version=0.48.01
+release=1
+source=(http://linux.dell.com/devlabel/permalink/devlabel-0.48.01.tar.gz)
+
+build() 
+{
+  cd devlabel-0.48.01
+  
+  install -d $ROOT/bin
+  install -m 755 devlabel $ROOT/bin
+
+  install -d $ROOT/share/man/man8
+  zcat devlabel.8.gz >$ROOT/share/man/man8/devlabel.8
+
+  install -d $PKG/sbin
+
+  sed -i \
+      -e 's, /usr, ${DESTDIR}/usr,g' \
+      -e 's, /etc, ${DESTDIR}/etc,g' \
+      -e 's, /sbin, ${DESTDIR}/sbin,g' \
+    install.sh
+
+  DESTDIR="$PKG" sh install.sh
+
+  install -d $ROOT/share/doc/devlabel
+  install -m 644 AUTHORS COPYING $ROOT/share/doc/devlabel
+}
+
+# EOF

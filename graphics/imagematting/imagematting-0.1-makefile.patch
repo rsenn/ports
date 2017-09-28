@@ -1,0 +1,22 @@
+diff -u imagematting-0.1_orig/Makefile imagematting-0.1/Makefile
+--- imagematting-0.1_orig/Makefile	2008-07-18 02:12:57.000000000 +0200
++++ imagematting-0.1/Makefile	2008-07-18 02:14:15.000000000 +0200
+@@ -8,10 +8,16 @@
+ # DEBUG = -g
+ 
+ $(APPNAME) : $(OBJECTS)
+-	c++ -o $(APPNAME) $(OBJECTS) $(LIBS)
++	$(CXX) $(CXXFLAGS) -o $(APPNAME) $(OBJECTS) $(LIBS)
+ 
+ imagematting.o : imagematting.cxx
+-	c++ -O99 -c $(DEBUG) $(INCLUDES) imagematting.cxx
++	$(CXX) $(CXXFLAGS) -O99 -c $(DEBUG) $(INCLUDES) imagematting.cxx
++
++install:
++	install -d $(DESTDIR)$(prefix)/bin
++	install -m 755 imagematting $(DESTDIR)$(prefix)/bin
++	install -d $(DESTDIR)$(prefix)/share/doc/imagematting
++	install -m 644 COPYING README $(DESTDIR)$(prefix)/share/doc/imagematting
+ 
+ clean :
+ 	rm -f $(OBJECTS)

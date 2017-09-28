@@ -1,0 +1,49 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An SVN browser that works with minimal software dependencies.
+#  Easy SVN is a subversion browser via the Web. It's easy because only
+#  a command line svn program and Perl are required to run it; no extra
+#  software needs to be installed. After configuring the Perl script as
+#  cgi-bin program, SVN repositories can be navigated, and entries viewed
+#  for contents, history, and diffs.
+#  .
+# URL: http://public.e-tunity.com/web-svn-view/web-svn-view.html
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=websvn
+version=2.1.0
+release=1
+source=(http://websvn.tigris.org/files/documents/1380/44451/websvn-$version.tar.gz
+        websvn-2.1.0-cmake.patch
+        websvn-2.1.0-asm.patch
+        apache.conf)
+
+build()
+{
+  cd websvn-$version
+
+  patch -N -p1 -i $SRC/websvn-2.1.0-cmake.patch
+  patch -N -p1 -i $SRC/websvn-2.1.0-asm.patch
+
+  case $prefix in
+    "/usr") sysconfdir="/etc" localstatedir="/var" ;;
+  esac
+
+  pkgsysconfdir=${sysconfdir="$prefix/etc"}/websvn
+
+  install -d $PKG${pkgsysconfdir}
+  sed "s,@prefix@,$prefix,g" $SRC/apache.conf >$PKG${pkgsysconfdir}/apache.conf
+  cp -f include/distconfig.php $PKG${pkgsysconfdir}/config.php
+  ln -s ${pkgsysconfdir}/config.php include/
+
+  install -d $ROOT/share/websvn
+  install -d $ROOT/share/doc/websvn
+
+  mv -f *.txt $ROOT/share/doc/websvn/
+  mv -f doc $ROOT/share/doc/websvn/html
+
+  mv -f * $ROOT/share/websvn
+}
+
+# EOF

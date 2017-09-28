@@ -1,0 +1,45 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Package: cmake
+# Section: devel
+# Description: CMake is a cross-platform build system
+#  CMake is a cross-platform, open-source build system.
+#  It is used to control the software compilation process using simple platform
+#  and compiler independent configuration files. It generates native makefiles
+#  and workspaces that can be used in the compiler environment of your choice.
+#  CMake is quite sophisticated: it is possible to support complex environments
+#  requiring system configuration, pre-processor generation, and code generation.
+# URL: http://www.cmake.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=cmake
+version=2.6.2
+release=2
+source=(http://www.cmake.org/files/v${version%.*}/cmake-$version.tar.gz)
+
+build()
+{
+  cd cmake-$version
+
+  find * -type f -name "*.cmake" -or -name "*.txt" -or -name "*.cxx" | xargs -d "
+" sed -i -e "s,/usr/local,$prefix,g" \
+         -e "s,/usr/bin,$prefix/bin,g" \
+         -e "s,/usr/sbin,$prefix/sbin,g" \
+         -e "s,/usr/lib,$prefix/lib,g" \
+         -e "s,/usr/include,$prefix/include,g"
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --mandir="$prefix/share/man"
+
+  make
+  make DESTDIR="$PKG" install
+
+  if [ -e $ROOT/doc ]; then
+    install -d $ROOT/share
+    mv -f $ROOT/doc $ROOT/share/
+  fi
+}

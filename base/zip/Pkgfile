@@ -1,0 +1,28 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: Archiver for .zip files
+#  This is InfoZIP's zip program. It produces files that are fully compatible
+#  with the popular PKZIP program; however, the command line options are not
+#  identical. In other words, the end result is the same, but the methods
+#  differ. :-)
+#  This version supports encryption.
+# URL: 
+# Maintainer: Roman Senn <smoli@paranoya.ch>
+# Depends on:
+
+name=zip
+version=2.31
+release=1
+source=(ftp://sunsite.cnlab-switch.ch/mirror/infozip/src/zip$(echo $version | sed 's,\.,,').tar.gz)
+
+build() {
+  cd zip-${version}
+  make -f unix/Makefile prefix="$prefix" BIND="gcc -Wl,-rpath,$prefix/lib" generic_gcc
+  make -f unix/Makefile prefix=$ROOT INSTALL=install install
+
+  copy_license "LICENSE"
+}
+
+cleanup() {
+  rm -r $ROOT/man
+}

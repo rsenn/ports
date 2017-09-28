@@ -1,0 +1,49 @@
+diff -ru ruby-gtk2-0.16.0_orig/glib/src/rbglib_maincontext.c ruby-gtk2-0.16.0/glib/src/rbglib_maincontext.c
+--- ruby-gtk2-0.16.0_orig/glib/src/rbglib_maincontext.c	2008-04-07 19:11:09.000000000 +0000
++++ ruby-gtk2-0.16.0/glib/src/rbglib_maincontext.c	2008-04-07 19:12:12.000000000 +0000
+@@ -343,7 +343,7 @@
+     info->callback = func;
+     id = g_timeout_add_seconds(NUM2UINT(interval),
+                                (GSourceFunc)invoke_source_func,
+-                               (gpointer)info, g_free);
++                               (gpointer)info);
+     info->id = id;
+     rb_id = UINT2NUM(id);
+     G_RELATIVE2(mGLibSource, func, id__callbacks__, rb_id);
+diff -ru ruby-gtk2-0.16.0_orig/glib/src/rbglib_unicode.c ruby-gtk2-0.16.0/glib/src/rbglib_unicode.c
+--- ruby-gtk2-0.16.0_orig/glib/src/rbglib_unicode.c	2008-04-07 19:11:09.000000000 +0000
++++ ruby-gtk2-0.16.0/glib/src/rbglib_unicode.c	2008-04-07 19:14:47.000000000 +0000
+@@ -140,7 +140,7 @@
+ rbglib_m_unichar_get_script(VALUE self, VALUE unichar)
+ {
+     return GENUM2RVAL(g_unichar_get_script(NUM2UINT(unichar)),
+-                      G_TYPE_UNICODE_SCRIPT_TYPE);
++                      G_TYPE_UNICODE_SCRIPT);
+ }
+ #endif
+ 
+diff -ru ruby-gtk2-0.16.0_orig/glib/src/rbgobj_boxed.c ruby-gtk2-0.16.0/glib/src/rbgobj_boxed.c
+--- ruby-gtk2-0.16.0_orig/glib/src/rbgobj_boxed.c	2008-04-07 19:11:09.000000000 +0000
++++ ruby-gtk2-0.16.0/glib/src/rbgobj_boxed.c	2008-04-07 19:13:02.000000000 +0000
+@@ -144,8 +144,7 @@
+ }
+ 
+ gpointer
+-rbgobj_boxed_get(obj, gtype)
+-    VALUE obj, gtype;
++rbgobj_boxed_get(VALUE obj, GType gtype)
+ {
+     boxed_holder* holder;
+     Data_Get_Struct(obj, boxed_holder, holder);
+diff -ru ruby-gtk2-0.16.0_orig/gtk/src/rbgtktreeiter.c ruby-gtk2-0.16.0/gtk/src/rbgtktreeiter.c
+--- ruby-gtk2-0.16.0_orig/gtk/src/rbgtktreeiter.c	2008-04-07 19:11:09.000000000 +0000
++++ ruby-gtk2-0.16.0/gtk/src/rbgtktreeiter.c	2008-04-07 19:18:51.000000000 +0000
+@@ -18,7 +18,7 @@
+ 
+ void
+ rbgtk_register_treeiter_set_value_func(gtype, func)
+-    GType gtype;
++    VALUE gtype;
+     rbgtkiter_set_value_func func;
+ {
+     rb_hash_aset(treeiter_set_value_table, INT2NUM(gtype), 

@@ -1,0 +1,46 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: SWF (flash) output library / PHP module
+#  Ming is a library for writing SWF (Flash) format files. It includes
+#  high-level functions which abstract away mundane specifics of the file
+#  format and PHP (and now Python/Zope, Ruby, and c++) module code which
+#  wraps the library into handy objects.
+# URL: http://www.opaque.net/ming/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=ming
+version=0.2a
+release=2
+source=($mirror_sf/ming/ming-$version.tgz
+        ming-0.2a-int-advance.patch)
+
+build()
+{
+  cd ming-$version
+
+  patch -N -p1 -i $SRC/ming-0.2a-int-advance.patch
+
+  export LIBS="-lXdmcp -lXau -lz -lgif -lpng"
+
+  make LIBS="$LIBS" GIFLIB="-lgif"
+
+  PREFIX="$prefix" \
+  make LIBS="$LIBS" \
+      LIBDIR="$ROOT/lib" \
+      INCLUDEDIR="$ROOT/include" \
+      -e install-common
+
+  install "libming.so" "$ROOT/lib/libming.so.${version%[a-z]}"
+  ln -s "libming.so.${version%[a-z]}" "$ROOT/lib/libming.so.${version%.*}"
+  ln -s "libming.so.${version%.*}" "$ROOT/lib/libming.so"
+
+  copy_license "LICENSE"
+
+  sed -i 's,ungif,gif,g' util/Makefile
+  make -C util gif2dbl png2dbl
+  install -d $ROOT/bin
+  install -m 755 util/{gif2dbl,png2dbl} $ROOT/bin
+
+  chmod 644 $ROOT/include/*.h
+}

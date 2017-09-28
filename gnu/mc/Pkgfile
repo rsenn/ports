@@ -1,0 +1,34 @@
+# $Id: Pkgfile,v 1.3 2007/05/09 21:02:55 roman Exp $
+#
+# Description: An advanced music player.
+#  MusicControl is designed to put you in control of the music that gets
+#  played from your computer. It supports MP3, Ogg, and various module
+#  formats.
+# URL: http://borderworlds.dk/projects/#mc
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=mc
+version=4.6.1
+release=1
+source=(http://www.ibiblio.org/pub/Linux/utils/file/managers/mc/mc-$version.tar.gz)
+
+build()
+{
+  cd mc-$version
+
+  if test -e $prefix/lib/libterminfo.so
+  then
+    export LIBS="-lterminfo"
+  fi
+
+  ./configure \
+    --build="$target" \
+    --host="$target" \
+    --prefix="$prefix" \
+    --${static:=enable}-shared \
+    --${shared:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+}

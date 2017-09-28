@@ -1,0 +1,32 @@
+# $Id: Pkgfile 424 2008-08-10 01:52:57Z enki $
+#
+# Description: A version of the Boost library that uses configure and Makefile.am scripts to build the library (instead of the Jam build system).
+# URL: http://boost-extras.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=gnu-boost
+version=1.35.0
+release=1
+source=($mirror_sf/boost-extras/boost-$version.tar.bz2
+        boost-1.35.0-mingw32.patch)
+
+build()
+{
+  cd boost-$version
+
+  patch -N -p1 -i $SRC/boost-1.35.0-mingw32.patch
+
+  find -name Makefile.am -exec rm '{}' ';'
+
+  ./autogen.sh
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

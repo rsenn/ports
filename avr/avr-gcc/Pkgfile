@@ -1,0 +1,51 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: gcc
+# URL: http://gcc.gnu.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=avr-gcc
+version=4.2.0
+release=1
+target=avr
+
+source=($mirror_gnu/gcc/gcc-$version/gcc-{core,g++,ada}-$version.tar.bz2
+        10-gcc-4.2.0-c-incpath.patch
+        11-gcc-4.2.0-exec-prefix.patch
+        20-gcc-4.2.0-libiberty-Makefile.in.patch
+        30-gcc-4.2.0-binary-constants.patch
+        40-gcc-4.2.0-bug-28902.patch
+        41-gcc-4.2.0-bug-10768.patch
+        51-gcc-4.2.0-mega256-v2.patch)
+
+build()
+{
+  cd gcc-$version
+
+  patch -N -p0 -i $SRC/10-gcc-4.2.0-c-incpath.patch
+  patch -N -p0 -i $SRC/11-gcc-4.2.0-exec-prefix.patch
+  patch -N -p0 -i $SRC/20-gcc-4.2.0-libiberty-Makefile.in.patch
+  patch -N -p0 -i $SRC/30-gcc-4.2.0-binary-constants.patch
+  patch -N -p0 -i $SRC/40-gcc-4.2.0-bug-28902.patch
+  patch -N -p0 -i $SRC/41-gcc-4.2.0-bug-10768.patch
+  patch -N -p0 -i $SRC/51-gcc-4.2.0-mega256-v2.patch
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      ${target+--target="$target"} \
+      --prefix="$prefix" \
+      --infodir="$prefix/share/info" \
+      --mandir="$prefix/share/man" \
+      --disable-rpath \
+      --disable-shared \
+      --${static:=enable}-shared \
+      --enable-languages="c,c++" \
+      --with-system-zlib \
+      --without-included-gettext \
+      --disable-libssp
+
+  make
+  make DESTDIR="$PKG" install
+}

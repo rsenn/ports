@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A sniffer that saves and tracks TCP connections on a network interface.
+#  tcpick is a textmode sniffer that can track TCP streams and saves the
+#  data captured in files or displays them in the terminal. It is useful
+#  for picking files in a passive way. It can store all connections in
+#  different files, or it can display all the stream on the terminal (using
+#  colors too).
+#  .
+# URL: http://tcpick.sourceforge.net
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=tcpick
+version=0.2.1
+release=1
+source=($mirror_sf/tcpick/tcpick-0.2.1.tar.gz)
+
+build()
+{
+  cd tcpick-0.2.1
+./autogen.sh
+./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+make
+make DESTDIR="$PKG" install
+}
+
+# EOF

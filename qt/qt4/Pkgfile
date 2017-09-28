@@ -1,0 +1,96 @@
+# $Id: Pkgfile,v 1.8 2007/04/22 23:07:58 roman Exp $
+#
+# Description: A cross-platform development framework/toolkit.
+#  Qt is a comprehensive, object-oriented development framework that
+#  enables development of high-performance, cross-platform rich-client
+#  and server-side applications. When you implement a program with Qt,
+#  Microsoft Windows NT/9x/2000/XP by simply compiling the source code for
+#  the platform you want. Qt is the basis for the KDE desktop environment,
+#  and is also used in numerous commercial applications such as Google Earth,
+#  Skype for Linux, and Adobe Photoshop Elements.
+#  .
+# URL: http://trolltech.com/products/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=qt4
+version=4.4.3
+release=1
+source=(ftp://ftp.trolltech.com/qt/source/qt-x11-opensource-src-$version.tar.gz
+        ftp://ftp.trolltech.com/qt/source/qt-win-opensource-src-$version.zip)
+
+
+build()
+{
+  # Determine CPU
+  case $host in
+      x86_64-*) CPU='64' ;;
+    i[3-7]86-*) CPU='32' ;;
+            *) CPU='generic' ;;
+  esac
+
+  # Determine operating system
+  case $host in
+     *-linux*) OS='linux' ;;
+           *) OS='generic' ;;
+  esac
+
+  # Determine compiler
+  COMPILER=${CXX%-[0-9]*}
+  COMPILER=${COMPILER##*-}
+
+  # Determine configure script
+  case $OS in
+    win32) TK='win' CONFIGURE='configure.exe' ;;
+        *) TK='x11' CONFIGURE='./configure' ;;
+  esac
+
+  # Assemble platform triplet
+  PLATFORM="$OS-${COMPILER:-g++}-$CPU"
+
+  # Detect debug flags
+  case $CXXFLAGS in
+    *-g*) DEBUG='-debug' ;;
+       *) DEBUG= ;;
+  esac
+
+  cd qt-${TK}-opensource-src-$version
+
+#  case $TK in
+#    x11) patch -R -p1 -i $SRC/qt-x11-opensource-src-4.3.0-fixes.patch ;;
+#  esac
+
+  yes "yes" | $CONFIGURE \
+         -platform "$PLATFORM" \
+         -prefix "$prefix" \
+         -libdir "$prefix/lib" \
+         -headerdir "$prefix/include/qt4" \
+         -sysconfdir "$prefix/etc/qt4" \
+         -plugindir "$prefix/lib/qt4/plugins" \
+         -datadir "$prefix/share/qt4" \
+         -translationdir "$prefix/share/qt4/translations" \
+         -docdir "$prefix/share/doc/qt4" \
+         -qt3support \
+         -qdbus \
+         -pch \
+         -nomake examples \
+         -nomake demos \
+         -qt-gif \
+         -fast \
+         -shared \
+         -no-separate-debug-info \
+         $DEBUG
+
+  make
+  make INSTALL_ROOT="$PKG" install
+
+  if [ -e $ROOT/lib/qt4/pkgconfig ]; then
+    mv -f $ROOT/lib/qt4/pkgconfig $ROOT/lib/
+  fi
+
+ (cd $ROOT/bin && for bin in *; do
+    mv -vf $bin $bin-qt4
+  done)
+
+  mkdir -p $ROOT/bin/designer
+}

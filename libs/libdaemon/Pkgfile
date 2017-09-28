@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A C library for writing UNIX daemons.
+#  libdaemon is a lightweight C library that eases the process of writing
+#  UNIX daemons. It contains a daemonizing fork() wrapper, a powerful
+#  syslog() wrapper, PID file management, and signal serialization.
+# URL: http://0pointer.de/lennart/projects/libdaemon/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libdaemon
+version=0.12
+release=1
+source=(http://0pointer.de/lennart/projects/libdaemon/libdaemon-$version.tar.gz)
+
+build()
+{
+  cd libdaemon-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

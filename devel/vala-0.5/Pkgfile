@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Package: valac
+# Section: universe/devel
+# Description: Compiler for the GObject type system
+# Vala is a new programming language that aims to bring modern programming
+# language features to GNOME developers without imposing any additional
+# runtime requirements and without using a different ABI compared to
+# applications and libraries written in C.
+# URL: http://live.gnome.org/Vala
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libatk1.0-0, libc6, libcairo-directfb2, libcairo2, libfontconfig1, libfreetype6, libglib2.0-0, libglitz1, libgtk2.0-0, libpango1.0-0, libpixman-1-0, libpng12-0, libx11-6, libxrender1, zlib1g
+
+name=vala
+version=0.5.6
+release=1
+source=(ftp://ftp.gnome.org/pub/gnome/sources/vala/${version%.*}/vala-$version.tar.bz2)
+
+build()
+{
+  cd vala-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --enable-vapigen \
+       --enable-gen-project
+
+  make
+  make DESTDIR="$PKG" install
+}

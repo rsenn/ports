@@ -1,0 +1,22 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: PTypes is a simple alternative to the STL that includes
+# multithreading and networking. It defines dynamic strings, character
+# sets, lists and other basic data types along with threads,
+# synchronization primitives, named pipes and IP sockets.
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=ptypes
+version=2.1.1
+release=1
+source=($mirror_sf/ptypes/ptypes-$version.tar.gz)
+
+build()
+{
+  cd ptypes-$version
+
+  make PREFIX="$prefix" CXX="$CXX $CXXFLAGS"
+  make PREFIX="$ROOT" install
+}

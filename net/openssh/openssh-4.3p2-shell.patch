@@ -1,0 +1,27 @@
+diff -ru openssh-4.3p2_orig/session.c openssh-4.3p2/session.c
+--- openssh-4.3p2_orig/session.c	2006-03-20 17:54:01.000000000 +0100
++++ openssh-4.3p2/session.c	2006-03-20 17:55:01.000000000 +0100
+@@ -1432,6 +1432,7 @@
+ 	char *argv[10];
+ 	const char *shell, *shell0, *hostname = NULL;
+ 	struct passwd *pw = s->pw;
++  char realshell[PATH_MAX];
+ 
+ 	/* remove hostkey from the child's memory */
+ 	destroy_sensitive_data();
+@@ -1490,6 +1491,15 @@
+ 	 */
+ 	shell = (pw->pw_shell[0] == '\0') ? _PATH_BSHELL : pw->pw_shell;
+ 
++  if(!strncmp(shell, "/bin/", 5))
++  {
++    memset(realshell, 0, sizeof(realshell));
++    strcpy(realshell, BINDIR);
++    strcat(realshell, "/");
++    strncat(realshell, basename(shell), sizeof(realshell) - sizeof(BINDIR) - 2);
++    shell = realshell;
++  }
++  
+ 	/*
+ 	 * Make sure $SHELL points to the shell from the password file,
+ 	 * even if shell is overridden from login.conf

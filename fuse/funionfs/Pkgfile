@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A filesystem which concatenate two or more directories
+# FunionFS is a union filesystem for the FUSE driver that allows
+# a small read-write filesystem to be superimposed on read-only media such as
+# a CD-ROM. It is useful for live CD distributions or systems storing files in
+# a PROM or a compressed filesystem such as CRAMFS.
+# URL: http://funionfs.apiou.org
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libfuse2
+
+name=funionfs
+version=0.4.3
+release=1
+source=(http://funionfs.apiou.org/file/funionfs-$version.tar.gz)
+
+build()
+{
+  cd funionfs-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/funionfs
+  install -m 644 [A-Z]*[A-Z]* $ROOT/share/doc/funionfs
+}

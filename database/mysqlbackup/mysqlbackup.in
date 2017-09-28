@@ -1,0 +1,146 @@
+#!/bin/bash
+#
+# $Id: mysqlbackup.in,v 1.2 2006/12/01 15:47:33 roman Exp $
+#
+
+: ${prefix=@prefix@}
+: ${libdir=$prefix/lib}
+: ${shelldir=$libdir/nexshell}
+
+source $shelldir/util
+source $shelldir/var
+source $shelldir/list
+source $shelldir/mysql
+
+# Set the full paths to these if your environment requires it.
+#     $date must be GNU date.
+#     $gzip must be GNU gzip.
+tai64nlocal="@bindir@/tai64nlocal"
+tai2human="@bindir@/sed s,^[-0-9]\+.\([:0-9]\+\.[0-9][0-9][0-9]\)[0-9]\+,\1,"
+cat="@bindir@/cat" 
+cp="@bindir@/cp"
+date="@bindir@/date"
+grep="@bindir@/grep"
+gzip="@bindir@/gzip"
+mkdir="@bindir@/mkdir"
+mv="@bindir@/mv"
+rm="@bindir@/rm"
+svc="@bindir@/svc"
+
+# No changes should be necessary past this point.
+
+source '@prefix@/etc/nexbyte.conf'
+source '@prefix@/etc/mysqlbackup.conf'
+source '@prefix@/local/config/mysqlbackup.conf'
+
+# If for some reason you can't get GNU date you'll need to change this to suit.
+# year should return a year (eg 2001) and yesterday should be a date in 
+# yyyy-mm-dd format (I suppose Solaris date could be hacked because it uses 
+# strftime() but who cares? use perl or something).
+# Changing these lines doesn't count as a bug wrt the previous paragraph 8-7
+unixtime=$($date +%s)
+rounded=$(($unixtime / $stepping * $stepping))
+rfcdate=$(ftime $rounded)
+
+year=$($date +%Y --date="$rfcdate")
+today=$($date +%Y%m%d --date="$rfcdate")
+now=$($date +%H%M --date="$rfcdate")
+
+#if ! echo $year-$yesterday | $grep -q '....-....-..-..'; then
+#  echo "fatal: date command '$date' didn't return sensible values"
+#  exit 100
+#fi
+
+# Keep track of errors.
+errors=0
+me=${0##*/}
+
+eval "set -- $(getopt -n "$me" -l 'verbose,incremental' \
+  'vi' "$@")"
+
+for arg in $@
+do
+  case $arg in
+    -i|--incremental)
+      incremental=yes
+    ;;
+    -v|--verbose)
+      verbose=yes
+    ;;
+  esac
+done
+
+dir="$archive/mysql/$global_hostname/$today"
+
+# check if we are to backup ALL databases
+if [ "$databases" = "*" ]; then
+  msg "All databases..."
+  databases=$(mysql_databases)
+else
+  msg "Databases:" ${databases}
+fi
+
+# create the target dir
+mkdir -p "$dir"
+
+# get the current full backup we're operating on
+get_backup_full()
+  {
+  ls -1 --color=no "$dir/full.sql.gz" 2>/dev/null
+  }
+  
+# list all backup files of that day
+list_backup_files()
+  {
+  ls -1 --color=no "$dir" 2>/dev/null
+  }
+
+# list all incremental backups of that day
+list_backup_incremental()
+  {
+  ls -1 --color=no "$dir"/[0-9][0-9][0-9][0-9].sql.gz 2>/dev/null
+  }
+
+# list last incremental backup
+last_backup_incremental()
+  {
+  list_backup_incremental | tail -n1
+  }
+
+if [ "$incremental" != "yes" ]; then
+  file="$dir/full.sql.gz"
+
+  rm -f "$file"
+
+  msg "Backupping databases to" ${file}
+
+  mysql_backup_databases ${databases} | gzip -c >$file
+else
+  file="$dir/$now.sql.gz"
+  
+  rm -f "$file"
+  
+  msg "Backupping binlog to" ${file}
+
+  binlogs=$(mysql_binlogs)
+  mysql_flush_logs
+  
+  previous=$(last_backup_incremental)
+  
+  mysql_binlog ${binlogs} | gzip -c >$file
+  
+  if [ "$previous" ] && [ -f "$previous" ]; then
+    difference=$(zdiff "$previous" "$file")
+    
+    if [ -z "$difference" ]; then
+      msg "Nothing changed, linking to previous incremental:" $(basename "$previous")
+
+      rm -f "$file"
+      ln -sf "$previous" "$file"
+    fi
+  fi
+fi
+
+size=$(du -sk "$file" | sed 's,[ \t].*,,')
+
+msg "Done. Size is ${size}kb"

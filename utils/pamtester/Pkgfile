@@ -1,0 +1,36 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A tool for testing pluggable authentication modules (PAM) facilities.
+#  pamtester is a tiny utility program to test the pluggable authentication
+#  modules (PAM) facility. While specifically designed to help PAM module
+#  authors to test their own modules, it might also be handy for system
+#  administrators interested in building a centralized authentication system
+#  using common standards such as NIS, SASL, and LDAP.
+#  .
+# URL: http://pamtester.sourceforge.net/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=pamtester
+version=0.1.2
+release=1
+source=($mirror_sf/pamtester/pamtester-$version.tar.gz)
+
+build()
+{
+  cd pamtester-$version
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --prefix="$prefix" \
+     --mandir="$prefix/share/man"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/pamtester
+  install -m 644 NEWS LICENSE README AUTHORS ChangeLog $ROOT/share/doc/pamtester
+}
+
+# EOF

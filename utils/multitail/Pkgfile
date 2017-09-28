@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: MultiTail lets you view one or multiple files like the original tail program. The difference is that it creates multiple windows on your console (with ncurses). Merging of 2 or more log files is possible. It can also use colors while displaying the log files (through regular expressions) for faster recognition of what is important. It can also filter lines (again with regular expressions). It has interactive menus for editing given regular expressions and deleting and adding windows. One can also have windows with the output of shell scripts and other software. When viewing the output of external software, MultiTail can mimic the functionality of tools like 'watch'.
+# URL: 
+# Maintainer: 
+# Depends on: 
+
+name=multitail
+version=5.2.2
+release=1
+source=(http://www.vanheusden.com/multitail/multitail-$version.tgz)
+
+build() 
+{
+  cd multitail-$version
+  
+  make
+
+  install -d $ROOT/bin
+  install -d $ROOT/share/man/man1
+  install -d $PKG/etc
+
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/multitail
+  install -m 644 INSTALL Changes thanks.txt license.txt readme.txt $ROOT/share/doc/multitail
+}
+
+# EOF

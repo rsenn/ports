@@ -1,0 +1,165 @@
+Only in libextractor-0.5.18_orig/: Makefile
+Only in libextractor-0.5.18_orig/doc: Makefile
+Only in libextractor-0.5.18_orig/libltdl: Makefile
+Only in libextractor-0.5.18_orig/libltdl: config.h
+Only in libextractor-0.5.18_orig/libltdl: stamp-h1
+Only in libextractor-0.5.18_orig/m4: Makefile
+Only in libextractor-0.5.18_orig/po: Makefile
+Only in libextractor-0.5.18_orig/src: Makefile
+Only in libextractor-0.5.18_orig/src/include: Makefile
+Only in libextractor-0.5.18_orig/src/include: config.h
+diff -r -u -- libextractor-0.5.18_orig/src/include/plibc.h libextractor-0.5.18/src/include/plibc.h
+--- libextractor-0.5.18_orig/src/include/plibc.h	2007-05-31 17:59:37.000000000 +0200
++++ libextractor-0.5.18/src/include/plibc.h	2007-05-31 17:59:47.000000000 +0200
+@@ -43,7 +43,7 @@
+ #endif
+ 
+ #include <windows.h>
+-#include <Ws2tcpip.h>
++#include <ws2tcpip.h>
+ #include <time.h>
+ #include <stdio.h>
+ #include <sys/types.h>
+Only in libextractor-0.5.18_orig/src/include: stamp-h1
+Only in libextractor-0.5.18_orig/src/main: Makefile
+Only in libextractor-0.5.18_orig/src/plugins: Makefile
+Only in libextractor-0.5.18_orig/src/plugins/exiv2: Makefile
+Only in libextractor-0.5.18_orig/src/plugins/hash: Makefile
+Only in libextractor-0.5.18_orig/src/plugins/ole2: Makefile
+Only in libextractor-0.5.18_orig/src/plugins/oo: Makefile
+Only in libextractor-0.5.18_orig/src/plugins/pdf: Makefile
+Only in libextractor-0.5.18_orig/src/plugins/printable: Makefile
+Only in libextractor-0.5.18_orig/src/plugins/printable: pefi.c
+Only in libextractor-0.5.18_orig/src/plugins/printable: pefr.c
+Only in libextractor-0.5.18_orig/src/plugins/printable: pega.c
+Only in libextractor-0.5.18_orig/src/plugins/printable: pesv.c
+Only in libextractor-0.5.18_orig/src/plugins/rpm: Makefile
+Only in libextractor-0.5.18_orig/src/plugins/thumbnail: Makefile
+Only in libextractor-0.5.18_orig/src/test: Makefile
+Only in libextractor-0.5.18_orig/: Makefile
+diff -r -u -- libextractor-0.5.18_orig/configure.ac libextractor-0.5.18/configure.ac
+--- libextractor-0.5.18_orig/configure.ac	2007-05-31 18:42:14.000000000 +0200
++++ libextractor-0.5.18/configure.ac	2007-05-31 18:42:23.000000000 +0200
+@@ -119,8 +119,8 @@
+ AC_SYS_LARGEFILE
+ AC_FUNC_FSEEKO
+ 
+-AM_CONDITIONAL(CYGWIN, test "$build_os" = "cygwin")
+-AM_CONDITIONAL(MINGW, test "$build_os" = "mingw32")
++AM_CONDITIONAL(CYGWIN, test "$host_os" = "cygwin")
++AM_CONDITIONAL(MINGW, test "$host_os" = "mingw32")
+ 
+ 
+ # use '-fno-strict-aliasing', but only if the compiler can take it
+Only in libextractor-0.5.18_orig/doc: Makefile
+diff -r -u -- libextractor-0.5.18_orig/src/plugins/printable/Makefile.am libextractor-0.5.18/src/plugins/printable/Makefile.am
+--- libextractor-0.5.18_orig/src/plugins/printable/Makefile.am	2007-05-31 19:03:54.000000000 +0200
++++ libextractor-0.5.18/src/plugins/printable/Makefile.am	2007-05-31 19:04:52.000000000 +0200
+@@ -1,5 +1,6 @@
+ include ../Makefile-plugins.am
+ 
++DICTIONARY_BUILDER = ./dictionary-builder
+ noinst_PROGRAMS = dictionary-builder
+ 
+ da_LANG=da_0.c da_1.c da_2.c da_3.c da_4.c da_5.c da_6.c da_7.c da_8.c da_9.c da_10.c da_11.c da_12.c da_13.c da_14.c da_15.c da_16.c da_17.c da_18.c da_19.c da_20.c da_21.c da_22.c da_23.c da_24.c da_25.c da_26.c da_27.c da_28.c da_29.c da_30.c da_31.c
+@@ -17,27 +18,27 @@
+ CLEANFILES = da.c de.c en.c es.c fi.c fr.c ga.c it.c no.c pt.c sv.c peda.c pede.c peen.c pees.c pefi.c pefr.c pega.c peit.c peno.c pept.c pesv.c $(da_LANG) $(de_LANG) $(es_LANG) $(en_LANG) $(fi_LANG) $(fr_LANG) $(ga_LANG) $(it_LANG) $(no_LANG) $(pt_LANG) $(sv_LANG)
+ 
+ da.c $(da_LANG): dictionary-builder$(EXEEXT)
+-	./dictionary-builder $(srcdir)/da da > da.c
++	$(DICTIONARY_BUILDER) $(srcdir)/da da > da.c
+ de.c $(de_LANG): dictionary-builder$(EXEEXT)
+-	./dictionary-builder $(srcdir)/de de > de.c
++	$(DICTIONARY_BUILDER) $(srcdir)/de de > de.c
+ en.c $(en_LANG): dictionary-builder$(EXEEXT)
+-	./dictionary-builder $(srcdir)/en en > en.c
++	$(DICTIONARY_BUILDER) $(srcdir)/en en > en.c
+ es.c $(es_LANG): dictionary-builder$(EXEEXT)
+-	./dictionary-builder $(srcdir)/es es > es.c
++	$(DICTIONARY_BUILDER) $(srcdir)/es es > es.c
+ fi.c $(fi_LANG): dictionary-builder$(EXEEXT)
+-	./dictionary-builder $(srcdir)/fi fi > fi.c
++	$(DICTIONARY_BUILDER) $(srcdir)/fi fi > fi.c
+ fr.c $(fr_LANG): dictionary-builder$(EXEEXT)
+-	./dictionary-builder $(srcdir)/fr fr > fr.c
++	$(DICTIONARY_BUILDER) $(srcdir)/fr fr > fr.c
+ ga.c $(ga_LANG): dictionary-builder$(EXEEXT)
+-	./dictionary-builder $(srcdir)/ga ga > ga.c
++	$(DICTIONARY_BUILDER) $(srcdir)/ga ga > ga.c
+ it.c $(it_LANG): dictionary-builder$(EXEEXT)
+-	./dictionary-builder $(srcdir)/it it > it.c
++	$(DICTIONARY_BUILDER) $(srcdir)/it it > it.c
+ no.c $(no_LANG): dictionary-builder$(EXEEXT)
+-	./dictionary-builder $(srcdir)/no no > no.c
++	$(DICTIONARY_BUILDER) $(srcdir)/no no > no.c
+ pt.c $(pt_LANG): dictionary-builder$(EXEEXT)
+-	./dictionary-builder $(srcdir)/pt pt > pt.c
++	$(DICTIONARY_BUILDER) $(srcdir)/pt pt > pt.c
+ sv.c $(sv_LANG): dictionary-builder$(EXEEXT)
+-	./dictionary-builder $(srcdir)/sv sv > sv.c
++	$(DICTIONARY_BUILDER) $(srcdir)/sv sv > sv.c
+ 
+ peda.c:
+ 	cat peXX.c | sed -e "s/XX/da/" > peda.c
+diff -r -u -- libextractor-0.5.18_orig/src/plugins/printable/Makefile.in libextractor-0.5.18/src/plugins/printable/Makefile.in
+--- libextractor-0.5.18_orig/src/plugins/printable/Makefile.in	2007-05-31 19:03:54.000000000 +0200
++++ libextractor-0.5.18/src/plugins/printable/Makefile.in	2007-05-31 19:04:59.000000000 +0200
+@@ -423,6 +423,7 @@
+ @HAVE_GNU_LD_TRUE@makesymbolic = -Wl,-Bsymbolic
+ @HAVE_GNU_LD_TRUE@retaincommand = -Wl,--retain-symbols-file -Wl,SYMBOLS
+ PLUGINFLAGS = $(makesymbolic) -avoid-version -module -no-undefined
++DICTIONARY_BUILDER = ./dictionary-builder
+ da_LANG = da_0.c da_1.c da_2.c da_3.c da_4.c da_5.c da_6.c da_7.c da_8.c da_9.c da_10.c da_11.c da_12.c da_13.c da_14.c da_15.c da_16.c da_17.c da_18.c da_19.c da_20.c da_21.c da_22.c da_23.c da_24.c da_25.c da_26.c da_27.c da_28.c da_29.c da_30.c da_31.c
+ de_LANG = de_0.c de_1.c de_2.c de_3.c de_4.c de_5.c de_6.c de_7.c de_8.c de_9.c de_10.c de_11.c de_12.c de_13.c de_14.c de_15.c de_16.c de_17.c de_18.c de_19.c de_20.c de_21.c de_22.c de_23.c de_24.c de_25.c de_26.c de_27.c de_28.c de_29.c de_30.c de_31.c
+ en_LANG = en_0.c en_1.c en_2.c en_3.c en_4.c en_5.c en_6.c en_7.c en_8.c en_9.c en_10.c en_11.c en_12.c en_13.c en_14.c en_15.c en_16.c en_17.c en_18.c en_19.c en_20.c en_21.c en_22.c en_23.c en_24.c en_25.c en_26.c en_27.c en_28.c en_29.c en_30.c en_31.c
+@@ -566,9 +567,9 @@
+ 	      exit 1;; \
+ 	  esac; \
+ 	done; \
+-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu  src/plugins/printable/Makefile'; \
++	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign  src/plugins/printable/Makefile'; \
+ 	cd $(top_srcdir) && \
+-	  $(AUTOMAKE) --gnu  src/plugins/printable/Makefile
++	  $(AUTOMAKE) --foreign  src/plugins/printable/Makefile
+ .PRECIOUS: Makefile
+ Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
+ 	@case '$?' in \
+@@ -1239,27 +1240,27 @@
+ 
+ 
+ da.c $(da_LANG): dictionary-builder$(EXEEXT)
+-	./dictionary-builder $(srcdir)/da da > da.c
++	$(DICTIONARY_BUILDER) $(srcdir)/da da > da.c
+ de.c $(de_LANG): dictionary-builder$(EXEEXT)
+-	./dictionary-builder $(srcdir)/de de > de.c
++	$(DICTIONARY_BUILDER) $(srcdir)/de de > de.c
+ en.c $(en_LANG): dictionary-builder$(EXEEXT)
+-	./dictionary-builder $(srcdir)/en en > en.c
++	$(DICTIONARY_BUILDER) $(srcdir)/en en > en.c
+ es.c $(es_LANG): dictionary-builder$(EXEEXT)
+-	./dictionary-builder $(srcdir)/es es > es.c
++	$(DICTIONARY_BUILDER) $(srcdir)/es es > es.c
+ fi.c $(fi_LANG): dictionary-builder$(EXEEXT)
+-	./dictionary-builder $(srcdir)/fi fi > fi.c
++	$(DICTIONARY_BUILDER) $(srcdir)/fi fi > fi.c
+ fr.c $(fr_LANG): dictionary-builder$(EXEEXT)
+-	./dictionary-builder $(srcdir)/fr fr > fr.c
++	$(DICTIONARY_BUILDER) $(srcdir)/fr fr > fr.c
+ ga.c $(ga_LANG): dictionary-builder$(EXEEXT)
+-	./dictionary-builder $(srcdir)/ga ga > ga.c
++	$(DICTIONARY_BUILDER) $(srcdir)/ga ga > ga.c
+ it.c $(it_LANG): dictionary-builder$(EXEEXT)
+-	./dictionary-builder $(srcdir)/it it > it.c
++	$(DICTIONARY_BUILDER) $(srcdir)/it it > it.c
+ no.c $(no_LANG): dictionary-builder$(EXEEXT)
+-	./dictionary-builder $(srcdir)/no no > no.c
++	$(DICTIONARY_BUILDER) $(srcdir)/no no > no.c
+ pt.c $(pt_LANG): dictionary-builder$(EXEEXT)
+-	./dictionary-builder $(srcdir)/pt pt > pt.c
++	$(DICTIONARY_BUILDER) $(srcdir)/pt pt > pt.c
+ sv.c $(sv_LANG): dictionary-builder$(EXEEXT)
+-	./dictionary-builder $(srcdir)/sv sv > sv.c
++	$(DICTIONARY_BUILDER) $(srcdir)/sv sv > sv.c
+ 
+ peda.c:
+ 	cat peXX.c | sed -e "s/XX/da/" > peda.c

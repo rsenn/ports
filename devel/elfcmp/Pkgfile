@@ -1,0 +1,26 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:44 roman Exp $
+#
+# Description: An ELF binary-to-process comparison tool.
+#  elfcmp compares running processes to the their respective binary image
+#  to ensure that the process image in memory has not been tampered with
+#  after execution. This is useful for general security auditing purposes
+#  as other methods that rely strictly on checking disk image checksums are
+#  not entirely reliable if only the process image is being tampered with.
+# URL: http://www.hick.org/code.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=elfcmp
+version=1.0.0
+release=1
+source=(elfcmp-$version.tar.gz)
+
+build()
+{
+  cd elfcmp-$version
+
+  make
+
+  install -d $ROOT/bin
+  install -m 755 elfcmp $ROOT/bin
+}

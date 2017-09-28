@@ -1,0 +1,161 @@
+--- js_orig/Makefile.am	2008-11-09 07:23:00.000000000 +0100
++++ js/Makefile.am	2008-11-09 07:30:44.000000000 +0100
+@@ -1,4 +1,8 @@
+ #SUBDIRS = jsd src
+ SUBDIRS = src
+ 
+-EXTRA_DIST = README
++EXTRA_DIST = README js.pc.in
++
++pkgconfigdir = $(libdir)/pkgconfig
++pkgconfig_DATA = js.pc
++
+--- js_orig/configure.in	2008-11-09 07:23:00.000000000 +0100
++++ js/configure.in	2008-11-09 09:38:40.000000000 +0100
+@@ -8,32 +8,61 @@
+ AC_PROG_CC
+ AC_PROG_LIBTOOL
+ 
+-dnl
++dnl Check for the math library
++dnl -------------------------------------------------------------------------
+ ac_cv_check_lib_LIBS="$LIBS"
+ AC_CHECK_LIB([m], [sqrt], [MATH_LIBS="-lm"])
+ LIBS="$ac_cv_check_lib_LIBS"
+ AC_SUBST([MATH_LIBS])
+ 
+-dnl
++dnl Check for the NSPR4 library and header
++dnl -------------------------------------------------------------------------
++NSPR_LIBS=
++NSPR_CFLAGS=
++NSPR=no
++
++AM_PATH_NSPR([4.0.0], [
+ ac_cv_check_lib_LIBS="$LIBS"
+-AC_CHECK_LIB([nspr4], [PR_Init], [NSPR_LIBS="-lnspr4"])
++LIBS="$NSPR_LIBS $LIBS"
++AC_CHECK_LIB([nspr4], [PR_Init], [], [NSPR_LIBS=])
+ LIBS="$ac_cv_check_lib_LIBS"
+-AC_SUBST([NSPR_LIBS])
+ 
+-AC_CHECK_HEADER([nspr/nspr.h], [NSPR_CFLAGS="-I\$(includedir)/nspr"])
+-AC_SUBST([NSPR_CFLAGS])
++ac_cv_check_header_CFLAGS="$CFLAGS"
++CFLAGS="$CFLAGS $NSPR_CFLAGS"
++AC_CHECK_HEADER([nspr/nspr.h], [], [NSPR_CFLAGS=])
++CFLAGS="$ac_cv_check_header_CFLAGS"
++
++if test "$NSPR_LIBS"; then
++  NSPR_PC="nspr"
++fi],
+ 
+-if test -n "$NSPR_LIBS"; then
++[ac_cv_check_lib_LIBS="$LIBS"
++AC_CHECK_LIB([nspr4], [PR_Init], [NSPR_LIBS="-lnspr4"])
++LIBS="$ac_cv_check_lib_LIBS"
++AC_CHECK_HEADER([nspr/nspr.h], [NSPR_CFLAGS="-I\$(includedir)/nspr"])])
++
++if test -n "$NSPR_LIBS" -a -n "$NSPR_CFLAGS"; then
+   AC_DEFINE_UNQUOTED([NSPR], [1], [Use the mozilla nspr runtime?])
++  NSPR="yes"
++  JS_REQUIRES="nspr"
+ fi
+ 
+-dnl
++AC_SUBST([NSPR_LIBS])
++AC_SUBST([NSPR_CFLAGS])
++
++AM_CONDITIONAL([NSPR], [test "$NSPR" = yes])
++
++dnl Check for the readline library and header
++dnl -------------------------------------------------------------------------
+ ac_cv_check_lib_LIBS="$LIBS"
+ AC_CHECK_LIB([readline], [readline], [READLINE_LIBS="-lreadline"])
+ LIBS="$ac_cv_check_lib_LIBS"
+ AC_SUBST([READLINE_LIBS])
+ 
+-if test -n "$READLINE_LIBS"; then
++AC_CHECK_HEADER([readline/readline.h], [READLINE_CFLAGS="-I\$(includedir)/readline"])
++AC_SUBST([READLINE_CFLAGS])
++
++if test -n "$READLINE_LIBS" -a -n "$READLINE_CFLAGS"; then
+   AC_DEFINE_UNQUOTED([EDITLINE], [1], [Support command-line editing?])
+ fi
+ 
+@@ -49,15 +78,16 @@
+ 
+ case "$host" in
+   *) 
+-    AC_DEFINE_UNQUOTED([XP_UNIX], [1], [UNIX alike operating system]) 
+-#    FDLIBM="_POSIX_"
++dnl    AC_DEFINE_UNQUOTED([XP_UNIX], [1], [UNIX alike operating system]) 
++dnl    FDLIBM="_POSIX_"
++    JS_CFLAGS="-DXP_UNIX"
+   ;;
+ esac
+ 
+ if test "$host" = "$build"; then
+   NATIVE="yes"
+ else
+-   AC_MSG_ERROR([No cross-compilation supported yet: build=$build host=$host])
++  AC_MSG_ERROR([No cross-compilation supported yet: build=$build host=$host])
+ fi
+ 
+ dnl case "$FDLIBM" in
+@@ -68,8 +98,22 @@
+ if test -n "$FDLIBM"; then
+   AC_DEFINE_UNQUOTED([_LIB_VERSION], [$FDLIBM], [fdlibm build type])
+   AC_DEFINE_UNQUOTED([JS_USE_FDLIBM_MATH], [1], [Use shipped fdlibm library])
++dnl JS_CFLAGS="$JS_CFLAGS -DJS_USE_FDLIBM_MATH"
++fi
++
++dnl Set compiler flags for building libjs
++dnl -------------------------------------------------------------------------
++JS_CFLAGS="$JS_CFLAGS -DJS_THREADSAFE"
++JS_CFLAGS="$JS_CFLAGS -DJS_HAS_FILE_OBJECT"
++#JS_CFLAGS="$JS_CFLAGS -DJS_USE_ONLY_NSPR_LOCKS"
++#JS_CFLAGS="$JS_CFLAGS -DJS_USE_SAFE_ARENA"
++
++if test "$NSPR" = yes; then
++  JS_REQUIRES="$NSPR_PC"
+ fi
+ 
++AC_SUBST([JS_CFLAGS])
++AC_SUBST([JS_REQUIRES])
+ 
+ dnl Evaluate build time conditionals
+ dnl -------------------------------------------------------------------------
+@@ -79,6 +123,7 @@
+ 
+ dnl -------------------------------------------------------------------------
+ AC_CONFIG_FILES([Makefile
++js.pc
+ src/Makefile
+ src/fdlibm/Makefile])
+ AC_OUTPUT
+--- js_orig/js.pc.in	2008-11-09 07:24:32.000000000 +0100
++++ js/js.pc.in	2008-11-09 09:40:39.000000000 +0100
+@@ -0,0 +1,11 @@
++prefix=@prefix@
++exec_prefix=@exec_prefix@
++libdir=@libdir@
++includedir=@includedir@
++
++Name: js
++Description: Mozilla SpiderMonkey (JavaScript) engine
++Version: @PACKAGE_VERSION@
++Requires: @JS_REQUIRES@
++Cflags: -I${includedir}/js @JS_CFLAGS@
++Libs: -L${libdir} -ljs
+--- js_orig/src/Makefile.am	2008-11-09 07:23:00.000000000 +0100
++++ js/src/Makefile.am	2008-11-09 07:50:17.000000000 +0100
+@@ -2,7 +2,7 @@
+ bin_PROGRAMS = js
+ lib_LTLIBRARIES = libjs.la
+ 
+-DEFS += -DJS_THREADSAFE -DJS_USE_ONLY_NSPR_LOCKS -DJS_HAS_FILE_OBJECT -DJS_USE_SAFE_ARENA
++CFLAGS = @CFLAGS@ @JS_CFLAGS@
+ INCLUDES = -I$(builddir) -I$(srcddir) $(NSPR_CFLAGS)
+ 
+ CONFIG_CLEAN_FILES = jsautokw.h jsautocfg.h

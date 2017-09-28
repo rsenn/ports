@@ -1,0 +1,103 @@
+diff -ru cxxtools-1.4.5_orig/demo/Makefile.in cxxtools-1.4.5/demo/Makefile.in
+--- cxxtools-1.4.5_orig/demo/Makefile.in	2008-03-12 12:29:43.000000000 +0100
++++ cxxtools-1.4.5/demo/Makefile.in	2008-03-12 12:34:23.000000000 +0100
+@@ -211,7 +211,7 @@
+ LDFLAGS = @LDFLAGS@
+ LIBLTDL = @LIBLTDL@
+ LIBOBJS = @LIBOBJS@
+-LIBS = @LIBS@
++LIBS = @LIBS@ -liconv
+ LIBTOOL = @LIBTOOL@
+ LN_S = @LN_S@
+ LTLIBOBJS = @LTLIBOBJS@
+diff -ru cxxtools-1.4.5_orig/include/cxxtools/arg.h cxxtools-1.4.5/include/cxxtools/arg.h
+--- cxxtools-1.4.5_orig/include/cxxtools/arg.h	2008-03-12 12:29:43.000000000 +0100
++++ cxxtools-1.4.5/include/cxxtools/arg.h	2008-03-12 12:33:57.000000000 +0100
+@@ -23,6 +23,7 @@
+ #define CXXTOOLS_ARG_H
+ 
+ #include <sstream>
++#include <cstring>
+ 
+ namespace cxxtools
+ {
+@@ -168,7 +169,7 @@
+         return false;
+ 
+       for (int i = 1; i < argc - 1; ++i)
+-        if (strcmp(argv[i], str) == 0)
++        if (::strcmp(argv[i], str) == 0)
+         {
+           std::istringstream s(argv[i + 1]);
+           s >> m_value;
+@@ -428,7 +429,7 @@
+         return false;
+ 
+       for (int i = 1; i < argc; ++i)
+-        if (strcmp(argv[i], str) == 0)
++        if (::strcmp(argv[i], str) == 0)
+         {
+           m_value = true;
+           m_isset = true;
+@@ -538,7 +539,7 @@
+         return false;
+ 
+       for (int i = 1; i < argc - 1; ++i)
+-        if (strcmp(argv[i], str) == 0)
++        if (::strcmp(argv[i], str) == 0)
+         {
+           m_value = argv[i + 1];
+           m_isset = true;
+@@ -675,7 +676,7 @@
+         return false;
+ 
+       for (int i = 1; i < argc - 1; ++i)
+-        if (strcmp(argv[i], str) == 0)
++        if (::strcmp(argv[i], str) == 0)
+         {
+           m_value = argv[i + 1];
+           m_isset = true;
+diff -ru cxxtools-1.4.5_orig/src/net.cpp cxxtools-1.4.5/src/net.cpp
+--- cxxtools-1.4.5_orig/src/net.cpp	2008-03-12 12:29:43.000000000 +0100
++++ cxxtools-1.4.5/src/net.cpp	2008-03-12 12:29:59.000000000 +0100
+@@ -25,6 +25,7 @@
+ #include <errno.h>
+ #include <sys/poll.h>
+ #include <sstream>
++#include <cstring>
+ #include "cxxtools/log.h"
+ 
+ log_define("cxxtools.net");
+diff -ru cxxtools-1.4.5_orig/src/syserror.cpp cxxtools-1.4.5/src/syserror.cpp
+--- cxxtools-1.4.5_orig/src/syserror.cpp	2008-03-12 12:29:43.000000000 +0100
++++ cxxtools-1.4.5/src/syserror.cpp	2008-03-12 12:30:56.000000000 +0100
+@@ -22,6 +22,7 @@
+ #include "cxxtools/syserror.h"
+ #include <errno.h>
+ #include <sstream>
++#include <cstring>
+ 
+ namespace cxxtools
+ {
+diff -ru cxxtools-1.4.5_orig/src/tcpstream.cpp cxxtools-1.4.5/src/tcpstream.cpp
+--- cxxtools-1.4.5_orig/src/tcpstream.cpp	2008-03-12 12:29:43.000000000 +0100
++++ cxxtools-1.4.5/src/tcpstream.cpp	2008-03-12 12:31:11.000000000 +0100
+@@ -24,6 +24,7 @@
+ #include <unistd.h>
+ #include <netdb.h>
+ #include <errno.h>
++#include <cstring>
+ #include "cxxtools/log.h"
+ 
+ log_define("cxxtools.net.tcp")
+diff -ru cxxtools-1.4.5_orig/src/udp.cpp cxxtools-1.4.5/src/udp.cpp
+--- cxxtools-1.4.5_orig/src/udp.cpp	2008-03-12 12:29:43.000000000 +0100
++++ cxxtools-1.4.5/src/udp.cpp	2008-03-12 12:31:36.000000000 +0100
+@@ -25,6 +25,7 @@
+ #include <netdb.h>
+ #include <sys/poll.h>
+ #include <errno.h>
++#include <cstring>
+ 
+ log_define("cxxtools.net.udp")
+ 

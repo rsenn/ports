@@ -1,0 +1,25 @@
+# $Id: Pkgfile 424 2008-08-10 01:52:57Z enki $
+#
+# Description: Daemond is a daemon control daemon. It can be used as a faster and more flexible replacement for init, or by itself. It has the ability to track complex dependencies, and allows package management systems to easily add and maintain them.
+# URL: http://sourceforge.net/projects/daemond/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=daemond
+version=0.2
+release=1
+source=($mirror_sf/daemond/daemond-src-0.2.tar.bz2)
+
+build()
+{
+  cd daemond-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

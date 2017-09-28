@@ -1,0 +1,319 @@
+diff -r -u -N mxml-2.5_orig/.deps/mxml-attr.Plo mxml-2.5/.deps/mxml-attr.Plo
+diff -r -u -N mxml-2.5_orig/.deps/mxml-entity.Plo mxml-2.5/.deps/mxml-entity.Plo
+diff -r -u -N mxml-2.5_orig/.deps/mxml-file.Plo mxml-2.5/.deps/mxml-file.Plo
+diff -r -u -N mxml-2.5_orig/.deps/mxml-index.Plo mxml-2.5/.deps/mxml-index.Plo
+diff -r -u -N mxml-2.5_orig/.deps/mxml-node.Plo mxml-2.5/.deps/mxml-node.Plo
+diff -r -u -N mxml-2.5_orig/.deps/mxml-private.Plo mxml-2.5/.deps/mxml-private.Plo
+diff -r -u -N mxml-2.5_orig/.deps/mxml-search.Plo mxml-2.5/.deps/mxml-search.Plo
+diff -r -u -N mxml-2.5_orig/.deps/mxml-set.Plo mxml-2.5/.deps/mxml-set.Plo
+diff -r -u -N mxml-2.5_orig/.deps/mxml-string.Plo mxml-2.5/.deps/mxml-string.Plo
+diff -r -u -N mxml-2.5_orig/.deps/mxmldoc.Plo mxml-2.5/.deps/mxmldoc.Plo
+diff -r -u -N mxml-2.5_orig/.libs/libmxml.la mxml-2.5/.libs/libmxml.la
+diff -r -u -N mxml-2.5_orig/.libs/libmxml.lai mxml-2.5/.libs/libmxml.lai
+diff -r -u -N mxml-2.5_orig/Makefile mxml-2.5/Makefile
+diff -r -u -N mxml-2.5_orig/Makefile.am mxml-2.5/Makefile.am
+--- mxml-2.5_orig/Makefile.am	1970-01-01 00:00:00.000000000 +0000
++++ mxml-2.5/Makefile.am	2008-04-04 02:25:13.000000000 +0000
+@@ -0,0 +1,19 @@
++SUBDIRS = doc 
++
++lib_LTLIBRARIES = libmxml.la
++include_HEADERS = mxml.h
++
++libmxml_la_SOURCES = \
++	mxml-attr.c \
++	mxml-entity.c \
++	mxml-file.c \
++	mxml-index.c \
++	mxml-node.c \
++	mxml-private.c \
++	mxml-search.c \
++	mxml-set.c \
++	mxml-string.c \
++	mxml.h \
++	mxmldoc.c
++
++libmxml_la_LDFLAGS = -rpath $(libdir) -version-number 2:5 -no-undefined
+diff -r -u -N mxml-2.5_orig/Makefile.in mxml-2.5/Makefile.in
+diff -r -u -N mxml-2.5_orig/aclocal.m4 mxml-2.5/aclocal.m4
+diff -r -u -N mxml-2.5_orig/autom4te.cache/output.0 mxml-2.5/autom4te.cache/output.0
+diff -r -u -N mxml-2.5_orig/autom4te.cache/output.1 mxml-2.5/autom4te.cache/output.1
+diff -r -u -N mxml-2.5_orig/autom4te.cache/requests mxml-2.5/autom4te.cache/requests
+diff -r -u -N mxml-2.5_orig/autom4te.cache/traces.0 mxml-2.5/autom4te.cache/traces.0
+diff -r -u -N mxml-2.5_orig/autom4te.cache/traces.1 mxml-2.5/autom4te.cache/traces.1
+diff -r -u -N mxml-2.5_orig/config.guess mxml-2.5/config.guess
+diff -r -u -N mxml-2.5_orig/config.h mxml-2.5/config.h
+diff -r -u -N mxml-2.5_orig/config.h.in mxml-2.5/config.h.in
+diff -r -u -N mxml-2.5_orig/config.h.in~ mxml-2.5/config.h.in~
+diff -r -u -N mxml-2.5_orig/config.log mxml-2.5/config.log
+diff -r -u -N mxml-2.5_orig/config.status mxml-2.5/config.status
+diff -r -u -N mxml-2.5_orig/config.sub mxml-2.5/config.sub
+diff -r -u -N mxml-2.5_orig/configure mxml-2.5/configure
+diff -r -u -N mxml-2.5_orig/configure.in mxml-2.5/configure.in
+--- mxml-2.5_orig/configure.in	2008-04-04 01:26:15.000000000 +0000
++++ mxml-2.5/configure.in	2008-04-04 02:23:30.000000000 +0000
+@@ -18,6 +18,7 @@
+ 
+ dnl Specify a source file from the distribution...
+ AC_INIT(mxml.h)
++AM_INIT_AUTOMAKE([mxml], [1.3])
+ 
+ dnl Set the name of the config header file...
+ AC_CONFIG_HEADER(config.h)
+@@ -25,7 +26,7 @@
+ dnl Version number...
+ VERSION=2.5
+ AC_SUBST(VERSION)
+-AC_DEFINE_UNQUOTED(MXML_VERSION, "Mini-XML v$VERSION")
++AC_DEFINE_UNQUOTED([MXML_VERSION], "Mini-XML v$VERSION", [Version of this package])
+ 
+ dnl Clear default debugging options and set normal optimization by
+ dnl default unless the user asks for debugging specifically.
+@@ -75,7 +76,8 @@
+ 	# Use full path to install-sh script...
+ 	INSTALL="`pwd`/install-sh -c"
+ fi
+-AC_PROG_RANLIB
++AC_PROG_LIBTOOL
++dnl AC_PROG_RANLIB
+ AC_PATH_PROG(AR,ar)
+ AC_PATH_PROG(CP,cp)
+ AC_PATH_PROG(LN,ln)
+@@ -114,7 +116,7 @@
+ PTHREAD_LIBS=""
+ 
+ if test "x$enable_threads" != xno; then
+-	AC_CHECK_HEADER(pthread.h, AC_DEFINE(HAVE_PTHREAD_H))
++	AC_CHECK_HEADER([pthread.h])
+ 
+ 	if test x$ac_cv_header_pthread_h = xyes; then
+ 		dnl Check various threading options for the platforms we support
+@@ -319,7 +321,7 @@
+ AC_SUBST(PC_LIBS)
+ 
+ dnl Output the makefile, etc...
+-AC_OUTPUT(Makefile mxml.list mxml.pc)
++AC_OUTPUT(Makefile doc/Makefile mxml.list mxml.pc)
+ 
+ dnl
+ dnl End of "$Id: configure.in 335 2008-01-26 20:50:28Z mike $".
+diff -r -u -N mxml-2.5_orig/configure.in~ mxml-2.5/configure.in~
+diff -r -u -N mxml-2.5_orig/depcomp mxml-2.5/depcomp
+diff -r -u -N mxml-2.5_orig/doc/Makefile mxml-2.5/doc/Makefile
+diff -r -u -N mxml-2.5_orig/doc/Makefile.am mxml-2.5/doc/Makefile.am
+--- mxml-2.5_orig/doc/Makefile.am	1970-01-01 00:00:00.000000000 +0000
++++ mxml-2.5/doc/Makefile.am	2008-04-04 02:24:34.000000000 +0000
+@@ -0,0 +1,38 @@
++
++doc_DATA = \
++	0.gif \
++	1.gif \
++	2.gif \
++	3.gif \
++	4.gif \
++	5.gif \
++	6.gif \
++	7.gif \
++	8.gif \
++	9.gif \
++	A.gif \
++	B.gif \
++	C.gif \
++	D.gif \
++	E.gif \
++	F.gif \
++	Makefile.am \
++	advanced.html \
++	basics.html \
++	chapters.xcf.gz \
++	install.html \
++	intro.html \
++	intro.man \
++	license.html \
++	logo.gif \
++	logo.xcf.gz \
++	makedocs.sh \
++	mxml.book \
++	mxml.html \
++	mxmldoc.html \
++	mxmldoc.man \
++	mxmldoc.xsd \
++	reference.html \
++	relnotes.html \
++	schema.html \
++	title.html
+diff -r -u -N mxml-2.5_orig/doc/Makefile.in mxml-2.5/doc/Makefile.in
+diff -r -u -N mxml-2.5_orig/install-sh mxml-2.5/install-sh
+diff -r -u -N mxml-2.5_orig/libmxml.la mxml-2.5/libmxml.la
+diff -r -u -N mxml-2.5_orig/libtool mxml-2.5/libtool
+diff -r -u -N mxml-2.5_orig/ltmain.sh mxml-2.5/ltmain.sh
+diff -r -u -N mxml-2.5_orig/missing mxml-2.5/missing
+diff -r -u -N mxml-2.5_orig/mxml-attr.c mxml-2.5/mxml-attr.c
+--- mxml-2.5_orig/mxml-attr.c	2008-04-04 01:26:15.000000000 +0000
++++ mxml-2.5/mxml-attr.c	2008-04-04 02:21:34.000000000 +0000
+@@ -28,9 +28,10 @@
+  * Include necessary headers...
+  */
+ 
+-#include "config.h"
++#include "tweaks.h"
+ #include "mxml.h"
+ 
++#include <stdarg.h>
+ 
+ /*
+  * Local functions...
+diff -r -u -N mxml-2.5_orig/mxml-attr.c~ mxml-2.5/mxml-attr.c~
+diff -r -u -N mxml-2.5_orig/mxml-attr.lo mxml-2.5/mxml-attr.lo
+diff -r -u -N mxml-2.5_orig/mxml-entity.c.rej mxml-2.5/mxml-entity.c.rej
+diff -r -u -N mxml-2.5_orig/mxml-entity.c~ mxml-2.5/mxml-entity.c~
+diff -r -u -N mxml-2.5_orig/mxml-entity.lo mxml-2.5/mxml-entity.lo
+diff -r -u -N mxml-2.5_orig/mxml-file.c.rej mxml-2.5/mxml-file.c.rej
+diff -r -u -N mxml-2.5_orig/mxml-file.c~ mxml-2.5/mxml-file.c~
+diff -r -u -N mxml-2.5_orig/mxml-file.lo mxml-2.5/mxml-file.lo
+diff -r -u -N mxml-2.5_orig/mxml-index.c mxml-2.5/mxml-index.c
+--- mxml-2.5_orig/mxml-index.c	2008-04-04 01:26:15.000000000 +0000
++++ mxml-2.5/mxml-index.c	2008-04-04 02:21:34.000000000 +0000
+@@ -32,7 +32,7 @@
+  * Include necessary headers...
+  */
+ 
+-#include "config.h"
++#include "tweaks.h"
+ #include "mxml.h"
+ 
+ 
+diff -r -u -N mxml-2.5_orig/mxml-index.lo mxml-2.5/mxml-index.lo
+diff -r -u -N mxml-2.5_orig/mxml-node.c mxml-2.5/mxml-node.c
+--- mxml-2.5_orig/mxml-node.c	2008-04-04 01:26:15.000000000 +0000
++++ mxml-2.5/mxml-node.c	2008-04-04 02:21:34.000000000 +0000
+@@ -38,7 +38,7 @@
+  * Include necessary headers...
+  */
+ 
+-#include "config.h"
++#include "tweaks.h"
+ #include "mxml.h"
+ 
+ 
+diff -r -u -N mxml-2.5_orig/mxml-node.lo mxml-2.5/mxml-node.lo
+diff -r -u -N mxml-2.5_orig/mxml-private.c mxml-2.5/mxml-private.c
+--- mxml-2.5_orig/mxml-private.c	2008-04-04 01:26:15.000000000 +0000
++++ mxml-2.5/mxml-private.c	2008-04-04 02:24:48.000000000 +0000
+@@ -30,6 +30,7 @@
+ 
+ #include "mxml-private.h"
+ 
++#include <stdarg.h>
+ 
+ /*
+  * 'mxml_error()' - Display an error message.
+diff -r -u -N mxml-2.5_orig/mxml-private.c.rej mxml-2.5/mxml-private.c.rej
+diff -r -u -N mxml-2.5_orig/mxml-private.c~ mxml-2.5/mxml-private.c~
+diff -r -u -N mxml-2.5_orig/mxml-private.lo mxml-2.5/mxml-private.lo
+diff -r -u -N mxml-2.5_orig/mxml-search.c mxml-2.5/mxml-search.c
+--- mxml-2.5_orig/mxml-search.c	2008-04-04 01:26:15.000000000 +0000
++++ mxml-2.5/mxml-search.c	2008-04-04 02:21:34.000000000 +0000
+@@ -27,7 +27,7 @@
+  * Include necessary headers...
+  */
+ 
+-#include "config.h"
++#include "tweaks.h"
+ #include "mxml.h"
+ 
+ 
+diff -r -u -N mxml-2.5_orig/mxml-search.lo mxml-2.5/mxml-search.lo
+diff -r -u -N mxml-2.5_orig/mxml-set.c mxml-2.5/mxml-set.c
+--- mxml-2.5_orig/mxml-set.c	2008-04-04 01:26:15.000000000 +0000
++++ mxml-2.5/mxml-set.c	2008-04-04 02:21:34.000000000 +0000
+@@ -31,7 +31,7 @@
+  * Include necessary headers...
+  */
+ 
+-#include "config.h"
++#include "tweaks.h"
+ #include "mxml.h"
+ 
+ 
+diff -r -u -N mxml-2.5_orig/mxml-set.lo mxml-2.5/mxml-set.lo
+diff -r -u -N mxml-2.5_orig/mxml-string.c mxml-2.5/mxml-string.c
+--- mxml-2.5_orig/mxml-string.c	2008-04-04 01:26:15.000000000 +0000
++++ mxml-2.5/mxml-string.c	2008-04-04 02:25:01.000000000 +0000
+@@ -28,8 +28,10 @@
+  * Include necessary headers...
+  */
+ 
+-#include "config.h"
+-
++#include "tweaks.h"
++#include <string.h>
++#include <stdio.h>
++#include <stdlib.h>
+ 
+ #ifndef HAVE_SNPRINTF
+ /*
+diff -r -u -N mxml-2.5_orig/mxml-string.c~ mxml-2.5/mxml-string.c~
+diff -r -u -N mxml-2.5_orig/mxml-string.lo mxml-2.5/mxml-string.lo
+diff -r -u -N mxml-2.5_orig/mxml.list mxml-2.5/mxml.list
+diff -r -u -N mxml-2.5_orig/mxml.pc mxml-2.5/mxml.pc
+diff -r -u -N mxml-2.5_orig/mxmldoc.c mxml-2.5/mxmldoc.c
+--- mxml-2.5_orig/mxmldoc.c	2008-04-04 01:26:15.000000000 +0000
++++ mxml-2.5/mxmldoc.c	2008-04-04 02:21:35.000000000 +0000
+@@ -48,7 +48,7 @@
+  * Include necessary headers...
+  */
+ 
+-#include "config.h"
++#include "tweaks.h"
+ #include "mxml.h"
+ #include <time.h>
+ 
+diff -r -u -N mxml-2.5_orig/mxmldoc.c~ mxml-2.5/mxmldoc.c~
+diff -r -u -N mxml-2.5_orig/mxmldoc.lo mxml-2.5/mxmldoc.lo
+diff -r -u -N mxml-2.5_orig/stamp-h1 mxml-2.5/stamp-h1
+diff -r -u -N mxml-2.5_orig/testmxml.c mxml-2.5/testmxml.c
+--- mxml-2.5_orig/testmxml.c	2008-04-04 01:26:15.000000000 +0000
++++ mxml-2.5/testmxml.c	2008-04-04 02:21:35.000000000 +0000
+@@ -28,7 +28,7 @@
+  * Include necessary headers...
+  */
+ 
+-#include "config.h"
++#include "tweaks.h"
+ #include "mxml.h"
+ #ifdef WIN32
+ #  include <io.h>
+diff -r -u -N mxml-2.5_orig/tweaks.h mxml-2.5/tweaks.h
+--- mxml-2.5_orig/tweaks.h	1970-01-01 00:00:00.000000000 +0000
++++ mxml-2.5/tweaks.h	2008-04-04 02:21:35.000000000 +0000
+@@ -0,0 +1,29 @@
++#ifndef MXML_TWEAKS_H
++#define MXML_TWEAKS_H
++
++#include "config.h"
++#include <stdarg.h>
++
++/*
++ * Define prototypes for string functions as needed...
++ */
++
++#  ifndef HAVE_STRDUP
++extern char *_mxml_strdup(const char *);
++#    define strdup _mxml_strdup
++#  endif /* !HAVE_STRDUP */
++
++extern char *_mxml_strdupf(const char *, ...);
++extern char *_mxml_vstrdupf(const char *, va_list);
++
++#  ifndef HAVE_SNPRINTF
++extern int  _mxml_snprintf(char *, size_t, const char *, ...);
++#    define snprintf _mxml_snprintf
++#  endif /* !HAVE_SNPRINTF */
++
++#  ifndef HAVE_VSNPRINTF
++extern int  _mxml_vsnprintf(char *, size_t, const char *, va_list);
++#    define vsnprintf _mxml_vsnprintf
++#  endif /* !HAVE_VSNPRINTF */
++
++#endif /* MXML_TWEAKS_H */

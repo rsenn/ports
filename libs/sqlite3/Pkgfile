@@ -1,0 +1,69 @@
+# $Id: Pkgfile,v 1.2 2007/05/10 16:59:30 roman Exp $
+#
+# Description: SQLite 3 library
+#  SQLite is a C library that implements an SQL database engine.
+#  Programs that link with the SQLite library can have SQL database
+#  access without running a separate RDBMS process.
+#  .
+# URL: http://sqlite.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=sqlite3
+version=3.6.10
+release=1
+source=(http://distfiles.gentoo.org/distfiles/sqlite-$version.tar.gz
+        sqlite-3.3.17-cmake.patch
+        sqlite-3.3.17-tcl84.patch
+#       www.sqlite.org.tar.gz
+       )
+
+build()
+{
+  cd sqlite-$version
+
+  patch -N -p1 -i $SRC/sqlite-3.3.17-cmake.patch
+#  patch -N -p1 -i $SRC/sqlite-3.3.17-tcl84.patch
+
+  if false #test -f CMakeLists.txt
+  then
+    cmake .
+  else
+    libtoolize --force --copy --install
+    aclocal --force
+    #automake --copy --force --foreign --add-missing
+    #aclocal --force
+    autoconf --force
+
+    case $host in
+      *-mingw32) args='--disable-readline --disable-tcl' ;;
+      *) args= ;;
+    esac
+
+    make distclean || true
+
+    ./configure \
+        --build="$build" \
+        --host="$host" \
+        --prefix="$prefix" \
+        --${shared:=enable}-shared \
+        --${static:=enable}-static \
+        --enable-threadsafe \
+        --enable-cross-thread-connections \
+        --enable-releasemode \
+        --enable-tempstore="yes" \
+        --with-readline-lib="-L$prefix/lib -lreadline" \
+        --with-readline-inc="-I$prefix/include" \
+        --with-tcl="$prefix/lib" \
+        $args
+  fi
+
+  rm -f sqlite3.h
+
+  make clean
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/sqlite
+  mv $SRC/www.sqlite.org $ROOT/share/doc/sqlite/html
+}

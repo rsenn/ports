@@ -1,0 +1,39 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: James' DSSSL Engine
+#  Jade is an implementation of the DSSSL style language. Document Style
+#  Semantics and Specification Language
+#  .
+# URL: http://www.jclark.com/jade/
+# Maintainer:  Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=jade
+version=1.2.1
+release=1
+source=(ftp://ftp.jclark.com/pub/jade/jade-$version.tar.gz
+        jade-1.2.1-ubuntu.patch)
+
+build()
+{
+  cd jade-$version
+
+  patch -N -p1 -i $SRC/jade-1.2.1-ubuntu.patch
+
+  sh autogen.sh
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+
+  make
+
+  install -d $ROOT/lib
+  install -d $ROOT/include
+
+  make prefix="$ROOT" install
+}
+
+# EOF

@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Miscellaneous system utilities
+# URL:
+# Maintainer:  Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=util-linux-ng
+version=2.14.1
+release=1
+source=(http://www.kernel.org/pub/linux/utils/util-linux-ng/v2.14/util-linux-ng-$version.tar.bz2
+        util-linux-ng-2.14.1-no-std-c99.patch)
+
+build()
+{
+  cd util-linux-ng-$version
+
+  #sh autogen.sh
+
+  patch -N -p1 -i $SRC/util-linux-ng-2.14.1-no-std-c99.patch
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

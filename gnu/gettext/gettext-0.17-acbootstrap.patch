@@ -1,0 +1,2192 @@
+args: -r -u -- gettext-0.17_orig gettext-0.17
+diff -r -u -- gettext-0.17_orig/Makefile gettext-0.17/Makefile
+diff -r -u -- gettext-0.17_orig/Makefile.am gettext-0.17/Makefile.am
+--- gettext-0.17_orig/Makefile.am	2008-07-27 22:04:51.000000000 +0200
++++ gettext-0.17/Makefile.am	2008-07-27 22:11:54.000000000 +0200
+@@ -24,8 +24,7 @@
+ EXTRA_DIST = \
+   version.sh DEPENDENCIES PACKAGING HACKING ChangeLog.0 autogen.sh \
+   build-aux/ac-help.sed build-aux/fixaclocal build-aux/moopp \
+-  m4/fixautomake.m4 m4/woe32-dll.m4 \
+-  m4/libtool.m4
++  m4/fixautomake.m4 m4/woe32-dll.m4
+ 
+ # Additional dependencies for configure, due to the use of autoconf --trace.
+ $(srcdir)/configure: $(srcdir)/autoconf-lib-link/configure.ac $(srcdir)/gettext-runtime/configure.ac $(srcdir)/gettext-tools/configure.ac 
+diff -r -u -- gettext-0.17_orig/Makefile.in gettext-0.17/Makefile.in
+diff -r -u -- gettext-0.17_orig/autoconf-lib-link/Makefile gettext-0.17/autoconf-lib-link/Makefile
+diff -r -u -- gettext-0.17_orig/autoconf-lib-link/Makefile.am gettext-0.17/autoconf-lib-link/Makefile.am
+--- gettext-0.17_orig/autoconf-lib-link/Makefile.am	2008-07-27 22:04:51.000000000 +0200
++++ gettext-0.17/autoconf-lib-link/Makefile.am	2008-07-27 22:12:24.000000000 +0200
+@@ -80,7 +80,7 @@
+ CONFIGURES_RPATHX = $(srcdir)/tests/rpathx/Makefile.in $(srcdir)/tests/rpathx/aclocal.m4 $(srcdir)/tests/rpathx/configure
+ $(srcdir)/tests/rpathx/Makefile.in: $(srcdir)/tests/rpathx/Makefile.am $(srcdir)/tests/rpathx/configure.ac $(srcdir)/tests/rpathx/aclocal.m4
+ 	cd $(srcdir)/tests/rpathx && automake Makefile
+-$(srcdir)/tests/rpathx/aclocal.m4: $(srcdir)/tests/rpathx/configure.ac $(srcdir)/../m4/libtool.m4
++$(srcdir)/tests/rpathx/aclocal.m4: $(srcdir)/tests/rpathx/configure.ac
+ 	cd $(srcdir)/tests/rpathx && ../../../build-aux/fixaclocal aclocal -I `cd ../../m4 && pwd` -I `cd ../../../m4 && pwd`
+ $(srcdir)/tests/rpathx/configure: $(srcdir)/tests/rpathx/configure.ac $(srcdir)/tests/rpathx/aclocal.m4
+ 	cd $(srcdir)/tests/rpathx && autoconf
+@@ -88,7 +88,7 @@
+ CONFIGURES_RPATHY = $(srcdir)/tests/rpathy/Makefile.in $(srcdir)/tests/rpathy/aclocal.m4 $(srcdir)/tests/rpathy/configure
+ $(srcdir)/tests/rpathy/Makefile.in: $(srcdir)/tests/rpathy/Makefile.am $(srcdir)/tests/rpathy/configure.ac $(srcdir)/tests/rpathy/aclocal.m4
+ 	cd $(srcdir)/tests/rpathy && automake Makefile
+-$(srcdir)/tests/rpathy/aclocal.m4: $(srcdir)/tests/rpathy/configure.ac $(srcdir)/../m4/libtool.m4 $(srcdir)/m4/lib-link.m4 $(srcdir)/m4/lib-prefix.m4 $(srcdir)/m4/lib-ld.m4
++$(srcdir)/tests/rpathy/aclocal.m4: $(srcdir)/tests/rpathy/configure.ac $(srcdir)/m4/lib-link.m4 $(srcdir)/m4/lib-prefix.m4 $(srcdir)/m4/lib-ld.m4
+ 	cd $(srcdir)/tests/rpathy && ../../../build-aux/fixaclocal aclocal -I `cd ../../m4 && pwd` -I `cd ../../../m4 && pwd`
+ $(srcdir)/tests/rpathy/configure: $(srcdir)/tests/rpathy/configure.ac $(srcdir)/tests/rpathy/aclocal.m4
+ 	cd $(srcdir)/tests/rpathy && autoconf
+@@ -96,7 +96,7 @@
+ CONFIGURES_RPATHZ = $(srcdir)/tests/rpathz/Makefile.in $(srcdir)/tests/rpathz/aclocal.m4 $(srcdir)/tests/rpathz/configure
+ $(srcdir)/tests/rpathz/Makefile.in: $(srcdir)/tests/rpathz/Makefile.am $(srcdir)/tests/rpathz/configure.ac $(srcdir)/tests/rpathz/aclocal.m4
+ 	cd $(srcdir)/tests/rpathz && automake Makefile
+-$(srcdir)/tests/rpathz/aclocal.m4: $(srcdir)/tests/rpathz/configure.ac $(srcdir)/../m4/libtool.m4 $(srcdir)/m4/lib-link.m4 $(srcdir)/m4/lib-prefix.m4 $(srcdir)/m4/lib-ld.m4
++$(srcdir)/tests/rpathz/aclocal.m4: $(srcdir)/tests/rpathz/configure.ac $(srcdir)/m4/lib-link.m4 $(srcdir)/m4/lib-prefix.m4 $(srcdir)/m4/lib-ld.m4
+ 	cd $(srcdir)/tests/rpathz && ../../../build-aux/fixaclocal aclocal -I `cd ../../m4 && pwd` -I `cd ../../../m4 && pwd`
+ $(srcdir)/tests/rpathz/configure: $(srcdir)/tests/rpathz/configure.ac $(srcdir)/tests/rpathz/aclocal.m4
+ 	cd $(srcdir)/tests/rpathz && autoconf
+diff -r -u -- gettext-0.17_orig/autogen.sh gettext-0.17/autogen.sh
+--- gettext-0.17_orig/autogen.sh	2008-07-27 22:04:52.000000000 +0200
++++ gettext-0.17/autogen.sh	2008-07-27 22:11:26.000000000 +0200
+@@ -1,295 +1,9 @@
+ #!/bin/sh
+-# Convenience script for regenerating all autogeneratable files that are
+-# omitted from the version control repository. In particular, this script
+-# also regenerates all aclocal.m4, config.h.in, Makefile.in, configure files
+-# with new versions of autoconf or automake.
+ #
+-# This script requires autoconf-2.60..2.61 and automake-1.10 in the PATH.
+-# It also requires either
+-#   - the GNULIB_TOOL environment variable pointing to the gnulib-tool script
+-#     in a gnulib checkout, or
+-#   - the cvs program in the PATH and an internet connection.
++# 20080727
+ 
+-# Copyright (C) 2003-2007 Free Software Foundation, Inc.
+-#
+-# This program is free software: you can redistribute it and/or modify
+-# it under the terms of the GNU General Public License as published by
+-# the Free Software Foundation; either version 3 of the License, or
+-# (at your option) any later version.
+-#
+-# This program is distributed in the hope that it will be useful,
+-# but WITHOUT ANY WARRANTY; without even the implied warranty of
+-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-# GNU General Public License for more details.
+-#
+-# You should have received a copy of the GNU General Public License
+-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-
+-# Usage: ./autogen.sh [--quick] [--skip-gnulib]
+-#
+-# Usage after a first-time CVS checkout:     ./autogen.sh
+-# Usage after a CVS update:                  ./autogen.sh --quick
+-# This uses an up-to-date gnulib checkout.
+-# (The gettext-0.17 release was prepared using gnulib commit
+-# bf5ebbca03613397b66521e98dd4ce28741c4689 from 2007-11-07.)
+-#
+-# Usage from a released tarball:             ./autogen.sh --quick --skip-gnulib
+-# This does not use a gnulib checkout.
+-
+-quick=false
+-skip_gnulib=false
+-while :; do
+-  case "$1" in
+-    --quick) quick=true; shift;;
+-    --skip-gnulib) skip_gnulib=true; shift;;
+-    *) break ;;
+-  esac
+-done
+-
+-if test $skip_gnulib = false; then
+-  if test -z "$GNULIB_TOOL"; then
+-    # Check out gnulib in a subdirectory 'gnulib'.
+-    GNULIB_CVS_ROOT=':pserver:anonymous@pserver.git.sv.gnu.org:/gnulib.git'
+-    GNULIB_CVS_REPOSITORY='gnulib'
+-    if test -d gnulib; then
+-      (cd gnulib && cvs update -d -P)
+-    else
+-      cvs -d "$GNULIB_CVS_ROOT" checkout -d $GNULIB_CVS_REPOSITORY HEAD
+-    fi
+-    # Now it should contain a gnulib-tool.
+-    if test -f gnulib/gnulib-tool; then
+-      GNULIB_TOOL=`pwd`/gnulib/gnulib-tool
+-    else
+-      echo "** warning: gnulib-tool not found" 1>&2
+-    fi
+-  fi
+-  # Skip the gnulib-tool step if gnulib-tool was not found.
+-  if test -n "$GNULIB_TOOL"; then
+-    # In gettext-runtime:
+-    if test -f gettext-runtime/gnulib-m4/gnulib-cache.m4; then
+-      mv -f gettext-runtime/gnulib-m4/gnulib-cache.m4 gettext-runtime/gnulib-m4/gnulib-cache.m4~
+-    fi
+-    GNULIB_MODULES_RUNTIME_FOR_SRC='
+-      atexit
+-      basename
+-      closeout
+-      error
+-      exit
+-      getopt
+-      gettext-h
+-      memmove
+-      progname
+-      propername
+-      relocatable-prog
+-      stdbool
+-      strtoul
+-      unlocked-io
+-      xalloc
+-    '
+-    GNULIB_MODULES_RUNTIME_OTHER='
+-      gettext-runtime-misc
+-      csharpcomp-script
+-      java
+-      javacomp-script
+-    '
+-    $GNULIB_TOOL --dir=gettext-runtime --lib=libgrt --source-base=gnulib-lib --m4-base=gnulib-m4 --no-libtool --local-dir=gnulib-local --local-symlink \
+-      --import $GNULIB_MODULES_RUNTIME_FOR_SRC $GNULIB_MODULES_RUNTIME_OTHER
+-    # In gettext-tools:
+-    if test -f gettext-tools/gnulib-m4/gnulib-cache.m4; then
+-      mv -f gettext-tools/gnulib-m4/gnulib-cache.m4 gettext-tools/gnulib-m4/gnulib-cache.m4~
+-    fi
+-    GNULIB_MODULES_TOOLS_FOR_SRC='
+-      alloca-opt
+-      atexit
+-      backupfile
+-      basename
+-      binary-io
+-      bison-i18n
+-      byteswap
+-      c-ctype
+-      c-strcase
+-      c-strcasestr
+-      c-strstr
+-      clean-temp
+-      closeout
+-      copy-file
+-      csharpcomp
+-      csharpexec
+-      error
+-      error-progname
+-      execute
+-      exit
+-      fd-ostream
+-      file-ostream
+-      filename
+-      findprog
+-      fnmatch-posix
+-      fopen
+-      fstrcmp
+-      full-write
+-      fwriteerror
+-      gcd
+-      getline
+-      getopt
+-      gettext-h
+-      hash
+-      html-styled-ostream
+-      iconv
+-      javacomp
+-      javaexec
+-      linebreak
+-      localcharset
+-      locale
+-      localename
+-      lock
+-      memmove
+-      memset
+-      minmax
+-      obstack
+-      open
+-      openmp
+-      ostream
+-      pipe
+-      progname
+-      propername
+-      relocatable-prog
+-      relocatable-script
+-      sh-quote
+-      stdbool
+-      stpcpy
+-      stpncpy
+-      strcspn
+-      strpbrk
+-      strtol
+-      strtoul
+-      styled-ostream
+-      sys_stat
+-      sys_time
+-      term-styled-ostream
+-      ucs4-utf8
+-      uniname/uniname
+-      unistd
+-      uniwidth/width
+-      unlocked-io
+-      utf8-ucs4
+-      utf16-ucs4
+-      vasprintf
+-      wait-process
+-      xalloc
+-      xmalloca
+-      xerror
+-      xsetenv
+-      xstriconv
+-      xvasprintf
+-    '
+-    # Not yet used. Add some files to gettext-tools-misc instead.
+-    GNULIB_MODULES_TOOLS_FOR_LIBGREP='
+-      error
+-      exitfail
+-      gettext-h
+-      hard-locale
+-      obstack
+-      regex
+-      stdbool
+-      xalloc
+-    '
+-    GNULIB_MODULES_TOOLS_OTHER='
+-      gettext-tools-misc
+-      gcj
+-      java
+-      stdint
+-    '
+-    $GNULIB_TOOL --dir=gettext-tools --lib=libgettextlib --source-base=gnulib-lib --m4-base=gnulib-m4 --tests-base=gnulib-tests --makefile-name=Makefile.gnulib --libtool --with-tests --local-dir=gnulib-local --local-symlink \
+-      --import $GNULIB_MODULES_TOOLS_FOR_SRC $GNULIB_MODULES_TOOLS_OTHER
+-    # In gettext-tools/libgettextpo:
+-    if test -f gettext-tools/libgettextpo/gnulib-m4/gnulib-cache.m4; then
+-      mv -f gettext-tools/libgettextpo/gnulib-m4/gnulib-cache.m4 gettext-tools/libgettextpo/gnulib-m4/gnulib-cache.m4~
+-    fi
+-    # This is a subset of the GNULIB_MODULES_FOR_SRC.
+-    GNULIB_MODULES_LIBGETTEXTPO='
+-      basename
+-      c-ctype
+-      c-strcase
+-      c-strstr
+-      error
+-      error-progname
+-      exit
+-      file-ostream
+-      filename
+-      fopen
+-      fstrcmp
+-      fwriteerror
+-      gcd
+-      getline
+-      gettext-h
+-      hash
+-      iconv
+-      linebreak
+-      minmax
+-      ostream
+-      progname
+-      relocatable-lib
+-      stdbool
+-      ucs4-utf8
+-      uniwidth/width
+-      unlocked-io
+-      utf8-ucs4
+-      utf16-ucs4
+-      vasprintf
+-      xalloc
+-      xmalloca
+-      xerror
+-      xstriconv
+-      xvasprintf
+-    '
+-    GNULIB_MODULES_LIBGETTEXTPO_OTHER='
+-    '
+-    $GNULIB_TOOL --dir=gettext-tools --source-base=libgettextpo --m4-base=libgettextpo/gnulib-m4 --macro-prefix=gtpo --makefile-name=Makefile.gnulib --libtool --local-dir=gnulib-local --local-symlink \
+-      --import $GNULIB_MODULES_LIBGETTEXTPO $GNULIB_MODULES_LIBGETTEXTPO_OTHER
+-  fi
+-fi
+-
+-(cd autoconf-lib-link
+- ../build-aux/fixaclocal aclocal -I m4 -I ../m4
+- autoconf
+- automake
+-)
+-
+-(cd gettext-runtime
+- ../build-aux/fixaclocal aclocal -I m4 -I ../autoconf-lib-link/m4 -I ../m4 -I gnulib-m4
+- autoconf
+- autoheader && touch config.h.in
+- automake
+-)
+-
+-(cd gettext-runtime/libasprintf
+- ../../build-aux/fixaclocal aclocal -I ../../m4 -I ../m4
+- autoconf
+- autoheader && touch config.h.in
+- automake
+-)
+-
+-cp -p gettext-runtime/ABOUT-NLS gettext-tools/ABOUT-NLS
+-
+-(cd gettext-tools
+- ../build-aux/fixaclocal aclocal -I m4 -I ../gettext-runtime/m4 -I ../autoconf-lib-link/m4 -I ../m4 -I gnulib-m4 -I libgettextpo/gnulib-m4
+- autoconf
+- autoheader && touch config.h.in
+- automake
+-)
+-
+-(cd gettext-tools/examples
+- ../../build-aux/fixaclocal aclocal -I ../../gettext-runtime/m4 -I ../../m4
+- autoconf
+- automake
+- # Rebuilding the examples PO files is only rarely needed.
+- if ! $quick; then
+-   ./configure && (cd po && make update-po) && make distclean
+- fi
+-)
+-
+-build-aux/fixaclocal aclocal
+-autoconf
+-automake
+-
+-cp -p autoconf-lib-link/config.rpath build-aux/config.rpath
++libtoolize --force --copy --automake
++aclocal --force
++automake --force --copy --foreign --add-missing --add-missing
++aclocal --force
++autoconf --force
+diff -r -u -- gettext-0.17_orig/autom4te.cache/requests gettext-0.17/autom4te.cache/requests
+diff -r -u -- gettext-0.17_orig/build-aux/texinfo.tex gettext-0.17/build-aux/texinfo.tex
+diff -r -u -- gettext-0.17_orig/config.log gettext-0.17/config.log
+diff -r -u -- gettext-0.17_orig/config.status gettext-0.17/config.status
+diff -r -u -- gettext-0.17_orig/gettext-runtime/INSTALL gettext-0.17/gettext-runtime/INSTALL
+--- gettext-0.17_orig/gettext-runtime/INSTALL	2008-07-27 22:04:52.000000000 +0200
++++ gettext-0.17/gettext-runtime/INSTALL	2008-07-27 22:18:58.000000000 +0200
+@@ -1,38 +1,54 @@
++Installation Instructions
++*************************
++
++Copyright (C) 1994, 1995, 1996, 1999, 2000, 2001, 2002, 2004, 2005,
++2006 Free Software Foundation, Inc.
++
++This file is free documentation; the Free Software Foundation gives
++unlimited permission to copy, distribute and modify it.
++
+ Basic Installation
+ ==================
+ 
+-   These are generic installation instructions.
++Briefly, the shell commands `./configure; make; make install' should
++configure, build, and install this package.  The following
++more-detailed instructions are generic; see the `README' file for
++instructions specific to this package.
+ 
+    The `configure' shell script attempts to guess correct values for
+ various system-dependent variables used during compilation.  It uses
+ those values to create a `Makefile' in each directory of the package.
+ It may also create one or more `.h' files containing system-dependent
+ definitions.  Finally, it creates a shell script `config.status' that
+-you can run in the future to recreate the current configuration, a file
+-`config.cache' that saves the results of its tests to speed up
+-reconfiguring, and a file `config.log' containing compiler output
+-(useful mainly for debugging `configure').
++you can run in the future to recreate the current configuration, and a
++file `config.log' containing compiler output (useful mainly for
++debugging `configure').
++
++   It can also use an optional file (typically called `config.cache'
++and enabled with `--cache-file=config.cache' or simply `-C') that saves
++the results of its tests to speed up reconfiguring.  Caching is
++disabled by default to prevent problems with accidental use of stale
++cache files.
+ 
+    If you need to do unusual things to compile the package, please try
+ to figure out how `configure' could check whether to do them, and mail
+ diffs or instructions to the address given in the `README' so they can
+-be considered for the next release.  If at some point `config.cache'
+-contains results you don't want to keep, you may remove or edit it.
+-
+-   The file `configure.ac' is used to create `configure' by a program
+-called `autoconf'.  You only need `configure.ac' if you want to change
+-it or regenerate `configure' using a newer version of `autoconf'.
++be considered for the next release.  If you are using the cache, and at
++some point `config.cache' contains results you don't want to keep, you
++may remove or edit it.
++
++   The file `configure.ac' (or `configure.in') is used to create
++`configure' by a program called `autoconf'.  You need `configure.ac' if
++you want to change it or regenerate `configure' using a newer version
++of `autoconf'.
+ 
+ The simplest way to compile this package is:
+ 
+   1. `cd' to the directory containing the package's source code and type
+-     `./configure' to configure the package for your system.  If you're
+-     using `csh' on an old version of System V, you might need to type
+-     `sh ./configure' instead to prevent `csh' from trying to execute
+-     `configure' itself.
++     `./configure' to configure the package for your system.
+ 
+-     Running `configure' takes awhile.  While running, it prints some
+-     messages telling which features it is checking for.
++     Running `configure' might take a while.  While running, it prints
++     some messages telling which features it is checking for.
+ 
+   2. Type `make' to compile the package.
+ 
+@@ -54,44 +70,49 @@
+ Compilers and Options
+ =====================
+ 
+-   Some systems require unusual options for compilation or linking that
+-the `configure' script does not know about.  You can give `configure'
+-initial values for variables as arguments.  You can do it like this:
+-     ./configure CC=c89 CFLAGS=-O2 LIBS=-lposix
++Some systems require unusual options for compilation or linking that the
++`configure' script does not know about.  Run `./configure --help' for
++details on some of the pertinent environment variables.
++
++   You can give `configure' initial values for configuration parameters
++by setting variables in the command line or in the environment.  Here
++is an example:
++
++     ./configure CC=c99 CFLAGS=-g LIBS=-lposix
++
++   *Note Defining Variables::, for more details.
+ 
+ Compiling For Multiple Architectures
+ ====================================
+ 
+-   You can compile the package for more than one kind of computer at the
++You can compile the package for more than one kind of computer at the
+ same time, by placing the object files for each architecture in their
+-own directory.  To do this, you must use a version of `make' that
+-supports the `VPATH' variable, such as GNU `make'.  `cd' to the
++own directory.  To do this, you can use GNU `make'.  `cd' to the
+ directory where you want the object files and executables to go and run
+ the `configure' script.  `configure' automatically checks for the
+ source code in the directory that `configure' is in and in `..'.
+ 
+-   If you have to use a `make' that does not supports the `VPATH'
+-variable, you have to compile the package for one architecture at a time
+-in the source code directory.  After you have installed the package for
+-one architecture, use `make distclean' before reconfiguring for another
+-architecture.
++   With a non-GNU `make', it is safer to compile the package for one
++architecture at a time in the source code directory.  After you have
++installed the package for one architecture, use `make distclean' before
++reconfiguring for another architecture.
+ 
+ Installation Names
+ ==================
+ 
+-   By default, `make install' will install the package's files in
+-`/usr/local/bin', `/usr/local/man', etc.  You can specify an
+-installation prefix other than `/usr/local' by giving `configure' the
+-option `--prefix=PATH'.
++By default, `make install' installs the package's commands under
++`/usr/local/bin', include files under `/usr/local/include', etc.  You
++can specify an installation prefix other than `/usr/local' by giving
++`configure' the option `--prefix=PREFIX'.
+ 
+    You can specify separate installation prefixes for
+ architecture-specific files and architecture-independent files.  If you
+-give `configure' the option `--exec-prefix=PATH', the package will use
+-PATH as the prefix for installing programs and libraries.
+-Documentation and other data files will still use the regular prefix.
++pass the option `--exec-prefix=PREFIX' to `configure', the package uses
++PREFIX as the prefix for installing programs and libraries.
++Documentation and other data files still use the regular prefix.
+ 
+    In addition, if you use an unusual directory layout you can give
+-options like `--bindir=PATH' to specify different values for particular
++options like `--bindir=DIR' to specify different values for particular
+ kinds of files.  Run `configure --help' for a list of the directories
+ you can set and what kinds of files go in them.
+ 
+@@ -99,43 +120,10 @@
+ with an extra prefix or suffix on their names by giving `configure' the
+ option `--program-prefix=PREFIX' or `--program-suffix=SUFFIX'.
+ 
+-Relocatable Installation
+-========================
+-
+-   By default, `make install' will install a package with hardwired
+-file names, and the package will not work correctly when copied or
+-moved to a different location in the filesystem.
+-
+-   Some packages pay attention to the `--enable-relocatable' option to
+-`configure'.  This option makes the entire installed package
+-relocatable.  This means, it can be moved or copied to a different
+-location on the filesystem.  It is possible to make symlinks to the
+-installed and moved programs, and invoke them through the symlink.  It
+-is possible to do the same thing  with a hard link _only_ if the hard
+-linked file is in the same directory as the real program.
+-
+-   For reliability it is best to give together with --enable-relocatable
+-a `--prefix' option pointing to an otherwise unused (and never used
+-again) directory, for example, `--prefix=/tmp/inst$$'.  This is
+-recommended because on some OSes the executables remember the location
+-of shared libraries (and prefer them over LD_LIBRARY_PATH !), therefore
+-such an executable will look for its shared libraries first in the
+-original installation directory and only then in the current
+-installation directory.
+-
+-   Installation with `--enable-relocatable' will not work for setuid /
+-setgid executables.  (This is because such an executable kills its
+-LD_LIBRARY_PATH variable when it is launched.)
+-
+-   The runtime penalty and size penalty are nearly zero on Linux 2.2 or
+-newer (just one system call more when an executable is launched), and
+-small on other systems (the wrapper program just sets an environment
+-variable and execs the real program).
+-
+ Optional Features
+ =================
+ 
+-   Some packages pay attention to `--enable-FEATURE' options to
++Some packages pay attention to `--enable-FEATURE' options to
+ `configure', where FEATURE indicates an optional part of the package.
+ They may also pay attention to `--with-PACKAGE' options, where PACKAGE
+ is something like `gnu-as' or `x' (for the X Window System).  The
+@@ -147,91 +135,89 @@
+ you can use the `configure' options `--x-includes=DIR' and
+ `--x-libraries=DIR' to specify their locations.
+ 
+-   For packages that use the GNU libiconv library, you can use the
+-`configure' option `--with-libiconv-prefix' to specify the prefix you
+-used while installing GNU libiconv.  This option is not necessary if
+-that other prefix is the same as the one now specified through --prefix.
+-
+-   For packages that use the GNU libintl library, you can use the
+-`configure' option `--with-libintl-prefix' to specify the prefix you
+-used while installing GNU gettext-runtime.  This option is not necessary if
+-that other prefix is the same as the one now specified through --prefix.
+-
+-Particular Systems
+-==================
+-
+-   On HP-UX, the default C compiler is not ANSI C compatible.  If GNU CC
+-is not installed, it is recommended to use the following options in order
+-to use an ANSI C compiler:
+-
+-     ./configure CC="cc -Ae"
+-
+-   On OSF/1 a.k.a. Tru64, some versions of the default C compiler don't grok
+-its <wchar.h> header file.  The option -nodtk can be used as a workaround.
+-If GNU CC is not installed, it is therefore recommended to try
+-
+-     ./configure CC="cc"
+-
+-and if that doesn't work, try
+-
+-     ./configure CC="cc -nodtk"
+-
+-   On AIX 3, the C include files by default don't define some necessary
+-prototype declarations.  If GNU CC is not installed, it is recommended to
+-use the following options:
+-
+-     ./configure CC="xlc -D_ALL_SOURCE"
+-
+-   On BeOS, user installed software goes in /boot/home/config, not
+-/usr/local.  It is recommended to use the following options:
+-
+-     ./configure --prefix=/boot/home/config
+-
+ Specifying the System Type
+ ==========================
+ 
+-   There may be some features `configure' can not figure out
+-automatically, but needs to determine by the type of host the package
+-will run on.  Usually `configure' can figure that out, but if it prints
+-a message saying it can not guess the host type, give it the
+-`--host=TYPE' option.  TYPE can either be a short name for the system
+-type, such as `sun4', or a canonical name with three fields:
++There may be some features `configure' cannot figure out automatically,
++but needs to determine by the type of machine the package will run on.
++Usually, assuming the package is built to be run on the _same_
++architectures, `configure' can figure that out, but if it prints a
++message saying it cannot guess the machine type, give it the
++`--build=TYPE' option.  TYPE can either be a short name for the system
++type, such as `sun4', or a canonical name which has the form:
++
+      CPU-COMPANY-SYSTEM
+ 
+-See the file `config.sub' for the possible values of each field.  If
++where SYSTEM can have one of these forms:
++
++     OS KERNEL-OS
++
++   See the file `config.sub' for the possible values of each field.  If
+ `config.sub' isn't included in this package, then this package doesn't
+-need to know the host type.
++need to know the machine type.
+ 
+-   If you are building compiler tools for cross-compiling, you can also
+-use the `--target=TYPE' option to select the type of system they will
+-produce code for and the `--build=TYPE' option to select the type of
+-system on which you are compiling the package.
++   If you are _building_ compiler tools for cross-compiling, you should
++use the option `--target=TYPE' to select the type of system they will
++produce code for.
++
++   If you want to _use_ a cross compiler, that generates code for a
++platform different from the build platform, you should specify the
++"host" platform (i.e., that on which the generated programs will
++eventually be run) with `--host=TYPE'.
+ 
+ Sharing Defaults
+ ================
+ 
+-   If you want to set default values for `configure' scripts to share,
+-you can create a site shell script called `config.site' that gives
+-default values for variables like `CC', `cache_file', and `prefix'.
++If you want to set default values for `configure' scripts to share, you
++can create a site shell script called `config.site' that gives default
++values for variables like `CC', `cache_file', and `prefix'.
+ `configure' looks for `PREFIX/share/config.site' if it exists, then
+ `PREFIX/etc/config.site' if it exists.  Or, you can set the
+ `CONFIG_SITE' environment variable to the location of the site script.
+ A warning: not all `configure' scripts look for a site script.
+ 
+-Operation Controls
++Defining Variables
+ ==================
+ 
+-   `configure' recognizes the following options to control how it
+-operates.
++Variables not defined in a site shell script can be set in the
++environment passed to `configure'.  However, some packages may run
++configure again during the build, and the customized values of these
++variables may be lost.  In order to avoid this problem, you should set
++them in the `configure' command line, using `VAR=value'.  For example:
+ 
+-`--cache-file=FILE'
+-     Use and save the results of the tests in FILE instead of
+-     `./config.cache'.  Set FILE to `/dev/null' to disable caching, for
+-     debugging `configure'.
++     ./configure CC=/usr/local2/bin/gcc
++
++causes the specified `gcc' to be used as the C compiler (unless it is
++overridden in the site shell script).
++
++Unfortunately, this technique does not work for `CONFIG_SHELL' due to
++an Autoconf bug.  Until the bug is fixed you can use this workaround:
++
++     CONFIG_SHELL=/bin/bash /bin/bash ./configure CONFIG_SHELL=/bin/bash
++
++`configure' Invocation
++======================
++
++`configure' recognizes the following options to control how it operates.
+ 
+ `--help'
++`-h'
+      Print a summary of the options to `configure', and exit.
+ 
++`--version'
++`-V'
++     Print the version of Autoconf used to generate the `configure'
++     script, and exit.
++
++`--cache-file=FILE'
++     Enable the cache: use and save the results of the tests in FILE,
++     traditionally `config.cache'.  FILE defaults to `/dev/null' to
++     disable caching.
++
++`--config-cache'
++`-C'
++     Alias for `--cache-file=config.cache'.
++
+ `--quiet'
+ `--silent'
+ `-q'
+@@ -243,9 +229,6 @@
+      Look for the package's source code in directory DIR.  Usually
+      `configure' can determine that directory automatically.
+ 
+-`--version'
+-     Print the version of Autoconf used to generate the `configure'
+-     script, and exit.
+-
+-`configure' also accepts some other, not widely useful, options.
++`configure' also accepts some other, not widely useful, options.  Run
++`configure --help' for more details.
+ 
+diff -r -u -- gettext-0.17_orig/gettext-runtime/Makefile gettext-0.17/gettext-runtime/Makefile
+diff -r -u -- gettext-0.17_orig/gettext-runtime/Makefile.in gettext-0.17/gettext-runtime/Makefile.in
+diff -r -u -- gettext-0.17_orig/gettext-runtime/aclocal.m4 gettext-0.17/gettext-runtime/aclocal.m4
+diff -r -u -- gettext-0.17_orig/gettext-runtime/config.h gettext-0.17/gettext-runtime/config.h
+diff -r -u -- gettext-0.17_orig/gettext-runtime/config.h.in gettext-0.17/gettext-runtime/config.h.in
+diff -r -u -- gettext-0.17_orig/gettext-runtime/config.log gettext-0.17/gettext-runtime/config.log
+diff -r -u -- gettext-0.17_orig/gettext-runtime/config.status gettext-0.17/gettext-runtime/config.status
+diff -r -u -- gettext-0.17_orig/gettext-runtime/configure gettext-0.17/gettext-runtime/configure
+diff -r -u -- gettext-0.17_orig/gettext-runtime/configure.ac gettext-0.17/gettext-runtime/configure.ac
+--- gettext-0.17_orig/gettext-runtime/configure.ac	2008-07-27 22:04:52.000000000 +0200
++++ gettext-0.17/gettext-runtime/configure.ac	2008-07-28 01:20:03.000000000 +0200
+@@ -63,7 +63,7 @@
+ 
+ dnl Check for build configuration.
+ 
+-gl_WOE32_DLL
++dnl gl_WOE32_DLL
+ AC_LIBTOOL_WIN32_DLL
+ AC_PROG_LIBTOOL
+ 
+@@ -109,6 +109,14 @@
+ CROSS_COMPILING=$cross_compiling
+ AC_SUBST(CROSS_COMPILING)
+ 
++AC_CHECK_HEADERS([iconv.h libiconv.h])
++
++AC_CHECK_LIB([iconv],[libiconv_open],[ICONV_LIBS='-L$(libdir) -liconv'
++AC_DEFINE_UNQUOTED([HAVE_ICONV], [1], [Define this if you have iconv() functionality])dnl
++AC_DEFINE_UNQUOTED([ICONV_CONST], [const], [iconv const])dnl
++])
++AC_SUBST([ICONV_LIBS])
++
+ AC_CHECK_FUNC([stpcpy], [],
+ [AC_CHECK_LIB([compat], [stpcpy],
+ [#LIBS="$LIBS -lcompat"
+diff -r -u -- gettext-0.17_orig/gettext-runtime/gnulib-lib/propername.c gettext-0.17/gettext-runtime/gnulib-lib/propername.c
+--- gettext-0.17_orig/gettext-runtime/gnulib-lib/propername.c	2008-07-27 22:04:52.000000000 +0200
++++ gettext-0.17/gettext-runtime/gnulib-lib/propername.c	2008-07-28 01:24:33.000000000 +0200
+@@ -24,8 +24,12 @@
+ #include <stdlib.h>
+ #include <string.h>
+ #if HAVE_ICONV
++#ifdef HAVE_LIBICONV_H
++# include <libiconv.h>
++#else
+ # include <iconv.h>
+ #endif
++#endif
+ 
+ #include "localcharset.h"
+ #include "c-strcase.h"
+diff -r -u -- gettext-0.17_orig/gettext-runtime/gnulib-lib/striconv.c gettext-0.17/gettext-runtime/gnulib-lib/striconv.c
+--- gettext-0.17_orig/gettext-runtime/gnulib-lib/striconv.c	2008-07-27 22:04:52.000000000 +0200
++++ gettext-0.17/gettext-runtime/gnulib-lib/striconv.c	2008-07-28 01:25:28.000000000 +0200
+@@ -26,7 +26,11 @@
+ #include <string.h>
+ 
+ #if HAVE_ICONV
++#ifdef HAVE_LIBICONV_H
++# include <libiconv.h>
++#else
+ # include <iconv.h>
++#endif
+ /* Get MB_LEN_MAX, CHAR_BIT.  */
+ # include <limits.h>
+ #endif
+diff -r -u -- gettext-0.17_orig/gettext-runtime/gnulib-lib/striconv.h gettext-0.17/gettext-runtime/gnulib-lib/striconv.h
+--- gettext-0.17_orig/gettext-runtime/gnulib-lib/striconv.h	2008-07-27 22:04:52.000000000 +0200
++++ gettext-0.17/gettext-runtime/gnulib-lib/striconv.h	2008-07-28 01:25:07.000000000 +0200
+@@ -21,8 +21,12 @@
+ 
+ #include <stddef.h>
+ #if HAVE_ICONV
++#ifdef HAVE_LIBICONV_H
++#include <libiconv.h>
++#else
+ #include <iconv.h>
+ #endif
++#endif
+ 
+ 
+ #ifdef __cplusplus
+diff -r -u -- gettext-0.17_orig/gettext-runtime/gnulib-lib/xstriconv.h gettext-0.17/gettext-runtime/gnulib-lib/xstriconv.h
+--- gettext-0.17_orig/gettext-runtime/gnulib-lib/xstriconv.h	2008-07-27 22:04:52.000000000 +0200
++++ gettext-0.17/gettext-runtime/gnulib-lib/xstriconv.h	2008-07-28 01:24:52.000000000 +0200
+@@ -20,8 +20,12 @@
+ 
+ #include <stddef.h>
+ #if HAVE_ICONV
++#ifdef HAVE_LIBICONV_H
++#include <libiconv.h>
++#else
+ #include <iconv.h>
+ #endif
++#endif
+ 
+ 
+ #ifdef __cplusplus
+diff -r -u -- gettext-0.17_orig/gettext-runtime/intl/Makefile gettext-0.17/gettext-runtime/intl/Makefile
+diff -r -u -- gettext-0.17_orig/gettext-runtime/intl/Makefile.in gettext-0.17/gettext-runtime/intl/Makefile.in
+diff -r -u -- gettext-0.17_orig/gettext-runtime/intl/gettextP.h gettext-0.17/gettext-runtime/intl/gettextP.h
+--- gettext-0.17_orig/gettext-runtime/intl/gettextP.h	2008-07-27 22:04:52.000000000 +0200
++++ gettext-0.17/gettext-runtime/intl/gettextP.h	2008-07-28 01:16:00.000000000 +0200
+@@ -26,7 +26,12 @@
+ # include "../iconv/gconv_int.h"
+ #else
+ # if HAVE_ICONV
+-#  include <iconv.h>
++# include "../config.h"
++#  ifdef HAVE_LIBICONV_H
++#   include <libiconv.h>
++#  else
++#   include <iconv.h>
++#  endif
+ # endif
+ #endif
+ 
+diff -r -u -- gettext-0.17_orig/gettext-runtime/intl/relocatable.c gettext-0.17/gettext-runtime/intl/relocatable.c
+--- gettext-0.17_orig/gettext-runtime/intl/relocatable.c	2008-07-27 22:04:52.000000000 +0200
++++ gettext-0.17/gettext-runtime/intl/relocatable.c	2008-07-27 23:12:36.000000000 +0200
+@@ -52,7 +52,11 @@
+ # include <libcharset.h>
+ #endif
+ #if DEPENDS_ON_LIBICONV && HAVE_ICONV
+-# include <iconv.h>
++# ifdef HAVE_LIBICONV_H
++#  include <libiconv.h>
++# else
++#  include <iconv.h>
++# endif
+ #endif
+ #if DEPENDS_ON_LIBINTL && ENABLE_NLS
+ # include <libintl.h>
+diff -r -u -- gettext-0.17_orig/gettext-runtime/intl-csharp/Makefile gettext-0.17/gettext-runtime/intl-csharp/Makefile
+diff -r -u -- gettext-0.17_orig/gettext-runtime/intl-csharp/Makefile.in gettext-0.17/gettext-runtime/intl-csharp/Makefile.in
+diff -r -u -- gettext-0.17_orig/gettext-runtime/intl-java/Makefile gettext-0.17/gettext-runtime/intl-java/Makefile
+diff -r -u -- gettext-0.17_orig/gettext-runtime/intl-java/Makefile.in gettext-0.17/gettext-runtime/intl-java/Makefile.in
+diff -r -u -- gettext-0.17_orig/gettext-runtime/libasprintf/INSTALL gettext-0.17/gettext-runtime/libasprintf/INSTALL
+--- gettext-0.17_orig/gettext-runtime/libasprintf/INSTALL	2008-07-27 22:04:52.000000000 +0200
++++ gettext-0.17/gettext-runtime/libasprintf/INSTALL	2008-07-27 22:22:25.000000000 +0200
+@@ -1,38 +1,54 @@
++Installation Instructions
++*************************
++
++Copyright (C) 1994, 1995, 1996, 1999, 2000, 2001, 2002, 2004, 2005,
++2006 Free Software Foundation, Inc.
++
++This file is free documentation; the Free Software Foundation gives
++unlimited permission to copy, distribute and modify it.
++
+ Basic Installation
+ ==================
+ 
+-   These are generic installation instructions.
++Briefly, the shell commands `./configure; make; make install' should
++configure, build, and install this package.  The following
++more-detailed instructions are generic; see the `README' file for
++instructions specific to this package.
+ 
+    The `configure' shell script attempts to guess correct values for
+ various system-dependent variables used during compilation.  It uses
+ those values to create a `Makefile' in each directory of the package.
+ It may also create one or more `.h' files containing system-dependent
+ definitions.  Finally, it creates a shell script `config.status' that
+-you can run in the future to recreate the current configuration, a file
+-`config.cache' that saves the results of its tests to speed up
+-reconfiguring, and a file `config.log' containing compiler output
+-(useful mainly for debugging `configure').
++you can run in the future to recreate the current configuration, and a
++file `config.log' containing compiler output (useful mainly for
++debugging `configure').
++
++   It can also use an optional file (typically called `config.cache'
++and enabled with `--cache-file=config.cache' or simply `-C') that saves
++the results of its tests to speed up reconfiguring.  Caching is
++disabled by default to prevent problems with accidental use of stale
++cache files.
+ 
+    If you need to do unusual things to compile the package, please try
+ to figure out how `configure' could check whether to do them, and mail
+ diffs or instructions to the address given in the `README' so they can
+-be considered for the next release.  If at some point `config.cache'
+-contains results you don't want to keep, you may remove or edit it.
+-
+-   The file `configure.ac' is used to create `configure' by a program
+-called `autoconf'.  You only need `configure.ac' if you want to change
+-it or regenerate `configure' using a newer version of `autoconf'.
++be considered for the next release.  If you are using the cache, and at
++some point `config.cache' contains results you don't want to keep, you
++may remove or edit it.
++
++   The file `configure.ac' (or `configure.in') is used to create
++`configure' by a program called `autoconf'.  You need `configure.ac' if
++you want to change it or regenerate `configure' using a newer version
++of `autoconf'.
+ 
+ The simplest way to compile this package is:
+ 
+   1. `cd' to the directory containing the package's source code and type
+-     `./configure' to configure the package for your system.  If you're
+-     using `csh' on an old version of System V, you might need to type
+-     `sh ./configure' instead to prevent `csh' from trying to execute
+-     `configure' itself.
++     `./configure' to configure the package for your system.
+ 
+-     Running `configure' takes awhile.  While running, it prints some
+-     messages telling which features it is checking for.
++     Running `configure' might take a while.  While running, it prints
++     some messages telling which features it is checking for.
+ 
+   2. Type `make' to compile the package.
+ 
+@@ -54,44 +70,49 @@
+ Compilers and Options
+ =====================
+ 
+-   Some systems require unusual options for compilation or linking that
+-the `configure' script does not know about.  You can give `configure'
+-initial values for variables as arguments.  You can do it like this:
+-     ./configure CC=c89 CFLAGS=-O2 LIBS=-lposix
++Some systems require unusual options for compilation or linking that the
++`configure' script does not know about.  Run `./configure --help' for
++details on some of the pertinent environment variables.
++
++   You can give `configure' initial values for configuration parameters
++by setting variables in the command line or in the environment.  Here
++is an example:
++
++     ./configure CC=c99 CFLAGS=-g LIBS=-lposix
++
++   *Note Defining Variables::, for more details.
+ 
+ Compiling For Multiple Architectures
+ ====================================
+ 
+-   You can compile the package for more than one kind of computer at the
++You can compile the package for more than one kind of computer at the
+ same time, by placing the object files for each architecture in their
+-own directory.  To do this, you must use a version of `make' that
+-supports the `VPATH' variable, such as GNU `make'.  `cd' to the
++own directory.  To do this, you can use GNU `make'.  `cd' to the
+ directory where you want the object files and executables to go and run
+ the `configure' script.  `configure' automatically checks for the
+ source code in the directory that `configure' is in and in `..'.
+ 
+-   If you have to use a `make' that does not supports the `VPATH'
+-variable, you have to compile the package for one architecture at a time
+-in the source code directory.  After you have installed the package for
+-one architecture, use `make distclean' before reconfiguring for another
+-architecture.
++   With a non-GNU `make', it is safer to compile the package for one
++architecture at a time in the source code directory.  After you have
++installed the package for one architecture, use `make distclean' before
++reconfiguring for another architecture.
+ 
+ Installation Names
+ ==================
+ 
+-   By default, `make install' will install the package's files in
+-`/usr/local/bin', `/usr/local/man', etc.  You can specify an
+-installation prefix other than `/usr/local' by giving `configure' the
+-option `--prefix=PATH'.
++By default, `make install' installs the package's commands under
++`/usr/local/bin', include files under `/usr/local/include', etc.  You
++can specify an installation prefix other than `/usr/local' by giving
++`configure' the option `--prefix=PREFIX'.
+ 
+    You can specify separate installation prefixes for
+ architecture-specific files and architecture-independent files.  If you
+-give `configure' the option `--exec-prefix=PATH', the package will use
+-PATH as the prefix for installing programs and libraries.
+-Documentation and other data files will still use the regular prefix.
++pass the option `--exec-prefix=PREFIX' to `configure', the package uses
++PREFIX as the prefix for installing programs and libraries.
++Documentation and other data files still use the regular prefix.
+ 
+    In addition, if you use an unusual directory layout you can give
+-options like `--bindir=PATH' to specify different values for particular
++options like `--bindir=DIR' to specify different values for particular
+ kinds of files.  Run `configure --help' for a list of the directories
+ you can set and what kinds of files go in them.
+ 
+@@ -99,43 +120,10 @@
+ with an extra prefix or suffix on their names by giving `configure' the
+ option `--program-prefix=PREFIX' or `--program-suffix=SUFFIX'.
+ 
+-Relocatable Installation
+-========================
+-
+-   By default, `make install' will install a package with hardwired
+-file names, and the package will not work correctly when copied or
+-moved to a different location in the filesystem.
+-
+-   Some packages pay attention to the `--enable-relocatable' option to
+-`configure'.  This option makes the entire installed package
+-relocatable.  This means, it can be moved or copied to a different
+-location on the filesystem.  It is possible to make symlinks to the
+-installed and moved programs, and invoke them through the symlink.  It
+-is possible to do the same thing  with a hard link _only_ if the hard
+-linked file is in the same directory as the real program.
+-
+-   For reliability it is best to give together with --enable-relocatable
+-a `--prefix' option pointing to an otherwise unused (and never used
+-again) directory, for example, `--prefix=/tmp/inst$$'.  This is
+-recommended because on some OSes the executables remember the location
+-of shared libraries (and prefer them over LD_LIBRARY_PATH !), therefore
+-such an executable will look for its shared libraries first in the
+-original installation directory and only then in the current
+-installation directory.
+-
+-   Installation with `--enable-relocatable' will not work for setuid /
+-setgid executables.  (This is because such an executable kills its
+-LD_LIBRARY_PATH variable when it is launched.)
+-
+-   The runtime penalty and size penalty are nearly zero on Linux 2.2 or
+-newer (just one system call more when an executable is launched), and
+-small on other systems (the wrapper program just sets an environment
+-variable and execs the real program).
+-
+ Optional Features
+ =================
+ 
+-   Some packages pay attention to `--enable-FEATURE' options to
++Some packages pay attention to `--enable-FEATURE' options to
+ `configure', where FEATURE indicates an optional part of the package.
+ They may also pay attention to `--with-PACKAGE' options, where PACKAGE
+ is something like `gnu-as' or `x' (for the X Window System).  The
+@@ -147,91 +135,89 @@
+ you can use the `configure' options `--x-includes=DIR' and
+ `--x-libraries=DIR' to specify their locations.
+ 
+-   For packages that use the GNU libiconv library, you can use the
+-`configure' option `--with-libiconv-prefix' to specify the prefix you
+-used while installing GNU libiconv.  This option is not necessary if
+-that other prefix is the same as the one now specified through --prefix.
+-
+-   For packages that use the GNU libintl library, you can use the
+-`configure' option `--with-libintl-prefix' to specify the prefix you
+-used while installing GNU gettext-runtime.  This option is not necessary if
+-that other prefix is the same as the one now specified through --prefix.
+-
+-Particular Systems
+-==================
+-
+-   On HP-UX, the default C compiler is not ANSI C compatible.  If GNU CC
+-is not installed, it is recommended to use the following options in order
+-to use an ANSI C compiler:
+-
+-     ./configure CC="cc -Ae"
+-
+-   On OSF/1 a.k.a. Tru64, some versions of the default C compiler don't grok
+-its <wchar.h> header file.  The option -nodtk can be used as a workaround.
+-If GNU CC is not installed, it is therefore recommended to try
+-
+-     ./configure CC="cc"
+-
+-and if that doesn't work, try
+-
+-     ./configure CC="cc -nodtk"
+-
+-   On AIX 3, the C include files by default don't define some necessary
+-prototype declarations.  If GNU CC is not installed, it is recommended to
+-use the following options:
+-
+-     ./configure CC="xlc -D_ALL_SOURCE"
+-
+-   On BeOS, user installed software goes in /boot/home/config, not
+-/usr/local.  It is recommended to use the following options:
+-
+-     ./configure --prefix=/boot/home/config
+-
+ Specifying the System Type
+ ==========================
+ 
+-   There may be some features `configure' can not figure out
+-automatically, but needs to determine by the type of host the package
+-will run on.  Usually `configure' can figure that out, but if it prints
+-a message saying it can not guess the host type, give it the
+-`--host=TYPE' option.  TYPE can either be a short name for the system
+-type, such as `sun4', or a canonical name with three fields:
++There may be some features `configure' cannot figure out automatically,
++but needs to determine by the type of machine the package will run on.
++Usually, assuming the package is built to be run on the _same_
++architectures, `configure' can figure that out, but if it prints a
++message saying it cannot guess the machine type, give it the
++`--build=TYPE' option.  TYPE can either be a short name for the system
++type, such as `sun4', or a canonical name which has the form:
++
+      CPU-COMPANY-SYSTEM
+ 
+-See the file `config.sub' for the possible values of each field.  If
++where SYSTEM can have one of these forms:
++
++     OS KERNEL-OS
++
++   See the file `config.sub' for the possible values of each field.  If
+ `config.sub' isn't included in this package, then this package doesn't
+-need to know the host type.
++need to know the machine type.
+ 
+-   If you are building compiler tools for cross-compiling, you can also
+-use the `--target=TYPE' option to select the type of system they will
+-produce code for and the `--build=TYPE' option to select the type of
+-system on which you are compiling the package.
++   If you are _building_ compiler tools for cross-compiling, you should
++use the option `--target=TYPE' to select the type of system they will
++produce code for.
++
++   If you want to _use_ a cross compiler, that generates code for a
++platform different from the build platform, you should specify the
++"host" platform (i.e., that on which the generated programs will
++eventually be run) with `--host=TYPE'.
+ 
+ Sharing Defaults
+ ================
+ 
+-   If you want to set default values for `configure' scripts to share,
+-you can create a site shell script called `config.site' that gives
+-default values for variables like `CC', `cache_file', and `prefix'.
++If you want to set default values for `configure' scripts to share, you
++can create a site shell script called `config.site' that gives default
++values for variables like `CC', `cache_file', and `prefix'.
+ `configure' looks for `PREFIX/share/config.site' if it exists, then
+ `PREFIX/etc/config.site' if it exists.  Or, you can set the
+ `CONFIG_SITE' environment variable to the location of the site script.
+ A warning: not all `configure' scripts look for a site script.
+ 
+-Operation Controls
++Defining Variables
+ ==================
+ 
+-   `configure' recognizes the following options to control how it
+-operates.
++Variables not defined in a site shell script can be set in the
++environment passed to `configure'.  However, some packages may run
++configure again during the build, and the customized values of these
++variables may be lost.  In order to avoid this problem, you should set
++them in the `configure' command line, using `VAR=value'.  For example:
+ 
+-`--cache-file=FILE'
+-     Use and save the results of the tests in FILE instead of
+-     `./config.cache'.  Set FILE to `/dev/null' to disable caching, for
+-     debugging `configure'.
++     ./configure CC=/usr/local2/bin/gcc
++
++causes the specified `gcc' to be used as the C compiler (unless it is
++overridden in the site shell script).
++
++Unfortunately, this technique does not work for `CONFIG_SHELL' due to
++an Autoconf bug.  Until the bug is fixed you can use this workaround:
++
++     CONFIG_SHELL=/bin/bash /bin/bash ./configure CONFIG_SHELL=/bin/bash
++
++`configure' Invocation
++======================
++
++`configure' recognizes the following options to control how it operates.
+ 
+ `--help'
++`-h'
+      Print a summary of the options to `configure', and exit.
+ 
++`--version'
++`-V'
++     Print the version of Autoconf used to generate the `configure'
++     script, and exit.
++
++`--cache-file=FILE'
++     Enable the cache: use and save the results of the tests in FILE,
++     traditionally `config.cache'.  FILE defaults to `/dev/null' to
++     disable caching.
++
++`--config-cache'
++`-C'
++     Alias for `--cache-file=config.cache'.
++
+ `--quiet'
+ `--silent'
+ `-q'
+@@ -243,9 +229,6 @@
+      Look for the package's source code in directory DIR.  Usually
+      `configure' can determine that directory automatically.
+ 
+-`--version'
+-     Print the version of Autoconf used to generate the `configure'
+-     script, and exit.
+-
+-`configure' also accepts some other, not widely useful, options.
++`configure' also accepts some other, not widely useful, options.  Run
++`configure --help' for more details.
+ 
+diff -r -u -- gettext-0.17_orig/gettext-tools/INSTALL gettext-0.17/gettext-tools/INSTALL
+--- gettext-0.17_orig/gettext-tools/INSTALL	2008-07-27 22:04:52.000000000 +0200
++++ gettext-0.17/gettext-tools/INSTALL	2008-07-28 01:35:38.000000000 +0200
+@@ -1,38 +1,54 @@
++Installation Instructions
++*************************
++
++Copyright (C) 1994, 1995, 1996, 1999, 2000, 2001, 2002, 2004, 2005,
++2006 Free Software Foundation, Inc.
++
++This file is free documentation; the Free Software Foundation gives
++unlimited permission to copy, distribute and modify it.
++
+ Basic Installation
+ ==================
+ 
+-   These are generic installation instructions.
++Briefly, the shell commands `./configure; make; make install' should
++configure, build, and install this package.  The following
++more-detailed instructions are generic; see the `README' file for
++instructions specific to this package.
+ 
+    The `configure' shell script attempts to guess correct values for
+ various system-dependent variables used during compilation.  It uses
+ those values to create a `Makefile' in each directory of the package.
+ It may also create one or more `.h' files containing system-dependent
+ definitions.  Finally, it creates a shell script `config.status' that
+-you can run in the future to recreate the current configuration, a file
+-`config.cache' that saves the results of its tests to speed up
+-reconfiguring, and a file `config.log' containing compiler output
+-(useful mainly for debugging `configure').
++you can run in the future to recreate the current configuration, and a
++file `config.log' containing compiler output (useful mainly for
++debugging `configure').
++
++   It can also use an optional file (typically called `config.cache'
++and enabled with `--cache-file=config.cache' or simply `-C') that saves
++the results of its tests to speed up reconfiguring.  Caching is
++disabled by default to prevent problems with accidental use of stale
++cache files.
+ 
+    If you need to do unusual things to compile the package, please try
+ to figure out how `configure' could check whether to do them, and mail
+ diffs or instructions to the address given in the `README' so they can
+-be considered for the next release.  If at some point `config.cache'
+-contains results you don't want to keep, you may remove or edit it.
+-
+-   The file `configure.ac' is used to create `configure' by a program
+-called `autoconf'.  You only need `configure.ac' if you want to change
+-it or regenerate `configure' using a newer version of `autoconf'.
++be considered for the next release.  If you are using the cache, and at
++some point `config.cache' contains results you don't want to keep, you
++may remove or edit it.
++
++   The file `configure.ac' (or `configure.in') is used to create
++`configure' by a program called `autoconf'.  You need `configure.ac' if
++you want to change it or regenerate `configure' using a newer version
++of `autoconf'.
+ 
+ The simplest way to compile this package is:
+ 
+   1. `cd' to the directory containing the package's source code and type
+-     `./configure' to configure the package for your system.  If you're
+-     using `csh' on an old version of System V, you might need to type
+-     `sh ./configure' instead to prevent `csh' from trying to execute
+-     `configure' itself.
++     `./configure' to configure the package for your system.
+ 
+-     Running `configure' takes awhile.  While running, it prints some
+-     messages telling which features it is checking for.
++     Running `configure' might take a while.  While running, it prints
++     some messages telling which features it is checking for.
+ 
+   2. Type `make' to compile the package.
+ 
+@@ -54,44 +70,49 @@
+ Compilers and Options
+ =====================
+ 
+-   Some systems require unusual options for compilation or linking that
+-the `configure' script does not know about.  You can give `configure'
+-initial values for variables as arguments.  You can do it like this:
+-     ./configure CC=c89 CFLAGS=-O2 LIBS=-lposix
++Some systems require unusual options for compilation or linking that the
++`configure' script does not know about.  Run `./configure --help' for
++details on some of the pertinent environment variables.
++
++   You can give `configure' initial values for configuration parameters
++by setting variables in the command line or in the environment.  Here
++is an example:
++
++     ./configure CC=c99 CFLAGS=-g LIBS=-lposix
++
++   *Note Defining Variables::, for more details.
+ 
+ Compiling For Multiple Architectures
+ ====================================
+ 
+-   You can compile the package for more than one kind of computer at the
++You can compile the package for more than one kind of computer at the
+ same time, by placing the object files for each architecture in their
+-own directory.  To do this, you must use a version of `make' that
+-supports the `VPATH' variable, such as GNU `make'.  `cd' to the
++own directory.  To do this, you can use GNU `make'.  `cd' to the
+ directory where you want the object files and executables to go and run
+ the `configure' script.  `configure' automatically checks for the
+ source code in the directory that `configure' is in and in `..'.
+ 
+-   If you have to use a `make' that does not supports the `VPATH'
+-variable, you have to compile the package for one architecture at a time
+-in the source code directory.  After you have installed the package for
+-one architecture, use `make distclean' before reconfiguring for another
+-architecture.
++   With a non-GNU `make', it is safer to compile the package for one
++architecture at a time in the source code directory.  After you have
++installed the package for one architecture, use `make distclean' before
++reconfiguring for another architecture.
+ 
+ Installation Names
+ ==================
+ 
+-   By default, `make install' will install the package's files in
+-`/usr/local/bin', `/usr/local/man', etc.  You can specify an
+-installation prefix other than `/usr/local' by giving `configure' the
+-option `--prefix=PATH'.
++By default, `make install' installs the package's commands under
++`/usr/local/bin', include files under `/usr/local/include', etc.  You
++can specify an installation prefix other than `/usr/local' by giving
++`configure' the option `--prefix=PREFIX'.
+ 
+    You can specify separate installation prefixes for
+ architecture-specific files and architecture-independent files.  If you
+-give `configure' the option `--exec-prefix=PATH', the package will use
+-PATH as the prefix for installing programs and libraries.
+-Documentation and other data files will still use the regular prefix.
++pass the option `--exec-prefix=PREFIX' to `configure', the package uses
++PREFIX as the prefix for installing programs and libraries.
++Documentation and other data files still use the regular prefix.
+ 
+    In addition, if you use an unusual directory layout you can give
+-options like `--bindir=PATH' to specify different values for particular
++options like `--bindir=DIR' to specify different values for particular
+ kinds of files.  Run `configure --help' for a list of the directories
+ you can set and what kinds of files go in them.
+ 
+@@ -99,43 +120,10 @@
+ with an extra prefix or suffix on their names by giving `configure' the
+ option `--program-prefix=PREFIX' or `--program-suffix=SUFFIX'.
+ 
+-Relocatable Installation
+-========================
+-
+-   By default, `make install' will install a package with hardwired
+-file names, and the package will not work correctly when copied or
+-moved to a different location in the filesystem.
+-
+-   Some packages pay attention to the `--enable-relocatable' option to
+-`configure'.  This option makes the entire installed package
+-relocatable.  This means, it can be moved or copied to a different
+-location on the filesystem.  It is possible to make symlinks to the
+-installed and moved programs, and invoke them through the symlink.  It
+-is possible to do the same thing  with a hard link _only_ if the hard
+-linked file is in the same directory as the real program.
+-
+-   For reliability it is best to give together with --enable-relocatable
+-a `--prefix' option pointing to an otherwise unused (and never used
+-again) directory, for example, `--prefix=/tmp/inst$$'.  This is
+-recommended because on some OSes the executables remember the location
+-of shared libraries (and prefer them over LD_LIBRARY_PATH !), therefore
+-such an executable will look for its shared libraries first in the
+-original installation directory and only then in the current
+-installation directory.
+-
+-   Installation with `--enable-relocatable' will not work for setuid /
+-setgid executables.  (This is because such an executable kills its
+-LD_LIBRARY_PATH variable when it is launched.)
+-
+-   The runtime penalty and size penalty are nearly zero on Linux 2.2 or
+-newer (just one system call more when an executable is launched), and
+-small on other systems (the wrapper program just sets an environment
+-variable and execs the real program).
+-
+ Optional Features
+ =================
+ 
+-   Some packages pay attention to `--enable-FEATURE' options to
++Some packages pay attention to `--enable-FEATURE' options to
+ `configure', where FEATURE indicates an optional part of the package.
+ They may also pay attention to `--with-PACKAGE' options, where PACKAGE
+ is something like `gnu-as' or `x' (for the X Window System).  The
+@@ -147,91 +135,89 @@
+ you can use the `configure' options `--x-includes=DIR' and
+ `--x-libraries=DIR' to specify their locations.
+ 
+-   For packages that use the GNU libiconv library, you can use the
+-`configure' option `--with-libiconv-prefix' to specify the prefix you
+-used while installing GNU libiconv.  This option is not necessary if
+-that other prefix is the same as the one now specified through --prefix.
+-
+-   For packages that use the GNU libintl library, you can use the
+-`configure' option `--with-libintl-prefix' to specify the prefix you
+-used while installing GNU gettext-runtime.  This option is not necessary if
+-that other prefix is the same as the one now specified through --prefix.
+-
+-Particular Systems
+-==================
+-
+-   On HP-UX, the default C compiler is not ANSI C compatible.  If GNU CC
+-is not installed, it is recommended to use the following options in order
+-to use an ANSI C compiler:
+-
+-     ./configure CC="cc -Ae"
+-
+-   On OSF/1 a.k.a. Tru64, some versions of the default C compiler don't grok
+-its <wchar.h> header file.  The option -nodtk can be used as a workaround.
+-If GNU CC is not installed, it is therefore recommended to try
+-
+-     ./configure CC="cc"
+-
+-and if that doesn't work, try
+-
+-     ./configure CC="cc -nodtk"
+-
+-   On AIX 3, the C include files by default don't define some necessary
+-prototype declarations.  If GNU CC is not installed, it is recommended to
+-use the following options:
+-
+-     ./configure CC="xlc -D_ALL_SOURCE"
+-
+-   On BeOS, user installed software goes in /boot/home/config, not
+-/usr/local.  It is recommended to use the following options:
+-
+-     ./configure --prefix=/boot/home/config
+-
+ Specifying the System Type
+ ==========================
+ 
+-   There may be some features `configure' can not figure out
+-automatically, but needs to determine by the type of host the package
+-will run on.  Usually `configure' can figure that out, but if it prints
+-a message saying it can not guess the host type, give it the
+-`--host=TYPE' option.  TYPE can either be a short name for the system
+-type, such as `sun4', or a canonical name with three fields:
++There may be some features `configure' cannot figure out automatically,
++but needs to determine by the type of machine the package will run on.
++Usually, assuming the package is built to be run on the _same_
++architectures, `configure' can figure that out, but if it prints a
++message saying it cannot guess the machine type, give it the
++`--build=TYPE' option.  TYPE can either be a short name for the system
++type, such as `sun4', or a canonical name which has the form:
++
+      CPU-COMPANY-SYSTEM
+ 
+-See the file `config.sub' for the possible values of each field.  If
++where SYSTEM can have one of these forms:
++
++     OS KERNEL-OS
++
++   See the file `config.sub' for the possible values of each field.  If
+ `config.sub' isn't included in this package, then this package doesn't
+-need to know the host type.
++need to know the machine type.
+ 
+-   If you are building compiler tools for cross-compiling, you can also
+-use the `--target=TYPE' option to select the type of system they will
+-produce code for and the `--build=TYPE' option to select the type of
+-system on which you are compiling the package.
++   If you are _building_ compiler tools for cross-compiling, you should
++use the option `--target=TYPE' to select the type of system they will
++produce code for.
++
++   If you want to _use_ a cross compiler, that generates code for a
++platform different from the build platform, you should specify the
++"host" platform (i.e., that on which the generated programs will
++eventually be run) with `--host=TYPE'.
+ 
+ Sharing Defaults
+ ================
+ 
+-   If you want to set default values for `configure' scripts to share,
+-you can create a site shell script called `config.site' that gives
+-default values for variables like `CC', `cache_file', and `prefix'.
++If you want to set default values for `configure' scripts to share, you
++can create a site shell script called `config.site' that gives default
++values for variables like `CC', `cache_file', and `prefix'.
+ `configure' looks for `PREFIX/share/config.site' if it exists, then
+ `PREFIX/etc/config.site' if it exists.  Or, you can set the
+ `CONFIG_SITE' environment variable to the location of the site script.
+ A warning: not all `configure' scripts look for a site script.
+ 
+-Operation Controls
++Defining Variables
+ ==================
+ 
+-   `configure' recognizes the following options to control how it
+-operates.
++Variables not defined in a site shell script can be set in the
++environment passed to `configure'.  However, some packages may run
++configure again during the build, and the customized values of these
++variables may be lost.  In order to avoid this problem, you should set
++them in the `configure' command line, using `VAR=value'.  For example:
+ 
+-`--cache-file=FILE'
+-     Use and save the results of the tests in FILE instead of
+-     `./config.cache'.  Set FILE to `/dev/null' to disable caching, for
+-     debugging `configure'.
++     ./configure CC=/usr/local2/bin/gcc
++
++causes the specified `gcc' to be used as the C compiler (unless it is
++overridden in the site shell script).
++
++Unfortunately, this technique does not work for `CONFIG_SHELL' due to
++an Autoconf bug.  Until the bug is fixed you can use this workaround:
++
++     CONFIG_SHELL=/bin/bash /bin/bash ./configure CONFIG_SHELL=/bin/bash
++
++`configure' Invocation
++======================
++
++`configure' recognizes the following options to control how it operates.
+ 
+ `--help'
++`-h'
+      Print a summary of the options to `configure', and exit.
+ 
++`--version'
++`-V'
++     Print the version of Autoconf used to generate the `configure'
++     script, and exit.
++
++`--cache-file=FILE'
++     Enable the cache: use and save the results of the tests in FILE,
++     traditionally `config.cache'.  FILE defaults to `/dev/null' to
++     disable caching.
++
++`--config-cache'
++`-C'
++     Alias for `--cache-file=config.cache'.
++
+ `--quiet'
+ `--silent'
+ `-q'
+@@ -243,9 +229,6 @@
+      Look for the package's source code in directory DIR.  Usually
+      `configure' can determine that directory automatically.
+ 
+-`--version'
+-     Print the version of Autoconf used to generate the `configure'
+-     script, and exit.
+-
+-`configure' also accepts some other, not widely useful, options.
++`configure' also accepts some other, not widely useful, options.  Run
++`configure --help' for more details.
+ 
+diff -r -u -- gettext-0.17_orig/gettext-tools/Makefile gettext-0.17/gettext-tools/Makefile
+diff -r -u -- gettext-0.17_orig/gettext-tools/Makefile.in gettext-0.17/gettext-tools/Makefile.in
+diff -r -u -- gettext-0.17_orig/gettext-tools/aclocal.m4 gettext-0.17/gettext-tools/aclocal.m4
+diff -r -u -- gettext-0.17_orig/gettext-tools/config.h gettext-0.17/gettext-tools/config.h
+diff -r -u -- gettext-0.17_orig/gettext-tools/config.h.in gettext-0.17/gettext-tools/config.h.in
+diff -r -u -- gettext-0.17_orig/gettext-tools/config.log gettext-0.17/gettext-tools/config.log
+diff -r -u -- gettext-0.17_orig/gettext-tools/config.status gettext-0.17/gettext-tools/config.status
+diff -r -u -- gettext-0.17_orig/gettext-tools/configure gettext-0.17/gettext-tools/configure
+diff -r -u -- gettext-0.17_orig/gettext-tools/configure.ac gettext-0.17/gettext-tools/configure.ac
+--- gettext-0.17_orig/gettext-tools/configure.ac	2008-07-27 22:04:52.000000000 +0200
++++ gettext-0.17/gettext-tools/configure.ac	2008-07-28 01:20:21.000000000 +0200
+@@ -29,6 +29,7 @@
+ 
+ dnl Checks for programs.
+ AC_PROG_CC
++AC_PROG_CXX
+ AC_PROG_INSTALL
+ AC_PROG_YACC
+ 
+@@ -87,7 +88,7 @@
+ 
+ dnl Check for build configuration.
+ 
+-gl_WOE32_DLL
++dnl gl_WOE32_DLL
+ AC_LIBTOOL_WIN32_DLL
+ AC_PROG_LIBTOOL
+ case "$host_os" in
+@@ -116,7 +117,7 @@
+ BISON_I18N
+ 
+ dnl Test whether msgmerge must be linked against libm. This is the case on
+-dnl most systems; but BeOS has all <math.h> functions in libc and doesn't have
++dnl most systems; but BeOS has all <math.h> functions in libc and doesnt have
+ dnl a libm.
+ MSGMERGE_LIBM=?
+ AC_TRY_LINK([
+@@ -150,7 +151,7 @@
+ gtpo_INIT
+ 
+ dnl Checks for header files.
+-AC_CHECK_HEADERS(pwd.h)
++AC_CHECK_HEADERS([pwd.h iconv.h libiconv.h])
+ 
+ dnl Checks for typedefs, structures, and compiler characteristics.
+ AC_C_INLINE
+@@ -213,7 +214,7 @@
+    contains the characters not allowed.  */
+ #if defined _MSC_VER || defined __MINGW32__
+ /* Woe32.  This string is valid for Windows NT/2000.  On Windows 95/98/ME some
+-   few characters in the range 0x80..0xff are invalid as well, but this doesn't
++   few characters in the range 0x80..0xff are invalid as well, but this doesnt
+    matter much for our purposes.  */
+ # define INVALID_PATH_CHAR "\001\002\003\004\005\006\007\010\011\012\013\014\015\016\017\020\021\022\023\024\025\026\027\030\031\032\033\034\035\036\037\"*/:<>?\\|"
+ #elif defined MSDOS
+@@ -282,7 +283,7 @@
+ AM_PATH_LISPDIR
+ dnl Sometimes Emacs is badly installed. Allow the user to work around it.
+ AC_ARG_WITH([emacs],
+-  [  --without-emacs         do not use Emacs, don't install po-mode],
++  [  --without-emacs         do not use Emacs, dont install po-mode],
+   [gt_use_emacs=$withval],
+   [gt_use_emacs=yes])
+ if test "$EMACS" != no; then
+@@ -328,6 +329,12 @@
+ fi
+ AC_SUBST(TESTLIBASPRINTF)
+ 
++AC_CHECK_LIB([iconv],[libiconv_open],[ICONV_LIBS='-L$(libdir) -liconv'
++AC_DEFINE_UNQUOTED([HAVE_ICONV], [1], [Define this if you have iconv() functionality])dnl
++AC_DEFINE_UNQUOTED([ICONV_CONST], [const], [iconv const])dnl
++])
++AC_SUBST([ICONV_LIBS])
++
+ AC_CHECK_FUNC([stpcpy], [],
+ [AC_CHECK_LIB([compat], [stpcpy],
+ [LIBS="$LIBS -lcompat"
+diff -r -u -- gettext-0.17_orig/gettext-tools/gnulib-lib/Makefile.am gettext-0.17/gettext-tools/gnulib-lib/Makefile.am
+--- gettext-0.17_orig/gettext-tools/gnulib-lib/Makefile.am	2008-07-27 22:04:52.000000000 +0200
++++ gettext-0.17/gettext-tools/gnulib-lib/Makefile.am	2008-07-27 22:49:19.000000000 +0200
+@@ -65,11 +65,11 @@
+ libgettextlib_la_LINK = $(LIBTOOL) --tag=CC \
+ 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
+ 	$(CCLD) $(AM_CFLAGS) $(CFLAGS) $(libgettextlib_la_LDFLAGS) $(LDFLAGS) \
+-	-o $@
++	-o $@ $(ICONV_LIBS)
+ else
+ libgettextlib_la_LINK = $(LIBTOOL) --tag=CXX \
+ 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
+ 	$(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(libgettextlib_la_LDFLAGS) $(LDFLAGS) \
+-	-o $@
++	-o $@ $(ICONV_LIBS)
+ endif
+ 
+diff -r -u -- gettext-0.17_orig/gettext-tools/gnulib-lib/Makefile.in gettext-0.17/gettext-tools/gnulib-lib/Makefile.in
+diff -r -u -- gettext-0.17_orig/gettext-tools/gnulib-lib/linebreak.c gettext-0.17/gettext-tools/gnulib-lib/linebreak.c
+--- gettext-0.17_orig/gettext-tools/gnulib-lib/linebreak.c	2008-07-27 22:04:52.000000000 +0200
++++ gettext-0.17/gettext-tools/gnulib-lib/linebreak.c	2008-07-28 01:28:40.000000000 +0200
+@@ -873,7 +873,11 @@
+ 
+ #if HAVE_ICONV
+ 
++#ifdef HAVE_LIBICONV_H
++#include <libiconv.h>
++#else
+ #include <iconv.h>
++#endif
+ #include <errno.h>
+ 
+ /* Luckily, the encoding's name is platform independent.  */
+diff -r -u -- gettext-0.17_orig/gettext-tools/gnulib-lib/propername.c gettext-0.17/gettext-tools/gnulib-lib/propername.c
+--- gettext-0.17_orig/gettext-tools/gnulib-lib/propername.c	2008-07-27 22:04:52.000000000 +0200
++++ gettext-0.17/gettext-tools/gnulib-lib/propername.c	2008-07-28 01:29:25.000000000 +0200
+@@ -24,8 +24,12 @@
+ #include <stdlib.h>
+ #include <string.h>
+ #if HAVE_ICONV
++#ifdef HAVE_LIBICONV_H
++# include <libiconv.h>
++#else
+ # include <iconv.h>
+ #endif
++#endif
+ 
+ #include "localcharset.h"
+ #include "c-strcase.h"
+diff -r -u -- gettext-0.17_orig/gettext-tools/gnulib-lib/striconv.c gettext-0.17/gettext-tools/gnulib-lib/striconv.c
+--- gettext-0.17_orig/gettext-tools/gnulib-lib/striconv.c	2008-07-27 22:04:52.000000000 +0200
++++ gettext-0.17/gettext-tools/gnulib-lib/striconv.c	2008-07-28 01:30:50.000000000 +0200
+@@ -26,7 +26,11 @@
+ #include <string.h>
+ 
+ #if HAVE_ICONV
++#ifdef HAVE_LIBICONV_H
++# include <libiconv.h>
++#else
+ # include <iconv.h>
++#endif
+ /* Get MB_LEN_MAX, CHAR_BIT.  */
+ # include <limits.h>
+ #endif
+diff -r -u -- gettext-0.17_orig/gettext-tools/gnulib-lib/striconv.h gettext-0.17/gettext-tools/gnulib-lib/striconv.h
+--- gettext-0.17_orig/gettext-tools/gnulib-lib/striconv.h	2008-07-27 22:04:52.000000000 +0200
++++ gettext-0.17/gettext-tools/gnulib-lib/striconv.h	2008-07-28 01:30:17.000000000 +0200
+@@ -21,7 +21,11 @@
+ 
+ #include <stddef.h>
+ #if HAVE_ICONV
+-#include <iconv.h>
++#ifdef HAVE_LIBICONV_H
++# include <libiconv.h>
++#else
++# include <iconv.h>
++#endif
+ #endif
+ 
+ 
+diff -r -u -- gettext-0.17_orig/gettext-tools/gnulib-lib/xstriconv.h gettext-0.17/gettext-tools/gnulib-lib/xstriconv.h
+--- gettext-0.17_orig/gettext-tools/gnulib-lib/xstriconv.h	2008-07-27 22:04:52.000000000 +0200
++++ gettext-0.17/gettext-tools/gnulib-lib/xstriconv.h	2008-07-28 01:29:55.000000000 +0200
+@@ -20,8 +20,12 @@
+ 
+ #include <stddef.h>
+ #if HAVE_ICONV
++#ifdef HAVE_LIBICONV_H
++#include <libiconv.h>
++#else
+ #include <iconv.h>
+ #endif
++#endif
+ 
+ 
+ #ifdef __cplusplus
+diff -r -u -- gettext-0.17_orig/gettext-tools/libgettextpo/linebreak.c gettext-0.17/gettext-tools/libgettextpo/linebreak.c
+--- gettext-0.17_orig/gettext-tools/libgettextpo/linebreak.c	2008-07-27 22:04:52.000000000 +0200
++++ gettext-0.17/gettext-tools/libgettextpo/linebreak.c	2008-07-28 01:44:09.000000000 +0200
+@@ -873,7 +873,11 @@
+ 
+ #if HAVE_ICONV
+ 
++#ifdef HAVE_LIBICONV_H
++#include <libiconv.h>
++#else
+ #include <iconv.h>
++#endif
+ #include <errno.h>
+ 
+ /* Luckily, the encoding's name is platform independent.  */
+diff -r -u -- gettext-0.17_orig/gettext-tools/libgettextpo/striconv.c gettext-0.17/gettext-tools/libgettextpo/striconv.c
+--- gettext-0.17_orig/gettext-tools/libgettextpo/striconv.c	2008-07-27 22:04:52.000000000 +0200
++++ gettext-0.17/gettext-tools/libgettextpo/striconv.c	2008-07-28 01:46:27.000000000 +0200
+@@ -26,7 +26,11 @@
+ #include <string.h>
+ 
+ #if HAVE_ICONV
++#ifdef HAVE_LIBICONV_H
++# include <libiconv.h>
++#else
+ # include <iconv.h>
++#endif
+ /* Get MB_LEN_MAX, CHAR_BIT.  */
+ # include <limits.h>
+ #endif
+diff -r -u -- gettext-0.17_orig/gettext-tools/libgettextpo/striconv.h gettext-0.17/gettext-tools/libgettextpo/striconv.h
+--- gettext-0.17_orig/gettext-tools/libgettextpo/striconv.h	2008-07-27 22:04:52.000000000 +0200
++++ gettext-0.17/gettext-tools/libgettextpo/striconv.h	2008-07-28 01:46:01.000000000 +0200
+@@ -21,8 +21,12 @@
+ 
+ #include <stddef.h>
+ #if HAVE_ICONV
++#ifdef HAVE_LIBICONV_H
++#include <libiconv.h>
++#else
+ #include <iconv.h>
+ #endif
++#endif
+ 
+ 
+ #ifdef __cplusplus
+diff -r -u -- gettext-0.17_orig/gettext-tools/libgettextpo/xstriconv.h gettext-0.17/gettext-tools/libgettextpo/xstriconv.h
+--- gettext-0.17_orig/gettext-tools/libgettextpo/xstriconv.h	2008-07-27 22:04:52.000000000 +0200
++++ gettext-0.17/gettext-tools/libgettextpo/xstriconv.h	2008-07-28 01:46:57.000000000 +0200
+@@ -20,8 +20,12 @@
+ 
+ #include <stddef.h>
+ #if HAVE_ICONV
++#ifdef HAVE_LIBICONV_H
++#include <libiconv.h>
++#else
+ #include <iconv.h>
+ #endif
++#endif
+ 
+ 
+ #ifdef __cplusplus
+diff -r -u -- gettext-0.17_orig/gettext-tools/src/msgl-iconv.c gettext-0.17/gettext-tools/src/msgl-iconv.c
+--- gettext-0.17_orig/gettext-tools/src/msgl-iconv.c	2008-07-27 22:04:52.000000000 +0200
++++ gettext-0.17/gettext-tools/src/msgl-iconv.c	2008-07-28 01:41:24.000000000 +0200
+@@ -29,8 +29,12 @@
+ #include <string.h>
+ 
+ #if HAVE_ICONV
++#ifdef HAVE_LIBICONV_H
++# include <libiconv.h>
++#else
+ # include <iconv.h>
+ #endif
++#endif
+ 
+ #include "progname.h"
+ #include "basename.h"
+diff -r -u -- gettext-0.17_orig/gettext-tools/src/msgl-iconv.h gettext-0.17/gettext-tools/src/msgl-iconv.h
+--- gettext-0.17_orig/gettext-tools/src/msgl-iconv.h	2008-07-27 22:04:52.000000000 +0200
++++ gettext-0.17/gettext-tools/src/msgl-iconv.h	2008-07-28 01:40:38.000000000 +0200
+@@ -20,8 +20,12 @@
+ 
+ #include <stdbool.h>
+ #if HAVE_ICONV
++#ifdef HAVE_LIBICONV_H
++#include <libiconv.h>
++#else
+ #include <iconv.h>
+ #endif
++#endif
+ 
+ #include "message.h"
+ 
+diff -r -u -- gettext-0.17_orig/gettext-tools/src/po-charset.h gettext-0.17/gettext-tools/src/po-charset.h
+--- gettext-0.17_orig/gettext-tools/src/po-charset.h	2008-07-27 22:04:52.000000000 +0200
++++ gettext-0.17/gettext-tools/src/po-charset.h	2008-07-28 01:40:15.000000000 +0200
+@@ -22,8 +22,12 @@
+ #include <stddef.h>
+ 
+ #if HAVE_ICONV
++#ifdef HAVE_LIBICONV_H
++#include <libiconv.h>
++#else
+ #include <iconv.h>
+ #endif
++#endif
+ 
+ 
+ #ifdef __cplusplus
+diff -r -u -- gettext-0.17_orig/gettext-tools/src/po-lex.c gettext-0.17/gettext-tools/src/po-lex.c
+--- gettext-0.17_orig/gettext-tools/src/po-lex.c	2008-07-27 22:04:52.000000000 +0200
++++ gettext-0.17/gettext-tools/src/po-lex.c	2008-07-28 01:40:00.000000000 +0200
+@@ -33,7 +33,11 @@
+ #include <stdarg.h>
+ 
+ #if HAVE_ICONV
+-# include <iconv.h>
++#ifdef HAVE_LIBICONV_H
++#include <libiconv.h>
++#else
++#include <iconv.h>
++#endif
+ #endif
+ 
+ #include "c-ctype.h"
+diff -r -u -- gettext-0.17_orig/gettext-tools/src/recode-sr-latin.c gettext-0.17/gettext-tools/src/recode-sr-latin.c
+--- gettext-0.17_orig/gettext-tools/src/recode-sr-latin.c	2008-07-27 22:04:52.000000000 +0200
++++ gettext-0.17/gettext-tools/src/recode-sr-latin.c	2008-07-28 01:42:51.000000000 +0200
+@@ -27,8 +27,12 @@
+ #include <locale.h>
+ 
+ #if HAVE_ICONV
++#ifdef HAVE_LIBICONV_H
++#include <libiconv.h>
++#else
+ #include <iconv.h>
+ #endif
++#endif
+ 
+ #include "closeout.h"
+ #include "error.h"
+diff -r -u -- gettext-0.17_orig/gettext-tools/src/write-po.c gettext-0.17/gettext-tools/src/write-po.c
+--- gettext-0.17_orig/gettext-tools/src/write-po.c	2008-07-27 22:04:52.000000000 +0200
++++ gettext-0.17/gettext-tools/src/write-po.c	2008-07-28 01:41:02.000000000 +0200
+@@ -31,8 +31,12 @@
+ #include <string.h>
+ 
+ #if HAVE_ICONV
++#ifdef HAVE_LIBICONV_H
++# include <libiconv.h>
++#else
+ # include <iconv.h>
+ #endif
++#endif
+ 
+ #include "c-ctype.h"
+ #include "po-charset.h"
+diff -r -u -- gettext-0.17_orig/gettext-tools/src/xgettext.h gettext-0.17/gettext-tools/src/xgettext.h
+--- gettext-0.17_orig/gettext-tools/src/xgettext.h	2008-07-27 22:04:52.000000000 +0200
++++ gettext-0.17/gettext-tools/src/xgettext.h	2008-07-28 01:42:07.000000000 +0200
+@@ -24,8 +24,12 @@
+ #include <stdlib.h>
+ 
+ #if HAVE_ICONV
++#ifdef HAVE_LIBICONV_H
++#include <libiconv.h>
++#else
+ #include <iconv.h>
+ #endif
++#endif
+ 
+ #include "message.h"
+ #include "pos.h"
+diff -r -u -- gettext-0.17_orig/gettext-tools/styles/Makefile gettext-0.17/gettext-tools/styles/Makefile
+diff -r -u -- gettext-0.17_orig/gettext-tools/styles/Makefile.in gettext-0.17/gettext-tools/styles/Makefile.in
+diff -r -u -- gettext-0.17_orig/gettext-tools/tests/Makefile gettext-0.17/gettext-tools/tests/Makefile
+diff -r -u -- gettext-0.17_orig/gettext-tools/tests/Makefile.in gettext-0.17/gettext-tools/tests/Makefile.in
+diff -r -u -- gettext-0.17_orig/gnulib-local/Makefile gettext-0.17/gnulib-local/Makefile
+--- gettext-0.17_orig/configure.ac	2008-07-28 02:00:50.000000000 +0200
++++ gettext-0.17/configure.ac	2008-07-28 02:02:03.000000000 +0200
+@@ -19,7 +19,8 @@
+ AC_PREREQ(2.57)
+ AC_INIT
+ AC_CONFIG_SRCDIR(gettext-tools/src/msgfmt.c)
+-AC_CONFIG_AUX_DIR(build-aux)
++AC_CONFIG_AUX_DIR([build-aux])
++AC_CONFIG_MACRO_DIR([m4])
+ . $srcdir/version.sh
+ AM_INIT_AUTOMAKE(gettext, $VERSION_NUMBER)
+ 
+diff -r -u -- gettext-0.17_orig/gettext-runtime/autogen.sh gettext-0.17/gettext-runtime/autogen.sh
+--- gettext-0.17_orig/gettext-runtime/autogen.sh	2008-07-28 02:04:19.000000000 +0200
++++ gettext-0.17/gettext-runtime/autogen.sh	2008-07-28 02:03:58.000000000 +0200
+@@ -0,0 +1,9 @@
++#!/bin/sh
++#
++# 20080727
++
++libtoolize --force --copy --automake
++aclocal --force -I m4 -I ../autoconf-lib-link/m4 -I ../m4 -I gnulib-m4
++automake --force --copy --foreign --add-missing --add-missing
++aclocal --force -I m4 -I ../autoconf-lib-link/m4 -I ../m4 -I gnulib-m4
++autoconf --force
+diff -r -u -- gettext-0.17_orig/gettext-tools/autogen.sh gettext-0.17/gettext-tools/autogen.sh
+--- gettext-0.17_orig/gettext-tools/autogen.sh	2008-07-28 02:04:17.000000000 +0200
++++ gettext-0.17/gettext-tools/autogen.sh	2008-07-28 02:04:03.000000000 +0200
+@@ -0,0 +1,9 @@
++#!/bin/sh
++#
++# 20080727
++
++libtoolize --force --copy --automake
++aclocal --force -I m4 -I ../gettext-runtime/m4 -I ../autoconf-lib-link/m4 -I ../m4 -I gnulib-m4 -I libgettextpo/gnulib-m4
++automake --force --copy --foreign --add-missing --add-missing
++aclocal --force -I m4 -I ../gettext-runtime/m4 -I ../autoconf-lib-link/m4 -I ../m4 -I gnulib-m4 -I libgettextpo/gnulib-m4
++autoconf --force
+--- gettext-0.17_orig/m4/longlong.m4	1970-01-01 01:00:00.000000000 +0100
++++ gettext-0.17/m4/longlong.m4	2008-07-28 02:12:54.000000000 +0200
+@@ -0,0 +1,72 @@
++# longlong.m4 serial 10
++dnl Copyright (C) 1999-2006 Free Software Foundation, Inc.
++dnl This file is free software; the Free Software Foundation
++dnl gives unlimited permission to copy and/or distribute it,
++dnl with or without modifications, as long as this notice is preserved.
++
++dnl From Paul Eggert.
++
++# Define HAVE_LONG_LONG_INT if 'long long int' works.
++# This fixes a bug in Autoconf 2.60, but can be removed once we
++# assume 2.61 everywhere.
++
++# Note: If the type 'long long int' exists but is only 32 bits large
++# (as on some very old compilers), HAVE_LONG_LONG_INT will not be
++# defined. In this case you can treat 'long long int' like 'long int'.
++
++AC_DEFUN([AC_TYPE_LONG_LONG_INT],
++[
++  AC_CACHE_CHECK([for long long int], [ac_cv_type_long_long_int],
++    [AC_LINK_IFELSE(
++       [AC_LANG_PROGRAM(
++	  [[long long int ll = 9223372036854775807ll;
++	    long long int nll = -9223372036854775807LL;
++	    typedef int a[((-9223372036854775807LL < 0
++			    && 0 < 9223372036854775807ll)
++			   ? 1 : -1)];
++	    int i = 63;]],
++	  [[long long int llmax = 9223372036854775807ll;
++	    return ((ll << 63) | (ll >> 63) | (ll < i) | (ll > i)
++		    | (llmax / ll) | (llmax % ll));]])],
++       [dnl This catches a bug in Tandem NonStop Kernel (OSS) cc -O circa 2004.
++	dnl If cross compiling, assume the bug isn't important, since
++	dnl nobody cross compiles for this platform as far as we know.
++        AC_RUN_IFELSE(
++	  [AC_LANG_PROGRAM(
++	     [[@%:@include <limits.h>
++	       @%:@ifndef LLONG_MAX
++	       @%:@ define HALF \
++			(1LL << (sizeof (long long int) * CHAR_BIT - 2))
++	       @%:@ define LLONG_MAX (HALF - 1 + HALF)
++	       @%:@endif]],
++	     [[long long int n = 1;
++	       int i;
++	       for (i = 0; ; i++)
++		 {
++		   long long int m = n << i;
++		   if (m >> i != n)
++		     return 1;
++		   if (LLONG_MAX / 2 < m)
++		     break;
++		 }
++	       return 0;]])],
++	  [ac_cv_type_long_long_int=yes],
++	  [ac_cv_type_long_long_int=no],
++	  [ac_cv_type_long_long_int=yes])],
++       [ac_cv_type_long_long_int=no])])
++  if test $ac_cv_type_long_long_int = yes; then
++    AC_DEFINE([HAVE_LONG_LONG_INT], 1,
++      [Define to 1 if the system has the type `long long int'.])
++  fi
++])
++
++# This macro is obsolescent and should go away soon.
++AC_DEFUN([gl_AC_TYPE_LONG_LONG],
++[
++  AC_REQUIRE([AC_TYPE_LONG_LONG_INT])
++  ac_cv_type_long_long=$ac_cv_type_long_long_int
++  if test $ac_cv_type_long_long = yes; then
++    AC_DEFINE(HAVE_LONG_LONG, 1,
++      [Define if you have the 'long long' type.])
++  fi
++])
+args: -r -u -- gettext-0.17_orig gettext-0.17
+diff -r -u -- gettext-0.17_orig/Makefile gettext-0.17/Makefile
+diff -r -u -- gettext-0.17_orig/autoconf-lib-link/Makefile gettext-0.17/autoconf-lib-link/Makefile
+diff -r -u -- gettext-0.17_orig/autoconf-lib-link/config.log gettext-0.17/autoconf-lib-link/config.log
+diff -r -u -- gettext-0.17_orig/autoconf-lib-link/config.status gettext-0.17/autoconf-lib-link/config.status
+diff -r -u -- gettext-0.17_orig/autoconf-lib-link/libtool gettext-0.17/autoconf-lib-link/libtool
+diff -r -u -- gettext-0.17_orig/autoconf-lib-link/m4/Makefile gettext-0.17/autoconf-lib-link/m4/Makefile
+diff -r -u -- gettext-0.17_orig/autoconf-lib-link/tests/Makefile gettext-0.17/autoconf-lib-link/tests/Makefile
+diff -r -u -- gettext-0.17_orig/config.log gettext-0.17/config.log
+diff -r -u -- gettext-0.17_orig/config.status gettext-0.17/config.status
+diff -r -u -- gettext-0.17_orig/gettext-runtime/Makefile gettext-0.17/gettext-runtime/Makefile
+diff -r -u -- gettext-0.17_orig/gettext-runtime/config.h gettext-0.17/gettext-runtime/config.h
+diff -r -u -- gettext-0.17_orig/gettext-runtime/config.log gettext-0.17/gettext-runtime/config.log
+diff -r -u -- gettext-0.17_orig/gettext-runtime/config.status gettext-0.17/gettext-runtime/config.status
+diff -r -u -- gettext-0.17_orig/gettext-runtime/doc/Makefile gettext-0.17/gettext-runtime/doc/Makefile
+diff -r -u -- gettext-0.17_orig/gettext-runtime/gnulib-lib/Makefile gettext-0.17/gettext-runtime/gnulib-lib/Makefile
+diff -r -u -- gettext-0.17_orig/gettext-runtime/gnulib-lib/charset.alias gettext-0.17/gettext-runtime/gnulib-lib/charset.alias
+diff -r -u -- gettext-0.17_orig/gettext-runtime/gnulib-lib/configmake.h gettext-0.17/gettext-runtime/gnulib-lib/configmake.h
+diff -r -u -- gettext-0.17_orig/gettext-runtime/gnulib-lib/relocatable.c gettext-0.17/gettext-runtime/gnulib-lib/relocatable.c
+--- gettext-0.17_orig/gettext-runtime/gnulib-lib/relocatable.c	2008-07-28 02:19:09.000000000 +0200
++++ gettext-0.17/gettext-runtime/gnulib-lib/relocatable.c	2008-07-28 02:37:05.000000000 +0200
+@@ -52,8 +52,12 @@
+ # include <libcharset.h>
+ #endif
+ #if DEPENDS_ON_LIBICONV && HAVE_ICONV
++#ifdef HAVE_LIBICONV_H
++# include <libiconv.h>
++#else
+ # include <iconv.h>
+ #endif
++#endif
+ #if DEPENDS_ON_LIBINTL && ENABLE_NLS
+ # include <libintl.h>
+ #endif
+diff -r -u -- gettext-0.17_orig/gettext-runtime/gnulib-lib/stdlib.h gettext-0.17/gettext-runtime/gnulib-lib/stdlib.h
+diff -r -u -- gettext-0.17_orig/gettext-runtime/gnulib-lib/string.h gettext-0.17/gettext-runtime/gnulib-lib/string.h
+diff -r -u -- gettext-0.17_orig/gettext-runtime/gnulib-lib/unistd.h gettext-0.17/gettext-runtime/gnulib-lib/unistd.h
+diff -r -u -- gettext-0.17_orig/gettext-runtime/intl/.libs/libintl.la gettext-0.17/gettext-runtime/intl/.libs/libintl.la
+diff -r -u -- gettext-0.17_orig/gettext-runtime/intl/.libs/libintl.lai gettext-0.17/gettext-runtime/intl/.libs/libintl.lai
+diff -r -u -- gettext-0.17_orig/gettext-runtime/intl/Makefile gettext-0.17/gettext-runtime/intl/Makefile
+diff -r -u -- gettext-0.17_orig/gettext-runtime/intl/Makefile.in gettext-0.17/gettext-runtime/intl/Makefile.in
+diff -r -u -- gettext-0.17_orig/gettext-runtime/intl/charset.alias gettext-0.17/gettext-runtime/intl/charset.alias
+diff -r -u -- gettext-0.17_orig/gettext-runtime/intl/libgnuintl.h gettext-0.17/gettext-runtime/intl/libgnuintl.h
+diff -r -u -- gettext-0.17_orig/gettext-runtime/intl/libintl.h gettext-0.17/gettext-runtime/intl/libintl.h
+diff -r -u -- gettext-0.17_orig/gettext-runtime/intl/libintl.la gettext-0.17/gettext-runtime/intl/libintl.la
+diff -r -u -- gettext-0.17_orig/gettext-runtime/intl-csharp/Makefile gettext-0.17/gettext-runtime/intl-csharp/Makefile
+diff -r -u -- gettext-0.17_orig/gettext-runtime/intl-java/Makefile gettext-0.17/gettext-runtime/intl-java/Makefile
+diff -r -u -- gettext-0.17_orig/gettext-runtime/javacomp.sh gettext-0.17/gettext-runtime/javacomp.sh
+diff -r -u -- gettext-0.17_orig/gettext-runtime/libasprintf/Makefile gettext-0.17/gettext-runtime/libasprintf/Makefile
+diff -r -u -- gettext-0.17_orig/gettext-runtime/libasprintf/config.h gettext-0.17/gettext-runtime/libasprintf/config.h
+diff -r -u -- gettext-0.17_orig/gettext-runtime/libasprintf/config.log gettext-0.17/gettext-runtime/libasprintf/config.log
+diff -r -u -- gettext-0.17_orig/gettext-runtime/libasprintf/config.status gettext-0.17/gettext-runtime/libasprintf/config.status
+diff -r -u -- gettext-0.17_orig/gettext-runtime/libasprintf/libtool gettext-0.17/gettext-runtime/libasprintf/libtool
+diff -r -u -- gettext-0.17_orig/gettext-runtime/libtool gettext-0.17/gettext-runtime/libtool
+diff -r -u -- gettext-0.17_orig/gettext-runtime/m4/Makefile gettext-0.17/gettext-runtime/m4/Makefile
+diff -r -u -- gettext-0.17_orig/gettext-runtime/man/Makefile gettext-0.17/gettext-runtime/man/Makefile
+diff -r -u -- gettext-0.17_orig/gettext-runtime/man/x-to-1 gettext-0.17/gettext-runtime/man/x-to-1
+diff -r -u -- gettext-0.17_orig/gettext-runtime/po/Makefile gettext-0.17/gettext-runtime/po/Makefile
+diff -r -u -- gettext-0.17_orig/gettext-runtime/po/Makefile.in gettext-0.17/gettext-runtime/po/Makefile.in
+diff -r -u -- gettext-0.17_orig/gettext-runtime/src/Makefile gettext-0.17/gettext-runtime/src/Makefile
+diff -r -u -- gettext-0.17_orig/gettext-runtime/tests/Makefile gettext-0.17/gettext-runtime/tests/Makefile
+diff -r -u -- gettext-0.17_orig/gettext-tools/Makefile gettext-0.17/gettext-tools/Makefile
+diff -r -u -- gettext-0.17_orig/gettext-tools/config.h gettext-0.17/gettext-tools/config.h
+diff -r -u -- gettext-0.17_orig/gettext-tools/config.log gettext-0.17/gettext-tools/config.log
+diff -r -u -- gettext-0.17_orig/gettext-tools/config.status gettext-0.17/gettext-tools/config.status
+diff -r -u -- gettext-0.17_orig/gettext-tools/csharpexec.sh gettext-0.17/gettext-tools/csharpexec.sh
+diff -r -u -- gettext-0.17_orig/gettext-tools/doc/Makefile gettext-0.17/gettext-tools/doc/Makefile
+diff -r -u -- gettext-0.17_orig/gettext-tools/examples/Makefile gettext-0.17/gettext-tools/examples/Makefile
+diff -r -u -- gettext-0.17_orig/gettext-tools/examples/config.log gettext-0.17/gettext-tools/examples/config.log
+diff -r -u -- gettext-0.17_orig/gettext-tools/examples/config.status gettext-0.17/gettext-tools/examples/config.status
+diff -r -u -- gettext-0.17_orig/gettext-tools/examples/installpaths gettext-0.17/gettext-tools/examples/installpaths
+diff -r -u -- gettext-0.17_orig/gettext-tools/examples/po/Makefile gettext-0.17/gettext-tools/examples/po/Makefile
+diff -r -u -- gettext-0.17_orig/gettext-tools/gnulib-lib/Makefile gettext-0.17/gettext-tools/gnulib-lib/Makefile
+diff -r -u -- gettext-0.17_orig/gettext-tools/gnulib-tests/Makefile gettext-0.17/gettext-tools/gnulib-tests/Makefile
+diff -r -u -- gettext-0.17_orig/gettext-tools/intl/Makefile gettext-0.17/gettext-tools/intl/Makefile
+diff -r -u -- gettext-0.17_orig/gettext-tools/javacomp.sh gettext-0.17/gettext-tools/javacomp.sh
+diff -r -u -- gettext-0.17_orig/gettext-tools/javaexec.sh gettext-0.17/gettext-tools/javaexec.sh
+diff -r -u -- gettext-0.17_orig/gettext-tools/libgettextpo/Makefile gettext-0.17/gettext-tools/libgettextpo/Makefile
+diff -r -u -- gettext-0.17_orig/gettext-tools/libgettextpo/exported.sh gettext-0.17/gettext-tools/libgettextpo/exported.sh
+diff -r -u -- gettext-0.17_orig/gettext-tools/libgrep/Makefile gettext-0.17/gettext-tools/libgrep/Makefile
+diff -r -u -- gettext-0.17_orig/gettext-tools/libtool gettext-0.17/gettext-tools/libtool
+diff -r -u -- gettext-0.17_orig/gettext-tools/m4/Makefile gettext-0.17/gettext-tools/m4/Makefile
+diff -r -u -- gettext-0.17_orig/gettext-tools/man/Makefile gettext-0.17/gettext-tools/man/Makefile
+diff -r -u -- gettext-0.17_orig/gettext-tools/man/x-to-1 gettext-0.17/gettext-tools/man/x-to-1
+diff -r -u -- gettext-0.17_orig/gettext-tools/misc/Makefile gettext-0.17/gettext-tools/misc/Makefile
+diff -r -u -- gettext-0.17_orig/gettext-tools/misc/autopoint gettext-0.17/gettext-tools/misc/autopoint
+diff -r -u -- gettext-0.17_orig/gettext-tools/misc/gettextize gettext-0.17/gettext-tools/misc/gettextize
+diff -r -u -- gettext-0.17_orig/gettext-tools/po/Makefile gettext-0.17/gettext-tools/po/Makefile
+diff -r -u -- gettext-0.17_orig/gettext-tools/po/Makefile.in gettext-0.17/gettext-tools/po/Makefile.in
+diff -r -u -- gettext-0.17_orig/gettext-tools/projects/Makefile gettext-0.17/gettext-tools/projects/Makefile
+diff -r -u -- gettext-0.17_orig/gettext-tools/src/Makefile gettext-0.17/gettext-tools/src/Makefile
+diff -r -u -- gettext-0.17_orig/gettext-tools/src/user-email gettext-0.17/gettext-tools/src/user-email
+diff -r -u -- gettext-0.17_orig/gettext-tools/styles/Makefile gettext-0.17/gettext-tools/styles/Makefile
+diff -r -u -- gettext-0.17_orig/gettext-tools/tests/Makefile gettext-0.17/gettext-tools/tests/Makefile
+diff -r -u -- gettext-0.17_orig/gnulib-local/Makefile gettext-0.17/gnulib-local/Makefile
+diff -r -u -- gettext-0.17_orig/m4/longdouble.m4 gettext-0.17/m4/longdouble.m4
+--- gettext-0.17_orig/m4/longdouble.m4	2008-07-28 02:44:54.000000000 +0200
++++ gettext-0.17/m4/longdouble.m4	2008-07-28 02:44:44.000000000 +0200
+@@ -0,0 +1,30 @@
++# longdouble.m4 serial 1 (gettext-0.12)
++dnl Copyright (C) 2002-2003 Free Software Foundation, Inc.
++dnl This file is free software, distributed under the terms of the GNU
++dnl General Public License.  As a special exception to the GNU General
++dnl Public License, this file may be distributed as part of a program
++dnl that contains a configuration script generated by Autoconf, under
++dnl the same distribution terms as the rest of that program.
++
++dnl From Bruno Haible.
++dnl Test whether the compiler supports the 'long double' type.
++dnl Prerequisite: AC_PROG_CC
++
++AC_DEFUN([gt_TYPE_LONGDOUBLE],
++[
++  AC_CACHE_CHECK([for long double], gt_cv_c_long_double,
++    [if test "$GCC" = yes; then
++       gt_cv_c_long_double=yes
++     else
++       AC_TRY_COMPILE([
++         /* The Stardent Vistra knows sizeof(long double), but does not support it.  */
++         long double foo = 0.0;
++         /* On Ultrix 4.3 cc, long double is 4 and double is 8.  */
++         int array [2*(sizeof(long double) >= sizeof(double)) - 1];
++         ], ,
++         gt_cv_c_long_double=yes, gt_cv_c_long_double=no)
++     fi])
++  if test $gt_cv_c_long_double = yes; then
++    AC_DEFINE(HAVE_LONG_DOUBLE, 1, [Define if you have the 'long double' type.])
++  fi
++])
+diff -ru gettext-0.17_orig/gettext-runtime/intl/Makefile.in gettext-0.17/gettext-runtime/intl/Makefile.in
+--- gettext-0.17_orig/gettext-runtime/intl/Makefile.in	2008-07-28 02:52:51.000000000 +0200
++++ gettext-0.17/gettext-runtime/intl/Makefile.in	2008-07-28 02:53:23.000000000 +0200
+@@ -197,7 +197,7 @@
+ 	  $(OBJECTS_RES_@WOE32@) \
+ 	  -version-info $(LTV_CURRENT):$(LTV_REVISION):$(LTV_AGE) \
+ 	  -rpath $(libdir) \
+-	  -no-undefined
++	  -no-undefined @ICONV_LIBS@
+ 
+ # Libtool's library version information for libintl.
+ # Before making a gettext release, the gettext maintainer must change this
+diff -ru gettext-0.17_orig/gettext-tools/gnulib-lib/relocatable.c gettext-0.17/gettext-tools/gnulib-lib/relocatable.c
+--- gettext-0.17_orig/gettext-tools/gnulib-lib/relocatable.c	2008-07-28 02:52:52.000000000 +0200
++++ gettext-0.17/gettext-tools/gnulib-lib/relocatable.c	2008-07-28 02:55:13.000000000 +0200
+@@ -52,8 +52,12 @@
+ # include <libcharset.h>
+ #endif
+ #if DEPENDS_ON_LIBICONV && HAVE_ICONV
++#ifdef HAVE_LIBICONV_H
++# include <libiconv.h>
++#else
+ # include <iconv.h>
+ #endif
++#endif
+ #if DEPENDS_ON_LIBINTL && ENABLE_NLS
+ # include <libintl.h>
+ #endif
+--- gettext-0.17_orig/gettext-tools/gnulib-lib/libxml/encoding.in.h	2008-07-28 03:09:37.000000000 +0200
++++ gettext-0.17/gettext-tools/gnulib-lib/libxml/encoding.in.h	2008-07-28 03:14:30.000000000 +0200
+@@ -25,8 +25,12 @@
+ #include <libxml/xmlversion.h>
+ 
+ #ifdef LIBXML_ICONV_ENABLED
++#ifdef HAVE_LIBICONV_H
++#include <libiconv.h>
++#else
+ #include <iconv.h>
+ #endif
++#endif
+ #ifdef __cplusplus
+ extern "C" {
+ #endif

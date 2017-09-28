@@ -1,0 +1,42 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Verify and parse RFC822 addresses in your C++ application.
+#  librfc822 provides application developers with a complete parser for
+#  RFC822 addresses. Not only can you use the library to verify that RFC822
+#  addresses are syntactically correct, you can also have an address split
+#  up into its semantic parts, what is needed when deciding where to route an
+#  address to, etc. What is quite unique is that librfc822 does indeed parse
+#  all address types allowed by the standard. That includes such weird things
+#  as "address groups" or addresses with whitespace and comments throw in.
+# URL: http://cryp.to/librfc2822/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=librfc822
+version=1.2
+release=1
+source=(http://cryp.to/librfc2822/librfc822-$version.tar.gz)
+
+build()
+{
+  cd librfc822-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix" \
+       --enable-shared \
+       --enable-static
+
+  make
+
+  install -d $ROOT/lib
+  install -m 644 *.a $ROOT/lib
+
+  install -d $ROOT/include
+  install -m 644 *.hpp $ROOT/include
+
+  install -d $ROOT/share/doc/librfc822
+  install -m 644 *.html $ROOT/share/doc/librfc822
+}

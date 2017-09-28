@@ -1,0 +1,22 @@
+# $Id: Pkgfile,v 1.2 2007/04/22 23:07:53 roman Exp $
+#
+# Description: MySQL driver for the Perl5 Database Interface (DBI)
+# URL: http://search.cpan.org/dist/DBD-mysql/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=dbd-mysql
+version=4.010
+release=1
+source=(http://search.cpan.org/CPAN/authors/id/C/CA/CAPTTOFU/DBD-mysql-$version.tar.gz)
+
+build()
+{
+  cd DBD-mysql-$version
+
+  perl Makefile.PL installdirs=vendor
+
+  make
+  make DESTDIR=$PKG install
+}
+

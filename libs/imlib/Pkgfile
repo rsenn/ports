@@ -1,0 +1,45 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Advanced replacement library for libraries like libXpm
+#  Imlib is an advanced replacement library for libraries like libXpm that
+#  provides many more features with much greater flexibility and speed. It
+#  was originally written for E, now used by the GNOME Project.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=imlib
+version=1.9.15
+release=1
+source=($mirror_gnome/sources/imlib/1.9/imlib-$version.tar.bz2)
+
+build()
+{
+  cd imlib-$version
+
+  for libname in gif ungif
+  do
+    if set -- $prefix/lib/lib$libname.* && test -e "$1"
+    then
+      GIFLIBS="-l$libname"
+    fi
+  done
+
+  sed -i "s/ungif/gif/g" configure.in
+  sed -i "/AC_DEFUN/ s/(\([_A-Z]\+\),/(\[\1\],/" imlib.m4
+
+  libtoolize --force --copy
+  aclocal --force -I .
+  automake --force --copy --foreign --add-missing
+  aclocal --force -I .
+  autoconf --force
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make ${GIFLIBS+GIFLIBS="$GIFLIBS"}
+  make DESTDIR="$PKG" install
+}

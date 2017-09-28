@@ -1,0 +1,36 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A semantic parser of source files.
+#  Sparse is a semantic parser of source files. It's neither a compiler
+#  (although it could be used as a front-end for one) nor a preprocessor
+#  (although it contains a preprocessing phase). It is meant to be a small,
+#  simple, easy to use library. Its function is to create a semantic parse
+#  tree for some arbitrary user for further analysis. It's not a tokenizer,
+#  nor is it a generic context-free parser. Context (semantics) is what
+#  it's all about: figuring out not just what the grouping of tokens are,
+#  but what the types are that the grouping implies.
+#  .
+# URL: http://www.codemonkey.org.uk/projects/git-snapshots/sparse/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=sparse
+version=2009-02-19
+release=1
+source=(http://www.codemonkey.org.uk/projects/git-snapshots/sparse/sparse-`date +"%Y-%m-%d" --date=$version`.tar.gz
+        sparse-20090207-clue.patch)
+
+build()
+{
+  cd sparse-`date +"%Y-%m-%d" --date=$version`
+
+  patch -N -p1 -i $SRC/sparse-20090207-clue.patch
+
+  make
+  make PREFIX="$ROOT" install
+
+  install -d $ROOT/share/doc/sparse
+  install -m 644 FAQ LICENSE README $ROOT/share/doc/sparse
+}
+
+# EOF

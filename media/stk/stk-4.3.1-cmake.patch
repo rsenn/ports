@@ -1,0 +1,260 @@
+diff -ru stk-4.3.1_orig/CMakeLists.txt stk-4.3.1/CMakeLists.txt
+--- stk-4.3.1_orig/CMakeLists.txt	2008-01-14 00:58:56.625000000 +0100
++++ stk-4.3.1/CMakeLists.txt	2008-01-11 13:00:03.000000000 +0100
+@@ -0,0 +1,233 @@
++PROJECT(stk)
++SET(STK_VERSION 4.3.1)
++
++INCLUDE(CPack)
++
++IF(NOT DEFINED BUILD_SHARED_LIBS)
++  SET(BUILD_SHARED_LIBS "SHARED")
++ENDIF(NOT DEFINED BUILD_SHARED_LIBS)
++
++# MESSAGE(STATUS "Shared libs: ${BUILD_SHARED_LIBS}")
++
++SET(STK_HEADERS
++    include/ADSR.h
++    include/Asymp.h
++    include/BandedWG.h
++    include/BeeThree.h
++    include/BiQuad.h
++    include/Blit.h
++    include/BlitSaw.h
++    include/BlitSquare.h
++    include/BlowBotl.h
++    include/BlowHole.h
++    include/BowTable.h
++    include/Bowed.h
++    include/Brass.h
++    include/Chorus.h
++    include/Clarinet.h
++    include/Delay.h
++    include/DelayA.h
++    include/DelayL.h
++    include/Drummer.h
++    include/Echo.h
++    include/Effect.h
++    include/Envelope.h
++    include/FM.h
++    include/FMVoices.h
++    include/FileRead.h
++    include/FileWrite.h
++    include/FileWvIn.h
++    include/FileWvOut.h
++    include/Filter.h
++    include/Flute.h
++    include/FormSwep.h
++    include/Function.h
++    include/Generator.h
++    include/Granulate.h
++    include/HevyMetl.h
++    include/InetWvIn.h
++    include/InetWvOut.h
++    include/Instrmnt.h
++    include/JCRev.h
++    include/JetTable.h
++    include/Mandolin.h
++    include/Mesh2D.h
++    include/Messager.h
++    include/MidiFileIn.h
++    include/Modal.h
++    include/ModalBar.h
++    include/Modulate.h
++    include/Moog.h
++    include/Mutex.h
++    include/NRev.h
++    include/Noise.h
++    include/OnePole.h
++    include/OneZero.h
++    include/PRCRev.h
++    include/PercFlut.h
++    include/Phonemes.h
++    include/PitShift.h
++    include/PluckTwo.h
++    include/Plucked.h
++    include/PoleZero.h
++    include/ReedTable.h
++    include/Resonate.h
++    include/Rhodey.h
++    include/RtAudio.h
++    include/RtError.h
++    include/RtMidi.h
++    include/RtWvIn.h
++    include/RtWvOut.h
++    include/Sampler.h
++    include/Saxofony.h
++    include/Shakers.h
++    include/Simple.h
++    include/SineWave.h
++    include/SingWave.h
++    include/Sitar.h
++    include/Skini.h
++    include/Socket.h
++    include/Sphere.h
++    include/StifKarp.h
++    include/Stk.h
++    include/SubNoise.h
++    include/TcpClient.h
++    include/TcpServer.h
++    include/Thread.h
++    include/TubeBell.h
++    include/TwoPole.h
++    include/TwoZero.h
++    include/UdpSocket.h
++    include/Vector3D.h
++    include/VoicForm.h
++    include/Voicer.h
++    include/WaveLoop.h
++    include/Whistle.h
++    include/Wurley.h
++    include/WvIn.h
++    include/WvOut.h)
++    
++SET(STK_SOURCES
++    src/ADSR.cpp
++    src/Asymp.cpp
++    src/BandedWG.cpp
++    src/BeeThree.cpp
++    src/BiQuad.cpp
++    src/Blit.cpp
++    src/BlitSaw.cpp
++    src/BlitSquare.cpp
++    src/BlowBotl.cpp
++    src/BlowHole.cpp
++    src/Bowed.cpp
++    src/BowTable.cpp
++    src/Brass.cpp
++    src/Chorus.cpp
++    src/Clarinet.cpp
++    src/Delay.cpp
++    src/DelayA.cpp
++    src/DelayL.cpp
++    src/Drummer.cpp
++    src/Echo.cpp
++    src/Effect.cpp
++    src/Envelope.cpp
++    src/FileRead.cpp
++    src/FileWrite.cpp
++    src/FileWvIn.cpp
++    src/FileWvOut.cpp
++    src/Filter.cpp
++    src/Flute.cpp
++    src/FM.cpp
++    src/FMVoices.cpp
++    src/FormSwep.cpp
++    src/Function.cpp
++    src/Generator.cpp
++    src/Granulate.cpp
++    src/HevyMetl.cpp
++    src/InetWvIn.cpp
++    src/InetWvOut.cpp
++    src/Instrmnt.cpp
++    src/JCRev.cpp
++    src/JetTable.cpp
++    src/Mandolin.cpp
++    src/Mesh2D.cpp
++    src/Messager.cpp
++    src/MidiFileIn.cpp
++    src/Modal.cpp
++    src/ModalBar.cpp
++    src/Modulate.cpp
++    src/Moog.cpp
++    src/Mutex.cpp
++    src/Noise.cpp
++    src/NRev.cpp
++    src/OnePole.cpp
++    src/OneZero.cpp
++    src/PercFlut.cpp
++    src/Phonemes.cpp
++    src/PitShift.cpp
++    src/Plucked.cpp
++    src/PluckTwo.cpp
++    src/PoleZero.cpp
++    src/PRCRev.cpp
++    src/ReedTable.cpp
++    src/Resonate.cpp
++    src/Rhodey.cpp
++    src/RtAudio.cpp
++    src/RtMidi.cpp
++    src/RtWvIn.cpp
++    src/RtWvOut.cpp
++    src/Sampler.cpp
++    src/Saxofony.cpp
++    src/Shakers.cpp
++    src/Simple.cpp
++    src/SineWave.cpp
++    src/SingWave.cpp
++    src/Sitar.cpp
++    src/Skini.cpp
++    src/Socket.cpp
++    src/Sphere.cpp
++    src/StifKarp.cpp
++    src/Stk.cpp
++    src/SubNoise.cpp
++    src/TcpClient.cpp
++    src/TcpServer.cpp
++    src/Thread.cpp
++    src/TubeBell.cpp
++    src/TwoPole.cpp
++    src/TwoZero.cpp
++    src/UdpSocket.cpp
++    src/Vector3D.cpp
++    src/Voicer.cpp
++    src/VoicForm.cpp
++    src/WaveLoop.cpp
++    src/Whistle.cpp
++    src/Wurley.cpp
++    src/WvIn.cpp
++    src/WvOut.cpp)
++
++IF(MSVC)
++  SET(STK_NAME "Stk")
++  ADD_DEFINITIONS("/W0")
++ELSE(MSVC)
++  SET(STK_NAME "stk")
++ENDIF(MSVC)
++
++IF(WIN32)
++  ADD_DEFINITIONS(-D__OS_WINDOWS__=1 -D__WINDOWS_MM__=1)
++  SET(STK_LIBS ws2_32 winmm)
++  
++  IF(BUILD_SHARED_LIBS)
++    ADD_DEFINITIONS(-DSTK_DLL=1)
++  ENDIF(BUILD_SHARED_LIBS)
++ENDIF(WIN32)
++
++INCLUDE_DIRECTORIES("${CMAKE_SOURCE_DIR}/include")
++
++ADD_LIBRARY(${STK_NAME} ${STK_SOURCES})
++TARGET_LINK_LIBRARIES(${STK_NAME} ${STK_LIBS})
++SET_TARGET_PROPERTIES(${STK_NAME} PROPERTIES COMPILE_FLAGS "-DSTK_BUILD=1")
++SET_TARGET_PROPERTIES(${STK_NAME} PROPERTIES SOVERSION "${STK_VERSION}")
++
++INSTALL(FILES ${STK_HEADERS} DESTINATION include/stk)
++INSTALL(TARGETS ${STK_NAME} RUNTIME DESTINATION bin LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
++
++ADD_SUBDIRECTORY(projects)
+diff -ru stk-4.3.1_orig/projects/CMakeLists.txt stk-4.3.1/projects/CMakeLists.txt
+--- stk-4.3.1_orig/projects/CMakeLists.txt	2008-01-14 00:59:16.671875000 +0100
++++ stk-4.3.1/projects/CMakeLists.txt	2008-01-11 12:27:47.031250000 +0100
+@@ -0,0 +1 @@
++ADD_SUBDIRECTORY(examples)
+diff -ru stk-4.3.1_orig/projects/examples/CMakeLists.txt stk-4.3.1/projects/examples/CMakeLists.txt
+--- stk-4.3.1_orig/projects/examples/CMakeLists.txt	2008-01-14 00:59:29.250000000 +0100
++++ stk-4.3.1/projects/examples/CMakeLists.txt	2008-01-11 12:39:00.281250000 +0100
+@@ -0,0 +1,14 @@
++SET(EXAMPLES audioprobe bethree controlbee crtsine duplex foursine grains inetIn inetOut midiprobe play playsmf record rtsine sine sineosc threebees)
++
++IF(BUILD_EXAMPLES)
++
++  FOREACH(EXAMPLE ${EXAMPLES})
++
++    ADD_EXECUTABLE("${EXAMPLE}" "${EXAMPLE}.cpp")
++    TARGET_LINK_LIBRARIES("${EXAMPLE}" "${STK_NAME}")
++    ADD_DEPENDENCIES("${EXAMPLE}" "${STK_NAME}")
++
++  ENDFOREACH(EXAMPLE ${EXAMPLES})
++
++ENDIF(BUILD_EXAMPLES)
++

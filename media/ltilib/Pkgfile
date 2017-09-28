@@ -1,0 +1,56 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:50 roman Exp $
+#
+# Description: A C++ Library for computer vision.
+#  The LTI-Lib is an object oriented library with algorithms and data
+#  structures frequently used in image processing and computer vision. It
+#  was developed at the RWTH-Aachen University as a part of many research
+#  projects on computer vision dealing with robotics, object recognition,
+#  sign language, and gesture recognition. It provides an object oriented
+#  C++ library that includes fast algorithms, which can be used in real
+#  applications.
+# URL: http://ltilib.sourceforge.net
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=ltilib
+version=1.9.15
+release=1
+source=(http://heanet.dl.sourceforge.net/sourceforge/ltilib/051124_ltilib-$version.tar.bz2
+        http://heanet.dl.sourceforge.net/sourceforge/ltilib/051124_ltilib-extras-$version.tar.bz2
+        http://heanet.dl.sourceforge.net/sourceforge/ltilib/051124_DevelopersGuide.pdf
+        ltilib-1.9.15-c++0x.patch)
+
+build()
+{
+  cd ltilib
+
+  patch -p1 -i $SRC/ltilib-1.9.15-c++0x.patch
+
+  cd linux
+
+  MODE="release"
+
+  ./configure \
+       --prefix="$prefix" \
+       --host="$host" \
+       --build="$build"
+
+  make all-$MODE
+ 
+  install -d $ROOT/include/ltilib
+  find .. -name "lti[A-Z]*.h" -exec cp -i "{}" "$ROOT/include/ltilib" ";"
+
+  install -d $ROOT/lib
+  find .. -name "*.a" -exec cp -i "{}" "$ROOT/lib/liblti.a" ";"
+
+  cd ..
+  find . -name .keepme -exec rm -f "{}" ";"
+
+  install -d $ROOT/share/ltilib
+  cp -r examples tester $ROOT/share/ltilib
+
+  install -d $ROOT/share/doc/ltilib
+  install -m 644 DIRTREE LICENSE README $ROOT/share/doc/ltilib
+
+  install -m 644 $SRC/*_DevelopersGuide.pdf $ROOT/share/doc/ltilib
+}

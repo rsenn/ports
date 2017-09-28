@@ -1,0 +1,36 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: BG Libraries Collection
+#  This package contains a collection of libraries written by Bruce
+#  Guenter and
+#  put in use in various packages.
+#  .
+# URL: http://untroubled.org/bglibs/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=bglibs
+version=1.105
+release=1
+source=(http://untroubled.org/bglibs/bglibs-$version.tar.gz)
+
+build()
+{
+  cd bglibs-$version
+
+  echo "$ROOT/bin" >conf-bin
+  echo "$ROOT/lib/bglibs/include" >conf-include
+  echo "$ROOT/lib/bglibs/lib" >conf-lib
+  echo "$ROOT/share/man" >conf-man
+
+  make
+
+  ./bg-installer -v <INSTHIER
+
+  cp msg/debug.h $ROOT/lib/bglibs/include/msg/
+
+  install -d $ROOT/share/doc/bglibs
+  install -m 644 NEWS ChangeLog README COPYING TODO VERSION ANNOUNCEMENT $ROOT/share/doc/bglibs
+
+  mv -vf $ROOT/lib/bglibs/lib/libbg{,-sysdeps}.* $ROOT/lib
+}

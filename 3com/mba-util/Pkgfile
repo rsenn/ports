@@ -1,0 +1,23 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: DynamicAccess managed pc boot agent (MBA) Downloads
+# URL: http://support.3com.com/infodeli/tools/nic/mba.htm
+# Maintainer: 
+# Depends on: 
+
+name=mba-util
+version=4.30
+release=1
+source=(ftp://ftp.3com.com/pub/nic/3c90x/util${version/./}.exe)
+
+build() 
+{
+  yes A | unzip -d mba-util-$version -L util${version/./}.exe
+
+  cd mba-util-$version
+
+  install -d $ROOT/share/mba-util
+  cp -r * $ROOT/share/mba-util
+}
+
+# EOF

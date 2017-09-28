@@ -1,0 +1,29 @@
+# $Id: Pkgfile,v 1.4 2007/05/09 21:02:54 roman Exp $
+#
+# Description: Xdebug Module for PHP 5
+# URL: http://www.xdebug.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=xdebug
+version=2.0.5
+release=1
+source=(http://www.xdebug.org/files/xdebug-$version.tgz
+        xdebug-2.0.3-module-globals.patch)
+
+build()
+{
+  cd xdebug-$version
+
+  patch -N -p1 -i $SRC/xdebug-2.0.3-module-globals.patch
+
+  phpize
+
+  ./configure \
+    --prefix="$prefix"
+
+  make
+  make \
+      INSTALL_ROOT="$PKG" \
+    install
+}

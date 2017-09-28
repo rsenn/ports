@@ -1,0 +1,24 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Techniques And Paradigms for Expressive Synthesis, Transformation,
+#  and Rendering of Environmental Audio (also known as taps)
+#  TAPESTREA (or taps) is a unified framework for interactively analyzing,
+#  transforming and synthesizing complex sounds.
+# URL: 
+# Maintainer: 
+# Depends on: 
+
+name=tapestrea
+version=0.1.0.5
+release=1
+source=(http://taps.cs.princeton.edu/release/files/tapestrea-$version.tgz)
+
+build() 
+{
+  cd tapestrea-$version
+  
+  make -C src linux-jack
+  make -C src linux-jack DESTDIR="$PKG" install
+}
+
+# EOF

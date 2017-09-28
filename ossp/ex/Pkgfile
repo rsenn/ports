@@ -1,0 +1,36 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An exception handling library.
+#  OSSP ex is a small ISO-C++ style exception handling library for use in
+#  the ISO-C language. It allows you to use the paradigm of throwing and
+#  catching exceptions in order to reduce the amount of error handling code
+#  without making your program less robust. This is achieved by directly
+#  transferring exceptional return codes (and the program control flow)
+#  from the location where the exception is raised (throw point) to the
+#  location where it is handled (catch point), usually from a deeply nested
+#  sub-routine to a parent routine. All intermediate routines no longer
+#  have to make sure that the exceptional return codes from sub-routines
+#  are correctly passed back to the parent.
+#  .
+# URL: http://www.ossp.org/pkg/lib/ex/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=ex
+version=1.0.5
+release=1
+source=(ftp://ftp.ossp.org/pkg/lib/ex/ex-1.0.5.tar.gz)
+
+build()
+{
+  cd ex-1.0.5
+./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+make
+make DESTDIR="$PKG" install
+}
+
+# EOF

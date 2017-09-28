@@ -1,0 +1,95 @@
+diff -r -u MSYS-1.0.11-20070729_orig/rt/src/winsup/cygwin/Makefile.in MSYS-1.0.11-20070729/rt/src/winsup/cygwin/Makefile.in
+--- MSYS-1.0.11-20070729_orig/rt/src/winsup/cygwin/Makefile.in	2007-09-05 01:29:19.000000000 +0200
++++ MSYS-1.0.11-20070729/rt/src/winsup/cygwin/Makefile.in	2007-09-05 01:33:32.000000000 +0200
+@@ -51,7 +51,7 @@
+ # FIXME: Which is it, CC or CC_FOR_TARGET?
+ CC_FOR_TARGET:=$(CC)
+ CFLAGS:=@CFLAGS@
+-CFLAGS+=-MD -fbuiltin
++CFLAGS+=-MD -fbuiltin -I$(prefix)/include/w32api
+ CXX:=@CXX@
+ CXXFLAGS:=@CXXFLAGS@
+ 
+diff -r -u MSYS-1.0.11-20070729_orig/rt/src/winsup/cygwin/cygheap.cc MSYS-1.0.11-20070729/rt/src/winsup/cygwin/cygheap.cc
+--- MSYS-1.0.11-20070729_orig/rt/src/winsup/cygwin/cygheap.cc	2007-09-05 01:29:19.000000000 +0200
++++ MSYS-1.0.11-20070729/rt/src/winsup/cygwin/cygheap.cc	2007-09-05 01:29:53.000000000 +0200
+@@ -166,7 +166,7 @@
+     }
+ 
+   lastheap = cygheap_max;
+-  (char *) cygheap_max += sbs;
++  cygheap_max = ((char *)cygheap_max + sbs);
+   void *heapalign = (void *) pagetrunc (lastheap);
+ 
+   if (!needalloc)
+diff -r -u MSYS-1.0.11-20070729_orig/rt/src/winsup/cygwin/dcrt0.cc MSYS-1.0.11-20070729/rt/src/winsup/cygwin/dcrt0.cc
+--- MSYS-1.0.11-20070729_orig/rt/src/winsup/cygwin/dcrt0.cc	2007-09-05 01:29:19.000000000 +0200
++++ MSYS-1.0.11-20070729/rt/src/winsup/cygwin/dcrt0.cc	2007-09-05 01:31:08.000000000 +0200
+@@ -958,7 +958,7 @@
+ 	    fork_info = NULL;
+ #else /* !__MSYS__ */
+ 	    if (_cygwin_testing)
+-	      fork_info = NULL;
++        si.lpReserved2 = 0;
+ 	    else if ((fork_info->type & PROC_MAGIC_MASK) == PROC_MAGIC_GENERIC)
+ 	      api_fatal ("conflicting versions of cygwin1.dll detected.  Use only the most recent version.\n");
+ #endif /* !__MSYS__ */
+diff -r -u MSYS-1.0.11-20070729_orig/rt/src/winsup/cygwin/errno.cc MSYS-1.0.11-20070729/rt/src/winsup/cygwin/errno.cc
+--- MSYS-1.0.11-20070729_orig/rt/src/winsup/cygwin/errno.cc	2007-09-05 01:29:19.000000000 +0200
++++ MSYS-1.0.11-20070729/rt/src/winsup/cygwin/errno.cc	2007-09-05 01:32:14.000000000 +0200
+@@ -145,7 +145,7 @@
+ 
+ extern char *_user_strerror _PARAMS ((int));
+ 
+-const NO_COPY char __declspec(dllexport) * const _sys_errlist[]=
++extern const NO_COPY char __declspec(dllexport) * const _sys_errlist[]=
+ {
+ /*      NOERROR 0       */ "No error",
+ /*	EPERM 1		*/ "Not super-user",
+@@ -287,7 +287,7 @@
+ /* ECASECLASH 137 */ "Filename exists with different case"
+ };
+ 
+-int const NO_COPY __declspec(dllexport) _sys_nerr =
++extern int const NO_COPY __declspec(dllexport) _sys_nerr =
+   sizeof (_sys_errlist) / sizeof (_sys_errlist[0]);
+ 
+ /* FIXME: Why is strerror() a long switch and not just:
+diff -r -u MSYS-1.0.11-20070729_orig/rt/src/winsup/cygwin/security.cc MSYS-1.0.11-20070729/rt/src/winsup/cygwin/security.cc
+--- MSYS-1.0.11-20070729_orig/rt/src/winsup/cygwin/security.cc	2007-09-05 01:49:09.000000000 +0200
++++ MSYS-1.0.11-20070729/rt/src/winsup/cygwin/security.cc	2007-09-05 01:51:32.000000000 +0200
+@@ -504,7 +504,7 @@
+ 	  grp_list += well_known_interactive_sid;
+ 	  grp_list += well_known_authenticated_users_sid;
+ 	}
+-      if (auth_luid.QuadPart != 999) /* != SYSTEM_LUID */
++      if (auth_luid.HighPart != 0 || auth_luid.LowPart != 999) /* != SYSTEM_LUID */
+ 	{
+ 	  char buf[64];
+ 	  __small_sprintf (buf, "S-1-5-5-%u-%u", auth_luid.HighPart,
+diff -r -u MSYS-1.0.11-20070729_orig/rt/src/winsup/cygwin/autoload.cc MSYS-1.0.11-20070729/rt/src/winsup/cygwin/autoload.cc
+--- MSYS-1.0.11-20070729_orig/rt/src/winsup/cygwin/autoload.cc	2007-09-05 03:27:03.000000000 +0200
++++ MSYS-1.0.11-20070729/rt/src/winsup/cygwin/autoload.cc	2007-09-05 03:28:41.000000000 +0200
+@@ -201,8 +201,8 @@
+ };
+ 
+ /* The standard DLL initialization routine. */
+-static long long std_dll_init () __asm__ ("std_dll_init") __attribute__ ((unused));
+-static long long
++/*static*/ long long std_dll_init () __asm__ ("std_dll_init") __attribute__ ((unused));
++/*static*/ long long
+ std_dll_init ()
+ {
+   HANDLE h;
+@@ -241,9 +241,9 @@
+ }
+ 
+ /* Initialization function for winsock stuff. */
+-static long long wsock_init () __asm__ ("wsock_init") __attribute__ ((unused, regparm(1)));
++/*static*/ long long wsock_init () __asm__ ("wsock_init") __attribute__ ((unused, regparm(1)));
+ bool NO_COPY wsock_started = 0;
+-static long long
++/*static*/ long long
+ wsock_init ()
+ {
+   static LONG NO_COPY here = -1L;

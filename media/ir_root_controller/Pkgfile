@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A daemon for handling LIRC events.
+#  ir-root-controller is a small daemon which listens to the LIRC (Linux
+#  Infrared Remote Control) daemon and executes system events. It is intended
+#  to be run as a system daemon and does not require any user to have set
+#  up LIRC or events for LIRC. An example application would be changing
+#  the global system volume irrespective of what applications are running
+#  or which users (if any) are logged in.
+#  .
+# URL: http://www.lwithers.me.uk/projects/ir-root-controller/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=ir_root_controller
+version=1.0.1
+release=1
+source=(http://www.lwithers.me.uk/projects/ir-root-controller/data/ir-root-controller-$version.tar.bz2)
+
+build()
+{
+  cd ir-root-controller-$version
+
+  install -d $ROOT/share/doc/ir_root_controller
+  install -m 644 COPYING README $ROOT/share/doc/ir_root_controller
+}
+
+# EOF

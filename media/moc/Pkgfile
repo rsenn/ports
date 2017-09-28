@@ -1,0 +1,34 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A console audio player (MP3, OGG, FLAC, WMA, other) with ncurses interface.
+#  MOC (music on console) is a console audio player with a simple ncurses
+#  interface in playmp3list style. It supports MP3 (with ID3 tag, VBR,
+#  and Xing headers), Ogg, FLAC, WAVE, Musepack, Speex, WMA, MP4, AAC, and
+#  some other less popular audio formats. Playlists can be saved and loaded
+#  using .m3u files (PLS version 2 can also be loaded). Internet streams
+#  (Shoutcast, Icecast) are supported. It achieves gapless playback by
+#  employing an output buffer in a separate thread and file pre-caching. The
+#  key mapping can be fully customized. The interface can be detached from
+#  the server as it plays in the background.
+# URL: http://moc.daper.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=moc
+version=2.4.3
+release=1
+source=(ftp://ftp.daper.net/pub/soft/moc/stable/moc-$version.tar.bz2)
+
+build()
+{
+  cd moc-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

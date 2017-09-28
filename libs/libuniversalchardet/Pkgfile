@@ -1,0 +1,63 @@
+# $Id: Pkgfile,v 1.3 2007/05/09 21:02:51 roman Exp $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libuniversalchardet
+version=2.0.0.3
+release=1
+source=(ftp://ftp.mozilla.org/pub/mozilla.org/firefox/releases/$version/source/firefox-$version-source.tar.bz2
+        firefox-2.0.0.3-universalchardet.patch
+        GNUmakefile)
+
+build()
+{
+  cd mozilla
+  patch -N -p1 -i "$SRC/firefox-2.0.0.3-universalchardet.patch"
+
+  ./configure \
+    --host="$host" \
+    --prefix="$prefix" \
+    --enable-application="browser"
+
+  arch=${host%%-*}
+
+ #  set -e
+  cp "$SRC/GNUmakefile" "extensions/universalchardet/src"
+
+
+  for td in config:export nsprpub xpcom extensions/universalchardet/src; do
+    target=${td##*:}
+    dir=${td%:*}
+
+    if [ "$target" = "$td" ]; then
+      unset target
+    fi
+
+    make \
+      TARGET_XPCOM_ABI="$arch-gcc3" \
+      OS_TEST="$arch" \
+      VISIBILITY_FLAGS="" \
+      OS_CXXFLAGS="-g -ggdb -O2 -march=$arch -fshort-wchar -pthread -pipe" \
+      -C "$dir" ${target:+"$target"} || break
+  done
+
+  make -C "extensions/universalchardet/src" DESTDIR="$PKG" install
+
+  return 0
+
+  version_major=${version%%.*}
+  version_minor=${version#$version_major.}
+  version_minor=${version_minor%%.*}
+
+  install -d "$ROOT/include/universalchardet"
+  install -m 644 extensions/universalchardet/src/*.h "$ROOT/include/universalchardet"
+
+  install -d "$ROOT/lib"
+  install -m 755 extensions/universalchardet/src/libuniversalchardet.so "$ROOT/lib/libuniversalchardet.so.$version_major.$version_minor"
+
+  ln -s "libuniversalchardet.so.$version_major.$version_minor" "$ROOT/lib/libuniversalchardet.so.$version_major"
+  ln -s "libuniversalchardet.so.$version_major.$version_minor" "$ROOT/lib/libuniversalchardet.so"
+}

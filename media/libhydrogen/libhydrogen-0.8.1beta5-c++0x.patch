@@ -1,0 +1,52 @@
+args: -r -u -- libhydrogen-0.8.1beta5_orig libhydrogen-0.8.1beta5
+diff -r -u -- libhydrogen-0.8.1beta5_orig/src/.deps/AlsaMidiDriver.Plo libhydrogen-0.8.1beta5/src/.deps/AlsaMidiDriver.Plo
+diff -r -u -- libhydrogen-0.8.1beta5_orig/src/.deps/DiskWriterDriver.Plo libhydrogen-0.8.1beta5/src/.deps/DiskWriterDriver.Plo
+diff -r -u -- libhydrogen-0.8.1beta5_orig/src/.deps/Hydrogen.Plo libhydrogen-0.8.1beta5/src/.deps/Hydrogen.Plo
+diff -r -u -- libhydrogen-0.8.1beta5_orig/src/.deps/JackDriver.Plo libhydrogen-0.8.1beta5/src/.deps/JackDriver.Plo
+diff -r -u -- libhydrogen-0.8.1beta5_orig/src/.deps/LocalFileMng.Plo libhydrogen-0.8.1beta5/src/.deps/LocalFileMng.Plo
+diff -r -u -- libhydrogen-0.8.1beta5_orig/src/.deps/NullDriver.Plo libhydrogen-0.8.1beta5/src/.deps/NullDriver.Plo
+diff -r -u -- libhydrogen-0.8.1beta5_orig/src/.deps/Object.Plo libhydrogen-0.8.1beta5/src/.deps/Object.Plo
+diff -r -u -- libhydrogen-0.8.1beta5_orig/src/.deps/OssDriver.Plo libhydrogen-0.8.1beta5/src/.deps/OssDriver.Plo
+diff -r -u -- libhydrogen-0.8.1beta5_orig/src/.deps/PreferencesMng.Plo libhydrogen-0.8.1beta5/src/.deps/PreferencesMng.Plo
+diff -r -u -- libhydrogen-0.8.1beta5_orig/src/.deps/Sample.Plo libhydrogen-0.8.1beta5/src/.deps/Sample.Plo
+diff -r -u -- libhydrogen-0.8.1beta5_orig/src/.deps/Song.Plo libhydrogen-0.8.1beta5/src/.deps/Song.Plo
+diff -r -u -- libhydrogen-0.8.1beta5_orig/src/.deps/tinystr.Plo libhydrogen-0.8.1beta5/src/.deps/tinystr.Plo
+diff -r -u -- libhydrogen-0.8.1beta5_orig/src/.deps/tinyxml.Plo libhydrogen-0.8.1beta5/src/.deps/tinyxml.Plo
+diff -r -u -- libhydrogen-0.8.1beta5_orig/src/.deps/tinyxmlerror.Plo libhydrogen-0.8.1beta5/src/.deps/tinyxmlerror.Plo
+diff -r -u -- libhydrogen-0.8.1beta5_orig/src/.deps/tinyxmlparser.Plo libhydrogen-0.8.1beta5/src/.deps/tinyxmlparser.Plo
+diff -r -u -- libhydrogen-0.8.1beta5_orig/src/JackDriver.cpp libhydrogen-0.8.1beta5/src/JackDriver.cpp
+--- libhydrogen-0.8.1beta5_orig/src/JackDriver.cpp	2009-02-28 11:37:48.000000000 +0100
++++ libhydrogen-0.8.1beta5/src/JackDriver.cpp	2009-02-28 11:39:06.000000000 +0100
+@@ -25,6 +25,8 @@
+ #include "JackDriver.h"
+ #ifdef JACK_SUPPORT
+ 
++#include <cstring>
++
+ unsigned long jack_server_sampleRate = 0;
+ jack_nframes_t jack_server_bufferSize = 0;
+ JackDriver *jackDriverInstance = NULL;
+diff -r -u -- libhydrogen-0.8.1beta5_orig/src/Object.h libhydrogen-0.8.1beta5/src/Object.h
+--- libhydrogen-0.8.1beta5_orig/src/Object.h	2009-02-28 11:37:48.000000000 +0100
++++ libhydrogen-0.8.1beta5/src/Object.h	2009-02-28 11:38:52.000000000 +0100
+@@ -25,7 +25,7 @@
+ #ifndef H2_OBJECT_H
+ #define H2_OBJECT_H
+ 
+-
++#include <sys/types.h>
+ #include <iostream>
+ #include <string>
+ using std::string;
+diff -r -u -- libhydrogen-0.8.1beta5_orig/src/OssDriver.cpp libhydrogen-0.8.1beta5/src/OssDriver.cpp
+--- libhydrogen-0.8.1beta5_orig/src/OssDriver.cpp	2009-02-28 11:37:48.000000000 +0100
++++ libhydrogen-0.8.1beta5/src/OssDriver.cpp	2009-02-28 11:39:17.000000000 +0100
+@@ -28,7 +28,7 @@
+ #ifdef OSS_SUPPORT
+ 
+ #include <pthread.h>
+-
++#include <cstring>
+ 
+ audioProcessCallback ossDriver_audioProcessCallback;
+ bool ossDriver_running;

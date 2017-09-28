@@ -1,0 +1,38 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An advanced and well-established feature-rich text mode Web browser.
+#  ELinks is an advanced and well-established feature-rich text mode Web
+#  (HTTP, FTP, etc.) browser. It can render both frames and tables, is
+#  highly customizable, and can be extended via Lua, Guile, Perl, or Ruby
+#  scripts. It has limited support for CSS and Javascript.
+#  .
+# URL: http://elinks.cz/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=elinks
+version=0.11.7
+release=1
+source=(http://elinks.cz/download/elinks-$version.tar.bz2)
+
+build()
+{
+  cd elinks-$version
+
+  sh autogen.sh
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix" \
+     --enable-256-colors \
+     --with-ruby \
+     --with-perl \
+     --with-python
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

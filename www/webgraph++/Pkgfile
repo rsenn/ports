@@ -1,0 +1,26 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=webgraph
+version=1
+release=1
+source=(http://philez.treespider.net/cgi-bin/checkout.pl?project=webgraph)
+
+build()
+{
+  cd webgraph
+
+  install -d $ROOT/{include,lib}
+
+  make \
+      HEADER_INSTALL_DIR="$ROOT/include" \
+      LIB_INSTALL_DIR="$prefix/libs" \
+      ADDITIONAL_INCLUDES="$prefix/include" \
+      ADDITIONAL_LIBS="$prefix/lib" \
+    all install
+
+}

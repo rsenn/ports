@@ -1,0 +1,37 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A C++ library that converts syscalls into a C++ context.
+# CSCall++ is a C++ library that converts common uses of syscalls and C
+# library functions into forms that are more appropriate for use in a C++
+# context. The library wraps functions for dealing with threads, files,
+# FIFOs, serial I/O, sockets, and directories.
+#
+# URL: http://sourceforge.net/projects/cscall/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libwy
+version=0.33
+release=1
+source=($mirror_sf/cscall/libwy-$version.tgz)
+
+build()
+{
+  cd libwy-$version/src
+
+  make CC="$CXX" CFLAGS="$CXXFLAGS"
+
+  install -d $ROOT/include
+  install -d $ROOT/lib
+  install -d $ROOT/share/man/man3
+
+  make \
+      INSTALL_DIR_INC="$ROOT/include" \
+      INSTALL_DIR_LIB="$ROOT/lib" \
+      INSTALL_DIR_MAN="$ROOT/share/man/man3" \
+    install
+
+  install -d $ROOT/share/doc/libwy
+  install -m 644 [A-Z]*[A-Z]* $ROOT/share/doc/libwy
+  install -m 644 *.{txt,note} $ROOT/share/doc/libwy
+}

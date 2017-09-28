@@ -1,0 +1,37 @@
+# $Id: Pkgfile 424 2008-08-10 01:52:57Z enki $
+#
+# Description: Neural Network Framework is a C++ framework to develop, simulate, and analyze arbitrary complex neural networks
+#  The programmer can use the classes provided to create neural networks
+#  with arbitrary topology and mixed type of neurons. It's very easy to
+#  add customized neurons and layers.
+#  .
+# URL: http://www.nnfw.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=nnfw
+version=1.1.5
+release=1
+source=(http://download.berlios.de/nnfw/nnfw-$version-src.tar.gz
+        nnfw-1.1.5-fixes.patch)
+
+build()
+{
+  cd nnfw-$version-src
+
+  patch -p1 -i $SRC/nnfw-1.1.5-fixes.patch
+
+  cmake \
+       -D CMAKE_CXX_FLAGS="$CXXFLAGS" \
+       -D CMAKE_BUILD_TYPE="RelWithDebInfo" \
+       -D CMAKE_INSTALL_PREFIX:PATH="$prefix" \
+       -D CMAKE_SKIP_RPATH:BOOL="ON" \
+       -D SHARED_LIBS:BOOL="ON" \
+    .
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc
+  mv -vf $ROOT/share/nnfw $ROOT/share/doc
+}

@@ -1,0 +1,42 @@
+# $Id: Pkgfile,v 1.6 2007/05/09 21:02:52 roman Exp $
+#
+# Description: A C library for parsing command line parameters.
+#  Popt is a C library for parsing command line parameters. Popt was
+#  heavily influenced by the getopt() and getopt_long() functions, but
+#  it improves on them by allowing more powerful argument expansion. Popt
+#  can parse arbitrary argv[] style arrays and automatically set variables
+#  based on command line arguments. Popt allows command line arguments to
+#  be aliased via configuration files and includes utility functions for
+#  parsing arbitrary strings into argv[] arrays using shell-like rules.
+# URL: http://rpm5.org
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Split: -dev (*/include/*)
+# Depends on:
+
+name=popt
+version=1.15
+release=1
+source=(http://rpm5.org/files/popt/popt-$version.tar.gz
+        popt-libintl.patch
+        popt-1.7-notest.patch
+        popt-1.7-version-info.patch)
+
+build()
+{
+  cd popt-$version
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --with-libintl-prefix="$prefix" \
+      --with-libiconv-prefix="$prefix"
+
+  set -- $(IFS="." && echo $version)
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/popt
+  install -m 644 README ABOUT-NLS COPYING CHANGES $ROOT/share/doc/popt
+}

@@ -1,0 +1,249 @@
+diff -ru -ruN magickwand_orig/Makefile.in magickwand/Makefile.in
+--- magickwand_orig/Makefile.in	2004-10-09 05:41:42.000000000 +0200
++++ magickwand/Makefile.in	2006-05-01 17:57:40.000000000 +0200
+@@ -1,7 +1,7 @@
+ # $Id: Makefile.in
+ 
+ LTLIBRARY_NAME          = libmagickwand.la
+-LTLIBRARY_SOURCES       = magickwand.c
++LTLIBRARY_SOURCES       = magickwand.c magickremapimage.c
+ LTLIBRARY_SHARED_NAME   = magickwand.la
+ LTLIBRARY_SHARED_LIBADD = $(MAGICKWAND_SHARED_LIBADD)
+ 
+diff -ru -ruN magickwand_orig/magickremapimage.c magickwand/magickremapimage.c
+--- magickwand_orig/magickremapimage.c	1970-01-01 01:00:00.000000000 +0100
++++ magickwand/magickremapimage.c	2006-05-01 17:57:27.000000000 +0200
+@@ -0,0 +1,111 @@
++
++#include <magick/MagickCore.h>
++#include <magick/ImageMagick.h>
++#include <magick/image.h>
++
++#include <wand/magick_wand.h>
++#include <wand/magick-image.h>
++#include <wand/magick-wand.h>
++#include <assert.h>
++
++#include "magickwand_im_defs.h"
++#include "magickremapimage.h"
++
++
++MagickExport MagickBooleanType RemapImage(Image *image,const Quantum *map,ExceptionInfo *exception)
++{
++  return RemapImageChannel(image,(ChannelType) ((long) AllChannels &~
++    (long) OpacityChannel),map,exception);
++}
++
++MagickExport MagickBooleanType RemapImageChannel(Image *image,
++  const ChannelType channel,const Quantum *map,
++  ExceptionInfo *exception)
++{       
++#define RemapImageTag  "Remap/Image"
++
++  IndexPacket
++    *indexes;
++
++  long
++    y;
++
++  MagickBooleanType status = MagickTrue;
++  register PixelPacket *p;
++  register long
++    i,
++    u,
++    v,
++    x;
++
++  unsigned long
++    width;
++
++  /*
++    Initialize convolve image attributes.
++  */
++  assert(image != (Image *) NULL);
++  assert(image->signature == MagickSignature);
++  if (image->debug != MagickFalse)
++    (void) LogMagickEvent(TraceEvent,GetMagickModule(),image->filename);
++  assert(exception != (ExceptionInfo *) NULL);
++  assert(exception->signature == MagickSignature);
++
++  for (y=0; y < (long) image->rows; y++)
++  {
++    p=GetImagePixels(image,0,y,image->columns,1);
++    if ((p == (const PixelPacket *) NULL))
++      break;
++    for (x=0; x < (long) image->columns; x++)
++    {
++      if(channel & RedChannel) p->red = map[p->red];
++      if(channel & GreenChannel) p->green = map[p->green];
++      if(channel & BlueChannel) p->blue = map[p->blue];
++      if(channel & OpacityChannel) p->opacity = map[p->opacity];
++
++      p++;
++    }
++    if (SyncImagePixels(image) == MagickFalse)
++      break;
++    if ((image->progress_monitor != (MagickProgressMonitor) NULL) &&
++        (QuantumTick(y,image->rows) != MagickFalse))
++      {
++        status=image->progress_monitor(RemapImageTag,y,image->rows,
++          image->client_data);
++        if (status == MagickFalse)
++          break;
++      }
++  }
++//  normal_kernel=(double *) RelinquishMagickMemory(normal_kernel);
++  return status;
++}
++
++
++WandExport MagickBooleanType MagickRemapImage(MagickWand *wand,
++  const Quantum *map)
++{
++  assert(wand != (MagickWand *) NULL);
++  if (wand->debug != MagickFalse)
++    (void) LogMagickEvent(WandEvent,GetMagickModule(),wand->name);
++  if (map == NULL)
++    return(MagickFalse);
++  if (wand->images == (Image *) NULL)
++    ThrowWandException(WandError,"WandContainsNoImages",wand->name);
++  return RemapImage(wand->images,map,&wand->exception);
++}
++
++WandExport MagickBooleanType MagickRemapImageChannel(MagickWand *wand,
++  const ChannelType channel,const Quantum *map)
++{
++  assert(wand != (MagickWand *) NULL);
++  assert(wand->signature == MagickSignature);
++  if (wand->debug != MagickFalse)
++    (void) LogMagickEvent(WandEvent,GetMagickModule(),wand->name);
++  if (map == NULL)
++    return(MagickFalse);
++  if (wand->images == (Image *) NULL)
++    ThrowWandException(WandError,"WandContainsNoImages",wand->name);
++  return RemapImageChannel(wand->images,channel,map,
++    &wand->exception);
++}
++
+diff -ru -ruN magickwand_orig/magickremapimage.h magickwand/magickremapimage.h
+--- magickwand_orig/magickremapimage.h	1970-01-01 01:00:00.000000000 +0100
++++ magickwand/magickremapimage.h	2006-05-01 17:48:05.000000000 +0200
+@@ -0,0 +1,30 @@
++#ifndef MAGICK_REMAPIMAGE_H
++#define MAGICK_REMAPIMAGE_H
++
++//typedef struct _MagickWand MagickWand;
++//typedef int MagickBooleanType;
++
++#undef WandExport
++#define WandExport extern
++
++#define ThrowWandException(severity,tag,context) \
++{ \
++  (void) ThrowMagickException(&wand->exception,GetMagickModule(),severity, \
++    tag,context); \
++  return(MagickFalse); \
++}
++
++#define QuantumTick(i,span) ((MagickBooleanType) ((((i) & ((i)-1)) == 0) || \
++   (((i) & 0xfff) == 0) || \
++   ((MagickOffsetType) (i) == ((MagickOffsetType) (span)-1))))
++
++MagickExport MagickBooleanType RemapImage(Image *image,const Quantum *map,ExceptionInfo *exception);
++  
++MagickExport MagickBooleanType RemapImageChannel(Image *image,
++                                      const ChannelType channel,const Quantum *map,
++                                      ExceptionInfo *exception);
++
++WandExport MagickBooleanType MagickRemapImage(MagickWand *wand, const Quantum *map);
++WandExport MagickBooleanType MagickRemapImageChannel(MagickWand *wand, const ChannelType channel, const Quantum *map);
++
++#endif /* MAGICK_REMAPIMAGE_H */
+diff -ru -ruN magickwand_orig/magickwand.c magickwand/magickwand.c
+--- magickwand_orig/magickwand.c	2005-09-13 17:20:32.000000000 +0200
++++ magickwand/magickwand.c	2006-05-01 18:00:05.000000000 +0200
+@@ -9,6 +9,8 @@
+ 
+ #include "magickwand_inc.h"
+ 
++#include "magickremapimage.h"
++
+ /* ************************************************************************************************************** */
+ 
+ static MagickBooleanType MW_split_filename_on_period( char **filename, const size_t filename_len,
+@@ -789,6 +791,7 @@
+ 	ZEND_FE( magickcontrastimage, NULL )
+ 
+ 	ZEND_FE( magickconvolveimage, NULL )
++	ZEND_FE( magickremapimage, NULL )
+ /*	ZEND_FE( magickconvolveimagechannel, NULL )  */
+ 
+ 	ZEND_FE( magickcropimage, NULL )
+@@ -4548,6 +4551,56 @@
+ }
+ /* }}} */
+ 
++/* {{{ proto bool MagickRemapImage( MagickWand mgck_wnd, array map [, int channel_type] )
++*/
++ZEND_FUNCTION( magickremapimage )
++{
++	MW_PRINT_DEBUG_INFO
++
++	MagickWand *mgck_wnd;
++	zval *mgck_wnd_rsrc_zvl_p, *zvl_arr, **zvl_pp_element;
++	long channel = -1;
++	unsigned long i = 0;
++  Quantum *map_arr;
++	int num_elements; 
++	HashPosition pos;
++
++	MW_GET_3_ARG( "ra|l", &mgck_wnd_rsrc_zvl_p, &zvl_arr, &channel );
++
++	num_elements = (int) zend_hash_num_elements( Z_ARRVAL_P( zvl_arr ) );
++
++	if ( num_elements < 1 ) {
++		MW_SPIT_FATAL_ERR( "the array parameter was empty" );
++		return;
++	}
++
++	if ( MW_QuantumRange + 1 > num_elements ) {
++		MW_SPIT_FATAL_ERR( "array parameter length was not >= quantum depth" );
++		return;
++	}
++
++	MW_GET_POINTER_FROM_RSRC( MagickWand, mgck_wnd, &mgck_wnd_rsrc_zvl_p );
++
++	MW_ARR_ECALLOC( Quantum, map_arr, num_elements );
++
++	MW_ITERATE_OVER_PHP_ARRAY( pos, zvl_arr, zvl_pp_element ) {
++		convert_to_double_ex( zvl_pp_element );
++
++		map_arr[i++] = (int)(Z_DVAL_PP( zvl_pp_element ));
++	}
++
++	if ( channel == -1 || channel == AllChannels ) {
++		MW_BOOL_FUNC_RETVAL_BOOL( MagickRemapImage( mgck_wnd, map_arr ) );
++	}
++	else {
++		MW_CHECK_CONSTANT( ChannelType, channel );
++		MW_BOOL_FUNC_RETVAL_BOOL( MagickRemapImageChannel( mgck_wnd, (ChannelType) channel, map_arr ) );
++	}
++
++	efree( map_arr );
++}
++/* }}} */
++
+ /* {{{ proto bool MagickCropImage( MagickWand mgck_wnd, int width, int height, int x, int y )
+ */
+ ZEND_FUNCTION( magickcropimage )
+diff -ru -ruN magickwand_orig/magickwand.h magickwand/magickwand.h
+--- magickwand_orig/magickwand.h	2005-09-13 10:45:56.000000000 +0200
++++ magickwand/magickwand.h	2006-05-01 17:59:56.000000000 +0200
+@@ -228,6 +228,7 @@
+ 	ZEND_FUNCTION( magickcontrastimage );
+ 
+ 	ZEND_FUNCTION( magickconvolveimage );
++	ZEND_FUNCTION( magickremapimage );
+ /*	ZEND_FUNCTION( magickconvolveimagechannel );  */
+ 
+ 	ZEND_FUNCTION( magickcropimage );

@@ -1,0 +1,36 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:47 roman Exp $
+#
+# Description: GNUstep Base library
+#  The GNUstep Base Library is a powerful fast library of general-purpose,
+#  non-graphical Objective C classes, inspired by the superb OpenStep API
+#  but implementing Apple and GNU additions to the API as well. It includes
+#  for example classes for unicode strings, arrays, dictionaries, sets,
+#  byte streams, typed coders, invocations, notifications, notification
+#  dispatchers, scanners, tasks, files, networking, threading, remote object
+#  messaging support (distributed objects), event loops, loadable bundles,
+#  attributed unicode strings, xml, mime, user defaults.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=gnustep-base
+version=1.15.0
+release=1
+source=(http://ftpmain.gnustep.org/pub/gnustep/core/gnustep-base-$version.tar.gz)
+
+build()
+{
+  cd gnustep-base-$version
+
+#  libtoolize --force
+#  aclocal --force
+#  autoconf --force
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix"
+
+  make gnustep-base_la_LDFLAGS="-no-undefined -version-info ${version//./:}"
+  make DESTDIR="$PKG" install
+}

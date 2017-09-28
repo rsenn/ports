@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A small but very powerful text-based mail client.
+#  Mutt is a small but very powerful text-based MIME mail client. It is
+#  highly configurable, and is well-suited to the mail power user with
+#  advanced features like key bindings, keyboard macros, mail threading,
+#  regular expression searches, and a powerful pattern matching language
+#  for selecting groups of messages.
+#  .
+# URL: http://www.mutt.org/
+# Maintainer:  Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=mutt
+version=1.4.2.3
+release=1
+source=(ftp://ftp.mutt.org/mutt/mutt-$version.tar.gz)
+
+build()
+{
+  cd mutt-$version
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

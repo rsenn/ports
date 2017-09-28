@@ -1,0 +1,24 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=spidermonkey
+version=0.0.1a
+release=1
+source=(http://wwwsearch.sourceforge.net/python-spidermonkey/src/python-spidermonkey-$version.tar.gz
+        python-spidermonkey-0.0.1a-spare.patch)
+
+build()
+{
+  cd spidermonkey-$version
+
+  patch -N -p1 -i $SRC/python-spidermonkey-0.0.1a-spare.patch
+
+  sed -i "/^include_dirs/ s:= .*:= $prefix/include/js:" \
+    setup.cfg
+
+  python setup.py install --prefix="$ROOT"
+}

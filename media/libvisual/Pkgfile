@@ -1,0 +1,40 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A middle layer library between audio visualisation plugins and applications.
+#  Libvisual is a library that acts as a middle layer between applications
+#  that wish to display audio visualisation and audio visualisation
+#  plugins. It is aimed at developers who have a need for audio
+#  visualisation, and those who write visualisation plugins. By writing an
+#  audio visualisation plugin for libvisual, the developer allows every
+#  application that uses libvisual to use their plugin. The application
+#  handles the actual drawing of the graphics, allowing rendering done by
+#  plugins to be drawn anywhere... as ASCII art, in SDL, as a surface on
+#  an OpenGL object, etc.
+#  .
+# URL: http://libvisual.sf.net
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on: libc6
+
+name=libvisual
+version=0.4.0
+release=1
+source=($mirror_sf/libvisual/libvisual-$version.tar.gz
+        libvisual-0.4.0-fxsr-magic.patch)
+
+build()
+{
+  cd libvisual-$version
+
+  patch -N -p1 -i $SRC/libvisual-0.4.0-fxsr-magic.patch
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

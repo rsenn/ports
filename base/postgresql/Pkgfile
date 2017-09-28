@@ -1,0 +1,37 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: object-relational SQL database (supported version)
+#  PostgreSQL is a fully featured object-relational database management
+#  system. It supports a large part of the SQL standard and is designed
+#  to be extensible by users in many aspects. Some of the features are:
+#  ACID transactions, foreign keys, views, sequences, subqueries, triggers,
+#  user-defined types and functions, outer joins, multiversion concurrency
+#  control. Graphical user interfaces and bindings for many programming
+#  languages are available as well.
+#  This package always depends on the currently supported PostgreSQL database
+#  server version. object-relational SQL database (supported version)
+#  PostgreSQL is a fully featured object-relational database management
+#  system. It supports a large part of the SQL standard and is designed
+#  to be extensible by users in many aspects. Some of the features are:
+#  ACID transactions, foreign keys, views, sequences, subqueries, triggers,
+#  user-defined types and functions, outer joins, multiversion concurrency
+#  control. Graphical user interfaces and bindings for many programming
+#  languages are available as well.
+#  This package always depends on the currently supported PostgreSQL database
+#  server version.
+# URL: 
+# Maintainer: Roman Senn <smoli@paranoya.ch>
+# Depends on:
+
+name=postgresql
+version=8.2beta
+release=1
+source=(ftp://ftp2.ch.postgresql.org/pub/postgresql/source/v$version/postgresql-${version}3.tar.bz2)
+
+build()
+{
+  cd postgresql-${version}3
+  ./configure --prefix="$prefix"
+  make
+  make DESTDIR=$PKG install
+}

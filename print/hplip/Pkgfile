@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A printer driver that provides support for more than 1000 HP printer mode
+#  HPLIP (HP Linux Imaging and Printing) is a complete single and
+#  multi-function printing device connectivity solution for users of
+#  Linux. Supported features include a toolbox with status and maintenance
+#  functions, scanning, a CUPS backend that supports bidirectional I/O,
+#  and photo card unloading. It includes HPIJS 2.x and supports over 1000 HP
+#  printer models including Deskjet, Business Inkjet, Photosmart, Business
+#  Inkjet, PSC, Officejet, Mono/Color LaserJet, and LaserJet Multifunction
+#  Peripheral (MFP).
+# URL: http://hplip.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=hplip
+version=2.7.10
+release=1
+source=($mirror_sf/hplip/hplip-$version.tar.gz)
+
+build()
+{
+  cd hplip-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

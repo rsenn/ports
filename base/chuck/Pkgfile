@@ -1,0 +1,31 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: Concurrent, On-the-fly Audio Programming Language
+#  ChucK is a new audio programming language for real-time synthesis,
+#  composition, and performance, which runs on commodity operating systems.
+#  ChucK presents a new time-based concurrent programming model, which
+#  supports multiple, simultaneous, dynamic control rates, and the ability
+#  to add, remove, and modify code, on-the-fly, while the program is running,
+#  without stopping or restarting.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=chuck
+version=1.2.1.2
+release=1
+source=(http://chuck.cs.princeton.edu/release/files/chuck-$version.tgz)
+
+build()
+{
+  cd chuck-$version/src
+
+  case $host in
+     *-linux-*)
+       make -f makefile.alsa
+       ;;
+  esac
+
+  install -d $ROOT/bin
+  make DESTDIR="$ROOT/bin" install
+}

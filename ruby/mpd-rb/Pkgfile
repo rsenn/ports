@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Library for interfacing with MPD
+# URL: http://rubyforge.org/projects/mpd/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=mpd-rb
+version=0.2.3
+release=1
+source=($mirror_rubyforge/mpd-rb/mpd-rb-$version.tar.gz)
+
+build()
+{
+  cd mpd-rb-$version
+
+  set `ruby --version`
+
+  RUBYVERSION=$2
+  RUBYLIBDIR=$prefix/lib/ruby/${RUBYVERSION%.*}
+
+  install -d $PKG/$RUBYLIBDIR
+  cp -rf lib/* $PKG/$RUBYLIBDIR
+
+  install -d $ROOT/share/doc/mpd-rb
+  install -m 644 COPYING *.txt $ROOT/share/doc/mpd-rb
+}
+
+# EOF

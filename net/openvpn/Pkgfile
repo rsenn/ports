@@ -1,0 +1,45 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: OpenVPN is a full-featured open source SSL VPN solution that
+# accommodates a wide range of configurations, including remote access,
+# site-to-site VPNs, Wi-Fi security, and enterprise-scale remote access
+# solutions with load balancing, failover, and fine-grained access-controls.
+# Starting with the fundamental premise that complexity is the enemy of
+# security, OpenVPN offers a cost-effective, lightweight alternative to other
+# VPN technologies that is well-targeted for the SME and enterprise markets.
+# URL: http://openvpn.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=openvpn
+version=2.0.9
+release=1
+source=(http://openvpn.net/release/openvpn-$version.tar.gz)
+
+build()
+{
+  cd openvpn-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix" \
+       --mandir="$prefix/share/man" \
+       --program-prefix=""
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/include/openvpn
+  install -m 644 openvpn-plugin.h $ROOT/include/openvpn
+
+  install -d $ROOT/share/openvpn
+  cp -rf sample-scripts $ROOT/share/openvpn/
+
+  install -d $ROOT/share/doc/openvpn
+  install -m 644 AUTHORS COPYING COPYRIGHT.GPL ChangeLog INSTALL INSTALL-win32.txt NEWS PORTS README $ROOT/share/doc/openvpn/
+
+  install -d $ROOT/share/doc/openvpn/examples
+  cp -rf easy-rsa $ROOT/share/doc/openvpn/examples/
+}

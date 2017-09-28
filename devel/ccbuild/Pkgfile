@@ -1,0 +1,43 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A C++ source scanning build utility with Makefile and A-A-P recipe generation.
+#  ccbuild is like a dynamic Makefile. ccbuild finds all programs in
+#  the current directory (containing &quot;int main&quot;) and builds
+#  them. For this, it reads the C++ sources and looks at all local and
+#  global includes. All C++ files surrounding local includes are considered
+#  objects for the main program. The global includes lead to extra compiler
+#  arguments using a configuration file. ccbuild splits these arguments
+#  for compilation and linking, keeping the linking arguments back for
+#  later use. It should allow development without any scripting and only
+#  simple reusable configuration. Deployment and distribution should still
+#  be done with other tools. It can create simple Makefiles, A-A-P files,
+#  and graph dependencies using DOT (graphviz) graphs.
+# URL: http://ccbuild.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=ccbuild
+version=1.5.7
+release=1
+source=($mirror_sf/ccbuild/ccbuild-$version.tar.gz
+        ccbuild-1.5.6-boost-typeof.patch
+        ccbuild-1.5.6-c++fix.patch)
+
+build()
+{
+  cd ccbuild-$version
+
+  patch -N -p1 -i $SRC/ccbuild-1.5.6-boost-typeof.patch
+#  patch -N -p1 -i $SRC/ccbuild-1.5.6-c++fix.patch
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/ccbuild
+  install -m 644 AUTHORS COPYING ChangeLog Doxyfile INSTALL MD5SUMS NEWS README TODO $ROOT/share/doc/ccbuild
+}

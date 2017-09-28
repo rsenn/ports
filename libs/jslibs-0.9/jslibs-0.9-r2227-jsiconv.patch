@@ -1,0 +1,127 @@
+diff -wru jslibs-0.9-r1881_orig/src/jsiconv/Makefile jslibs-0.9-r1881/src/jsiconv/Makefile
+--- jslibs-0.9-r1881_orig/src/jsiconv/Makefile	2009-02-06 06:42:12.000000000 +0100
++++ jslibs-0.9-r1881/src/jsiconv/Makefile	2009-02-06 06:41:49.000000000 +0100
+@@ -0,0 +1,8 @@
++TARGET     = jsiconv.so
++SRC        = $(wildcard *.cpp)
++INCLUDES   = `pkg-config js --cflags`
++STATICLIBS = 
++SHAREDLIBS = `pkg-config js --libs`
++DEPENDS    = 
++
++include ../rules.mk
+diff -wru jslibs-0.9-r1881_orig/src/jsiconv/iconv.cpp jslibs-0.9-r1881/src/jsiconv/iconv.cpp
+--- jslibs-0.9-r1881_orig/src/jsiconv/iconv.cpp	2009-02-06 05:13:13.000000000 +0100
++++ jslibs-0.9-r1881/src/jsiconv/iconv.cpp	2009-02-06 06:41:30.000000000 +0100
+@@ -16,7 +16,7 @@
+ 
+ #include <stddef.h>
+ #include <iconv.h>
+-
++#include <errno.h>
+ 
+ struct Private {
+ 	iconv_t cd;
+@@ -38,7 +38,7 @@
+ 	Private *pv = (Private*)JS_GetPrivate(cx, obj);
+ 	if ( pv != NULL ) {
+ 		
+-		int status = iconv_close(pv->cd); // if ( status == -1 ) error is in errno.
++		iconv_close(pv->cd); // if ( status == -1 ) error is in errno.
+ 		JS_free(cx, pv);
+ 	}
+ }
+@@ -53,7 +53,7 @@
+    $ARG boolean fromUseWide:
+ **/
+ DEFINE_CONSTRUCTOR() {
+-
++  Private *pv;
+ 	J_S_ASSERT_CONSTRUCTING();
+ 	J_S_ASSERT_THIS_CLASS();
+ 	J_S_ASSERT_ARG_MIN(2);
+@@ -64,7 +64,7 @@
+ 	J_CHK( JsvalToString(cx, &J_ARG(1), &tocode) );
+ 	J_CHK( JsvalToString(cx, &J_ARG(2), &fromcode) );
+ 
+-	Private *pv = (Private*)JS_malloc(cx, sizeof(Private));
++	pv = (Private*)JS_malloc(cx, sizeof(Private));
+ 	J_S_ASSERT_ALLOC(pv);
+ 
+ 	pv->remainderLen = 0;
+@@ -98,11 +98,14 @@
+   Converts textData. If called without argument, this resets the conversion state to the initial state and returns $UNDEF.
+ **/
+ DEFINE_CALL() {
+-		
++	size_t length, inLeft, outLeft;	
++  char *outPtr;
++  const char *inPtr;
++  Private *pv;
+ 	JSObject *thisObj = JSVAL_TO_OBJECT(argv[-2]); // get 'this' object of the current object ...
+ 	J_S_ASSERT_CLASS(thisObj, classIconv);
+ 
+-	Private *pv = (Private*)JS_GetPrivate(cx, thisObj);
++	pv = (Private*)JS_GetPrivate(cx, thisObj);
+ 	J_S_ASSERT_RESOURCE( pv );
+ 
+ 	size_t status;
+@@ -127,8 +130,8 @@
+ 		inBuf = (char*)JS_GetStringChars(jsstr);
+ 	}
+ 
+-	const char *inPtr = inBuf;
+-	size_t inLeft = inLen;
++	inPtr = inBuf;
++	inLeft = inLen;
+ 
+ 	char *outBuf;
+ 	size_t outLen;
+@@ -137,12 +140,12 @@
+ 	outBuf = (char*)JS_malloc(cx, outLen +1);
+ 	J_S_ASSERT_ALLOC( outBuf );
+ 
+-	char *outPtr = outBuf;
+-	size_t outLeft = outLen;
++	outPtr = outBuf;
++	outLeft = outLen;
+ 
+ 	if ( pv->remainderLen ) { // have to process previous the incomplete multibyte sequence ?
+ 
+-		const char *tmpPtr;
++		char *tmpPtr;
+ 		size_t tmpLeft;
+ 		do {
+ 			pv->remainderBuf[pv->remainderLen++] = *inPtr;
+@@ -170,7 +173,7 @@
+ 	}
+ 
+ 	do {
+-		status = iconv(pv->cd, &inPtr, &inLeft, &outPtr, &outLeft); // doc: http://www.manpagez.com/man/3/iconv/
++		status = iconv(pv->cd, (char **)&inPtr, &inLeft, &outPtr, &outLeft); // doc: http://www.manpagez.com/man/3/iconv/
+ 
+ 		if ( status == (size_t)(-1) )
+ 			switch ( errno ) {
+@@ -218,7 +221,7 @@
+ 
+ 	} while( inLeft );
+ 
+-	size_t length = outPtr - outBuf;
++	length = outPtr - outBuf;
+ 
+ 	if ( MaybeRealloc(outLen, length) ) {
+ 
+@@ -273,11 +276,10 @@
+ 		JSObject *list = JS_NewArrayObject(cx, 0, NULL);
+ 		J_S_ASSERT_ALLOC( list );
+ 		*vp = OBJECT_TO_JSVAL( list );
+-		IteratorPrivate ipv = { cx, list, 0 };
+-		iconvlist(do_one, &ipv);
++		//IteratorPrivate ipv = { cx, list, 0 };
++		//iconvlist(do_one, &ipv);
+ 	}
+ 	return JS_TRUE;
+-	JL_BAD;
+ }
+ 
+ 

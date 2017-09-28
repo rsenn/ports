@@ -1,0 +1,34 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:50 roman Exp $
+#
+# Description: A tool for the creation of sound events based on visual motion data.
+#  Wechselspieler is a tool for mapping motion data from a video stream
+#  easy selection of trigger regions in a video stream and mapping these to
+#  as Video4Linux devices, movie files, and FireWire cameras. As output, it
+#  protocol for integration with MIDI hard/software and OSC-capable software
+# URL: http://wechselspieler.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=wechselspieler
+version=0.8.1
+release=1
+source=($mirror_sf/wechselspieler/wechselspieler-$version.tar.gz
+        wechselspieler-0.8.1-fixes.patch)
+
+build()
+{
+  cd wechselspieler-$version
+
+  patch -N -p1 -i $SRC/wechselspieler-0.8.1-fixes.patch
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --${shared:=enable}-shared \
+       --${static:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+}
+

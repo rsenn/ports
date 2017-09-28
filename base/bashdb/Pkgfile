@@ -1,0 +1,31 @@
+# $Id: Pkgfile 424 2008-08-10 01:52:57Z enki $
+#
+# Description: BASH Debugger
+#  BASH Debugger provides a patched BASH that enables better debugging
+#  support as well as improved error reporting. It also contains the most
+#  comprehensive source code debugger for BASH that has been written. It can
+#  be used as a springboard for other experimental features (such as adding
+#  hashtables), since development is maintained openly and developers are
+#  encouraged to participate.
+# URL: http://bashdb.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=bashdb
+version=3.1-0.09
+release=1
+source=($mirror_sf/bashdb/bashdb-3.1-0.09.tar.gz)
+
+build()
+{
+  cd bashdb-$version
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --target="$target" \
+      --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

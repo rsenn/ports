@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A documentation browser.
+#  Dox is an extensible browser for manpages and HTML documentation. It
+#  allows you to access documentation via tables of contents, keyword
+#  indices, and full text searches. Interfaces to pydoc and perldoc are
+#  provided. Doxygen-generated documentation can easily be integrated in
+#  the toc and index sections.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=dox
+version=1.1
+release=1
+source=(http://download.berlios.de/dox/dox-$version.tar.gz)
+
+build()
+{
+  cd dox-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

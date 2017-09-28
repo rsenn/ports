@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: X11 Video extension wire protocol
+#  This package provides development headers describing the wire protocol
+#  for the XVideo and XVideoMotionCompensation extensions, used to accelerate
+#  playback of videos through X.
+#  This package is built from the X.org videoproto proto module.
+# URL: http://www.X.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=videoproto
+version=2.2.2
+release=1
+source=(ftp://ftp.x.org/pub/individual/proto/videoproto-$version.tar.bz2)
+
+build()
+{
+  cd videoproto-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

@@ -1,0 +1,44 @@
+# $Id: Pkgfile,v 1.3 2007/05/09 21:02:45 roman Exp $
+#
+# Description: A program for converting bitmap to vector graphics.
+#  The aim of the AutoTrace project is the development of a freely available 
+#  application with a functionality similar to CorelTrace or Adobe Streamline.
+#  .
+# URL: http://autotrace.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+
+name=autotrace
+version=0.31.1
+release=1
+source=($mirror_sf/autotrace/autotrace-$version.tar.gz
+        autotrace-0.31.1-m4.patch)
+
+build()
+{
+  cd autotrace-$version
+
+  patch -N -p1 -i $SRC/autotrace-0.31.1-m4.patch
+
+  libtoolize --force --copy --install
+  aclocal --force
+  automake --force --copy --foreign --add-missing
+  aclocal --force
+  autoconf --force
+
+  if [ -e $prefix/bin/Magick-config ]; then
+    export MAGICK_CONFIG="$prefix/bin/Magick-config"
+  fi
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --${shared:=enable}-shared \
+       --${static:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/autotrace
+  install -m 644 README AUTHORS COPYING COPYING.LIB ChangeLog INSTALL NEWS THANKS TODO README.MING HACKING FAQ $ROOT/share/doc/autotrace
+}

@@ -1,0 +1,65 @@
+--- openssl-0.9.8g_orig/Configure	2008-06-11 16:57:33.000000000 +0200
++++ openssl-0.9.8g/Configure	2008-06-11 16:59:20.000000000 +0200
+@@ -326,6 +326,10 @@
+ "linux-ia64-ecc","ecc:-DL_ENDIAN -DTERMIO -O2 -Wall -no_cpprt::-D_REENTRANT::-ldl:SIXTY_FOUR_BIT_LONG RC4_CHUNK:${ia64_asm}:dlfcn:linux-shared:-fPIC::.so.\$(SHLIB_MAJOR).\$(SHLIB_MINOR)",
+ "linux-ia64-icc","icc:-DL_ENDIAN -DTERMIO -O2 -Wall -no_cpprt::-D_REENTRANT::-ldl:SIXTY_FOUR_BIT_LONG RC4_CHUNK:${ia64_asm}:dlfcn:linux-shared:-fPIC::.so.\$(SHLIB_MAJOR).\$(SHLIB_MINOR)",
+ "linux-x86_64",	"gcc:-m64 -DL_ENDIAN -DTERMIO -O3 -Wall -DMD32_REG_T=int::-D_REENTRANT::-ldl:SIXTY_FOUR_BIT_LONG RC4_CHUNK BF_PTR2 DES_INT DES_UNROLL:${x86_64_asm}:dlfcn:linux-shared:-fPIC:-m64:.so.\$(SHLIB_MAJOR).\$(SHLIB_MINOR)",
++
++# dietlibc
++"diet-linux-elf",	"diet-gcc:-DL_ENDIAN -DTERMIO -Os -fomit-frame-pointer -Wall::-D_REENTRANT::-ldl:BN_LLONG ${x86_gcc_des} ${x86_gcc_opts}:${x86_elf_asm}:dlfcn:diet-shared:-fPIC::.so",
++
+ #### SPARC Linux setups
+ # Ray Miller <ray.miller@computing-services.oxford.ac.uk> has patiently
+ # assisted with debugging of following two configs.
+diff -ru openssl-0.9.8g_orig/Makefile.shared openssl-0.9.8g/Makefile.shared
+--- openssl-0.9.8g_orig/Makefile.shared	2008-06-11 17:11:09.000000000 +0200
++++ openssl-0.9.8g/Makefile.shared	2008-06-11 17:32:01.000000000 +0200
+@@ -156,6 +156,15 @@
+ 
+ DO_GNU_APP=LDFLAGS="$(CFLAGS) -Wl,-rpath,$(LIBRPATH)"
+ 
++DO_DIET_SO=SHLIB=lib$(LIBNAME).so; \
++	SHLIB_SUFFIX=; \
++	SHLIB_NAME=lib$(LIBNAME).so; \
++	ALLSYMSFLAGS='-Wl,--whole-archive'; \
++	NOALLSYMSFLAGS='-Wl,--no-whole-archive'; \
++	SHAREDFLAGS="$(CFLAGS) $(SHARED_LDFLAGS) -shared -Wl,-Bsymbolic -Wl,-soname=$$SHLIB_NAME"
++
++DO_DIET_APP=LDFLAGS="$(CFLAGS)"
++
+ #This is rather special.  It's a special target with which one can link
+ #applications without bothering with any features that have anything to
+ #do with shared libraries, for example when linking against static
+@@ -171,6 +180,13 @@
+ link_app.gnu:
+ 	@ $(DO_GNU_APP); $(LINK_APP)
+ 
++link_o.diet:
++	@ $(DO_DIET_SO); $(LINK_SO_O)
++link_a.diet:
++	@ $(DO_DIET_SO); $(LINK_SO_A)
++link_app.diet:
++	@ $(DO_DIET_APP); $(LINK_APP)
++
+ link_o.bsd:
+ 	@if ${DETECT_GNU_LD}; then $(DO_GNU_SO); else \
+ 	$(CALC_VERSIONS); \
+@@ -550,13 +566,17 @@
+ 	expr $(PLATFORM) : '.*ia64' > /dev/null && SHLIB=lib$(LIBNAME).so; \
+ 	$(SYMLINK_SO)
+ # The following lines means those specific architectures do no symlinks
+-symlink.cygwin symlink.alpha-osf1 symlink.tru64 symlink.tru64-rpath:
++symlink.diet symlink.cygwin symlink.alpha-osf1 symlink.tru64 symlink.tru64-rpath:
+ 
+ # Compatibility targets
+ link_o.bsd-gcc-shared link_o.linux-shared link_o.gnu-shared: link_o.gnu
+ link_a.bsd-gcc-shared link_a.linux-shared link_a.gnu-shared: link_a.gnu
+ link_app.bsd-gcc-shared link_app.linux-shared link_app.gnu-shared: link_app.gnu
+ symlink.bsd-gcc-shared symlink.bsd-shared symlink.linux-shared symlink.gnu-shared: symlink.gnu
++link_o.diet-shared: link_o.diet
++link_a.diet-shared: link_a.diet
++link_app.diet-shared: link_app.diet
++symlink.diet-shared: symlink.diet
+ link_o.bsd-shared: link_o.bsd
+ link_a.bsd-shared: link_a.bsd
+ link_app.bsd-shared: link_app.bsd

@@ -1,0 +1,34 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: DAV protocol extensions for Apache.
+#  mod_dav enables Apache to understand the WebDAV protocol (extensions
+#  to HTTP). WebDAV stands for &quot;Web-based Distributed Authoring and
+#  Versioning&quot;, and is defined by RFC 2518. WebDAV is intended to
+#  replace proprietary authoring protocols such as those used by Frontpage
+#  or NetObjects' Fusion, but is also a complete set of protocols for
+#  manipulating a webserver's files and directories, and their properties.
+# URL: http://www.webdav.org/mod_dav/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=mod_dav
+version=1.0.3-1.3.6
+release=2
+source=(http://www.webdav.org/mod_dav/mod_dav-$version.tar.gz)
+
+build()
+{
+  cd mod_dav-${version}
+  ./configure --prefix=$prefix \
+       --with-apxs=$prefix/sbin/apxs
+  make
+
+  # install manually
+  install -d $ROOT/lib/apache
+  install -m 755 libdav.so $ROOT/lib/apache
+
+  install -d $ROOT/include/apache
+  install -m 644 mod_dav.h $ROOT/include/apache
+
+  copy_license "LICENSE.html"
+}

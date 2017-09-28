@@ -1,0 +1,58 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: Tools for managing UNIX services.
+# Longdescription:
+# daemontools is an extensive collection of tools for managing UNIX services.
+# It includes tools for starting, restarting, stopping, monitoring and logging
+# any services that you might wish to run on a UNIX machine.
+#
+# URL: http://cr.yp.to/daemontools.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6
+
+name=daemontools
+version=0.76
+release=1
+source=(http://cr.yp.to/daemontools/daemontools-$version.tar.gz
+        http://smarden.org/pape/djb/manpages/daemontools-$version-man.tar.gz
+        daemontools-$version-tls.patch
+        daemontools-$version-supervise.patch
+        daemontools-$version-sigterm.patch
+        daemontools-0.76-chainable.patch
+        svscanboot.in
+        split.c)
+
+build()
+{
+  cd ${srcdir=$SRC/admin/daemontools-$version}
+
+  patch -N -p1 -i $SRC/daemontools-$version-tls.patch
+  patch -N -p1 -i $SRC/daemontools-$version-supervise.patch
+  patch -N -p1 -i $SRC/daemontools-$version-sigterm.patch
+  patch -N -p1 -i $SRC/daemontools-0.76-chainable.patch
+
+  case ${prefix="/usr"} in
+    /usr)
+      sysconfdir="/etc"
+      localstatedir="/var"
+      servicedir="/service"
+      ;;
+  esac
+
+  cp $SRC/split.c src
+
+  echo "${CC-cc} $CFLAGS -DPREFIX=\\\"$prefix\\\"" >src/conf-cc
+  echo "${CC-cc}" >src/conf-ld
+
+  package/compile
+  mkdir -p $ROOT/bin
+  cp command/* $ROOT/bin
+  mkdir -p $ROOT/share/man/man8
+  cp $SRC/daemontools-man/*.8 $ROOT/share/man/man8
+
+  sed -e "s,@prefix@,$prefix,g" $SRC/svscanboot.in >$ROOT/bin/svscanboot
+  chmod 755 $ROOT/bin/svscanboot
+
+  install -d $PKG/${servicedir=$prefix/service}
+  install -d $PKG/${localstatedir=$prefix/var}/{core,log,run}
+}

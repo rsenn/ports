@@ -1,0 +1,38 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A Ruby library for object-oriented access to databases.
+#  FlexiRecord is a Ruby library for object-oriented access to databases
+#  (object-relational-mapping/ORM). Each table is represented by a
+#  class, and each row of that table is represented by an object of that
+#  class. This library is especially aimed to properly support database
+#  transactions. Currently, only PostgreSQL (version 8.2 or higher) is
+#  supported as a backend.
+#  .
+# URL: http://www.flexiguided.de/publications.flexirecord.en.html
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=flexirecord
+version=1.0.7
+release=1
+source=(http://www.flexiguided.de/pub/flexirecord-$version.gem)
+
+build()
+{
+  if gem unpack flexirecord-$version.gem; then
+    cd flexirecord-$version
+  else
+    gunzip -c data.tar.gz | tar -x
+  fi
+
+  set `ruby --version`
+  RUBYLIBDIR=$prefix/lib/ruby/${2%.*}
+
+  install -d $PKG/$RUBYLIBDIR
+  install -m 644 lib/flexirecord.rb lib/thread_resource_pool.rb $PKG/$RUBYLIBDIR/
+
+  install -d $ROOT/share/doc/flexirecord
+  install -m 644 CHANGELOG LICENSE $ROOT/share/doc/flexirecord/
+}
+
+# EOF

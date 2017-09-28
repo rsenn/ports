@@ -1,0 +1,25 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Paludis is a package management library that works with Gentoo style ebuilds, together with a simple console client. It is entirely independent of Portage.
+# URL: http://paludis.pioto.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=paludis
+version=0.28.2
+release=1
+source=(http://paludis.pioto.org/download/paludis-$version.tar.bz2)
+
+build()
+{
+  cd paludis-$version
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --target="$target" \
+      --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

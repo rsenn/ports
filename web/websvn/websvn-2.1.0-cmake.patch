@@ -1,0 +1,259 @@
+diff --git a/include/svnlook.php b/include/svnlook.php
+index b6e02f1..79ca009 100644
+--- a/include/svnlook.php
++++ b/include/svnlook.php
+@@ -523,6 +523,30 @@ class SVNRepository {
+ 
+   // }}}
+ 
++  // {{{ detectFileFormat
++  //
++  // Detect the format of the given file
++  function detectFileFormat($path, $filename = NULL) {
++    global $extEnscript;
++
++    $ext = strrchr($path, ".");
++
++    switch($ext) {
++      case ".txt":
++        if(strpos($path, "CMake") !== FALSE)
++          $l = "cmake";
++        break;  
++
++      default:
++        $l = @$extEnscript[$ext];
++        break;
++    }
++
++    //print "detectFileFormat($path, $filename) = $l\n";
++
++    return $l;
++  }
++
+   // {{{ getFileContents
+   //
+   // Dump the content of a file to the given filename
+@@ -538,9 +562,7 @@ class SVNRepository {
+     }
+ 
+     // Get the file contents info
+-
+-    $ext = strrchr($path, ".");
+-    $l = @$extEnscript[$ext];
++    $l = $this->detectFileFormat($path, $filename);
+ 
+     if ($l == "php") {
+       // Output the file to the filename
+@@ -650,9 +672,7 @@ class SVNRepository {
+     $pre = false;
+ 
+     // Get the file contents info
+-
+-    $ext = strrchr($path, ".");
+-    $l = @$extEnscript[$ext];
++    $l = $this->detectFileFormat($path);
+ 
+     // Deal with php highlighting internally
+     if ($l == "php") {
+diff --git a/lib/geshi/cmake.php b/lib/geshi/cmake.php
+new file mode 100644
+index 0000000..9fa19f3
+--- /dev/null
++++ b/lib/geshi/cmake.php
+@@ -0,0 +1,195 @@
++<?php
++/************************************************************************************* * <cmake.php>
++ * --------------------------------- * Author: Voker57 (voker57@gmail.com)
++ * Copyright: (c) 2008 Voker57 (http://nblast.org) * Release Version: 1.0.8
++ * Date Started: 15.09.08 *
++ * CMake language file for GeSHi. *
++ * <date-of-release> (<GeSHi release>) *  -  First Release
++ * * TODO
++ * *************************************************************************************
++ * *     This file is part of GeSHi.
++ * *   GeSHi is free software; you can redistribute it and/or modify
++ *   it under the terms of the GNU General Public License as published by *   the Free Software Foundation; either version 2 of the License, or
++ *   (at your option) any later version. *
++ *   GeSHi is distributed in the hope that it will be useful, *   but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the *   GNU General Public License for more details.
++ * *   You should have received a copy of the GNU General Public License
++ *   along with GeSHi; if not, write to the Free Software *   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
++ * ************************************************************************************/
++$language_data = array ('LANG-NAME' => 'CMake',
++	'COMMENT_SINGLE' => array(1 => '#'),
++	'CASE_KEYWORDS' => GESHI_CAPS_NO_CHANGE,
++	'QUOTEMARKS' => array('"'),
++	'ESCAPE_CHAR' => '\\',
++	'KEYWORDS' => array(
++	1 => array('add_custom_command',
++'add_custom_target',
++'add_definitions',
++'add_dependencies',
++'add_executable',
++'add_library',
++'add_subdirectory',
++'add_test',
++'aux_source_directory',
++'break',
++'build_command',
++'cmake_minimum_required',
++'cmake_policy',
++'configure_file',
++'create_test_sourcelist',
++'define_property',
++'else',
++'elseif',
++'enable_language',
++'enable_testing',
++'endforeach',
++'endfunction',
++'endif',
++'endmacro',
++'endwhile',
++'execute_process',
++'export',
++'file',
++'find_file',
++'find_library',
++'find_package',
++'find_path',
++'find_program',
++'fltk_wrap_ui',
++'foreach',
++'function',
++'get_cmake_property',
++'get_directory_property',
++'get_filename_component',
++'get_property',
++'get_source_file_property',
++'get_target_property',
++'get_test_property',
++'if',
++'include',
++'include_directories',
++'include_external_msproject',
++'include_regular_expression',
++'install',
++'link_directories',
++'list',
++'load_cache',
++'load_command',
++'macro',
++'mark_as_advanced',
++'math',
++'message',
++'option',
++'output_required_files',
++'project',
++'remove_definitions',
++'return',
++'separate_arguments',
++'set',
++'set_directory_properties',
++'set_property',
++'set_source_files_properties',
++'set_target_properties',
++'set_tests_properties',
++'site_name',
++'source_group',
++'string',
++'target_link_libraries',
++'try_compile',
++'try_run',
++'variable_watch',
++'while'),
++	2 => array('OUTPUT', 'COMMAND', 'ARGS',
++ 'COMMAND', 'ARGS',
++ 'MAIN_DEPENDENCY',
++ 'DEPENDS',
++ 'IMPLICIT_DEPENDS',
++ 'WORKING_DIRECTORY',
++ 'COMMENT', 'VERBATIM', 'APPEND', 'OUTPUT', 'COMMAND', 'ARGS',
++ 'COMMAND', 'ARGS',
++ 'MAIN_DEPENDENCY',
++ 'DEPENDS',
++ 'IMPLICIT_DEPENDS',
++ 'WORKING_DIRECTORY',
++ 'COMMENT', 'VERBATIM', 'APPEND',
++
++'TARGET', 'PRE_BUILD', 'PRE_LINK', 'POST_BUILD',
++'WIN', 'MACOSX_BUNDLE', 'EXCLUDE_FROM_ALL', 'IMPORTED',
++'STATIC', 'SHARED', 'MODULE',
++'VERSION', 'FATAL_ERROR', 'SET', 'PUSH', 'POP',
++'COPYONLY', 'ESCAPE_QUOTES', 'ONLY',
++ 'EXTRA_INCLUDE', 'FUNCTION',
++
++'GLOBAL', 'DIRECTORY', 'TARGET', 'SOURCE',
++ 'TEST', 'VARIABLE', 'CACHED_VARIABLE',
++ 'PROPERTY', 'INHERITED',
++ 'BRIEF_DOCS',
++ 'FULL_DOCS',
++'OPTIONAL',
++ 'TIMEOUT',
++ 'RESULT_VARIABLE',
++ 'OUTPUT_VARIABLE',
++ 'ERROR_VARIABLE',
++ 'INPUT_FILE',
++ 'OUTPUT_FILE',
++ 'ERROR_FILE',
++ 'OUTPUT_QUIET',
++ 'ERROR_QUIET',
++ 'OUTPUT_STRIP_TRAILING_WHITESPACE',
++ 'ERROR_STRIP_TRAILING_WHITESPACE',
++'NAMESPACE',
++'WRITE',
++ 'APPEND',
++ 'READ', 'LIMIT', 'OFFSET', 'HEX',
++ 'STRINGS', 'LIMIT_COUNT',
++ 'LIMIT_INPUT', 'LIMIT_OUTPUT',
++ 'LENGTH_MINIMUM', 'LENGTH_MAXIMUM',
++ 'NEWLINE_CONSUME', 'REGEX',
++ 'NO_HEX_CONVERSION',
++ 'GLOB',
++ 'GLOB_RECURSE', 'RELATIVE',
++ 'REMOVE',
++ 'REMOVE_RECURSE',
++ 'MAKE_DIRECTORY',
++ 'RELATIVE_PATH',
++ 'TO_CMAKE_PATH',
++ 'TO_NATIVE_PATH',
++ 'DOWNLOAD', 'STATUS', 'LOG',
++ 'NAMES',
++ 'HINTS', 'ENV',
++ 'PATHS',
++ 'PATH_SUFFIXES',
++ 'DOC',
++ 'NO_DEFAULT_PATH',
++ 'NO_CMAKE_ENVIRONMENT_PATH',
++ 'NO_CMAKE_PATH',
++ 'NO_SYSTEM_ENVIRONMENT_PATH',
++ 'NO_CMAKE_SYSTEM_PATH',
++ 'CMAKE_FIND_ROOT_PATH_BOTH',
++ 'ONLY_CMAKE_FIND_ROOT_PATH',
++ 'NO_CMAKE_FIND_ROOT_PATH',
++'ON', 'OFF', 'TRUE', 'FALSE',
++'COMPONENTS', 'REQUIRED')
++),
++'SYMBOLS' => array( 1 => array('(',')','@')),
++'STYLES' => array(
++        'KEYWORDS' => array(            1 => 'color: #b1b100;',
++            2 => 'color: #000000; font-weight: bold;',            3 => 'color: #000066;'
++            ),
++          'COMMENTS' => array(
++            1 => 'color: #808080; font-style: italic;',            2 => 'color: #808080; font-style: italic;'),
++        'ESCAPE_CHAR' => array(            0 => 'color: #000099; font-weight: bold;'
++            ),        'BRACKETS' => array(
++            0 => 'color: #66cc66;'            ),
++        'STRINGS' => array(            0 => 'color: #ff0000;'
++            ),        'NUMBERS' => array(
++            0 => 'color: #cc66cc;'            ),
++        'METHODS' => array(            0 => 'color: #006600;'
++            ),        'SYMBOLS' => array(
++            0 => 'color: #66cc66;'         ),
++           'SCRIPT' => array(),
++            'REGEXPS' => array(0 => 'color: #6400BC;')
++            ),
++           'SCRIPTS' => array(),
++           'REGEXPS' => array(0 => '\$\{.*?\}')
++);
+\ No newline at end of file

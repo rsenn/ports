@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An efficient C++ Web services client library and invocation tool.
+# wsdlpull is an efficient and powerful command line utility for dynamic
+# inspection and invocation of WSDL web services. It also has a C++ library
+# with a Dynamic WSDL Invocation API, a WSDL parser, a schema parser and
+# validator, and an XML parser/serializer.
+#
+# URL: http://wsdlpull.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libcurl3, libgcc1, libstdc++6
+
+name=wsdlpull
+version=1.20
+release=1
+source=($mirror_sf/wsdlpull/wsdlpull-$version.tar.gz)
+
+build()
+{
+  cd wsdlpull-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" docsdir="$prefix/share/doc/wsdlpull" install
+
+  install -d $ROOT/share/doc/wsdlpull
+  install -m 644 [A-Z]*[A-Z]* $ROOT/share/doc/wsdlpull
+}

@@ -1,0 +1,27 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Section: devel
+# Description: The SDF support library
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=sdf-support
+version=2.4
+release=1
+source=(http://homepages.cwi.nl/~daybuild/releases/sdf-support-2.4.tar.gz)
+
+build()
+{
+  cd sdf-support-2.4
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

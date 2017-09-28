@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An O/R Mapper based on the DataMapper pattern
+# URL: http://rubyforge.org/projects/datamapper/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=datamapper
+version=0.9.8
+release=1
+source=($mirror_rubyforge/datamapper/datamapper-$version.tgz)
+
+build()
+{
+  cd datamapper-$version
+
+  set `ruby --version`
+
+  RUBYVERSION=$2
+  RUBYLIBDIR=$prefix/lib/ruby/${RUBYVERSION%.*}
+
+  install -d $PKG$RUBYLIBDIR
+
+  cp -rf lib/* $PKG$RUBYLIBDIR/
+
+  install -d $ROOT/share/doc/datamapper
+  install -m 644 History.txt Manifest.txt README.txt $ROOT/share/doc/datamapper
+}
+
+# EOF

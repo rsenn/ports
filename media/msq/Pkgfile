@@ -1,0 +1,34 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Midifile sequencer
+#  A C library to handle midifiles.
+#  .
+# URL: http://code.google.com/p/msq/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=msq
+version=svn
+release=1
+source=(svn+http://msq.googlecode.com/svn/trunk/msq
+        msq-20081204-fixes.patch)
+
+build()
+{
+  cd msq
+
+  patch -N -p0 -i $SRC/msq-20081204-fixes.patch
+
+  make -C src
+
+  install -d $ROOT/bin
+  install -m 755 src/lmsq $ROOT/bin/
+
+  install -d $ROOT/lib
+  install -m 644 src/libmsq.a $ROOT/lib/
+
+  install -d $ROOT/include
+  install -m 644 src/msq.h $ROOT/include/
+}
+
+# EOF

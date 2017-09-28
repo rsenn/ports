@@ -1,0 +1,29 @@
+# $Id: Pkgfile,v 1.18 2007/04/22 23:07:53 roman Exp $
+#
+# Description: A semantic file system for Linux Kernels based on libfuse.
+# URL: https://gna.org/projects/tagfs/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libfuse2, libsqlite3-0, xulrunner-1.9
+
+name=tagfs
+version=20070714
+release=1
+source=(http://download.gna.org/tagfs/tagfs.$version.tar.bz2)
+
+build()
+{
+  cd tagfs-sql
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  rm -f TAGS ChangeLog NEWS README
+
+  install -d $ROOT/share/doc/tagfs
+  install -m 644 [A-Z]*[A-Z]* $ROOT/share/doc/tagfs
+}

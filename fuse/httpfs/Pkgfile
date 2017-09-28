@@ -1,0 +1,37 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Section: utils
+# Description: file over http mounter.
+# httpfs uses HTTP/1.1 extensions to read arbitrary bytes from a file on a
+# web-server. This is particular interesting for an iso, since it can be
+# investigated (loop device) without actually downloading the whole iso.
+#
+# URL: http://sourceforge.net/projects/httpfs/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=httpfs
+version=2.06.08.26
+release=1
+source=($mirror_sf/httpfs/httpfs_with_static_binaries_$version.tar.gz
+        httpfs-2.06-head-clen.patch
+        httpfs-2.06-makefile.patch
+        httpfs-2.06-enki.patch)
+
+build()
+{
+  patch -N -p0 -i httpfs-2.06-head-clen.patch
+  patch -N -p0 -i httpfs-2.06-makefile.patch
+  patch -N -p0 -i httpfs-2.06-enki.patch
+
+  make SSL=1
+
+  #${CC-cc} $CFLAGS -DUSE_AUTH -D_FILE_OFFSET_BITS=64 -D_REENTRANT -DFUSE_USE_VERSION=25 -D_POSIX_C_SOURCE=200112L -D_POSIX_SOURCE -D_SVID_SOURCE -D_BSD_SOURCE -D_XOPEN_SOURCE=500 -c httpfs.c
+  #${CC-cc} $LDFLAGS -o httpfs httpfs.o -lfuse
+
+  install -d $ROOT/bin
+  install -m 755 httpfs $ROOT/bin
+
+  install -d $ROOT/share/doc/httpfs
+  install -m 644 readme{,.1,.2} $ROOT/share/doc/httpfs
+}

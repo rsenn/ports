@@ -1,0 +1,44 @@
+# $Id: Pkgfile,v 1.1 2007/05/10 16:59:30 roman Exp $
+#
+# Description: Command line and configuration file parsing library
+# libcfg+ is a C library that features multi- command line and configuration
+# file parsing. It is possible to set up various special properties such as
+# quoting characters, deliminator strings, file comment prefixes, multi-line
+# postfixes, and more. It supports many data types such as booleans, integers,
+# decimal numbers, strings with many additional data type flags (such as
+# multiple values for a single option).
+# URL: http://platon.sk/projects/libcfg+/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6
+
+name=libcfg+
+version=0.6.2
+release=1
+source=(http://platon.sk/upload/_projects/00003/libcfg+-$version.tar.gz
+        libcfg+-0.6.2-libtool.patch)
+
+build()
+{
+  cd libcfg+-$version
+
+  patch -N -p1 -i $SRC/libcfg+-0.6.2-libtool.patch
+
+  libtoolize --force --copy --install
+  aclocal --force
+  autoconf --force
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --${shared:=enable}-shared \
+      --${static:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+
+  ln -s platon/cfg+.h $ROOT/include
+
+  install -d $ROOT/share/doc/libcfg+
+  install -m 644 [A-Z]*[A-Z]* $ROOT/share/doc/libcfg+
+}

@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Displays NAT connections created by iptables.
+#  netstat-nat is a small program written in C which displays NAT connections
+#  created by the iptables conntrack module.
+#  .
+# URL: http://www.tweegy.nl/projects/netstat-nat/index.html
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=netstat-nat
+version=1.4.9
+release=1
+source=(http://www.tweegy.nl/download/netstat-nat-1.4.9.tar.gz)
+
+build()
+{
+  cd netstat-nat-1.4.9
+./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+make
+make DESTDIR="$PKG" install
+}
+
+# EOF

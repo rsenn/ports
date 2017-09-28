@@ -1,0 +1,30 @@
+# $Id: Pkgfile,v 1.1.1.1 2005/03/31 19:53:09 enki Exp $
+#
+# Description: Portable tracked music player
+#  Mikmod is a very portable tracked music player which supports a wide
+#  variety of module formats including compressed sample Impulse Tracker
+#  modules. It also supports many archive formats, as well as on the fly
+#  decompression.
+# URL: 
+# Maintainer: Roman Senn <smoli@paranoya.ch>
+# Depends on:
+
+name=mikmod
+version=3.2.2-beta1
+release=1
+source=(http://mikmod.raphnet.net/files/mikmod-${version//-/_}.tar.gz)
+
+build()
+{
+	cd mikmod-$version
+
+	./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --${shared:=enable}-shared \
+       --${static:=enable}-shared
+
+	make
+	make DESTDIR="$PKG" install
+}

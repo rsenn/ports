@@ -1,0 +1,35 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Package: liblog4sh
+# Section: libs
+# Description: A shell script logging framework similar to log4j.
+#  log4sh is a logging framework for shell scripts that works similar to
+#  the other wonderful logging products available from the Apache Software
+#  Foundation (e.g. log4j, log4perl). Although not as powerful as the others,
+#  it can make the task of adding advanced logging to a shell script easier,
+#  and has much more power than just using simple amp;quot;echoamp;quot;
+#  commands throughout. In addition, it can be configured from a properties
+#  file so that scripts in a production environment do not need to be
+#  altered to change the amount of logging they produce.
+#  .
+# URL: http://log4sh.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=log4sh
+version=1.2.10
+release=1
+source=($mirror_sf/log4sh/log4sh-$version.tgz)
+
+build()
+{
+  cd log4sh-$version
+
+  make
+
+  install -d $ROOT/share/doc/log4sh
+  cp -rf doc/* src/examples src/docbook src/test $ROOT/share/doc/log4sh
+
+  install -d $ROOT/bin
+  install -m 644 build/log4sh $ROOT/bin
+}

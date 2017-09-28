@@ -1,0 +1,50 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Iconvircproxy is a proxy for IRC users who want to talk in different character set environments
+# It is especially suitable for European users who occasionally
+# talk on Japanese channels. It requires a fully UTF-8 compatible IRC
+# client, and can talk in ISO-8859-*, ISO-2022-JP, SHIFT-JIS, and UTF-8
+# encodings. Encodings can be configured on a channel-by-channel basis,
+# and heuristics are used to determine the encoding of each character
+# of traffic.
+#
+# URL: http://bisqwit.iki.fi/source/iconvircproxy.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=iconvircproxy
+version=1.6.3
+release=1
+source=(http://bisqwit.iki.fi/src/arch/iconvircproxy-$version.tar.bz2
+        iconvircproxy-1.6.3-cfgexit.patch
+        iconvircproxy-1.6.3-sysconfdir.patch)
+
+build()
+{
+  cd iconvircproxy-$version
+
+  patch -N -p1 -i $SRC/iconvircproxy-1.6.3-cfgexit.patch
+  patch -N -p1 -i $SRC/iconvircproxy-1.6.3-sysconfdir.patch
+
+  case $prefix in
+    "/usr") sysconfdir="/etc" ;;
+  esac
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make SYSCONFDIR="${sysconfdir=$prefix/etc}"
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/iconvircproxy
+  install -m 644 [A-Z]*[A-Z]* $ROOT/share/doc/iconvircproxy
+
+  install -d $ROOT/bin
+  install -m 755 iconvircproxy $ROOT/bin
+
+  install -d $PKG${sysconfdir}
+  install -m 644 ircproxy.cfg $PKG${sysconfdir}
+}

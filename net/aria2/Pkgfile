@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A high speed download utility.
+#  aria2 is a utility for downloading files. The supported protocols are
+#  HTTP(S), FTP, BitTorrent, and Metalink. It has a powerful segmented
+#  downloading ability, downloading a file from multiple sources and multiple
+#  protocols and utilizing your download bandwidth to the maximum. It
+#  supports downloading a file from HTTP(S)/FTP and BitTorrent at the same
+#  time, while the data downloaded from HTTP(S)/FTP is uploaded to the
+#  BitTorrent swarm. Using Metalink's chunk checksums, aria2 automatically
+#  validates chunks of data while downloading a file like BitTorrent.
+# URL: http://aria2.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=aria2
+version=1.5.0b+20090716
+release=1
+source=($mirror_sf/aria2/aria2-$version.tar.bz2)
+
+build()
+{
+  cd aria2-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --program-prefix="" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

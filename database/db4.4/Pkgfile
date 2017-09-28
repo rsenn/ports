@@ -1,0 +1,54 @@
+# $Id: Pkgfile,v 1.9 2007/04/22 23:07:54 roman Exp $
+#
+# Package: libdb4.4
+# Description: Provides embedded database support for traditional and client/server application
+#  Berkeley DB (libdb) is a programmatic toolkit that provides
+#  applications. It includes b+tree, queue, extended linear hashing, fixed,
+#  shared memory caching, database recovery, and replication for highly
+#  available for a wide variety of UNIX platforms as well as Windows XP,
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=db
+version=4.4.20
+release=1
+source=(http://download.oracle.com/berkeley-db/db-$version.tar.gz
+        db-4.5.20-libversion.patch)
+
+build()
+{
+  cd ${srcdir=$SRC/db-$version/dist}
+
+  rm -rf ${builddir=$SRC/db-build-$version} && mkdir -p $builddir && cd $builddir
+
+  if [ -e $prefix/lib/libpthread.so ]; then
+    export PTHREAD_LIB="-lpthread"
+  fi
+
+  $srcdir/configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --mandir="$prefix/share/man" \
+       --infodir="$prefix/share/info" \
+       --${shared:=enable}-shared \
+       --${static:=enable}-shared \
+       --enable-cxx \
+       --enable-compat185 \
+       --enable-pthread_api
+
+  make LIBCSO_LIBS="$PTHREAD_LIB"
+  make DESTDIR="$PKG" install
+
+  IFS=" ." && set -- $version && IFS=" "
+
+  mkdir -p $ROOT/share/doc
+  test -e $ROOT/docs && mv $ROOT/docs $ROOT/share/doc/db-${version%.*}
+
+  install -d $ROOT/lib
+
+  chown -R 0:0 $ROOT
+
+  find $ROOT -perm 444 -print0 | xargs -0 chmod 664
+}

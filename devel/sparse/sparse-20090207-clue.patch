@@ -1,0 +1,29 @@
+diff -wru sparse-2009-02-07_orig/simplify.c sparse-2009-02-07/simplify.c
+--- sparse-2009-02-07_orig/simplify.c	2009-02-07 13:16:00.000000000 +0100
++++ sparse-2009-02-07/simplify.c	2009-02-07 13:16:38.000000000 +0100
+@@ -692,11 +692,13 @@
+ 		}
+ 	}
+ 
++#if 0
+ 	if (size == orig_size) {
+ 		int op = (orig_type->ctype.modifiers & MOD_SIGNED) ? OP_SCAST : OP_CAST;
+ 		if (insn->opcode == op)
+ 			goto simplify;
+ 	}
++#endif
+ 
+ 	return 0;
+ 
+diff -wru sparse-2009-02-07_orig/tokenize.c sparse-2009-02-07/tokenize.c
+--- sparse-2009-02-07_orig/tokenize.c	2009-02-07 13:16:00.000000000 +0100
++++ sparse-2009-02-07/tokenize.c	2009-02-07 13:16:39.000000000 +0100
+@@ -484,7 +484,7 @@
+ 				int nr = 2;
+ 				value -= '0';
+ 				while (next >= '0' && next <= '9') {
+-					value = (value << 3) + (next-'0');
++					value = (value*8) + (next-'0');
+ 					next = nextchar(stream);
+ 					if (!--nr)
+ 						break;

@@ -1,0 +1,34 @@
+# $Id: Pkgfile,v 1.4 2007/04/22 23:07:52 roman Exp $
+#
+# Description: A tool to create, maintain, and monitor Linux Software RAID.
+#  mdadm is a tool for creating, maintaining, and monitoring Linux "md"
+#  device arrays, also known as Software RAID.
+# URL: http://neil.brown.name/blog/mdadm
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=mdadm
+version=2.6.4
+release=1
+source=(http://ftp.de.kernel.org/pub/linux/utils/raid/mdadm/mdadm-$version.tar.bz2)
+
+build()
+{
+  cd mdadm-$version
+
+  case ${prefix="/usr"} in
+    /usr) sysconfdir="/etc" ;;
+  esac
+
+  install -d $ROOT/sbin $ROOT/share/man/man4
+
+  make \
+       DESTDIR="$PKG" \
+       SYSCONFDIR="${sysconfdir=$prefix/etc}" \
+       BINDIR="$prefix/sbin" \
+       MANDIR="$prefix/share/man" \
+       CONFFILE="$sysconfdir/mdadm.conf" \
+       CONFFILE2="$sysconfdir/mdadm/mdadm.conf" \
+       STRIP="" \
+       all install
+}

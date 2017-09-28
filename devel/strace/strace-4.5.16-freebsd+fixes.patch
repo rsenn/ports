@@ -1,0 +1,148 @@
+diff -r -u strace-4.5.16_orig/configure strace-4.5.16/configure
+--- strace-4.5.16_orig/configure	2007-08-03 12:24:41.000000000 +0200
++++ strace-4.5.16/configure	2007-09-21 13:15:46.000000000 +0200
+@@ -7511,6 +7511,7 @@
+ cat confdefs.h >>conftest.$ac_ext
+ cat >>conftest.$ac_ext <<_ACEOF
+ /* end confdefs.h.  */
++#include <sys/types.h>
+ #include <netinet/in.h>
+ 
+ #include <$ac_header>
+@@ -7796,6 +7797,7 @@
+ cat confdefs.h >>conftest.$ac_ext
+ cat >>conftest.$ac_ext <<_ACEOF
+ /* end confdefs.h.  */
++#include <sys/types.h>
+ #include <sys/socket.h>
+ 
+ int
+diff -r -u strace-4.5.16_orig/file.c strace-4.5.16/file.c
+--- strace-4.5.16_orig/file.c	2007-07-24 03:57:11.000000000 +0200
++++ strace-4.5.16/file.c	2007-09-21 13:21:02.000000000 +0200
+@@ -1600,6 +1600,9 @@
+ 		(unsigned long)statbuf.f_bavail,
+ 		(unsigned long)statbuf.f_files,
+ 		(unsigned long)statbuf.f_ffree,
++#ifdef FREEBSD
++#define __val val
++#endif /* FREEBSD */
+ 		statbuf.f_fsid.__val[0], statbuf.f_fsid.__val[1]);
+ #ifdef LINUX
+ 	tprintf(", f_namelen=%lu", (unsigned long)statbuf.f_namelen);
+@@ -2783,6 +2786,7 @@
+ }
+ 
+ 
++#ifdef LINUX
+ static const struct xlat advise[] = {
+   { POSIX_FADV_NORMAL,		"POSIX_FADV_NORMAL"	},
+   { POSIX_FADV_RANDOM,		"POSIX_FADV_RANDOM"	},
+@@ -2794,7 +2798,6 @@
+ };
+ 
+ 
+-#ifdef LINUX
+ int
+ sys_fadvise64(tcp)
+ struct tcb *tcp;
+@@ -2812,7 +2815,6 @@
+     }
+     return 0;
+ }
+-#endif
+ 
+ 
+ int
+@@ -2833,7 +2835,7 @@
+     }
+     return 0;
+ }
+-
++#endif
+ #ifdef LINUX
+ static const struct xlat inotify_modes[] = {
+ 	{ 0x00000001, "IN_ACCESS" },
+diff -r -u strace-4.5.16_orig/net.c strace-4.5.16/net.c
+--- strace-4.5.16_orig/net.c	2007-07-05 20:53:54.000000000 +0200
++++ strace-4.5.16/net.c	2007-09-21 13:15:46.000000000 +0200
+@@ -1125,6 +1125,7 @@
+ 			free(cmsg);
+ 			return;
+ 		}
++#ifdef SCM_CREDENTIALS
+ 		if (cmsg->cmsg_type == SCM_CREDENTIALS
+ 		    && CMSG_LEN(sizeof(struct ucred)) <= cmsg_len) {
+ 			struct ucred *uc = (struct ucred *) CMSG_DATA (cmsg);
+@@ -1134,6 +1135,7 @@
+ 			free(cmsg);
+ 			return;
+ 		}
++#endif /* SCM_CREDENTIALS */
+ 	}
+ 	free(cmsg);
+ 	tprintf(", ...}");
+diff -r -u strace-4.5.16_orig/sock.c strace-4.5.16/sock.c
+--- strace-4.5.16_orig/sock.c	2007-05-24 08:33:11.000000000 +0200
++++ strace-4.5.16/sock.c	2007-09-21 13:15:46.000000000 +0200
+@@ -37,6 +37,7 @@
+ #include <sys/sockio.h>
+ #endif
+ #include <arpa/inet.h>
++#include <netinet/in.h>
+ 
+ #if defined (ALPHA) || defined(SH) || defined(SH64)
+ #ifdef HAVE_SYS_IOCTL_H
+@@ -55,16 +56,26 @@
+ 	{ IFF_DEBUG,		"IFF_DEBUG"		},
+ 	{ IFF_LOOPBACK,		"IFF_LOOPBACK"		},
+ 	{ IFF_POINTOPOINT,	"IFF_POINTOPOINT"	},
++#ifdef IFF_NOTRAILERS
+ 	{ IFF_NOTRAILERS,	"IFF_NOTRAILERS"	},
++#endif /* IFF_NOTRAILERS */
+ 	{ IFF_RUNNING,		"IFF_RUNNING"		},
+ 	{ IFF_NOARP,		"IFF_NOARP"		},
+ 	{ IFF_PROMISC,		"IFF_PROMISC"		},
+ 	{ IFF_ALLMULTI,		"IFF_ALLMULTI"		},
++#ifdef IFF_MASTER
+ 	{ IFF_MASTER,		"IFF_MASTER"		},
++#endif /* IFF_MASTER */
++#ifdef IFF_SLAVE
+ 	{ IFF_SLAVE,		"IFF_SLAVE"		},
++#endif /* IFF_SLAVE */
+ 	{ IFF_MULTICAST,	"IFF_MULTICAST"		},
++#ifdef IFF_PORTSEL
+ 	{ IFF_PORTSEL,		"IFF_PORTSEL"		},
++#endif /* IFF_PORTSEL */
++#ifdef IFF_AUTOMEDIA
+ 	{ IFF_AUTOMEDIA,	"IFF_AUTOMEDIA"		},
++#endif /* IFF_AUTOMEDIA */
+ 	{ 0,			NULL			}
+ };
+ 
+diff -r -u strace-4.5.16_orig/strace.c strace-4.5.16/strace.c
+--- strace-4.5.16_orig/strace.c	2007-08-03 12:02:00.000000000 +0200
++++ strace-4.5.16/strace.c	2007-09-21 13:19:13.000000000 +0200
+@@ -604,6 +604,22 @@
+ 			cleanup();
+ 			exit(1);
+ 		}
++#ifdef FREEBSD
++	{
++		int status;
++		pid_t err;
++
++		do {
++			err = waitpid(pid, &status, WUNTRACED);
++		} while (err == -1 && errno == EINTR);
++		if (err == -1) {
++			fprintf(stderr, "waitpid() failed: %s\n",
++				strerror(errno));
++			cleanup();
++			exit(1);
++		}
++	}
++#endif
+ #ifdef USE_PROCFS
+ 		if (proc_open(tcp, 0) < 0) {
+ 			fprintf(stderr, "trouble opening proc file\n");

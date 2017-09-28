@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Distributed hash table file system
+# URL: http://www.magmafs.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libfuse2, libssl0.9.8
+
+name=magmafs
+version=20070829
+release=1
+source=(http://download.gna.org/magma/magma-$version.tgz
+        magma-20070829-pthreads-max.patch)
+
+build()
+{
+  cd magma
+
+  patch -N -p1 -i $SRC/magma-20070829-pthreads-max.patch
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make SUBDIRS="src tools" DESTDIR="$PKG" install
+
+  find -name .svn -or -name .deps -exec rm -rf '{}' ';'
+
+  rm -f NEWS TODO
+
+  install -d $ROOT/share/doc/magmafs
+  install -m 644 [A-Z]*[A-Z]* docs/*.txt $ROOT/share/doc/magmafs
+}

@@ -1,0 +1,30 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:50 roman Exp $
+#
+# Description: library for loading and modifying Gigasampler and DLS files
+#  libgig is a C++ library for loading, modifying and creating Gigasampler
+#  files and DLS (Downloadable Sounds) Level 1/2 files.
+#  For more information visit
+#  http://stud.hs-heilbronn.de/~cschoene/projects/libgig/
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libgig
+version=3.1.1
+release=1
+source=(http://download.linuxsampler.org/packages/libgig-$version.tar.bz2)
+
+build()
+{
+  cd libgig-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --${shared:=enable}-shared \
+       --${static:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+}

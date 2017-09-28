@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Realtime Audio Synthesizer (DJ Scratching)
+#  TerminatorX is a realtime audio synthesizer that allows you to "scratch"
+#  on digitally sampled audio data (*.wav, *.au, *.mp3, etc.) the way
+#  hiphop-DJs scratch on vinyl records. It features multiple turntables,
+#  realtime effects (built-in as well as LADSPA plugin effects), a sequencer,
+#  and an easy-to-use GTK+ GUI.
+# URL: http://www.terminatorX.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=terminatorX
+version=3.82
+release=1
+source=(http://terminatorx.org/dist/terminatorX-$version.tar.bz2)
+
+build()
+{
+  cd terminatorX-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

@@ -1,0 +1,36 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Simple but powerful web scraping toolkit written in Ruby.
+#  A simple to learn and use, yet very powerful web extraction framework
+#  in Ruby. Navigate through the Web, Extract, query, transform and save
+#  data from the Web page of interest by the concise and easy to use DSL
+#  provided by scRUBYt
+# URL: http://scrubyt.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=scrubyt
+version=0.4.1
+release=1
+source=($mirror_rubyforge/scrubyt/scrubyt-$version.gem)
+
+build()
+{
+  mkdir -p ${srcdir=$SRC/scrubyt-$version} && cd $srcdir
+
+  tar -xvmf $SRC/data.tar.gz
+  gzip -dc $SRC/metadata.gz >metadata
+
+  rake
+
+  set -- `ruby --version`
+
+  RUBYVERSION="$2"
+  RUBYDIR="$prefix/lib/ruby/${RUBYVERSION%.*}"
+
+  #install -d $ROOT/share/doc/scrubyt
+  #install -m 755 [A-Z]*[A-Z]* $ROOT/share/doc/scrubyt
+
+  install -d $PKG/$RUBYDIR
+  cp -rf lib/* $PKG/$RUBYDIR
+}

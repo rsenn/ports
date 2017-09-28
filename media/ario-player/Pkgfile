@@ -1,0 +1,26 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: GTK2 client for MPD.
+# URL: http://ario-player.sourceforge.net/
+# Maintainer: 
+# Depends on: 
+
+name=ario-player
+version=1.2.2
+release=1
+source=(http://heanet.dl.sourceforge.net/sourceforge/ario-player/ario-1.2.2.tar.gz)
+
+build() 
+{
+  cd ario-1.2.2
+  
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+  
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

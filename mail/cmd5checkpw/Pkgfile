@@ -1,0 +1,40 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Authentication program that uses CRAM-MD5 authentiaction mode.
+#  cmd5checkpw is a checkpassword compatible authentication program that
+#  uses CRAM-MD5 authentiaction mode. It was designed primary to work
+#  with qmail but it can be used by any other program that knows how
+#  to use checkpassword compatible authentication. Actualy you can save
+#  yourself a lot of work using this program instead of patching other
+#  programs. Changing a program to use checkpassword is certainly simplier
+#  than adding whole CRAM-MD5 support. This code is based on the original
+#  checkpassword by Dan Bernstein. It uses MD5 and HMAC algorithms as
+#  described in rfc1321 and rfc2104
+#  .
+# URL: http://members.elysium.pl/brush/cmd5checkpw/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=cmd5checkpw
+version=0.22
+release=1
+source=(http://members.elysium.pl/brush/cmd5checkpw/dist/cmd5checkpw-$version.tar.gz)
+
+build()
+{
+  cd cmd5checkpw-$version
+
+  make
+
+  install -d $ROOT/bin
+  install -m 4711 cmd5checkpw $ROOT/bin
+
+  install -d $ROOT/share/man/man8
+  install -m 644 cmd5checkpw.8 $ROOT/share/man/man8
+
+  install -d $ROOT/share/doc/cmd5checkpw
+  install -m 644 CHANGES CREDITS INSTALL README rfc1321.txt rfc2104.txt $ROOT/share/doc/cmd5checkpw
+
+}
+
+# EOF

@@ -1,0 +1,39 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A tool for blending the seams between images in a panorama.
+#  Enblend is a postprocessing tool for creating panoramic images. After
+#  you align image features using a program like Hugin, there are
+#  often photometric problems that lead to ugly seams in the final
+#  composite. Enblend blends away these seams using a multiresolution
+#  spline. This technique gives good results on both low spatial frequency
+#  objects (sky and clouds) and high spatial frequency objects (trees
+#  and houses).
+# URL: http://enblend.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=enblend
+version=3.0
+release=1
+source=($mirror_sf/enblend/enblend-$version.tar.gz)
+
+build()
+{
+  cd enblend-$version
+
+  libtoolize --force --copy
+  aclocal --force -I m4
+  automake --force --copy --foreign --add-missing
+  aclocal --force -I m4
+  autoconf --force
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix" \
+       --mandir="$prefix/share/man"
+
+  make
+  make DESTDIR="$PKG" install
+}

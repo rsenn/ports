@@ -1,0 +1,542 @@
+Only in aibash-0.4: .build
+Only in aibash-0.4: .made
+Only in aibash-0.4: alias.o
+Only in aibash-0.4: array.o
+Only in aibash-0.4: bash
+Only in aibash-0.4: bashbug
+Only in aibash-0.4: bashhist.o
+Only in aibash-0.4: bashline.o
+Only in aibash-0.4: bracecomp.o
+Only in aibash-0.4: braces.o
+Only in aibash-0.4/builtins: alias.o
+Only in aibash-0.4/builtins: bashgetopt.o
+Only in aibash-0.4/builtins: bind.o
+Only in aibash-0.4/builtins: break.o
+Only in aibash-0.4/builtins: builtext.h
+Only in aibash-0.4/builtins: builtin.o
+Only in aibash-0.4/builtins: builtins.c
+Only in aibash-0.4/builtins: builtins.o
+Only in aibash-0.4/builtins: cd.o
+Only in aibash-0.4/builtins: colon.o
+Only in aibash-0.4/builtins: command.o
+Only in aibash-0.4/builtins: common.o
+Only in aibash-0.4/builtins: complete.o
+Only in aibash-0.4/builtins: declare.o
+Only in aibash-0.4/builtins: echo.o
+Only in aibash-0.4/builtins: enable.o
+Only in aibash-0.4/builtins: eval.o
+Only in aibash-0.4/builtins: evalfile.o
+Only in aibash-0.4/builtins: evalstring.o
+Only in aibash-0.4/builtins: exec.o
+Only in aibash-0.4/builtins: exit.o
+Only in aibash-0.4/builtins: fc.o
+Only in aibash-0.4/builtins: fg_bg.o
+Only in aibash-0.4/builtins: getopt.o
+Only in aibash-0.4/builtins: getopts.o
+Only in aibash-0.4/builtins: hash.o
+Only in aibash-0.4/builtins: help.o
+Only in aibash-0.4/builtins: history.o
+Only in aibash-0.4/builtins: jobs.o
+Only in aibash-0.4/builtins: kill.o
+Only in aibash-0.4/builtins: let.o
+Only in aibash-0.4/builtins: libbuiltins.a
+Only in aibash-0.4/builtins: mkbuiltins
+Only in aibash-0.4/builtins: mkbuiltins.o
+Only in aibash-0.4/builtins: pipesize.h
+Only in aibash-0.4/builtins: printf.o
+Only in aibash-0.4/builtins: psize.aux
+Only in aibash-0.4/builtins: pushd.o
+Only in aibash-0.4/builtins: read.o
+Only in aibash-0.4/builtins: return.o
+Only in aibash-0.4/builtins: set.o
+Only in aibash-0.4/builtins: setattr.o
+Only in aibash-0.4/builtins: shift.o
+Only in aibash-0.4/builtins: shopt.o
+Only in aibash-0.4/builtins: source.o
+Only in aibash-0.4/builtins: suspend.o
+Only in aibash-0.4/builtins: test.o
+Only in aibash-0.4/builtins: times.o
+Only in aibash-0.4/builtins: trap.o
+Only in aibash-0.4/builtins: type.o
+Only in aibash-0.4/builtins: ulimit.o
+Only in aibash-0.4/builtins: umask.o
+Only in aibash-0.4/builtins: wait.o
+Only in aibash-0.4: copy_cmd.o
+Only in aibash-0.4: dispose_cmd.o
+Only in aibash-0.4: error.o
+Only in aibash-0.4: eval.o
+Only in aibash-0.4: execute_cmd.o
+Only in aibash-0.4: expr.o
+Only in aibash-0.4: findcmd.o
+Only in aibash-0.4: flags.o
+Only in aibash-0.4: general.o
+Only in aibash-0.4: hashcmd.o
+Only in aibash-0.4: hashlib.o
+Only in aibash-0.4: input.o
+Only in aibash-0.4: jobs.o
+Only in aibash-0.4/lib/glob: fnmatch.o
+Only in aibash-0.4/lib/glob: glob.o
+Only in aibash-0.4/lib/glob: libglob.a
+Only in aibash-0.4/lib/malloc: libmalloc.a
+Only in aibash-0.4/lib/malloc: malloc.o
+Only in aibash-0.4/lib/malloc: stub.o
+diff -ru aibash-0.4_orig/lib/readline/aibash/Node.h aibash-0.4/lib/readline/aibash/Node.h
+--- aibash-0.4_orig/lib/readline/aibash/Node.h	2009-03-12 05:10:41.000000000 +0100
++++ aibash-0.4/lib/readline/aibash/Node.h	2009-03-12 04:57:55.000000000 +0100
+@@ -2,16 +2,18 @@
+ 
+ using namespace std;
+ 
+-template <class Contents> class Node : public vector<class Node*>
++template <class Contents> class Node : public vector<Node<Contents>*>
+ {
++  typedef Node<Contents> node_type;
++
+  protected:
+-  Node* m_nodeParent;
++  node_type* m_nodeParent;
+ 
+   private: 
+   Contents m_contents;
+ 
+ public:
+-  typedef vector<Node*>::iterator iterator;
++  typedef typename vector<node_type*>::iterator iterator;
+ 
+   Node* getParent()
+   {
+@@ -23,16 +25,16 @@
+       this->contents=c;
+     }
+ 
+-  void push_back(Node* pNode)
++  void push_back(node_type* pNode)
+     {
+-      vector<Node*>::push_back(pNode);
++      vector<node_type*>::push_back(pNode);
+       pNode->m_nodeParent=this;
+     }
+ 
+   iterator erase(iterator iter)
+     {
+       (*iter)->m_nodeParent=0;
+-      return vector<Node*>::erase(iter);
++      return vector<node_type*>::erase(iter);
+     }
+ 
+   Node()
+diff -ru aibash-0.4_orig/lib/readline/aibash/NodeContents.cpp aibash-0.4/lib/readline/aibash/NodeContents.cpp
+--- aibash-0.4_orig/lib/readline/aibash/NodeContents.cpp	2009-03-12 05:10:41.000000000 +0100
++++ aibash-0.4/lib/readline/aibash/NodeContents.cpp	2009-03-12 04:57:55.000000000 +0100
+@@ -1,3 +1,5 @@
++#include <iostream>
++
+ #include "NodeContents.h"
+ 
+ /** writes a XML representation to a stream */
+diff -ru aibash-0.4_orig/lib/readline/aibash/NodeContents.h aibash-0.4/lib/readline/aibash/NodeContents.h
+--- aibash-0.4_orig/lib/readline/aibash/NodeContents.h	2009-03-12 05:10:41.000000000 +0100
++++ aibash-0.4/lib/readline/aibash/NodeContents.h	2009-03-12 04:57:55.000000000 +0100
+@@ -9,6 +9,7 @@
+ #include <xercesc/util/XMLString.hpp>
+ 
+ using namespace std;
++XERCES_CPP_NAMESPACE_USE
+ 
+ class NodeContents
+ {
+diff -ru aibash-0.4_orig/lib/readline/aibash/Path.cpp aibash-0.4/lib/readline/aibash/Path.cpp
+--- aibash-0.4_orig/lib/readline/aibash/Path.cpp	2009-03-12 05:10:41.000000000 +0100
++++ aibash-0.4/lib/readline/aibash/Path.cpp	2009-03-12 04:57:55.000000000 +0100
+@@ -5,28 +5,28 @@
+ #include "Path.h"
+ 
+ 
+-Path::Path(string s,char c)
++Path::Path(std::string s,char c)
+ {
+   m_cSep=c;
+   setPath(s);
+ }
+ 
+-void Path::setPath(string s)
++void Path::setPath(std::string s)
+ {
+   m_bParsed=false;
+   m_sPathString=s;
+ }
+ 
+-string Path::getPath()
++std::string Path::getPath()
+ {
+   return m_sPathString;
+ }
+ 
+-void Path::parse(string& s)
++void Path::parse(std::string& s)
+ {
+   m_bParsed=true;
+   if (s=="") return;
+-  string pathComponent;
++  std::string pathComponent;
+   for (int i=0;i<s.length();i++)
+   {
+     if (i==0 && s[0]==m_cSep) 
+@@ -37,7 +37,7 @@
+     {
+       // store path component
+       m_vPathComponents.push_back(pathComponent); 
+-      pathComponent=string("");
++      pathComponent=std::string("");
+     }
+     else if (s[i]!=m_cSep)
+       pathComponent+=s[i];
+@@ -74,10 +74,10 @@
+   return true;
+ }
+ 
+-string Path::getParent()
++std::string Path::getParent()
+ {
+   int i=m_sPathString.rfind(m_cSep,m_sPathString.length()-1);
+-  if (i==string::npos)
++  if (i==std::string::npos)
+     return m_sPathString;
+   return m_sPathString.substr(0,i);
+ }
+@@ -85,9 +85,9 @@
+ 
+ /*int main(int argc,char** argv)
+ {
+-  string s(argv[1]);
++  std::string s(argv[1]);
+   Path p(s);
+-  for (vector<string>::const_iterator iter=p.begin();
++  for (vector<std::string>::const_iterator iter=p.begin();
+        iter!=p.end();
+        iter++)
+     cout << *iter << endl;
+diff -ru aibash-0.4_orig/lib/readline/aibash/Path.h aibash-0.4/lib/readline/aibash/Path.h
+--- aibash-0.4_orig/lib/readline/aibash/Path.h	2009-03-12 05:10:41.000000000 +0100
++++ aibash-0.4/lib/readline/aibash/Path.h	2009-03-12 04:57:55.000000000 +0100
+@@ -9,11 +9,11 @@
+   
+  public:
+   /** iterator for the path */
+-  typedef vector<string>::iterator iterator;
++  typedef std::vector<std::string>::iterator iterator;
+   //typedef string const_iterator;
+ 
+   /** s=pathname (filename) */
+-  Path(string s,char c='/');
++  Path(std::string s,char c='/');
+ 
+   /** initializes with empty string*/
+   Path()
+@@ -24,7 +24,7 @@
+     }
+ 
+   /** sets a new path */
+-  void setPath(string s);
++  void setPath(std::string s);
+ 
+   /** returns first component (directory) of pathname */
+   iterator begin();
+@@ -40,9 +40,9 @@
+   bool exists();
+ 
+   /** returns the full path */
+-  string getPath();
++  std::string getPath();
+ 
+-  string getParent();
++  std::string getParent();
+ 
+   /** returns the number of components the path has*/
+   int getNumOfComponents()
+@@ -52,14 +52,14 @@
+     }
+ 
+   /** return the i.th component of the path (beginning with 0) */
+-  string getComponent(int i)
++  std::string getComponent(int i)
+     {
+       if (!m_bParsed) parse(m_sPathString);
+       return m_vPathComponents[i];
+     }
+ 
+   /** returns the last component of the path*/
+-  string getLastComponent()
++  std::string getLastComponent()
+     {
+       if (!m_bParsed) parse(m_sPathString);
+       return m_vPathComponents[m_vPathComponents.size()-1];
+@@ -81,16 +81,16 @@
+  private:
+ 
+   /** parse the given string in path components */
+-  void parse(string& s);
++  void parse(std::string& s);
+ 
+   /** vector of components */
+-  vector<string> m_vPathComponents;
++  std::vector<std::string> m_vPathComponents;
+ 
+   /** was already parsed in components or not */
+   bool m_bParsed;
+   
+   /** full path */
+-  string m_sPathString;
++  std::string m_sPathString;
+ 
+   /** path separator */
+   char m_cSep;
+diff -ru aibash-0.4_orig/lib/readline/aibash/PathNode.cpp aibash-0.4/lib/readline/aibash/PathNode.cpp
+--- aibash-0.4_orig/lib/readline/aibash/PathNode.cpp	2009-03-12 05:10:41.000000000 +0100
++++ aibash-0.4/lib/readline/aibash/PathNode.cpp	2009-03-12 04:57:55.000000000 +0100
+@@ -1,5 +1,6 @@
+ #include <vector>
+ #include <string.h>
++#include <iostream>
+ #include <sys/stat.h>
+ #include "PathNode.h"
+ 
+@@ -285,8 +286,7 @@
+   {
+      pNode=*iter;
+      pNodeContents=pNode->getContents();
+-     if (s.compare(pNodeContents->getPathComponent(),0,
+-		   s.length())==0)
++     if (s.compare(pNodeContents->getPathComponent())==0)
+      {
+        vpHighestScores.push_back((PathNode*) pNode);
+        iCount=pNodeContents->getCount();
+diff -ru aibash-0.4_orig/lib/readline/aibash/PathNode.h aibash-0.4/lib/readline/aibash/PathNode.h
+--- aibash-0.4_orig/lib/readline/aibash/PathNode.h	2009-03-12 05:10:41.000000000 +0100
++++ aibash-0.4/lib/readline/aibash/PathNode.h	2009-03-12 04:57:55.000000000 +0100
+@@ -93,7 +93,7 @@
+    * does not exists 
+    * @param cSep  file separator used (normally '/')
+    */
+-  void PathNode::optimize(char cSep='/');
++  void optimize(char cSep='/');
+ 
+   /** returns the longest common prefix of the given list of strings */
+   static string getPrefix(vector<string> vStrings);
+@@ -114,14 +114,14 @@
+     }
+ 
+   /** retrieves an iterator pointing to this path node */
+-  Node<NodeContents*>::iterator PathNode::getIterator();
++  Node<NodeContents*>::iterator getIterator();
+ 
+  private:
+    /** returns the path node belonging to the given path */
+ 
+   bool m_bSawErrors;
+   PathNode** m_ypPathNodes;
+-  void PathNode::optimize(const string& sSep,string& sCurrentPath,int iTime);
++  void optimize(const string& sSep,string& sCurrentPath,int iTime);
+   
+ };
+ 
+diff -ru aibash-0.4_orig/lib/readline/aibash/Program.h aibash-0.4/lib/readline/aibash/Program.h
+--- aibash-0.4_orig/lib/readline/aibash/Program.h	2009-03-12 05:10:41.000000000 +0100
++++ aibash-0.4/lib/readline/aibash/Program.h	2009-03-12 04:57:55.000000000 +0100
+@@ -7,10 +7,12 @@
+ 
+ #include <math.h>
+ #include <string>
+-#include <hash_map>
++#include <backward/hash_fun.h>
++#include <backward/hash_map>
+ #include "Suffix.h"
+ 
+ using namespace std;
++using namespace __gnu_cxx;
+ 
+ class MyHash
+ {
+diff -ru aibash-0.4_orig/lib/readline/aibash/Programs.h aibash-0.4/lib/readline/aibash/Programs.h
+--- aibash-0.4_orig/lib/readline/aibash/Programs.h	2009-03-12 05:10:41.000000000 +0100
++++ aibash-0.4/lib/readline/aibash/Programs.h	2009-03-12 04:57:55.000000000 +0100
+@@ -4,11 +4,14 @@
+ 
+ #ifndef PROGRAMS_H
+ #define PROGRAMS_H
+-#include <hash_map>
++#include <ext/hash_map>
+ #include <xercesc/sax2/DefaultHandler.hpp>
+ #include "Program.h"
+ 
+ using namespace std;
++using namespace __gnu_cxx;
++
++XERCES_CPP_NAMESPACE_USE
+ 
+ class Programs: public hash_map<string,Program*,MyHash>, DefaultHandler
+ {
+@@ -60,7 +63,7 @@
+   //hash_map<const char*,Program> hm;
+   int m_num;
+   Program* currentProgram;
+-  friend Program;
++  friend class Program;
+ };
+ #endif
+ 
+diff -ru aibash-0.4_orig/lib/readline/aibash/aibashUtils.cpp aibash-0.4/lib/readline/aibash/aibashUtils.cpp
+--- aibash-0.4_orig/lib/readline/aibash/aibashUtils.cpp	2009-03-12 04:59:13.000000000 +0100
++++ aibash-0.4/lib/readline/aibash/aibashUtils.cpp	2009-03-12 05:09:32.000000000 +0100
+@@ -1,6 +1,6 @@
+ #include <stdlib.h>
+ #include <iostream>
+-#include <string>
++#include <cstring>
+ 
+ using namespace std;
+ 
+Only in aibash-0.4/lib/readline/aibash: aibashUtils.o
+diff -ru aibash-0.4_orig/lib/readline/aibash/correct.cpp aibash-0.4/lib/readline/aibash/correct.cpp
+--- aibash-0.4_orig/lib/readline/aibash/correct.cpp	2009-03-12 05:10:41.000000000 +0100
++++ aibash-0.4/lib/readline/aibash/correct.cpp	2009-03-12 04:57:55.000000000 +0100
+@@ -8,6 +8,7 @@
+ #include <dirent.h>
+ #include <string>
+ #include <string.h>
++#include <iostream>
+ #include "Path.h"
+ //#include "fuzzy.h"
+ #include "Programs.h"
+@@ -416,7 +417,7 @@
+ /** initializes the path trees for file and java pathes */
+ void initPathTrees()
+ {
+-  ypPathNodes=new (PathNode*)[2];
++  ypPathNodes=new PathNode*[2];
+   char* pCHome=getenv("HOME");
+   string sFilename;
+   for (int i=0;i<2;i++)
+diff -ru aibash-0.4_orig/lib/readline/aibash/exception.h aibash-0.4/lib/readline/aibash/exception.h
+--- aibash-0.4_orig/lib/readline/aibash/exception.h	2009-03-12 05:10:41.000000000 +0100
++++ aibash-0.4/lib/readline/aibash/exception.h	2009-03-12 04:57:55.000000000 +0100
+@@ -1,22 +1,22 @@
+ #ifndef exc
+ #define exc
+ 
+-#include <stl.h> 
++//#include <stl.h> 
+ #include <string>
+ 
+ class Exception
+ {
+   protected:
+-    string m_mesg;
++    std::string m_mesg;
+      void* m_str; 
+  public:
+-  Exception(string mesg="",void* str=NULL)
++  Exception(std::string mesg="",void* str=NULL)
+   {
+     m_mesg=mesg;
+     m_str=str;
+   }
+ 
+-  string getMesg()
++  std::string getMesg()
+   {
+     return m_mesg;
+   }
+Only in aibash-0.4/lib/readline: bind.o
+Only in aibash-0.4/lib/readline: callback.o
+Only in aibash-0.4/lib/readline: compat.o
+Only in aibash-0.4/lib/readline: complete.o
+Only in aibash-0.4/lib/readline: display.o
+Only in aibash-0.4/lib/readline: funmap.o
+Only in aibash-0.4/lib/readline: histexpand.o
+Only in aibash-0.4/lib/readline: histfile.o
+Only in aibash-0.4/lib/readline: history.o
+Only in aibash-0.4/lib/readline: histsearch.o
+Only in aibash-0.4/lib/readline: input.o
+Only in aibash-0.4/lib/readline: isearch.o
+Only in aibash-0.4/lib/readline: keymaps.o
+Only in aibash-0.4/lib/readline: kill.o
+Only in aibash-0.4/lib/readline: libhistory.a
+Only in aibash-0.4/lib/readline: libreadline.a
+Only in aibash-0.4/lib/readline: macro.o
+Only in aibash-0.4/lib/readline: nls.o
+Only in aibash-0.4/lib/readline: parens.o
+Only in aibash-0.4/lib/readline: readline.o
+Only in aibash-0.4/lib/readline: rltty.o
+Only in aibash-0.4/lib/readline: savestring.o
+Only in aibash-0.4/lib/readline: search.o
+Only in aibash-0.4/lib/readline: shell.o
+Only in aibash-0.4/lib/readline: signals.o
+Only in aibash-0.4/lib/readline: terminal.o
+Only in aibash-0.4/lib/readline: tilde.o
+Only in aibash-0.4/lib/readline: undo.o
+Only in aibash-0.4/lib/readline: util.o
+Only in aibash-0.4/lib/readline: vi_mode.o
+Only in aibash-0.4/lib/readline: xmalloc.o
+Only in aibash-0.4/lib/sh: clktck.o
+Only in aibash-0.4/lib/sh: clock.o
+Only in aibash-0.4/lib/sh: getcwd.o
+Only in aibash-0.4/lib/sh: getenv.o
+Only in aibash-0.4/lib/sh: inet_aton.o
+Only in aibash-0.4/lib/sh: itos.o
+Only in aibash-0.4/lib/sh: libsh.a
+Only in aibash-0.4/lib/sh: makepath.o
+Only in aibash-0.4/lib/sh: netopen.o
+Only in aibash-0.4/lib/sh: oslib.o
+Only in aibash-0.4/lib/sh: pathcanon.o
+Only in aibash-0.4/lib/sh: pathphys.o
+Only in aibash-0.4/lib/sh: rename.o
+Only in aibash-0.4/lib/sh: setlinebuf.o
+Only in aibash-0.4/lib/sh: shquote.o
+Only in aibash-0.4/lib/sh: shtty.o
+Only in aibash-0.4/lib/sh: spell.o
+Only in aibash-0.4/lib/sh: strcasecmp.o
+Only in aibash-0.4/lib/sh: strerror.o
+Only in aibash-0.4/lib/sh: strindex.o
+Only in aibash-0.4/lib/sh: stringlist.o
+Only in aibash-0.4/lib/sh: stringvec.o
+Only in aibash-0.4/lib/sh: strpbrk.o
+Only in aibash-0.4/lib/sh: strtod.o
+Only in aibash-0.4/lib/sh: strtol.o
+Only in aibash-0.4/lib/sh: strtoul.o
+Only in aibash-0.4/lib/sh: strtrans.o
+Only in aibash-0.4/lib/sh: timeval.o
+Only in aibash-0.4/lib/sh: tmpfile.o
+Only in aibash-0.4/lib/sh: vprint.o
+Only in aibash-0.4/lib/sh: zread.o
+Only in aibash-0.4/lib/sh: zwrite.o
+Only in aibash-0.4/lib/tilde: libtilde.a
+Only in aibash-0.4/lib/tilde: tilde.o
+Only in aibash-0.4: list.o
+Only in aibash-0.4: locale.o
+Only in aibash-0.4: lsignames.h
+Only in aibash-0.4: mailcheck.o
+Only in aibash-0.4: make_cmd.o
+Only in aibash-0.4: mksignames
+Only in aibash-0.4: mksyntax
+Only in aibash-0.4: pathexp.o
+Only in aibash-0.4: pcomplete.o
+Only in aibash-0.4: pcomplib.o
+Only in aibash-0.4: print_cmd.o
+Only in aibash-0.4: redir.o
+Only in aibash-0.4: shell.o
+Only in aibash-0.4: sig.o
+Only in aibash-0.4: siglist.o
+Only in aibash-0.4: signames.h
+Only in aibash-0.4: stringlib.o
+Only in aibash-0.4: subst.o
+Only in aibash-0.4: syntax.c
+Only in aibash-0.4: syntax.o
+Only in aibash-0.4: test.o
+Only in aibash-0.4: trap.o
+Only in aibash-0.4: unwind_prot.o
+Only in aibash-0.4: variables.o
+Only in aibash-0.4: version.h
+Only in aibash-0.4: version.o
+Only in aibash-0.4: xmalloc.o
+Only in aibash-0.4: y.tab.o

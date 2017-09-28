@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An intermediate representation of programs for compilers.
+#  libFirm is a library that provides an intermediate representation and
+#  optimizations for compilers. Programs are represented in a graph-based
+#  SSA form.
+#  .
+# URL: http://www.libfirm.org
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=libfirm
+version=1.13.0
+release=1
+source=($mirror_sf/libfirm/libfirm-1.13.0.tar.bz2)
+
+build()
+{
+  cd libfirm-1.13.0
+./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+make
+make DESTDIR="$PKG" install
+}
+
+# EOF

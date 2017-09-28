@@ -1,0 +1,44 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A set of internet protocol service daemons for Unix.
+#  It currently includes a TCP/IP service daemon, an SSLv3 TCP/IP service
+#  daemon (Linux and MacOSX), and an UDP/IP service daemon
+#  .
+# URL: http://smarden.org/ipsvd/index.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6
+
+name=ipsvd
+version=0.14.0
+release=1
+source=(http://smarden.org/ipsvd/ipsvd-$version.tar.gz
+        ipsvd-0.14.0-matrixssl-ext.patch)
+
+build()
+{
+#  cp matrixssl-1.8.3.orig/matrixssl-1-8-3-open.tar.gz \
+#     ${srcdir=$SRC/net/ipsvd-$version}/src/matrixssl.tar.gz
+
+  cd net/ipsvd-$version/src
+
+  patch -N -p2 -i $SRC/ipsvd-0.14.0-matrixssl-ext.patch
+
+  echo "${CC-cc} $CFLAGS" >conf-cc
+
+  make
+#  package/install
+
+  cd ..
+
+  install -d $ROOT/bin
+  install -m 755 src/{chkshsgr,ipsvd-cdb,tcpsvd,udpsvd,sslsvd,sslio} $ROOT/bin
+
+  install -d $ROOT/share/doc/ipsvd/html
+  install -m 644 package/[A-Z]*[A-Z]* $ROOT/share/doc/ipsvd
+  install -m 644 doc/* $ROOT/share/doc/ipsvd/html
+
+  install -d $ROOT/share/man/man{5,7,8}
+  install -m 644 man/*.5 $ROOT/share/man/man5
+  install -m 644 man/*.7 $ROOT/share/man/man7
+  install -m 644 man/*.8 $ROOT/share/man/man8
+}

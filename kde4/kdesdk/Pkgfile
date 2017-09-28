@@ -1,0 +1,118 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:50 roman Exp $
+#
+# Description: Software Development Kit from the official KDE 4 release
+#  KDE is produced by an international technology team that creates free
+#  and open source software for desktop and portable computing. Among KDE's
+#  products are a modern desktop system for Linux and UNIX platforms,
+#  comprehensive office productivity and groupware suites and hundreds
+#  of software titles in many categories including Internet and web
+#  applications, multimedia, entertainment, educational, graphics and
+#  software development.
+#  This metapackage includes software development applications provided
+#  with the official release of KDE 4. Software Development Kit from the
+#  official KDE 4 release KDE is produced by an international technology
+#  team that creates free and open source software for desktop and portable
+#  computing. Among KDE's products are a modern desktop system for Linux
+#  and UNIX platforms, comprehensive office productivity and groupware
+#  suites and hundreds of software titles in many categories including
+#  Internet and web applications, multimedia, entertainment, educational,
+#  graphics and software development.
+#  This metapackage includes software development applications provided
+#  with the official release of KDE 4.
+# URL: http://www.kde.org
+#  http://www.kde.org
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=kdesdk4
+version=4.0.5
+release=1
+source=(ftp://ftp.kde.org/pub/kde/stable/$version/src/kdesdk-$version.tar.bz2)
+
+build()
+{
+  rm -rf ${builddir=$SRC/kdesdk4-build} && mkdir $builddir && cd $builddir
+
+  case $CXXFLAGS in
+    *-ggdb*) build_type="Debug" ;;
+       *-g*) build_type="RelWithDebInfo" CXXFLAGS="$CXXFLAGS -DNDEBUG" ;;
+         *) build_type="Release" CXXFLAGS="$CXXFLAGS -DNDEBUG" ;;
+  esac
+
+  export CXXFLAGS
+
+  cmake -D CMAKE_INSTALL_PREFIX="$prefix" \
+        -D CMAKE_BUILD_TYPE="$build_type" \
+        -D UPDATE_TYPE="svn" \
+        -D BUILD_EXAMPLES:BOOL="OFF" \
+        -D BUILD_TESTS:BOOL="OFF" \
+        -D LIBEXSLT_LIBRARIES:FILEPATH="$prefix/lib/libexslt.so" \
+        -D LIBIBERTY_LIBRARY:FILEPATH="$prefix/lib/libiberty.a" \
+        -D LIBXML2_INCLUDE_DIR:PATH="$prefix/include/libxml2" \
+        -D LIBXML2_LIBRARIES:FILEPATH="$prefix/lib/libxml2.so" \
+        -D LIBXSLT_INCLUDE_DIR:PATH="$prefix/include" \
+        -D LIBXSLT_LIBRARIES:FILEPATH="$prefix/lib/libxslt.so" \
+        -D STRIGI_INCLUDE_DIR:PATH="$prefix/include" \
+        -D STRIGI_STREAMANALYZER_LIBRARY:FILEPATH="$prefix/lib/libstreamanalyzer.so" \
+        -D STRIGI_STREAMS_LIBRARY:FILEPATH="$prefix/lib/libstreams.so" \
+        -D STRIGI_STRIGIQTDBUSCLIENT_LIBRARY:FILEPATH="$prefix/lib/libstrigiqtdbusclient.so" \
+        -D SVN_INCLUDES:PATH="$prefix/include" \
+        -D SVN_LIBRARIES:FILEPATH="$prefix/lib/libsvn_client-1.so" \
+        -D X11_ICE_INCLUDE_PATH:PATH="$prefix/include" \
+        -D X11_ICE_LIB:FILEPATH="$prefix/lib/libICE.so" \
+        -D X11_X11_INCLUDE_PATH:PATH="$prefix/include" \
+        -D X11_X11_LIB:FILEPATH="$prefix/lib/libX11.so" \
+        -D X11_XShm_INCLUDE_PATH:PATH="$prefix/include" \
+        -D X11_XSync_INCLUDE_PATH:PATH="$prefix/include" \
+        -D X11_XTest_INCLUDE_PATH:PATH="$prefix/include" \
+        -D X11_XTest_LIB:FILEPATH="$prefix/lib/libXtst.so" \
+        -D X11_Xaccessrules_INCLUDE_PATH:PATH="$prefix/include" \
+        -D X11_Xaccessstr_INCLUDE_PATH:PATH="$prefix/include" \
+        -D X11_Xau_INCLUDE_PATH:PATH="$prefix/include" \
+        -D X11_Xau_LIB:FILEPATH="$prefix/lib/libXau.so" \
+        -D X11_Xcomposite_INCLUDE_PATH:PATH="$prefix/include" \
+        -D X11_Xcomposite_LIB:FILEPATH="$prefix/lib/libXcomposite.so" \
+        -D X11_Xcursor_INCLUDE_PATH:PATH="$prefix/include" \
+        -D X11_Xcursor_LIB:FILEPATH="$prefix/lib/libXcursor.so" \
+        -D X11_Xdamage_INCLUDE_PATH:PATH="$prefix/include" \
+        -D X11_Xdamage_LIB:FILEPATH="$prefix/lib/libXdamage.so" \
+        -D X11_Xdmcp_INCLUDE_PATH:PATH="$prefix/include" \
+        -D X11_Xdmcp_LIB:FILEPATH="$prefix/lib/libXdmcp.so" \
+        -D X11_Xext_LIB:FILEPATH="$prefix/lib/libXext.so" \
+        -D X11_Xfixes_INCLUDE_PATH:PATH="$prefix/include" \
+        -D X11_Xfixes_LIB:FILEPATH="$prefix/lib/libXfixes.so" \
+        -D X11_Xft_INCLUDE_PATH:PATH="$prefix/include" \
+        -D X11_Xft_LIB:FILEPATH="$prefix/lib/libXft.so" \
+        -D X11_Xinerama_INCLUDE_PATH:PATH="$prefix/include" \
+        -D X11_Xinerama_LIB:FILEPATH="$prefix/lib/libXinerama.so" \
+        -D X11_Xinput_INCLUDE_PATH:PATH="$prefix/include" \
+        -D X11_Xinput_LIB:FILEPATH="$prefix/lib/libXi.so" \
+        -D X11_Xkb_INCLUDE_PATH:PATH="$prefix/include" \
+        -D X11_Xkbfile_INCLUDE_PATH:PATH="$prefix/include" \
+        -D X11_Xkbfile_LIB:FILEPATH="$prefix/lib/libxkbfile.so" \
+        -D X11_Xkblib_INCLUDE_PATH:PATH="$prefix/include" \
+        -D X11_Xlib_INCLUDE_PATH:PATH="$prefix/include" \
+        -D X11_Xpm_INCLUDE_PATH:PATH="$prefix/include" \
+        -D X11_Xpm_LIB:FILEPATH="$prefix/lib/libXpm.so" \
+        -D X11_Xrandr_INCLUDE_PATH:PATH="$prefix/include" \
+        -D X11_Xrandr_LIB:FILEPATH="$prefix/lib/libXrandr.so" \
+        -D X11_Xrender_INCLUDE_PATH:PATH="$prefix/include" \
+        -D X11_Xrender_LIB:FILEPATH="$prefix/lib/libXrender.so" \
+        -D X11_Xscreensaver_INCLUDE_PATH:PATH="$prefix/include" \
+        -D X11_Xscreensaver_LIB:FILEPATH="$prefix/lib/libXss.so" \
+        -D X11_Xshape_INCLUDE_PATH:PATH="$prefix/include" \
+        -D X11_Xt_INCLUDE_PATH:PATH="$prefix/include" \
+        -D X11_Xt_LIB:FILEPATH="$prefix/lib/libXt.so" \
+        -D X11_Xutil_INCLUDE_PATH:PATH="$prefix/include" \
+        -D X11_Xv_INCLUDE_PATH:PATH="$prefix/include" \
+        -D X11_Xv_LIB:FILEPATH="$prefix/lib/libXv.so" \
+        -D X11_Xxf86misc_LIB:FILEPATH="$prefix/lib/libXxf86misc.so" \
+        -D X11_dpms_INCLUDE_PATH:PATH="$prefix/include" \
+        -D X11_xf86misc_INCLUDE_PATH:PATH="$prefix/include" \
+        -D X11_xf86vmode_INCLUDE_PATH:PATH="$prefix/include" \
+    ${srcdir=$SRC/kdesdk-$version} \
+    -LA
+
+  make
+  make DESTDIR="$PKG" install
+}

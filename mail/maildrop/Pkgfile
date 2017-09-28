@@ -1,0 +1,37 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A mail filter/mail delivery agent.
+#  Maildrop is a powerful email filter/delivery agent. It supports mbox-style
+#  mailboxes and maildirs (a mail storage format used by Qmail). Its mail
+#  filtering language supports RFC822 parsing and GDBM/Berkeley DB database
+#  files. The maildrop package also includes a command-line tool to perform
+#  various operations on MIME messages.
+#  .
+# URL: http://www.courier-mta.org/maildrop/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=maildrop
+version=2.0.4
+release=1
+date=20080726
+source=($mirror_sf/courier/maildrop-$version.$date.tar.bz2)
+
+build()
+{
+  cd maildrop-$version*
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --prefix="$prefix" \
+     --mandir="$prefix/share/man"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/maildrop
+  install -m 644 NEWS pgpkeys.txt AUTHORS ChangeLog UPGRADE INSTALL README COPYING.GPL maildroptips.txt COPYING $ROOT/share/doc/maildrop
+}
+
+# EOF

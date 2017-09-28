@@ -1,0 +1,60 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A Web-based Subversion and CVS repository browser.
+#  ViewVC (formerly known as ViewCVS) is a Python/CGI-based system for
+#  viewing and interacting with Subversion and CVS repositories through your
+#  Web browser. It can browse directories, view changelogs, generate diffs,
+#  view arbitrary revisions, and display annotated ("blame") listings. It
+#  has full support for tags and branches, and contains a database-backed
+#  query system like Bonsai. It was initially based on the cvsweb work by
+#  Henner Zeller, but has been ported to Python and dramatically enhanced.
+#  .
+# URL: http://www.viewvc.org/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=viewvc
+version=1.0.7
+release=1
+source=(http://www.viewvc.org/viewvc-$version.tar.gz
+        apache.conf)
+
+build()
+{
+  cd viewvc-$version
+
+  case "$prefix" in
+    "/usr") sysconfdir="/etc" ;;
+  esac
+
+  install -d $ROOT/share/
+  mv -f templates/docroot $ROOT/share/viewvc
+
+  install -d $PKG${sysconfdir="$prefix/etc"}/viewvc
+  cp -rf templates $PKG${sysconfdir}/viewvc
+  cp $SRC/apache.conf $PKG${sysconfdir}
+  sed \
+      -e "/cvs_roots =/ s,^,#," \
+      -e "/root_as_url_component =/ s,=.*,= 1," \
+      -e "/docroot =/ s,.*,docroot = /viewvc," \
+      -e "/root_parents =/ s,.*,root_parents = /data/svn : svn," \
+      -e "/template_dir =/ s,=.*,= $sysconfdir/viewvc/templates," \
+    viewvc.conf.dist >$PKG${sysconfdir}/viewvc/viewvc.conf
+
+  install -d $ROOT/lib/viewvc
+  cp -rf lib/* $ROOT/lib/viewvc
+
+  sed -i \
+      -e "/^LIBRARY_DIR/ s|=.*|= r\"$prefix/lib/viewvc\"|" \
+      -e "/^CONF_PATHNAME/ s|=.*|= r\"$sysconfdir/viewvc/viewvc.conf\"|" \
+    bin/cgi/viewvc.cgi
+
+  install -d $ROOT/lib/cgi-bin
+  install -m 755 bin/cgi/viewvc.cgi $ROOT/lib/cgi-bin
+
+  install -d $ROOT/share/doc/viewvc
+  install -m 644 CHANGES COMMITTERS INSTALL LICENSE.html README TODO docs/* $ROOT/share/doc/viewvc
+
+}
+
+# EOF

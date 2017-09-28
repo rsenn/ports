@@ -1,0 +1,37 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A Cross-Platform C++ Class for Realtime Audio Input/Output.
+# URL: http://www.music.mcgill.ca/~gary/rtaudio/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=rtaudio
+version=4.0.5
+release=1
+source=(http://www.music.mcgill.ca/~gary/rtaudio/release/rtaudio-$version.tar.gz)
+
+build() 
+{
+  cd rtaudio-$version
+  
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --with-oss \
+       --with-alsa \
+       --with-jack
+  
+  make
+
+  install -d $ROOT/lib
+  install -m 644 *.a $ROOT/lib
+
+  install -d $ROOT/include
+  install -m 644 *.h $ROOT/include
+
+  install -d $ROOT/share/doc/rtaudio
+  cp -rf doc/* $ROOT/share/doc/rtaudio
+}
+
+# EOF

@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Jvals, Fields, Dllists, Red-Black Trees
+# URL: 
+#  http://loci.cs.utk.edu/
+#  http://www.cs.utk.edu/~plank/plank/classes/cs360/360/notes/Libfdr/
+#  .
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=libfdr
+version=0.0.1
+release=1
+source=(http://loci.cs.utk.edu/lors/distributions/libfdr-$version.tgz)
+
+build() 
+{
+  cd libfdr
+  
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+  
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/libfdr
+  install -m 644 COPYING INSTALL $ROOT/share/doc/libfdr
+}
+
+# EOF

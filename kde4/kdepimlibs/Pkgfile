@@ -1,0 +1,46 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:50 roman Exp $
+#
+# Description: core libraries for KDE PIM 4 applications
+#  This package contains Personal Information Management libraries needed
+#  to run KDE 4 applications.
+#  This package is part of the KDE 4 PIM libraries module. core libraries
+#  for KDE PIM 4 applications This package contains Personal Information
+#  Management libraries needed to run KDE 4 applications.
+#  This package is part of the KDE 4 PIM libraries module. core libraries
+#  for KDE PIM 4 applications This package contains Personal Information
+#  Management libraries needed to run KDE 4 applications.
+#  This package is part of the KDE 4 PIM libraries module.
+# URL: http://pim.kde.org/
+#  http://pim.kde.org/
+#  http://pim.kde.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=kdepimlibs4
+version=4.0.3
+release=1
+source=(ftp://ftp.kde.org/pub/kde/stable/$version/src/kdepimlibs-$version.tar.bz2)
+
+build()
+{
+  rm -rf ${builddir=$SRC/kdepimlibs4-build} && mkdir $builddir && cd $builddir
+
+  case $CXXFLAGS in
+    *-ggdb*) build_type="Debug" ;;
+       *-g*) build_type="RelWithDebInfo" CXXFLAGS="$CXXFLAGS -DNDEBUG" ;;
+         *) build_type="Release" CXXFLAGS="$CXXFLAGS -DNDEBUG" ;;
+  esac
+
+  export CXXFLAGS
+
+  cmake -D CMAKE_INSTALL_PREFIX="$prefix" \
+        -D CMAKE_BUILD_TYPE="$build_type" \
+        -D UPDATE_TYPE="svn" \
+        -D BUILD_EXAMPLES:BOOL="OFF" \
+        -D BUILD_TESTS:BOOL="OFF" \
+    ${srcdir=$SRC/kdepimlibs-$version}
+
+  make
+  make DESTDIR="$PKG" install
+}
+

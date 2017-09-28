@@ -1,0 +1,26 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A minimalist command line interface to MPD, not to be confused with musepack.
+# URL: 
+# Maintainer: 
+# Depends on: 
+
+name=mpc
+version=0.15
+release=1
+source=(http://downloads.sourceforge.net/musicpd/mpc-0.15.tar.gz)
+
+build() 
+{
+  cd mpc-0.15
+  
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+  
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

@@ -1,0 +1,46 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:49 roman Exp $
+#
+# Description: A high level programming interface to various calling conventions.
+#  libffi is a library that really only provides the lowest, machine
+#  dependent layer of a fully featured foreign function interface. A layer
+#  must exist above libffi that handles type conversions for values passed
+#  between the two languages. ffi stands for Foreign Function Interface. A
+#  foreign function interface is the popular name for the interface that
+#  allows code written in one language to call code written in another
+#  language.
+# URL: http://sources.redhat.com/libffi/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libffi
+version=3.0.8
+release=1
+source=(ftp://sources.redhat.com/pub/libffi/libffi-$version.tar.gz
+        #libffi-1.20-target.patch
+        )
+
+build()
+{
+  cd libffi-$version
+
+  #patch -N -p1 -i $SRC/libffi-1.20-target.patch
+
+#  libtoolize --force --copy --automake
+#  aclocal --force
+#  automake --force --copy --foreign --add-missing
+#  aclocal --force
+#  autoconf --force
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --disable-maintainer-mode \
+      --disable-dependency-tracking
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/libffi
+  install -m 644 TODO README LICENSE ChangeLog $ROOT/share/doc/libffi
+}

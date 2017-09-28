@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Library that eases the task of writing networked servers  clients
+# URL:
+# Maintainer:  Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=linc
+version=1.1.1
+release=1
+source=(http://ftp.acc.umu.se/pub/gnome/sources/linc/${version%.*}/linc-$version.tar.bz2
+        linc-1.1.1-m4.patch)
+
+build()
+{
+  cd linc-$version
+
+  patch -N -p1 -i $SRC/linc-1.1.1-m4.patch
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An object-oriented XML-RPC C++ library.
+#  Libiqxmlrpc is an object-oriented library that represents an XML-RPC
+#  solution for both client and server. It supports HTTP and HTTPS, both
+#  single-threaded and multi-threaded computation models on the server side,
+#  method interceptors, and other features.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libiqxmlrpc
+version=0.8.7
+release=1
+source=($mirror_sf/libiqxmlrpc/libiqxmlrpc-$version.tar.gz)
+
+build()
+{
+  cd libiqxmlrpc-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

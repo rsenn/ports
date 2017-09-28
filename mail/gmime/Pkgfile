@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A MIME (Multipurpose Internet Mail Extension) parser library.
+#  GMime is a library and set of utilities for parsing and creating messages
+#  using the Multipurpose Internet Mail Extension (MIME).
+#  .
+# URL: http://spruce.sourceforge.net/gmime/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=gmime
+version=2.4.3
+release=1
+source=(http://download.gnome.org/sources/gmime/2.4/gmime-$version.tar.bz2
+        gmime-2.4.3-doltlibtool.patch)
+
+build()
+{
+  cd gmime-$version
+
+  patch -N -p1 -i $SRC/gmime-2.4.3-doltlibtool.patch
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

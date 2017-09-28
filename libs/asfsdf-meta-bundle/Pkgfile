@@ -1,0 +1,45 @@
+# $Id: Pkgfile,v 1.11 2007/05/12 01:09:23 roman Exp $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=asfsdf-meta-bundle
+version=2.0.1RC3
+release=1
+source=(http://homepages.cwi.nl/~daybuild/releases/asfsdf-meta-bundle-$version-precollected.tar.gz)
+
+build()
+{
+  cd asfsdf-meta-bundle-${version}*
+
+  find -name configure.ac | while read cfg
+  do
+    dir=$(dirname "$cfg")
+
+    (cd $dir &&
+     libtoolize --force --copy &&
+     aclocal --force -I . &&
+     autoconf --force &&
+     sed -i 's,{ (exit 1); exit 1; },:,g' configure)
+  done
+
+#  case $host in
+#    *-mingw32)
+#      export LIBS="-lws2_32"
+#      ;;
+#  esac
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --datadir="$prefix/share/asfsdf-meta-bundle" \
+      --docdir="$prefix/share/doc/asfsdf-meta-bundle" \
+      --${shared:=enable}-shared \
+      --${static:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+}

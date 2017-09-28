@@ -1,0 +1,66 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+# Package: qmail-ldap
+# Provides: qmail
+# Replaces: qmail-vanilla
+# Description: A patch to add LDAP user database and server clustering to qmail.
+# qmail-ldap is an extension to stock qmail-1.03 to get all user account
+# information from an LDAP database. Its primary target is POP toasters with
+# thousands to millions of users, such as in ISP, FreeMail, and Corporate
+# environments. It features full SMTP/POP3/IMAP server clustering for
+# scaling and high availablity. Additionally there are state-of-the art
+# spam filters, TLS SMTP encrytion, and mailbox quotas. A migration path
+# for Netscape Messenger and Software.com's Post.Office installations
+# is provided.
+#
+# URL: http://www.qmail-ldap.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libldap-2.4-2
+
+name=qmail-ldap
+version=1.03-20060201
+release=1adinis1
+source=(http://cr.yp.to/software/qmail-${version%%-*}.tar.gz
+        http://www.nrg4u.com/qmail/qmail-ldap-$version.patch.gz
+        qmail-ldap-1.03-cryptlib.patch)
+
+build()
+{
+  cd qmail-${version%%-*}
+
+  zcat $SRC/qmail-ldap-$version.patch.gz | patch -N -p1
+  patch -N -p1 -i $SRC/qmail-ldap-1.03-cryptlib.patch
+
+  case $prefix in
+    "/usr") localstatedir="/var" ;;
+  esac
+
+  echo "${CC-cc} $CFLAGS -include errno.h" >conf-cc
+  echo "${CC-cc} $LDFLAGS" >conf-ld
+
+  echo "${localstatedir=$prefix/var}/qmail" >conf-qmail
+
+  make
+
+  install -d $ROOT/bin
+  install -m 755 auto-{gid,int,int8,str,uid} $ROOT/bin
+  install -m 755 bouncesaying chkshsgr chkspawn condredirect dnscname dnsfq dnsmxip dnsptr except forward idedit ipmeprint maildir2mbox maildirmake maildirwatch predate preline qbiff $ROOT/bin
+  install -m 755 qmail-{clean,getpw,inject,local,lspawn,newmrh,newu,pop3d,popup,pw2u,qmqpc,qmqpd,qmtpd,qread,queue,remote,rspawn,send,showctl,smtpd,start,tcpok,tcpto} $ROOT/bin
+  install -m 755 qreceipt qsmhook sendmail splogger tcp-env $ROOT/bin
+
+  # qmail-ldap extra binaries
+  install -m 755 auth_{imap,pop,smtp} condwrite digest endian pbs{add,check,dbd} qmail-{cdb,forward,group,ldaplookup,quotawarn,reply,secretary,todo,verify} $ROOT/bin
+
+  for man in *.[0-9]
+  do
+    to=$man
+
+    test "$to" = mbox.5 && to=qmail-mbox.5
+    test "$to" = error.3 && to=qmail-error.3
+
+    install -d $ROOT/share/man/man${man##*.}/
+    install -m 644 $man $ROOT/share/man/man${man##*.}/$to
+  done
+
+  install -d $ROOT/share/doc/qmail-ldap
+  install -m 644 [A-Z]*[A-Z]* $ROOT/share/doc/qmail-ldap
+}

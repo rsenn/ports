@@ -1,0 +1,46 @@
+# $Id: Pkgfile,v 1.1.1.1 2005/03/31 19:53:40 enki Exp $
+#
+# Description: GNU Inetutils
+#  The GNU inetutils are a collection of common networking utilities
+#  and servers including finger, ftp, ftpd, rcp, rexec, rlogin, rlogind,
+#  rsh, rshd, syslog, syslogd, talk, talkd, telnet, telnetd, tftp, tftpd,
+#  and uucpd.
+# Longdescription:
+# The GNU inetutils are a collection of common networking
+# utilities and servers including ftp, ftpd, rcp, rexec, rlogin, rlogind, rsh,
+# rshd, syslog, syslogd, talk, talkd, telnet, telnetd, tftp, tftpd, and uucpd.
+#
+# URL: http://www.gnu.org/software/inetutils/inetutils.html
+# Maintainer: Roman Senn <smoli@paranoya.ch>
+# Depends on:
+
+name=inetutils
+version=1.5
+release=1
+source=($mirror_gnu/inetutils/inetutils-$version.tar.gz)
+
+build()
+{
+  cd inetutils-$version
+
+  case $prefix in
+    /usr) bindir="/bin" sbindir="/sbin" ;;
+  esac
+
+  enable_extra='enable'
+
+  LIBS="-lterminfo" \
+  ./configure \
+       --prefix="$prefix" \
+       --bindir="${bindir=$prefix/bin}" \
+       --sbindir="${sbindir=$prefix/sbin}" \
+       --mandir="$prefix/share/man" \
+       --infodir="$prefix/share/info" \
+       --${enable_extra:-disable}-rsh \
+       --${enable_extra:-disable}-rshd \
+       --${enable_extra:-disable}-rcp \
+       --${enable_extra:-disable}-rlogin
+
+	make
+	make DESTDIR="$PKG" install
+}

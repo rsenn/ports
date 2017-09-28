@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: X11 font rasterisation library
+#  libXfont provides various services for X servers, most notably font
+#  selection and rasterisation (through external libraries).
+#  .
+# URL: http://xorg.freedesktop.org
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=xfont
+version=1.4.0
+release=1
+source=(ftp://ftp.x.org/pub/individual/lib/libXfont-$version.tar.bz2)
+
+build()
+{
+  cd libXfont-$version
+
+  #./autogen.sh
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

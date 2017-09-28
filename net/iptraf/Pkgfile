@@ -1,0 +1,47 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: IPTraf is a console-based network statistics utility for Linux.
+# It gathers a variety of figures such as TCP connection packet and byte counts,
+# interface statistics and activity indicators, TCP/UDP traffic breakdowns, and
+# LAN station packet and byte counts.
+# URL: http://iptraf.seul.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=iptraf
+version=3.0.0
+release=1
+
+source=(ftp://iptraf.seul.org/pub/iptraf/iptraf-$version.tar.gz
+        iptraf-3.0.0-{Makefile,add-devnames,build,headerfix,linux-headers,ncursesw,setlocale}.patch)
+
+build()
+{
+  cd iptraf-$version
+
+  for p in $SRC/iptraf-3.0.0-{Makefile,add-devnames,build,headerfix,linux-headers,ncursesw,setlocale}.patch
+  do
+    patch -N -p1 -i $p
+  done
+
+#  make -C src CC="${CC-cc}" CFLAGS="$CFLAGS"
+
+  case $prefix in
+    "/usr") localstatedir="/var" sysconfdir="/etc" ;;
+  esac
+
+  sed -i \
+      -e 's:/var:$(localstatedir):' \
+      -e 's:/etc:$(sysconfdir):' \
+      -e 's:/usr/local/bin:$(bindir):' \
+    src/Makefile
+
+  yes Q | make -C src \
+      localstatedir="${localstatedir=$prefix/var}" \
+      sysconfdir="${sysconfdir=$prefix/etc}" \
+      bindir="${bindir=$prefix/bin}" \
+    all
+
+  install -d $ROOT/bin
+  install -m 755 src/iptraf $ROOT/bin
+}

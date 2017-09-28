@@ -1,0 +1,104 @@
+# $Id: Pkgfile,v 1.4 2007/04/22 23:07:53 roman Exp $
+#
+# Description: gcc
+# URL: http://gcc.gnu.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libgcj
+version=4.1.1
+release=1
+source=($mirror_gnu/gcc/gcc-$version/gcc-core-$version.tar.bz2
+  $mirror_gnu/gcc/gcc-$version/gcc-g++-$version.tar.bz2
+  $mirror_gnu/gcc/gcc-$version/gcc-java-$version.tar.bz2
+  gcc-4.1.0-nofixincludes.patch
+  gcc-4.1.0-path.patch
+  gcc-4.1.0-rpath.patch
+  gcc-4.1.0-cxxincludes.patch
+  gcc-4.1.1-libgcj-iconv.patch)
+
+build()
+{
+  cd gcc-$version
+
+  patch -N -p1 -i $SRC/gcc-4.1.0-nofixincludes.patch
+  patch -N -p1 -i $SRC/gcc-4.1.0-path.patch
+  patch -N -p1 -i $SRC/gcc-4.1.0-rpath.patch
+  patch -N -p1 -i $SRC/gcc-4.1.0-cxxincludes.patch
+  patch -N -p1 -i $SRC/gcc-4.1.1-libgcj-iconv.patch
+
+  # change runtime linker
+  sed -i -e "s,/lib/ld-linux.so.2,$prefix/lib/ld-linux.so.2," gcc/config/i386/linux.h
+
+  cd ..
+
+  # now configure in a separate build tree
+  mkdir gcc-build && cd gcc-build
+  ../gcc-$version/configure --prefix="$prefix" \
+                --with-local-prefix="$prefix" \
+                --disable-nls \
+                --without-included-gettext \
+                --enable-threads=posix \
+                --with-tls \
+                --disable-rpath \
+                --${shared:=enable}-shared \
+                --${static:=enable}-shared \
+                --enable-languages=java \
+                --with-ld=$prefix/$target/bin/ld \
+                --with-as=$prefix/$target/bin/as \
+                --with-system-zlib \
+                --with-slibdir=$prefix/lib \
+                --with-gxx-include-dir=$prefix/include/c++ \
+                --with-cpp-install-dir=$prefix/lib \
+                "$target"
+
+  make LDFLAGS="-Wl,-rpath,$prefix/lib" DESTDIR="$PKG" VERSION="$version" all install
+
+  # install libjava
+  install -d $ROOT/share/java
+  install -m 644 $target/libjava/libgcj-$version.jar $ROOT/share/java
+
+  # install libgcj config header
+  install -m 644 $target/libjava/gcj/libgcj-config.h $ROOT/include/c++/gcj
+
+  cd ../gcc-$version
+  copy_license "COPYING" "COPYING.LIB"
+
+  rm -rf $ROOT/bin
+  rm -rf $ROOT/${target}
+  rm -rf $ROOT/include
+  rm -rf $ROOT/lib/gcc
+  rm -rf $ROOT/lib/gcj*
+  rm -rf $ROOT/lib/*.{l,}a
+  rm -rf $ROOT/lib/logging.properties
+  rm -rf $ROOT/lib/pkgconfig
+  rm -rf $ROOT/lib/security
+  rm -rf $ROOT/lib/lib{gcc_s,stdc++,mudflap,ssp}*
+  rm -rf $ROOT/lib/libgcj.spec
+}
+
+cleanup()
+{
+  rm -r $ROOT/{info,man,share}
+
+  # remove duplicate binaries
+  rm $ROOT/bin/{c,g}++
+  rm $ROOT/bin/gcc
+  rm $ROOT/bin/"$target"-c++
+  rm $ROOT/bin/"$target"-gcc-"$version"
+
+  # make symlinks instead
+  ln -s "$target"-g++ $ROOT/bin/"$target"-c++
+  ln -s "$target"-g++ $ROOT/bin/g++
+  ln -s "$target"-g++ $ROOT/bin/c++
+  ln -s "$target"-gcc $ROOT/bin/gcc
+  ln -s "$target"-gcc $ROOT/bin/cc
+
+  # remove libtool stuff
+  rm $ROOT/lib/lib{mudflap,mudflapth,stdc++,supc++}.la
+  rm $ROOT/lib/lib{mudflap,mudflapth}.a
+
+  rm $ROOT/lib/libmudflap{,th}.so*
+
+  rm $ROOT/lib/libiberty.a
+}

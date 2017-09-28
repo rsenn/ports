@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: X11 damaged region extension library
+#  libXdamage provides an X Window System client interface to the DAMAGE
+#  extension to the X protocol. . The Damage extension provides for
+#  notification of when on-screen regions have been 'damaged' (altered).
+#  .
+# URL: http://xorg.freedesktop.org
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=xdamage
+version=1.1.1
+release=1
+source=(ftp://ftp.x.org/pub/individual/lib/libXdamage-$version.tar.bz2)
+
+build()
+{
+  cd libXdamage-$version
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

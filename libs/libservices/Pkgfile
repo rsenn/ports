@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: libservices is a simple library, written in C, to access and edit
+# the /etc/services file. While editing, it allows one to add, remove and change
+# services preserving existent file proprieties (comments, blank lines, etc).
+# A command line utility is also provided, making /etc/services easily
+# accessible through shell scripts.
+# URL: http://niemeyer.net/libservices
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libservices
+version=0.3
+release=1
+source=(http://niemeyer.net/download/libservices/libservices-$version.tar.gz)
+
+build()
+{
+  cd libservices-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/libservices-$version
+  install -m 644 [A-Z]*[A-Z]* $ROOT/share/doc/libservices-$version/
+}

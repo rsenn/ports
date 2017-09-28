@@ -1,0 +1,39 @@
+diff -ur djbdns-1.05.orig/Makefile djbdns-1.05/Makefile
+--- djbdns-1.05.orig/Makefile	Sun Feb 11 21:11:45 2001
++++ djbdns-1.05/Makefile	Sat Jun  7 09:09:09 2003
+@@ -37,6 +37,14 @@
+ compile auto_home.c
+ 	./compile auto_home.c
+ 
++auto_home_inst.c: \
++auto-str conf-home-inst
++	./auto-str auto_home `head -1 conf-home-inst` > auto_home_inst.c
++
++auto_home_inst.o: \
++compile auto_home_inst.c
++	./compile auto_home_inst.c
++
+ axfr-get: \
+ load axfr-get.o iopause.o timeoutread.o timeoutwrite.o dns.a libtai.a \
+ alloc.a buffer.a unix.a byte.a
+@@ -519,16 +527,16 @@
+ 	./compile hier.c
+ 
+ install: \
+-load install.o hier.o auto_home.o buffer.a unix.a byte.a
+-	./load install hier.o auto_home.o buffer.a unix.a byte.a 
++load install.o hier.o auto_home_inst.o buffer.a unix.a byte.a
++	./load install hier.o auto_home_inst.o buffer.a unix.a byte.a 
+ 
+ install.o: \
+ compile install.c buffer.h strerr.h error.h open.h exit.h
+ 	./compile install.c
+ 
+ instcheck: \
+-load instcheck.o hier.o auto_home.o buffer.a unix.a byte.a
+-	./load instcheck hier.o auto_home.o buffer.a unix.a byte.a 
++load instcheck.o hier.o auto_home_inst.o buffer.a unix.a byte.a
++	./load instcheck hier.o auto_home_inst.o buffer.a unix.a byte.a 
+ 
+ instcheck.o: \
+ compile instcheck.c strerr.h error.h exit.h

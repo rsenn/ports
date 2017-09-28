@@ -1,0 +1,36 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Shell Users' Revolutionary Front Rage Against the Web.
+#  Surfraw (Shell Users' Revolutionary Front Rage Against the Web) provides a
+#  Unix command line interface to a variety of popular Web search engines and
+#  sites, including Google, Altavista, Wikipedia, Babelfish, Ebay, Wayback,
+#  Research Index, Yahoo!, Slashdot, freshmeat, CPAN, dictionaries, weather,
+#  currency conversion, and many others.
+# URL: http://surfraw.alioth.debian.org/
+# Maintainer: 
+# Depends on: 
+
+name=surfraw
+version=2.2.5
+release=1
+source=(http://surfraw.alioth.debian.org/dist/surfraw-$version.tar.gz)
+
+build() 
+{
+  cd surfraw-$version
+
+  case $prefix in
+     /usr) sysconfdir="/etc" ;;
+  esac
+  
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --sysconfdir="${sysconfdir=$prefix/etc}"
+  
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

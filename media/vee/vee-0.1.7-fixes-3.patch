@@ -1,0 +1,354 @@
+diff -r -u vee-0.1.7_orig/include/Fluid/Vector2.hpp vee-0.1.7/include/Fluid/Vector2.hpp
+--- vee-0.1.7_orig/include/Fluid/Vector2.hpp	2007-07-27 01:49:50.000000000 +0200
++++ vee-0.1.7/include/Fluid/Vector2.hpp	2007-07-27 01:52:47.000000000 +0200
+@@ -13,6 +13,7 @@
+ #define FLUID_VECTOR2T_HPP
+ 
+ #include <iostream>
++#include <math.h>
+ 
+ namespace Fluid {
+ 
+diff -r -u vee-0.1.7_orig/include/vee_interpolators.h vee-0.1.7/include/vee_interpolators.h
+--- vee-0.1.7_orig/include/vee_interpolators.h	2007-07-27 01:49:50.000000000 +0200
++++ vee-0.1.7/include/vee_interpolators.h	2007-07-27 01:51:31.000000000 +0200
+@@ -225,14 +225,15 @@
+ 
+   void move(float dt) { m_time += dt; }
+   void reset(float time = 0.0) 
+-  { m_time = time; m_index = 0; seekInterval(time); }
++  { m_time = time; m_index = 0; VEE_LinearInterpolation<T>::seekInterval(time); }
+ 
+   float time() const { return m_time; }
+   
+-  T getValue2() { return getValue(m_time); }
++  T getValue2() { return VEE_LinearInterpolation<T>::getValue(m_time); }
+ 
+ protected:
+   float m_time;
++  int m_index;
+ };
+ 
+ #endif
+diff -r -u vee-0.1.7_orig/src/base/vee_interpolators.h vee-0.1.7/src/base/vee_interpolators.h
+--- vee-0.1.7_orig/src/base/vee_interpolators.h	2007-07-27 01:49:50.000000000 +0200
++++ vee-0.1.7/src/base/vee_interpolators.h	2007-07-27 01:51:31.000000000 +0200
+@@ -225,14 +225,15 @@
+ 
+   void move(float dt) { m_time += dt; }
+   void reset(float time = 0.0) 
+-  { m_time = time; m_index = 0; seekInterval(time); }
++  { m_time = time; m_index = 0; VEE_LinearInterpolation<T>::seekInterval(time); }
+ 
+   float time() const { return m_time; }
+   
+-  T getValue2() { return getValue(m_time); }
++  T getValue2() { return VEE_LinearInterpolation<T>::getValue(m_time); }
+ 
+ protected:
+   float m_time;
++  int m_index;
+ };
+ 
+ #endif
+diff -r -u vee-0.1.7_orig/src/magic/WmlMultipleCurve3.cpp vee-0.1.7/src/magic/WmlMultipleCurve3.cpp
+--- vee-0.1.7_orig/src/magic/WmlMultipleCurve3.cpp	2007-07-27 01:49:50.000000000 +0200
++++ vee-0.1.7/src/magic/WmlMultipleCurve3.cpp	2007-07-27 01:57:53.000000000 +0200
+@@ -102,8 +102,8 @@
+ template <class Real>
+ Real MultipleCurve3<Real>::GetLength (Real fT0, Real fT1) const
+ {
+-    assert( m_fTMin <= fT0 && fT0 <= m_fTMax );
+-    assert( m_fTMin <= fT1 && fT1 <= m_fTMax );
++//    assert( m_fTMin <= fT0 && fT0 <= m_fTMax );
++//    assert( m_fTMin <= fT1 && fT1 <= m_fTMax );
+     assert( fT0 <= fT1 );
+ 
+     if ( !m_afLength )
+@@ -144,10 +144,10 @@
+         InitializeLength();
+ 
+     if ( fLength <= (Real)0.0 )
+-        return m_fTMin;
++        return Curve3<Real>::m_fTMin;
+ 
+     if ( fLength >= m_afAccumLength[m_iSegments-1] )
+-        return m_fTMax;
++        return Curve3<Real>::m_fTMax;
+ 
+     int iKey;
+     for (iKey = 0; iKey < m_iSegments; iKey++)
+@@ -192,8 +192,8 @@
+ Real MultipleCurve3<Real>::GetVariation (Real fT0, Real fT1,
+     const Vector3<Real>* pkP0, const Vector3<Real>* pkP1) const
+ {
+-    assert( m_fTMin <= fT0 && fT0 <= m_fTMax );
+-    assert( m_fTMin <= fT1 && fT1 <= m_fTMax );
++//    assert( m_fTMin <= fT0 && fT0 <= m_fTMax );
++//    assert( m_fTMin <= fT1 && fT1 <= m_fTMax );
+     assert( fT0 <= fT1 );
+ 
+     // construct line segment, A + (t-t0)*B
+diff -r -u vee-0.1.7_orig/src/magic/WmlTCBSpline3.cpp vee-0.1.7/src/magic/WmlTCBSpline3.cpp
+--- vee-0.1.7_orig/src/magic/WmlTCBSpline3.cpp	2007-07-27 01:49:50.000000000 +0200
++++ vee-0.1.7/src/magic/WmlTCBSpline3.cpp	2007-07-27 02:02:56.000000000 +0200
+@@ -21,7 +21,7 @@
+     MultipleCurve3<Real>(iSegments,afTime)
+ {
+     // TO DO.  Add 'boundary type' just as in natural splines.
+-    assert( m_iSegments >= 3 );
++//    assert( m_iSegments >= 3 );
+ 
+     // all four of these arrays have m_iSegments+1 elements
+     m_akPoint = akPoint;
+@@ -29,19 +29,20 @@
+     m_afContinuity = afContinuity;
+     m_afBias = afBias;
+ 
+-    m_akA = new Vector3<Real>[m_iSegments];
+-    m_akB = new Vector3<Real>[m_iSegments];
+-    m_akC = new Vector3<Real>[m_iSegments];
+-    m_akD = new Vector3<Real>[m_iSegments];
++    m_akA = new Vector3<Real>[MultipleCurve3<Real>::m_iSegments];
++    m_akB = new Vector3<Real>[MultipleCurve3<Real>::m_iSegments];
++    m_akC = new Vector3<Real>[MultipleCurve3<Real>::m_iSegments];
++    m_akD = new Vector3<Real>[MultipleCurve3<Real>::m_iSegments];
+ 
+     // For now, treat the first point as if it occurred twice.
+     ComputePoly(0,0,1,2);
+ 
+-    for (int i = 1; i < m_iSegments-1; i++)
++    for (int i = 1; i < MultipleCurve3<Real>::m_iSegments-1; i++)
+         ComputePoly(i-1,i,i+1,i+2);
+ 
+     // For now, treat the last point as if it occurred twice.
+-    ComputePoly(m_iSegments-2,m_iSegments-1,m_iSegments,m_iSegments);
++    ComputePoly(MultipleCurve3<Real>::m_iSegments-2,MultipleCurve3<Real>::m_iSegments-1,
++                MultipleCurve3<Real>::m_iSegments,MultipleCurve3<Real>::m_iSegments);
+ 
+ }
+ //----------------------------------------------------------------------------
+@@ -86,7 +87,7 @@
+ void TCBSpline3<Real>::ComputePoly (int i0, int i1, int i2, int i3)
+ {
+     Vector3<Real> kDiff = m_akPoint[i2] - m_akPoint[i1];
+-    Real fDt = m_afTime[i2] - m_afTime[i1];
++    Real fDt = MultipleCurve3<Real>::m_afTime[i2] - MultipleCurve3<Real>::m_afTime[i1];
+ 
+     // build multipliers at P1
+     Real fOmt0 = (Real)1.0 - m_afTension[i1];
+@@ -94,7 +95,7 @@
+     Real fOpc0 = (Real)1.0 + m_afContinuity[i1];
+     Real fOmb0 = (Real)1.0 - m_afBias[i1];
+     Real fOpb0 = (Real)1.0 + m_afBias[i1];
+-    Real fAdj0 = ((Real)2.0)*fDt/(m_afTime[i2]-m_afTime[i0]);
++    Real fAdj0 = ((Real)2.0)*fDt/(MultipleCurve3<Real>::m_afTime[i2]-MultipleCurve3<Real>::m_afTime[i0]);
+     Real fOut0 = ((Real)0.5)*fAdj0*fOmt0*fOpc0*fOpb0;
+     Real fOut1 = ((Real)0.5)*fAdj0*fOmt0*fOmc0*fOmb0;
+ 
+@@ -107,7 +108,7 @@
+     Real fOpc1 = (Real)1.0 + m_afContinuity[i2];
+     Real fOmb1 = (Real)1.0 - m_afBias[i2];
+     Real fOpb1 = (Real)1.0 + m_afBias[i2];
+-    Real fAdj1 = ((Real)2.0)*fDt/(m_afTime[i3] - m_afTime[i1]);
++    Real fAdj1 = ((Real)2.0)*fDt/(MultipleCurve3<Real>::m_afTime[i3] - MultipleCurve3<Real>::m_afTime[i1]);
+     Real fIn0 = ((Real)0.5)*fAdj1*fOmt1*fOmc1*fOpb1;
+     Real fIn1 = ((Real)0.5)*fAdj1*fOmt1*fOpc1*fOmb1;
+ 
+@@ -127,7 +128,7 @@
+     Real fDt;
+     GetKeyInfo(fTime,iKey,fDt);
+ 
+-    fDt /= (m_afTime[iKey+1] - m_afTime[iKey]);
++    fDt /= (MultipleCurve3<Real>::m_afTime[iKey+1] - MultipleCurve3<Real>::m_afTime[iKey]);
+ 
+     Vector3<Real> kResult = m_akA[iKey] + fDt*(m_akB[iKey] + fDt*(m_akC[iKey]
+         + fDt*m_akD[iKey]));
+@@ -142,7 +143,7 @@
+     Real fDt;
+     GetKeyInfo(fTime,iKey,fDt);
+ 
+-    fDt /= (m_afTime[iKey+1] - m_afTime[iKey]);
++    fDt /= (MultipleCurve3<Real>::m_afTime[iKey+1] - MultipleCurve3<Real>::m_afTime[iKey]);
+ 
+     Vector3<Real> kResult = m_akB[iKey] + fDt*(((Real)2.0)*m_akC[iKey] +
+         ((Real)3.0)*fDt*m_akD[iKey]);
+@@ -157,7 +158,7 @@
+     Real fDt;
+     GetKeyInfo(fTime,iKey,fDt);
+ 
+-    fDt /= (m_afTime[iKey+1] - m_afTime[iKey]);
++    fDt /= (MultipleCurve3<Real>::m_afTime[iKey+1] - MultipleCurve3<Real>::m_afTime[iKey]);
+ 
+     Vector3<Real> kResult = ((Real)2.0)*m_akC[iKey] +
+         ((Real)6.0)*fDt*m_akD[iKey];
+@@ -172,7 +173,7 @@
+     Real fDt;
+     GetKeyInfo(fTime,iKey,fDt);
+ 
+-    fDt /= (m_afTime[iKey+1] - m_afTime[iKey]);
++    fDt /= (MultipleCurve3<Real>::m_afTime[iKey+1] - MultipleCurve3<Real>::m_afTime[iKey]);
+ 
+     Vector3<Real> kResult = ((Real)6.0)*m_akD[iKey];
+ 
+@@ -191,7 +192,7 @@
+ Real TCBSpline3<Real>::GetLengthKey (int iKey, Real fT0, Real fT1) const
+ {
+     ThisPlusKey kData(this,iKey);
+-    return Integrate1<Real>::RombergIntegral(fT0,fT1,GetSpeedWithData,
++    return Integrate1<Real>::RombergIntegral(fT0,fT1,MultipleCurve3<Real>::GetSpeedWithData,
+         (void*)&kData);
+ }
+ //----------------------------------------------------------------------------
+diff -r -u vee-0.1.7_orig/src/magic/WmlVector3.cpp vee-0.1.7/src/magic/WmlVector3.cpp
+--- vee-0.1.7_orig/src/magic/WmlVector3.cpp	2007-07-27 01:49:50.000000000 +0200
++++ vee-0.1.7/src/magic/WmlVector3.cpp	2007-07-27 02:08:54.000000000 +0200
+@@ -25,89 +25,89 @@
+ template <class Real>
+ Vector3<Real>::Vector3 (Real fX, Real fY, Real fZ)
+ {
+-    m_afTuple[0] = fX;
+-    m_afTuple[1] = fY;
+-    m_afTuple[2] = fZ;
++    Vector<3, Real>::m_afTuple[0] = fX;
++    Vector<3, Real>::m_afTuple[1] = fY;
++    Vector<3, Real>::m_afTuple[2] = fZ;
+ }
+ //----------------------------------------------------------------------------
+ template <class Real>
+ Vector3<Real>::Vector3 (const Vector3& rkV)
+ {
+-    memcpy(m_afTuple,rkV.m_afTuple,3*sizeof(Real));
++    memcpy(Vector<3, Real>::m_afTuple,rkV.m_afTuple,3*sizeof(Real));
+ }
+ //----------------------------------------------------------------------------
+ template <class Real>
+ Vector3<Real>::Vector3 (const Vector<3,Real>& rkV)
+ {
+-    memcpy(m_afTuple,(const Real*)rkV,3*sizeof(Real));
++    memcpy(Vector<3, Real>::m_afTuple,(const Real*)rkV,3*sizeof(Real));
+ }
+ //----------------------------------------------------------------------------
+ template <class Real>
+ Vector3<Real>& Vector3<Real>::operator= (const Vector3& rkV)
+ {
+-    memcpy(m_afTuple,rkV.m_afTuple,3*sizeof(Real));
++    memcpy(Vector<3, Real>::m_afTuple,rkV.m_afTuple,3*sizeof(Real));
+     return *this;
+ }
+ //----------------------------------------------------------------------------
+ template <class Real>
+ Vector3<Real>& Vector3<Real>::operator= (const Vector<3,Real>& rkV)
+ {
+-    memcpy(m_afTuple,(const Real*)rkV,3*sizeof(Real));
++    memcpy(Vector<3, Real>::m_afTuple,(const Real*)rkV,3*sizeof(Real));
+     return *this;
+ }
+ //----------------------------------------------------------------------------
+ template <class Real>
+ Real Vector3<Real>::X () const
+ {
+-    return m_afTuple[0];
++    return Vector<3, Real>::m_afTuple[0];
+ }
+ //----------------------------------------------------------------------------
+ template <class Real>
+ Real& Vector3<Real>::X ()
+ {
+-    return m_afTuple[0];
++    return Vector<3, Real>::m_afTuple[0];
+ }
+ //----------------------------------------------------------------------------
+ template <class Real>
+ Real Vector3<Real>::Y () const
+ {
+-    return m_afTuple[1];
++    return Vector<3, Real>::m_afTuple[1];
+ }
+ //----------------------------------------------------------------------------
+ template <class Real>
+ Real& Vector3<Real>::Y ()
+ {
+-    return m_afTuple[1];
++    return Vector<3, Real>::m_afTuple[1];
+ }
+ //----------------------------------------------------------------------------
+ template <class Real>
+ Real Vector3<Real>::Z () const
+ {
+-    return m_afTuple[2];
++    return Vector<3, Real>::m_afTuple[2];
+ }
+ //----------------------------------------------------------------------------
+ template <class Real>
+ Real& Vector3<Real>::Z ()
+ {
+-    return m_afTuple[2];
++    return Vector<3, Real>::m_afTuple[2];
+ }
+ //----------------------------------------------------------------------------
+ template <class Real>
+ Vector3<Real> Vector3<Real>::Cross (const Vector3& rkV) const
+ {
+     return Vector3(
+-        m_afTuple[1]*rkV.m_afTuple[2] - m_afTuple[2]*rkV.m_afTuple[1],
+-        m_afTuple[2]*rkV.m_afTuple[0] - m_afTuple[0]*rkV.m_afTuple[2],
+-        m_afTuple[0]*rkV.m_afTuple[1] - m_afTuple[1]*rkV.m_afTuple[0]);
++        Vector<3, Real>::m_afTuple[1]*rkV.m_afTuple[2] - Vector<3, Real>::m_afTuple[2]*rkV.m_afTuple[1],
++        Vector<3, Real>::m_afTuple[2]*rkV.m_afTuple[0] - Vector<3, Real>::m_afTuple[0]*rkV.m_afTuple[2],
++        Vector<3, Real>::m_afTuple[0]*rkV.m_afTuple[1] - Vector<3, Real>::m_afTuple[1]*rkV.m_afTuple[0]);
+ }
+ //----------------------------------------------------------------------------
+ template <class Real>
+ Vector3<Real> Vector3<Real>::UnitCross (const Vector3& rkV) const
+ {
+     Vector3 kCross(
+-        m_afTuple[1]*rkV.m_afTuple[2] - m_afTuple[2]*rkV.m_afTuple[1],
+-        m_afTuple[2]*rkV.m_afTuple[0] - m_afTuple[0]*rkV.m_afTuple[2],
+-        m_afTuple[0]*rkV.m_afTuple[1] - m_afTuple[1]*rkV.m_afTuple[0]);
++        Vector<3, Real>::m_afTuple[1]*rkV.m_afTuple[2] - Vector<3, Real>::m_afTuple[2]*rkV.m_afTuple[1],
++        Vector<3, Real>::m_afTuple[2]*rkV.m_afTuple[0] - Vector<3, Real>::m_afTuple[0]*rkV.m_afTuple[2],
++        Vector<3, Real>::m_afTuple[0]*rkV.m_afTuple[1] - Vector<3, Real>::m_afTuple[1]*rkV.m_afTuple[0]);
+     kCross.Normalize();
+     return kCross;
+ }
+@@ -194,14 +194,14 @@
+     const Vector<3,float>&);
+ #endif
+ 
+-  // RRR
++  // RRR
+   template <class Real> const Vector3<Real> Vector3<Real>::ZERO(0.0,0.0,0.0);
+-  template <class Real> const Vector3<Real> Vector3<Real>::UNIT_X(1.0f,0.0f,0.0f);
++  template <class Real> const Vector3<Real> Vector3<Real>::UNIT_X(1.0f,0.0f,0.0f);
+   template <class Real> const Vector3<Real> Vector3<Real>::UNIT_Y(0.0f,1.0f,0.0f);
+   template <class Real> const Vector3<Real> Vector3<Real>::UNIT_Z(0.0f,0.0f,1.0f);
+-
++
+ template class WML_ITEM Vector3<float>;
+-//const Vector3f 
++//const Vector3f 
+ //const Vector3f Vector3f::UNIT_X(1.0f,0.0f,0.0f);
+ //const Vector3f Vector3f::UNIT_Y(0.0f,1.0f,0.0f);
+ //const Vector3f Vector3f::UNIT_Z(0.0f,0.0f,1.0f);
+diff -r -u vee-0.1.7_orig/src/solargl/GlDisplayLists.cpp vee-0.1.7/src/solargl/GlDisplayLists.cpp
+--- vee-0.1.7_orig/src/solargl/GlDisplayLists.cpp	2007-07-27 01:49:50.000000000 +0200
++++ vee-0.1.7/src/solargl/GlDisplayLists.cpp	2007-07-27 02:11:05.000000000 +0200
+@@ -12,12 +12,17 @@
+  *
+  */
+ 
++#include <GL/glew.h>
++
+ #include <Solar/GlDisplayLists.hpp>
+ 
+ #include <Solar/GlRenderer.hpp>
+ 
+ #include <Solar/Garbage.hpp>
+ 
++//#include <GL/glext.h>
++//#include <GL/gl_mangle.h>
++
+ namespace Solar {
+  
+   void GlDisplayLists::List::freeList() 

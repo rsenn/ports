@@ -1,0 +1,29 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:50 roman Exp $
+#
+# Description: Splits large WAV files into tracks.
+#  WavSplit splits large WAV files at given time positions. To find out split
+#  positions you can use any WAV player or editor with a time display. Also
+#  included is a tool which helps you renaming the created tracks. WavSplit
+#  is based on wavplay and GNU split.
+# URL: http://wavsplit.sourceforge.net
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=wavsplit
+version=1.2.1
+release=1
+source=($mirror_gentoo/wavsplit-$version.tar.gz)
+
+build()
+{
+  cd wavsplit-$version
+
+  install -d $ROOT/{bin,share/man/man1}
+
+  make \
+      BIN="$ROOT/bin" \
+      MAN="$ROOT/share/man/man1" \
+    all \
+    install
+}
+

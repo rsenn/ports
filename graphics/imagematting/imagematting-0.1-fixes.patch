@@ -1,0 +1,68 @@
+args: -r -u -- imagematting-0.1_orig imagematting-0.1
+diff -r -u -- imagematting-0.1_orig/imagematting.cxx imagematting-0.1/imagematting.cxx
+--- imagematting-0.1_orig/imagematting.cxx	2008-07-31 23:35:56.000000000 +0200
++++ imagematting-0.1/imagematting.cxx	2008-08-01 09:34:41.000000000 +0200
+@@ -1,13 +1,15 @@
+-#include <math.h>
+-#include <stdio.h>
+-#include <stdlib.h>
+-#include <math.h>
+-#include <iostream.h>
++#include <cmath>
++#include <cstdio>
++#include <cstdlib>
++#include <cerrno>
++#include <iostream>
+ #include <SDL.h>
+ #include <SDL/SDL_image.h>
+ 
+ #define NO_TYPICAL_COLORS 200
+ 
++using namespace std;
++
+ int typical_foreground[NO_TYPICAL_COLORS][3];
+ int typical_background[NO_TYPICAL_COLORS][3];
+ 
+@@ -473,6 +475,12 @@
+   delete[] hist_rgb;
+ } // AlphaMate
+ 
++void usage(const char* argv0)
++{
++  cerr << "usage: " << argv0 << " <image-file>" << endl;
++  exit(-1);
++}
++
+ int main(int argc, char** argv)
+ {
+     SDL_Surface      *screen;
+@@ -491,8 +499,10 @@
+     radius        = 18; 
+     artificial_background = CHECKERBOARD;
+ 
+-    p_picture = IMG_Load(argv[1]);
++    if(argc<2||argv[1]==0)
++      usage(argv[0]);
+ 
++    p_picture = IMG_Load(argv[1]);
+     if(p_picture != NULL) {
+ 
+     int window_width = p_picture->w;      
+@@ -515,7 +525,7 @@
+     // SDL Bibliothek initialisieren
+ 
+     if(SDL_Init(SDL_INIT_VIDEO) < 0) {
+-	cerr << "Konnte die SDL Bibliothek nicht initialisieren" << endl;
++	cerr << "Error initializing the SDL library" << endl;
+ 	exit(-1);
+     } // if
+ 
+@@ -528,7 +538,7 @@
+     screen = SDL_SetVideoMode(window_width, window_height, 24, flags);
+ 
+     if(!screen) {
+-	cerr << "Der angeforderte Videomodus SetVideoMode(...) konnte nicht erzeugt werden - Abbruch" << endl;
++	cerr << "Failed setting a video-mode, aborting..." << endl;
+ 	exit(-1);
+     } // if
+ 

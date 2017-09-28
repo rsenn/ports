@@ -1,0 +1,313 @@
+Index: fuse_kio/CMakeLists.txt
+===================================================================
+RCS file: /cvs/ctd/ctd/fuse_kio/fuse_kio/CMakeLists.txt,v
+retrieving revision 1.3
+diff -u -r1.3 CMakeLists.txt
+--- fuse_kio/CMakeLists.txt	28 Mar 2004 15:24:40 -0000	1.3
++++ fuse_kio/CMakeLists.txt	7 Jun 2008 19:57:35 -0000
+@@ -1,24 +1,31 @@
++IF(NOT DESIRED_QT_VERSION)
++  SET(DESIRED_QT_VERSION 3)
++ENDIF(NOT DESIRED_QT_VERSION)
++
+ INCLUDE(${CMAKE_ROOT}/Modules/FindQt.cmake)
+-INCLUDE(FindKDE.cmake)
++INCLUDE(FindKDE3)
+ 
+-FIND_LIBRARY(QT_QTMT_LIBRARY
+-  NAMES qt-mt qt-mt230nc
+-  PATHS
+-  $ENV{QTDIR}/lib
+-  /usr/local/qt/lib
+-  /usr/local/lib
+-  /usr/lib
+-  /usr/share/qt3/lib
+-  C:/Progra~1/qt/lib
+-  )
+-
+-SET( FUSE_KIO_SRCS 
+-basejobhelper.cpp
+-fileproxy.cpp
+-fuse_kio.cpp
+-fuse_kio_ops.cpp
+-fuseapp.cpp
+-jobhelpers.cpp )
++FIND_LIBRARY( 
++              QT_QTMT_LIBRARY
++              NAMES qt-mt qt-mt230nc
++              PATHS
++              $ENV{QTDIR}/lib
++              /usr/local/qt/lib
++              /usr/local/lib
++              /usr/lib
++              /usr/share/qt3/lib
++              C:/Progra~1/qt/lib
++            )
++
++SET( 
++     FUSE_KIO_SRCS
++     basejobhelper.cpp
++     fileproxy.cpp
++     fuse_kio.cpp
++     fuse_kio_ops.cpp
++     fuseapp.cpp
++     jobhelpers.cpp 
++   )
+ 
+ SET(FUSE_KIO_MOC_SRCS
+ basejobhelper.h 
+@@ -28,8 +35,14 @@
+ 
+ QT_WRAP_CPP(fuse_kio FUSE_KIO_SRCS ${FUSE_KIO_MOC_SRCS})
+ 
++IF(NOT WIN32)
++  ADD_DEFINITIONS(-D_FILE_OFFSET_BITS=64 -DFUSE_USE_VERSION=27)
++ENDIF(NOT WIN32)
++
+ ADD_EXECUTABLE(fuse_kio ${FUSE_KIO_SRCS})
+-INCLUDE_DIRECTORIES(${QT_INCLUDE_DIR} ${KDE_INCLUDE_DIR})
+-TARGET_LINK_LIBRARIES(fuse_kio ${QT_QTMT_LIBRARY} ${KDE_LIB_DIR} kio fuse pthread)
+-INSTALL_TARGETS(/bin fuse_kio ioslave_helper)
++INCLUDE_DIRECTORIES(${QT_INCLUDE_DIR} ${KDE3_INCLUDE_DIR})
++#TARGET_LINK_LIBRARIES(fuse_kio ${QT_QTMT_LIBRARY} ${KDE3_LIB_DIR} kio fuse pthread)
++TARGET_LINK_LIBRARIES(fuse_kio ${QT_QTMT_LIBRARY} kio fuse pthread)
++# INSTALL_TARGETS(/bin fuse_kio ioslave_helper)
++INSTALL_TARGETS(/bin fuse_kio)
+ 
+Index: fuse_kio/Makefile.am
+===================================================================
+RCS file: /cvs/ctd/ctd/fuse_kio/fuse_kio/Makefile.am,v
+retrieving revision 1.1
+diff -u -r1.1 Makefile.am
+--- fuse_kio/Makefile.am	26 Mar 2004 19:03:46 -0000	1.1
++++ fuse_kio/Makefile.am	7 Jun 2008 19:57:35 -0000
+@@ -2,6 +2,8 @@
+ AM_LDFLAGS = $(all_libraries) $(KDE_RPATH)
+ LDADD = $(LIB_KSYCOCA) $(LIB_KFILE) -lfuse -lpthread
+ 
++AM_CPPFLAGS = -DFUSE_USE_VERSION=27  -D_FILE_OFFSET_BITS=64
++
+ METASOURCES = AUTO
+ 
+ bin_PROGRAMS = fuse_kio
+Index: fuse_kio/fileproxy.cpp
+===================================================================
+RCS file: /cvs/ctd/ctd/fuse_kio/fuse_kio/fileproxy.cpp,v
+retrieving revision 1.2
+diff -u -r1.2 fileproxy.cpp
+--- fuse_kio/fileproxy.cpp	28 Mar 2004 12:06:11 -0000	1.2
++++ fuse_kio/fileproxy.cpp	7 Jun 2008 19:57:35 -0000
+@@ -202,7 +202,8 @@
+       data.resize(bytesToSend);
+       lseek(fd(), m_sentBytes, SEEK_SET);
+       // FIXME: unused variable
+-      int bytesRead = ::read(fd(), data.data(), bytesToSend);
++      //int bytesRead = 
++       ::read(fd(), data.data(), bytesToSend);
+       m_sentBytes+= bytesToSend;
+    }
+ 
+Index: fuse_kio/fuse_kio.cpp
+===================================================================
+RCS file: /cvs/ctd/ctd/fuse_kio/fuse_kio/fuse_kio.cpp,v
+retrieving revision 1.1
+diff -u -r1.1 fuse_kio.cpp
+--- fuse_kio/fuse_kio.cpp	26 Mar 2004 19:03:46 -0000	1.1
++++ fuse_kio/fuse_kio.cpp	7 Jun 2008 19:57:35 -0000
+@@ -21,8 +21,8 @@
+ #include <unistd.h>
+ #include <signal.h>
+ #include <sys/mount.h>
+-#include <stdlib.h>
+-#include <iostream.h>
++#include <cstdlib>
++#include <iostream>
+ 
+ #include "fuse_kio_ops.h"
+ #include "fuseapp.h"
+@@ -48,7 +48,7 @@
+    {0, 0, 0}
+ };
+ 
+-static struct fuse *fuse_handle = 0;
++static fuse *fuse_handle = 0;
+ 
+ static void exit_handler(int)
+ {
+@@ -87,6 +87,15 @@
+ int main(int argc, char *argv[])
+ {
+    struct fuse_operations ops;
++
++#ifdef _DEBUG
++   for(unsigned i = 0; i < (sizeof(ops) >> 2); ++i)
++   {
++     memset(&((int *)&ops)[i], i, sizeof(unsigned));
++   }
++#endif
++   memset(&ops, 0, sizeof(ops));
++  
+    ops.getattr=fuse_kio_getattr;
+    ops.readlink=fuse_kio_readlink;
+    ops.getdir=fuse_kio_getdir;
+@@ -146,6 +155,8 @@
+    if (args_ok)
+    {
+       const char *fusermountArgs[3];
++      struct fuse_args args;
++
+       fusermountArgs[0]="-n";
+       fusermountArgs[1]="fuse_kio_gateway";
+       fusermountArgs[2]=0;
+@@ -156,21 +167,24 @@
+       if (!gateway)
+          fusermountArgs[1]=base_url.prettyURL().latin1();
+ 
+-      int fuse_fd = fuse_mount(mount_point.path().latin1(), (niceMTab?fusermountArgs:0));
++      args.argc = 2;
++      args.argv = const_cast<char **>(fusermountArgs);
++     
++      fuse_chan *fuse_fd = fuse_mount(mount_point.path().latin1(), (niceMTab?&args:0));
+ //      int fuse_fd = fuse_mount(mount_point.path().latin1(), fusermountArgs);
+       kdDebug()<<"fuse_mount(): "<<fuse_fd<<endl;
+ 
+       if (fuse_fd<0)
+       {
+-         cout<<"fuse_mount() failed"<<endl;
++         std::cout<<"fuse_mount() failed"<<std::endl;
+          exit(-1);
+       }
+ 
+       //fuse_handle = fuse_new(fuse_fd, FUSE_DEBUG, &ops);
+-      fuse_handle = fuse_new(fuse_fd, 0, &ops);
++      fuse_handle = fuse_new(fuse_fd, 0, &ops, sizeof(ops), 0);
+       if (fuse_handle==0)
+       {
+-         cout<<"fuse_new() failed"<<endl;
++         std::cout<<"fuse_new() failed"<<std::endl;
+          exit(-2);
+       }
+ 
+@@ -184,9 +198,9 @@
+ 
+       //fuse_loop_mt(fuse_handle);
+       fuse_loop(fuse_handle);
+-      close(fuse_fd);
++//      fuse_chan_destroy(fuse_fd);
+ 
+-      fuse_unmount(mount_point.path().latin1());
++      fuse_unmount(mount_point.path().latin1(), fuse_fd);
+ 
+       delete fuseApp;
+       fuseApp = 0;
+Index: fuse_kio/fuse_kio_ops.cpp
+===================================================================
+RCS file: /cvs/ctd/ctd/fuse_kio/fuse_kio/fuse_kio_ops.cpp,v
+retrieving revision 1.1
+diff -u -r1.1 fuse_kio_ops.cpp
+--- fuse_kio/fuse_kio_ops.cpp	26 Mar 2004 19:03:46 -0000	1.1
++++ fuse_kio/fuse_kio_ops.cpp	7 Jun 2008 19:57:35 -0000
+@@ -28,7 +28,6 @@
+ #include <sys/statfs.h>
+ #include <pwd.h>
+ 
+-
+ #include "fuseapp.h"
+ #include "jobhelpers.h"
+ #include "fileproxy.h"
+@@ -40,6 +39,10 @@
+ #include <qstring.h>
+ #include <qregexp.h>
+ 
++#ifndef __unused
++#define __unused __attribute__((unused))
++#endif
++
+ static void fillStatBufFromFileItem(struct stat *stbuf, KFileItem *item)
+ {
+    if ((item==0) || (stbuf==0)) return;
+@@ -126,7 +129,7 @@
+       QRegExp regex("(^[^/]+)(://)(.*)");
+       if (regex.search(dir)!=-1)
+          dir=(regex.cap(1)+":__"+regex.cap(3));
+-      filler(h, dir.latin1(), DT_DIR);
++      filler(h, dir.latin1(), DT_DIR, 0);
+    }
+ 
+    return 0;
+@@ -304,7 +307,7 @@
+          {
+             type = DT_DIR;
+          }
+-         filler(h, item->name().latin1(), type);
++         filler(h, item->name().latin1(), type, 0);
+       }
+    }
+ 
+@@ -313,7 +316,7 @@
+ }
+ 
+ 
+-int fuse_kio_open(const char *path, int flags)
++int fuse_kio_open(const char *path, fuse_file_info __unused *info)
+ {
+    kdDebug()<<"kio_open "<<path<<endl;
+ 
+@@ -336,7 +339,7 @@
+ }
+ 
+ 
+-int fuse_kio_release(const char* path, int whatever)
++int fuse_kio_release(const char* path, fuse_file_info __unused *info)
+ {
+    kdDebug()<<"kio_release() "<<path<<endl;
+ 
+@@ -354,7 +357,7 @@
+ }
+ 
+ 
+-int fuse_kio_read(const char *path, char *buf, size_t size, off_t offs)
++int fuse_kio_read(const char *path, char *buf, size_t size, off_t offs, fuse_file_info __unused *info)
+ {
+ //if we get here, the file *must* already have been opened
+ 
+@@ -394,7 +397,7 @@
+ }
+ 
+ 
+-int fuse_kio_write(const char* path, const char* buf, size_t size, off_t offs)
++int fuse_kio_write(const char* path, const char* buf, size_t size, off_t offs, fuse_file_info __unused *info)
+ {
+    FileProxy *fp = fuseApp->fileProxy(path);
+ 
+@@ -437,7 +440,7 @@
+ }
+ 
+ 
+-int fuse_kio_mknod(const char *path, mode_t mode, dev_t rdev)
++int fuse_kio_mknod(const char *path, mode_t __unused mode, dev_t __unused rdev)
+ {
+    kdDebug()<<"kio_mknod "<<path<<endl;
+ 
+Index: fuse_kio/fuse_kio_ops.h
+===================================================================
+RCS file: /cvs/ctd/ctd/fuse_kio/fuse_kio/fuse_kio_ops.h,v
+retrieving revision 1.1
+diff -u -r1.1 fuse_kio_ops.h
+--- fuse_kio/fuse_kio_ops.h	26 Mar 2004 19:03:46 -0000	1.1
++++ fuse_kio/fuse_kio_ops.h	7 Jun 2008 19:57:35 -0000
+@@ -25,10 +25,10 @@
+ int fuse_kio_getattr(const char *path, struct stat *stbuf);
+ int fuse_kio_readlink(const char *path, char *buf, size_t size);
+ int fuse_kio_getdir(const char *path, fuse_dirh_t h, fuse_dirfil_t filler);
+-int fuse_kio_open(const char *path, int flags);
+-int fuse_kio_release(const char* path, int whatever);
+-int fuse_kio_read(const char *path, char *buf, size_t size, off_t offs);
+-int fuse_kio_write(const char *path, const char *buf, size_t size, off_t offs);
++int fuse_kio_open(const char *path, fuse_file_info *info);
++int fuse_kio_release(const char* path, fuse_file_info *info);
++int fuse_kio_read(const char *path, char *buf, size_t size, off_t offs, fuse_file_info *info);
++int fuse_kio_write(const char *path, const char *buf, size_t size, off_t offs, fuse_file_info *info);
+ int fuse_kio_truncate(const char *path, off_t size);
+ int fuse_kio_mknod(const char *path, mode_t mode, dev_t rdev);
+ int fuse_kio_unlink(const char *path);

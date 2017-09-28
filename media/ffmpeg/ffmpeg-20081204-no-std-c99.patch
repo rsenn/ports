@@ -1,0 +1,34 @@
+diff -ru ffmpeg-export-2008-12-04_orig/configure ffmpeg-export-2008-12-04/configure
+--- ffmpeg-export-2008-12-04_orig/configure	2008-12-04 23:04:00.000000000 +0100
++++ ffmpeg-export-2008-12-04/configure	2008-12-04 23:07:29.000000000 +0100
+@@ -1290,8 +1290,6 @@
+ TMPS="${TMPDIR1}/ffmpeg-conf-${RANDOM}-$$-${RANDOM}.S"
+ TMPSH="${TMPDIR1}/ffmpeg-conf-${RANDOM}-$$-${RANDOM}.sh"
+ 
+-check_cflags -std=c99
+-
+ case "$arch" in
+     i386|i486|i586|i686|i86pc|BePC)
+         arch="x86_32"
+--- ffmpeg-export-2009-02-07_orig/configure	2009-02-07 18:39:23.000000000 +0100
++++ ffmpeg-export-2009-02-07/configure	2009-02-07 18:47:34.000000000 +0100
+@@ -1171,7 +1171,7 @@
+ vhook="default"
+ 
+ # build settings
+-add_cflags -D_ISOC99_SOURCE -D_POSIX_C_SOURCE=200112
++add_cflags -D_ISOC99_SOURCE -D_BSD_SOURCE -D_POSIX_C_SOURCE=200112
+ SHFLAGS='-shared -Wl,-soname,$$(@F)'
+ VHOOKSHFLAGS='$(SHFLAGS)'
+ FFSERVERLDFLAGS=-Wl,-E
+--- ffmpeg-export-2009-02-07_orig/libavcodec/nellymoserenc.c	2009-02-07 18:39:23.000000000 +0100
++++ ffmpeg-export-2009-02-07/libavcodec/nellymoserenc.c	2009-02-07 18:56:01.000000000 +0100
+@@ -42,6 +42,8 @@
+ #define BITSTREAM_WRITER_LE
+ #include "bitstream.h"
+ 
++#include <math.h>
++
+ #define POW_TABLE_SIZE (1<<11)
+ #define POW_TABLE_OFFSET 3
+ #define OPT_SIZE ((1<<15) + 3000)

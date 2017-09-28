@@ -1,0 +1,44 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: A low-latency audio server.
+#  JACK is a low-latency audio server. It can connect a number of different
+#  between themselves. Its clients can run in their own processes (i.e.,
+#  "plugin"). JACK is different from other audio server efforts in that it
+#  audio work. This means that it focuses on two key areas: synchronous
+#  execution of all clients, and low latency operation.
+# URL: http://jackaudio.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=jackd
+version=0.116.2
+release=1
+source=(http://jackaudio.org/downloads/jack-audio-connection-kit-$version.tar.gz)
+
+build()
+{
+  cd jack-audio-connection-kit-$version
+
+  libtoolize --force --copy
+  aclocal --force
+  autoheader --force
+  autoconf --force
+  automake --force --copy --foreign --add-missing
+
+  sh configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --datadir="$prefix/share/doc" \
+      --enable-optimization-by-compiler \
+      --enable-timestamps \
+      --with-default-tmpdir="/dev/shm"
+
+  make
+  make DESTDIR="$PKG" install
+
+  mv -f $ROOT/share/doc/jack-audio-connection-kit/reference/* \
+        $ROOT/share/doc/jack-audio-connection-kit
+
+  rm -r $ROOT/share/doc/jack-audio-connection-kit/reference
+}

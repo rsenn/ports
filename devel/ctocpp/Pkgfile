@@ -1,0 +1,41 @@
+# $Id: Pkgfile,v 1.10 2007/04/22 23:07:53 roman Exp $
+#
+# Description: A tool that converts C sources to C++.
+#  C to C++ Converter is a script that converts C projects to C++ in six
+#  steps. It also provides a project mover that changes the directory of
+#  a project while updating #include statements.
+# URL: http://www.scriptol.org/ctocpp.php
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=ctocpp
+version=1.4.0
+release=1
+source=(http://www.scriptol.com/scripts/ctocpp-$version.tar.gz)
+
+build()
+{
+   cd ctocpp
+
+   ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+   install -d $ROOT/{bin,c2cpp}
+
+   python setup.py --with-prefix=$ROOT/
+
+   sed -i \
+       -e "s:$ROOT:exec $prefix:g" \
+       -e 's:$[0-9 $]\+[0-9]:"$@":g' \
+     $ROOT/bin/ctocpp
+
+   chmod 755 $ROOT/bin/ctocpp
+
+   install -d $ROOT/share/{doc/$name,info}
+
+   install -m 644 ctocpp.info $ROOT/share/info
+   install -m 644 ctocpp.html $ROOT/share/doc/ctocpp/index.html
+
+}

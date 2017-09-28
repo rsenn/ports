@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A password generator.
+#  APG (Automated Password Generator) is a tool set for generating random
+#  passwords. A standalone tool generates some random words of the required
+#  type and prints them to standard output. A networked client/server
+#  following RFC972 is also provided.
+#  .
+# URL: http://www.adel.nursat.kz/apg/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=apg
+version=2.2.3
+release=1
+source=(http://www.adel.nursat.kz/apg/download/apg-$version.tar.gz)
+
+build()
+{
+  cd apg-$version
+
+  make
+  make \
+      APG_MAN_DIR="/share/man/man1" \
+      APGD_MAN_DIR="/share/man/man8" \
+      INSTALL_PREFIX="$ROOT" \
+    install
+}
+
+# EOF

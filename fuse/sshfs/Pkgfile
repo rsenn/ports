@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+# Section: universe/utils
+# Description: filesystem client based on SSH File Transfer Protocol
+#  sshfs is a filesystem client based on the SSH File Transfer Protocol.
+#  to set up: i.e. on the server side there's nothing to do. On the
+#  server with ssh.
+# URL: http://fuse.sourceforge.net/sshfs.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: fuse-utils, libc6, libfuse2, libglib2.0-0
+
+name=sshfs
+version=2.1
+release=1
+source=($mirror_sf/fuse/sshfs-fuse-$version.tar.gz)
+
+build()
+{
+  cd sshfs-fuse-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/sshfs
+  install -m 644 AUTHORS COPYING ChangeLog FAQ.txt INSTALL NEWS README $ROOT/share/doc/sshfs
+}

@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A port-knocking daemon.
+#  Portkey is a port-knocking daemon. It allows you to put a simple
+#  combination lock on your TCP services and grant access to a port once
+#  a client has supplied the correct combination. The combination is
+#  supplied by attempting to connect to a specific sequence of closed TCP
+#  ports within a configured time period. Access is later revoked after a
+#  suitable timeout period.
+#  .
+# URL: http://www.smee.org/software/portkey
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=portkey
+version=0.9b-145
+release=1
+source=(http://www.smee.org/software/portkey/downloads/portkey-$version.tar.gz)
+
+build()
+{
+  cd portkey-$version
+
+  jam
+
+  install -d $ROOT/share/doc/portkey
+  install -m 644 Changes INSTALL LICENSE README $ROOT/share/doc/portkey
+
+}
+
+# EOF

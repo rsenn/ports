@@ -1,0 +1,35 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A Ruby module for reading and writing zip files.
+#  rubyzip is a Ruby module for reading and writing zip files.
+#  .
+# URL: http://rubyzip.sourceforge.net/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=rubyzip
+version=0.9.1
+release=1
+source=($mirror_sf/rubyzip/rubyzip-$version.tgz)
+
+build()
+{
+  cd rubyzip-$version
+
+  set -- `ruby --version`
+
+  RUBYVERSION="$2"
+  RUBYLIBDIR="$prefix/lib/ruby/${RUBYVERSION%.*}"
+
+  mkdir -p $PKG${RUBYLIBDIR}
+
+  install -d $PKG/$RUBYLIBDIR
+  cp -rf lib/* $PKG/$RUBYLIBDIR
+
+  install -d $ROOT/share/doc/rubyzip
+  install -m 644 README ChangeLog NEWS TODO $ROOT/share/doc/rubyzip
+
+  cp -rf samples $ROOT/share/doc/rubyzip
+}
+
+# EOF

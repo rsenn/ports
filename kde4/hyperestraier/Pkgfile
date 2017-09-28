@@ -1,0 +1,37 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:50 roman Exp $
+#
+# Description: A full-text search system for communities.
+#  Hyper Estraier is a full-text search system. It can be used as a Web
+#  search engine, mailbox searching, etc. It features high performance
+#  searching, high scalability of target documents, a perfect recall ratio by
+#  the N-gram method, phrase searching, attribute searching, and similarity
+#  searching. Multilingualism is supported with Unicode. It is independent
+#  of file format and repository, and has a simple and powerful API.
+# URL: http://hyperestraier.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=hyperestraier
+version=1.4.13
+release=1
+source=($mirror_gentoo/hyperestraier-$version.tar.gz)
+
+build() 
+{
+  cd hyperestraier-$version
+
+  libtoolize --force --copy --install
+  aclocal --force
+  autoconf --force
+
+  #sed -i "s, /lib, $prefix/lib,g" configure
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make \
+       DESTDIR="$PKG" \
+       all install
+}

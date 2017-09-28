@@ -1,0 +1,27 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: 
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=headers
+version=10.4
+release=1
+source=(http://sidbox.homelinux.org/~sid77/darwin-cross/slackware/source/darwin-cross-headers/headers-10.{3,4}.tar.bz2)
+
+build()
+{
+  install -d -m 755 $ROOT/powerpc-apple-darwin7
+  cp -a headers-10.3 $ROOT/powerpc-apple-darwin7/include
+  ln -sf include $ROOT/powerpc-apple-darwin7/sys-include
+
+  for arch in i386 powerpc
+  do
+    install -d -m 755 $ROOT/$arch-apple-darwin8
+    cp -a headers-10.4 $ROOT/$arch-apple-darwin8/include
+    ln -sf include $ROOT/$arch-apple-darwin8/sys-include
+  done
+
+  chown -R 0.0 $pkg
+}

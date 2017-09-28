@@ -1,0 +1,25 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A just-in-time compilation library.
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libgcc1, libstdc++6
+
+name=libjit
+version=0.1.0
+release=1
+source=(ftp://ftp.gnu.org/gnu/dotgnu/pnet/libjit-$version.tar.gz)
+
+build()
+{
+  cd libjit-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

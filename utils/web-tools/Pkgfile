@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Various tools which assist in adminstering a server.
+#  Web-tools is a package that contains 15 shell scripts for use in
+#  administering UNIX servers. These tools make it easy to add and
+#  remove: VirtualHosts on Apache Web server, users on ProFTPD server,
+#  and primary/secundary zones on the named DNS server.
+#  .
+# URL: http://webtools.linuxsecurity.com.br/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=web-tools
+version=1.4
+release=1
+source=(http://webtools.linuxsecurity.com.br/downloads/webtools-$version.tar.gz)
+
+build()
+{
+  cd webtools-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

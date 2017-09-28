@@ -1,0 +1,32 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:50 roman Exp $
+#
+# Description: GNU Image Manipulation Program.
+#  GIMP is the GNU Image Manipulation Program. It is a freely distributed
+#  piece of software suitable for such tasks as photo retouching, image
+#  composition and image authoring. It can be used as a simple paint program,
+#  an expert quality photo retouching program, an online batch processing
+#  system, a mass production image renderer, a image format converter, etc.
+# URL: http://gimp.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=gimp
+version=2.4.1
+release=1
+source=(ftp://ftp.gimp.org/pub/gimp/v${version%.*}/gimp-$version.tar.bz2)
+
+build()
+{
+  cd gimp-$version
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --${shared:=enable}-shared \
+      --${static:=enable}-shared
+
+  make
+  make INSTALL="$INSTALL" DESTDIR="$PKG" install
+}
+

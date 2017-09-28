@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: XML-based formatting tool for RFCs
+# URL: 
+# Maintainer: 
+# Depends on: 
+
+name=xml2rfc
+version=1.33
+release=1
+source=(http://ftp.debian.org/debian/pool/main/x/xml2rfc/xml2rfc_$version.dfsg.orig.tar.gz)
+
+build() 
+{
+  cd xmlrfc-$version.dfsg
+
+  mkdir -p $ROOT/lib/xml2rfc
+  mv -f *.tcl $ROOT/lib/xml2rfc
+
+ (mkdir -p $ROOT/bin
+  cd $ROOT/bin
+  for TCL in ../lib/xml2rfc/*.tcl; do
+    NAME=`basename "${TCL%.tcl}"`
+
+    ln -sf "$TCL" "$NAME"
+  done)  
+  
+  install -d $ROOT/share/doc/xml2rfc
+  install -m 644 LICENSE README.txt sample.txt test.txt $ROOT/share/doc/xml2rfc
+}
+
+# EOF

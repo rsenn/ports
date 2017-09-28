@@ -1,0 +1,26 @@
+# $Id: Pkgfile,v 1.3 2007/04/22 23:07:53 roman Exp $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=bsdinstall
+version=6.2
+release=1
+source=(xinstall-freebsd6.2.tar.gz
+        xinstall-portable.patch)
+
+build()
+{
+  cd xinstall
+  patch -N -p1 -R -i $SRC/xinstall-portable.patch
+
+  pmake
+
+  install -d $ROOT/bin
+  install -m 755 xinstall $ROOT/bin/bsdinstall
+
+  install -d $ROOT/man/man1
+  install -m 755 install.1 $ROOT/man/man1/bsdinstall.1
+}

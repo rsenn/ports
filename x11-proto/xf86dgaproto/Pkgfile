@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: X11 Direct Graphics Access extension wire protocol
+#  This package provides development headers describing the wire protocol
+#  for the XFree86-DGA extension, which provides direct, framebuffer-like,
+#  graphics access.
+#  This package is built from the X.org xf86dgaproto proto module.
+# URL: http://www.X.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=xf86dgaproto
+version=2.0.2
+release=1
+source=(ftp://ftp.x.org/pub/individual/proto/xf86dgaproto-$version.tar.bz2)
+
+build()
+{
+  cd xf86dgaproto-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

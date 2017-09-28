@@ -1,0 +1,35 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: Fonts for mplayer
+#  This package contains fonts needed (but not mandatory) by mplayer to
+#  display OSD (onscreen display) and subtitles.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=fonts
+version=1.0
+release=2
+source=(ttf-fonts.tar.gz)
+
+build()
+{
+  # create directory for ttf-fonts
+  install -m 755 -d $ROOT/fonts/ttf
+
+  # character sets for uppercase -> lowercase conversion
+  upper='ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+  lower='abcdefghijklmnopqrstuvwxyz'
+
+  # copy ttf font files to the TTF directory
+  for ttf in $SRC/ttf/*
+  do
+    # get the filename and convert it to lowercase
+    filename=$(basename $ttf)
+    lowercase=$(echo $filename | tr $upper $lower)
+
+    # destination file is in lowercase
+    chmod 644 "$ttf"
+    mv "$ttf" "$ROOT/fonts/ttf/$lowercase"
+  done
+}

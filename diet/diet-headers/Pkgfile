@@ -1,0 +1,39 @@
+# $Id: Pkgfile,v 1.8 2007/04/22 23:07:53 roman Exp $
+#
+# Description:
+# Longdescription:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=diet-headers
+version=2.6.12.0
+release=1
+os_system=${build%-gnu}
+host=${build%%-*}-diet-${os_system##*-}
+prefix=/opt/diet
+
+source=(http://ep09.pld-linux.org/~mmazur/linux-libc-headers/linux-libc-headers-$version.tar.bz2)
+
+build()
+{
+  cd linux-libc-headers-$version
+
+#  if test $host != $build
+#  then
+#    root="$ROOT/$host"
+#  fi
+
+  case $host in
+    i[3-7]86-*) arch='i386' ;;
+    x86_64-*) arch='x86_64' ;;
+    *) arch=${host%%-*} ;;
+  esac
+
+  # create include directory in the package
+  install -d $ROOT/include
+
+  # copy the necessary headers
+  cp -Rv include/asm-$arch $ROOT/include/asm
+  cp -Rv include/linux $ROOT/include
+}

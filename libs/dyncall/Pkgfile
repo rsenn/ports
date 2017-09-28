@@ -1,0 +1,37 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A foreign function call interface using small assembly kernels.
+#  The dyncall library project provides a clean and portable C interface to
+#  dynamically issue foreign function calls using small call kernels written
+#  in assembly. Instead of providing code for every bridged function call,
+#  which unnecessarily results in code bloat, only a modest number of
+#  instructions are used to invoke all calls.
+#  .
+# URL: http://dyncall.org
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=dyncall
+version=0.2
+release=1
+source=(http://dyncall.org/r$version/dyncall-$version.tar.gz)
+
+build()
+{
+  cd dyncall-$version
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+
+  make
+  make INSTALL_PREFIX="$ROOT" install
+
+  install -d $ROOT/share/doc/dyncall
+  install -m 644 AUTHORS ChangeLog LICENSE README* $ROOT/share/doc/dyncall
+  cp -f doc/[a-z]* $ROOT/share/doc/dyncall
+}
+
+# EOF

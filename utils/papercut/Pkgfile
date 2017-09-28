@@ -1,0 +1,24 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A command line Rock, Paper, Scissors game.
+# URL: http://code.google.com/p/koolkit/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6
+
+name=papercut
+version=0.1.1
+release=1
+source=(http://koolkit.googlecode.com/files/papercut-$version.tar.gz)
+
+build()
+{
+  cd papercut-$version
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

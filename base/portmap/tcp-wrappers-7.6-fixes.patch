@@ -1,0 +1,77 @@
+diff -ru -ru tcp_wrappers_7.6/Makefile tcp_wrappers/Makefile
+--- tcp_wrappers_7.6/Makefile	1997-03-21 19:27:21.000000000 +0100
++++ tcp_wrappers/Makefile	2006-11-28 12:22:47.000000000 +0100
+@@ -44,7 +44,7 @@
+ #REAL_DAEMON_DIR=/usr/etc
+ #
+ # SysV.4 Solaris 2.x OSF AIX
+-#REAL_DAEMON_DIR=/usr/sbin
++REAL_DAEMON_DIR=/usr/local/sbin
+ #
+ # BSD 4.4
+ #REAL_DAEMON_DIR=/usr/libexec
+diff -ru -ru tcp_wrappers_7.6/percent_m.c tcp_wrappers/percent_m.c
+--- tcp_wrappers_7.6/percent_m.c	1994-12-28 17:42:37.000000000 +0100
++++ tcp_wrappers/percent_m.c	2006-11-28 12:24:01.000000000 +0100
+@@ -14,7 +14,7 @@
+ 
+ extern int errno;
+ #ifndef SYS_ERRLIST_DEFINED
+-extern char *sys_errlist[];
++//extern char *sys_errlist[];
+ extern int sys_nerr;
+ #endif
+ 
+@@ -29,15 +29,11 @@
+ 
+     while (*bp = *cp)
+ 	if (*cp == '%' && cp[1] == 'm') {
+-	    if (errno < sys_nerr && errno > 0) {
+-		strcpy(bp, sys_errlist[errno]);
+-	    } else {
+-		sprintf(bp, "Unknown error %d", errno);
+-	    }
+-	    bp += strlen(bp);
+-	    cp += 2;
++		strcpy(bp, strerror(errno));
++    bp += strlen(bp);
++    cp += 2;
+ 	} else {
+-	    bp++, cp++;
++    bp++, cp++;
+ 	}
+-    return (obuf);
++  return (obuf);
+ }
+diff -ru -ru tcp_wrappers_7.6/scaffold.c tcp_wrappers/scaffold.c
+--- tcp_wrappers_7.6/scaffold.c	1997-03-21 19:27:24.000000000 +0100
++++ tcp_wrappers/scaffold.c	2006-11-28 12:23:14.000000000 +0100
+@@ -20,12 +20,13 @@
+ #include <syslog.h>
+ #include <setjmp.h>
+ #include <string.h>
++#include <stdlib.h>
+ 
+ #ifndef INADDR_NONE
+ #define	INADDR_NONE	(-1)		/* XXX should be 0xffffffff */
+ #endif
+ 
+-extern char *malloc();
++//extern char *malloc();
+ 
+ /* Application-specific. */
+ 
+diff -ru -ru tcp_wrappers_7.6_orig/shell_cmd.c tcp_wrappers_7.6/shell_cmd.c
+--- tcp_wrappers_7.6_orig/shell_cmd.c	2006-11-28 12:42:06.000000000 +0100
++++ tcp_wrappers_7.6/shell_cmd.c	2006-11-28 12:42:27.000000000 +0100
+@@ -81,8 +81,8 @@
+     } else if (dup(0) != 1 || dup(0) != 2) {
+ 	error = "dup: %m";
+     } else {
+-	(void) execl("/bin/sh", "sh", "-c", command, (char *) 0);
+-	error = "execl /bin/sh: %m";
++	(void) execl("/usr/local/bin/sh", "sh", "-c", command, (char *) 0);
++	error = "execl /usr/local/bin/sh: %m";
+     }
+ 
+     /* Something went wrong. We MUST terminate the child process. */

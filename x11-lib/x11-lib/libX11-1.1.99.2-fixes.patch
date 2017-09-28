@@ -1,0 +1,42 @@
+diff -r -u -- libX11-1.1.99.2_orig/src/globals.c libX11-1.1.99.2/src/globals.c
+--- libX11-1.1.99.2_orig/src/globals.c	2008-11-16 13:56:21.000000000 +0000
++++ libX11-1.1.99.2/src/globals.c	2008-11-16 14:00:47.000000000 +0000
+@@ -46,13 +46,13 @@
+  * Some shared library implementations are *much* happier if there isn't any
+  * global initialized data.
+  */
+-#ifdef NULL_NOT_ZERO			/* then need to initialize */
++#if 1 //def NULL_NOT_ZERO			/* then need to initialize */
+ #define SetZero(t,var,z) t var = z
+ #else
+ #define SetZero(t,var,z) t var
+ #endif
+ 
+-#ifdef USL_SHAREDLIB			/* then need extra variables */
++#if 0 //def USL_SHAREDLIB			/* then need extra variables */
+ /*
+  * If we need to define extra variables for each global
+  */
+diff -r -u -- libX11-1.1.99.2_orig/src/xlibi18n/lcWrap.c libX11-1.1.99.2/src/xlibi18n/lcWrap.c
+--- libX11-1.1.99.2_orig/src/xlibi18n/lcWrap.c	2008-11-16 13:56:21.000000000 +0000
++++ libX11-1.1.99.2/src/xlibi18n/lcWrap.c	2008-11-16 14:08:47.000000000 +0000
+@@ -70,7 +70,7 @@
+ #include "XlcPubI.h"
+ 
+ #ifdef XTHREADS
+-LockInfoPtr _Xi18n_lock;
++LockInfoPtr _Xi18n_lock = { 0 };
+ #endif
+ 
+ char *
+--- libX11-1.1.99.2_orig/configure	2008-11-20 09:17:02.000000000 +0000
++++ libX11-1.1.99.2/configure	2008-11-20 09:17:34.000000000 +0000
+@@ -20123,7 +20123,7 @@
+     case "$arg" in
+         --mode=compile) modeok=true ;;
+         --tag=CC|--tag=CXX) tagok=true ;;
+-        *) args+=("$arg")
++        *) args="${args+$args }$arg" ;;
+     esac
+ done
+ if $modeok && $tagok ; then

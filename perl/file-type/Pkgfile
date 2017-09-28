@@ -1,0 +1,23 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: determine file type using magic
+# URL: http://search.cpan.org/dist/File-Type/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=file-type
+version=0.22
+release=1
+source=(http://search.cpan.org/CPAN/authors/id/P/PM/PMISON/File-Type-$version.tar.gz)
+
+build()
+{
+  cd File-Type-$version
+
+  perl Makefile.PL installdirs=vendor
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

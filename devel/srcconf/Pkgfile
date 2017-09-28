@@ -1,0 +1,35 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A source code configuration tool.
+#  srcconf is a software package which enables user friendly configuration
+#  of software source code packages. srcconf is based on the lxdialog and
+#  kconfig (a.k.a. lkc) programs extracted from the Linux kernel version
+#  2.5.50.
+#  .
+# URL: http://openwince.sourceforge.net/srcconf/
+# Maintainer:  Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=srcconf
+version=0.1
+release=1
+source=($mirror_sf/openwince/srcconf-$version.tar.gz
+        srcconf-0.1-current-menu.patch)
+
+build()
+{
+  cd srcconf-$version
+
+  patch -N -p1 -i $SRC/srcconf-0.1-current-menu.patch
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

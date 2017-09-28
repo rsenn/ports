@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A DNS(SEC) library in C inspired by Net::DNS.
+#  ldns is a library with the aim of simplifying DNS programing in C. It
+#  is inspired by the Net::DNS module from Perl.
+# URL: http://www.nlnetlabs.nl/ldns/index.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=ldns
+version=1.5.1
+release=1
+source=(http://www.nlnetlabs.nl/downloads/ldns/ldns-$version.tar.gz)
+
+build() 
+{
+  cd ldns-$version
+  
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+  
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/ldns
+  install -m 644 LICENSE Changelog README $ROOT/share/doc/ldns
+  install -m 644 doc/CodingStyle $ROOT/share/doc/ldns
+}
+
+# EOF

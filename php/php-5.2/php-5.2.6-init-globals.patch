@@ -1,0 +1,813 @@
+diff -ru php-5.2.6_orig/Zend/zend_API.h php-5.2.6/Zend/zend_API.h
+--- php-5.2.6_orig/Zend/zend_API.h	2008-11-16 14:14:07.000000000 +0000
++++ php-5.2.6/Zend/zend_API.h	2008-11-16 14:31:19.000000000 +0000
+@@ -116,7 +116,7 @@
+ #else
+ 
+ #define ZEND_DECLARE_MODULE_GLOBALS(module_name)							\
+-	zend_##module_name##_globals module_name##_globals;
++	zend_##module_name##_globals module_name##_globals = {};
+ #define ZEND_EXTERN_MODULE_GLOBALS(module_name)								\
+ 	extern zend_##module_name##_globals module_name##_globals;
+ #define ZEND_INIT_MODULE_GLOBALS(module_name, globals_ctor, globals_dtor)	\
+diff -ru php-5.2.6_orig/Zend/zend_compile.c php-5.2.6/Zend/zend_compile.c
+--- php-5.2.6_orig/Zend/zend_compile.c	2008-11-16 14:14:08.000000000 +0000
++++ php-5.2.6/Zend/zend_compile.c	2008-11-16 14:44:54.000000000 +0000
+@@ -36,8 +36,8 @@
+ 
+ 
+ #ifndef ZTS
+-ZEND_API zend_compiler_globals compiler_globals;
+-ZEND_API zend_executor_globals executor_globals;
++ZEND_API zend_compiler_globals compiler_globals = {};
++ZEND_API zend_executor_globals executor_globals = {};
+ #endif
+ 
+ static void zend_duplicate_property_info(zend_property_info *property_info)
+diff -ru php-5.2.6_orig/ext/curl/interface.c php-5.2.6/ext/curl/interface.c
+--- php-5.2.6_orig/ext/curl/interface.c	2008-11-16 14:13:42.000000000 +0000
++++ php-5.2.6/ext/curl/interface.c	2008-11-16 14:48:16.000000000 +0000
+@@ -88,8 +88,8 @@
+ #include "ext/standard/url.h"
+ #include "php_curl.h"
+ 
+-int  le_curl;
+-int  le_curl_multi_handle;
++int  le_curl = 0;
++int  le_curl_multi_handle = 0;
+ 
+ #ifdef PHP_CURL_NEED_OPENSSL_TSL /* {{{ */
+ static MUTEX_T *php_curl_openssl_tsl = NULL;
+diff -ru php-5.2.6_orig/ext/date/php_date.c php-5.2.6/ext/date/php_date.c
+--- php-5.2.6_orig/ext/date/php_date.c	2008-11-16 14:13:42.000000000 +0000
++++ php-5.2.6/ext/date/php_date.c	2008-11-16 14:48:57.000000000 +0000
+@@ -229,7 +229,7 @@
+ static PHP_GINIT_FUNCTION(date);
+ 
+ /* True global */
+-timelib_tzdb *php_date_global_timezone_db;
++timelib_tzdb *php_date_global_timezone_db = NULL;
+ int php_date_global_timezone_db_enabled;
+ 
+ #define DATE_DEFAULT_LATITUDE "31.7667"
+diff -ru php-5.2.6_orig/ext/standard/file.c php-5.2.6/ext/standard/file.c
+--- php-5.2.6_orig/ext/standard/file.c	2008-11-16 14:14:05.000000000 +0000
++++ php-5.2.6/ext/standard/file.c	2008-11-16 14:21:08.000000000 +0000
+@@ -113,7 +113,7 @@
+ #ifdef ZTS
+ int file_globals_id;
+ #else
+-php_file_globals file_globals;
++php_file_globals file_globals = {};
+ #endif
+ 
+ #ifdef HAVE_FNMATCH
+diff -ru php-5.2.6_orig/main/SAPI.c php-5.2.6/main/SAPI.c
+--- php-5.2.6_orig/main/SAPI.c	2008-11-16 14:14:11.000000000 +0000
++++ php-5.2.6/main/SAPI.c	2008-11-16 14:45:11.000000000 +0000
+@@ -55,7 +55,7 @@
+ #ifdef ZTS
+ SAPI_API int sapi_globals_id;
+ #else
+-sapi_globals_struct sapi_globals;
++sapi_globals_struct sapi_globals = {};
+ #endif
+ 
+ static void sapi_globals_ctor(sapi_globals_struct *sapi_globals TSRMLS_DC)
+diff -ru php-5.2.6_orig/main/main.c php-5.2.6/main/main.c
+--- php-5.2.6_orig/main/main.c	2008-11-16 14:14:12.000000000 +0000
++++ php-5.2.6/main/main.c	2008-11-16 14:41:46.000000000 +0000
+@@ -92,7 +92,7 @@
+ /* }}} */
+ 
+ #ifndef ZTS
+-php_core_globals core_globals;
++php_core_globals core_globals = { 0,0,0,0,0,0,1 };
+ #else
+ PHPAPI int core_globals_id;
+ #endif
+@@ -1628,7 +1628,7 @@
+ 	int module_number=0;	/* for REGISTER_INI_ENTRIES() */
+ 	char *php_os;
+ #ifdef ZTS
+-	zend_executor_globals *executor_globals;
++	zend_executor_globals *executor_globals = 0; 
+ 	void ***tsrm_ls;
+ 
+ 	php_core_globals *core_globals;
+diff -ru php-5.2.6_orig/main/output.c php-5.2.6/main/output.c
+--- php-5.2.6_orig/main/output.c	2008-11-16 14:14:12.000000000 +0000
++++ php-5.2.6/main/output.c	2008-11-16 14:46:54.000000000 +0000
+@@ -43,7 +43,7 @@
+ #ifdef ZTS
+ int output_globals_id;
+ #else
+-php_output_globals output_globals;
++php_output_globals output_globals = {};
+ #endif
+ 
+ /* {{{ php_default_output_func */
+diff -ru php-5.2.6_orig/TSRM/tsrm_virtual_cwd.c php-5.2.6/TSRM/tsrm_virtual_cwd.c
+--- php-5.2.6_orig/TSRM/tsrm_virtual_cwd.c	2008-11-20 02:13:00.000000000 +0000
++++ php-5.2.6/TSRM/tsrm_virtual_cwd.c	2008-11-20 03:09:41.000000000 +0000
+@@ -57,10 +57,10 @@
+ #ifdef ZTS
+ ts_rsrc_id cwd_globals_id;
+ #else
+-virtual_cwd_globals cwd_globals;
++virtual_cwd_globals cwd_globals = {};
+ #endif
+ 
+-cwd_state main_cwd_state; /* True global */
++cwd_state main_cwd_state = {}; /* True global */
+ 
+ #ifndef TSRM_WIN32
+ #include <unistd.h>
+diff -ru php-5.2.6_orig/Zend/zend.c php-5.2.6/Zend/zend.c
+--- php-5.2.6_orig/Zend/zend.c	2008-11-20 02:13:08.000000000 +0000
++++ php-5.2.6/Zend/zend.c	2008-11-20 03:12:51.000000000 +0000
+@@ -47,21 +47,21 @@
+ 
+ /* true multithread-shared globals */
+ ZEND_API zend_class_entry *zend_standard_class_def = NULL;
+-ZEND_API int (*zend_printf)(const char *format, ...);
+-ZEND_API zend_write_func_t zend_write;
+-ZEND_API FILE *(*zend_fopen)(const char *filename, char **opened_path);
+-ZEND_API int (*zend_stream_open_function)(const char *filename, zend_file_handle *handle TSRMLS_DC);
+-ZEND_API void (*zend_block_interruptions)(void);
+-ZEND_API void (*zend_unblock_interruptions)(void);
+-ZEND_API void (*zend_ticks_function)(int ticks);
+-ZEND_API void (*zend_error_cb)(int type, const char *error_filename, const uint error_lineno, const char *format, va_list args);
+-int (*zend_vspprintf)(char **pbuf, size_t max_len, const char *format, va_list ap);
+-ZEND_API char *(*zend_getenv)(char *name, size_t name_len TSRMLS_DC);
++ZEND_API int (*zend_printf)(const char *format, ...) = 0;
++ZEND_API zend_write_func_t zend_write = 0;
++ZEND_API FILE *(*zend_fopen)(const char *filename, char **opened_path) = 0;
++ZEND_API int (*zend_stream_open_function)(const char *filename, zend_file_handle *handle TSRMLS_DC) = 0;
++ZEND_API void (*zend_block_interruptions)(void) = 0;
++ZEND_API void (*zend_unblock_interruptions)(void) = 0;
++ZEND_API void (*zend_ticks_function)(int ticks) = 0;
++ZEND_API void (*zend_error_cb)(int type, const char *error_filename, const uint error_lineno, const char *format, va_list args) = 0;
++int (*zend_vspprintf)(char **pbuf, size_t max_len, const char *format, va_list ap) = 0;
++ZEND_API char *(*zend_getenv)(char *name, size_t name_len TSRMLS_DC) = 0;
+ 
+-void (*zend_on_timeout)(int seconds TSRMLS_DC);
++void (*zend_on_timeout)(int seconds TSRMLS_DC) = 0;
+ 
+-static void (*zend_message_dispatcher_p)(long message, void *data);
+-static int (*zend_get_configuration_directive_p)(char *name, uint name_length, zval *contents);
++static void (*zend_message_dispatcher_p)(long message, void *data) = 0;
++static int (*zend_get_configuration_directive_p)(char *name, uint name_length, zval *contents) = 0;
+ 
+ 
+ static ZEND_INI_MH(OnUpdateErrorReporting)
+@@ -94,9 +94,9 @@
+ static HashTable *global_persistent_list = NULL;
+ #endif
+ 
+-ZEND_API zend_utility_values zend_uv;
++ZEND_API zend_utility_values zend_uv = {};
+ 
+-ZEND_API zval zval_used_for_init; /* True global variable */
++ZEND_API zval zval_used_for_init = {}; /* True global variable */
+ 
+ /* version information */
+ static char *zend_version_info;
+diff -ru php-5.2.6_orig/Zend/zend_API.c php-5.2.6/Zend/zend_API.c
+--- php-5.2.6_orig/Zend/zend_API.c	2008-11-20 02:13:00.000000000 +0000
++++ php-5.2.6/Zend/zend_API.c	2008-11-20 02:47:10.000000000 +0000
+@@ -32,7 +32,7 @@
+ 
+ /* these variables are true statics/globals, and have to be mutex'ed on every access */
+ static int module_count=0;
+-ZEND_API HashTable module_registry;
++ZEND_API HashTable module_registry = {};
+ 
+ /* this function doesn't check for too many parameters */
+ ZEND_API int zend_get_parameters(int ht, int param_count, ...)
+diff -ru php-5.2.6_orig/Zend/zend_compile.c php-5.2.6/Zend/zend_compile.c
+--- php-5.2.6_orig/Zend/zend_compile.c	2008-11-20 02:13:08.000000000 +0000
++++ php-5.2.6/Zend/zend_compile.c	2008-11-20 02:55:01.000000000 +0000
+@@ -31,8 +31,8 @@
+ #include "zend_multibyte.h"
+ #endif /* ZEND_MULTIBYTE */
+ 
+-ZEND_API zend_op_array *(*zend_compile_file)(zend_file_handle *file_handle, int type TSRMLS_DC);
+-ZEND_API zend_op_array *(*zend_compile_string)(zval *source_string, char *filename TSRMLS_DC);
++ZEND_API zend_op_array *(*zend_compile_file)(zend_file_handle *file_handle, int type TSRMLS_DC) = 0;
++ZEND_API zend_op_array *(*zend_compile_string)(zval *source_string, char *filename TSRMLS_DC) = 0;
+ 
+ 
+ #ifndef ZTS
+diff -ru php-5.2.6_orig/Zend/zend_exceptions.c php-5.2.6/Zend/zend_exceptions.c
+--- php-5.2.6_orig/Zend/zend_exceptions.c	2008-11-20 02:13:08.000000000 +0000
++++ php-5.2.6/Zend/zend_exceptions.c	2008-11-20 03:13:36.000000000 +0000
+@@ -27,10 +27,10 @@
+ #include "zend_interfaces.h"
+ #include "zend_exceptions.h"
+ 
+-zend_class_entry *default_exception_ce;
+-zend_class_entry *error_exception_ce;
++zend_class_entry *default_exception_ce = 0;
++zend_class_entry *error_exception_ce = 0;
+ static zend_object_handlers default_exception_handlers;
+-ZEND_API void (*zend_throw_exception_hook)(zval *ex TSRMLS_DC);
++ZEND_API void (*zend_throw_exception_hook)(zval *ex TSRMLS_DC) = 0;
+ 
+ void zend_throw_exception_internal(zval *exception TSRMLS_DC) /* {{{ */
+ {
+diff -ru php-5.2.6_orig/Zend/zend_execute.c php-5.2.6/Zend/zend_execute.c
+--- php-5.2.6_orig/Zend/zend_execute.c	2008-11-20 02:13:08.000000000 +0000
++++ php-5.2.6/Zend/zend_execute.c	2008-11-20 03:14:27.000000000 +0000
+@@ -1365,7 +1365,7 @@
+ #define CHECK_SYMBOL_TABLES()
+ #endif
+ 
+-ZEND_API opcode_handler_t *zend_opcode_handlers;
++ZEND_API opcode_handler_t *zend_opcode_handlers = 0;
+ 
+ ZEND_API void execute_internal(zend_execute_data *execute_data_ptr, int return_value_used TSRMLS_DC)
+ {
+diff -ru php-5.2.6_orig/Zend/zend_execute_API.c php-5.2.6/Zend/zend_execute_API.c
+--- php-5.2.6_orig/Zend/zend_execute_API.c	2008-11-20 02:13:08.000000000 +0000
++++ php-5.2.6/Zend/zend_execute_API.c	2008-11-20 02:55:53.000000000 +0000
+@@ -35,8 +35,8 @@
+ #include <sys/time.h>
+ #endif
+ 
+-ZEND_API void (*zend_execute)(zend_op_array *op_array TSRMLS_DC);
+-ZEND_API void (*zend_execute_internal)(zend_execute_data *execute_data_ptr, int return_value_used TSRMLS_DC);
++ZEND_API void (*zend_execute)(zend_op_array *op_array TSRMLS_DC) = 0;
++ZEND_API void (*zend_execute_internal)(zend_execute_data *execute_data_ptr, int return_value_used TSRMLS_DC) = 0;
+ 
+ /* true globals */
+ ZEND_API zend_fcall_info_cache empty_fcall_info_cache = { 0, NULL, NULL, NULL };
+diff -ru php-5.2.6_orig/Zend/zend_extensions.c php-5.2.6/Zend/zend_extensions.c
+--- php-5.2.6_orig/Zend/zend_extensions.c	2008-11-20 02:13:08.000000000 +0000
++++ php-5.2.6/Zend/zend_extensions.c	2008-11-20 03:12:09.000000000 +0000
+@@ -21,7 +21,7 @@
+ 
+ #include "zend_extensions.h"
+ 
+-ZEND_API zend_llist zend_extensions;
++ZEND_API zend_llist zend_extensions = {};
+ static int last_resource_number;
+ 
+ int zend_load_extension(char *path)
+diff -ru php-5.2.6_orig/Zend/zend_ini_scanner.c php-5.2.6/Zend/zend_ini_scanner.c
+--- php-5.2.6_orig/Zend/zend_ini_scanner.c	2008-11-20 02:13:08.000000000 +0000
++++ php-5.2.6/Zend/zend_ini_scanner.c	2008-11-20 03:10:32.000000000 +0000
+@@ -526,7 +526,7 @@
+ #ifdef ZTS
+ ZEND_API ts_rsrc_id ini_scanner_globals_id;
+ #else
+-ZEND_API zend_scanner_globals ini_scanner_globals;
++ZEND_API zend_scanner_globals ini_scanner_globals = {};
+ #endif
+ 
+ # define YY_INPUT(buf, result, max_size) \
+diff -ru php-5.2.6_orig/Zend/zend_interfaces.c php-5.2.6/Zend/zend_interfaces.c
+--- php-5.2.6_orig/Zend/zend_interfaces.c	2008-11-20 02:13:08.000000000 +0000
++++ php-5.2.6/Zend/zend_interfaces.c	2008-11-20 02:47:10.000000000 +0000
+@@ -23,11 +23,11 @@
+ #include "zend_interfaces.h"
+ #include "zend_exceptions.h"
+ 
+-ZEND_API zend_class_entry *zend_ce_traversable;
+-ZEND_API zend_class_entry *zend_ce_aggregate;
+-ZEND_API zend_class_entry *zend_ce_iterator;
+-ZEND_API zend_class_entry *zend_ce_arrayaccess;
+-ZEND_API zend_class_entry *zend_ce_serializable;
++ZEND_API zend_class_entry *zend_ce_traversable = 0;
++ZEND_API zend_class_entry *zend_ce_aggregate = 0;
++ZEND_API zend_class_entry *zend_ce_iterator = 0;
++ZEND_API zend_class_entry *zend_ce_arrayaccess = 0;
++ZEND_API zend_class_entry *zend_ce_serializable = 0;
+ 
+ /* {{{ zend_call_method
+  Only returns the returned zval if retval_ptr != NULL */
+diff -ru php-5.2.6_orig/Zend/zend_language_scanner.c php-5.2.6/Zend/zend_language_scanner.c
+--- php-5.2.6_orig/Zend/zend_language_scanner.c	2008-11-20 02:13:08.000000000 +0000
++++ php-5.2.6/Zend/zend_language_scanner.c	2008-11-20 03:06:03.000000000 +0000
+@@ -3107,7 +3107,7 @@
+ #ifdef ZTS
+ ZEND_API ts_rsrc_id language_scanner_globals_id;
+ #else
+-ZEND_API zend_scanner_globals language_scanner_globals;
++ZEND_API zend_scanner_globals language_scanner_globals = {};
+ #endif
+ 
+ 
+diff -ru php-5.2.6_orig/Zend/zend_language_scanner.l php-5.2.6/Zend/zend_language_scanner.l
+--- php-5.2.6_orig/Zend/zend_language_scanner.l	2008-11-20 02:13:08.000000000 +0000
++++ php-5.2.6/Zend/zend_language_scanner.l	2008-11-20 03:05:18.000000000 +0000
+@@ -87,7 +87,7 @@
+ #ifdef ZTS
+ ZEND_API ts_rsrc_id language_scanner_globals_id;
+ #else
+-ZEND_API zend_scanner_globals language_scanner_globals;
++ZEND_API zend_scanner_globals language_scanner_globals = {};
+ #endif
+ 
+ 
+diff -ru php-5.2.6_orig/Zend/zend_list.c php-5.2.6/Zend/zend_list.c
+--- php-5.2.6_orig/Zend/zend_list.c	2008-11-20 02:13:08.000000000 +0000
++++ php-5.2.6/Zend/zend_list.c	2008-11-20 02:47:10.000000000 +0000
+@@ -26,7 +26,7 @@
+ #include "zend_API.h"
+ #include "zend_globals.h"
+ 
+-ZEND_API int le_index_ptr;
++ZEND_API int le_index_ptr = 0;
+ 
+ /* true global */
+ static HashTable list_destructors;
+diff -ru php-5.2.6_orig/ext/date/php_date.c php-5.2.6/ext/date/php_date.c
+--- php-5.2.6_orig/ext/date/php_date.c	2008-11-20 02:12:48.000000000 +0000
++++ php-5.2.6/ext/date/php_date.c	2008-11-20 02:47:00.000000000 +0000
+@@ -230,7 +230,7 @@
+ 
+ /* True global */
+ timelib_tzdb *php_date_global_timezone_db = NULL;
+-int php_date_global_timezone_db_enabled;
++int php_date_global_timezone_db_enabled = 0;
+ 
+ #define DATE_DEFAULT_LATITUDE "31.7667"
+ #define DATE_DEFAULT_LONGITUDE "35.2333"
+@@ -251,7 +251,7 @@
+ PHP_INI_END()
+ /* }}} */
+ 
+-zend_class_entry *date_ce_date, *date_ce_timezone;
++zend_class_entry *date_ce_date = 0, *date_ce_timezone = 0;
+ 
+ static zend_object_handlers date_object_handlers_date;
+ static zend_object_handlers date_object_handlers_timezone;
+diff -ru php-5.2.6_orig/ext/dom/php_dom.c php-5.2.6/ext/dom/php_dom.c
+--- php-5.2.6_orig/ext/dom/php_dom.c	2008-11-20 02:12:48.000000000 +0000
++++ php-5.2.6/ext/dom/php_dom.c	2008-11-20 02:47:01.000000000 +0000
+@@ -34,42 +34,42 @@
+ #define PHP_XPATH 1
+ #define PHP_XPTR 2
+ 
+-zend_class_entry *dom_node_class_entry;
+-zend_class_entry *dom_domexception_class_entry;
+-zend_class_entry *dom_domstringlist_class_entry;
+-zend_class_entry *dom_namelist_class_entry;
+-zend_class_entry *dom_domimplementationlist_class_entry;
+-zend_class_entry *dom_domimplementationsource_class_entry;
+-zend_class_entry *dom_domimplementation_class_entry;
+-zend_class_entry *dom_documentfragment_class_entry;
+-zend_class_entry *dom_document_class_entry;
+-zend_class_entry *dom_nodelist_class_entry;
+-zend_class_entry *dom_namednodemap_class_entry;
+-zend_class_entry *dom_characterdata_class_entry;
+-zend_class_entry *dom_attr_class_entry;
+-zend_class_entry *dom_element_class_entry;
+-zend_class_entry *dom_text_class_entry;
+-zend_class_entry *dom_comment_class_entry;
+-zend_class_entry *dom_typeinfo_class_entry;
+-zend_class_entry *dom_userdatahandler_class_entry;
+-zend_class_entry *dom_domerror_class_entry;
+-zend_class_entry *dom_domerrorhandler_class_entry;
+-zend_class_entry *dom_domlocator_class_entry;
+-zend_class_entry *dom_domconfiguration_class_entry;
+-zend_class_entry *dom_cdatasection_class_entry;
+-zend_class_entry *dom_documenttype_class_entry;
+-zend_class_entry *dom_notation_class_entry;
+-zend_class_entry *dom_entity_class_entry;
+-zend_class_entry *dom_entityreference_class_entry;
+-zend_class_entry *dom_processinginstruction_class_entry;
+-zend_class_entry *dom_string_extend_class_entry;
++zend_class_entry *dom_node_class_entry = 0;
++zend_class_entry *dom_domexception_class_entry = 0;
++zend_class_entry *dom_domstringlist_class_entry = 0;
++zend_class_entry *dom_namelist_class_entry = 0;
++zend_class_entry *dom_domimplementationlist_class_entry = 0;
++zend_class_entry *dom_domimplementationsource_class_entry = 0;
++zend_class_entry *dom_domimplementation_class_entry = 0;
++zend_class_entry *dom_documentfragment_class_entry = 0;
++zend_class_entry *dom_document_class_entry = 0;
++zend_class_entry *dom_nodelist_class_entry = 0;
++zend_class_entry *dom_namednodemap_class_entry = 0;
++zend_class_entry *dom_characterdata_class_entry = 0;
++zend_class_entry *dom_attr_class_entry = 0;
++zend_class_entry *dom_element_class_entry = 0;
++zend_class_entry *dom_text_class_entry = 0;
++zend_class_entry *dom_comment_class_entry = 0;
++zend_class_entry *dom_typeinfo_class_entry = 0;
++zend_class_entry *dom_userdatahandler_class_entry = 0;
++zend_class_entry *dom_domerror_class_entry = 0;
++zend_class_entry *dom_domerrorhandler_class_entry = 0;
++zend_class_entry *dom_domlocator_class_entry = 0;
++zend_class_entry *dom_domconfiguration_class_entry = 0;
++zend_class_entry *dom_cdatasection_class_entry = 0;
++zend_class_entry *dom_documenttype_class_entry = 0;
++zend_class_entry *dom_notation_class_entry = 0;
++zend_class_entry *dom_entity_class_entry = 0;
++zend_class_entry *dom_entityreference_class_entry = 0;
++zend_class_entry *dom_processinginstruction_class_entry = 0;
++zend_class_entry *dom_string_extend_class_entry = 0;
+ #if defined(LIBXML_XPATH_ENABLED)
+-zend_class_entry *dom_xpath_class_entry;
++zend_class_entry *dom_xpath_class_entry = 0;
+ #endif
+-zend_class_entry *dom_namespace_node_class_entry;
++zend_class_entry *dom_namespace_node_class_entry = 0;
+ 
+-zend_object_handlers dom_object_handlers;
+-zend_object_handlers dom_ze1_object_handlers;
++zend_object_handlers dom_object_handlers = {};
++zend_object_handlers dom_ze1_object_handlers = {};
+ 
+ static HashTable classes;
+ 
+diff -ru php-5.2.6_orig/ext/hash/hash.c php-5.2.6/ext/hash/hash.c
+--- php-5.2.6_orig/ext/hash/hash.c	2008-11-20 02:12:48.000000000 +0000
++++ php-5.2.6/ext/hash/hash.c	2008-11-20 02:47:01.000000000 +0000
+@@ -27,7 +27,7 @@
+ #include "ext/standard/file.h"
+ 
+ static int php_hash_le_hash;
+-HashTable php_hash_hashtable;
++HashTable php_hash_hashtable = {};
+ 
+ #if (PHP_MAJOR_VERSION >= 5)
+ # define DEFAULT_CONTEXT FG(default_context)
+diff -ru php-5.2.6_orig/ext/mysqli/mysqli.c php-5.2.6/ext/mysqli/mysqli.c
+--- php-5.2.6_orig/ext/mysqli/mysqli.c	2008-11-20 02:12:55.000000000 +0000
++++ php-5.2.6/ext/mysqli/mysqli.c	2008-11-20 02:47:02.000000000 +0000
+@@ -45,12 +45,12 @@
+ static HashTable mysqli_stmt_properties;
+ static HashTable mysqli_warning_properties;
+ 
+-zend_class_entry *mysqli_link_class_entry;
+-zend_class_entry *mysqli_stmt_class_entry;
+-zend_class_entry *mysqli_result_class_entry;
+-zend_class_entry *mysqli_driver_class_entry;
+-zend_class_entry *mysqli_warning_class_entry;
+-zend_class_entry *mysqli_exception_class_entry;
++zend_class_entry *mysqli_link_class_entry = 0;
++zend_class_entry *mysqli_stmt_class_entry = 0;
++zend_class_entry *mysqli_result_class_entry = 0;
++zend_class_entry *mysqli_driver_class_entry = 0;
++zend_class_entry *mysqli_warning_class_entry = 0;
++zend_class_entry *mysqli_exception_class_entry = 0;
+ 
+ extern void php_mysqli_connect(INTERNAL_FUNCTION_PARAMETERS);
+ 
+diff -ru php-5.2.6_orig/ext/oci8/oci8.c php-5.2.6/ext/oci8/oci8.c
+--- php-5.2.6_orig/ext/oci8/oci8.c	2008-11-20 02:12:49.000000000 +0000
++++ php-5.2.6/ext/oci8/oci8.c	2008-11-20 02:47:02.000000000 +0000
+@@ -64,9 +64,9 @@
+ int le_collection;
+ #endif
+ 
+-zend_class_entry *oci_lob_class_entry_ptr;
++zend_class_entry *oci_lob_class_entry_ptr = 0;
+ #ifdef PHP_OCI8_HAVE_COLLECTIONS
+-zend_class_entry *oci_coll_class_entry_ptr;
++zend_class_entry *oci_coll_class_entry_ptr = 0;
+ #endif
+ 
+ #ifndef SQLT_BFILEE
+diff -ru php-5.2.6_orig/ext/pdo/pdo.c php-5.2.6/ext/pdo/pdo.c
+--- php-5.2.6_orig/ext/pdo/pdo.c	2008-11-20 02:12:48.000000000 +0000
++++ php-5.2.6/ext/pdo/pdo.c	2008-11-20 02:47:02.000000000 +0000
+@@ -41,7 +41,7 @@
+ /* True global resources - no need for thread safety here */
+ 
+ /* the registry of PDO drivers */
+-HashTable pdo_driver_hash;
++HashTable pdo_driver_hash = {};
+ 
+ /* we use persistent resources for the driver connection stuff */
+ static int le_ppdo;
+@@ -52,7 +52,7 @@
+ }
+ 
+ /* for exceptional circumstances */
+-zend_class_entry *pdo_exception_ce;
++zend_class_entry *pdo_exception_ce = 0;
+ 
+ PDO_API zend_class_entry *php_pdo_get_dbh_ce(void)
+ {
+@@ -94,7 +94,7 @@
+ #endif
+ }
+ 
+-zend_class_entry *pdo_dbh_ce, *pdo_dbstmt_ce, *pdo_row_ce;
++zend_class_entry *pdo_dbh_ce = 0, *pdo_dbstmt_ce = 0, *pdo_row_ce = 0;
+ 
+ /* {{{ proto array pdo_drivers()
+  Return array of available PDO drivers */
+diff -ru php-5.2.6_orig/ext/pdo/pdo_stmt.c php-5.2.6/ext/pdo/pdo_stmt.c
+--- php-5.2.6_orig/ext/pdo/pdo_stmt.c	2008-11-20 02:12:48.000000000 +0000
++++ php-5.2.6/ext/pdo/pdo_stmt.c	2008-11-20 02:47:02.000000000 +0000
+@@ -2301,7 +2301,7 @@
+ 	return retval;
+ }
+ 
+-zend_object_handlers pdo_dbstmt_object_handlers;
++zend_object_handlers pdo_dbstmt_object_handlers = {};
+ 
+ void pdo_stmt_init(TSRMLS_D)
+ {
+diff -ru php-5.2.6_orig/ext/reflection/php_reflection.c php-5.2.6/ext/reflection/php_reflection.c
+--- php-5.2.6_orig/ext/reflection/php_reflection.c	2008-11-20 02:12:54.000000000 +0000
++++ php-5.2.6/ext/reflection/php_reflection.c	2008-11-20 02:51:24.000000000 +0000
+@@ -45,17 +45,17 @@
+ #endif
+ 
+ /* Class entry pointers */
+-PHPAPI zend_class_entry *reflector_ptr;
+-PHPAPI zend_class_entry *reflection_exception_ptr;
+-PHPAPI zend_class_entry *reflection_ptr;
+-PHPAPI zend_class_entry *reflection_function_abstract_ptr;
+-PHPAPI zend_class_entry *reflection_function_ptr;
+-PHPAPI zend_class_entry *reflection_parameter_ptr;
+-PHPAPI zend_class_entry *reflection_class_ptr;
+-PHPAPI zend_class_entry *reflection_object_ptr;
+-PHPAPI zend_class_entry *reflection_method_ptr;
+-PHPAPI zend_class_entry *reflection_property_ptr;
+-PHPAPI zend_class_entry *reflection_extension_ptr;
++PHPAPI zend_class_entry *reflector_ptr = 0;
++PHPAPI zend_class_entry *reflection_exception_ptr = 0;
++PHPAPI zend_class_entry *reflection_ptr = 0;
++PHPAPI zend_class_entry *reflection_function_abstract_ptr = 0;
++PHPAPI zend_class_entry *reflection_function_ptr = 0;
++PHPAPI zend_class_entry *reflection_parameter_ptr = 0;
++PHPAPI zend_class_entry *reflection_class_ptr = 0;
++PHPAPI zend_class_entry *reflection_object_ptr = 0;
++PHPAPI zend_class_entry *reflection_method_ptr = 0;
++PHPAPI zend_class_entry *reflection_property_ptr = 0;
++PHPAPI zend_class_entry *reflection_extension_ptr = 0;
+ 
+ #if MBO_0
+ ZEND_BEGIN_MODULE_GLOBALS(reflection)
+diff -ru php-5.2.6_orig/ext/soap/soap.c php-5.2.6/ext/soap/soap.c
+--- php-5.2.6_orig/ext/soap/soap.c	2008-11-20 02:12:49.000000000 +0000
++++ php-5.2.6/ext/soap/soap.c	2008-11-20 02:47:02.000000000 +0000
+@@ -175,7 +175,7 @@
+ static zend_class_entry* soap_fault_class_entry;
+ static zend_class_entry* soap_header_class_entry;
+ static zend_class_entry* soap_param_class_entry;
+-zend_class_entry* soap_var_class_entry;
++zend_class_entry* soap_var_class_entry = 0;
+ 
+ ZEND_DECLARE_MODULE_GLOBALS(soap)
+ 
+diff -ru php-5.2.6_orig/ext/spl/spl_array.c php-5.2.6/ext/spl/spl_array.c
+--- php-5.2.6_orig/ext/spl/spl_array.c	2008-11-20 02:12:48.000000000 +0000
++++ php-5.2.6/ext/spl/spl_array.c	2008-11-20 02:57:42.000000000 +0000
+@@ -35,12 +35,12 @@
+ #include "spl_array.h"
+ #include "spl_exceptions.h"
+ 
+-zend_object_handlers spl_handler_ArrayObject;
+-PHPAPI zend_class_entry  *spl_ce_ArrayObject;
++zend_object_handlers spl_handler_ArrayObject = {};
++PHPAPI zend_class_entry  *spl_ce_ArrayObject = 0;
+ 
+-zend_object_handlers spl_handler_ArrayIterator;
+-PHPAPI zend_class_entry  *spl_ce_ArrayIterator;
+-PHPAPI zend_class_entry  *spl_ce_RecursiveArrayIterator;
++zend_object_handlers spl_handler_ArrayIterator = {};
++PHPAPI zend_class_entry  *spl_ce_ArrayIterator = 0;
++PHPAPI zend_class_entry  *spl_ce_RecursiveArrayIterator = 0;
+ 
+ #define SPL_ARRAY_STD_PROP_LIST      0x00000001
+ #define SPL_ARRAY_ARRAY_AS_PROPS     0x00000002
+diff -ru php-5.2.6_orig/ext/spl/spl_directory.c php-5.2.6/ext/spl/spl_directory.c
+--- php-5.2.6_orig/ext/spl/spl_directory.c	2008-11-20 02:12:48.000000000 +0000
++++ php-5.2.6/ext/spl/spl_directory.c	2008-11-20 02:57:42.000000000 +0000
+@@ -48,11 +48,11 @@
+ static zend_object_handlers spl_filesystem_object_handlers;
+ 
+ /* decalre the class entry */
+-PHPAPI zend_class_entry *spl_ce_SplFileInfo;
+-PHPAPI zend_class_entry *spl_ce_DirectoryIterator;
+-PHPAPI zend_class_entry *spl_ce_RecursiveDirectoryIterator;
+-PHPAPI zend_class_entry *spl_ce_SplFileObject;
+-PHPAPI zend_class_entry *spl_ce_SplTempFileObject;
++PHPAPI zend_class_entry *spl_ce_SplFileInfo = 0;
++PHPAPI zend_class_entry *spl_ce_DirectoryIterator = 0;
++PHPAPI zend_class_entry *spl_ce_RecursiveDirectoryIterator = 0;
++PHPAPI zend_class_entry *spl_ce_SplFileObject = 0;
++PHPAPI zend_class_entry *spl_ce_SplTempFileObject = 0;
+ 
+ static void spl_filesystem_file_free_line(spl_filesystem_object *intern TSRMLS_DC) /* {{{ */
+ {
+diff -ru php-5.2.6_orig/ext/spl/spl_exceptions.c php-5.2.6/ext/spl/spl_exceptions.c
+--- php-5.2.6_orig/ext/spl/spl_exceptions.c	2008-11-20 02:12:48.000000000 +0000
++++ php-5.2.6/ext/spl/spl_exceptions.c	2008-11-20 02:57:42.000000000 +0000
+@@ -33,19 +33,19 @@
+ #include "spl_engine.h"
+ #include "spl_exceptions.h"
+ 
+-PHPAPI zend_class_entry *spl_ce_LogicException;
+-PHPAPI zend_class_entry *spl_ce_BadFunctionCallException;
+-PHPAPI zend_class_entry *spl_ce_BadMethodCallException;
+-PHPAPI zend_class_entry *spl_ce_DomainException;
+-PHPAPI zend_class_entry *spl_ce_InvalidArgumentException;
+-PHPAPI zend_class_entry *spl_ce_LengthException;
+-PHPAPI zend_class_entry *spl_ce_OutOfRangeException;
+-PHPAPI zend_class_entry *spl_ce_RuntimeException;
+-PHPAPI zend_class_entry *spl_ce_OutOfBoundsException;
+-PHPAPI zend_class_entry *spl_ce_OverflowException;
+-PHPAPI zend_class_entry *spl_ce_RangeException;
+-PHPAPI zend_class_entry *spl_ce_UnderflowException;
+-PHPAPI zend_class_entry *spl_ce_UnexpectedValueException;
++PHPAPI zend_class_entry *spl_ce_LogicException = 0;
++PHPAPI zend_class_entry *spl_ce_BadFunctionCallException = 0;
++PHPAPI zend_class_entry *spl_ce_BadMethodCallException = 0;
++PHPAPI zend_class_entry *spl_ce_DomainException = 0;
++PHPAPI zend_class_entry *spl_ce_InvalidArgumentException = 0;
++PHPAPI zend_class_entry *spl_ce_LengthException = 0;
++PHPAPI zend_class_entry *spl_ce_OutOfRangeException = 0;
++PHPAPI zend_class_entry *spl_ce_RuntimeException = 0;
++PHPAPI zend_class_entry *spl_ce_OutOfBoundsException = 0;
++PHPAPI zend_class_entry *spl_ce_OverflowException = 0;
++PHPAPI zend_class_entry *spl_ce_RangeException = 0;
++PHPAPI zend_class_entry *spl_ce_UnderflowException = 0;
++PHPAPI zend_class_entry *spl_ce_UnexpectedValueException = 0;
+ 
+ #define spl_ce_Exception zend_exception_get_default(TSRMLS_C)
+ 
+diff -ru php-5.2.6_orig/ext/spl/spl_iterators.c php-5.2.6/ext/spl/spl_iterators.c
+--- php-5.2.6_orig/ext/spl/spl_iterators.c	2008-11-20 02:12:48.000000000 +0000
++++ php-5.2.6/ext/spl/spl_iterators.c	2008-11-20 02:57:42.000000000 +0000
+@@ -40,24 +40,24 @@
+ #undef accept
+ #endif
+ 
+-PHPAPI zend_class_entry *spl_ce_RecursiveIterator;
+-PHPAPI zend_class_entry *spl_ce_RecursiveIteratorIterator;
+-PHPAPI zend_class_entry *spl_ce_FilterIterator;
+-PHPAPI zend_class_entry *spl_ce_RecursiveFilterIterator;
+-PHPAPI zend_class_entry *spl_ce_ParentIterator;
+-PHPAPI zend_class_entry *spl_ce_SeekableIterator;
+-PHPAPI zend_class_entry *spl_ce_LimitIterator;
+-PHPAPI zend_class_entry *spl_ce_CachingIterator;
+-PHPAPI zend_class_entry *spl_ce_RecursiveCachingIterator;
+-PHPAPI zend_class_entry *spl_ce_OuterIterator;
+-PHPAPI zend_class_entry *spl_ce_IteratorIterator;
+-PHPAPI zend_class_entry *spl_ce_NoRewindIterator;
+-PHPAPI zend_class_entry *spl_ce_InfiniteIterator;
+-PHPAPI zend_class_entry *spl_ce_EmptyIterator;
+-PHPAPI zend_class_entry *spl_ce_AppendIterator;
+-PHPAPI zend_class_entry *spl_ce_RegexIterator;
+-PHPAPI zend_class_entry *spl_ce_RecursiveRegexIterator;
+-PHPAPI zend_class_entry *spl_ce_Countable;
++PHPAPI zend_class_entry *spl_ce_RecursiveIterator = 0;
++PHPAPI zend_class_entry *spl_ce_RecursiveIteratorIterator = 0;
++PHPAPI zend_class_entry *spl_ce_FilterIterator = 0;
++PHPAPI zend_class_entry *spl_ce_RecursiveFilterIterator = 0;
++PHPAPI zend_class_entry *spl_ce_ParentIterator = 0;
++PHPAPI zend_class_entry *spl_ce_SeekableIterator = 0;
++PHPAPI zend_class_entry *spl_ce_LimitIterator = 0;
++PHPAPI zend_class_entry *spl_ce_CachingIterator = 0;
++PHPAPI zend_class_entry *spl_ce_RecursiveCachingIterator = 0;
++PHPAPI zend_class_entry *spl_ce_OuterIterator = 0;
++PHPAPI zend_class_entry *spl_ce_IteratorIterator = 0;
++PHPAPI zend_class_entry *spl_ce_NoRewindIterator = 0;
++PHPAPI zend_class_entry *spl_ce_InfiniteIterator = 0;
++PHPAPI zend_class_entry *spl_ce_EmptyIterator = 0;
++PHPAPI zend_class_entry *spl_ce_AppendIterator = 0;
++PHPAPI zend_class_entry *spl_ce_RegexIterator = 0;
++PHPAPI zend_class_entry *spl_ce_RecursiveRegexIterator = 0;
++PHPAPI zend_class_entry *spl_ce_Countable = 0;
+ 
+ zend_function_entry spl_funcs_RecursiveIterator[] = {
+ 	SPL_ABSTRACT_ME(RecursiveIterator, hasChildren,  NULL)
+diff -ru php-5.2.6_orig/ext/spl/spl_observer.c php-5.2.6/ext/spl/spl_observer.c
+--- php-5.2.6_orig/ext/spl/spl_observer.c	2008-11-20 02:12:48.000000000 +0000
++++ php-5.2.6/ext/spl/spl_observer.c	2008-11-20 02:57:42.000000000 +0000
+@@ -70,10 +70,10 @@
+ 	{NULL, NULL, NULL}
+ };
+ 
+-PHPAPI zend_class_entry     *spl_ce_SplObserver;
+-PHPAPI zend_class_entry     *spl_ce_SplSubject;
+-PHPAPI zend_class_entry     *spl_ce_SplObjectStorage;
+-PHPAPI zend_object_handlers spl_handler_SplObjectStorage;
++PHPAPI zend_class_entry     *spl_ce_SplObserver = 0;
++PHPAPI zend_class_entry     *spl_ce_SplSubject = 0;
++PHPAPI zend_class_entry     *spl_ce_SplObjectStorage = 0;
++PHPAPI zend_object_handlers spl_handler_SplObjectStorage = {};
+ 
+ typedef struct _spl_SplObjectStorage {
+ 	zend_object       std;
+diff -ru php-5.2.6_orig/ext/spl/spl_sxe.c php-5.2.6/ext/spl/spl_sxe.c
+--- php-5.2.6_orig/ext/spl/spl_sxe.c	2008-11-20 02:12:48.000000000 +0000
++++ php-5.2.6/ext/spl/spl_sxe.c	2008-11-20 02:57:42.000000000 +0000
+@@ -35,7 +35,7 @@
+ #include "spl_array.h"
+ 
+ zend_class_entry *spl_ce_SimpleXMLIterator = NULL;
+-zend_class_entry *spl_ce_SimpleXMLElement;
++zend_class_entry *spl_ce_SimpleXMLElement = 0;
+ 
+ #if HAVE_LIBXML && HAVE_SIMPLEXML
+ 
+diff -ru php-5.2.6_orig/ext/sqlite/sqlite.c php-5.2.6/ext/sqlite/sqlite.c
+--- php-5.2.6_orig/ext/sqlite/sqlite.c	2008-11-20 02:12:55.000000000 +0000
++++ php-5.2.6/ext/sqlite/sqlite.c	2008-11-20 02:59:07.000000000 +0000
+@@ -779,8 +779,8 @@
+ 		sqlite_ce_ ## c_name->ce_flags |= ZEND_ACC_FINAL_CLASS; \
+ 	}
+ 
+-zend_class_entry *sqlite_ce_db, *sqlite_ce_exception;
+-zend_class_entry *sqlite_ce_query, *sqlite_ce_ub_query;
++zend_class_entry *sqlite_ce_db = 0, *sqlite_ce_exception = 0;
++zend_class_entry *sqlite_ce_query = 0, *sqlite_ce_ub_query = 0;
+ 
+ static zend_object_handlers sqlite_object_handlers_db;
+ static zend_object_handlers sqlite_object_handlers_query;
+diff -ru php-5.2.6_orig/ext/standard/basic_functions.c php-5.2.6/ext/standard/basic_functions.c
+--- php-5.2.6_orig/ext/standard/basic_functions.c	2008-11-20 02:12:59.000000000 +0000
++++ php-5.2.6/ext/standard/basic_functions.c	2008-11-20 03:00:35.000000000 +0000
+@@ -110,7 +110,7 @@
+ #ifdef ZTS
+ PHPAPI int basic_globals_id;
+ #else
+-PHPAPI php_basic_globals basic_globals;
++PHPAPI php_basic_globals basic_globals = {};
+ #endif
+ 
+ #include "php_fopen_wrappers.h"
+diff -ru php-5.2.6_orig/ext/standard/dir.c php-5.2.6/ext/standard/dir.c
+--- php-5.2.6_orig/ext/standard/dir.c	2008-11-20 02:12:55.000000000 +0000
++++ php-5.2.6/ext/standard/dir.c	2008-11-20 03:01:33.000000000 +0000
+@@ -59,7 +59,7 @@
+ int dir_globals_id;
+ #else
+ #define DIRG(v) (dir_globals.v)
+-php_dir_globals dir_globals;
++php_dir_globals dir_globals = {};
+ #endif
+ 
+ #if 0
+diff -ru php-5.2.6_orig/ext/standard/pack.c php-5.2.6/ext/standard/pack.c
+--- php-5.2.6_orig/ext/standard/pack.c	2008-11-20 02:12:59.000000000 +0000
++++ php-5.2.6/ext/standard/pack.c	2008-11-20 03:03:42.000000000 +0000
+@@ -65,7 +65,7 @@
+ 	outputpos += (a)*(b);
+ 
+ /* Whether machine is little endian */
+-char machine_little_endian;
++char machine_little_endian = 0;
+ 
+ /* Mapping of byte from char (8bit) to long for machine endian */
+ static int byte_map[1];
+diff -ru php-5.2.6_orig/ext/xmlreader/php_xmlreader.c php-5.2.6/ext/xmlreader/php_xmlreader.c
+--- php-5.2.6_orig/ext/xmlreader/php_xmlreader.c	2008-11-20 02:13:00.000000000 +0000
++++ php-5.2.6/ext/xmlreader/php_xmlreader.c	2008-11-20 02:47:03.000000000 +0000
+@@ -32,7 +32,7 @@
+ #endif
+ #include <libxml/uri.h>
+ 
+-zend_class_entry *xmlreader_class_entry;
++zend_class_entry *xmlreader_class_entry = 0;
+ 
+ static zend_object_handlers xmlreader_object_handlers;
+ static zend_object_handlers xmlreader_object_handlers_ze1;
+diff -ru php-5.2.6_orig/ext/xsl/php_xsl.c php-5.2.6/ext/xsl/php_xsl.c
+--- php-5.2.6_orig/ext/xsl/php_xsl.c	2008-11-20 02:12:48.000000000 +0000
++++ php-5.2.6/ext/xsl/php_xsl.c	2008-11-20 02:47:03.000000000 +0000
+@@ -28,7 +28,7 @@
+ #include "php_xsl.h"
+ 
+ 
+-zend_class_entry *xsl_xsltprocessor_class_entry;
++zend_class_entry *xsl_xsltprocessor_class_entry = 0;
+ static zend_object_handlers xsl_object_handlers;
+ 
+ /* {{{ xsl_functions[]
+diff -ru php-5.2.6_orig/main/SAPI.c php-5.2.6/main/SAPI.c
+--- php-5.2.6_orig/main/SAPI.c	2008-11-20 02:13:08.000000000 +0000
++++ php-5.2.6/main/SAPI.c	2008-11-20 03:02:49.000000000 +0000
+@@ -71,7 +71,7 @@
+ }
+ 
+ /* True globals (no need for thread safety) */
+-SAPI_API sapi_module_struct sapi_module;
++SAPI_API sapi_module_struct sapi_module = {};
+ 
+ 
+ SAPI_API void sapi_startup(sapi_module_struct *sf)
+diff -ru php-5.2.6_orig/sapi/apache2handler/php_functions.c php-5.2.6/sapi/apache2handler/php_functions.c
+--- php-5.2.6_orig/sapi/apache2handler/php_functions.c	2008-11-20 02:13:09.000000000 +0000
++++ php-5.2.6/sapi/apache2handler/php_functions.c	2008-11-20 03:16:37.000000000 +0000
+@@ -49,9 +49,9 @@
+ #include "php_apache.h"
+ 
+ #ifdef ZTS
+-int php_apache2_info_id;
++int php_apache2_info_id = 0;
+ #else
+-php_apache2_info_struct php_apache2_info;
++php_apache2_info_struct php_apache2_info = {};
+ #endif
+ 
+ #define SECTION(name)  PUTS("<h2>" name "</h2>\n")

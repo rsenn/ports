@@ -1,0 +1,29 @@
+# $Id: Pkgfile,v 1.2 2007/04/22 23:07:53 roman Exp $
+#
+# Description: An nfs idmapping library.
+#  libnfsidmap provides functions to map between NFSv4 names (which are 
+#  of the form user@domain) and local uid's and gid's. 
+# URL: http://www.citi.umich.edu/projects/nfsv4/linux/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libnfsidmap
+version=0.21b1
+release=1
+source=(http://www.citi.umich.edu/projects/nfsv4/linux/libnfsidmap/libnfsidmap-$version.tar.gz)
+
+build()
+{
+  cd libnfsidmap-$version
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/libnfsidmap
+  install -m 644 README AUTHORS COPYING ChangeLog INSTALL NEWS $ROOT/share/doc/libnfsidmap
+}

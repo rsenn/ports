@@ -1,0 +1,208 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Section: universe/web
+# Description: Web based management system for OpenVZ.
+# URL: http://homaly.dunanet.hu/wvz/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: php5, debconf (>= 0.5) | debconf-2.0, vzctl
+
+name=wvz
+version=0.1.0
+release=1adfinis3
+source=(http://homaly.dunanet.hu/wvz/releases/wvz-$version.tar.gz
+        apache.conf
+        wvz-0.1.0-adfinis-1.patch)
+
+build()
+{
+  cd wvz-$version
+
+  patch -N -p1 -i $SRC/wvz-0.1.0-adfinis-1.patch
+
+  make CC="${CC-cc}" CFLAGS="$CFLAGS"
+
+  install -d $ROOT/lib/wvz/bin
+  install suwvz $ROOT/lib/wvz/bin
+
+  chmod ug+s $ROOT/lib/wvz/bin/suwvz
+
+  install -d $ROOT/share/wvz
+  install -m 644 www/* $ROOT/share/wvz
+
+  install -d $PKG/etc/wvz
+  install -m 644 $SRC/apache.conf $PKG/etc/wvz
+
+}
+
+templates()
+{
+  Template: wvz/reconfigure-webserver
+  Type: multiselect
+  Choices: apache2, lighttpd
+  Default:
+  Description: Web server to reconfigure automatically
+
+  Template: wvz/setup-username
+  Type: string
+  Default: admin
+  Description: User name for wvz administrator login
+   .
+   Leave empty if you want to use the default user name 'admin'.
+
+  Template: wvz/setup-password
+  Type: password
+  Default:
+  Description: Password for wvz administrator login
+   .
+   Leave empty if you want no password.
+}
+
+config()
+{
+  . /usr/share/debconf/confmodule
+  db_version 2.0
+
+  db_input high wvz/reconfigure-webserver || true
+
+  db_input high wvz/setup-username || true
+  db_input high wvz/setup-password || true
+
+  db_go || true
+}
+
+postinst()
+{
+  lighttpd_install() {
+    if test ! -f /etc/lighttpd/conf-available/60-wvz.conf; then
+      if test ! -x /usr/sbin/lighty-enable-mod; then
+        echo "Lighttpd not installed, skipping"
+      else
+        ln -s ../../wvz/lighttpd.conf /etc/lighttpd/conf-available/60-wvz.conf
+        # We also need auth to protect setup.php
+        /usr/sbin/lighty-enable-mod wvz auth
+      fi
+    fi
+  }
+  apache_install() {
+    webserver=$1
+    if test -d /etc/$webserver/conf.d && test ! -e /etc/$webserver/conf.d/wvz.conf; then
+      ln -s ../../wvz/apache.conf /etc/$webserver/conf.d/wvz.conf
+    fi
+  }
+  if test "$1" = "configure"; then
+    . /usr/share/debconf/confmodule
+    db_version 2.0
+    # The following only on a new install
+    if test "$2" = ""; then
+        db_get wvz/setup-username
+        setup_username=${RET:-admin}
+        db_get wvz/setup-password
+        setup_password="$RET"
+        setup_username=$(echo "$setup_username" | sed -e 's,\\,\\\\,g' -e 's,\",\\\",g' -e 's,\$,\\\$,g')
+        setup_password=$(echo "$setup_password" | sed -e 's,\\,\\\\,g' -e 's,\",\\\",g' -e 's,\$,\\\$,g')
+        sed -i \
+            -e "s,^\(\$rootuser = \).*,\1\"${setup_username}\";," \
+            -e "s,^\(\$rootpass = \).*,\1\"${setup_password}\";," \
+            -e "s,^\(\$v = \).*,\1\"/usr/lib/wvz/bin/suwvz\";," \
+          /usr/share/wvz/_config.php
+        db_reset wvz/setup-username || true
+        db_reset wvz/setup-password || true
+    fi
+    # Configure Apache
+    db_get wvz/reconfigure-webserver
+    webservers="$RET"
+    for webserver in $webservers
+    do
+      webserver=${webserver%,}
+      if test "$webserver" = "lighttpd"; then
+        lighttpd_install
+      else
+        apache_install $webserver
+      fi
+      # Reload webserver in any case, configuration might have changed
+      # Redirection of 3 is needed because Debconf uses it and it might
+      # be inherited by webserver. See bug #446324.
+      if test -x /usr/sbin/invoke-rc.d; then
+        invoke-rc.d $webserver reload 3>/dev/null || true
+      else
+        /etc/init.d/$webserver reload 3>/dev/null || true
+      fi
+    done
+  fi
+  chown 0:0 /usr/lib/wvz/bin/suwvz
+  chmod ug+s /usr/lib/wvz/bin/suwvz
+  chown www-data /usr/lib/wvz
+  chmod 700 /usr/lib/wvz
+  chown www-data /usr/share/wvz/_config.php
+  chmod 600 /usr/share/wvz/_config.php
+}
+
+postrm()
+{
+  lighttpd_remove() {
+    if test -f /etc/lighttpd/conf-available/50-wvz.conf
+    then
+      rm -f /etc/lighttpd/conf-available/50-wvz.conf
+
+      if test ! -x /usr/sbin/lighty-disable-mod
+      then
+        echo "Lighttpd not installed, skipping"
+      else
+        /usr/sbin/lighty-disable-mod wvz
+        # We also enabled auth in postinst, but I think it's safer to keep it there
+      fi
+
+      # See bug #448682
+      if test -h /etc/lighttpd/conf-enabled/50-wvz.conf
+      then
+          echo 'Manually deleting lighttpd/wvz configuration link'
+          rm /etc/lighttpd/conf-enabled/50-wvz.conf
+      fi
+    fi
+  }
+
+  apache_remove() {
+    if test -d /etc/$webserver/conf.d -a -L /etc/$webserver/conf.d/wvz.conf
+    then
+      rm -f /etc/$webserver/conf.d/wvz.conf
+    fi
+  }
+
+  if test "$1" = "remove" -o "$1" = "purge"
+  then
+    if test -f /usr/share/debconf/confmodule
+    then
+      . /usr/share/debconf/confmodule
+      db_version 2.0
+
+      db_get wvz/reconfigure-webserver
+
+      webservers="$RET"
+
+      for webserver in $webservers
+      do
+        webserver=${webserver%,}
+
+        if test "$webserver" = "lighttpd"
+        then
+          lighttpd_remove
+        else
+          apache_remove $webserver
+        fi
+        # Redirection of 3 is needed because Debconf uses it and it might
+        # be inherited by webserver. See bug #446324.
+        if test -x /usr/sbin/invoke-rc.d
+        then
+          invoke-rc.d $webserver reload 3>/dev/null || true
+        else
+          /etc/init.d/$webserver reload 3>/dev/null || true
+        fi
+      done
+    fi
+
+    if test "$1" = "purge"
+    then
+      rm -rf /etc/wvz
+    fi
+  fi
+}

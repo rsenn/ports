@@ -1,0 +1,58 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+# Package: libapache2-mod-umask
+# Description: Sets the Unix umask of the Apache HTTPd process
+# sets the Unix umask of the Apache HTTPd process after it has started. This
+# is useful when accessing Subversion from both mod_dav_svn and via a
+# local client with a file:// url. Without setting a proper umask the
+# file permissions can create a repository that is not easily accessable
+# from both.
+#
+# URL: http://www.outoforder.cc/projects/apache/mod_umask/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: apache2.2-common, libc6
+
+name=mod_umask
+version=0.1.0
+release=1
+source=(http://www.outoforder.cc/downloads/mod_umask/mod_umask-$version.tar.bz2
+        mod_umask-0.1.0-build.patch
+        umask.load)
+
+build()
+{
+  cd mod_umask-$version
+
+  case $prefix in
+    "/usr") sysconfdir="/etc" ;;
+  esac
+
+  patch -N -p1 -i $SRC/mod_umask-0.1.0-build.patch
+
+  sh autogen.sh
+
+  APXS=`ls $prefix/*bin/apxs*`
+
+  for apxs in $APXS; do
+   (rm -rf ${builddir=build-`$apxs -q progname`}
+    mkdir -p $builddir
+    cd $builddir
+
+    ../configure \
+         --build="$build" \
+         --host="$host" \
+         --target="$target" \
+         --prefix="$prefix" \
+         --with-apxs="$apxs"
+
+    make
+    make DESTDIR="$PKG" install)
+  done
+
+  return 0
+
+  install -d $ROOT/lib/apache2/modules
+  libtool --mode=install cp src/mod_umask.la $ROOT/lib/apache2/modules
+
+  install -d $PKG${sysconfdir=$prefix/etc}/apache2/mods-available
+  install -m 644 $SRC/umask.load $PKG${sysconfdir=$prefix/etc}/apache2/mods-available
+}

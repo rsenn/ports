@@ -1,0 +1,42 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Ethernet Monitor
+#  Netwatch allows a user to monitor an Ethernet segment or PPP line and
+#  examine activity on the network. Hostnames are highlighted in colours to
+#  indicate activity on the bus network based on time. The monitor includes
+#  statistics on transmitted and received packets, transmitted and received
+#  bytes, protocol of last packet (TX or RC), last communication partner
+#  (IP address) and Logging entire stats to an ASCII file. There is a TOP
+#  mode which allows a sorted list of hosts based on IP usage. All info is
+#  updated on a per second basis.
+# URL: http://www.slctech.org/~mackay/NETWATCH/netwatch.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=netwatch
+version=1.2.0
+release=1
+source=(http://www.slctech.org/~mackay/NETWATCH/netwatch-$version-1.tgz
+        netwatch-1.2.0-o_creat.patch
+        netwatch-1.2.0-noinst-usrgrp.patch)
+
+build() 
+{
+  cd netwatch-$version
+ 
+  patch -p1 -i $SRC/netwatch-1.2.0-o_creat.patch
+  patch -p1 -i $SRC/netwatch-1.2.0-noinst-usrgrp.patch
+  
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+  
+  make
+  make INSTALLDIR="$ROOT/bin" mandir="$ROOT/share/man" install
+
+  install -d $ROOT/share/doc/netwatch
+  install -m 644 BUGS CHANGES README TODO COPYING TRY $ROOT/share/doc/netwatch
+}
+
+# EOF

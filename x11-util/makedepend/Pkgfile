@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Makedepend is a makefile dependency generator from The XFree86 Project
+# URL: 
+# Maintainer: 
+# Depends on: 
+
+name=makedepend
+version=1.0.1
+release=1
+source=(ftp://ftp.x.org/pub/individual/util/makedepend-$version.tar.bz2)
+
+build() 
+{
+  cd makedepend-$version
+  
+  #./autogen.sh
+  rm -f config.sub
+  autoreconf --force --verbose --install
+  
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+  
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/makedepend
+  install -m 644 AUTHORS COPYING ChangeLog $ROOT/share/doc/makedepend
+}
+
+# EOF

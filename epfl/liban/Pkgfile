@@ -1,0 +1,40 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Package: liban-dev
+# Section: universe/libs
+# Description: Basic useful bricks for scientific use.
+#  An provides basic useful bricks for scientific use. This includes the
+#  Color type, a collection of several random distributions, some numeric
+#  functions such as exponential decay with varying timestep, and Formula,
+#  a formule parser, bytecompiler and interpreter.
+#  .
+# URL: http://lis.epfl.ch/resources/download/doc1.0/liban/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=liban
+version=1.0
+release=1
+source=(http://lis.epfl.ch/resources/download/liban-$version.tar.gz)
+
+build()
+{
+  cd liban-$version
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  doxygen
+
+  install -d $ROOT/share/doc/liban
+  install -m 644 AUTHORS INSTALL LICENSE README $ROOT/share/doc/liban
+  cp -rf doc/html $ROOT/share/doc/liban
+}
+
+# EOF

@@ -1,0 +1,44 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: System and kernel logging services (programs)
+#  socklog cooperates with the runit package to create a small and secure
+#  replacement for syslogd. socklog supports system logging through Unix
+#  domain sockets (/dev/log), UDP sockets (0.0.0.0:514), as well as TCP
+#  socket, with the help of runit's runsvdir, runsv, and svlogd. socklog
+#  provides a different network logging concept, and also does log event
+#  notification. svlogd has built in log file rotation based on file size,
+#  so there is no need for any cron jobs to rotate the logs. socklog is
+#  small, secure, and reliable.
+#  .
+# URL: http://smarden.org/socklog/
+# Maintainer: Roman Senn <roman@digitall.ch>
+
+name=socklog
+version=2.1.0
+release=1
+source=(http://smarden.org/socklog/socklog-$version.tar.gz)
+
+build()
+{
+  cd admin/socklog-$version
+
+  make -C src
+
+  install -d $ROOT/sbin
+  install -m 755 src/socklog src/socklog-conf $ROOT/sbin
+
+  install -d $ROOT/bin
+  install -m 755 src/socklog-check src/tryto src/uncat $ROOT/bin
+
+  install -d $ROOT/share/man/man1
+  install -m 644 man/*.1 $ROOT/share/man/man1
+
+  install -d $ROOT/share/man/man8
+  install -m 644 man/*.8 $ROOT/share/man/man8
+
+  install -d $ROOT/share/doc/socklog
+  install -m 644 package/CHANGES package/COPYING package/README src/TARGETS $ROOT/share/doc/socklog
+  cp -rf doc/* $ROOT/share/doc/socklog
+}
+
+# EOF

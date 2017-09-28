@@ -1,0 +1,35 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: mkrf is a library for generating Rakefiles. It is primarily for
+# building C extensions for Ruby, but will be able to be used for generic
+# Rakefile generation as well. Main goals include simple use and reuse in
+# other projects.
+# URL: http://rubyforge.org/projects/mkrf/
+
+name=mkrf
+version=0.2.3
+release=1
+source=(http://rubyforge.org/frs/download.php/30280/mkrf-$version.gem)
+
+build()
+{
+  rm -rf ${srcdir=mkrf-$version} && mkdir -p $srcdir && cd $srcdir
+
+  gzip -dc ../data.tar.gz | tar -x
+
+  set -- $(ruby --version)
+
+  RUBYVERSION="$2"
+  RUBYLIBDIR="$prefix/lib/ruby/${RUBYVERSION%.*}"
+
+  rake
+
+  install -d $PKG$RUBYLIBDIR
+  cp -rf lib/* $PKG$RUBYLIBDIR
+
+  mv test $PKG$RUBYLIBDIR/mkrf/
+  install -d $PKG$RUBYLIBDIR/mkrf/doc
+  install -m 644 [A-Z][A-Z]* $PKG$RUBYLIBDIR/mkrf/doc
+
+  chown -R 0:0 $PKG
+}

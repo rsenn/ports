@@ -1,0 +1,40 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:50 roman Exp $
+#
+# Description: Anti-Grain Geometry (AGG)
+#  Anti-Grain Geometry (AGG) is an Open Source, free of charge graphic
+#  library, written in industrially standard C++. The terms and conditions
+#  of use AGG are described on The License page. AGG doesn't depend on
+#  any graphic API or technology. Basically, you can think of AGG as
+#  of a rendering engine that produces pixel images in memory from some
+#  vectorial data.
+# URL: http://antigrain.com/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=agg
+version=2.5
+release=1
+source=(http://www.antigrain.com/agg-$version.tar.gz)
+
+build()
+{
+  cd agg-$version
+
+  libtoolize --force --copy --install
+  aclocal --force -I .
+  autoheader
+  automake -a --foreign
+  aclocal --force -I .
+  autoconf --force
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --${shared:=enable}-shared \
+       --${static:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+}
+

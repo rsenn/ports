@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A full featured cryptographic library
+#  XySSL is a cryptographic library written in C. It currently features
+#  several ciphers (AES, Triple-DES, and ARC4), hash functions (MD{2,4,5},
+#  SHA-1, and SHA-256), and RSA and X. 509 reading support. It also
+#  implements the Secure Sockets Layer version 3 protocol (SSLv3), as well
+#  as the Transport Layer Security version 1 protocol.
+#  .
+# URL: http://xyssl.org
+# Maintainer:  Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=xyssl
+version=0.9
+release=1
+source=(http://mirror.switch.ch/mirror/gentoo/distfiles/xyssl-$version-gpl.tgz
+        xyssl-0.9-libtool.patch)
+
+build()
+{
+  cd xyssl-$version
+
+  patch -N -p1 -i $SRC/xyssl-0.9-libtool.patch
+
+  make
+  make DESTDIR="$ROOT" install
+
+  install -d $ROOT/share/doc/xyssl
+  install -m 644 ChangeLog gpl-2.0.txt $ROOT/share/doc/xyssl
+}
+
+# EOF

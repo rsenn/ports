@@ -1,0 +1,34 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+# 
+# Description: Audio plugin API for software instruments.
+#  DSSI is an API for audio plugins, with particular application for software
+#  synthesis plugins with native user interfaces.
+#  DSSI is an open specification developed for use in Linux audio
+#  applications, although it is portable to other platforms. It may be
+#  thought of as LADSPA-for-instruments, or something comparable to VSTi.
+#  This package contains the header file required for compiling hosts
+#  and plugins.
+# URL: http://dssi.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=dssi
+version=1.0.0
+release=1
+source=($mirror_sf/dssi/dssi-$version.tar.gz)
+
+build()
+{
+  cd dssi-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/dssi
+  install -m 644 doc/RFC.txt doc/TODO doc/midi-controllers.txt doc/why-use.txt README COPYING ChangeLog INSTALL $ROOT/share/doc/dssi
+}

@@ -1,0 +1,43 @@
+diff -ru libtomcrypt-1.17_orig/testprof/makefile.shared libtomcrypt-1.17/testprof/makefile.shared
+--- libtomcrypt-1.17_orig/testprof/makefile.shared	2009-02-06 11:19:10.000000000 +0100
++++ libtomcrypt-1.17/testprof/makefile.shared	2009-02-06 11:27:10.000000000 +0100
+@@ -1,3 +1,4 @@
++LIBTOOL?=libtool
+ CC=$(LIBTOOL) --mode=compile gcc
+ 
+ CFLAGS += -I../src/headers -I./ -Wall -W
+@@ -7,9 +8,9 @@
+    RANLIB=ranlib
+ endif
+ 
+-OBJECTS = base64_test.o cipher_hash_test.o der_tests.o                                   \
+-dsa_test.o ecc_test.o mac_test.o modes_test.o pkcs_1_test.o rsa_test.o                   \
+-store_test.o test_driver.o x86_prof.o katja_test.o
++OBJECTS = base64_test.lo cipher_hash_test.lo der_tests.lo                                   \
++dsa_test.lo ecc_test.lo mac_test.lo modes_test.lo pkcs_1_test.lo rsa_test.lo                   \
++store_test.lo test_driver.lo x86_prof.lo katja_test.lo
+ 
+ ifndef LIBTEST
+    LIBTEST=libtomcrypt_prof.la
+@@ -17,6 +18,9 @@
+ 
+ default: $(LIBTEST)
+ 
++%.lo: %.c
++	$(CC) $(CFLAGS) -c -o $@ $<
++
+ $(LIBTEST): $(OBJECTS)
+ 	libtool --tag=CC --silent --mode=link gcc $(CFLAGS) `find . -type f | grep "[.]lo" |  xargs` -o $@
+ 
+diff -ru libtomcrypt-1.17_orig/testprof/makefile.shared libtomcrypt-1.17/testprof/makefile.shared
+--- libtomcrypt-1.17_orig/testprof/makefile.shared	2009-02-06 11:33:10.000000000 +0100
++++ libtomcrypt-1.17/testprof/makefile.shared	2009-02-06 11:34:42.000000000 +0100
+@@ -22,7 +22,7 @@
+ 	$(CC) $(CFLAGS) -c -o $@ $<
+ 
+ $(LIBTEST): $(OBJECTS)
+-	libtool --tag=CC --silent --mode=link gcc $(CFLAGS) `find . -type f | grep "[.]lo" |  xargs` -o $@
++	libtool --tag=CC --silent --mode=link gcc $(CFLAGS) -rpath /usr/lib -version-info 0:0:0 -shared -o $@ $^ 
+ 
+ install: $(LIBTEST)
+ 	libtool --tag=CC --silent --mode=install install -c $(LIBTEST) $(DESTDIR)$(LIBPATH)/$(LIBTEST)

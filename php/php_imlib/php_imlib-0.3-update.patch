@@ -1,0 +1,82 @@
+diff -ru -ru imlib_orig/config.m4 imlib/config.m4
+--- imlib_orig/config.m4	2006-07-18 10:41:58.000000000 +0200
++++ imlib/config.m4	2006-07-18 10:48:36.000000000 +0200
+@@ -2,7 +2,7 @@
+ [  --with-imlib[=DIR]      Include imlib support.  DIR is the Imlib2 base
+                           directory, defaults to /usr/local.])
+ 
+-AC_DEFUN(AC_TEMP_LDFLAGS,[
++AC_DEFUN([AC_TEMP_LDFLAGS],[
+   old_LDFLAGS="$LDFLAGS"
+   LDFLAGS="$1 $LDFLAGS"
+   $2
+@@ -30,8 +30,10 @@
+     [AC_MSG_ERROR(Imlib2 module requires CVS Imlib2)])
+   ])
+ 
+-  AC_ADD_LIBRARY_WITH_PATH(Imlib2, $IMLIB2_LIBDIR, IMLIB_LIBADD)
+-  PHP_SUBST(IMLIB_LIBADD)
+-
+-  AC_ADD_INCLUDE($IMLIB2_INCDIR)
++dnl  AC_CHECK_LIB([Imlib2], [imlib_context_new])
++dnl  AC_ADD_LIBRARY_WITH_PATH(Imlib2, $IMLIB2_LIBDIR, IMLIB_LIBADD)
++dnl  PHP_SUBST(IMLIB_LIBADD)
++dnl  AC_ADD_INCLUDE($IMLIB2_INCDIR)
++ 
++  AC_DEFINE_UNQUOTED([X_DISPLAY_MISSING], [1], [Define this if you don't want X11 support])
+ fi
+diff -ru -ru imlib_orig/imlib.c imlib/imlib.c
+--- imlib_orig/imlib.c	2006-07-18 10:41:58.000000000 +0200
++++ imlib/imlib.c	2006-07-18 10:51:00.000000000 +0200
+@@ -16,6 +16,8 @@
+    +----------------------------------------------------------------------+
+  */
+ 
++#include "config.h"
++
+ #include "php.h"
+ #include "php_config.h"
+ #include "php_ini.h"
+@@ -29,7 +31,7 @@
+ php_imlib_globals imlib_globals;
+ #endif
+ 
+-static unsigned char third_arg_force_ref[] = { 3, BYREF_NONE, BYREF_NONE, BYREF_FORCE };
++//static unsigned char third_arg_force_ref[] = { 3, BYREF_NONE, BYREF_NONE, BYREF_FORCE };
+ static unsigned char third_and_fourth_arg_force_ref[] = { 4, BYREF_NONE, BYREF_NONE, BYREF_FORCE, BYREF_FORCE };
+ static unsigned char second_through_fifth_arg_force_ref[] = { 5, BYREF_NONE, BYREF_FORCE, BYREF_FORCE, BYREF_FORCE, BYREF_FORCE };
+ static int le_imlib_cr;
+@@ -101,6 +103,9 @@
+ PHP_INI_END()
+ 
+ zend_module_entry imlib_module_entry = {
++#if ZEND_MODULE_API_NO >= 20010901
++  STANDARD_MODULE_HEADER,
++#endif
+ 	"imlib",
+ 	imlib_functions,
+ 	PHP_MINIT(imlib),
+@@ -108,7 +113,10 @@
+ 	PHP_RINIT(imlib),
+ 	PHP_RSHUTDOWN(imlib),
+ 	PHP_MINFO(imlib),
+-	STANDARD_MODULE_PROPERTIES
++#if ZEND_MODULE_API_NO >= 20010901
++  PACKAGE_VERSION, /* Replace with version number for your extension */
++#endif
++  STANDARD_MODULE_PROPERTIES
+ };
+ 
+ 
+diff -ru -ru imlib_orig/php_imlib.h imlib/php_imlib.h
+--- imlib_orig/php_imlib.h	2006-07-18 10:41:58.000000000 +0200
++++ imlib/php_imlib.h	2006-07-18 10:45:58.000000000 +0200
+@@ -19,7 +19,7 @@
+ #ifndef _PHP_IMLIB_H
+ #define _PHP_IMLIB_H
+ 
+-#include <X11/Xlib.h>
++/*#include <X11/Xlib.h>*/
+ #include <Imlib2.h>
+ 
+ #if HAVE_IMLIB

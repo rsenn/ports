@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A shared library that implements a trash can under Linux.
+#  libtrash is a shared library that implements a trash can on
+#  GNU/Linux. When preloaded, it intercepts calls to a series of GNU libc
+#  functions and, instead of permanently destroying files, moves them to a
+#  "trash can".
+# URL: http://pages.stern.nyu.edu/~marriaga/software/libtrash/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libtrash
+version=3.2
+release=1
+source=(http://pages.stern.nyu.edu/~marriaga/software/libtrash/libtrash-latest.tgz)
+
+build()
+{
+  cd libtrash-$version
+
+  case $prefix in
+    "/usr") sysconfdir="/etc" ;;
+  esac
+
+  install -d $ROOT/{etc,lib}
+
+  make -C src SYSCONFFILE="$sysconfdir/libtrash.conf"
+  make -C src SYSCONFFILE="$PKG$sysconfdir/libtrash.conf" INSTLIBDIR="$ROOT/lib" install
+
+#  install -m 644 libtrash.conf $pkg
+}

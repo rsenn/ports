@@ -1,0 +1,70 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:51 roman Exp $
+#
+# Description: A library for reading and writing  sound files.
+#  libsndfile is a C library for reading and writing sound files such
+#  currently read/write 8, 16, 24 and 32-bit PCM files as well as 32 and
+#  compiles and runs on *nix, MacOS, and Win32.
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libsndfile
+version=1.0.19
+release=1
+source=(http://www.mega-nerd.com/libsndfile/libsndfile-$version.tar.gz
+        libsndfile-1.0.17-stdint.patch
+        libsndfile-1.0.17-cmake.patch
+        libsndfile-1.0.18pre24e-disable-jack.patch)
+
+build()
+{
+  cd libsndfile-$version
+
+#  patch -N -p1 -i $SRC/libsndfile-1.0.17-stdint.patch
+#  patch -N -p1 -i $SRC/libsndfile-1.0.17-cmake.patch
+#  patch -N -p1 -i $SRC/libsndfile-1.0.18pre24e-disable-jack.patch
+
+  if [ -f CMakeLists.txt ]; then
+    cmake \
+      -D CMAKE_INSTALL_PREFIX:PATH="$prefix" \
+      -D CMAKE_BUILD_TYPE:STRING="Release" \
+      -D CMAKE_C_COMPILER:FILEPATH="${CC-cc}" \
+      -D CMAKE_C_FLAGS:STRING="$CFLAGS" \
+      -D CMAKE_CXX_COMPILER:FILEPATH="$CXX" \
+      -D CMAKE_CXX_FLAGS:STRING="$CXXFLAGS" \
+      -D CMAKE_COLOR_MAKEFILE:BOOL="ON" \
+      -D CMAKE_VERBOSE_MAKEFILE:BOOL="OFF" \
+      -D CMAKE_SKIP_RPATH:BOOL="ON" \
+      .
+  else
+
+    libtoolize --force --copy
+    aclocal --force -I M4
+    automake --force --copy --foreign --add-missing
+    autoconf --force
+    aclocal --force -I M4
+
+    if set -- $prefix/lib/libjack.* && [ -e "$1" ]; then
+      jack=enable
+    else
+      jack=disable
+    fi
+
+    ./configure \
+        --build="$build" \
+        --host="$host" \
+        --prefix="$prefix" \
+        --${shared:=enable}-shared \
+        --${static:=enable}-shared \
+        --enable-experimental \
+        --${jack:=enable}-jack
+
+  fi
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/libsndfile1-dev/examples
+  install -m 644 AUTHORS COPYING ChangeLog INSTALL NEWS README TODO $ROOT/share/doc/libsndfile1-dev
+  install -m 644 examples/*.{c,cc} $ROOT/share/doc/libsndfile1-dev/examples
+}

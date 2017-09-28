@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A very fast file compressor similar to gzip
+#  lzop is a file compressor similar to gzip. Its main advantages over gzip
+#  are much higher compression and decompression speed at the cost of some
+#  compression ratio. lzop uses the LZO library for compression services.
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=lzop
+version=1.02rc1
+release=1
+source=(http://www.lzop.org/download/lzop-$version.tar.gz)
+
+build()
+{
+  cd lzop-$version
+
+  (echo "#!/bin/sh" && echo 'echo "$@"') >autoconf/config.sub
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix" \
+       --program-prefix=""
+
+  make
+  make DESTDIR="$PKG" install
+}

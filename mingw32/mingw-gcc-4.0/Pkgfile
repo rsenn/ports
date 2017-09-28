@@ -1,0 +1,57 @@
+# $Id: Pkgfile,v 1.11 2007/05/09 21:02:40 roman Exp $
+#
+# Description: gcc
+# URL: http://gcc.gnu.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=mingw-gcc-4.0
+version=4.0.4
+release=1
+target=i686-pc-mingw32
+
+source=($mirror_gnu/gcc/gcc-$version/gcc-$version.tar.bz2
+        gcc-4.0.4-mingw32.patch)
+
+build()
+{
+  cd $SRC/gcc-$version
+
+  patch -N -p1 -i $SRC/gcc-4.0.4-mingw32.patch
+
+  # configure in a separate build tree
+  builddir=gcc-build-$version
+
+  rm -rf $SRC/$builddir
+  mkdir -p $SRC/$builddir
+  cd $SRC/$builddir
+
+  $SRC/gcc-$version/configure \
+      --build="$build" \
+      --host="$host" \
+      ${target+--target="$target"} \
+      --prefix="$prefix" \
+      --with-local-prefix="$prefix" \
+      --mandir="$prefix/share/man" \
+      --infodir="$prefix/share/info" \
+      --disable-nls \
+      --without-included-gettext \
+      --enable-threads="win32" \
+      --with-tls \
+      --disable-rpath \
+      --disable-shared \
+      --${static:=enable}-shared \
+      --enable-languages="c,c++" \
+      --with-ld="$prefix/bin/$target-ld" \
+      --with-as="$prefix/bin/$target-as" \
+      --with-system-zlib \
+      --with-gxx-include-dir="$prefix/$target/include/c++" \
+      --with-cpp-install-dir="$prefix/$target/lib" \
+      --disable-concept-checks
+
+  make
+  make DESTDIR="$PKG" install
+
+  rm -f $ROOT/lib/libiberty.a
+  rm -rf $ROOT/share/{info,man}
+}

@@ -1,0 +1,30 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: jed
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: slang
+
+name=writer2latex
+version=0.5
+release=1
+source=(http://www.hj-gym.dk/~hj/writer2latex/writer2latex${version//./}beta.zip)
+
+build()
+{
+  install -d $ROOT/share/doc
+
+  W2L_NAME=writer2latex-$version
+  W2L_DIR=$prefix/share/$W2L_NAME
+
+  mv $SRC/writer2latex${version//./} $ROOT/share/$W2L_NAME
+  mv $PKG/$W2L_DIR/doc $ROOT/share/doc/$W2L_NAME
+
+  install -d $ROOT/bin
+  mv $PKG/$W2L_DIR/w2l $ROOT/bin
+  chmod 755 $ROOT/bin/w2l
+
+  sed -i "/^W2LPATH/ s,=\".*\",=\"$W2L_DIR\"," \
+    $ROOT/bin/w2l
+
+}

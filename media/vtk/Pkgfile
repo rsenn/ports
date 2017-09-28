@@ -1,0 +1,33 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:50 roman Exp $
+#
+# Description: Software system for 3D computer graphics, image processing, and visualization.
+#  The Visualization ToolKit (VTK) is an object oriented software system for
+#  3D computer graphics, image processing, and visualization. VTK includes
+#  a textbook, a C++ class library, and several interpreted interface
+#  layers including Tcl/Tk, Java, and Python. VTK supports a wide variety
+#  of visualization algorithms including scalar, vector, tensor, texture,
+#  and volumetric methods. It also supports advanced modeling techniques
+#  like implicit modeling, polygon reduction, mesh smoothing, cutting,
+#  contouring, and Delaunay triangulation. Moreover, dozens of imaging
+#  algorithms have been integrated into the system. This allows mixing 2D
+#  imaging / 3D graphics algorithms and data.
+# URL: http://public.kitware.com/VTK/index.php
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=vtk
+version=5.0.3
+release=1
+source=(http://www.vtk.org/files/release/5.0/vtk-$version.tar.gz)
+
+build()
+{
+  cd VTK
+
+  cmake -DCMAKE_INSTALL_PREFIX="$prefix" \
+        -DCMAKE_BACKWARDS_COMPATABILITY="1.4" \
+    -G 'Unix Makefiles' .
+
+  make
+  make DESTDIR="$PKG" install
+}

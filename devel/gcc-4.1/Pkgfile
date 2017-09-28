@@ -1,0 +1,93 @@
+# $Id: Pkgfile,v 1.2 2007/04/22 23:07:53 roman Exp $
+#
+# Description: gcc
+# URL: http://gcc.gnu.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=gcc-4.1
+version=4.1.2
+release=1
+source=($mirror_gnu/gcc/gcc-$version/gcc-core-$version.tar.bz2
+        $mirror_gnu/gcc/gcc-$version/gcc-g++-$version.tar.bz2)
+
+build()
+{
+  cd ${srcdir=$SRC/gcc-$version}
+
+#  patch -N -p0 -i $SRC/gcc-4.2.2-config-gcc.patch
+
+  ( echo "#!/bin/sh" && echo '${CC-gcc} -dumpmachine' ) >config.guess
+  ( echo "#!/bin/sh" && echo 'echo "$@"' ) >config.sub
+
+#  patch -N -p1 -i $SRC/gcc-4.2.1-iconv_t.patch
+  sed -i 's,$(SHELL) \./fixinc\.sh,:,' \
+    gcc/Makefile.in
+
+  # change runtime linker
+  case $target in
+    *linux*)
+      sed -i -e "s,/lib/ld-linux.so.2,$prefix/lib/ld-linux.so.2," \
+        gcc/config/i386/linux.h
+      ;;
+    *freebsd*)
+      sed -i -e '/FBSD_DYNAMIC_LINKER/ s,".*","'$prefix/lib/ld-elf.so.1'",' \
+        gcc/config/freebsd-spec.h
+      ;;
+  esac
+
+  cd ..
+
+  # now configure in a separate build tree
+  rm -rf ${builddir=$SRC/gcc-build-$version} && mkdir $builddir && cd $builddir
+
+  $srcdir/configure \
+       --build="$build" \
+       --host="$host" \
+       ${target+--target="$target"} \
+       --prefix="$prefix" \
+       --infodir="$prefix/share/info" \
+       --mandir="$prefix/share/man" \
+       --libexecdir="$prefix/lib" \
+       --program-suffix="-4.1" \
+       --${static:=enable}-shared \
+       --${shared:=enable}-shared \
+       --enable-threads="posix" \
+       --enable-__cxa_atexit \
+       --enable-clocale="gnu" \
+       --enable-languages="c,c++" \
+       --disable-bootstrap \
+       --enable-sjlj-exceptions \
+       $args
+
+  make DESTDIR="$PKG" all install
+
+  # remove duplicate binaries
+  rm -f $ROOT/bin/gcc
+  rm -f $ROOT/bin/$target-gcc-$version
+
+  # make symlinks instead
+  ln -sf $target-gcc $ROOT/bin/gcc
+  ln -sf $target-gcc $ROOT/bin/cc
+
+  cd $SRC/gcc-$version
+  copy_license "COPYING" "COPYING.LIB"
+
+  rm -f $ROOT/bin/cc
+  rm -f $ROOT/lib/{*.so*,libiberty.a} $ROOT/share/info/dir
+
+  chmod 644 $ROOT/lib/*.la || true
+
+  mv $ROOT/lib/*.a $ROOT/lib/gcc/$target/$version
+}
+
+#postmerge()
+#{
+#  cd ${bindir} && for bin in *-${version%.*}
+#  do
+#    test -e ${bin%-*} || ln -svf ${bin} ${bin%-*}
+#  done
+#
+#  test -e ${bindir}/cc || ln -svf gcc ${bindir}/cc
+#  test -e ${bindir}/c++ || ln -svf g++ ${bindir}/c++
+#}

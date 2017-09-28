@@ -1,0 +1,43 @@
+diff -ru imap-2004g_orig/src/osdep/unix/Makefile imap-2004g/src/osdep/unix/Makefile
+--- imap-2004g_orig/src/osdep/unix/Makefile	2005-04-30 22:51:13.000000000 +0200
++++ imap-2004g/src/osdep/unix/Makefile	2006-01-24 18:56:24.000000000 +0100
+@@ -526,7 +526,7 @@
+ nx3:	# NEXTSTEP 3.0 single threaded
+ 	$(BUILD) `$(CAT) SPECIALS` OS=nxt \
+ 	 CRXTYPE=nfs \
+-	 BASECFLAGS="-g -O -pipe -Wall"
++	 BASECFLAGS="-g -O -pipe"
+ 	echo "void malloc_singlethreaded (void);" >> linkage.h
+ 	echo "  malloc_singlethreaded ();" >> linkage.c
+ 
+diff -ru imap-2004g_orig/src/osdep/unix/Makefile.gss imap-2004g/src/osdep/unix/Makefile.gss
+--- imap-2004g_orig/src/osdep/unix/Makefile.gss	2003-03-05 04:29:59.000000000 +0100
++++ imap-2004g/src/osdep/unix/Makefile.gss	2006-01-24 18:55:08.000000000 +0100
+@@ -21,9 +21,9 @@
+ # Extended flags needed for additional authenticators.  You may need to modify.
+ 
+ GSSDIR=/usr/local
+-GSSCFLAGS= -I$(GSSDIR)/include -DGSS_C_NT_HOSTBASED_SERVICE=gss_nt_service_name
+-GSSOLDLDFLAGS= -L$(GSSDIR)/lib -lgssapi_krb5 -lkrb5 -lcrypto -lcom_err
+-GSSNEWLDFLAGS= -L$(GSSDIR)/lib -lgssapi_krb5 -lkrb5 -lk5crypto -lcom_err
++GSSCFLAGS= -I$(GSSDIR)/include
++GSSOLDLDFLAGS= -L$(GSSDIR)/lib -lgssapi -lkrb5 -lcrypto -lcom_err
++GSSNEWLDFLAGS= -L$(GSSDIR)/lib -lgssapi -lkrb5 -lk5crypto -lcom_err
+ 
+ gss:	# GSSAPI Kerberos V flags
+ 	echo $(GSSCFLAGS) >> OSCFLAGS
+diff -ru imap-2004g_orig/src/osdep/unix/kerb_mit.c imap-2004g/src/osdep/unix/kerb_mit.c
+--- imap-2004g_orig/src/osdep/unix/kerb_mit.c	2003-10-17 18:39:42.000000000 +0200
++++ imap-2004g/src/osdep/unix/kerb_mit.c	2006-01-24 18:55:08.000000000 +0100
+@@ -19,9 +19,8 @@
+  */
+ 
+ #define PROTOTYPE(x) x
+-#include <gssapi/gssapi_generic.h>
+-#include <gssapi/gssapi_krb5.h>
+-
++#include <gssapi.h>
++#include <krb5.h>
+ 
+ long kerberos_server_valid (void);
+ long kerberos_try_kinit (OM_uint32 error);

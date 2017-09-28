@@ -1,0 +1,297 @@
+diff -r -u -- strategoxt-0.17_orig/stratego-libraries/lib/native/stratego-lib/system-io-dir.c strategoxt-0.17-mingw32/stratego-libraries/lib/native/stratego-lib/system-io-dir.c
+--- strategoxt-0.17_orig/stratego-libraries/lib/native/stratego-lib/system-io-dir.c	2007-05-04 18:19:15.000000000 +0200
++++ strategoxt-0.17-mingw32/stratego-libraries/lib/native/stratego-lib/system-io-dir.c	2007-05-21 21:32:34.000000000 +0200
+@@ -238,10 +238,10 @@
+ {
+   if(!t_is_string(existingpath) || !t_is_string(newpath))
+     _fail(existingpath);
+-
++#ifndef __MINGW32__
+   if(link(ATgetName(ATgetSymbol(existingpath)), ATgetName(ATgetSymbol(newpath))) != 0)
+     _fail(existingpath);
+-
++#endif
+   return newpath;
+ }
+ #endif
+@@ -286,12 +286,13 @@
+ #ifndef XT_STD_DISABLE_POSIX
+ ATerm SSL_setenv(ATerm name, ATerm value, ATerm overwrite)
+ {
++#ifndef __MINGW32__
+   if(!t_is_string(name)) _fail(name);
+   if(!t_is_string(value)) _fail(value);
+   if(!ATisInt(overwrite)) _fail(overwrite);
+ 
+   setenv(ATgetName(ATgetSymbol(name)), ATgetName(ATgetSymbol(value)), ATgetInt((ATermInt)overwrite));
+-
++#endif
+   return (ATerm)ATempty;
+ }
+ #endif
+diff -r -u -- strategoxt-0.17_orig/stratego-libraries/lib/native/stratego-lib/system-posix-file.c strategoxt-0.17-mingw32/stratego-libraries/lib/native/stratego-lib/system-posix-file.c
+--- strategoxt-0.17_orig/stratego-libraries/lib/native/stratego-lib/system-posix-file.c	2007-05-04 18:19:15.000000000 +0200
++++ strategoxt-0.17-mingw32/stratego-libraries/lib/native/stratego-lib/system-posix-file.c	2007-05-21 21:32:34.000000000 +0200
+@@ -200,6 +200,7 @@
+ 
+   if(pathmax == 0) {
+     errno = 0;
++#ifndef __MINGW32__
+     if( (pathmax = pathconf("/", _PC_PATH_MAX)) < 0) {
+       if(errno == 0) {
+         pathmax = PATH_MAX_GUESS;
+@@ -208,8 +209,11 @@
+         pathmax = PATH_MAX_GUESS;        
+       }
+     } else {
++#endif
+       pathmax++;
++#ifndef __MINGW32__
+     }
++#endif
+   }
+ 
+   if( (result = malloc(pathmax + 1)) == NULL) {
+@@ -269,8 +273,12 @@
+ 
+   if(!ATisString(pathname))
+     return NULL;
+-
++  
++#ifdef __MINGW32__
++  int result = mkdir(AT_getString(pathname));
++#else
+   int result = mkdir(AT_getString(pathname), 0700);
++#endif
+   return (ATerm) ATmakeInt(result);
+ }
+ #endif /* XT_STD */
+@@ -443,8 +451,11 @@
+   if(result == NULL) {
+     _fail(template);
+   }
+-
++#ifdef __MINGW32__
++  if(mkdir(result) == -1) {
++#else
+   if(mkdir(result, S_IRWXU) == -1) {
++#endif
+     _fail(template);
+   }
+ 
+@@ -667,8 +678,10 @@
+ 
+ ATerm SSL_S_ISLNK(ATerm mode)
+ {
++#ifndef __MINGW32__
+   if(!S_ISLNK(ATgetInt((ATermInt)mode)))
+     _fail(mode);
++#endif
+   return mode;
+ }
+ #endif /* XT_STD */
+@@ -692,6 +705,7 @@
+ #ifndef XT_STD_DISABLE_POSIX
+ ATerm SSL_pipe(void)
+ {
++#ifndef __MINGW32__
+   int fd[2], res;
+   res = pipe(fd);
+   switch(res) {
+@@ -713,6 +727,7 @@
+     //_fail((ATerm)ATempty);
+     //break;
+   }
++#endif
+   return (ATerm) ATempty;
+ }
+ #endif /* XT_STD */
+diff -r -u -- strategoxt-0.17_orig/stratego-libraries/lib/native/stratego-lib/system-posix-process.c strategoxt-0.17-mingw32/stratego-libraries/lib/native/stratego-lib/system-posix-process.c
+--- strategoxt-0.17_orig/stratego-libraries/lib/native/stratego-lib/system-posix-process.c	2007-05-04 18:19:15.000000000 +0200
++++ strategoxt-0.17-mingw32/stratego-libraries/lib/native/stratego-lib/system-posix-process.c	2007-05-21 21:32:34.000000000 +0200
+@@ -2,7 +2,9 @@
+ 
+ #ifndef XT_STD_DISABLE_POSIX
+ #include <sys/types.h>
++#ifndef __MINGW32__
+ #include <sys/wait.h>
++#endif
+ #include <unistd.h>
+ #endif
+ 
+@@ -16,14 +18,16 @@
+ 
+ #ifndef XT_STD_DISABLE_POSIX
+ ATerm SSL_fork(void) {
++#ifdef __MINGW32__
++  int result = -1;
++#else
+   pid_t pid = fork();
+   int result = (int) pid;
++#endif
+   ATerm tresult = (ATerm) ATmakeInt(result);
+-
+   if(result == -1) {
+     _fail(tresult);
+   }
+-
+   return tresult;
+ }
+ #endif /* XT_STD_DISABLE_POSIX */
+@@ -59,8 +63,9 @@
+ 
+ #ifndef XT_STD_DISABLE_POSIX
+ ATerm SSL_execvp(ATerm file, ATerm argv) {
+-  const char *str_args[256];
+   int result;
++#ifndef __MINGW32__
++  const char *str_args[256];
+ 
+   if(!ATisString(file)) 
+     return NULL;
+@@ -70,16 +75,19 @@
+   if(0 != err) {
+     return NULL;
+   }
+-
+   result = execvp(str_args[0], (char *const *) str_args);
++#else
++  result = -1;
++#endif
+   return (ATerm)ATmakeInt(result);
+ }
+ #endif /* XT_STD_DISABLE_POSIX */
+ 
+ #ifndef XT_STD_DISABLE_POSIX
+ ATerm SSL_execv(ATerm file, ATerm argv) {
+-  const char *str_args[256];
+   int result;
++#ifndef __MINGW32__
++  const char *str_args[256];
+ 
+   int err = execv_args(argv, str_args);
+   if(0 != err) {
+@@ -90,12 +98,16 @@
+     return NULL;
+ 
+   result = execv(AT_getString(file), (char *const *) str_args);
++#else
++  result = -1;
++#endif
+   return (ATerm) ATmakeInt(result);
+ }
+ #endif /* XT_STD_DISABLE_POSIX */
+ 
+ #ifndef XT_STD_DISABLE_POSIX
+ ATerm SSL_waitpid(ATerm pid) {
++#ifndef __MINGW32__
+   int status;
+   assert_is_int(pid);
+   waitpid(_get_int(pid), &status, 0);
+@@ -103,6 +115,9 @@
+     (ATerm)ATmakeInt(WIFEXITED(status)   ? WEXITSTATUS(status) : -1),
+     (ATerm)ATmakeInt(WIFSIGNALED(status) ? WTERMSIG(status) : -1),
+     (ATerm)ATmakeInt(WIFSTOPPED(status)  ? WSTOPSIG(status) : -1));
++#else
++  return (ATerm) ATmakeInt(-1);
++#endif
+ }
+ #endif /* XT_STD_DISABLE_POSIX */
+ 
+@@ -119,7 +134,7 @@
+ #ifndef XT_STD_DISABLE_POSIX
+ ATerm SSL_kill(ATerm pid, ATerm sig) {
+   int result = -1;
+-
++#ifndef __MINGW32__
+   if(ATisInt(pid) && ATisInt(sig)) {
+     result = kill(ATgetInt((ATermInt) pid), ATgetInt((ATermInt) sig));
+     
+@@ -130,7 +145,7 @@
+   else {
+     _fail(pid);
+   }
+-
++#endif
+   return (ATerm) ATmakeInt(result);
+ }
+ #endif /* XT_STD_DISABLE_POSIX */
+diff -r -u -- strategoxt-0.17_orig/stratego-libraries/lib/native/stratego-lib/util-time.c strategoxt-0.17-mingw32/stratego-libraries/lib/native/stratego-lib/util-time.c
+--- strategoxt-0.17_orig/stratego-libraries/lib/native/stratego-lib/util-time.c	2007-05-04 18:19:15.000000000 +0200
++++ strategoxt-0.17-mingw32/stratego-libraries/lib/native/stratego-lib/util-time.c	2007-05-21 21:32:34.000000000 +0200
+@@ -8,13 +8,17 @@
+ 
+ #ifndef XT_STD_DISABLE_POSIX
+ #include <unistd.h>
++#ifndef __MINGW32__
+ #include <sys/time.h>
+ #include <sys/times.h>
+ #endif
++#endif
+ 
+ #ifndef XT_STD_DISABLE_POSIX_XSI
++#ifndef __MINGW32__
+ #include <sys/resource.h>
+ #endif
++#endif
+ 
+ /* struct_tm conversion */
+ ATerm struct_tm2ATerm(const struct tm *tp) {
+@@ -77,10 +81,13 @@
+ }
+ 
+ #ifndef XT_STD_DISABLE_POSIX_XSI
++#ifndef __MINGW32__
+ struct rusage rusage;
++#endif
+ 
+ double dtime(void)
+ {
++#ifndef __MINGW32__
+  static double p[3];
+  double q;
+ 
+@@ -93,6 +100,9 @@
+  p[1] = p[2] - q;
+         
+  return p[1];
++#else
++  return 0;
++#endif
+ }
+ 
+ ATerm SSL_dtime(void)
+@@ -116,6 +126,7 @@
+ #ifndef XT_STD_DISABLE_POSIX
+ ATerm SSL_times(void)
+ {
++#ifndef __MINGW32__
+   struct tms ts;
+ 
+   times(&ts);
+@@ -125,12 +136,16 @@
+ 			    (ATerm)ATmakeInt(ts.tms_stime), 
+ 			    (ATerm)ATmakeInt(ts.tms_cutime), 
+ 			    (ATerm)ATmakeInt(ts.tms_cstime));
++#else
++  return (ATerm) ATmakeInt(0);
++#endif
+ }
+ #endif
+ 
+ #ifndef XT_STD_DISABLE_POSIX
+ ATerm SSL_TicksToSeconds(ATerm t)
+ {
++#ifndef __MINGW32__
+   long tps = sysconf(_SC_CLK_TCK);
+   long ticks;
+ 
+@@ -140,5 +155,8 @@
+   ticks = ATgetInt((ATermInt) t);
+ 
+   return (ATerm) ATmakeReal((double)ticks / (double)tps);
++#else
++  return (ATerm) ATmakeReal(0.0);
++#endif
+ }
+ #endif

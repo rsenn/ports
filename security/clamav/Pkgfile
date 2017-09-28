@@ -1,0 +1,39 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An anti-virus utility for Unix.
+#  Clam AntiVirus is an anti-virus toolkit designed especially for email
+#  scanning on mail gateways. It provides a number of utilities, including
+#  a flexible and scalable multi-threaded daemon, a commandline scanner,
+#  and a tool for automatic database updates. The core of the package is
+#  an anti-virus engine available as a shared library.
+# URL: http://www.clamav.org/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=clamav
+version=0.95.1
+release=1
+source=($mirror_sf/clamav/clamav-$version.tar.gz)
+
+build()
+{
+  cd clamav-$version
+
+  case $prefix in
+    "/usr") sysconfdir="/etc" localstatedir="/var" ;;
+  esac
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --prefix="$prefix" \
+     --sysconfdir="${sysconfdir=$prefix/etc}/clamav" \
+     --localstatedir="${localstatedir=$prefix/var}" \
+     --with-user="root" \
+     --with-group="root"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

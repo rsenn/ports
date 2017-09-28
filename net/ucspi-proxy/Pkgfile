@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: 'Connection proxy for UCSPI tools'
+# URL: http://untroubled.org/ucspi-proxy/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=ucspi-proxy
+version=0.97
+release=1
+source=(http://untroubled.org/ucspi-proxy/ucspi-proxy-$version.tar.gz)
+
+build()
+{
+  cd ucspi-proxy-$version
+
+  echo "$prefix/lib/bglibs/include" > conf-bgincs
+  echo "$prefix/lib/bglibs/lib" >conf-bglibs
+
+  echo "$ROOT/bin" >conf-bin
+  echo "$ROOT/share/man" >conf-man
+
+  make
+  make install
+
+  install -d $ROOT/share/doc/ucspi-proxy
+  install -m 644 README ChangeLog NEWS ANNOUNCEMENT TODO SRCFILES COPYING VERSION $ROOT/share/doc/ucspi-proxy
+}
+
+# EOF

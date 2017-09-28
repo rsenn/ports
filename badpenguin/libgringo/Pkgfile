@@ -1,0 +1,39 @@
+# $Id: Pkgfile 424 2008-08-10 01:52:57Z enki $
+#
+# Description: binary and library replacement for dialog.
+#  libgringo is a library to writes applications that run both in console
+#  (using ncurses) and under X-Window (using gtk). libgringo detects if you
+#  are running from the console or under X-Window, and selects the right
+#  library to use without recompiling your code. gringosh and gringodlg are
+#  two parsers that use libgringo to provide similar functionality to the
+#  cdialog utility. It was written to make some configuration scripts work
+#  both in console and under X Windows without any modification. gringosh
+#  and gringodlg also provide features more powerful than cdialog such as
+#  the ability to have more than two buttons per form and more than two
+#  windows on the screen.
+# URL: http://www.badpenguin.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libgringo
+version=3.2.1
+release=1
+source=(http://www.badpenguin.org/pub/software/libgringo/libgringo-$version.tar.gz)
+
+build()
+{
+  cd libgringo-$version
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --${static:=enable}-shared \
+      --${shared:=enable}-shared \
+      --disable-dependency-tracking \
+      --enable-gtk \
+      --enable-ncurses
+
+  make
+  make DESTDIR="$PKG" install
+}

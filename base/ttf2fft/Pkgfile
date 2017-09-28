@@ -1,0 +1,27 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: TrueType to FFT (Macromedia Flash Font format) font converter
+# URL: http://www.opaque.net/wiki/index.php?ttf2fft
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=ttf2fft
+version=1.0
+release=1
+source=($mirror_sf/ming/ttf2fft-$version.tar.bz2
+        ttf2fft-$version-nexbyte.patch
+        ttf2fft-1.patch)
+
+build() 
+{
+  cd ttf2fft
+
+  patch -N -p1 -i $SRC/ttf2fft-$version-nexbyte.patch
+  patch -N -p1 -i $SRC/ttf2fft-1.patch
+
+  make CXX="${CXX-g++}" CXXFLAGS="${CXXFLAGS--g -O2}"
+  make DESTDIR="$PKG" prefix="$prefix" install
+
+  install -d $ROOT/share/doc/ttf2fft
+  install -m 644 LICENSE README $ROOT/share/doc/ttf2fft
+}

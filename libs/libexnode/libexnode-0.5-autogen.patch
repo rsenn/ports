@@ -1,0 +1,40 @@
+--- libexnode-0.5_orig/autogen.sh	2009-02-21 01:28:07.000000000 +0100
++++ libexnode-0.5/autogen.sh	2009-02-21 01:28:14.000000000 +0100
+@@ -0,0 +1,37 @@
++#!/bin/sh
++#
++# 20090220
++
++FORCE="--force"
++
++for SUBDIR in . lbone/ibp lbone libe2e/aes libexnode libxml2 popt; do
++  if [ -d "$SUBDIR" ]; then
++   (set -e -x
++
++    cd $SUBDIR
++
++    if [ -f acconfig.h ]; then
++      rm -f acconfig.h
++    fi
++
++    if grep -q "A[CM]_PROG_LIBTOOL" configure.in; then
++      libtoolize $FORCE --copy --automake --install
++    fi
++
++    aclocal $FORCE
++
++    if grep -q "A[CM]_CONFIG_HEADER" configure.in; then
++      autoheader $FORCE
++    fi
++
++    automake $FORCE --copy --add-missing --foreign
++    aclocal $FORCE
++    autoconf $FORCE) || exit $?
++  fi
++done
++
++if [ "$?" != 0 ]; then
++  echo "error code: $?"
++else
++  echo "exit: success"
++fi

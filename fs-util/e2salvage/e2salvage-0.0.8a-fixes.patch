@@ -1,0 +1,28 @@
+diff -r -u e2salvage-0.0.8a_orig/src/dirops.c e2salvage-0.0.8a/src/dirops.c
+--- e2salvage-0.0.8a_orig/src/dirops.c	2007-07-29 10:56:16.000000000 +0200
++++ e2salvage-0.0.8a/src/dirops.c	2007-07-29 10:57:49.000000000 +0200
+@@ -20,13 +20,13 @@
+ 
+ 	myreclen = EXT2_DIR_REC_LEN(strlen(name));
+ 
+-	for (dirent = (struct ext2_dir_entry_2 *)block; (void *)dirent < ((void *)block)+blocksize; ((void *)dirent) += dirent->rec_len) {
++	for (dirent = (struct ext2_dir_entry_2 *)block; (void *)dirent < ((void *)block)+blocksize; dirent = (void *)((char *)dirent + dirent->rec_len)) {
+ 		if (dirent->rec_len - dirent->name_len >= myreclen) {
+ 			orig_rec_len = dirent->rec_len;
+ 			dirent->rec_len = EXT2_DIR_REC_LEN(dirent->name_len);
+ 			orig_rec_len -= dirent->rec_len;
+ 
+-			((void *)dirent) += dirent->rec_len;
++			dirent = (void *)((char *)dirent + dirent->rec_len);
+ 
+ 			dirent->inode = inum;
+ 			dirent->rec_len = orig_rec_len;
+@@ -42,7 +42,7 @@
+ int dirent_del(char * block, __u32 inum, __u32 lost_found_ino)
+ {
+ 	struct ext2_dir_entry_2 * dirent, * ldirent;
+-	for (ldirent = NULL, dirent = (struct ext2_dir_entry_2 *)block; (void *)dirent < ((void *)block)+blocksize; ldirent = dirent, ((void *)dirent) += dirent->rec_len)
++	for (ldirent = NULL, dirent = (struct ext2_dir_entry_2 *)block; (void *)dirent < ((void *)block)+blocksize; ldirent = dirent, dirent = (void *)((char *)dirent + dirent->rec_len))
+ 		if (dirent->inode == inum) {
+ 			if (!ldirent) {
+ 				fprintf(stderr, "Internal error 32762:6448\n");

@@ -1,0 +1,82 @@
+args: -r -u -N -- libghttp-1.0.9_orig libghttp-1.0.9
+diff -r -u -N -- libghttp-1.0.9_orig/.deps/ghttp.Plo libghttp-1.0.9/.deps/ghttp.Plo
+diff -r -u -N -- libghttp-1.0.9_orig/.deps/http_base64.Plo libghttp-1.0.9/.deps/http_base64.Plo
+diff -r -u -N -- libghttp-1.0.9_orig/.deps/http_date.Plo libghttp-1.0.9/.deps/http_date.Plo
+diff -r -u -N -- libghttp-1.0.9_orig/.deps/http_hdrs.Plo libghttp-1.0.9/.deps/http_hdrs.Plo
+diff -r -u -N -- libghttp-1.0.9_orig/.deps/http_req.Plo libghttp-1.0.9/.deps/http_req.Plo
+diff -r -u -N -- libghttp-1.0.9_orig/.deps/http_resp.Plo libghttp-1.0.9/.deps/http_resp.Plo
+diff -r -u -N -- libghttp-1.0.9_orig/.deps/http_trans.Plo libghttp-1.0.9/.deps/http_trans.Plo
+diff -r -u -N -- libghttp-1.0.9_orig/.deps/http_uri.Plo libghttp-1.0.9/.deps/http_uri.Plo
+diff -r -u -N -- libghttp-1.0.9_orig/.libs/libghttp.la libghttp-1.0.9/.libs/libghttp.la
+diff -r -u -N -- libghttp-1.0.9_orig/.libs/libghttp.lai libghttp-1.0.9/.libs/libghttp.lai
+diff -r -u -N -- libghttp-1.0.9_orig/Makefile libghttp-1.0.9/Makefile
+diff -r -u -N -- libghttp-1.0.9_orig/Makefile.am libghttp-1.0.9/Makefile.am
+--- libghttp-1.0.9_orig/Makefile.am	2008-11-20 09:14:02.000000000 +0000
++++ libghttp-1.0.9/Makefile.am	2008-11-20 09:14:42.000000000 +0000
+@@ -32,7 +32,7 @@
+ 	http_base64.h \
+ 	ghttpConf.sh.in
+ 
+-libghttp_la_LDFLAGS = -version-info 1:0:0
++libghttp_la_LDFLAGS = -rpath $(libdir) -version-info 1:0:0
+ 
+ ## We create ghttpConf.sh here and not from configure because we want
+ ## to get the paths expanded correctly.  Macros like srcdir are given
+diff -r -u -N -- libghttp-1.0.9_orig/Makefile.in libghttp-1.0.9/Makefile.in
+diff -r -u -N -- libghttp-1.0.9_orig/aclocal.m4 libghttp-1.0.9/aclocal.m4
+diff -r -u -N -- libghttp-1.0.9_orig/autogen.sh libghttp-1.0.9/autogen.sh
+--- libghttp-1.0.9_orig/autogen.sh	1970-01-01 00:00:00.000000000 +0000
++++ libghttp-1.0.9/autogen.sh	2008-11-20 09:16:31.000000000 +0000
+@@ -0,0 +1,10 @@
++#!/bin/sh
++#
++# 20081120
++
++
++libtoolize --force --copy --automake
++aclocal --force
++automake --force --copy --foreign --add-missing --add-missing
++aclocal --force
++autoconf --force
+diff -r -u -N -- libghttp-1.0.9_orig/autom4te.cache/output.0 libghttp-1.0.9/autom4te.cache/output.0
+diff -r -u -N -- libghttp-1.0.9_orig/autom4te.cache/output.1 libghttp-1.0.9/autom4te.cache/output.1
+diff -r -u -N -- libghttp-1.0.9_orig/autom4te.cache/requests libghttp-1.0.9/autom4te.cache/requests
+diff -r -u -N -- libghttp-1.0.9_orig/autom4te.cache/traces.0 libghttp-1.0.9/autom4te.cache/traces.0
+diff -r -u -N -- libghttp-1.0.9_orig/autom4te.cache/traces.1 libghttp-1.0.9/autom4te.cache/traces.1
+diff -r -u -N -- libghttp-1.0.9_orig/config.guess libghttp-1.0.9/config.guess
+diff -r -u -N -- libghttp-1.0.9_orig/config.log libghttp-1.0.9/config.log
+diff -r -u -N -- libghttp-1.0.9_orig/config.status libghttp-1.0.9/config.status
+diff -r -u -N -- libghttp-1.0.9_orig/config.sub libghttp-1.0.9/config.sub
+diff -r -u -N -- libghttp-1.0.9_orig/configure libghttp-1.0.9/configure
+diff -r -u -N -- libghttp-1.0.9_orig/configure.in libghttp-1.0.9/configure.in
+--- libghttp-1.0.9_orig/configure.in	2008-11-20 09:14:02.000000000 +0000
++++ libghttp-1.0.9/configure.in	2008-11-20 09:16:12.000000000 +0000
+@@ -1,11 +1,11 @@
+ AC_INIT(ghttp.h)
+ 
+-AC_DIVERT_PUSH(AC_DIVERSION_NOTICE)
++dnl AC_DIVERT_PUSH(AC_DIVERSION_NOTICE)
+ GHTTP_MAJOR_VERSION=1
+ GHTTP_MINOR_VERSION=0
+ GHTTP_MICRO_VERSION=9
+ GHTTP_VERSION=$GHTTP_MAJOR_VERSION.$GHTTP_MINOR_VERSION.$GHTTP_MICRO_VERSION
+-AC_DIVERT_POP()
++dnl AC_DIVERT_POP()
+ 
+ AC_SUBST(GHTTP_MAJOR_VERSION)
+ AC_SUBST(GHTTP_MINOR_VERSION)
+diff -r -u -N -- libghttp-1.0.9_orig/depcomp libghttp-1.0.9/depcomp
+diff -r -u -N -- libghttp-1.0.9_orig/ghttp.lo libghttp-1.0.9/ghttp.lo
+diff -r -u -N -- libghttp-1.0.9_orig/http_base64.lo libghttp-1.0.9/http_base64.lo
+diff -r -u -N -- libghttp-1.0.9_orig/http_date.lo libghttp-1.0.9/http_date.lo
+diff -r -u -N -- libghttp-1.0.9_orig/http_hdrs.lo libghttp-1.0.9/http_hdrs.lo
+diff -r -u -N -- libghttp-1.0.9_orig/http_req.lo libghttp-1.0.9/http_req.lo
+diff -r -u -N -- libghttp-1.0.9_orig/http_resp.lo libghttp-1.0.9/http_resp.lo
+diff -r -u -N -- libghttp-1.0.9_orig/http_trans.lo libghttp-1.0.9/http_trans.lo
+diff -r -u -N -- libghttp-1.0.9_orig/http_uri.lo libghttp-1.0.9/http_uri.lo
+diff -r -u -N -- libghttp-1.0.9_orig/install-sh libghttp-1.0.9/install-sh
+diff -r -u -N -- libghttp-1.0.9_orig/libghttp.la libghttp-1.0.9/libghttp.la
+diff -r -u -N -- libghttp-1.0.9_orig/libtool libghttp-1.0.9/libtool
+diff -r -u -N -- libghttp-1.0.9_orig/ltmain.sh libghttp-1.0.9/ltmain.sh
+diff -r -u -N -- libghttp-1.0.9_orig/missing libghttp-1.0.9/missing
+diff -r -u -N -- libghttp-1.0.9_orig/mkinstalldirs libghttp-1.0.9/mkinstalldirs

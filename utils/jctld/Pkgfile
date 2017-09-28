@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A job control system for clusters of machines.
+# jctld is a job control system for clusters of machines. Job-control
+# hosts and a nominated job- control server run a jctld daemon. Users
+# interact with the system via a command-line utility. Authentication
+# between parties uses private-public key pairs.
+#
+# URL: http://frmb.org/jctld.html
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=jctld
+version=0.9.6
+release=1
+source=(http://frmb.org/download/jctld-$version.tar.gz)
+
+build()
+{
+  cd jctld-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

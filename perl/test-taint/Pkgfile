@@ -1,0 +1,27 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Tools to test taintedness.
+# URL: http://search.cpan.org/dist/Test-Taint/
+# Maintainer: 
+# Depends on: 
+
+name=test-taint
+version=1.04
+release=1
+source=(http://search.cpan.org/CPAN/authors/id/P/PE/PETDANCE/Test-Taint-$version.tar.gz)
+
+build() 
+{
+  cd Test-Taint-$version
+  
+  perl Makefile.PL installdirs=vendor
+  
+  make \
+       DESTDIR="$PKG" \
+       install
+
+  install -d $ROOT/share/doc/test-taint
+  install -m 644 Changes MANIFEST $ROOT/share/doc/test-taint
+}
+
+# EOF

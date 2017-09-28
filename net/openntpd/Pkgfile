@@ -1,0 +1,27 @@
+# $Id: Pkgfile,v 1.5 2007/05/09 21:02:56 roman Exp $
+#
+# Description: A portable implementation of the Network Time Protocol.
+#  OpenNTPd is a portable implementation of the Network Time Protocol. It
+#  provides the ability to sync the local clock to remote NTP servers and
+#  can act as an NTP server itself, redistributing the local clock.
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+# URL: http://www.openntpd.org/
+
+name=openntpd
+version=3.9p1
+release=1
+source=(ftp://mirror.switch.ch/pub/OpenBSD/OpenNTPD/openntpd-$version.tar.gz)
+
+build()
+{
+  cd openntpd-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

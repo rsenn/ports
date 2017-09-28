@@ -1,0 +1,50 @@
+# $Id: Pkgfile,v 1.9 2007/05/09 21:02:52 roman Exp $
+#
+# Description: Enable programs to use display terminals in a terminal-independent manner.
+#  GNU termcap is a library of C functions that enables programs to send
+#  control strings to terminals in a terminal type-independent manner. The
+#  GNU termcap library does not place an arbitrary limit on the size of
+#  termcap entries, unlike most other termcap libraries.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=termcap
+version=2.0.8
+release=1
+source=($mirror_gentoo/termcap-$version.tar.bz2
+        $mirror_gentoo/termcap-$version-patches-1.tar.bz2
+        termcap-2.0.8-chown.patch)
+
+build()
+{
+  cd termcap-$version
+
+  patch -N -p1 -i $SRC/patch/001_all_termcap-shared.patch
+  patch -N -p1 -i $SRC/patch/002_all_termcap-setuid.patch
+  patch -N -p1 -i $SRC/patch/003_all_termcap-inst-no-root.patch
+  patch -N -p1 -i $SRC/patch/004_all_termcap-compat-glibc21.patch
+  patch -N -p1 -i $SRC/patch/005_all_termcap-xref.patch
+  patch -N -p1 -i $SRC/patch/006_all_termcap-fix-tc.patch
+  patch -N -p1 -i $SRC/patch/007_all_termcap-ignore-p.patch
+  patch -N -p1 -i $SRC/patch/008_all_termcap-buffer.patch
+  patch -N -p1 -i $SRC/patch/009_all_termcap-bufsize--needs-011.patch
+  patch -N -p1 -i $SRC/patch/010_all_termcap-colon.patch
+  patch -N -p1 -i $SRC/patch/011_all_termcap-AAARGH.patch
+  patch -N -p0 -i $SRC/patch/012_all_libtermcap-compat-2.0.8-fPIC.patch
+  patch -N -p0 -i $SRC/patch/013_all_libtermcap-compat_bcopy_fix.patch
+  patch -N -p1 -i $SRC/termcap-2.0.8-chown.patch
+
+  make CC="${CC-cc}" CFLAGS="$CFLAGS"
+
+  install -d $ROOT/{include,lib}
+
+  make prefix="$ROOT" install
+
+  cd $ROOT/lib
+
+  ln -sf libtermcap.so.$version libtermcap.so.${version%.*}
+  ln -sf libtermcap.so.$version libtermcap.so.${version%%.*}
+  ln -sf libtermcap.so.$version libtermcap.so
+}
+

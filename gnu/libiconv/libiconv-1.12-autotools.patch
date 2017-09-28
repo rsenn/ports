@@ -1,0 +1,237 @@
+--- libiconv-1.12_orig/autogen.sh	2008-07-27 23:51:07.000000000 +0200
++++ libiconv-1.12/autogen.sh	2008-07-27 23:11:00.000000000 +0200
+@@ -1,82 +1,11 @@
+ #!/bin/sh
+-# Convenience script for regenerating all autogeneratable files that are
+-# omitted from the version control repository. In particular, this script
+-# also regenerates all aclocal.m4, config.h.in, Makefile.in, configure files
+-# with new versions of autoconf or automake.
+ #
+-# This script requires autoconf-2.61 and automake-1.10 in the PATH.
+-# It also requires either
+-#   - the GNULIB_TOOL environment variable pointing to the gnulib-tool script
+-#     in a gnulib checkout, or
+-#   - the cvs program in the PATH and an internet connection.
++# 20080727
+ 
+-# Copyright (C) 2003-2007 Free Software Foundation, Inc.
+-#
+-# This program is free software: you can redistribute it and/or modify
+-# it under the terms of the GNU General Public License as published by
+-# the Free Software Foundation; either version 3 of the License, or
+-# (at your option) any later version.
+-#
+-# This program is distributed in the hope that it will be useful,
+-# but WITHOUT ANY WARRANTY; without even the implied warranty of
+-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-# GNU General Public License for more details.
+-#
+-# You should have received a copy of the GNU General Public License
+-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-
+-# Usage: ./autogen.sh [--skip-gnulib]
+-#
+-# Usage from a CVS checkout:                 ./autogen.sh
+-# This uses an up-to-date gnulib checkout.
+-#
+-# Usage from a released tarball:             ./autogen.sh --skip-gnulib
+-# This does not use a gnulib checkout.
+-
+-skip_gnulib=false
+-while :; do
+-  case "$1" in
+-    --skip-gnulib) skip_gnulib=true; shift;;
+-    *) break ;;
+-  esac
+-done
+-
+-if test $skip_gnulib = false; then
+-  if test -z "$GNULIB_TOOL"; then
+-    # Check out gnulib in a subdirectory 'gnulib'.
+-    GNULIB_CVS_ROOT=':pserver:anonymous@pserver.git.sv.gnu.org:/gnulib.git'
+-    GNULIB_CVS_REPOSITORY='gnulib'
+-    if test -d gnulib; then
+-      (cd gnulib && cvs update -d -P)
+-    else
+-      cvs -d "$GNULIB_CVS_ROOT" checkout -d $GNULIB_CVS_REPOSITORY HEAD
+-    fi
+-    # Now it should contain a gnulib-tool.
+-    if test -f gnulib/gnulib-tool; then
+-      GNULIB_TOOL=`pwd`/gnulib/gnulib-tool
+-    else
+-      echo "** warning: gnulib-tool not found" 1>&2
+-    fi
+-  fi
+-  # Skip the gnulib-tool step if gnulib-tool was not found.
+-  if test -n "$GNULIB_TOOL"; then
+-    if test -f srcm4/gnulib-cache.m4; then
+-      mv -f srcm4/gnulib-cache.m4 srcm4/gnulib-cache.m4~
+-    fi
+-    if test -f srclib/Makefile.gnulib; then
+-      mv -f srclib/Makefile.gnulib srclib/Makefile.gnulib~
+-    fi
+-    make -f Makefile.devel srclib/Makefile.gnulib GNULIB_TOOL="$GNULIB_TOOL"
+-  fi
+-fi
+-
+-rm -f configure config.h.in include/iconv.h.build.in
+-rm -f lib/aliases.h lib/aliases_aix.h lib/aliases_osf1.h lib/aliases_dos.h lib/aliases_extra.h
+-rm -f lib/flags.h
+-rm -f lib/translit.h
+-rm -f man/iconv.1.html man/iconv.3.html man/iconv_close.3.html man/iconv_open.3.html
+-make -f Makefile.devel
+-
+-(cd libcharset
+- ./autogen.sh
+-)
++(cd libcharset && sh autogen.sh)
++libtoolize --force --copy --automake
++aclocal --force -I m4 -I srcm4
++automake --force --copy --foreign --add-missing --foreign --add-missing
++aclocal --force -I m4 -I srcm4
++autoheader --force
++autoconf --force
+--- libiconv-1.12_orig/configure.ac	2008-07-27 23:51:07.000000000 +0200
++++ libiconv-1.12/configure.ac	2008-07-27 23:38:35.000000000 +0200
+@@ -18,10 +18,10 @@
+ 
+ AC_PREREQ([2.60])
+ AC_INIT
+-AC_CONFIG_SRCDIR(lib/iconv.c)
+-AC_CONFIG_AUX_DIR(build-aux)
+-AM_INIT_AUTOMAKE(libiconv, 1.12)
+-AC_CONFIG_HEADERS(config.h lib/config.h)
++AC_CONFIG_SRCDIR([lib/iconv.c])
++AC_CONFIG_AUX_DIR([build-aux])
++AM_INIT_AUTOMAKE([libicon], [1.12])
++AC_CONFIG_HEADERS([config.h lib/config.h])
+ AC_PROG_MAKE_SET
+ 
+ dnl           checks for basic programs
+@@ -130,7 +130,7 @@
+ if test -n "$OS"; then
+   AC_SUBST(OS)
+   AC_SUBST(GCC)
+-  PLUGLIB="preloadable_libiconv.so"
++  PLUGLIB="preloadable_libiconv.la"
+ else
+   PLUGLIB=""
+ fi
+--- libiconv-1.12_orig/libcharset/autogen.sh	2008-07-27 23:51:06.000000000 +0200
++++ libiconv-1.12/libcharset/autogen.sh	2008-07-27 23:27:57.000000000 +0200
+@@ -1,29 +1,8 @@
+ #!/bin/sh
+-# Convenience script for regenerating all aclocal.m4, config.h.in, Makefile.in,
+-# configure files with new versions of autoconf or automake.
+ #
+-# This script requires autoconf-2.61 and automake-1.10 in the PATH.
+-# It also requires either
+-#   - the GNULIB_TOOL environment variable pointing to the gnulib-tool script
+-#     in a gnulib checkout, or
+-#   - the cvs program in the PATH and an internet connection.
++# 20080727
+ 
+-# Copyright (C) 2003-2007 Free Software Foundation, Inc.
+-#
+-# This program is free software: you can redistribute it and/or modify
+-# it under the terms of the GNU General Public License as published by
+-# the Free Software Foundation; either version 3 of the License, or
+-# (at your option) any later version.
+-#
+-# This program is distributed in the hope that it will be useful,
+-# but WITHOUT ANY WARRANTY; without even the implied warranty of
+-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-# GNU General Public License for more details.
+-#
+-# You should have received a copy of the GNU General Public License
+-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-
+-# Usage: ./autogen.sh
+-
+-rm -f autoconf/aclocal.m4 configure config.h.in include/localcharset.h.build.in
+-make -f Makefile.devel
++libtoolize --force --copy
++aclocal --force -I ../srcm4
++autoheader --force
++autoconf --force
+--- libiconv-1.12_orig/libcharset/configure.ac	2008-07-27 23:51:06.000000000 +0200
++++ libiconv-1.12/libcharset/configure.ac	2008-07-27 23:26:48.000000000 +0200
+@@ -16,14 +16,16 @@
+ dnl write to the Free Software Foundation, Inc., 51 Franklin Street,
+ dnl Fifth Floor, Boston, MA 02110-1301, USA.
+ 
+-AC_PREREQ(2.13)
++AC_PREREQ(2.61)
+ 
+ PACKAGE=libcharset
+ VERSION=1.4
+ 
+-AC_INIT(lib/localcharset.c)
+-AC_CONFIG_AUX_DIR(build-aux)
+-AC_CONFIG_HEADER(config.h)
++AC_INIT
++AC_CONFIG_SRCDIR([lib/localcharset.c])
++AC_CONFIG_AUX_DIR([../build-aux])
++AC_CONFIG_HEADER([config.h])
++AC_CONFIG_MACRO_DIR([../m4])
+ AC_PROG_MAKE_SET
+ AC_SUBST(PACKAGE)
+ AC_SUBST(VERSION)
+@@ -56,8 +58,14 @@
+ 
+ dnl           check for build configuration
+ 
+-AC_LIBTOOL_WIN32_DLL
+-AC_PROG_LIBTOOL
++AC_CANONICAL_HOST
++
++dnl AC_REQUIRE([AC_CANONICAL_HOST])
++_LT_SET_OPTION([LT_INIT],[win32-dll])
++AC_DIAGNOSE([obsolete],[AC_LIBTOOL_WIN32_DLL: Remove this warning and the call to _LT_SET_OPTION when you
++put the `win32-dll' option into LT_INIT's first parameter.])
++
++LT_INIT
+ gl_VISIBILITY
+ 
+ dnl           checks for header files and functions
+--- libiconv-1.12_orig/lib/Makefile.in	2007-05-28 00:15:31.000000000 +0200
++++ libiconv-1.12/lib/Makefile.in	2008-07-27 23:38:08.000000000 +0200
+@@ -69,27 +69,27 @@
+ libiconv.la : $(OBJECTS)
+ 	$(LIBTOOL_LINK) $(CC) $(LDFLAGS) $(CFLAGS) -o libiconv.la -rpath $(libdir) -version-info $(LIBICONV_VERSION_INFO) -no-undefined $(OBJECTS)
+ 
+-preloadable_libiconv.so : preloadable_libiconv_@OS@.so
+-	$(RM) preloadable_libiconv.so
+-	$(LN_S) preloadable_libiconv_@OS@.so preloadable_libiconv.so
++preloadable_libiconv.la : preloadable_libiconv_@OS@.la
++	$(RM) preloadable_libiconv.la
++	$(LN_S) preloadable_libiconv_@OS@.la preloadable_libiconv.la
+ 
+-preloadable_libiconv_linux.so : $(SOURCES)
++preloadable_libiconv_linux.la : $(SOURCES)
+ 	if test -n "@GCC@"; then \
+-	  $(LIBTOOL_LINK) $(CC) $(LDFLAGS) $(INCLUDES) $(CFLAGS) $(CPPFLAGS) $(DEFS) -fPIC -DPIC -DLIBICONV_PLUG $(SOURCES) -shared -o preloadable_libiconv_linux.so; \
++	  $(LIBTOOL_LINK) $(CC) $(LDFLAGS) $(INCLUDES) $(CFLAGS) $(CPPFLAGS) $(DEFS) -fPIC -DPIC -DLIBICONV_PLUG $(SOURCES) -rpath $(libdir) -shared -module -avoid-version -o preloadable_libiconv_linux.la; \
+ 	else \
+-	  $(LIBTOOL_LINK) $(CC) $(LDFLAGS) $(INCLUDES) $(CFLAGS) $(CPPFLAGS) $(DEFS) -KPIC -DPIC -DLIBICONV_PLUG $(SOURCES) -shared -o preloadable_libiconv_linux.so; \
++	  $(LIBTOOL_LINK) $(CC) $(LDFLAGS) $(INCLUDES) $(CFLAGS) $(CPPFLAGS) $(DEFS) -KPIC -DPIC -DLIBICONV_PLUG $(SOURCES) -rpath $(libdir) -shared -module -avoid-version -o preloadable_libiconv_linux.la; \
+ 	fi
+ 
+-preloadable_libiconv_solaris.so : $(SOURCES)
++preloadable_libiconv_solaris.la : $(SOURCES)
+ 	if test -n "@GCC@"; then \
+-	  $(LIBTOOL_LINK) $(CC) $(LDFLAGS) $(INCLUDES) $(CFLAGS) $(CPPFLAGS) $(DEFS) -fPIC -DPIC -DLIBICONV_PLUG $(SOURCES) -shared -o preloadable_libiconv_solaris.so; \
++	  $(LIBTOOL_LINK) $(CC) $(LDFLAGS) $(INCLUDES) $(CFLAGS) $(CPPFLAGS) $(DEFS) -fPIC -DPIC -DLIBICONV_PLUG $(SOURCES) -rpath $(libdir) -shared -module -avoid-version -o preloadable_libiconv_solaris.la; \
+ 	else \
+-	  $(LIBTOOL_LINK) $(CC) $(LDFLAGS) $(INCLUDES) $(CFLAGS) $(CPPFLAGS) $(DEFS) -KPIC -DPIC -DLIBICONV_PLUG $(SOURCES) -G -o preloadable_libiconv_solaris.so; \
++	  $(LIBTOOL_LINK) $(CC) $(LDFLAGS) $(INCLUDES) $(CFLAGS) $(CPPFLAGS) $(DEFS) -KPIC -DPIC -DLIBICONV_PLUG $(SOURCES) -G -o preloadable_libiconv_solaris.la; \
+ 	fi
+ 
+-preloadable_libiconv_osf.so : $(SOURCES)
++preloadable_libiconv_osf.la : $(SOURCES)
+ 	if test -n "@GCC@"; then \
+-	  $(LIBTOOL_LINK) $(CC) $(LDFLAGS) $(INCLUDES) $(CFLAGS) $(CPPFLAGS) $(DEFS) -fPIC -DPIC -DLIBICONV_PLUG $(SOURCES) -shared -o preloadable_libiconv_osf.so; \
++	  $(LIBTOOL_LINK) $(CC) $(LDFLAGS) $(INCLUDES) $(CFLAGS) $(CPPFLAGS) $(DEFS) -fPIC -DPIC -DLIBICONV_PLUG $(SOURCES) -rpath $(libdir) -shared -module -avoid-version -o preloadable_libiconv_osf.la; \
+ 	else \
+ 	  mkdir objects; \
+ 	  for f in $(SOURCES); do \

@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A userspace FTP filesystem for FUSE.
+# URL: http://wiki.thiesen.org/page/Fuseftp
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=fuseftp
+version=0.8
+release=1
+source=(http://perl.thiesen.org/fuseftp/fuseftp-$version.tar.gz)
+
+build()
+{
+  cd fuseftp-$version
+
+  perl Makefile.PL
+
+  make
+  make \
+      DESTDIR="$PKG" \
+      PREFIX="$prefix" \
+      SITEPREFIX='$(PREFIX)' \
+      INSTALLSITELIB='$(INSTALLVENDORLIB)' \
+      INSTALLSITEARCH='$(INSTALLVENDORARCH)' \
+    install
+
+  rm -f $ROOT/lib/*/*.pod
+}

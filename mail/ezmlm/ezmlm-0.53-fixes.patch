@@ -1,0 +1,1009 @@
+diff -ru ezmlm-0.53_orig/alloc.c ezmlm-0.53/alloc.c
+--- ezmlm-0.53_orig/alloc.c	2008-07-12 23:35:17.000000000 +0200
++++ ezmlm-0.53/alloc.c	2008-07-12 23:54:18.000000000 +0200
+@@ -1,7 +1,7 @@
++#include <stdlib.h>
++#include <errno.h>
+ #include "alloc.h"
+ #include "error.h"
+-extern char *malloc();
+-extern void free();
+ 
+ #define ALIGNMENT 16 /* XXX: assuming that this alignment is enough */
+ #define SPACE 4096 /* must be multiple of ALIGNMENT */
+diff -ru ezmlm-0.53_orig/auto-str.c ezmlm-0.53/auto-str.c
+--- ezmlm-0.53_orig/auto-str.c	2008-07-12 23:35:17.000000000 +0200
++++ ezmlm-0.53/auto-str.c	2008-07-12 23:41:49.000000000 +0200
+@@ -5,13 +5,13 @@
+ char buf1[256];
+ substdio ss1 = SUBSTDIO_FDBUF(write,1,buf1,sizeof(buf1));
+ 
+-void puts(s)
++void putstr(s)
+ char *s;
+ {
+   if (substdio_puts(&ss1,s) == -1) _exit(111);
+ }
+ 
+-void main(argc,argv)
++int main(argc,argv)
+ int argc;
+ char **argv;
+ {
+@@ -25,20 +25,20 @@
+   value = argv[2];
+   if (!value) _exit(100);
+ 
+-  puts("char ");
+-  puts(name);
+-  puts("[] = \"\\\n");
++  putstr("char ");
++  putstr(name);
++  putstr("[] = \"\\\n");
+ 
+-  while (ch = *value++) {
+-    puts("\\");
++  while ((ch = *value++)) {
++    putstr("\\");
+     octal[3] = 0;
+     octal[2] = '0' + (ch & 7); ch >>= 3;
+     octal[1] = '0' + (ch & 7); ch >>= 3;
+     octal[0] = '0' + (ch & 7);
+-    puts(octal);
++    putstr(octal);
+   }
+ 
+-  puts("\\\n\";\n");
++  putstr("\\\n\";\n");
+   if (substdio_flush(&ss1) == -1) _exit(111);
+   _exit(0);
+ }
+diff -ru ezmlm-0.53_orig/envread.c ezmlm-0.53/envread.c
+--- ezmlm-0.53_orig/envread.c	2008-07-12 23:35:17.000000000 +0200
++++ ezmlm-0.53/envread.c	2008-07-12 23:44:56.000000000 +0200
+@@ -1,5 +1,6 @@
++#include <unistd.h>
+ #include "env.h"
+ #include "str.h"
+ 
+ extern /*@null@*/char *env_get(s)
+ char *s;
+@@ -9,7 +10,7 @@
+   char *envi;
+  
+   slen = str_len(s);
+-  for (i = 0;envi = environ[i];++i)
++  for (i = 0;(envi = environ[i]);++i)
+     if ((!str_diffn(s,envi,slen)) && (envi[slen] == '='))
+       return envi + slen + 1;
+   return 0;
+diff -ru ezmlm-0.53_orig/ezmlm-list.c ezmlm-0.53/ezmlm-list.c
+--- ezmlm-0.53_orig/ezmlm-list.c	2008-07-12 23:35:17.000000000 +0200
++++ ezmlm-0.53/ezmlm-list.c	2008-07-12 23:57:44.000000000 +0200
+@@ -1,3 +1,5 @@
++#include <unistd.h>
++#include <errno.h>
+ #include "stralloc.h"
+ #include "substdio.h"
+ #include "getln.h"
+@@ -6,6 +8,7 @@
+ #include "readwrite.h"
+ #include "exit.h"
+ #include "open.h"
++#include "str.h"
+ 
+ #define FATAL "ezmlm-list: fatal: "
+ void die_write()
+@@ -22,7 +25,7 @@
+ 
+ char fn[14] = "subscribers/?";
+ 
+-void main(argc,argv)
++int main(argc,argv)
+ int argc;
+ char **argv;
+ {
+@@ -58,5 +61,5 @@
+   }
+ 
+   if (substdio_flush(&out) == -1) die_write();
+-  _exit(0);
++  return 0;
+ }
+diff -ru ezmlm-0.53_orig/ezmlm-make.c ezmlm-0.53/ezmlm-make.c
+--- ezmlm-0.53_orig/ezmlm-make.c	2008-07-12 23:35:17.000000000 +0200
++++ ezmlm-0.53/ezmlm-make.c	2008-07-12 23:41:12.000000000 +0200
+@@ -1,5 +1,8 @@
++#include <stdio.h>
++#include <unistd.h>
+ #include <sys/types.h>
+ #include <sys/time.h>
++#include <sys/stat.h>
+ #include "sgetopt.h"
+ #include "stralloc.h"
+ #include "strerr.h"
+@@ -93,7 +96,7 @@
+ substdio ss;
+ char ssbuf[SUBSTDIO_OUTSIZE];
+ 
+-void fopen(slash)
++void fileopen(slash)
+ char *slash;
+ {
+   int fd;
+@@ -106,21 +109,21 @@
+   substdio_fdbuf(&ss,write,fd,ssbuf,sizeof(ssbuf));
+ }
+ 
+-void fput(buf,len)
++void fileput(buf,len)
+ char *buf;
+ unsigned int len;
+ {
+   if (substdio_bput(&ss,buf,len) == -1)
+     strerr_die4sys(111,FATAL,"unable to write to ",dirplus.s,": ");
+ }
+-void fputs(buf)
++void fileputs(buf)
+ char *buf;
+ {
+   if (substdio_bputs(&ss,buf) == -1)
+     strerr_die4sys(111,FATAL,"unable to write to ",dirplus.s,": ");
+ }
+ 
+-void fclose()
++void fileclose()
+ {
+   if (substdio_flush(&ss) == -1)
+     strerr_die4sys(111,FATAL,"unable to write to ",dirplus.s,": ");
+@@ -131,7 +134,7 @@
+   keyaddtime();
+ }
+ 
+-void main(argc,argv)
++int main(argc,argv)
+ int argc;
+ char **argv;
+ {
+@@ -185,95 +188,95 @@
+   linkdotdir("-return-default","/bouncer");
+   linkdotdir("","/editor");
+ 
+-  fopen("/lock"); fclose();
+-  fopen("/lockbounce"); fclose();
++  fileopen("/lock"); fileclose();
++  fileopen("/lockbounce"); fileclose();
+   if (flagpublic) {
+-    fopen("/public"); fclose();
++    fileopen("/public"); fileclose();
+   }
+   if (flagarchived) {
+-    fopen("/archived"); fclose();
++    fileopen("/archived"); fileclose();
+   }
+-  fopen("/num"); fputs("0\n"); fclose();
+-  fopen("/inhost"); fputs(host); fputs("\n"); fclose();
+-  fopen("/outhost"); fputs(host); fputs("\n"); fclose();
+-  fopen("/inlocal"); fputs(local); fputs("\n"); fclose();
+-  fopen("/outlocal"); fputs(local); fputs("\n"); fclose();
+-
+-  fopen("/mailinglist");
+-  fputs("contact ");
+-  fputs(local); fputs("-help@"); fputs(host); fputs("; run by ezmlm\n");
+-  fclose();
+-
+-  fopen("/owner");
+-  fputs(dir); fputs("/Mailbox\n");
+-  fputs("|"); fputs(auto_bin); fputs("/ezmlm-warn '"); fputs(dir);
+-  fputs("' || exit 0\n");
+-  fclose();
+-
+-  fopen("/manager");
+-  fputs("|"); fputs(auto_bin); fputs("/ezmlm-manage '"); fputs(dir); fputs("'\n");
+-  fputs("|"); fputs(auto_bin); fputs("/ezmlm-warn '"); fputs(dir);
+-  fputs("' || exit 0\n");
+-  fclose();
+-
+-  fopen("/editor");
+-  fputs("|"); fputs(auto_bin); fputs("/ezmlm-reject\n");
+-  fputs("|"); fputs(auto_bin); fputs("/ezmlm-send '"); fputs(dir); fputs("'\n");
+-  fputs("|"); fputs(auto_bin); fputs("/ezmlm-warn '"); fputs(dir);
+-  fputs("' || exit 0\n");
+-  fclose();
+-
+-  fopen("/bouncer");
+-  fputs("|"); fputs(auto_bin); fputs("/ezmlm-warn '"); fputs(dir);
+-  fputs("' || exit 0\n");
+-  fputs("|"); fputs(auto_bin); fputs("/ezmlm-weed\n");
+-  fputs("|"); fputs(auto_bin); fputs("/ezmlm-return '"); fputs(dir); fputs("'\n");
+-  fclose();
++  fileopen("/num"); fileputs("0\n"); fileclose();
++  fileopen("/inhost"); fileputs(host); fileputs("\n"); fileclose();
++  fileopen("/outhost"); fileputs(host); fileputs("\n"); fileclose();
++  fileopen("/inlocal"); fileputs(local); fileputs("\n"); fileclose();
++  fileopen("/outlocal"); fileputs(local); fileputs("\n"); fileclose();
++
++  fileopen("/mailinglist");
++  fileputs("contact ");
++  fileputs(local); fileputs("-help@"); fileputs(host); fileputs("; run by ezmlm\n");
++  fileclose();
++
++  fileopen("/owner");
++  fileputs(dir); fileputs("/Mailbox\n");
++  fileputs("|"); fileputs(auto_bin); fileputs("/ezmlm-warn '"); fileputs(dir);
++  fileputs("' || exit 0\n");
++  fileclose();
++
++  fileopen("/manager");
++  fileputs("|"); fileputs(auto_bin); fileputs("/ezmlm-manage '"); fileputs(dir); fileputs("'\n");
++  fileputs("|"); fileputs(auto_bin); fileputs("/ezmlm-warn '"); fileputs(dir);
++  fileputs("' || exit 0\n");
++  fileclose();
++
++  fileopen("/editor");
++  fileputs("|"); fileputs(auto_bin); fileputs("/ezmlm-reject\n");
++  fileputs("|"); fileputs(auto_bin); fileputs("/ezmlm-send '"); fileputs(dir); fileputs("'\n");
++  fileputs("|"); fileputs(auto_bin); fileputs("/ezmlm-warn '"); fileputs(dir);
++  fileputs("' || exit 0\n");
++  fileclose();
++
++  fileopen("/bouncer");
++  fileputs("|"); fileputs(auto_bin); fileputs("/ezmlm-warn '"); fileputs(dir);
++  fileputs("' || exit 0\n");
++  fileputs("|"); fileputs(auto_bin); fileputs("/ezmlm-weed\n");
++  fileputs("|"); fileputs(auto_bin); fileputs("/ezmlm-return '"); fileputs(dir); fileputs("'\n");
++  fileclose();
+ 
+-  fopen("/headerremove");
+-  fputs("\
++  fileopen("/headerremove");
++  fileputs("\
+ return-path\n\
+ return-receipt-to\n\
+ content-length\n\
+ ");
+-  fclose();
++  fileclose();
+ 
+-  fopen("/headeradd");
+-  fclose();
++  fileopen("/headeradd");
++  fileclose();
+ 
+ 
+-  fopen("/text/top");
+-  fputs("Hi! This is the ezmlm program. I'm managing the\n");
+-  fputs(local); fputs("@"); fputs(host); fputs(" mailing list.\n\n");
+-  fclose();
++  fileopen("/text/top");
++  fileputs("Hi! This is the ezmlm program. I'm managing the\n");
++  fileputs(local); fileputs("@"); fileputs(host); fileputs(" mailing list.\n\n");
++  fileclose();
+ 
+-  fopen("/text/bottom");
+-  fputs("\n--- Here are the ezmlm command addresses.\n\
++  fileopen("/text/bottom");
++  fileputs("\n--- Here are the ezmlm command addresses.\n\
+ \n\
+ I can handle administrative requests automatically.\n\
+ Just send an empty note to any of these addresses:\n\n   <");
+-  fputs(local); fputs("-subscribe@"); fputs(host); fputs(">:\n");
+-  fputs("   Receive future messages sent to the mailing list.\n\n   <");
+-  fputs(local); fputs("-unsubscribe@"); fputs(host); fputs(">:\n");
+-  fputs("   Stop receiving messages.\n\n   <");
+-  fputs(local); fputs("-get.12345@"); fputs(host); fputs(">:\n");
+-  fputs("   Retrieve a copy of message 12345 from the archive.\n\
++  fileputs(local); fileputs("-subscribe@"); fileputs(host); fileputs(">:\n");
++  fileputs("   Receive future messages sent to the mailing list.\n\n   <");
++  fileputs(local); fileputs("-unsubscribe@"); fileputs(host); fileputs(">:\n");
++  fileputs("   Stop receiving messages.\n\n   <");
++  fileputs(local); fileputs("-get.12345@"); fileputs(host); fileputs(">:\n");
++  fileputs("   Retrieve a copy of message 12345 from the archive.\n\
+ \n\
+ DO NOT SEND ADMINISTRATIVE REQUESTS TO THE MAILING LIST!\n\
+ If you do, I won't see them, and subscribers will yell at you.\n\
+ \n\
+ To specify God@heaven.af.mil as your subscription address, send mail\n\
+ to <");
+-  fputs(local); fputs("-subscribe-God=heaven.af.mil@"); fputs(host);
+-  fputs(">.\n\
++  fileputs(local); fileputs("-subscribe-God=heaven.af.mil@"); fileputs(host);
++  fileputs(">.\n\
+ I'll send a confirmation message to that address; when you receive that\n\
+ message, simply reply to it to complete your subscription.\n\
+ \n");
+-  fputs("\n--- Below this line is a copy of the request I received.\n\n");
+-  fclose();
++  fileputs("\n--- Below this line is a copy of the request I received.\n\n");
++  fileclose();
+ 
+-  fopen("/text/sub-confirm");
+-  fputs("To confirm that you would like\n\
++  fileopen("/text/sub-confirm");
++  fileputs("To confirm that you would like\n\
+ \n\
+ !A\n\
+ \n\
+@@ -287,10 +290,10 @@
+ to get mail through to you. Second, it protects you in case someone\n\
+ forges a subscription request in your name.\n\
+ \n");
+-  fclose();
++  fileclose();
+ 
+-  fopen("/text/unsub-confirm");
+-  fputs("To confirm that you would like\n\
++  fileopen("/text/unsub-confirm");
++  fileputs("To confirm that you would like\n\
+ \n\
+ !A\n\
+ \n\
+@@ -306,46 +309,46 @@
+ inside its return path; for example, God@heaven.af.mil receives messages\n\
+ with return path ...-God=heaven.af.mil.\n\
+ \n");
+-  fclose();
++  fileclose();
+ 
+-  fopen("/text/sub-ok");
+-  fputs("Acknowledgment: I have added the address\n\
++  fileopen("/text/sub-ok");
++  fileputs("Acknowledgment: I have added the address\n\
+ \n\
+ !A\n\
+ \n\
+ to this mailing list.\n\
+ \n");
+-  fclose();
++  fileclose();
+ 
+-  fopen("/text/unsub-ok");
+-  fputs("Acknowledgment: I have removed the address\n\
++  fileopen("/text/unsub-ok");
++  fileputs("Acknowledgment: I have removed the address\n\
+ \n\
+ !A\n\
+ \n\
+ from this mailing list.\n\
+ \n");
+-  fclose();
++  fileclose();
+ 
+-  fopen("/text/sub-nop");
+-  fputs("Acknowledgment: The address\n\
++  fileopen("/text/sub-nop");
++  fileputs("Acknowledgment: The address\n\
+ \n\
+ !A\n\
+ \n\
+ is on this mailing list.\n\
+ \n");
+-  fclose();
++  fileclose();
+ 
+-  fopen("/text/unsub-nop");
+-  fputs("Acknowledgment: The address\n\
++  fileopen("/text/unsub-nop");
++  fileputs("Acknowledgment: The address\n\
+ \n\
+ !A\n\
+ \n\
+ is not on this mailing list.\n\
+ \n");
+-  fclose();
++  fileclose();
+ 
+-  fopen("/text/sub-bad");
+-  fputs("Oops, that confirmation number appears to be invalid.\n\
++  fileopen("/text/sub-bad");
++  fileputs("Oops, that confirmation number appears to be invalid.\n\
+ \n\
+ The most common reason for invalid numbers is expiration. I have to\n\
+ receive confirmation of each request within ten days.\n\
+@@ -360,10 +363,10 @@
+ \n\
+ Sorry for the trouble.\n\
+ \n");
+-  fclose();
++  fileclose();
+ 
+-  fopen("/text/unsub-bad");
+-  fputs("Oops, that confirmation number appears to be invalid.\n\
++  fileopen("/text/unsub-bad");
++  fileputs("Oops, that confirmation number appears to be invalid.\n\
+ \n\
+ The most common reason for invalid numbers is expiration. I have to\n\
+ receive confirmation of each request within ten days.\n\
+@@ -378,29 +381,29 @@
+ \n\
+ Sorry for the trouble.\n\
+ \n");
+-  fclose();
++  fileclose();
+ 
+-  fopen("/text/get-bad");
+-  fputs("Sorry, I don't see that message.\n\n");
+-  fclose();
++  fileopen("/text/get-bad");
++  fileputs("Sorry, I don't see that message.\n\n");
++  fileclose();
+ 
+-  fopen("/text/bounce-bottom");
+-  fputs("\n\
++  fileopen("/text/bounce-bottom");
++  fileputs("\n\
+ --- Below this line is a copy of the bounce message I received.\n\n");
+-  fclose();
++  fileclose();
+ 
+-  fopen("/text/bounce-warn");
+-  fputs("\n\
++  fileopen("/text/bounce-warn");
++  fileputs("\n\
+ Messages to you seem to have been bouncing. I've attached a copy of\n\
+ the first bounce message I received.\n\
+ \n\
+ If this message bounces too, I will send you a probe. If the probe bounces,\n\
+ I will remove your address from the mailing list, without further notice.\n\
+ \n");
+-  fclose();
++  fileclose();
+ 
+-  fopen("/text/bounce-probe");
+-  fputs("\n\
++  fileopen("/text/bounce-probe");
++  fileputs("\n\
+ Messages to you seem to have been bouncing. I sent you a warning\n\
+ message, but it bounced. I've attached a copy of the bounce message.\n\
+ \n\
+@@ -408,28 +411,28 @@
+ probe bounces, I will remove your address from the mailing list, without\n\
+ further notice.\n\
+ \n");
+-  fclose();
++  fileclose();
+ 
+-  fopen("/text/bounce-num");
+-  fputs("\n\
++  fileopen("/text/bounce-num");
++  fileputs("\n\
+ I've kept a list of which messages bounced from your address. Copies of\n\
+ these messages may be in the archive. To get message 12345 from the\n\
+ archive, send an empty note to ");
+-  fputs(local); fputs("-get.12345@"); fputs(host); fputs(".\n\
++  fileputs(local); fileputs("-get.12345@"); fileputs(host); fileputs(".\n\
+ Here are the message numbers:\n\
+ \n");
+-  fclose();
++  fileclose();
+ 
+-  fopen("/text/help");
+-  fputs("\
++  fileopen("/text/help");
++  fileputs("\
+ This is a generic help message. The message I received wasn't sent to\n\
+ any of my command addresses.\n\
+ \n");
+-  fclose();
++  fileclose();
+ 
+-  fopen("/key");
+-  fput(key.s,key.len);
+-  fclose();
++  fileopen("/key");
++  fileput(key.s,key.len);
++  fileclose();
+ 
+   _exit(0);
+ }
+diff -ru ezmlm-0.53_orig/ezmlm-manage.c ezmlm-0.53/ezmlm-manage.c
+--- ezmlm-0.53_orig/ezmlm-manage.c	2008-07-12 23:35:17.000000000 +0200
++++ ezmlm-0.53/ezmlm-manage.c	2008-07-12 23:54:52.000000000 +0200
+@@ -1,5 +1,6 @@
+ #include <sys/types.h>
+ #include <sys/stat.h>
++#include <errno.h>
+ #include "error.h"
+ #include "stralloc.h"
+ #include "str.h"
+@@ -22,6 +23,10 @@
+ #include "fmt.h"
+ #include "subscribe.h"
+ #include "cookie.h"
++#include "scan.h"
++#include "open.h"
++#include "log.h"
++#include <unistd.h>
+ 
+ #define FATAL "ezmlm-manage: fatal: "
+ void die_usage() { strerr_die1x(100,"ezmlm-manage: usage: ezmlm-manage dir"); }
+@@ -129,7 +134,7 @@
+ 
+ stralloc mydtline = {0};
+ 
+-void main(argc,argv)
++int main(argc,argv)
+ int argc;
+ char **argv;
+ {
+@@ -317,7 +322,7 @@
+       switch(subscribe(target.s,1)) {
+         case -1: strerr_die1(111,FATAL,&subscribe_err);
+         case -2: strerr_die1(100,FATAL,&subscribe_err);
+-	case 1: log("+",target.s); copy("text/sub-ok"); break;
++	case 1: putlog("+",target.s); copy("text/sub-ok"); break;
+ 	default: copy("text/sub-nop"); break;
+       }
+   }
+@@ -328,7 +333,7 @@
+       switch(subscribe(target.s,0)) {
+         case -1: strerr_die1(111,FATAL,&subscribe_err);
+         case -2: strerr_die1(100,FATAL,&subscribe_err);
+-	case 1: log("-",target.s); copy("text/unsub-ok"); break;
++	case 1: putlog("-",target.s); copy("text/unsub-ok"); break;
+ 	default: copy("text/unsub-nop"); break;
+       }
+   }
+@@ -400,4 +405,5 @@
+       /* don't worry about undoing actions; everything is idempotent */
+       strerr_die2x(111,FATAL,"temporary qmail-queue error");
+   }
++  return 0;
+ }
+diff -ru ezmlm-0.53_orig/ezmlm-reject.c ezmlm-0.53/ezmlm-reject.c
+--- ezmlm-0.53_orig/ezmlm-reject.c	2008-07-12 23:35:17.000000000 +0200
++++ ezmlm-0.53/ezmlm-reject.c	2008-07-12 23:47:50.000000000 +0200
+@@ -1,9 +1,11 @@
++#include <unistd.h>
+ #include "strerr.h"
+ #include "substdio.h"
+ #include "readwrite.h"
+ #include "stralloc.h"
+ #include "getln.h"
+ #include "sgetopt.h"
++#include "case.h"
+ 
+ int flagrejectcommands = 1;
+ int flagneedsubject = 1;
+@@ -15,7 +17,7 @@
+ substdio ss0 = SUBSTDIO_FDBUF(read,0,buf0,sizeof(buf0));
+ stralloc line = {0};
+ 
+-void main(argc,argv)
++int main(argc,argv)
+ int argc;
+ char **argv;
+ {
+diff -ru ezmlm-0.53_orig/ezmlm-return.c ezmlm-0.53/ezmlm-return.c
+--- ezmlm-0.53_orig/ezmlm-return.c	2008-07-12 23:35:17.000000000 +0200
++++ ezmlm-0.53/ezmlm-return.c	2008-07-12 23:57:09.000000000 +0200
+@@ -1,3 +1,7 @@
++#include <stdio.h>
++#include <unistd.h>
++#include <sys/stat.h>
++#include <errno.h>
+ #include "stralloc.h"
+ #include "str.h"
+ #include "env.h"
+@@ -17,6 +21,11 @@
+ #include "cookie.h"
+ #include "subscribe.h"
+ #include "issub.h"
++#include "open.h"
++#include "scan.h"
++#include "log.h"
++#include "lock.h"
++#include "slurpclose.h"
+ 
+ #define FATAL "ezmlm-return: fatal: "
+ void die_usage() { strerr_die1x(100,"ezmlm-return: usage: ezmlm-return dir"); }
+@@ -179,7 +188,7 @@
+ char msginbuf[1024];
+ substdio ssmsgin;
+ 
+-void main(argc,argv)
++int main(argc,argv)
+ int argc;
+ char **argv;
+ {
+@@ -255,7 +264,7 @@
+     cookie(hash,key.s,key.len,strnum,line.s,"P");
+     if (byte_diff(hash,COOKIE,hashcopy)) die_trash();
+ 
+-    if (subscribe(line.s,0) == 1) log("-probe",line.s);
++    if (subscribe(line.s,0) == 1) putlog("-probe",line.s);
+     _exit(0);
+   }
+ 
+@@ -360,5 +369,5 @@
+     }
+   }
+ 
+-  _exit(0);
++  return 0;
+ }
+diff -ru ezmlm-0.53_orig/ezmlm-send.c ezmlm-0.53/ezmlm-send.c
+--- ezmlm-0.53_orig/ezmlm-send.c	2008-07-12 23:35:17.000000000 +0200
++++ ezmlm-0.53/ezmlm-send.c	2008-07-12 23:56:57.000000000 +0200
+@@ -1,3 +1,7 @@
++#include <unistd.h>
++#include <stdio.h>
++#include <sys/stat.h>
++#include <errno.h>
+ #include "stralloc.h"
+ #include "subfd.h"
+ #include "strerr.h"
+@@ -17,6 +21,7 @@
+ #include "substdio.h"
+ #include "getconf.h"
+ #include "constmap.h"
++#include "byte.h"
+ 
+ #define FATAL "ezmlm-send: fatal: "
+ 
+@@ -81,7 +86,7 @@
+     if (substdio_put(&ssarchive,buf,len) == -1) die_archive();
+ }
+ 
+-void puts(buf) char *buf;
++void putstr(buf) char *buf;
+ {
+   qmail_puts(&qq,buf);
+   if (flagarchived)
+@@ -134,7 +139,7 @@
+ 
+ stralloc mydtline = {0};
+ 
+-void main(argc,argv)
++int main(argc,argv)
+ int argc;
+ char **argv;
+ {
+@@ -225,9 +230,9 @@
+   }
+ 
+   if (!flagsublist) {
+-    puts("Mailing-List: ");
++    putstr("Mailing-List: ");
+     put(mailinglist.s,mailinglist.len);
+-    puts("\n");
++    putstr("\n");
+   }
+   put(headeradd.s,headeradd.len);
+   put(mydtline.s,mydtline.len);
+@@ -316,4 +321,5 @@
+       numwrite();
+       strerr_die2x(111,FATAL,"temporary qmail-queue error");
+   }
++  return 0;
+ }
+diff -ru ezmlm-0.53_orig/ezmlm-sub.c ezmlm-0.53/ezmlm-sub.c
+--- ezmlm-0.53_orig/ezmlm-sub.c	2008-07-12 23:35:17.000000000 +0200
++++ ezmlm-0.53/ezmlm-sub.c	2008-07-12 23:52:00.000000000 +0200
+@@ -1,3 +1,4 @@
++#include <unistd.h>
+ #include "strerr.h"
+ #include "subscribe.h"
+ #include "log.h"
+@@ -5,7 +6,7 @@
+ #define FATAL "ezmlm-sub: fatal: "
+ #define WARNING "ezmlm-sub: warning: "
+ 
+-void main(argc,argv)
++int main(argc,argv)
+ int argc;
+ char **argv;
+ {
+@@ -19,7 +20,7 @@
+     strerr_die4sys(111,FATAL,"unable to switch to ",dir,": ");
+ 
+   argv += 2;
+-  while (addr = *argv++)
++  while ((addr = *argv++))
+     switch(subscribe(addr,1)) {
+       case -1:
+ 	strerr_die1(111,FATAL,&subscribe_err);
+@@ -27,7 +28,7 @@
+ 	strerr_warn4(WARNING,"cannot subscribe ",addr,": ",&subscribe_err);
+ 	break;
+       case 1:
+-	log("+manual",addr);
++	putlog("+manual",addr);
+     }
+-  _exit(0);
++  return 0;
+ }
+diff -ru ezmlm-0.53_orig/ezmlm-unsub.c ezmlm-0.53/ezmlm-unsub.c
+--- ezmlm-0.53_orig/ezmlm-unsub.c	2008-07-12 23:35:17.000000000 +0200
++++ ezmlm-0.53/ezmlm-unsub.c	2008-07-12 23:52:27.000000000 +0200
+@@ -1,3 +1,4 @@
++#include <unistd.h>
+ #include "strerr.h"
+ #include "subscribe.h"
+ #include "log.h"
+@@ -5,7 +6,7 @@
+ #define FATAL "ezmlm-unsub: fatal: "
+ #define WARNING "ezmlm-unsub: warning: "
+ 
+-void main(argc,argv)
++int main(argc,argv)
+ int argc;
+ char **argv;
+ {
+@@ -19,7 +20,7 @@
+     strerr_die4sys(111,FATAL,"unable to switch to ",dir,": ");
+ 
+   argv += 2;
+-  while (addr = *argv++)
++  while ((addr = *argv++))
+     switch(subscribe(addr,0)) {
+       case -1:
+ 	strerr_die1(111,FATAL,&subscribe_err);
+@@ -27,8 +28,8 @@
+ 	strerr_warn4(WARNING,"cannot unsubscribe ",addr,": ",&subscribe_err);
+ 	break;
+       case 1:
+-	log("-manual",addr);
++	putlog("-manual",addr);
+     }
+ 
+-  _exit(0);
++  return 0;
+ }
+diff -ru ezmlm-0.53_orig/ezmlm-warn.c ezmlm-0.53/ezmlm-warn.c
+--- ezmlm-0.53_orig/ezmlm-warn.c	2008-07-12 23:35:17.000000000 +0200
++++ ezmlm-0.53/ezmlm-warn.c	2008-07-12 23:57:33.000000000 +0200
+@@ -1,5 +1,7 @@
+ #include <sys/types.h>
+ #include <sys/stat.h>
++#include <unistd.h>
++#include <errno.h>
+ #include "direntry.h"
+ #include "readwrite.h"
+ #include "getln.h"
+@@ -18,6 +20,11 @@
+ #include "fmt.h"
+ #include "cookie.h"
+ #include "qmail.h"
++#include "open.h"
++#include "issub.h"
++#include "quote.h"
++#include "lock.h"
++#include "scan.h"
+ 
+ #define FATAL "ezmlm-warn: fatal: "
+ void die_usage() { strerr_die1x(100,"ezmlm-warn: usage: ezmlm-warn dir"); }
+@@ -185,7 +192,7 @@
+     strerr_die6sys(111,FATAL,"unable to remove ",dir,"/",fn.s,": ");
+ }
+ 
+-void main(argc,argv)
++int main(argc,argv)
+ int argc;
+ char **argv;
+ {
+@@ -224,7 +231,7 @@
+   if (!bouncedir)
+     strerr_die4sys(111,FATAL,"unable to open ",dir,"/bounce: ");
+ 
+-  while (d = readdir(bouncedir)) {
++  while ((d = readdir(bouncedir))) {
+     if (str_equal(d->d_name,".")) continue;
+     if (str_equal(d->d_name,"..")) continue;
+ 
+@@ -250,5 +257,5 @@
+ 
+   closedir(bouncedir);
+ 
+-  _exit(0);
++  return 0;
+ }
+diff -ru ezmlm-0.53_orig/ezmlm-weed.c ezmlm-0.53/ezmlm-weed.c
+--- ezmlm-0.53_orig/ezmlm-weed.c	2008-07-12 23:35:17.000000000 +0200
++++ ezmlm-0.53/ezmlm-weed.c	2008-07-12 23:51:13.000000000 +0200
+@@ -1,3 +1,4 @@
++#include <unistd.h>
+ #include "stralloc.h"
+ #include "str.h"
+ #include "byte.h"
+@@ -41,10 +42,8 @@
+ int flagas = 0;
+ int flagbw = 0;
+ 
+-void main()
++int main()
+ {
+-  int match;
+-
+   for (;;) {
+     get(&line);
+     if (line.len == 1) break;
+@@ -90,5 +89,5 @@
+   if (flagmds && flagsw && flagas && flagbw) _exit(99);
+   if (flagmds && flagsr && flagbw) _exit(99);
+ 
+-  _exit(0);
++  return 0;
+ }
+diff -ru ezmlm-0.53_orig/fd_copy.c ezmlm-0.53/fd_copy.c
+--- ezmlm-0.53_orig/fd_copy.c	2008-07-12 23:35:17.000000000 +0200
++++ ezmlm-0.53/fd_copy.c	2008-07-12 23:45:35.000000000 +0200
+@@ -1,4 +1,5 @@
+ #include <fcntl.h>
++#include <unistd.h>
+ #include "fd.h"
+ 
+ int fd_copy(to,from)
+diff -ru ezmlm-0.53_orig/fd_move.c ezmlm-0.53/fd_move.c
+--- ezmlm-0.53_orig/fd_move.c	2008-07-12 23:35:17.000000000 +0200
++++ ezmlm-0.53/fd_move.c	2008-07-12 23:46:05.000000000 +0200
+@@ -1,3 +1,4 @@
++#include <unistd.h>
+ #include "fd.h"
+ 
+ int fd_move(to,from)
+diff -ru ezmlm-0.53_orig/fmt_str.c ezmlm-0.53/fmt_str.c
+--- ezmlm-0.53_orig/fmt_str.c	2008-07-12 23:35:17.000000000 +0200
++++ ezmlm-0.53/fmt_str.c	2008-07-12 23:45:07.000000000 +0200
+@@ -6,7 +6,7 @@
+   register unsigned int len;
+   char ch;
+   len = 0;
+-  if (s) { while (ch = t[len]) s[len++] = ch; }
++  if (s) { while ((ch = t[len])) s[len++] = ch; }
+   else while (t[len]) len++;
+   return len;
+ }
+diff -ru ezmlm-0.53_orig/getconf.c ezmlm-0.53/getconf.c
+--- ezmlm-0.53_orig/getconf.c	2008-07-12 23:35:17.000000000 +0200
++++ ezmlm-0.53/getconf.c	2008-07-12 23:43:19.000000000 +0200
+@@ -2,6 +2,7 @@
+ #include "slurp.h"
+ #include "strerr.h"
+ #include "getconf.h"
++#include "byte.h"
+ 
+ static stralloc data = {0};
+ 
+diff -ru ezmlm-0.53_orig/issub.c ezmlm-0.53/issub.c
+--- ezmlm-0.53_orig/issub.c	2008-07-12 23:35:17.000000000 +0200
++++ ezmlm-0.53/issub.c	2008-07-12 23:57:19.000000000 +0200
+@@ -1,3 +1,5 @@
++#include <unistd.h>
++#include <errno.h>
+ #include "stralloc.h"
+ #include "getln.h"
+ #include "readwrite.h"
+diff -ru ezmlm-0.53_orig/log.c ezmlm-0.53/log.c
+--- ezmlm-0.53_orig/log.c	2008-07-12 23:35:17.000000000 +0200
++++ ezmlm-0.53/log.c	2008-07-12 23:44:11.000000000 +0200
+@@ -5,13 +5,14 @@
+ #include "now.h"
+ #include "fmt.h"
+ #include "open.h"
++#include <unistd.h>
+ 
+ static substdio ss;
+ static char buf[1];
+ static char num[FMT_ULONG];
+ static stralloc line = {0};
+ 
+-void log(event,addr)
++void putlog(event,addr)
+ char *event;
+ char *addr;
+ {
+@@ -22,7 +23,7 @@
+   if (!stralloc_cats(&line," ")) return;
+   if (!stralloc_cats(&line,event)) return;
+   if (!stralloc_cats(&line," ")) return;
+-  while (ch = *addr++) {
++  while ((ch = *addr++)) {
+     if ((ch < 33) || (ch > 126)) ch = '?';
+     if (!stralloc_append(&line,&ch)) return;
+   }
+diff -ru ezmlm-0.53_orig/log.h ezmlm-0.53/log.h
+--- ezmlm-0.53_orig/log.h	2008-07-12 23:35:17.000000000 +0200
++++ ezmlm-0.53/log.h	2008-07-12 23:36:44.000000000 +0200
+@@ -1,6 +1,6 @@
+ #ifndef LOG_H
+ #define LOG_H
+ 
+-extern void log();
++extern void putlog();
+ 
+ #endif
+diff -ru ezmlm-0.53_orig/qmail.c ezmlm-0.53/qmail.c
+--- ezmlm-0.53_orig/qmail.c	2008-07-12 23:35:17.000000000 +0200
++++ ezmlm-0.53/qmail.c	2008-07-12 23:44:38.000000000 +0200
+@@ -6,6 +6,7 @@
+ #include "fd.h"
+ #include "qmail.h"
+ #include "auto_qmail.h"
++#include <unistd.h>
+ 
+ static char *binqqargs[2] = { "bin/qmail-queue", 0 } ;
+ 
+diff -ru ezmlm-0.53_orig/seek_set.c ezmlm-0.53/seek_set.c
+--- ezmlm-0.53_orig/seek_set.c	2008-07-12 23:35:17.000000000 +0200
++++ ezmlm-0.53/seek_set.c	2008-07-12 23:45:26.000000000 +0200
+@@ -1,4 +1,5 @@
+ #include <sys/types.h>
++#include <unistd.h>
+ #include "seek.h"
+ 
+ #define SET 0 /* sigh */
+diff -ru ezmlm-0.53_orig/slurp.c ezmlm-0.53/slurp.c
+--- ezmlm-0.53_orig/slurp.c	2008-07-12 23:35:17.000000000 +0200
++++ ezmlm-0.53/slurp.c	2008-07-12 23:55:31.000000000 +0200
+@@ -1,7 +1,9 @@
++#include <errno.h>
+ #include "stralloc.h"
+ #include "slurp.h"
+ #include "error.h"
+ #include "open.h"
++#include "slurpclose.h"
+ 
+ int slurp(fn,sa,bufsize)
+ char *fn;
+diff -ru ezmlm-0.53_orig/slurpclose.c ezmlm-0.53/slurpclose.c
+--- ezmlm-0.53_orig/slurpclose.c	2008-07-12 23:35:17.000000000 +0200
++++ ezmlm-0.53/slurpclose.c	2008-07-12 23:55:21.000000000 +0200
+@@ -1,3 +1,5 @@
++#include <unistd.h>
++#include <errno.h>
+ #include "stralloc.h"
+ #include "readwrite.h"
+ #include "slurpclose.h"
+diff -ru ezmlm-0.53_orig/strerr_sys.c ezmlm-0.53/strerr_sys.c
+--- ezmlm-0.53_orig/strerr_sys.c	2008-07-12 23:35:17.000000000 +0200
++++ ezmlm-0.53/strerr_sys.c	2008-07-12 23:54:34.000000000 +0200
+@@ -1,3 +1,4 @@
++#include <errno.h>
+ #include "error.h"
+ #include "strerr.h"
+ 
+diff -ru ezmlm-0.53_orig/subscribe.c ezmlm-0.53/subscribe.c
+--- ezmlm-0.53_orig/subscribe.c	2008-07-12 23:35:17.000000000 +0200
++++ ezmlm-0.53/subscribe.c	2008-07-12 23:55:10.000000000 +0200
+@@ -1,3 +1,6 @@
++#include <stdio.h>
++#include <unistd.h>
++#include <errno.h>
+ #include "stralloc.h"
+ #include "getln.h"
+ #include "readwrite.h"
+@@ -10,6 +13,7 @@
+ #include "error.h"
+ #include "uint32.h"
+ #include "subscribe.h"
++#include "str.h"
+ 
+ static stralloc addr = {0};
+ static stralloc line = {0};
+diff -ru ezmlm-0.53_orig/substdi.c ezmlm-0.53/substdi.c
+--- ezmlm-0.53_orig/substdi.c	2008-07-12 23:35:17.000000000 +0200
++++ ezmlm-0.53/substdi.c	2008-07-12 23:53:15.000000000 +0200
+@@ -1,3 +1,4 @@
++#include <errno.h>
+ #include "substdio.h"
+ #include "byte.h"
+ #include "error.h"
+diff -ru ezmlm-0.53_orig/substdo.c ezmlm-0.53/substdo.c
+--- ezmlm-0.53_orig/substdo.c	2008-07-12 23:35:17.000000000 +0200
++++ ezmlm-0.53/substdo.c	2008-07-12 23:53:20.000000000 +0200
+@@ -1,3 +1,4 @@
++#include <errno.h>
+ #include "substdio.h"
+ #include "str.h"
+ #include "byte.h"
+diff -ru ezmlm-0.53_orig/wait_pid.c ezmlm-0.53/wait_pid.c
+--- ezmlm-0.53_orig/wait_pid.c	2008-07-12 23:35:17.000000000 +0200
++++ ezmlm-0.53/wait_pid.c	2008-07-12 23:55:44.000000000 +0200
+@@ -1,5 +1,6 @@
+ #include <sys/types.h>
+ #include <sys/wait.h>
++#include <errno.h>
+ #include "error.h"
+ 
+ /* restriction: you must not care about any other child. */

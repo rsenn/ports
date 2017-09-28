@@ -1,0 +1,34 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A voice compression format (codec).
+#  Speex is a patent-free compression format designed especially for
+#  speech. It is specialized for voice communications at low bit-rates in
+#  the 2-45 kbps range. Possible applications include Voice over IP (VoIP),
+#  Internet audio streaming, audio books, and archiving of speech data
+#  (e.g. voice mail).
+# URL: http://www.speex.org
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=speex
+version=1.2rc1
+release=1
+source=(http://downloads.xiph.org/releases/speex/speex-$version.tar.gz)
+
+build()
+{
+  cd speex-$version
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/speex
+  install -m 644 README AUTHORS TODO README.TI-DSP INSTALL COPYING NEWS ChangeLog $ROOT/share/doc/speex
+}
+
+# EOF

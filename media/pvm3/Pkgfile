@@ -1,0 +1,53 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A portable message-passing programming system.
+#  PVM (Parallel Virtual Machine) is a portable message-passing programming 
+#  system, designed to link separate host machines to form a virtual machine
+#  which is a single, manageable computing resource. 
+#  The virtual machine can be composed of hosts of varying types, in physically
+#  remote locations. PVM applications can be composed of any number of separate
+#  processes, or components, written in a mixture of C, C++ and Fortran. 
+#  The system is portable to a wide variety of architectures, including 
+#  workstations, multiprocessors, supercomputers and PCs
+#  .
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=pvm3
+version=3.4.6
+release=1
+source=(http://www.netlib.org/pvm3/pvm$version.tgz)
+
+build()
+{
+  cd pvm3
+
+  make \
+      PVM_ROOT="$PWD" \
+      CC="${CC-gcc}" \
+      CFLOPTS="${CFLAGS--g -O2}" \
+      DESTDIR="$PKG"
+
+    #default \
+    #install
+    #
+  install -d $ROOT/bin
+  install -m 755 bin/*/* $ROOT/bin
+    #
+  install -d $ROOT/lib
+  install -m 755 lib/*/*.* $ROOT/lib
+
+  install -d $ROOT/sbin
+  install -m 755 lib/*/pvm{d*,gs} $ROOT/sbin
+    #
+  install -d $ROOT/include
+  install -m 644 include/* $ROOT/include
+    #
+  install -d $ROOT/share/man
+  cp -rf man/man[0-9] $ROOT/share/man
+    #
+  install -d $ROOT/share/doc/pvm3
+  install -d $ROOT/share/doc/pvm3
+  install -m 644 Readme.Os2 Readme.Beoscyld Readme Readme.Cygwin Readme.Beolin Readme.Win32 $ROOT/share/doc/pvm3
+}

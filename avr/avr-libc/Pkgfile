@@ -1,0 +1,36 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: Standard C library for Atmel AVR development
+#  Standard library used to the development of C programs for the Atmel
+#  AVR micro controllers. This package contains static libraries as well
+#  as the header files needed.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=avr-libc
+version=1.4.6
+release=1
+host=avr
+
+source=(http://download.savannah.gnu.org/releases/avr-libc/avr-libc-{,manpages-,user-manual-}$version.tar.bz2)
+
+build()
+{
+  cd avr-libc-$version
+
+  ./configure \
+      --prefix="$prefix" \
+      --build="$build" \
+      --host="$host" \
+      --target="$target"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc
+  cp -rvf $SRC/avr-libc-user-manual-$version $ROOT/share/doc/$name-$version
+
+  install -d $ROOT/$host/share
+  cp -rvf $SRC/man $ROOT/$host/share/
+}

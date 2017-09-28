@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: The MetaStock Data Conversion Command Line Utils are utilities to convert from MetaStock binary data (MASTER and Fxxx.DAT) format to MetaStock ASCII (8 Field) format and back.
+# URL: http://www.geocities.com/mimansoor/
+# Maintainer: 
+# Depends on: 
+
+name=metastockcommandlineutils
+version=1.8.1
+release=1
+source=(http://www.geocities.com/mimansoor/MsCmdLineUtilsV$version.zip)
+
+build() 
+{
+  cd MsCmdLineUtilsV$version
+
+  case $host in
+    *linux*) system="linux" ;;
+    *mingw*|*cygwin*|*msvc*|*w*32*) system="win32" ;;
+    *) echo "Unsupported arch: $host"; return 1 ;;
+  esac
+
+  install -d $ROOT/bin
+  find */bin/* */bin/$system/* -maxdepth 0 -type f -exec install -m 755 "{}" $ROOT/bin/ ";"
+ 
+  install -d $ROOT/share/metastockcommandlineutils
+  cp -r [A-Z]*/ $ROOT/share/metastockcommandlineutils/
+}
+# EOF

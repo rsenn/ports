@@ -1,0 +1,37 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A automatically resizing array class.
+# This C++ template class is exactly the same as the std::rvector<T, Alloc>
+# class. It is here for backward compatibility. See the documentation on
+# std::rvector for more information.
+#
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=rvector
+version=0.1
+release=1
+source=($mirror_sf/elementals/rvector-$version.tar.gz
+        rvector-0.1-fixes.patch)
+
+build()
+{
+  cd rvector-$version
+
+  dos2unix *.h *.conf
+
+  patch -N -p1 -i $SRC/rvector-0.1-fixes.patch
+
+  make \
+       OS="$(uname -s)" \
+       TEST_LIBS="-lutest"
+
+  make \
+       OS="$(uname -s)" \
+       PREFIX="$ROOT" \
+    install
+
+  install -d $ROOT/share
+  mv -vf $ROOT/doc $ROOT/share
+}

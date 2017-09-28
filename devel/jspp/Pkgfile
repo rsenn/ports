@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A Java-like scripting language.
+#  JSPP is an untyped, Java-like scripting language designed to be embedded
+#  in applications.
+#  .
+# URL: http://jspp.sourceforge.net
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=jspp
+version=0.1.2
+release=1
+source=($mirror_sf/jspp/jspp-$version.tar.gz)
+
+build()
+{
+  cd jspp-$version
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: GNU source code indenter
+# URL: 
+# Maintainer: 
+# Depends on: 
+
+name=indent
+version=2.2.10
+release=1
+source=(ftp://ftp.gnu.org/gnu/indent/indent-$version.tar.gz)
+
+build() 
+{
+  cd indent-$version
+  
+  #./bootstrap
+  rm -f config/config.sub
+  autoreconf --force --verbose --install
+  
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+  
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/indent
+  install -m 644 ChangeLog ChangeLog-1990 NEWS AUTHORS ChangeLog-1998 ABOUT-NLS COPYING ChangeLog-2001 INSTALL README $ROOT/share/doc/indent
+}
+
+# EOF

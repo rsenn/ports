@@ -1,0 +1,28 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: tavrasm - A GNU/Linux assembler for the Atmel AVR series of
+# micro-controllers.
+
+name=tavrasm
+version=1.22
+release=1
+source=(ftp://mirror.switch.ch/mirror/gentoo/distfiles/tavrasm-1.22.tar.gz)
+
+build()
+{
+  cd tavrasm.122/src
+
+  make CC="$CXX" CFLAGS="$CXXFLAGS -DAVRLANG=LANGUAGE_US" \
+       avrparse.cc tavrasm
+
+  install -d $ROOT/bin
+  install -m 755 tavrasm $ROOT/bin
+
+  install -d $ROOT/share/man/man1
+  install -m 644 ../tavrasm.1 $ROOT/share/man/man1
+
+  install -d $ROOT/share/doc/$name-$version
+  install -m 644 ../README $ROOT/share/doc/$name-$version
+
+  copy_license ../gpl.txt
+}

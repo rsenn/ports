@@ -1,0 +1,64 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:52 roman Exp $
+#
+# Description: A fully type-safe, extensible, extremely efficient C++ logging API library.
+#  Pantheios is a C/C++ logging API library. It offers an optimal
+#  combination of complete type-safety, very high efficiency, genericity, and
+#  extensibility. It is simple to use and extend, highly portable (platform
+#  and compiler independent), and it upholds the C tradition of only paying
+#  for what you use. Pantheios supports logging of message statements
+#  of arbitrary complexity, consisting of heterogenous types. Pantheios
+#  supports filtering of log messages based on severity level.
+# URL: http://pantheios.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=pantheios
+version=1.0.1-beta28
+release=1
+source=($mirror_sf/pantheios/pantheios-$version.zip
+        pantheois-1.0.1-union.patch)
+
+build()
+{
+  cd pantheios-$version
+
+  case $host in
+    *-mingw32)
+      builddir="build/gcc34"
+      makefile="makefile.win32"
+      ;;
+    *-linux*)
+      builddir="build/gcc40"
+      makefile="makefile.unix"
+      ;;
+  esac
+
+  # Converting line endings to UNIX
+  find -type f -name "*.cpp" -or -name "*.hpp" -or -name "*.h" | quiet xargs dos2unix
+
+  # Patching the sources
+  patch -N -p1 -l -i "$SRC/pantheois-1.0.1-union.patch"
+
+  # Compiling
+  make -C $builddir -f $makefile CC=${CC-cc} CPPC=$CXX
+
+  # Installing documentation
+  install -d $ROOT/share/doc
+  cp -rvf doc $ROOT/share/doc/$name-$version
+
+  install -d $ROOT/share/doc/$name-$version/txt
+  cp *.txt $ROOT/share/doc/$name-$version/txt/
+
+  # Installing headers
+  cp -rvf include $ROOT
+
+  # Installing libraries
+  install -d $ROOT/lib
+
+  for lib in lib/*.a; do
+    install -m 644 $lib $ROOT/lib/lib${lib#lib/}
+  done
+
+  # Copying license
+  copy_license LICENSE.txt
+}

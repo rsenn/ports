@@ -1,0 +1,35 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A fast 2D physics-based robot simulator.
+#  Enki is a fast 2D physics-based robot simulator. It is able to simulate
+#  cinematics, collisions, sensors, and cameras of robots on a flat
+#  surface. It also provides limited support for friction. It is able to
+#  simulate groups of robots hundreds of times faster than real-time on a
+#  modern desktop computer.
+#  .
+# URL: http://lis.epfl.ch/resources/enki
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=enki
+version=1.0
+release=1
+source=(http://lis.epfl.ch/resources/download/libenki-$version.tar.gz
+        libenki-1.0-xtra-qual.patch)
+
+build()
+{
+  cd libenki-$version
+
+  patch -p1 -i $SRC/libenki-1.0-xtra-qual.patch
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

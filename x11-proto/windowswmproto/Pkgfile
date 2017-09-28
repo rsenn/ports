@@ -1,0 +1,24 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: WindowsWM protocol headers
+# URL: http://www.X.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=windowswmproto
+version=1.0.3
+release=1
+source=(ftp://ftp.x.org/pub/individual/proto/windowswmproto-$version.tar.bz2)
+
+build()
+{
+  cd windowswmproto-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A client/server implementation of the TFTP Protocol.
+#  atftp is a client/server implementation of the TFTP protocol that
+#  implements RFCs 1350, 2090, 2347, 2348, and 2349. The server is
+#  multi-threaded and the client presents a friendly interface using
+#  libreadline. The current server implementation lacks IPv6 support.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=atftp
+version=0.7
+release=1
+source=(http://ftp.ch.debian.org/debian/pool/main/a/atftp/atftp_$version.dfsg.orig.tar.gz)
+
+build()
+{
+  cd atftp-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

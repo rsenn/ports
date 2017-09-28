@@ -1,0 +1,51 @@
+# $Id: Pkgfile,v 1.7 2007/05/09 21:03:04 roman Exp $
+#
+# Description: An ID3v1/ID3v2 tagging library.
+#  id3lib is an open-source, cross-platform software development library for 
+#  reading, writing, and manipulating meta-information in digital audio files. 
+#  Currently id3lib supports reading and writing of ID3v1 and ID3v2 tags, 
+#  as well as reading of Lyrics3, Lyrics3 v2.00, and MusicMatch tags. 
+#  id3lib is written in C++, but provides both C and COM interfaces to the 
+#  library.
+#  .
+# URL: http://id3lib.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=id3lib
+version=3.8.3
+release=1
+source=($mirror_sf/id3lib/id3lib-$version.tar.gz
+        id3lib-3.8.3-dll-2.patch
+        id3lib-3.8.3-cstring.patch)
+
+build()
+{
+  cd id3lib-$version
+
+  patch -N -p1 -i $SRC/id3lib-3.8.3-dll-2.patch
+  patch -N -p1 -i $SRC/id3lib-3.8.3-cstring.patch
+
+  libtoolize --force --copy --install
+  aclocal --force -I m4
+  autoconf --force
+
+  case $host in
+     *-mingw32) export LIBS="-lcompat -lz" ;;
+  esac
+
+  rm -f makefile.win32
+
+  CXX="g++-4.2" \
+  CPPFLAGS="-DID3LIB_LINKOPTION=2" \
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/id3lib
+  install -m 644 README AUTHORS COPYING ChangeLog INSTALL NEWS THANKS TODO HISTORY doc/id3v2.3.0.txt doc/musicmatch.txt $ROOT/share/doc/id3lib
+}

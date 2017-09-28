@@ -1,0 +1,35 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Ruby JavaScript parser using racc.
+#  This library will parse Javascript and turn it into Ruby. The ruby
+#  generated should be functionally equivalent to the Javascript.
+#  .
+# URL: http://wiki.github.com/tenderlove/rkelly
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=rkelly
+version=20090207
+release=1
+source=(rkelly-$version.tar.bz2)
+
+build()
+{
+  cd rkelly
+
+  rake
+  #rake install DESTDIR="$PKG"
+  #
+  set `ruby --version`
+
+  RUBYVERSION=$2
+  RUBYLIBDIR=$prefix/lib/ruby/${RUBYVERSION%.*}
+
+  install -d $PKG/$RUBYLIBDIR
+  cp -rf lib/* $PKG/$RUBYLIBDIR
+
+  install -d $ROOT/share/doc/rkelly
+  install -m 644 CHANGELOG.txt README.txt Manifest.txt $ROOT/share/doc/rkelly
+}
+
+# EOF

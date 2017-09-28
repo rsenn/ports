@@ -1,0 +1,41 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Ezmlm lets users set up their own mailing lists within qmails address hierarchy
+# A user, Joe, types ezmlm-make ~/SOS ~/.qmail-sos joe-sos isp.net and
+# instantly has a functioning mailing list, joe-sos@isp.net, with all
+# relevant information stored in a new ~/SOS directory.
+#
+# URL: http://cr.yp.to/ezmlm.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, qmail
+
+name=ezmlm
+version=0.53
+release=1adfinis1
+source=(http://cr.yp.to/software/ezmlm-$version.tar.gz
+        ezmlm-0.53-fixes.patch)
+
+build()
+{
+  cd ezmlm-$version
+
+  patch -N -p1 -i $SRC/ezmlm-0.53-fixes.patch
+
+  echo "${CC-cc} $CFLAGS" >conf-cc
+  echo "${CC-cc} $LDFLAGS" >conf-ld
+
+  make
+
+  install -d $ROOT/bin
+#  mv auto-str $ROOT/bin
+  mv ezmlm-{list,make,manage,reject,return,send,sub,unsub,warn,weed} $ROOT/bin
+
+  install -d $ROOT/share/man/man1
+  install -m 644 *.1 $ROOT/share/man/man1
+
+  install -d $ROOT/share/man/man5
+  install -m 644 *.5 $ROOT/share/man/man5
+
+  install -d $ROOT/share/doc/ezmlm
+  install -m 644 BLURB CHANGES FILES INSTALL MAN README THANKS TODO VERSION $ROOT/share/doc/ezmlm
+}

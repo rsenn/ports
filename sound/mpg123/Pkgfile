@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A realtime player for MPEG audio layer 1, 2, and 3 files.
+# Mpg123 is a fast, free and portable MPEG audio player for Unix. It
+# supports MPEG 1.0/2.0/2.5 layers 1, 2, and 3, with CD quality playback
+# even on relatively slow CPUs.
+#
+# URL: http://mpg123.org/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=mpg123
+version=1.5.0
+release=1
+source=(http://mpg123.org/download/mpg123-$version.tar.bz2)
+
+build()
+{
+  cd mpg123-$version
+
+  ./autogen.sh
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

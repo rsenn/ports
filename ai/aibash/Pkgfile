@@ -1,0 +1,41 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An intelligent version of the Bash shell.
+# AIBash is a project which aims to make Bash act more intelligently. It
+# features typing error-correction and the ability to learn that certain
+# file suffixes are associated with certain programs so that other programs
+# are filtered out while pressing TAB. Other features are planned for
+# the future.
+#
+# URL: http://aibash.sourceforge.net/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=aibash
+version=0.4
+release=1
+source=($mirror_sf/aibash/aibash-$version.tar.bz2
+        aibash-0.4-c++0x.patch)
+
+build()
+{
+  cd aibash-$version
+
+  patch -N -p1 -i $SRC/aibash-0.4-c++0x.patch
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --program-prefix="ai" \
+       --mandir="$prefix/share/man" \
+       --with-xerces_c="$prefix/lib"
+
+  make
+  make prefix="$ROOT" install
+
+  rm -f $ROOT/bin/bashbug
+  rm -rf $ROOT/{info,man}
+
+  mv -f $ROOT/bin/bash $ROOT/bin/aibash
+}

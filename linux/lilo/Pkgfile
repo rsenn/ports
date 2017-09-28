@@ -1,0 +1,26 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Boot loader for Linux/x86 and other PC operating systems
+# It is responsible for loading your Linux kernel from either a floppy
+# or a hard drive and passing control to it. It is capable of booting
+# beyond cylinder 1024 of a hard disk if the BIOS supports EDD packet call
+# extensions to the int 0x13 interface. LILO can also be used to boot
+# many other operating systems, including DOS, Windows (all versions),
+# OS/2, and the BSD variants. The LILO distribution includes full source,
+# documentation and support files.
+#
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=lilo
+version=22.8
+release=1
+source=(http://home.san.rr.com/johninsd/pub/linux/lilo/lilo-$version.src.tar.gz)
+
+build()
+{
+  cd lilo-$version
+
+  make CC="gcc-2.95" CFLAGS="$CFLAGS" all
+}

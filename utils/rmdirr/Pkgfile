@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Recursively remove empty directories.
+#  rmdirr moves recursively through the specified directories, removing
+#  any that are empty, and removing their parents if they are made empty.
+#  .
+# URL: http://users.dakotacom.net/~donut/programs/rmdirr.html
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=rmdirr
+version=1.0
+release=1
+source=(http://users.dakotacom.net/~donut/programs/rmdirr/rmdirr-$version.tar.gz)
+
+build()
+{
+  cd rmdirr-$version
+
+  install -d $ROOT/bin
+  install -d $ROOT/share/man/man1
+
+  make
+  make prefix="$ROOT" mandir="$ROOT/share/man" install
+
+  install -d $ROOT/share/doc/rmdirr
+  install -m 644 COPYING Changelog README $ROOT/share/doc/rmdirr
+}
+
+# EOF

@@ -1,0 +1,30 @@
+# $Id: Pkgfile,v 1.2 2007/04/22 23:07:53 roman Exp $
+#
+# Description: script for maintaining backwards compatibility of Tango Project
+#  Tango is a project to create a new cross-desktop and cross-platform
+#  icon theme, using a standard style guide, and the new Icon Naming
+#  Specification. This package contains the perl script for maintaining
+#  backwards compatibility.
+# URL: http://www.tango-project.org
+# Maintainer: Roman Senn <rs@adfinis.com>
+
+name=icon-naming-utils
+version=0.8.1
+release=1
+source=(http://tango-project.org/releases/icon-naming-utils-$version.tar.gz)
+
+build()
+{
+  cd icon-naming-utils-${version}
+
+  LDFLAGS="-Wl,-rpath,$prefix/lib" \
+  ./configure \
+       --prefix=$prefix \
+       --${shared:=enable}-shared \
+       --${static:=enable}-shared \
+       --without-x
+  make
+  make DESTDIR=$PKG install
+
+  copy_license "COPYING"
+}

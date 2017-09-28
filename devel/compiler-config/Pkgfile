@@ -1,0 +1,23 @@
+# $Id: Pkgfile,v 1.1 2007/04/19 21:21:03 roman Exp $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=compiler-config
+version=2.0.0
+release=1
+source=(http://dev.gentoo.org/~eradicator/toolchain/compiler-config/compiler-config-${version}_rc1.tar.gz)
+
+build()
+{
+  cd compiler-config*
+  ./configure \
+    --build="$build" \
+    --host="$host" \
+    ${target+--target="$target"} \
+    --prefix="$prefix"
+  make
+  make DESTDIR="$PKG" install
+}

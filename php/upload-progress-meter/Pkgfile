@@ -1,0 +1,34 @@
+# $Id: Pkgfile,v 1.10 2007/05/09 21:02:53 roman Exp $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=upload-progress-meter
+version=4.1
+release=3
+source=(http://pdoru.from.ro/upload-progress-meter/upload-progress-meter-v$version.tgz
+        upload-progress-meter-v$version-prototype.patch)
+
+build()
+{
+  cd upload-progress-meter-v$version/upload_progress_meter
+  patch -N -p2 -i $SRC/upload-progress-meter-v$version-prototype.patch
+  phpize
+  ./configure --prefix=$prefix
+  make
+  make EXTENSION_DIR=$ROOT/lib/php/extensions install
+
+  copy_license ../README.upload-progress-meter.txt
+}
+
+postmerge()
+{
+  if ! grep -q 'extension = upload_progress_meter.so' $libdir/php.ini; then
+    text_insert_after \
+      'extension = upload_progress_meter.so' \
+      '^; language extensions$' \
+      $libdir/php.ini
+  fi
+}

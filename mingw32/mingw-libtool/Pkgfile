@@ -1,0 +1,71 @@
+# $Id: Pkgfile,v 1.11 2007/05/12 01:09:24 roman Exp $
+#
+# Description: libtool
+# URL: http://www.gnu.org/software/libtool
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=mingw-libtool
+version=1.5.24
+target=i686-pc-mingw32
+
+release=1
+source=($mirror_gnu/libtool/libtool-$version.tar.gz
+        libtool-1.5.24-version-info.patch
+        libtool-1.5.22-mingw32.patch
+        libtool-1.5.22-tools.patch
+        libtool-1.5.24-no-exec-la.patch
+        libtool-1.5.24-gexpr.patch
+        impgen.c)
+
+build()
+{
+  cd libtool-$version
+
+  patch -N -p1 -i $SRC/libtool-1.5.24-version-info.patch
+  patch -N -p2 -i $SRC/libtool-1.5.22-mingw32.patch
+  patch -N -p2 -i $SRC/libtool-1.5.22-tools.patch
+  patch -N -p1 -i $SRC/libtool-1.5.24-no-exec-la.patch
+  patch -N -p1 -i $SRC/libtool-1.5.24-gexpr.patch
+
+  automake_version=$(automake --version | sed -n "1 s%.*\([0-9][.0-9]\+[0-9]\).*%\1%p")
+
+  sed -i -e "/^am__api_version=/ s,='.*',='$automake_version'," \
+        -e "/for ac_prog in/ s, xlf , #xlf ," \
+    configure */configure
+
+  sed -i -e "/-version-info/ s%-version-info\s\+[0-9]\+:[0-9]\+:[0-9]\+%-version-number ${version//./:}%" \
+    libltdl/Makefile*
+
+  if test $build != $host
+  then
+    prefix=$prefix/$host
+  fi
+
+  ./configure \
+        --build="$build" \
+        --host="$host" \
+        ${target+--target="$target"} \
+        --prefix="$prefix/$target" \
+        --infodir="$prefix/info" \
+        --disable-maintainer-mode \
+        --disable-dependency-tracking \
+        --${shared:=enable}-shared \
+        --${static:=enable}-shared
+
+  make
+
+  rm ltmain.sh
+
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/bin
+
+  ${CC-cc} $CFLAGS -c $SRC/impgen.c
+  ${CC-cc} $LDFLAGS -o $ROOT/bin/$target-impgen impgen.o
+
+  mv $ROOT/$target/bin/libtool $ROOT/bin/$target-libtool
+  ln -sf ../../bin/$target-libtool $ROOT/$target/bin/libtool
+
+  rm -f $ROOT/info/dir
+}

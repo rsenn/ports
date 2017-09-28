@@ -1,0 +1,45 @@
+diff -ru qAircrack-ng-0.1_orig/ACscan.cpp qAircrack-ng-0.1/ACscan.cpp
+--- qAircrack-ng-0.1_orig/ACscan.cpp	2009-03-27 04:36:52.000000000 +0000
++++ qAircrack-ng-0.1/ACscan.cpp	2009-03-27 05:05:02.000000000 +0000
+@@ -14,6 +14,8 @@
+ 
+ #include "ACscan.h"
+ 
++#include <QFile>
++
+ ACscan::ACscan (ACcommon* common_setup) {
+    ACcommon_setup = common_setup;
+ 
+@@ -156,17 +158,25 @@
+    FILE* f = tmpOpen(pathname);
+    char buffer[256], device[32];
+    int index1, index2;
++   QString qdevice, qbuffer;
+ 
+    while (fgets(buffer,255,f)) {
+       if (isalpha(buffer[0])) {
+          index1 = index2 = 0;
++         qbuffer = QString::fromLatin1(buffer);
+          while (buffer[index1]!=' ') { device[index2++] = buffer[index1++]; }
++         device[index2] = '\0';
++         qdevice = QString::fromLatin1(device);
+          fgets(buffer,255,f);
+-         index1 = 0;
+-         while (buffer[index1]!=':') index1++;
+-         while (buffer[index1]!=' ') { device[index2++] = buffer[index1++]; }
+-         device[index2] = 0x00;
+-         ACscan_device_select->addItem(tr(device));
++         qbuffer += QString::fromLatin1(buffer);
++         index1 = qbuffer.indexOf("Mode:");
++         index2 = qbuffer.indexOf(" ", index1);
++         index1 += 4;
++         qdevice.append(qbuffer.mid(index1, index2 - index1));
++         //while (buffer[index1]!=':') index1++;
++         //while (buffer[index1]!=' ') { device[index2++] = buffer[index1++]; }
++         //device[index2] = 0x00;
++         ACscan_device_select->addItem(qdevice);
+          printf("Device %s\n",device);
+       }
+    }
+Binary files qAircrack-ng-0.1_orig/ACscan.o and qAircrack-ng-0.1/ACscan.o differ
+Binary files qAircrack-ng-0.1_orig/qaircrack-ng and qAircrack-ng-0.1/qaircrack-ng differ

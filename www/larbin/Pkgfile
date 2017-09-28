@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A fast Web-crawler.
+#  Larbin is an HTTP Web crawler with an easy interface that runs under
+#  Linux. It can fetch more than 5 million pages a day on a standard PC
+#  (with a good network).
+# URL: http://larbin.sourceforge.net/index-eng.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=larbin
+version=2.6.3
+release=1
+source=($mirror_sf/larbin/larbin-$version.tar.gz)
+
+build()
+{
+  cd larbin-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

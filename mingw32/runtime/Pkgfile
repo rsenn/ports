@@ -1,0 +1,47 @@
+# $Id: Pkgfile,v 1.7 2007/05/09 21:02:40 roman Exp $
+#
+# Description: Minimalist GNU win32 (cross) runtime
+#  This package contains the target runtime files for a Linux hosted,
+#  win32 target, C/C++ cross compiler.
+# Longdescription:
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=mingw-runtime
+version=3.8
+release=1
+target=i686-pc-mingw32
+
+source=($mirror_sf/mingw/mingw-runtime-$version-src.tar.gz
+        $mirror_sf/mingw/w32api-$version-src.tar.gz
+        ldd.sh
+        pedump.c
+        disasm.h)
+
+build()
+{
+  export prefix='/Dev-Cpp'
+
+  ln -s w32api* w32api
+#  ln -s $prefix/$target w32api
+
+  cd mingw-runtime-$version
+  CC=$target-gcc \
+  ./configure \
+      --prefix="$prefix/$target" \
+      --build="$build" \
+      --host="$target" \
+      --target="$target"
+
+  make RANLIB="$target-ranlib"
+  make prefix="$ROOT/$target" install
+
+  install -m 755 $SRC/ldd.sh $ROOT/$target/bin/ldd
+
+  install -d $ROOT/bin
+  ln -sf ../$target/bin/ldd $ROOT/bin/$target-ldd
+
+  gcc -g -ggdb -O2 -Wall -o $ROOT/bin/pedump $SRC/pedump.c
+}
+

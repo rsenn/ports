@@ -1,0 +1,51 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: Yet Another mkInitRD
+#  Yaird generates initial boot images in initramfs format.
+#  The boot image is an intermediate step between the boot loader (eg. Grub,
+#  Lilo) and the init scripts on the root file system; it loads modules
+#  and enables devices to a level where the kernel can access the real root
+#  file system, and then hands over control to the init scripts.
+#  Main features:
+#  - Strict build logic: Less risk of producing non-booting ramdisks
+#  - Small ramdisks: Optimized for the currently running system
+#  Main shortcomings:
+#  - No automatic firmware loading (some SCSI drivers needs manual work)
+#  - Limited support for encrypted disks (enable manually in config)
+#  - Produced ramdisks cannot boot into a different system setup!
+#  Yaird is good for stable systems, like servers (especially if managed
+#  remotely) and embedded systems.
+#  If you need a flexible ramdisk tool, then use initramfs-tools instead.
+#  See http://wiki.debian.org/InitrdReplacementOptions for status and
+#  comparison with other ramdisk tools.
+# URL: http://yaird.alioth.debian.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=yaird
+version=0.0.12
+release=1
+source=(http://alioth.debian.org/frs/download.php/1314/yaird-$version.tar.gz)
+
+build()
+{
+  cd yaird-$version
+
+  case $prefix in
+    /usr) sysconfdir="/etc" localstatedir="/var" ;;
+       *) sysconfdir="$prefix/etc" localstatedir="$prefix/var" ;;
+  esac
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix" \
+       --sysconfdir="$sysconfdir" \
+       --localstatedir="$localstatedir" \
+       --mandir="$prefix/share/man" \
+       --infodir="$prefix/share/info"
+
+  make
+  make DESTDIR="$PKG" install
+}

@@ -1,0 +1,189 @@
+# $Id: Pkgfile,v 1.21 2007/05/09 21:02:56 roman Exp $
+#
+# Description: Various tools relating to the Simple Network Management Protocol.
+#  The NET-SNMP (formerly UCD-SNMP) package contains various tools relating
+#  an SNMP library, tools to request or set information from SNMP agents,
+#  command using SNMP and a Tk/perl mib browser. It was originally based on
+#  but has been greatly enhanced, ported and fixed and barely resembles
+# URL: http://www.net-snmp.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=net-snmp
+version=5.4
+release=1
+source=($mirror_sf/net-snmp/net-snmp-$version.tar.gz
+        snmpd.conf.in
+        snmpd.local.conf
+        net-snmp-5.4-stdout.patch
+        net-snmp-5.4-defaults.patch
+        net-snmp-5.4-config.patch
+        net-snmp-5.4-mod_ap2_snmp.patch
+        net-snmp-5.4-debug.patch)
+
+build()
+{
+  cd net-snmp-$version
+
+  patch -N -p1 -i $SRC/net-snmp-5.4-stdout.patch
+  patch -N -p1 -i $SRC/net-snmp-5.4-defaults.patch
+  patch -N -p1 -i $SRC/net-snmp-5.4-config.patch
+  patch -N -p1 -i $SRC/net-snmp-5.4-mod_ap2_snmp.patch
+  patch -N -p1 -i $SRC/net-snmp-5.4-debug.patch
+
+  case ${prefix=/usr} in
+    /usr) sysconfdir="/etc" localstatedir="/var"  ;;
+  esac
+
+  ./configure \
+       --prefix="$prefix" \
+       --sysconfdir="${sysconfdir=$prefix/etc}/snmp" \
+       --enable-shared \
+       --with-default-snmp-version=3 \
+       --with-sys-contact="root@localhost" \
+       --with-logfile="/dev/stdout" \
+       --with-persistent-directory="${localstatedir=/var/snmp}" \
+       --with-sys-location="unknown" \
+       --enable-ucd-snmp-compatibility \
+       --with-openssl="$prefix" \
+       --without-opaque-special-types \
+       --with-dummy-values \
+       --with-transports="UDP UDPIPv6 TCP TCPIPv6 Unix Callback" \
+       --with-mibs="UCD-SNMP-MIB:UCD-DEMO-MIB:NET-SNMP-AGENT-MIB:SNMP-TARGET-MIB:HOST-RESOURCES-MIB:HOST-RESOURCES-TYPES:MTA-MIB:NETWORK-SERVICES-MIB:UCD-IPFWACC-MIB:UCD-DISKIO-MIB:IP-MIB:IF-MIB:TCP-MIB:UDP-MIB:SNMPv2-MIB:RFC1213-MIB:NOTIFICATION-LOG-MIB:DISMAN-EVENT-MIB:DISMAN-SCHEDULE-MIB:IPV6-ICMP-MIB:IPV6-MIB:IPV6-TCP-MIB:IPV6-UDP-MIB:SNMP-VIEW-BASED-ACM-MIB:SNMP-COMMUNITY-MIB:IP-FORWARD-MIB:SNMP-FRAMEWORK-MIB:SNMP-MPD-MIB:SNMP-USER-BASED-SM-MIB:NET-SNMP-EXTEND-MIB:UCD-DLMOD-MIB:NET-SNMP-VACM-MIB:SNMP-NOTIFICATION-MIB:SNMPv2-TM:APACHE2-MIB" \
+       --with-mib-modules="ap2_snmp mibII snmpv3mibs ucd_snmp agent_mibs agentx notification target utilities host smux mibII/mta_sendmail misc/ipfwacc ucd-snmp/diskio agentx" \
+       --enable-ipv6 \
+       --with-agentx-socket="${localstatedir=/var/agentx/master}" \
+       $DEBUG
+
+  make CFLAGS="-DNETSNMP_ENABLE_IPV6 -DNETSNMP_NO_DEBUGGING $CFLAGS"
+
+  make -C apps
+
+  make INSTALL_PREFIX="$PKG" install
+  make INSTALL_PREFIX="$PKG" -C apps install
+
+  install -m 755 -d $ROOT/etc
+  install -m 644 $SRC/snmpd.conf.in $ROOT/etc/snmpd.conf~
+
+  chmod 644 $ROOT/lib/*.la
+
+  install -d $PKG/var/agentx
+  install -d $PKG/$sysconfdir/snmp
+  install -m 644 $SRC/snmpd.local.conf $PKG/$sysconfdir/snmp/snmpd.conf
+}
+
+postmerge()
+{
+  # substitute some essential values in the config files
+  if test ! -e ${sysconfdir}/snmpd.conf
+  then
+    $bindir/sed \
+       -e "s,@snmpd_community@,${snmpd_community},g" \
+       -e "s,@snmpd_allow@,${snmpd_allow},g" \
+       -e "s,@snmpd_host@,${snmpd_host},g" \
+       -e "s,@snmpd_port@,${snmpd_port},g" \
+       -e "s,@snmpd_user@,${snmpd_user},g" \
+       -e "s,@snmpd_group@,${snmpd_group},g" \
+      $sysconfdir/snmpd.conf~ >$sysconfdir/snmpd.conf
+  fi
+
+  # enable the service if wanted
+  if isin "$services_run" "snmpd"
+  then
+    service_add "snmpd"
+  else
+    service_remove "snmpd"
+  fi
+
+
+#  $bindir/net-snmp-config --create-snmpv3-user -A "$snmpd_authpass" -X "$snmpd_authpass" "$snmpd_authuser"
+}
+
+# snmpd configuration
+# --------------------------------------------------------------------------------
+config()
+{
+  config_branch 'snmpd'      'SNMP daemon'
+    config_value 'user'      'SNMP daemon user'
+      config_description     'The system-user the SNMP daemon will run as'
+      config_default         '$(user_find snmp nobody daemon monitor)'
+      config_function        'choose --help-{button,label} Create $(user_list)'
+      config_extra           'input'
+    config_end
+
+    config_value 'group'     'SNMP daemon group'
+      config_description     'The system-group the SNMP daemon will run as'
+      config_default         '$(group_find snmp nobody daemon monitor)'
+      config_function        'choose --help-{button,label} Create $(group_list)'
+      config_extra           'input'
+    config_end
+
+    config_value 'host'      'SNMP daemon host'
+      config_description     'The host address the SNMP daemon will listen to'
+      config_default         '127.0.0.1'
+    config_end
+
+    config_value 'port'      'SNMP daemon port'
+      config_description     'The port the SNMP daemon will listen to'
+      config_default         '161'
+    config_end
+
+    config_value 'community' 'SNMPv1 community'
+      config_description     'A read-only access community'
+      config_default         'nexbyte'
+    config_end
+
+    config_value 'allow'     'SNMPv1 allowed host/network'
+      config_description     'Allowed host/network. Network is specified using CIDR netmasks (eg. 10.10.0.0/16).'
+      config_default         '$(config_getvalue snmpd_host)'
+    config_end
+  config_end
+
+  # enhance daemontools package configuration
+  config_enter     'services' 'run' 'snmpd'
+    config_label   'Run snmpd at boot'
+    config_default 'yes'
+    config_type    'value'
+  config_leave
+}
+
+# set up a service for snmpd
+# --------------------------------------------------------------------------------
+services()
+{
+  config_branch 'snmpd'
+    config_branch 'log'
+    config_end
+
+    config_set  'TITLE' 'SNMP Daemon'
+    config_set  'START' 'NET.SNMP.version'
+    config_set  'STOP'  'shutting down'
+  config_end
+}
+
+# script to start snmpd from supervise
+# --------------------------------------------------------------------------------
+snmpd()
+{
+  # redirect stderr to stdout and set env vars
+  exec 2>&1
+  export SNMPCONFPATH=$prefix/etc:$prefix/local/config
+
+  # set default values
+  host=${snmpd_host:-0.0.0.0}
+  port=${snmpd_port:-161}
+  user=${snmpd_user:-nobody}
+
+  # check if the user is available to setuidgid
+  if ! user_avail $user; then
+    service_error "no such user:" ${user}
+  fi
+
+  # check whether host:port is bindable
+  if proc=$(inet_bound tcp $host:$port); then
+    service_error $host:$port "already bound"
+  fi
+
+  # finally execute snmpd
+  exec -a snmpd $sbindir/snmpd -f
+}

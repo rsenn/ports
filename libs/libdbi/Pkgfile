@@ -1,0 +1,34 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:48 roman Exp $
+#
+# Description: A database-independent abstraction layer written in C.
+#  libdbi implements a database-independent abstraction layer in C,
+#  similar to the DBI/DBD layer in Perl. Writing one generic set of code,
+#  programmers can leverage the power of multiple databases and multiple
+#  simultaneous database connections by using this framework. The plugin
+#  architecture allows for new database drivers to be easily added by a
+#  third party with flexible licensing.
+# URL: http://libdbi.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libdbi
+version=0.8.2
+release=1
+source=($mirror_sf/libdbi/libdbi-$version.tar.gz)
+
+build()
+{
+  cd libdbi-$version
+
+  libtoolize --force
+  aclocal --force
+  autoconf --force
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix"
+
+  make libdbi_la_LDFLAGS="-no-undefined -version-info ${version//./:}"
+  make DESTDIR="$PKG" install
+}

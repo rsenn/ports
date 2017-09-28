@@ -1,0 +1,43 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:50 roman Exp $
+#
+# Description: versatile and easy to use audio player for KDE
+#  Amarok tries to be a little different, providing a simple drag and drop
+#  interface that really makes playlist handling easy.
+#  Features include:
+#  - rapid playlist creation, with drag and drop from a directory view
+#  - nice playlist browser for your existing playlists (PLS or M3U formats)
+#  - collection-indexing support, for smart browsing and playlist creation
+#  - possibility of accessing media via kioslaves, allowing you to play
+#  via smb:// or fish:// (normal streams are of course supported)
+#  - inline ID3 tag editing, capable of retrieving tags via MusicBrainz
+#  - album cover support: automatically displays album covers from the
+#  filesystem, or downloaded on the fly
+#  - miscellaneous audio effects, including crossfading
+#  - easy bindable global shortcuts, rich DCOP interface
+#  - On-Screen Display (OSD), on track change or at keypress
+#  - iPod and iRiver support
+#  - Last.fm stream playing support (if ruby is installed)
+#  - Track "mood" display (requires moodbar package installed)
+#  Support for libvisual visualization plugins is also compiled in (you
+#  need to have libvisual-0.4-plugins installed to be able to use it).
+# URL: http://amarok.kde.org
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=amarok-2.0
+version=2.0
+date=20071016
+
+release=1
+source=(amarok-2.0-$date.tar.bz2)
+
+build()
+{
+  cd amarok
+
+  cmake $SRC/amarok \
+       -DCMAKE_INSTALL_PREFIX="$prefix" \
+       -DCMAKE_BUILD_TYPE="debugfull"
+
+  make DESTDIR="$PKG" all install
+}

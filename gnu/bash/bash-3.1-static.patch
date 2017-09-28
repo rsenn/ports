@@ -1,0 +1,31 @@
+diff -ru -ru bash-3.1_orig/Makefile.in bash-3.1/Makefile.in
+--- bash-3.1_orig/Makefile.in	2006-10-02 16:40:25.000000000 +0200
++++ bash-3.1/Makefile.in	2006-10-02 16:41:24.000000000 +0200
+@@ -513,7 +513,7 @@
+ # Keep GNU Make from exporting the entire environment for small machines.
+ .NOEXPORT:
+ 
+-.made: $(Program) bashbug
++.made: $(Program) $(Program).static bashbug
+ 	@echo "$(Program) last made for a $(Machine) running $(OS)" >.made
+ 
+ $(Program):  .build $(OBJECTS) $(BUILTINS_DEP) $(LIBDEP)
+@@ -522,6 +522,10 @@
+ 	ls -l $(Program)
+ 	-$(SIZE) $(Program)
+ 
++$(Program).static:  .build $(OBJECTS) $(BUILTINS_DEP) $(LIBDEP)
++	$(RM) $@
++	$(PURIFY) $(CC) -static $(BUILTINS_LDFLAGS) $(LIBRARY_LDFLAGS) $(LDFLAGS) -o $(Program).static $(OBJECTS) $(LIBS)
++
+ .build:	$(SOURCES) config.h Makefile version.h $(VERSPROG)
+ 	@echo
+ 	@echo "	  ***********************************************************"
+@@ -707,6 +711,7 @@
+ 
+ install:	.made installdirs
+ 	$(INSTALL_PROGRAM) $(INSTALLMODE) $(Program) $(DESTDIR)$(bindir)/$(Program)
++	$(INSTALL_PROGRAM) $(INSTALLMODE) $(Program).static $(DESTDIR)$(bindir)/$(Program).static
+ 	$(INSTALL_SCRIPT) $(INSTALLMODE2) bashbug $(DESTDIR)$(bindir)/bashbug
+ 	-( cd $(DOCDIR) ; $(MAKE) $(MFLAGS) \
+ 		man1dir=$(man1dir) man1ext=$(man1ext) \

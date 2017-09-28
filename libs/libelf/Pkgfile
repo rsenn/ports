@@ -1,0 +1,28 @@
+# $Id: $
+#
+# Description: A free ELF object file access library
+
+name=libelf
+version=0.8.10
+release=1
+source=(http://www.mr511.de/software/libelf-$version.tar.gz)
+
+build()
+{
+  cd libelf-$version
+
+  sed -i 's,w32/Makefile\s,,' configure.in
+
+#  libtoolize --force
+#  aclocal --force
+#  autoconf --force
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make prefix="$ROOT" install
+}

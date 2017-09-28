@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: XML-RPC client and server libraries for C and C++.
+#  xmlrpc-c is a programming library for writing an XML-RPC server or client
+#  program to make a simple remote procedure call (RPC) type request of a
+#  the same XML-RPC as similar libraries for lots of other programming
+#  uses either w3c libwww or Curl for HTTP. The server library contains a
+#  with CGI under any Web server.
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=xmlrpc-c
+version=1.06.31
+release=1
+source=($mirror_sf/xmlrpc-c/xmlrpc-c-$version.tgz)
+
+build()
+{
+  cd xmlrpc-c-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

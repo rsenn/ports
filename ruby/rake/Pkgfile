@@ -1,0 +1,41 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Simple modular application for data investigation.
+#  This is an application to help user (mathematician) to make
+#  regression between series of data, draw grpahics, and export them into
+#  various formats by means of common graphics packages (i.e., gnuplot,
+#  plotutils). It is written in Python. The user interfeace is built upon
+#  the wxPython (wxWindows) widget set. The idea of usage is as follows:
+#  the user builds a project which is represented as a tree of modules;
+#  modules can generate data variables, as well as consume them. Essentialy,
+#  such a tree represents an algorithm of data analysis. The system is
+#  intended to educate students.
+# URL: http://rake.sourceforge.net
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=rake
+version=0.8.1
+release=1
+source=(http://files.rubyforge.vm.bytemark.co.uk/rake/rake-$version.tgz)
+
+build()
+{
+  cd rake-$version
+
+  set -- $(ruby --version)
+
+  RUBYVERSION="$2"
+  RUBYLIBDIR="$prefix/lib/ruby/${RUBYVERSION%.*}"
+
+  install -d $ROOT/bin
+  install -m 755 bin/rake $ROOT/bin
+
+  install -d $PKG$RUBYLIBDIR
+
+  cp -rf lib/* $PKG$RUBYLIBDIR
+
+  find $PKG$RUBYLIBDIR -name ".*" -exec rm -v '{}' ';'
+#  DESTDIR="$PKG" sitelibdir="$RUBYLIBDIR" \
+#    ruby install.rb
+}

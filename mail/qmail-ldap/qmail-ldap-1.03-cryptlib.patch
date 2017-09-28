@@ -1,0 +1,105 @@
+diff -ru qmail-1.03_orig/Makefile qmail-1.03/Makefile
+--- qmail-1.03_orig/Makefile	2008-07-15 04:24:00.000000000 +0200
++++ qmail-1.03/Makefile	2008-07-15 04:26:09.000000000 +0200
+@@ -120,7 +120,7 @@
+ pbsexec.o constmap.o getln.a strerr.a substdio.a stralloc.a env.a wait.a \
+ dns.o ip.o ipalloc.o ipme.o alloc.a str.a case.a fs.a error.a timeoutconn.o \
+ timeoutread.o ndelay.a open.a sig.a prot.o auto_uids.o auto_qmail.o \
+-dns.lib socket.lib
++dns.lib socket.lib crypt.lib
+ 	./load auth_imap auth_mod.o checkpassword.o passwd.o digest_md4.o \
+ 	digest_md5.o digest_rmd160.o digest_sha1.o base64.o read-ctrl.o \
+ 	getopt.a control.o dirmaker.o mailmaker.o qldap.a localdelivery.o \
+@@ -128,7 +128,7 @@
+ 	stralloc.a env.a wait.a dns.o ip.o ipalloc.o ipme.o alloc.a str.a \
+ 	case.a fs.a error.a timeoutconn.o timeoutread.o ndelay.a open.a \
+ 	sig.a prot.o auto_uids.o auto_qmail.o $(LDAPLIBS) $(SHADOWLIBS) \
+-	`cat dns.lib` `cat socket.lib`
++	`cat dns.lib` `cat socket.lib` `cat crypt.lib`
+ 
+ auth_imap.o: \
+ compile auth_imap.c alloc.h byte.h env.h error.h exit.h fmt.h pbsexec.h \
+@@ -149,7 +149,7 @@
+ pbsexec.o constmap.o getln.a strerr.a substdio.a stralloc.a env.a wait.a \
+ dns.o ip.o ipalloc.o ipme.o alloc.a str.a case.a fs.a error.a timeoutconn.o \
+ timeoutread.o ndelay.a open.a prot.o auto_uids.o auto_qmail.o \
+-dns.lib socket.lib
++dns.lib socket.lib crypt.lib
+ 	./load auth_pop auth_mod.o checkpassword.o passwd.o digest_md4.o \
+ 	digest_md5.o digest_rmd160.o digest_sha1.o base64.o read-ctrl.o \
+ 	getopt.a control.o qldap.a dirmaker.o mailmaker.o localdelivery.o \
+@@ -157,7 +157,7 @@
+ 	stralloc.a env.a wait.a dns.o ip.o ipalloc.o ipme.o alloc.a str.a \
+ 	case.a fs.a error.a timeoutconn.o timeoutread.o ndelay.a open.a \
+ 	prot.o auto_uids.o auto_qmail.o $(LDAPLIBS) $(SHADOWLIBS) \
+-	`cat dns.lib` `cat socket.lib`
++	`cat dns.lib` `cat socket.lib` `cat crypt.lib`
+ 
+ auth_pop.o: \
+ compile auth_pop.c byte.h env.h error.h exit.h pbsexec.h qldap-debug.h \
+@@ -169,12 +169,12 @@
+ load auth_smtp.o checkpassword.o passwd.o digest_md4.o digest_md5.o \
+ digest_rmd160.o digest_sha1.o base64.o read-ctrl.o control.o qldap.a \
+ constmap.o getln.a strerr.a substdio.a stralloc.a env.a alloc.a str.a \
+-case.a fs.a error.a open.a prot.o auto_uids.o auto_qmail.o
++case.a fs.a error.a open.a prot.o auto_uids.o auto_qmail.o crypt.lib
+ 	./load auth_smtp checkpassword.o passwd.o digest_md4.o \
+ 	digest_md5.o digest_rmd160.o digest_sha1.o base64.o read-ctrl.o \
+ 	control.o qldap.a constmap.o getln.a strerr.a substdio.a stralloc.a \
+ 	env.a alloc.a str.a case.a fs.a error.a open.a prot.o auto_uids.o \
+-	auto_qmail.o $(LDAPLIBS) $(SHADOWLIBS)
++	auto_qmail.o `cat crypt.lib` $(LDAPLIBS) $(SHADOWLIBS)
+ 	
+ auth_smtp.o: \
+ compile auth_smtp.c byte.h env.h error.h exit.h output.h qldap.h \
+@@ -579,11 +579,11 @@
+ digest: \
+ load digest.o passwd.o digest_md4.o digest_md5.o digest_rmd160.o \
+ digest_sha1.o base64.o qldap-debug.o output.o getopt.a strerr.a \
+-substdio.a case.a env.a stralloc.a str.a fs.a alloc.a error.a
++substdio.a case.a env.a stralloc.a str.a fs.a alloc.a error.a crypt.lib
+ 	./load digest passwd.o digest_md4.o digest_md5.o digest_rmd160.o \
+ 	digest_sha1.o base64.o qldap-debug.o output.o getopt.a strerr.a \
+ 	substdio.a case.a env.a stralloc.a str.a fs.a alloc.a error.a \
+-	$(SHADOWLIBS)
++	`cat crypt.lib` $(SHADOWLIBS)
+ 
+ digest.o: \
+ compile digest.c base64.h error.h passwd.h qldap-errno.h \
+@@ -1615,12 +1615,12 @@
+ digest_rmd160.o digest_sha1.o base64.o constmap.o localdelivery.o \
+ dirmaker.o wait.a read-ctrl.o control.o env.a getopt.a getln.a stralloc.a \
+ alloc.a strerr.a error.a substdio.a open.a fs.a str.a case.a auto_usera.o \
+-auto_qmail.o
++auto_qmail.o crypt.lib
+ 	./load qmail-ldaplookup qldap.a passwd.o digest_md4.o digest_md5.o \
+ 	digest_rmd160.o digest_sha1.o base64.o constmap.o localdelivery.o \
+ 	dirmaker.o wait.a read-ctrl.o control.o env.a getopt.a getln.a \
+ 	stralloc.a alloc.a strerr.a error.a substdio.a open.a fs.a str.a \
+-	case.a auto_usera.o auto_qmail.o $(LDAPLIBS) $(SHADOWLIBS)
++	case.a auto_usera.o auto_qmail.o `cat crypt.lib` $(LDAPLIBS) $(SHADOWLIBS)
+ 
+ qmail-ldaplookup.o: \
+ compile qmail-ldaplookup.c alloc.h auto_usera.h byte.h case.h env.h error.h \
+@@ -2479,6 +2479,13 @@
+ 	&& echo -lsocket -lnsl || exit 0 ) > socket.lib
+ 	rm -f trylsock.o trylsock
+ 
++crypt.lib: \
++trylcrypt.c compile load
++	( ( ./compile trylcrypt.c && \
++	./load trylcrypt -lcrypt -lnsl ) >/dev/null 2>&1 \
++	&& echo -lcrypt -lnsl || exit 0 ) > crypt.lib
++	rm -f trylcrypt.o trylcrypt
++
+ spawn.o: \
+ compile chkspawn spawn.c sig.h wait.h substdio.h byte.h str.h \
+ stralloc.h gen_alloc.h select.h exit.h coe.h open.h error.h \
+diff -ruN qmail-1.03_orig/trylcrypt.c qmail-1.03/trylcrypt.c
+--- qmail-1.03_orig/trylcrypt.c	1970-01-01 01:00:00.000000000 +0100
++++ qmail-1.03/trylcrypt.c	2008-07-15 04:27:45.000000000 +0200
+@@ -0,0 +1,4 @@
++main()
++{
++  ;
++}

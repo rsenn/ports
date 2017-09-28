@@ -1,0 +1,24 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description:  pkcrack is an implementation of a known-plaintext-attack on ZIP file encryption. It can help you recover files after you've lost or forgotten the password.
+# URL: http://www.unix-ag.uni-kl.de/~conrad/krypto/pkcrack.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=pkcrack
+version=1.2.2
+release=1
+source=(http://www.unix-ag.uni-kl.de/%7Econrad/krypto/pkcrack/pkcrack-1.2.2.tar.gz)
+
+build()
+{
+  cd pkcrack-$version
+
+  make -C src CC="${CC-cc}" CFLAGS="$CFLAGS"
+
+  install -d $ROOT/bin
+  install -m 755 src/{pkcrack,zipdecrypt,findkey,extract,makekey} $ROOT/bin
+
+  install -d $ROOT/share/doc
+  cp -rf doc $ROOT/share/doc/pkcrack
+}

@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An XML-RPC program for vpopmail administration.
+# vpop-xmlrpc is a simple program based on xmlrpc-c and vpopmail which
+# can be run either as CGI or standalone server. It offers an easy-to-use
+# remote interface to administrative vpopmail tasks, such as vadduser,
+# vdeluser, vpasswd, and vsetuserquota.
+#
+# URL: http://dev.iworks.at/project/vpop-xmlrpc
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=vpop-xmlrpc
+version=2.1
+release=1
+source=(http://dev.iworks.at/files/vpop-xmlrpc-$version.tar.gz)
+
+build()
+{
+  cd vpop-xmlrpc-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

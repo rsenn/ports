@@ -1,0 +1,32 @@
+# $Id: Pkgfile,v 1.7 2007/04/22 23:07:53 roman Exp $
+#
+# Description: framework for managing administrative policies and privileges
+#  PolicyKit is an application-level toolkit for defining and handling
+#  the policy that allows unprivileged processes to speak to privileged
+#  processes.
+#  It is a framework for centralizing the decision making process with
+#  respect to granting access to privileged operations (like calling the
+#  HAL Mount() method) for unprivileged (desktop) applications.
+# URL: http://hal.freedesktop.org/docs/PolicyKit/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=policykit
+version=0.3
+release=1
+source=(http://people.freedesktop.org/~david/dist/PolicyKit-$version.tar.gz)
+
+build()
+{
+  cd PolicyKit-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --${shared:=enable}-shared \
+       --${static:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+}

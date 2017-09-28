@@ -1,0 +1,33 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:44 roman Exp $
+#
+# Description: A memory debugger.
+#  Valgrind is a tool that helps you find memory management problems in
+#  programs. When a program is run under Valgrind's supervision, all reads
+#  and writes of memory are checked, and calls to malloc/new/free/delete
+#  are intercepted. As a result, Valgrind can detect problems such as use
+#  of uninitialized memory, reading/writing of memory after it has been
+#  freed, reading/writing off the end of malloced blocks, reading/writing
+#  inappropriate areas on the stack, memory leaks in which pointers
+#  to malloced blocks are lost forever, passing of uninitialized and/or
+#  unaddressable memory to system calls, and mismatched use of malloc/new/new
+#  [] vs. free/delete/delete [].
+# URL: http://www.valgrind.org
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=valgrind
+version=3.2.3
+release=1
+source=(http://valgrind.org/downloads/valgrind-$version.tar.bz2)
+
+build()
+{
+  cd valgrind-$version
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix"
+
+  make DESTDIR="$PKG" install
+}

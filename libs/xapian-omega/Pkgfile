@@ -1,0 +1,37 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: CGI search interface and indexers using Xapian
+#  This package contains the "omega" CGI application which provides a
+#  customisable web interface for searching Xapian databases.
+#  The package also contains the "omindex" tool for indexing local documents
+#  into a Xapian database in a form suitable for searching with omega.
+#  This package also contains the "scriptindex" indexer, which takes a
+#  simple text input format representing documents as a set of fields,
+#  together with an "index script" file specifying actions to be performed
+#  on each field, and processes the documents into a Xapian database.
+#  The package also contains some example scripts for converting data from
+#  different sources into a form suitable for processing with "scriptindex".
+# URL: http://www.xapian.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=xapian-omega
+version=1.0.6
+release=1
+source=(http://www.oligarchy.co.uk/xapian/$version/xapian-omega-$version.tar.gz
+        xapian-omega-20080405.patch)
+
+build()
+{
+  cd xapian-omega-$version
+
+  patch -N -p1 -i $SRC/xapian-omega-20080405.patch
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

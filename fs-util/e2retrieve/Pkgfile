@@ -1,0 +1,28 @@
+# $Id: Pkgfile,v 1.15 2007/05/09 21:02:55 roman Exp $
+#
+# Description: A tool to retrieve data from partial Ext2 filesystems.
+#  e2retrieve is an Ext2 data recovery tool that works on truncated or
+#  partial filesystems. It is very useful to retrieve data when a disk from
+#  an LVM crashes. It does not repair the filesystem but extracts and copies
+#  most of the data it can from raw Ext2 data given to it.
+# URL: http://www.guzu.net/linux/e2retrieve.php
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=e2retrieve
+version=20070415
+release=1
+source=(http://www.guzu.net/files/e2retrieve_$version.tar.gz
+        e2retrieve-20070415-static.patch)
+
+build()
+{
+  cd e2retrieve
+
+  patch -N -p1 -i $SRC/e2retrieve-20070415-static.patch
+
+  make
+
+  install -d $ROOT/bin
+  install -m 755 e2retrieve $ROOT/bin
+}

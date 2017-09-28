@@ -1,0 +1,38 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Viewer for the International Beacon Project
+#  Ibp shows which of the beacons of the International Beacon Project is
+#  transmitting now. The user is presented with a list of Beacons with the
+#  current beacon highlighted. In a separate graphical window the position
+#  and short/long path to the beacon can be seen.
+#  The list can be viewed in either single or multiband mode, a Maidenhead
+#  locator, when used as an argument, shows distance and azimuth to each
+#  beacon.
+#  You will need an accurate clock because the beacons transmit at 10
+#  second intervals.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=ibp
+version=1.4.0.6
+release=1
+source=(http://loci.cs.utk.edu/lors/distributions/ibp-$version.tar.gz)
+
+build() 
+{
+  cd ibp-$version
+  
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+  
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/ibp
+  install -m 644 COPYING INSTALL README $ROOT/share/doc/ibp
+}
+
+# EOF

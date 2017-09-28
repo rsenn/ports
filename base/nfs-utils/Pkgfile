@@ -1,0 +1,61 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: NFS utilities for Linux NFS clients and servers.
+#  nfs-utils provides the required support programs for using the Linux
+#  kernel's NFS support, either as a client or as a server (or as both).
+# URL: http://nfs.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=nfs-utils
+version=1.1.2
+release=1
+source=($mirror_sf/nfs/nfs-utils-$version.tar.gz
+        http://www.citi.umich.edu/projects/nfsv4/linux/nfs-utils-patches/${version}-1/nfs-utils-${version}-CITI_NFS4_ALL-1.dif)
+
+build()
+{
+  cd nfs-utils-$version
+
+  patch -N -p1 -i $SRC/nfs-utils-${version}-CITI_NFS4_ALL-1.dif
+
+  case ${prefix="/usr"} in
+    "/usr") sysconfdir="/etc" localstatedir="/var" ;;
+  esac
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --sysconfdir="${sysconfdir=$prefix/etc}" \
+       --localstatedir="${localstatedir=$prefix/var}" \
+       --${shared:=enable}-shared \
+       --${static:=enable}-shared
+
+  make \
+    statedir="$localstatedir/nfs" \
+    am__append_3="" \
+    DESTDIR="$PKG" \
+    install
+}
+
+# set up the service for rpc.statd
+# -----------------------------------------------------------------------------
+services()
+{
+  config_branch 'rpc_statd'
+
+    config_set 'TITLE'   'RPC statd'
+    config_set 'BIN'     "$prefix/sbin/rpc.statd"
+#    config_set 'START'   'portmap.*ready.*'
+#    config_set 'STOP'    'Shutdown complete'
+
+  config_end
+}
+
+rpc_statd()
+{
+  exec 2>&1
+  $prefix/sbin/rpc.lockd
+  exec $prefix/bin/argv0 $prefix/sbin/rpc.statd rpc.statd -Fd
+}

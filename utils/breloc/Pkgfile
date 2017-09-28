@@ -1,0 +1,24 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A small program that does binary edits on files to relocate compiled-in prefixes
+# It is padding it with extra slashes to make up for differences in the length
+# of the prefixes.
+# In order for breloc to be most effective, a binary package should be configured
+# with a prefix that has a lot of extra slashes at the end of it.
+# URL: http://www.bell-labs.com/project/nsbd/breloc.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=breloc
+version=breloc.c
+release=1
+source=(http://www.bell-labs.com/project/nsbd/source/unix/breloc.c)
+
+build()
+{
+  ${CC-cc} $CFLAGS -c breloc.c
+  ${CC-cc} $LDFLAGS -o breloc breloc.o
+
+  install -d $ROOT/bin
+  install -m 755 breloc $ROOT/bin
+}

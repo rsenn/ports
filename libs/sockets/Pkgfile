@@ -1,0 +1,25 @@
+# $Id: Pkgfile,v 1.5 2006/05/11 16:10:05 roman Exp $
+#
+# Description: 
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=sockets
+version=2.2.3
+release=1
+source=(http://www.alhem.net/Sockets/Sockets-$version.tar.gz
+        http://www.alhem.net/Sockets/Sockets-$version-doxygendocs.tar.gz)
+
+build()
+{
+  install -d $ROOT/share/doc/
+  mv html $ROOT/share/doc/Sockets-$version
+
+  cd Sockets-$version
+
+  unset CPPFLAGS CFLAGS
+
+  make PREFIX="$prefix" CXX="$CXX"
+  make PREFIX="$ROOT" install
+}

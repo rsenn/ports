@@ -1,0 +1,420 @@
+# $Id: Pkgfile,v 1.66 2007/05/10 16:59:30 roman Exp $
+#
+# Description: MySQL database server
+#  MySQL is a fast, stable and true multi-user, multi-threaded SQL database
+#  server. SQL (Structured Query Language) is the most popular database
+#  query language in the world. The main goals of MySQL are speed, robustness
+#  and ease of use.
+#  This package includes the server and ndb-cluster binaries.
+# URL: http://dev.mysql.com/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+# package variables
+# --------------------------------------------------------------------------------
+name=mysql
+version=4.1.22
+release=1
+source=($mirror_sunsite/mysql/Downloads/MySQL-${version%.*}/mysql-$version.tar.gz
+        my.cnf
+        mysqld.conf
+        mysql_install_db.in)
+
+build()
+{
+  cd mysql-${version}
+
+  case $prefix in
+    /usr) sysconfdir="/etc" datadir="/var/lib" tmpdir="/tmp" ;;
+  esac
+
+  pkgdatadir=${datadir=$prefix/share}/mysql
+
+  # configure and build
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --localstatedir="$pkgdatadir" \
+      --sysconfdir="${sysconfdir=$prefix/etc}/mysql" \
+      --infodir="$prefix/share/info" \
+      --mandir="$prefix/share/man" \
+      --with-named-thread-libs="-lpthread" \
+      --with-named-curses-libs="-lncurses" \
+      --with-unix-socket-path="$tmpdir/mysql.sock" \
+      --with-mysqld-user=mysql \
+      --with-zlib-dir="$prefix" \
+      --with-ssl="$prefix" \
+      --with-ssl-includes="$prefix/include" \
+      --with-ssl-libs="$prefix/lib" \
+      --with-readline="$prefix" \
+      --without-libedit \
+      --without-berkeley-db \
+      --enable-thread-safe-client \
+      --with-collation="latin1_german1_ci" \
+      --without-debug \
+      --without-ndb-debug \
+      --with-ndb-test
+
+
+  make pkglibdir="$prefix/lib" DESTDIR="$PKG" install
+
+  # create temp directory, for mysql socket
+#  mkdir -p $ROOT/tmp
+#  chmod 1777 $ROOT/tmp
+
+  # create directory in which we'll install the database later
+  mkdir -p $PKG/$pkgdatadir
+
+  # install mysql configuration file
+  install -d $PKG/$sysconfdir/mysql
+  install -m 644 $SRC/my.cnf $PKG/$sysconfdir/mysql/my.cnf
+
+  install -d $PKG/$sysconfdir/mysql
+  install -m 644 $SRC/mysqld.conf $PKG/$sysconfdir/mysql/mysqld.conf
+
+  # install a customized mysql_install_db script, which should
+  # create 2 users allowed to connect from 127.0.0.1 and 2 users which
+  # can connect from ${mysqld_host}
+  install $SRC/mysql_install_db.in $ROOT/bin/mysql_install_db
+
+  # substitute prefix value
+  sed -i -e "s,@prefix@,$prefix,g" $ROOT/bin/mysql_install_db
+
+  rm -rf $ROOT/{mysql-test,sql-bench}
+}
+
+# package postmerge script
+# --------------------------------------------------------------------------------
+postmerge()
+{
+  export mysqld_host
+
+  # check if the user that should run the server exists
+  if ! user_exists $mysqld_user; then
+    msg "no user '$mysqld_user' found, creating it..."
+
+    # check if the group that should run the server exists
+    if ! group_exists $mysqld_group; then
+      msg "no group '$mysqld_group' found, creating it..."
+
+      # try creating group, if failed we unset the group variable
+      if ! group_add $mysqld_group; then
+  warn "failed creating group '$mysqld_group'," \
+      "omitting group when creating user"
+  unset group
+      fi
+    fi
+
+    # try to add user, if we fail here we cannot start the server
+    if ! user_add $mysqld_user $mysqld_group \
+     ${mysqld_datadir:-$pkgdatadir} "" "MySQL daemon"; then
+      error "failed adding user '$mysqld_user'"
+    fi
+  fi
+
+  # substitute configuration values
+  $bindir/sed -i -e \
+    "s,@prefix@,$prefix,g
+     s,@mysql_password@,,g
+     s,@mysql_port@,${mysql_port:-3306},g
+     s,@mysql_socket@,${mysql_socket:-$prefix/tmp/mysql.sock},g
+     s,@mysqld_host@,$mysqld_host,g
+     s,@mysqld_port@,$mysqld_port,g
+     s,@mysqld_socket@,$mysqld_socket,g" \
+     $sysconfdir/my.cnf \
+     $sysconfdir/mysql/mysqld.conf
+
+  datadir=${mysqld_datadir:-$pkgdatadir}
+  logdir=${mysqld_logdir:-$pkgdatadir}
+
+  if [ ! -d "$datadir" ]; then
+    msg "data directory '$datadir' currently not existing, creating it..."
+    mkdir -p "$datadir" &&
+    chown "$mysqld_user" "$datadir"
+  fi
+
+  if [ ! -d "$logdir" ]; then
+    msg "data directory '$logdir' currently not existing, creating it..."
+    mkdir -p "$logdir" &&
+    chown "$mysqld_user" "$logdir"
+  fi
+
+  # check if there is already a database, if not create one
+  if ! mysql_db_exists; then
+    msg "no database installed, installing now..."
+
+    # ensure that no mysqld is currently running on that host:port pair
+    if process=$(inet_conflict tcp $mysqld_host:$mysqld_port); then
+      error "$process is already binding $mysqld_host:$mysqld_port"
+    fi
+
+    # clean up database directory and set the permissions
+    mysql_db_clean
+
+    # launch mysql_install_db script
+    if ! mysql_db_install; then
+      error "failed creating database!"
+    fi
+
+    # launch a mysql daemon in background
+    mysql_daemon &
+    msg "temporarily started mysqld ($!) to tweak the privileges"
+
+    # wait for the listener to become active
+    if ! inet_wait tcp $mysqld_host:$mysqld_port; then
+      error "server wasn't available after waiting $inet_timeout msecs"
+    fi
+
+    # do we have to set a root password?
+    if [ "$mysqld_password" ]; then
+      # try to set it
+      if ! mysql_passwd $mysqld_host root $mysqld_password ||
+  ! mysql_passwd localhost root $mysqld_password; then
+  error "failed setting root password"
+      fi
+    fi
+
+    # now for every allowed host we create a new record in the 'user' table
+    for allow in $(split "$mysqld_allow" ", ")
+    do
+      # mysqld_host and localhost are already allowed
+      if [ "$allow" = "$mysqld_host" ] ||
+  [ "$allow" = "127.0.0.1" ] ||
+  [ "$allow" = "localhost" ]; then
+  continue
+      fi
+
+      # try to add a user with that host
+      if ! mysql_useradd "$allow" "root" "$mysqld_password"; then
+  error "failed inserting root-user with host '$allow' into mysql.user"
+      fi
+    done
+
+    # let the temporary mysql daemon terminate.
+    # SIGCONT is sent for those cases mysqld gets stopped (why the heck that?)
+    kill -TERM %1
+    kill -CONT %1
+
+    # wait for it to terminate properly
+    wait %1
+  else
+    msg "database already present"
+  fi
+
+  # password will be substituted after setting it, because otherwise
+  # we'll confuse mysqladmin
+  $bindir/sed -i -e "s,^\(password[ \t]*=\).*$,\1 $mysql_password," $sysconfdir/my.cnf
+
+  # add/remove service according to config
+  if [ "$services_run_mysqld" = "yes" ]; then
+    service_add "mysqld"
+  else
+    service_remove "mysqld"
+  fi
+}
+
+# package configuration
+# -----------------------------------------------------------------------------
+config()
+{
+  # add the main-menu entry "mysql"
+  config_branch 'mysql'     'MySQL client configuration'
+
+    config_value 'host'     'MySQL client host'
+      config_description    'Address the MySQL client will connect to'
+      config_default        '$(inet_any2local $(config_getvalue mysqld_host))'
+    config_end
+
+    config_value 'port'     'MySQL client port'
+      config_description    'Port the MySQL client will connect to'
+      config_default        '$(config_getvalue mysqld_port)'
+    config_end
+
+    config_value 'socket'   'MySQL server socket'
+      config_description    'Socket the MySQL server will listen to'
+      config_default        '$prefix/tmp/mysql.sock'
+    config_end
+
+    config_value 'username' 'MySQL username'
+      config_description    'Username for connecting to the MySQL server'
+      config_default        'root'
+    config_end
+
+    config_value 'password' 'MySQL password'
+      config_description    'Password for connecting to the MySQL server'
+    config_end
+
+  config_end
+
+  # add the main-menu entry "mysqld"
+  config_branch 'mysqld'    'MySQL server configuration'
+
+    config_value 'user'     'MySQL server user'
+      config_description    'User the MySQL server will run under'
+      config_default        '$(user_find mysql sql db daemon nobody)'
+      config_function       'choose --help-{button,label} Create $(user_table)'
+      config_extra          'input $choice'
+    config_end
+
+    config_value 'group'    'MySQL server group'
+      config_description    'Group the MySQL server will run under'
+      config_default        '$(user_group $(config_getvalue mysqld_user) || group_find mysql sql db daemon nogroup)'
+      config_function       'choose --help-{button,label} Create $(group_table)'
+      config_extra          'input $choice'
+    config_end
+
+    config_value 'host'     'MySQL server host'
+      config_description    'Address the MySQL server will listen to'
+      config_default        '$(config_getvalue global_ipaddr)'
+      config_function       'choose --help-{button,label} Other $(inet_list)'
+    config_end
+
+    config_value 'port'     'MySQL server port'
+      config_description    'Port the MySQL server will listen to'
+      config_default        '3306'
+    config_end
+
+    config_value 'socket'   'MySQL server socket'
+      config_description    'Socket the MySQL server will listen to'
+      config_default        '$prefix/tmp/mysql.sock'
+    config_end
+
+    config_value 'password' 'MySQL root password'
+      config_description    'Root password for the MySQL server'
+    config_end
+
+    config_value 'allow'    'MySQL allowed hosts'
+      config_description    'Allow remote hosts to connect (comma-separated list)'
+    config_end
+
+    config_value 'datadir'  'MySQL data directory'
+      config_description    'Directory where MySQL stores data files'
+      config_default        '$pkgdatadir'
+    config_end
+
+    config_value 'logdir'   'MySQL log directory'
+      config_description    'Directory where MySQL stores logs'
+      config_default        '$pkgdatadir'
+    config_end
+
+  config_end
+
+  # for daemontools
+  config_enter 'services' 'run'
+
+    config_value 'mysqld' 'Run mysqld at boot'
+      config_default      'yes'
+    config_end
+
+  config_leave
+}
+
+# set up the service for mysqld
+# -----------------------------------------------------------------------------
+services()
+{
+  config_branch 'mysqld'
+
+    config_branch 'log'
+    config_end
+
+    config_set 'TITLE'   'MySQL server'
+    config_set 'PIDFILE' "${mysqld_datadir:-$pkgdatadir}/$hostname.pid"
+    config_set 'BIN'     "$prefix/libexec/mysqld"
+    config_set 'START'   'Version: '.*' *socket: '.*' *port:'
+    config_set 'STOP'    'Shutdown complete'
+
+  config_end
+}
+
+mysqld()
+{
+  exec 2>&1
+
+  source $libdir/nexshell/user
+  source $libdir/nexshell/group
+
+  # set default values
+  host=${mysqld_host:-0.0.0.0}
+  port=${mysqld_port:-3306}
+  user=${mysqld_user:-mysql}
+  datadir=${mysqld_datadir:-$pkgdatadir}
+  logdir=${mysqld_logdir:-$pkgdatadir}
+
+  export mysqld_host # for the modded mysql_install_db
+
+  export PATH="$bindir:$sbindir:$prefix/libexec"
+
+  if ! user_avail $user; then
+    service_error "no such user:" ${user}
+  fi
+
+  if [ ! -d "$datadir" ]; then
+    mkdir -p "$datadir" &&
+    chown "$user" "$datadir"
+  fi
+
+  if [ ! -d "$logdir" ]; then
+    mkdir -p "$logdir" &&
+    chown "$user" "$logdir"
+  fi
+
+  if ! setuidgid "$user" test -w "$datadir"; then
+    echo "Data directory not writable, changing permissions..."
+    mkdir -p "$datadir"
+    chown -R $user "$datadir"
+  fi
+
+  if ! setuidgid "$user" test -w "$logdir"; then
+    echo "Log directory not writable, changing permissions..."
+    mkdir -p "$logdir"
+    chown -R $user "$logdir"
+  fi
+
+  if [ ! -f "$datadir/mysql/host.frm" ]; then
+    echo "No database installed, installing now..."
+    setuidgid $user mysql_install_db --datadir="$datadir" 1>/dev/null ||
+    { echo "Failed creating database...";
+      exit 1; }
+
+    echo "Setting the root password..."
+    $bindir/setuidgid "$user" $prefix/libexec/mysqld &
+
+    sleep 3 # mysqld should have some time to shut down
+
+    ($bindir/mysqladmin -u root -h "$mysqld_host" password "$mysqld_password" &&
+     $bindir/mysqladmin -u root -h localhost password "$mysqld_password") ||
+    { echo "Failed setting root password..."
+      exit 1; }
+
+    kill %1
+    wait # wait for mysqld to terminate properly
+  fi
+
+  if [ -f $datadir/*.pid ]; then
+    pid=$(cat $datadir/*.pid)
+
+    if [ -d $prefix/proc/$pid ]; then
+      echo "mysqld already running, restarting..."
+      kill ${pid}
+      sleep 5
+      exit 1
+    fi
+  fi
+
+  # wait for the listener to become active
+  if ! inet_wait_unbind tcp $mysqld_host:$mysqld_port; then
+    service_error $host:$port "wasn't available after waiting $inet_timeout msecs"
+  fi
+
+  # if the datadir is not the (compiled-in) default, then pass it as argument.
+  if [ "$datadir" != "$pkgdatadir" ]; then
+    args="--datadir=$datadir"
+  else
+    args=""
+  fi
+
+  # finally execute mysqld
+  exec setuidgid $user $bindir/argv0 $prefix/libexec/mysqld mysqld $args
+}

@@ -1,0 +1,30 @@
+diff -ru anyterm-1.1.22_orig/apachemod/apache.cc anyterm-1.1.22/apachemod/apache.cc
+--- anyterm-1.1.22_orig/apachemod/apache.cc	2008-06-16 17:53:30.000000000 +0200
++++ anyterm-1.1.22/apachemod/apache.cc	2008-06-16 18:06:42.000000000 +0200
+@@ -51,7 +51,7 @@
+ using namespace pbe;
+ 
+ 
+-extern module AP_MODULE_DECLARE_DATA anyterm;
++extern module AP_MODULE_DECLARE_DATA anyterm_module;
+ 
+ // Apache configuration commands:
+ 
+@@ -175,7 +175,7 @@
+     string command;
+     //    if (params.get("a")=="open") {
+     anyterm_dir_config_t* config = 
+-      (anyterm_dir_config_t*)ap_get_module_config(r->per_dir_config, &anyterm);
++      (anyterm_dir_config_t*)ap_get_module_config(r->per_dir_config, &anyterm_module);
+     command = expand_command(config->command,r,request);
+     //    }
+     
+@@ -253,7 +253,7 @@
+   {NULL}
+ };
+ 
+-module AP_MODULE_DECLARE_DATA anyterm = {
++module AP_MODULE_DECLARE_DATA anyterm_module = {
+ 
+   // Normally one uses the macro "STANDARD20_MODULE_STUFF" here, but
+   // that uses __FILE__ to get the module name.  This file is called

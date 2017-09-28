@@ -1,0 +1,38 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Additions and extensions library available for Ruby.
+#  The single most extensive additions and extensions library available
+#  for Ruby.
+#  .
+# URL:
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=facets
+version=2.5.0
+release=1
+source=(http://files.rubyforge.vm.bytemark.co.uk/facets/facets-$version.gem)
+
+build()
+{
+  mkdir -p facets-$version
+  cd facets-$version
+
+  tar -xzf ../data.tar.gz
+
+  set `ruby --version`
+
+  RUBYVERSION=$2
+  RUBYLIBDIR=$prefix/lib/ruby/${RUBYVERSION%.*}
+
+  install -d $PKG/$RUBYLIBDIR
+  cp -rf lib/* $PKG/$RUBYLIBDIR
+
+  install -d $ROOT/share/doc/facets
+  install -m 644 AUTHORS COPYING README CHANGES MANIFEST RELEASE VERSION $ROOT/share/doc/facets
+  cp -rf doc/* $ROOT/share/doc/facets/
+
+
+}
+
+# EOF

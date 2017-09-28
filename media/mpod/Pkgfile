@@ -1,0 +1,36 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Graphical frontend for the Music Player Daemon.
+# URL: http://sourceforge.net/projects/mpod/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=mpod
+version=20051205
+release=1
+source=(http://puzzle.dl.sourceforge.net/sourceforge/mpod/mpod-20051205.tbz2)
+
+build() 
+{
+  cd mpod
+
+  sed -i 's,"mpod.conf","/etc/mpod.conf",g' *.py
+
+  install -d $ROOT/bin
+  cat >$ROOT/bin/mpod <<__EOF__
+#!/bin/sh
+cd $prefix/share/mpod
+exec python mpod.py
+__EOF__
+  chmod +x $ROOT/bin/mpod
+
+  install -d $ROOT/share/mpod
+  cp -rf *.py gfx themes $ROOT/share/mpod
+
+  install -m 755 mpod $ROOT/share/mpod/mpod.py
+
+  install -d $PKG/etc
+  cp mpod.conf $PKG/etc
+}
+
+# EOF

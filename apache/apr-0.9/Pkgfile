@@ -1,0 +1,37 @@
+# $Id: Pkgfile 424 2008-08-10 01:52:57Z enki $
+#
+# Description: The Apache Portable Runtime Library
+#  APR is Apache's Portable Runtime Library, designed to be a support library
+#  that provides a predictable and consistent interface to underlying
+#  platform-specific implementations.
+#  .
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=apr-0
+version=0.9.17
+release=1
+source=(http://www.apache.org/dist/apr/apr-$version.tar.bz2
+        apr-0.9.17-epiphyte.patch)
+
+build()
+{
+  cd apr-$version
+
+  patch -N -p1 -i $SRC/apr-0.9.17-epiphyte.patch
+
+  LTFLAGS="--silent --tag=CC"
+
+  export LTFLAGS CFLAGS CPPFLAGS
+
+  ./configure \
+      --host="$host" \
+      --build="$build" \
+      --prefix="$prefix" \
+      --enable-layout="epiphyte"
+
+  make
+  make DESTDIR="$PKG" install
+
+  rm -f $ROOT/lib/apr.exp
+}

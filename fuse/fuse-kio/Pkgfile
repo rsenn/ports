@@ -1,0 +1,36 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A bridge between the KIO file system design and FUSE
+#
+# You can mount a KIO fs with this command:
+#
+# fusermount <mountpath> fuse_kio <kio_kurl>
+# URL: http://webcvs.freedesktop.org/ctd/ctd/fuse_kio/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: kdelibs4c2a, libc6, libfuse2, libgcc1, libqt3-mt, libstdc++6
+
+name=fuse-kio
+version=20080607
+release=1
+source=(fuse_kio_20040326.tar.bz2
+        fuse_kio_20080607_fixes.patch)
+
+build()
+{
+  cd fuse_kio
+
+  patch -N -p0 -i $SRC/fuse_kio_20080607_fixes.patch
+
+  cmake \
+      -DCMAKE_INSTALL_PREFIX="$prefix" \
+    .
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/fuse-kio
+  install -m 644 AUTHORS README* TODO $ROOT/share/doc/fuse-kio
+
+  install -d $ROOT/bin
+  install -m 755 ioslave_helper* $ROOT/bin
+}

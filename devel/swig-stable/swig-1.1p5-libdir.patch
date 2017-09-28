@@ -1,0 +1,64 @@
+diff -r -u -- SWIG1.1p5_orig/Makefile.in SWIG1.1p5/Makefile.in
+--- SWIG1.1p5_orig/Makefile.in	2007-05-30 15:35:20.000000000 +0200
++++ SWIG1.1p5/Makefile.in	2007-05-30 15:36:00.000000000 +0200
+@@ -29,7 +29,7 @@
+ # The SWIG library contains configuration files and library modules
+ # so you should install it someplace where it can be easily accessed.
+ 
+-SWIG_LIB = $(prefix)/lib/swig_lib
++SWIG_LIB = $(prefix)/lib/swig_lib-$(VERSION)
+ 
+ # Change these prefixes to set where you would like the
+ # SWIG binary file (swig) and C library (libswig.a) installed.
+diff -r -u -- SWIG1.1p5_orig/Modules/Makefile.in SWIG1.1p5/Modules/Makefile.in
+--- SWIG1.1p5_orig/Modules/Makefile.in	2007-05-30 15:35:20.000000000 +0200
++++ SWIG1.1p5/Modules/Makefile.in	2007-05-30 15:39:13.000000000 +0200
+@@ -36,7 +36,7 @@
+ # The SWIG library contains configuration files and library modules
+ # so you should install it someplace where it can be easily accessed.
+ 
+-SWIG_LIB = $(prefix)/lib/swig_lib
++SWIG_LIB = $(prefix)/lib/swig_lib-$(VERSION)
+ 
+ ########################################################################
+ # Normally, you shouldn't have to change anything below this point     #
+Only in SWIG1.1p5/Runtime: libperl.c
+Only in SWIG1.1p5/Runtime: libperl.swg
+Only in SWIG1.1p5/Runtime: libptr.c
+Only in SWIG1.1p5/Runtime: libpy.c
+Only in SWIG1.1p5/Runtime: libswigtcl.so
+Only in SWIG1.1p5/Runtime: libswigtcl8.so
+Only in SWIG1.1p5/Runtime: libtcl.c
+Only in SWIG1.1p5/Runtime: libtcl8.c
+diff -r -u -- SWIG1.1p5_orig/SWIG/Makefile.in SWIG1.1p5/SWIG/Makefile.in
+--- SWIG1.1p5_orig/SWIG/Makefile.in	2007-05-30 15:35:20.000000000 +0200
++++ SWIG1.1p5/SWIG/Makefile.in	2007-05-30 15:39:29.000000000 +0200
+@@ -36,7 +36,7 @@
+ # The SWIG library contains configuration files and library modules
+ # so you should install it someplace where it can be easily accessed.
+ 
+-SWIG_LIB = $(prefix)/lib/swig_lib
++SWIG_LIB = $(prefix)/lib/swig_lib-$(VERSION)
+ 
+ # YACC parser.  Use bison by default.  if this doesn't work, switch
+ # it over to yacc.   If that still doesn't work, let me know...
+diff -r -u -- SWIG1.1p5_orig/Makefile.in SWIG1.1p5/Makefile.in
+--- SWIG1.1p5_orig/Makefile.in	2007-05-30 15:46:03.000000000 +0200
++++ SWIG1.1p5/Makefile.in	2007-05-30 15:46:40.000000000 +0200
+@@ -46,6 +46,7 @@
+ MAN_DIR        = $(prefix)/man/man1
+ 
+ SHELL  = /bin/sh
++SWIG   = ./swig
+ 
+ # --with-PACKAGE options for configure script.
+ WITH=
+@@ -98,7 +99,7 @@
+ 
+ doc:	swig
+ 	@echo "Building Documentation for SWIG library..."
+-	./swig -Iswig_lib -d ./Doc/swiglib ./swig_lib/autodoc.i
++	$(SWIG) -Iswig_lib -d ./Doc/swiglib ./swig_lib/autodoc.i
+ 	@rm -f swig_lib/autodoc_wrap*
+ 
+ 

@@ -1,0 +1,35 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A fantastic javascript image gallery written in jQuery
+#  Galleria is a javascript image gallery written in jQuery. It loads
+#  the images one by one from an unordered list and displays thumbnails
+#  when each image is loaded. It will create thumbnails for you if you
+#  choose so, scaled or unscaled, centered and cropped inside a fixed
+#  thumbnail box defined by CSS. The core of Galleria lies in it's smart
+#  preloading behaviour, snappiness and the fresh absence of obtrusive
+#  design elements. Use it as a foundation for your custom styled
+#  image gallery. Visit the Galleria home page for more info and demos:
+#  http://devkick.com/lab/galleria/For support and issues, visit the galleria
+#  forum: http://devkick.com/talk/forum/4/galleria/
+#  .
+# URL: http://code.google.com/p/galleria/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=galleria
+version=1.0b
+release=1
+source=(http://galleria.googlecode.com/files/galleria-$version.zip)
+
+build()
+{
+  cd galleria-$version
+
+  install -d $ROOT/share/galleria
+  install -m 644 trunk/*.{js,css} $ROOT/share/galleria
+
+  install -d $ROOT/share/doc/galleria
+  cp -rf demo $ROOT/share/doc/galleria
+}
+
+# EOF

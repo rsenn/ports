@@ -1,0 +1,27 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: X11 Render extension wire protocol
+#  This package provides development headers describing the wire protocol for
+#  the Render extension, used to implement Porter-Duff operations within X.
+#  This package is built from the X.org renderproto proto module.
+# URL: http://www.X.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=renderproto
+version=0.9.3
+release=1
+source=(ftp://ftp.x.org/pub/individual/proto/renderproto-$version.tar.bz2)
+
+build()
+{
+  cd renderproto-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

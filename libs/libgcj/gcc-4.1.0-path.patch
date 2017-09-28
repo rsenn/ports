@@ -1,0 +1,204 @@
+diff -ru gcc-4.1.0_orig/fixincludes/Makefile.in gcc-4.1.0/fixincludes/Makefile.in
+--- gcc-4.1.0_orig/fixincludes/Makefile.in	2006-03-16 10:54:16.000000000 +0100
++++ gcc-4.1.0/fixincludes/Makefile.in	2006-03-16 11:05:30.000000000 +0100
+@@ -53,9 +53,9 @@
+ gcc_version := $(shell cat $(srcdir)/../gcc/BASE-VER)
+ 
+ # Directory in which the compiler finds libraries etc.
+-libsubdir = $(libdir)/gcc/$(target_noncanonical)/$(gcc_version)
++libsubdir = $(prefix)/$(target_noncanonical)/lib
+ # Directory in which the compiler finds executables
+-libexecsubdir = $(libexecdir)/gcc/$(target_noncanonical)/$(gcc_version)
++libexecsubdir = $(prefix)/$(target_noncanonical)/libexec
+ # Where our executable files go
+ itoolsdir = $(libexecsubdir)/install-tools
+ # Where our data files go
+diff -ru gcc-4.1.0_orig/gcc/Makefile.in gcc-4.1.0/gcc/Makefile.in
+--- gcc-4.1.0_orig/gcc/Makefile.in	2006-03-16 11:04:21.000000000 +0100
++++ gcc-4.1.0/gcc/Makefile.in	2006-03-16 11:04:36.000000000 +0100
+@@ -458,11 +458,11 @@
+ # --------
+ 
+ # Directory in which the compiler finds libraries etc.
+-libsubdir = $(libdir)/gcc/$(target_noncanonical)/$(version)
++libsubdir = $(prefix)/$(target_noncanonical)/lib
+ # Directory in which the compiler finds executables
+-libexecsubdir = $(libexecdir)/gcc/$(target_noncanonical)/$(version)
++libexecsubdir = $(prefix)/$(target_noncanonical)/libexec
+ # Used to produce a relative $(gcc_tooldir) in gcc.o
+-unlibsubdir = ../../..
++unlibsubdir = ..
+ # Directory in which to find other cross-compilation tools and headers.
+ dollar = @dollar@
+ # Used in install-cross.
+@@ -1594,8 +1594,8 @@
+ 
+ DRIVER_DEFINES = \
+   -DSTANDARD_STARTFILE_PREFIX=\"$(unlibsubdir)/\" \
+-  -DSTANDARD_EXEC_PREFIX=\"$(libdir)/gcc/\" \
+-  -DSTANDARD_LIBEXEC_PREFIX=\"$(libexecdir)/gcc/\" \
++  -DSTANDARD_EXEC_PREFIX=\"$(libsubdir)/\" \
++  -DSTANDARD_LIBEXEC_PREFIX=\"$(libexecsubdir)/\" \
+   -DDEFAULT_TARGET_VERSION=\"$(version)\" \
+   -DDEFAULT_TARGET_MACHINE=\"$(target_noncanonical)\" \
+   -DSTANDARD_BINDIR_PREFIX=\"$(bindir)/\" \
+diff -ru gcc-4.1.0_orig/gcc/gcc.c gcc-4.1.0/gcc/gcc.c
+--- gcc-4.1.0_orig/gcc/gcc.c	2006-03-16 10:54:09.000000000 +0100
++++ gcc-4.1.0/gcc/gcc.c	2006-03-16 11:04:36.000000000 +0100
+@@ -243,7 +243,7 @@
+ static const char *cross_compile = "0";
+ #endif
+ 
+-#ifdef MODIFY_TARGET_NAME
++#if 0
+ 
+ /* Information on how to alter the target name based on a command-line
+    switch.  The only case we support now is simply appending or deleting a
+@@ -2384,7 +2384,7 @@
+ 
+ 	  first_time = FALSE;
+ 	  obstack_grow (&collect_obstack, pprefix->prefix, len);
+-	  obstack_grow (&collect_obstack, machine_suffix, suffix_len);
++/*	  obstack_grow (&collect_obstack, machine_suffix, suffix_len);*/
+ 	}
+ 
+       if (just_machine_suffix
+@@ -2397,8 +2397,8 @@
+ 
+ 	  first_time = FALSE;
+ 	  obstack_grow (&collect_obstack, pprefix->prefix, len);
+-	  obstack_grow (&collect_obstack, just_machine_suffix,
+-			just_suffix_len);
++/*	  obstack_grow (&collect_obstack, just_machine_suffix,
++			just_suffix_len);*/
+ 	}
+ 
+       if (! pprefix->require_machine_suffix)
+@@ -2511,7 +2511,7 @@
+ 	    if (file_suffix[0] != 0)
+ 	      {
+ 		strcpy (temp, pl->prefix);
+-		strcat (temp, machine_suffix);
++/*		strcat (temp, machine_suffix);*/
+ 		strcat (temp, multilib_name);
+ 		strcat (temp, file_suffix);
+ 		if (access_check (temp, mode) == 0)
+@@ -2520,7 +2520,7 @@
+ 
+ 	    /* Now try just the multilib_name.  */
+ 	    strcpy (temp, pl->prefix);
+-	    strcat (temp, machine_suffix);
++/*	    strcat (temp, machine_suffix);*/
+ 	    strcat (temp, multilib_name);
+ 	    if (access_check (temp, mode) == 0)
+ 	      return temp;
+@@ -2535,7 +2535,7 @@
+ 	    if (file_suffix[0] != 0)
+ 	      {
+ 		strcpy (temp, pl->prefix);
+-		strcat (temp, just_machine_suffix);
++/*		strcat (temp, just_machine_suffix);*/
+ 		strcat (temp, multilib_name);
+ 		strcat (temp, file_suffix);
+ 		if (access_check (temp, mode) == 0)
+@@ -2543,7 +2543,7 @@
+ 	      }
+ 
+ 	    strcpy (temp, pl->prefix);
+-	    strcat (temp, just_machine_suffix);
++/*	    strcat (temp, just_machine_suffix);*/
+ 	    strcat (temp, multilib_name);
+ 	    if (access_check (temp, mode) == 0)
+ 	      return temp;
+@@ -3154,7 +3154,7 @@
+   const char *spec_lang = 0;
+   int last_language_n_infiles;
+   int lang_n_infiles = 0;
+-#ifdef MODIFY_TARGET_NAME
++#if 0
+   int is_modify_target_name;
+   int j;
+ #endif
+@@ -3745,7 +3745,7 @@
+ 	    default:
+ 	    normal_switch:
+ 
+-#ifdef MODIFY_TARGET_NAME
++#if 0
+ 	      is_modify_target_name = 0;
+ 
+ 	      for (j = 0; j < ARRAY_SIZE (modify_target); j++)
+@@ -3829,8 +3829,7 @@
+   add_prefix (&startfile_prefixes, standard_exec_prefix_2, "BINUTILS",
+ 	      PREFIX_PRIORITY_LAST, 1, 0);
+ 
+-  tooldir_prefix = concat (tooldir_base_prefix, spec_machine,
+-			   dir_separator_str, NULL);
++  tooldir_prefix = concat (tooldir_base_prefix, NULL);
+ 
+   /* If tooldir is relative, base it on exec_prefixes.  A relative
+      tooldir lets us move the installed tree as a unit.
+@@ -3844,8 +3843,7 @@
+       if (gcc_exec_prefix)
+ 	{
+ 	  char *gcc_exec_tooldir_prefix
+-	    = concat (gcc_exec_prefix, spec_machine, dir_separator_str,
+-		      spec_version, dir_separator_str, tooldir_prefix, NULL);
++	    = concat (gcc_exec_prefix, dir_separator_str, tooldir_prefix, NULL);
+ 
+ 	  add_prefix (&exec_prefixes,
+ 		      concat (gcc_exec_tooldir_prefix, "bin",
+@@ -3857,9 +3855,7 @@
+ 		      NULL, PREFIX_PRIORITY_LAST, 0, 1);
+ 	}
+ 
+-      tooldir_prefix = concat (standard_exec_prefix, spec_machine,
+-			       dir_separator_str, spec_version,
+-			       dir_separator_str, tooldir_prefix, NULL);
++      tooldir_prefix = concat (standard_exec_prefix, dir_separator_str, tooldir_prefix, NULL);
+     }
+ 
+   add_prefix (&exec_prefixes,
+@@ -4421,7 +4417,7 @@
+ 		  + strlen (machine_suffix)) * 2 + 1;
+       buffer = xrealloc (buffer, bufsize);
+       strcpy (buffer, pl->prefix);
+-      strcat (buffer, machine_suffix);
++/*      strcat (buffer, machine_suffix);*/
+       if (is_directory (buffer, dir_for_machine_suffix, 1))
+ 	{
+ 	  multilib_p = true;
+@@ -6152,7 +6148,7 @@
+ 		       + strlen (just_machine_suffix) + sizeof ("specs"));
+ 
+   strcpy (specs_file, standard_exec_prefix);
+-  strcat (specs_file, just_machine_suffix);
++/*  strcat (specs_file, just_machine_suffix);*/
+   strcat (specs_file, "specs");
+   if (access (specs_file, R_OK) == 0)
+     read_specs (specs_file, TRUE);
+@@ -6250,12 +6246,12 @@
+ 	{
+ 	  if (gcc_exec_prefix)
+ 	    add_prefix (&startfile_prefixes,
+-			concat (gcc_exec_prefix, machine_suffix,
++			concat (gcc_exec_prefix, /*machine_suffix,*/
+ 				standard_startfile_prefix, NULL),
+ 			NULL, PREFIX_PRIORITY_LAST, 0, 1);
+ 	  add_prefix (&startfile_prefixes,
+ 		      concat (standard_exec_prefix,
+-			      machine_suffix,
++/*			      machine_suffix,*/
+ 			      standard_startfile_prefix, NULL),
+ 		      NULL, PREFIX_PRIORITY_LAST, 0, 1);
+ 	}
+@@ -6281,8 +6277,7 @@
+ 
+   /* If we have a GCC_EXEC_PREFIX envvar, modify it for cpp's sake.  */
+   if (gcc_exec_prefix)
+-    gcc_exec_prefix = concat (gcc_exec_prefix, spec_machine, dir_separator_str,
+-			      spec_version, dir_separator_str, NULL);
++    gcc_exec_prefix = concat (gcc_exec_prefix, dir_separator_str, NULL);
+ 
+   /* Now we have the specs.
+      Set the `valid' bits for switches that match anything in any spec.  */

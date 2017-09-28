@@ -1,0 +1,25 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=pyphany
+version=0.1.4
+release=1
+source=(ftp://ftp.gnome.org./pub/gnome/sources/pyphany/0.1/pyphany-$version.tar.bz2)
+
+build()
+{
+  cd pyphany-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

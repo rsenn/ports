@@ -1,0 +1,34 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A utility which provides statistics based on the output of diff.
+# Diffstat reads the output of the diff command and displays a histogram
+# of the insertions, deletions, and modifications in each file. Diffstat
+# is commonly used to provide a summary of the changes in large, complex
+# patch files.
+#
+# URL: http://invisible-island.net/diffstat/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=diffstat
+version=1.45
+release=1
+source=(ftp://invisible-island.net/diffstat/diffstat-$version.tgz)
+
+build()
+{
+  cd diffstat-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix" \
+       --mandir="$prefix/share/man"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/diffstat
+  install -m 644 [A-Z]*[A-Z]* $ROOT/share/doc/diffstat
+}

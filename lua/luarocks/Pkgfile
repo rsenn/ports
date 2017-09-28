@@ -1,0 +1,35 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A deployment system for Lua modules.
+#  LuaRocks is a deployment and management system for modules in the Lua
+#  programming language. It aims to provide facilities for Lua such as
+#  those from module systems of other scripting languages, such as Ruby's
+#  RubyGems or Perl's CPAN. LuaRocks allows Lua modules to be installed
+#  as self-contained packages called "rocks", which also contain version
+#  and dependency information. This information is used at install time
+#  so that when one rock is requested, all rocks it depends on are also
+#  installed. It's also used at run time so that when a module is required,
+#  the correct version is loaded.
+#  .
+# URL: http://www.luarocks.org/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=luarocks
+version=1.0
+release=1
+source=(http://luaforge.net/frs/download.php/3727/luarocks-$version.tar.gz)
+
+build()
+{
+  cd luarocks-$version
+
+  ./configure \
+     --prefix="$prefix" \
+     --with-lua="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

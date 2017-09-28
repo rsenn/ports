@@ -1,0 +1,34 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A translation-based natural language steganography system.
+#  Lost in Translation is a steganographic encoder that exploits the
+#  possibilities of steganographically embedding information in the "noise''
+#  created by automatic translation of natural language documents. Because
+#  natural language translation inherently creates plenty of room for
+#  variation, it is ideal for steganographic applications. Also, because
+#  there are frequent errors in legitimate automatic text translations,
+#  additional errors inserted by an information hiding mechanism are
+#  plausibly undetectable and would appear to be part of the normal noise
+#  associated with translation.
+#  .
+# URL: http://www.cs.purdue.edu/homes/rstutsma/stego/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=lit
+version=2.0.0
+release=1
+source=(https://gnunet.org/projects/stego/WWW/download/lit-$version.tar.gz)
+
+build()
+{
+  cd lit-$version
+
+  install -d $ROOT/share/lit
+  cp -rf src/* $ROOT/share/lit
+
+  install -d $ROOT/share/doc/lit
+  install -m 644 AUTHORS COPYING README ChangeLog $ROOT/share/doc/lit
+}
+
+# EOF

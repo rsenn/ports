@@ -1,0 +1,298 @@
+diff -ru -ru mysql-5.0.27_orig/innobase/srv/srv0start.c mysql-5.0.27/innobase/srv/srv0start.c
+--- mysql-5.0.27_orig/innobase/srv/srv0start.c	2007-01-19 15:12:25.000000000 +0100
++++ mysql-5.0.27/innobase/srv/srv0start.c	2007-01-19 15:15:41.000000000 +0100
+@@ -623,7 +623,6 @@
+ 	} else {
+ 		*log_file_created = TRUE;
+ 
+-	    	ut_print_timestamp(stderr);
+ 
+ 		fprintf(stderr,
+ 		"  InnoDB: Log file %s did not exist: new to be created\n",
+@@ -884,7 +883,6 @@
+ 			one_created = TRUE;
+ 
+ 			if (i > 0) {
+-	    			ut_print_timestamp(stderr);
+ 				fprintf(stderr, 
+ 		"  InnoDB: Data file %s did not exist: new to be created\n",
+ 									name);
+@@ -895,7 +893,6 @@
+ 				*create_new_db = TRUE;
+ 			}
+ 			
+-	    		ut_print_timestamp(stderr);
+ 			fprintf(stderr, 
+ 				"  InnoDB: Setting file %s size to %lu MB\n",
+ 			       name, (ulong) (srv_data_file_sizes[i]
+@@ -1472,7 +1469,7 @@
+ 
+ 			In a crash recovery, we check that the info in data
+ 			dictionary is consistent with what we already know
+-			about space id's from the call of
++ö			about space id's from the call of
+ 			fil_load_single_table_tablespaces().
+ 
+ 			In a normal startup, we create the space objects for
+@@ -1662,9 +1659,8 @@
+ 	os_fast_mutex_free(&srv_os_test_mutex);
+ 
+ 	if (srv_print_verbose_log) {
+-	  	ut_print_timestamp(stderr);
+ 	  	fprintf(stderr,
+-"  InnoDB: Started; log sequence number %lu %lu\n",
++"InnoDB: Started; log sequence number %lu %lu\n",
+ 			(ulong) ut_dulint_get_high(srv_start_lsn),
+ 			(ulong) ut_dulint_get_low(srv_start_lsn));
+ 	}
+@@ -1747,7 +1743,6 @@
+ #endif
+         if (!srv_was_started) {
+ 	  	if (srv_is_being_started) {
+-	    		ut_print_timestamp(stderr);
+             		fprintf(stderr, 
+ "  InnoDB: Warning: shutting down a not properly started\n"
+ "                 InnoDB: or created database!\n");
+@@ -1763,7 +1758,6 @@
+ 
+ 
+ 	if (srv_fast_shutdown == 2) {
+-	        ut_print_timestamp(stderr);
+ 		fprintf(stderr,
+ "  InnoDB: MySQL has requested a very fast shutdown without flushing "
+ "the InnoDB buffer pool to data files. At the next mysqld startup "
+@@ -1907,7 +1901,6 @@
+ 	}
+ 
+ 	if (srv_print_verbose_log) {
+-	        ut_print_timestamp(stderr);
+ 	        fprintf(stderr,
+ "  InnoDB: Shutdown completed; log sequence number %lu %lu\n",
+ 			       (ulong) ut_dulint_get_high(srv_shutdown_lsn),
+diff -ru -ru mysql-5.0.27_orig/innobase/ut/ut0ut.c mysql-5.0.27/innobase/ut/ut0ut.c
+--- mysql-5.0.27_orig/innobase/ut/ut0ut.c	2007-01-19 15:12:23.000000000 +0100
++++ mysql-5.0.27/innobase/ut/ut0ut.c	2007-01-19 15:15:41.000000000 +0100
+@@ -116,39 +116,6 @@
+ /*===============*/
+ 	FILE*  file) /* in: file where to print */
+ {
+-#ifdef __WIN__
+-  	SYSTEMTIME cal_tm;
+-
+-  	GetLocalTime(&cal_tm);
+-
+-  	fprintf(file,"%02d%02d%02d %2d:%02d:%02d",
+-	  (int)cal_tm.wYear % 100,
+-	  (int)cal_tm.wMonth,
+-	  (int)cal_tm.wDay,
+-	  (int)cal_tm.wHour,
+-	  (int)cal_tm.wMinute,
+-	  (int)cal_tm.wSecond);
+-#else
+-	struct tm  cal_tm;
+-  	struct tm* cal_tm_ptr;
+-  	time_t     tm;
+-
+-  	time(&tm);
+-
+-#ifdef HAVE_LOCALTIME_R
+-  	localtime_r(&tm, &cal_tm);
+-  	cal_tm_ptr = &cal_tm;
+-#else
+-  	cal_tm_ptr = localtime(&tm);
+-#endif
+-  	fprintf(file,"%02d%02d%02d %2d:%02d:%02d",
+-	  cal_tm_ptr->tm_year % 100,
+-	  cal_tm_ptr->tm_mon + 1,
+-	  cal_tm_ptr->tm_mday,
+-	  cal_tm_ptr->tm_hour,
+-	  cal_tm_ptr->tm_min,
+-	  cal_tm_ptr->tm_sec);
+-#endif
+ }
+ 
+ /**************************************************************
+@@ -159,39 +126,6 @@
+ /*=================*/
+ 	char*	buf) /* in: buffer where to sprintf */
+ {
+-#ifdef __WIN__
+-  	SYSTEMTIME cal_tm;
+-
+-  	GetLocalTime(&cal_tm);
+-
+-  	sprintf(buf, "%02d%02d%02d %2d:%02d:%02d",
+-	  (int)cal_tm.wYear % 100,
+-	  (int)cal_tm.wMonth,
+-	  (int)cal_tm.wDay,
+-	  (int)cal_tm.wHour,
+-	  (int)cal_tm.wMinute,
+-	  (int)cal_tm.wSecond);
+-#else
+-	struct tm  cal_tm;
+-  	struct tm* cal_tm_ptr;
+-  	time_t     tm;
+-
+-  	time(&tm);
+-
+-#ifdef HAVE_LOCALTIME_R
+-  	localtime_r(&tm, &cal_tm);
+-  	cal_tm_ptr = &cal_tm;
+-#else
+-  	cal_tm_ptr = localtime(&tm);
+-#endif
+-  	sprintf(buf, "%02d%02d%02d %2d:%02d:%02d",
+-	  cal_tm_ptr->tm_year % 100,
+-	  cal_tm_ptr->tm_mon + 1,
+-	  cal_tm_ptr->tm_mday,
+-	  cal_tm_ptr->tm_hour,
+-	  cal_tm_ptr->tm_min,
+-	  cal_tm_ptr->tm_sec);
+-#endif
+ }
+ 
+ /**************************************************************
+@@ -203,39 +137,7 @@
+ /*=====================================*/
+ 	char*	buf) /* in: buffer where to sprintf */
+ {
+-#ifdef __WIN__
+-  	SYSTEMTIME cal_tm;
+-
+-  	GetLocalTime(&cal_tm);
+-
+-  	sprintf(buf, "%02d%02d%02d_%2d_%02d_%02d",
+-	  (int)cal_tm.wYear % 100,
+-	  (int)cal_tm.wMonth,
+-	  (int)cal_tm.wDay,
+-	  (int)cal_tm.wHour,
+-	  (int)cal_tm.wMinute,
+-	  (int)cal_tm.wSecond);
+-#else
+-	struct tm  cal_tm;
+-  	struct tm* cal_tm_ptr;
+-  	time_t     tm;
+-
+-  	time(&tm);
+-
+-#ifdef HAVE_LOCALTIME_R
+-  	localtime_r(&tm, &cal_tm);
+-  	cal_tm_ptr = &cal_tm;
+-#else
+-  	cal_tm_ptr = localtime(&tm);
+-#endif
+-  	sprintf(buf, "%02d%02d%02d_%2d_%02d_%02d",
+-	  cal_tm_ptr->tm_year % 100,
+-	  cal_tm_ptr->tm_mon + 1,
+-	  cal_tm_ptr->tm_mday,
+-	  cal_tm_ptr->tm_hour,
+-	  cal_tm_ptr->tm_min,
+-	  cal_tm_ptr->tm_sec);
+-#endif
++  buf[0] = '\0';
+ }
+ 
+ /**************************************************************
+diff -ru -ru mysql-5.0.27_orig/libmysqld/log.cc mysql-5.0.27/libmysqld/log.cc
+--- mysql-5.0.27_orig/libmysqld/log.cc	2007-01-19 15:12:32.000000000 +0100
++++ mysql-5.0.27/libmysqld/log.cc	2007-01-19 15:15:41.000000000 +0100
+@@ -1514,26 +1514,6 @@
+ 	skr=time(NULL);
+ 	id=0;
+       }
+-      if (skr != last_time)
+-      {
+-	last_time=skr;
+-	struct tm tm_tmp;
+-	struct tm *start;
+-	localtime_r(&skr,&tm_tmp);
+-	start=&tm_tmp;
+-	/* Note that my_b_write() assumes it knows the length for this */
+-	sprintf(buff,"%02d%02d%02d %2d:%02d:%02d\t",
+-		start->tm_year % 100,
+-		start->tm_mon+1,
+-		start->tm_mday,
+-		start->tm_hour,
+-		start->tm_min,
+-		start->tm_sec);
+-	if (my_b_write(&log_file, (byte*) buff,16))
+-	  error=errno;
+-      }
+-      else if (my_b_write(&log_file, (byte*) "\t\t",2) < 0)
+-	error=errno;
+       length=my_sprintf(buff,
+ 			(buff, "%7ld %-11.11s", id,
+ 			 command_name[(uint) command]));
+@@ -2239,13 +2219,7 @@
+   skr=time(NULL);
+   localtime_r(&skr, &tm_tmp);
+   start=&tm_tmp;
+-  fprintf(stderr, "%02d%02d%02d %2d:%02d:%02d [%s] %s\n",
+-          start->tm_year % 100,
+-          start->tm_mon+1,
+-          start->tm_mday,
+-          start->tm_hour,
+-          start->tm_min,
+-          start->tm_sec,
++  fprintf(stderr, "[%s] %s\n",
+           (level == ERROR_LEVEL ? "ERROR" : level == WARNING_LEVEL ?
+            "Warning" : "Note"),
+           buffer);
+diff -ru -ru mysql-5.0.27_orig/libmysqld/log_event.cc mysql-5.0.27/libmysqld/log_event.cc
+--- mysql-5.0.27_orig/libmysqld/log_event.cc	2007-01-19 15:12:32.000000000 +0100
++++ mysql-5.0.27/libmysqld/log_event.cc	2007-01-19 15:15:41.000000000 +0100
+@@ -997,23 +997,6 @@
+ 
+ void Log_event::print_timestamp(FILE* file, time_t* ts)
+ {
+-  struct tm *res;
+-  if (!ts)
+-    ts = &when;
+-#ifdef MYSQL_SERVER				// This is always false
+-  struct tm tm_tmp;
+-  localtime_r(ts,(res= &tm_tmp));
+-#else
+-  res=localtime(ts);
+-#endif
+-
+-  fprintf(file,"%02d%02d%02d %2d:%02d:%02d",
+-	  res->tm_year % 100,
+-	  res->tm_mon+1,
+-	  res->tm_mday,
+-	  res->tm_hour,
+-	  res->tm_min,
+-	  res->tm_sec);
+ }
+ 
+ #endif /* MYSQL_CLIENT */
+diff -ru -ru mysql-5.0.27_orig/ndb/src/common/logger/LogHandler.cpp mysql-5.0.27/ndb/src/common/logger/LogHandler.cpp
+--- mysql-5.0.27_orig/ndb/src/common/logger/LogHandler.cpp	2007-01-19 15:12:12.000000000 +0100
++++ mysql-5.0.27/ndb/src/common/logger/LogHandler.cpp	2007-01-19 15:15:41.000000000 +0100
+@@ -95,8 +95,7 @@
+ 			     Logger::LoggerLevel level) const
+ {
+   char time[MAX_DATE_TIME_HEADER_LENGTH];
+-  BaseString::snprintf(pStr, MAX_HEADER_LENGTH, "%s [%s] %s -- ", 
+-	     getTimeAsString((char*)time),
++  BaseString::snprintf(pStr, MAX_HEADER_LENGTH, "[%s] %s -- ",
+ 	     pCategory,
+ 	     Logger::LoggerLevelNames[level]);
+  
+diff -ru -ru mysql-5.0.27_orig/sql/log.cc mysql-5.0.27/sql/log.cc
+--- mysql-5.0.27_orig/sql/log.cc	2007-01-19 15:12:26.000000000 +0100
++++ mysql-5.0.27/sql/log.cc	2007-01-19 15:15:41.000000000 +0100
+@@ -2239,13 +2239,7 @@
+   skr=time(NULL);
+   localtime_r(&skr, &tm_tmp);
+   start=&tm_tmp;
+-  fprintf(stderr, "%02d%02d%02d %2d:%02d:%02d [%s] %s\n",
+-          start->tm_year % 100,
+-          start->tm_mon+1,
+-          start->tm_mday,
+-          start->tm_hour,
+-          start->tm_min,
+-          start->tm_sec,
++  fprintf(stderr, "[%s] %s\n",
+           (level == ERROR_LEVEL ? "ERROR" : level == WARNING_LEVEL ?
+            "Warning" : "Note"),
+           buffer);

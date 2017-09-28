@@ -1,0 +1,21 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Create tar archive based on description list contents
+# URL: http://www.guru-group.fi/~too/sw/tarlisted/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=tarlisted
+version=2.2
+release=1
+source=(http://www.guru-group.fi/~too/sw/tarlisted/tarlisted-$version.tar.gz)
+
+build()
+{
+  cd tarlisted-$version
+
+  sed -i 's,%PREFIX/man,%PREFIX/share/man,g' Makefile
+
+  make
+  make PREFIX="$ROOT" install
+}

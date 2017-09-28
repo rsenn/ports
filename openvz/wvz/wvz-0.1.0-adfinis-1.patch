@@ -1,0 +1,48 @@
+diff -ru wvz_orig/www/vzctl-create.php wvz/www/vzctl-create.php
+--- wvz_orig/www/vzctl-create.php	2008-07-15 15:54:10.000000000 +0200
++++ wvz/www/vzctl-create.php	2008-05-23 13:10:59.000000000 +0200
+@@ -117,6 +117,11 @@
+ 		exec($v." start ".$_GET['vpsid']);
+ 	}
+ 	exec($v." set ".$_GET['vpsid']." --userpasswd root:".$_GET['rootpsw']);
++  exec($v." set ".$_GET['vpsid']." --netif_add eth0");
++  exec($v." set ".$_GET['vpsid']." --save");
++
++  exec("/bin/sed -i 's/^IP_ADDRESS=/CONFIG_CUSTOMIZED=\\\"yes\\\"\\nVETH_IP_ADDRESS=/' /etc/vz/conf/".$_GET['vpsid'].".conf");
++
+ 	echo("New VPS ".$_GET['vpsid']." (".$_GET['hostname'].") created.<br>\n<br>\n");
+ 
+ }
+@@ -203,7 +208,7 @@
+ <input type="text" name="ip" size="13" maxlength="15"></td>
+ </tr><tr>
+ <td align="right">Memory:</td>
+-<td><input type="text" name="mem" value="64" size="2" maxlength="4">
++<td><input type="text" name="mem" value="256" size="2" maxlength="4">
+ <select name="memunits">
+ <option value="M" selected>Mb
+ <option value="G">Gb
+@@ -211,18 +216,18 @@
+ </td>
+ </tr><tr>
+ <td align="right">Disk space:</td>
+-<td><input type="text" name="disk" value="512" size="4" maxlength="6">
++<td><input type="text" name="disk" value="8" size="4" maxlength="6">
+ <select name="diskunits">
+-<option value="M" selected>Mb
+-<option value="G">Gb
++<option value="M">Mb
++<option value="G" selected>Gb
+ </select>
+ </td>
+ </tr><tr>
+ <td align="right">Process limit:</td>
+-<td><input type="text" name="numproc" value="64" size="6" maxlength="8"></td>
++<td><input type="text" name="numproc" value="128" size="6" maxlength="8"></td>
+ </tr><tr>
+ <td align="right">Open file limit:</td>
+-<td><input type="text" name="numfile" value="1280" size="6" maxlength="8"></td>
++<td><input type="text" name="numfile" value="2560" size="6" maxlength="8"></td>
+ </tr><tr>
+ <td align="right">File lock limit:</td>
+ <td><input type="text" name="numflock" value="100" size="6" maxlength="8"></td>

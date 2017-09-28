@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A library for efficient, lightweight text classification.
+# Libtextcat is a library with functions that implement the classification
+# technique described in Cavnar amp;amp; Trenkle, amp;quot;N-Gram-Based
+# Text Categorizationamp;quot;. It was primarily developed for language
+# guessing, a task on which it is known to perform with near- perfect
+# accuracy. Considerable effort went into making this implementation fast
+# and efficient. The language guesser processes over 100 documents/second
+# on a simple PC, which makes it practical for many uses.
+#
+# URL: http://software.wise-guys.nl/libtextcat/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=libtextcat
+version=2.2
+release=1
+source=(http://software.wise-guys.nl/download/libtextcat-$version.tar.gz)
+
+build()
+{
+  cd libtextcat-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

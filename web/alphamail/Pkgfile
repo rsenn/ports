@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A middleware-accelerated Web mail client.
+#  AlphaMail is a mod_perl webmail system with a C++ middleware component
+#  that is intended to make the system highly scalable. It supports many
+#  Unix variants with any RFC-compliant IMAP server (including UW, Cyrus,
+#  and Dovecot).
+#  .
+# URL: http://sourceforge.net/projects/alphamail
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=alphamail
+version=1.0.44
+release=1
+source=($mirror_sf/alphamail/alphamail-1.0.44.tar.gz)
+
+build()
+{
+  cd alphamail-1.0.44
+./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+make
+make DESTDIR="$PKG" install
+}
+
+# EOF

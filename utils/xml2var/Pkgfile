@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: xml2var is an XML file parser which converts XML tags to shell variables
+# URL: http://freshmeat.net/redir/xml2var/28928/url_bz2/xml2var-v2.tar.bz2
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libexpat1
+
+name=xml2var
+version=2.0
+release=1
+source=(http://www.antitachyon.com/download/xml2var-v${version%.*}.tar.bz2
+        xml2var-v2-nostrip-strfix.patch)
+
+build()
+{
+  cd xml2var
+
+  patch -N -p1 -i $SRC/xml2var-v2-nostrip-strfix.patch
+
+  make CFLAGS="$CFLAGS"
+
+  install -d $ROOT/bin
+  install -m 755 xml2var $ROOT/bin
+
+  install -d $ROOT/share/doc/xml2var
+  install -m 644 CHANGES COPYING README $ROOT/share/doc/xml2var
+  install -m 644 sample* $ROOT/share/doc/xml2var
+}

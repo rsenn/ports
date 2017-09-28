@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A set of foreign function call libraries.
+#  ffcall is a collection of four libraries which can be used to build
+#  foreign function call interfaces in embedded interpreters.
+#  .
+# URL: http://www.haible.de/bruno/packages-ffcall.html
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=ffcall
+version=1.10
+release=1
+source=(http://www.haible.de/bruno/gnu/ffcall-$version.tar.gz)
+
+build()
+{
+  cd ffcall-$version
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --prefix="$prefix" \
+     --mandir="$prefix/share/man"
+
+  make
+
+  install -d $ROOT/share/man
+
+  make DESTDIR="$PKG" install
+}
+
+# EOF

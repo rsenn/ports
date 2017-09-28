@@ -1,0 +1,48 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:50 roman Exp $
+#
+# Package: libyaml
+# Description: 
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=yaml
+version=0.1.1
+release=1
+source=(http://pyyaml.org/download/libyaml/yaml-$version.tar.gz
+        yaml-0.0.1-svn.patch
+        yaml-0.1.1-libtool.patch)
+
+build()
+{
+  cd yaml-$version
+
+  patch -N -p1 -i $SRC/yaml-0.1.1-libtool.patch
+
+  rm -f Makefile.in aclocal.m4
+#  patch -N -p1 -i $SRC/yaml-0.0.1-svn.patch
+  mkdir -p config
+
+  libtoolize --force --copy
+  aclocal --force
+  autoheader --force
+  automake --force --copy --foreign --add-missing
+  aclocal --force
+  autoconf --force
+
+  export CPPFLAGS="-DYAML_DECLARE_EXPORT"
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --${shared:=enable}-shared \
+      --${static:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/libyaml
+  install -m 644 [A-Z]*[A-Z]* $ROOT/share/doc/libyaml
+  cp -rf doc/* $ROOT/share/doc/libyaml
+}

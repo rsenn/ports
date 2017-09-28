@@ -1,0 +1,298 @@
+args: -r -u -- libtool-2.2.4_orig libtool-2.2.4
+diff -r -u -- libtool-2.2.4_orig/Makefile libtool-2.2.4/Makefile
+diff -r -u -- libtool-2.2.4_orig/autom4te.cache/output.0 libtool-2.2.4/autom4te.cache/output.0
+diff -r -u -- libtool-2.2.4_orig/autom4te.cache/output.1 libtool-2.2.4/autom4te.cache/output.1
+diff -r -u -- libtool-2.2.4_orig/autom4te.cache/traces.0 libtool-2.2.4/autom4te.cache/traces.0
+diff -r -u -- libtool-2.2.4_orig/autom4te.cache/traces.1 libtool-2.2.4/autom4te.cache/traces.1
+diff -r -u -- libtool-2.2.4_orig/config.log libtool-2.2.4/config.log
+diff -r -u -- libtool-2.2.4_orig/config.status libtool-2.2.4/config.status
+diff -r -u -- libtool-2.2.4_orig/configure libtool-2.2.4/configure
+diff -r -u -- libtool-2.2.4_orig/libltdl/autom4te.cache/output.0 libtool-2.2.4/libltdl/autom4te.cache/output.0
+diff -r -u -- libtool-2.2.4_orig/libltdl/autom4te.cache/output.1 libtool-2.2.4/libltdl/autom4te.cache/output.1
+diff -r -u -- libtool-2.2.4_orig/libltdl/autom4te.cache/traces.0 libtool-2.2.4/libltdl/autom4te.cache/traces.0
+diff -r -u -- libtool-2.2.4_orig/libltdl/config/config.sub libtool-2.2.4/libltdl/config/config.sub
+diff -r -u -- libtool-2.2.4_orig/libltdl/configure libtool-2.2.4/libltdl/configure
+diff -r -u -- libtool-2.2.4_orig/libltdl/m4/libtool.m4 libtool-2.2.4/libltdl/m4/libtool.m4
+--- libtool-2.2.4_orig/libltdl/m4/libtool.m4	2008-07-16 00:55:33.000000000 +0200
++++ libtool-2.2.4/libltdl/m4/libtool.m4	2008-07-16 02:43:49.000000000 +0200
+@@ -319,7 +319,7 @@
+ 
+ 
+ 
+-## ------------------------ ##
++##'------------------------ ##
+ ## FIXME: Eliminate VARNAME ##
+ ## ------------------------ ##
+ 
+@@ -554,7 +554,7 @@
+ ])
+ 
+ 
+-# LT_OUTPUT
++#"LT_OUTPUT
+ # ---------
+ # This macro allows early generation of the libtool script (before
+ # AC_OUTPUT is called), incase it is used in configure for compilation
+@@ -1738,7 +1738,7 @@
+     lt_cv_dlopen_self=yes
+     ;;
+ 
+-  mingw* | pw32*)
++  mingw* | pw32* | msvc* | icl*)
+     lt_cv_dlopen="LoadLibrary"
+     lt_cv_dlopen_libs=
+     ;;
+@@ -2241,7 +2241,7 @@
+         # especially as we might pass files found there to a mingw objdump,
+         # which wouldn't understand a cygwinified path. Ahh.
+         sys_lib_search_path_spec=`$ECHO "$sys_lib_search_path_spec" | $SED -e 's/;/ /g'`
+-      else
++
+         sys_lib_search_path_spec=`$ECHO "$sys_lib_search_path_spec" | $SED  -e "s/$PATH_SEPARATOR/ /g"`
+       fi
+       ;;
+@@ -2251,12 +2251,34 @@
+       ;;
+     esac
+     ;;
+-
+-  *)
+-    library_names_spec='${libname}`echo ${release} | $SED -e 's/[[.]]/-/g'`${versuffix}${shared_ext} $libname.lib'
+-    ;;
+   esac
+-  dynamic_linker='Win32 ld.exe'
++  ;;
++
++msvc* | icl*)
++  version_type=windows
++  shrext_cmds=".dll"
++  need_version=no
++  need_lib_prefix=no
++  dynamic_linker='MSVC cl.exe'
++
++#  library_names_spec='$libname${release}${libdebug}.lib'
++  # DLL is installed to $(libdir)/../bin by postinstall_cmds
++  postinstall_cmds='base_file=`basename \${file}`~
++      dlpath=`$SHELL 2>&1 -c '\''. $dir/'\''\${base_file}'\''i; echo \$dlname'\''`~
++      dldir=$destdir/`dirname \$dlpath`~
++      test -d \$dldir || mkdir -p \$dldir~
++      $install_prog $dir/$dlname \$dldir/$dlname~
++      chmod a+x \$dldir/$dlname~
++      if test -n '\''$stripme'\'' && test -n '\''$striplib'\''; then
++        eval '\''$striplib \$dldir/$dlname'\'' || exit \$?;
++      fi'
++    postuninstall_cmds='dldll=`$SHELL 2>&1 -c '\''. $file; echo \$dlname'\''`~
++      dlpath=$dir/\$dldll~
++       $RM \$dlpath'
++  shlibpath_overrides_runpath=yes
++
++  library_names_spec='${libname}${release}${libdebug}${shared_ext} ${libname}${release}${libdebug}.lib'
++
+   # FIXME: first we should search . and the directory the executable is in
+   shlibpath_var=PATH
+   ;;
+@@ -2555,7 +2577,10 @@
+   # Some older versions of OpenBSD (3.3 at least) *do* need versioned libs.
+   case $host_os in
+     openbsd3.3 | openbsd3.3.*)	need_version=yes ;;
+-    *)				need_version=no  ;;
++    *)
++    
++    LEFT014ASHKEN, MARCROOT ROT EP12LEFTROOM
++    need_version=no  ;;
+   esac
+   library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${shared_ext}$versuffix'
+   finish_cmds='PATH="\$PATH:/sbin" ldconfig -m $libdir'
+@@ -2731,6 +2756,8 @@
+     The last name is the one that the linker finds with -lNAME]])
+ _LT_DECL([], [soname_spec], [1],
+     [[The coded name of the library, if different from the real name]])
++_LT_DECL([], [exec_output_option], [1],
++    [[The command line option used for an executable output file]])
+ _LT_DECL([], [postinstall_cmds], [2],
+     [Command to use after installation of a shared archive])
+ _LT_DECL([], [postuninstall_cmds], [2],
+@@ -2885,6 +2912,20 @@
+   AC_MSG_CHECKING([for GNU ld])
+ else
+   AC_MSG_CHECKING([for non-GNU ld])
++
++  if test "$MSVC" = yes; then
++    if test "$INTELC" = yes; then
++      ac_prog="xilink.exe"
++    else
++      ac_prog="link.exe"
++    fi
++dnl  else
++dnl    case $host in
++dnl      *-icl*) ac_prog="xilink.exe" ;;
++dnl      *-msvc*) ac_prog="link.exe" ;;
++dnl    esac
++  fi
++    
+ fi
+ AC_CACHE_VAL(lt_cv_path_LD,
+ [if test -z "$LD"; then
+@@ -3020,7 +3061,7 @@
+   lt_cv_file_magic_cmd='func_win32_libid'
+   ;;
+ 
+-mingw* | pw32*)
++mingw* | pw32* | msvc* | icl*)
+   # Base MSYS/MinGW do not provide the 'file' command needed by
+   # func_win32_libid shell function, so use a weaker test based on 'objdump',
+   # unless we find 'file', for example because we are cross-compiling.
+@@ -3275,13 +3316,16 @@
+ [AC_REQUIRE([AC_CANONICAL_HOST])dnl
+ LIBM=
+ case $host in
+-*-*-beos* | *-*-cygwin* | *-*-pw32* | *-*-darwin*)
++*-*-beos* | *-*-cygwin* | *-*-pw32* | *-*-msvc* | *-*-icl* | *-*-darwin*)
+   # These system don't have libm, or don't need it
+   ;;
+ *-ncr-sysv4.3*)
+   AC_CHECK_LIB(mw, _mwvalidcheckl, LIBM="-lmw")
+   AC_CHECK_LIB(m, cos, LIBM="$LIBM -lm")
+   ;;
++*-icl*)
++  AC_CHECK_LIB(m, cos, LIBM="$LIBM libm.lib")
++  ;;
+ *)
+   AC_CHECK_LIB(m, cos, LIBM="-lm")
+   ;;
+@@ -3344,7 +3388,7 @@
+ aix*)
+   symcode='[[BCDT]]'
+   ;;
+-cygwin* | mingw* | pw32*)
++cygwin* | mingw* | pw32* | msvc* | icl*)
+   symcode='[[ABCDGISTW]]'
+   ;;
+ hpux*)
+@@ -3590,7 +3634,7 @@
+     beos* | irix5* | irix6* | nonstopux* | osf3* | osf4* | osf5*)
+       # PIC is the default for these OSes.
+       ;;
+-    mingw* | cygwin* | os2* | pw32*)
++    mingw* | cygwin* | os2* | *w32* | msvc* | icl* | win*)
+       # This hack is so that the source file can tell whether it is being
+       # built for inclusion in a dll (and should export symbols for example).
+       # Although the cygwin gcc ignores -fPIC, still need this for old-style
+@@ -3700,6 +3744,22 @@
+ 	# This is c89, which is MS Visual C++ (no shared libs)
+ 	# Anyone wants to do a port?
+ 	;;
++      os2* | *w32* | msvc* | icl* | win*)
++	# MS Visual C++ or Intel C++
++  _LT_AC_TAGVAR(lt_prog_compiler_pic, $1)='-DDLL_EXPORT'  
++	;;
++      os2* | *w32* | msvc* | icl* | win*)
++	# MS Visual C++ or Intel C++
++  _LT_AC_TAGVAR(lt_prog_compiler_pic, $1)='-DDLL_EXPORT'  
++	;;
++      os2* | *w32* | msvc* | icl* | win*)
++	# MS Visual C++ or Intel C++
++  _LT_AC_TAGVAR(lt_prog_compiler_pic, $1)='-DDLL_EXPORT'  
++	;;
++      os2* | *w32* | msvc* | icl* | win*)
++	# MS Visual C++ or Intel C++
++  _LT_AC_TAGVAR(lt_prog_compiler_pic, $1)='-DDLL_EXPORT'  
++	;;
+       irix5* | irix6* | nonstopux*)
+ 	case $cc_basename in
+ 	  CC*)
+@@ -3889,7 +3949,7 @@
+       # PIC is the default for these OSes.
+       ;;
+ 
+-    mingw* | cygwin* | pw32* | os2*)
++    mingw* | cygwin* | *w32* | os2* | msvc* | icl* | win*)
+       # This hack is so that the source file can tell whether it is being
+       # built for inclusion in a dll (and should export symbols for example).
+       # Although the cygwin gcc ignores -fPIC, still need this for old-style
+@@ -3958,7 +4018,7 @@
+       fi
+       ;;
+ 
+-    mingw* | cygwin* | pw32* | os2*)
++    mingw* | cygwin* | *w32* | os2* | msvc* | icl* | win*)
+       # This hack is so that the source file can tell whether it is being
+       # built for inclusion in a dll (and should export symbols for example).
+       m4_if([$1], [GCJ], [],
+@@ -4188,6 +4248,7 @@
+   _LT_TAGVAR(allow_undefined_flag, $1)=
+   _LT_TAGVAR(always_export_symbols, $1)=no
+   _LT_TAGVAR(archive_cmds, $1)=
++  _LT_TAGVAR(exec_output_option, $1)="-o "
+   _LT_TAGVAR(archive_expsym_cmds, $1)=
+   _LT_TAGVAR(compiler_needs_object, $1)=no
+   _LT_TAGVAR(enable_shared_with_static_runtimes, $1)=no
+@@ -4227,7 +4288,7 @@
+   extract_expsyms_cmds=
+ 
+   case $host_os in
+-  cygwin* | mingw* | pw32*)
++  cygwin* | mingw* | *w32* | icl* | msvc* | win*)
+     # FIXME: the MSVC++ port hasn't been tested in a loooong time
+     # When not using gcc, we currently assume that we are using
+     # Microsoft Visual C++.
+@@ -4665,24 +4726,40 @@
+       _LT_TAGVAR(export_dynamic_flag_spec, $1)=-rdynamic
+       ;;
+ 
+-    cygwin* | mingw* | pw32*)
++    cygwin* | mingw* | msys* | pw32* | icl* | msvc*)
+       # When not using gcc, we currently assume that we are using
+       # Microsoft Visual C++.
+       # hardcode_libdir_flag_spec is actually meaningless, as there is
+       # no search path for DLLs.
+       _LT_TAGVAR(hardcode_libdir_flag_spec, $1)=' '
+-      _LT_TAGVAR(allow_undefined_flag, $1)=unsupported
++dnl       _LT_TAGVAR(allow_undefined_flag, $1)=unsupported
+       # Tell ltmain to make .lib files, not .a files.
+       libext=lib
+       # Tell ltmain to make .dll files, not .so files.
+       shrext_cmds=".dll"
++      # Tell ltmain to make .dll files, not .so files.
++      case $host_os in
++        icl* | msvc*) _LT_TAGVAR(exec_output_option, $1)="/Fe" ;;
++      esac
++      _LT_TAGVAR(postinstall_cmds, $1)=
++      _LT_TAGVAR(old_postinstall_cmds, $1)="chmod 644 \$oldlib"
++      case $host_os in
++        icl* | msvc*) _LT_TAGVAR(archive_cmds, $1)='$CC /LD $exec_output_option$lib $libobjs $compiler_flags `$ECHO "X$deplibs" | $Xsed -e '\''s/ -lc$//'\''`' ;;
+       # FIXME: Setting linknames here is a bad hack.
+-      _LT_TAGVAR(archive_cmds, $1)='$CC -o $lib $libobjs $compiler_flags `$ECHO "X$deplibs" | $Xsed -e '\''s/ -lc$//'\''` -link -dll~linknames='
++        *) _LT_TAGVAR(archive_cmds, $1)='$CC -o $lib $libobjs $compiler_flags `$ECHO "X$deplibs" | $Xsed -e '\''s/ -lc$//'\''` -link -dll~linknames=' ;;
++      esac
++      
+       # The linker will automatically build a .lib file if we build a DLL.
+       _LT_TAGVAR(old_archive_from_new_cmds, $1)='true'
+       # FIXME: Should let the user specify the lib program.
+-      _LT_TAGVAR(old_archive_cmds, $1)='lib -OUT:$oldlib$oldobjs$old_deplibs'
+-      _LT_TAGVAR(fix_srcfile_path, $1)='`cygpath -w "$srcfile"`'
++      _LT_TAGVAR(old_archive_cmds, $1)='lib.exe -OUT:$oldlib$oldobjs$old_deplibs'
++      
++      _LT_TAGVAR(archive_cmds_need_lc, $1)=no
++      
++      case $host_os in
++        cygwin* | msys*) _LT_TAGVAR(fix_srcfile_path, $1)='`cygpath -w "$srcfile"`' ;;
++      esac
++
+       _LT_TAGVAR(enable_shared_with_static_runtimes, $1)=yes
+       ;;
+ 
+--- libtool-2.2.4_orig/libltdl/config/config.sub	2008-06-26 06:01:16.000000000 +0200
++++ libtool-2.2.4/libltdl/config/config.sub	2008-06-26 06:17:02.000000000 +0200
+@@ -679,9 +679,9 @@
+ 		basic_machine=ns32k-utek
+ 		os=-sysv
+ 		;;
+-	mingw32)
++	mingw32*|msvc*|icl*)
++		os=-$basic_machine
+ 		basic_machine=i386-pc
+-		os=-mingw32
+ 		;;
+ 	msys)
+ 		basic_machine=i386-pc

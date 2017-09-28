@@ -1,0 +1,37 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: UN*X I/O abstraction library.
+#  Libxio is an abstraction library that provides standard UN*X I/O interface, 
+#  which allows to access local files as well as logistical networking 
+#  technology based "network files" represented by URI 
+#  lors:///local_path/exnode. 
+#  Compared to libxio library v0.1, several bugs have been fixed in v0.2 
+#  version. 
+#  .
+#  It was initially developed by Lukas Hejtmanek in the Czech Republic with 
+#  assistance and debugging by LoCI.
+#  .
+# URL: http://loci.cs.utk.edu/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=libxio
+version=0.2
+release=1
+source=(http://loci.cs.utk.edu/lors/distributions/libxio-$version.tar.gz)
+
+build() 
+{
+  cd libxio-$version
+  
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --with-lors="$prefix"
+  
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

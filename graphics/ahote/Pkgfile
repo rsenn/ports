@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A C++ library for creating color schemes.
+# A'Hote has been folded into the papyrus canvas library. A'Hote is a
+# C++ library for creating color schemes including complements, split
+# complements, triadics, tetradics, analogous colors, monochromatic groups,
+# shaded groups, and tinted groups. The color scheme generators are also
+# overloaded, allowing schemes of schemes to be generated. There are
+# functions for converting RGB, HSB, HSL, YUV, and RYB.
+#
+# URL: http://ahote.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=ahote
+version=0.1.0
+release=1
+source=($mirror_sf/ahote/ahote-$version.tar.bz2)
+
+build()
+{
+  cd ahote-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

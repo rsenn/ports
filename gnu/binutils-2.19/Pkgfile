@@ -1,0 +1,103 @@
+# $Id: Pkgfile,v 1.18 2007/04/22 23:07:53 roman Exp $
+#
+# Description: Collection of binary utilities
+# Longdescription:
+#  Includes tools capable of linking and managing archives, including
+#  handling object code, libraries, profile data, and symbol names.
+#  URL: http://www.gnu.org/software/binutils
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=binutils
+version=2.19.1
+release=1
+source=($mirror_gnu/binutils/binutils-$version.tar.bz2
+        binutils-2.19-bfd-elf.patch
+        binutils-2.18.50-libs-for-build.patch
+        binutils-2.18.50-diet.patch
+        binutils-2.18.50-autotools.patch
+        binutils-2.18.50-config-sub.patch
+        binutils-2.19-configure-tgt.patch)
+
+build()
+{
+  cd ${srcdir=$SRC/binutils-$version}
+
+  patch -N -p1 -i $SRC/binutils-2.19-bfd-elf.patch
+  patch -N -p1 -i $SRC/binutils-2.18.50-libs-for-build.patch
+  #patch -N -p1 -i $SRC/binutils-2.18.50-diet.patch
+  #patch -N -p1 -i $SRC/binutils-2.18.50-autotools.patch
+  #patch -N -p1 -i $SRC/binutils-2.18.50-config-sub.patch
+  patch -N -p1 -i $SRC/binutils-2.19-configure-tgt.patch
+
+  # configure the linker
+#  case $target in
+#    *-diet*)
+#      { echo "HOSTING_CRT0='-dynamic-linker $prefix/lib/libdl.so $prefix/lib/dstart.o $prefix/lib/dyn_dstart.o'"  # $prefix/$target/lib/crtbegin.o'"
+#        echo "HOSTING_LIBS='-L$prefix/lib --start-group $prefix/$target/lib/libgcc.a $prefix/$target/lib/libgcc_eh.a -lc --end-group $prefix/lib/dyn_dstop.o $prefix/lib/gcc/$target/${gcc_version:-$({ $target-gcc -dumpversion || gcc -dumpversion; } 2>/dev/null)}/crtend.o'"
+#      } >>ld/configure.host
+#      ;;
+#    *-linux*)
+#      { echo "HOSTING_CRT0='-dynamic-linker $prefix/lib/ld-linux.so.2 $prefix/lib/crt1.o $prefix/lib/crti.o $prefix/$target/lib/crtbegin.o'"
+#        echo "HOSTING_LIBS='-L$prefix/lib --start-group $prefix/$target/lib/libgcc.a $prefix/$target/lib/libgcc_eh.a -lc --end-group $prefix/$target/lib/crtend.o $prefix/lib/crtn.o'"
+#      } >>ld/configure.host
+#      ;;
+#    *)
+#      ;;
+#  esac
+
+  (echo "#!/bin/sh" && echo 'echo "$@"') >config.sub
+
+  case $prefix in
+    "/usr") LIBPATH="/usr/local/lib:/usr/lib:/lib" ;;
+  esac
+
+  case $host in
+    *diet*) export LIBS="${LIBS:+$LIBS }-lcompat" ;;
+  esac
+
+  mkdir -p ${builddir=$srcdir/build/$host} && cd $builddir
+
+  $srcdir/configure \
+       --host="$host" \
+       --build="$build" \
+       ${target+--target="$target"} \
+       --prefix="$prefix" \
+       --mandir="$prefix/share/man" \
+       --infodir="$prefix/share/info" \
+       --with-mpfr="$prefix" \
+       --with-gmp="$prefix" \
+       --enable-64-bit-bfd \
+       --disable-commonbfdlib \
+       --disable-secureplt \
+       --enable-elf-stt-common \
+       --disable-install-libbfd \
+       --with-mmap \
+       --with-separate-debug-dir="$prefix/lib/debug" \
+       --disable-install-libiberty \
+       --enable-libada \
+       --enable-libssp \
+       --enable-objc-gc \
+       --enable-build-warnings \
+       --enable-bfd-assembler \
+       --with-lib-path="$prefix/lib" \
+       --disable-werror \
+       --with-libiconv-prefix="$prefix" \
+       --with-libintl-prefix="$prefix" \
+       --without-included-gettext \
+       ${LIBPATH+--with-lib-path="$LIBPATH"} \
+       ${shared+--${shared:=enable}-shared} \
+       ${static+--${static:=disable}-static}
+
+  make
+  make DESTDIR="$PKG" install
+
+#  cd $ROOT/$target/bin && for bin in ../../bin/*; do
+#    ln -sf $bin .
+#  done
+
+  cd $ROOT/bin && for BIN in *; do
+    mv -f $BIN $target-$BIN
+    ln -s $target-$BIN $BIN
+  done
+}

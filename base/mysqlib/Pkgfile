@@ -1,0 +1,25 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: MySQL Incremental Backup
+# URL: http://phpmyib.sourceforge.net/
+# Maintainer: Roman Senn <smoli@paranoya.ch>
+# Depends on:
+
+name=mysqlib
+version=0.2.1
+release=1
+source=($mirror_sf/phpmyib/mysql-incremental-backup_v$version.tar.bz2)
+
+build()
+{
+  cd mysql-incremental-backup_v$version
+
+  install -d $ROOT/share/mysqlib
+  cp -r web/* $ROOT/share/mysqlib
+
+  install -d $ROOT/bin
+  install -m 755 *.sh *.php $ROOT/bin
+
+  install -d $ROOT/share/doc/mysqlib
+  install -m 644 README INSTALL.txt CHANGELOG $ROOT/share/doc/mysqlib
+}

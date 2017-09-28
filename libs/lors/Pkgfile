@@ -1,0 +1,48 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: LoRS Source Development Package.
+# URL: http://loci.cs.utk.edu/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=lors
+version=0.82.1
+release=1
+source=(http://loci.cs.utk.edu/lors/distributions/lors-$version.tar.gz
+        lors-0.82.1-fixes.patch
+        lors-0.82.1-fixes-2.patch
+        lors-0.82.1-fixes-all.patch)
+
+build() 
+{
+  cd lors-$version
+
+  #patch -N -p1 -i $SRC/lors-0.82.1-fixes.patch
+  #patch -N -p1 -i $SRC/lors-0.82.1-fixes-2.patch
+  patch -N -p1 -i $SRC/lors-0.82.1-fixes-all.patch
+
+  case $prefix in
+    "/usr") sysconfdir="/etc" ;;
+  esac
+
+  export SRCDIR="$PWD" DESTDIR="$PKG" INSTALL_DIR="$prefix/share/doc/lors"
+
+  sh autogen.sh
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --sysconfdir="${sysconfdir=$prefix/etc}" \
+       --with-popt="$prefix" \
+       --with-zlib="$prefix" \
+       --with-libxml2="$prefix" \
+       --with-lbone="$prefix" \
+       --with-libexnode="$prefix"
+ 
+  make
+  make DESTDIR="$PKG" install
+#  DESTDIR="$PKG" sh pre-install.sh
+}
+
+# EOF

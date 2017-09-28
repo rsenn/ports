@@ -1,0 +1,35 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Harmonic inversion of time-signals
+#  Harminv is a free program and C library for harmonic inversion:
+#  decomposing a time-series into a sum of sinusoids, including exponentially
+#  decaying sinusoids. It is based on the "filter diagonalization method"
+#  (FDM) of Mandelshtam  Taylor, which maps the harmonic inversion
+#  problem onto a small eigen-problem (size proportional to the number of
+#  sinusoids). The FDM is often able to obtain much more robust and accurate
+#  solutions than alternative methods.
+#  .
+# URL: http://ab-initio.mit.edu/harminv/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=harminv
+version=1.3.1
+release=1
+source=(http://ab-initio.mit.edu/harminv/harminv-$version.tar.gz)
+
+build()
+{
+  cd harminv-$version
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

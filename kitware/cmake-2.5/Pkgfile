@@ -1,0 +1,65 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A cross-platform, open-source make system
+#  CMake is used to control the software compilation process using
+#  simple platform and compiler independent configuration files. CMake
+#  generates native makefiles and workspaces that can be used in the
+#  compiler environment of your choice. CMake is quite sophisticated: it is
+#  possible to support complex environments requiring system configuration,
+#  pre-processor generation, code generation, and template instantiation.
+#  CMake was developed by Kitware as part of the NLM Insight Segmentation and
+#  Registration Toolkit project. The ASCI VIEWS project also provided support
+#  in the context of their parallel computation environment. Other sponsors
+#  include the Insight, VTK, and VXL open source software communities.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=cmake-2.5
+version=20080318
+release=1
+source=(ftp://www.cmake.org/pub/cmake/vCVS/cmake-2.5.$version.zip)
+
+build()
+{
+  cd cmake-2.5.$version
+
+  find * -type f -print0 | xargs -0 dos2unix
+  find * -type f \
+         -name "*.cmake" \
+     -or -name "*.txt" \
+     -or -name "*.cxx" \
+     -print0 | \
+  xargs -0 sed -i \
+      -e "s,/usr/local,$prefix,g" \
+      -e "s,/usr/bin,$prefix/bin,g" \
+      -e "s,/usr/sbin,$prefix/sbin,g" \
+      -e "s,/usr/lib,$prefix/lib,g" \
+      -e "s,/usr/include,$prefix/include,g"
+
+  chmod 755 configure bootstrap
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  mkdir -p $ROOT/share
+  cp -rf $ROOT/doc $ROOT/share/cmake-2.5
+
+  cd $ROOT/bin
+  for bin in *; do
+    mv $bin $bin-${name#*-}
+  done
+}
+
+postmerge()
+{
+  for bin in c{cmake,make,test,pack}; do
+    ln -sf $bin-${name#*-} ${prefix}/bin/$bin
+  done
+}
+

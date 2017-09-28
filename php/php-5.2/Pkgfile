@@ -1,0 +1,171 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: A high-level scripting language.
+#  PHP is a widely-used Open Source general-purpose scripting language that
+#  is especially suited for Web development and can be embedded into HTML.
+#  Its syntax draws upon C, Java, and Perl, and is easy to learn.
+#  PHP runs on many different platforms and can be used as a standalone
+#  executable or as a module under a variety of Web servers. It has excellent
+#  support for databases, XML, LDAP, IMAP, Java, various Internet protocols,
+#  and general data manipulation, and is extensible via its powerful API.
+#  It is actively developed and supported by a talented and energetic
+#  international team. Numerous Open Source and commercial PHP-based
+#  application packages are available.
+#  .
+# URL: http://www.php.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=php
+version=5.2.9
+release=1
+source=(http://nl.php.net/distributions/php-$version.tar.bz2
+        php-5.2.2-krb5.patch
+        php-5.2.2-php5.patch
+        php.ini.in
+        php-5.2.6-init-globals.patch
+        php-5.2.6-apache-noconf.patch)
+
+build()
+{
+  cd php-$version
+
+  patch -N -p1 -i $SRC/php-5.2.6-init-globals.patch
+  patch -N -p1 -i $SRC/php-5.2.6-apache-noconf.patch
+
+  MAJOR="${version%.*}"
+  PKGNAME="php"
+
+#  fs_duplicate ../php-$version
+#  patch -N -p1 -i $SRC/php-5.2.2-krb5.patch
+#  patch -N -p1 -i $SRC/php-5.2.2-php5.patch
+
+  [ -e "$prefix/lib/libcrypt.so" ] && export LIBS="${LIBS:+$LIBS }-lcrypt"
+
+  case $host in
+    *linux*) [ -e "$prefix/lib/libroken.so" ] && export LIBS="-lroken${LIBS:+ $LIBS}" ;;
+  esac
+
+  case $prefix in
+    /usr) sysconfdir="/etc" tmpdir="/tmp" ;;
+  esac
+
+  APXS=`echo $prefix/*bin/apxs*`
+
+  set -- \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --mandir="$prefix/share/man" \
+      --with-libdir="lib" \
+      --disable-rpath \
+      --with-pear="$prefix/lib/$PKGNAME" \
+      --with-config-file-path='${sysconfdir=$prefix/etc}/$PKGNAME' \
+      --with-libxml-dir="$prefix" \
+      --with-openssl="$prefix" \
+      --with-kerberos="$prefix" \
+      --with-zlib="$prefix" \
+      --with-bz2="$prefix" \
+      --with-curl="$prefix" \
+      --enable-dba="$prefix" \
+      --with-db4="$prefix" \
+      --with-gdbm="$prefix" \
+      --with-inifile \
+      --with-flatfile \
+      --enable-dom="static" \
+      --with-libxml-dir="$prefix" \
+      --enable-ftp="shared" \
+      --with-openssl-dir="$prefix" \
+      --with-gd="$prefix" \
+      --with-jpeg-dir="$prefix" \
+      --with-png-dir="$prefix" \
+      --with-zlib-dir="$prefix" \
+      --without-xpm \
+      --with-ttf="$prefix" \
+      --with-freetype-dir="$prefix" \
+      --with-t1lib="$prefix" \
+      --with-mysql="$prefix" \
+      --with-pdo-mysql="$prefix" \
+      --with-mcrypt="$prefix" \
+      --enable-gd-native-ttf \
+      --enable-gd-jis-conv \
+      --with-gettext="$prefix" \
+      --enable-memory-limit \
+      --with-tsrm-pthreads \
+      --enable-soap \
+      --enable-zip \
+      --enable-sockets \
+      --with-pcre-dir="$prefix"
+
+#     sed -i '/#define HAVE_GLOB/ s,define \([0-9A-Za-z_]\+\) .*$,undef \1,' main/php_config.h
+#        --enable-ftp \
+#        --enable-mbstring \
+#        --enable-ucd-snmp-hack \
+#        --enable-sqlite-utf8 \
+#        --enable-sysvmsg \
+#        --enable-sysvsem \
+#        --enable-sysvshm \
+#        --enable-zip \
+#        --enable-zend-multibyte
+
+#   sed -i -e "s,sys_lib_search_path_spec=\".*\",sys_lib_search_path_spec=\"$prefix/lib\"," libtool
+
+   echo "APXS detected:" $APXS
+
+   for apxs in $APXS; do
+    (progname=$($apxs -q progname)
+     rm -rf ${builddir=$(pwd)/build-$progname}
+
+     mkdir -p $builddir
+     cd $builddir
+
+     ../configure "$@" \
+         --enable-cgi \
+         --with-apxs2="$apxs"
+
+    make EXTRA_LDFLAGS_PROGRAM="" \
+         EXTENSION_DIR="$prefix/lib/$PKGNAME/extensions"
+
+    install -d $PKG${sysconfdir}
+
+    make \
+        INSTALL_ROOT="$PKG" \
+        EXTENSION_DIR="$prefix/lib/$PKGNAME/extensions" \
+      install)
+  done
+
+  mkdir -p "$PKG${sysconfdir}/$PKGNAME"
+
+  accelerator_version="${MAJOR}_ts"
+
+  sed >$PKG${sysconfdir}/$PKGNAME/php.ini \
+      -e "s,@accelerator_version@,$accelerator_version,g" \
+      -e "s,@major@,$MAJOR,g" \
+      -e "s,@minor@,$MINOR,g" \
+      -e "s,@prefix@,$prefix,g" \
+      -e "s,upload_max_filesize = 2M,upload_max_filesize = 32M," \
+      -e "s,memory_limit = 8M,memory_limit = 64M," \
+    $SRC/php.ini.in
+
+  if [ -f "$PKG${sysconfdir}/$PKGNAME/php.ini" ]; then
+    sed -n >$PKG${sysconfdir}/$PKGNAME/php-cli.ini \
+        -e "/upload_progress_meter/! p" \
+      "$PKG${sysconfdir}/$PKGNAME/php.ini"
+  fi
+
+  rm -f $PKG${sysconfdir}/httpd*.conf*
+
+#  for FILE in $ROOT/bin/* $ROOT/man/*/*; do
+#    if [ -f "$FILE" ]; then
+#      newname=`echo "$FILE" | sed 's,\(.*/[a-z]\+\),\15,'`
+#      mv -f "$FILE" "$newname"
+#    fi
+#  done
+
+#  mv $PKG${sysconfdir}/pear.conf $pkg/$sysconfdir/pear5.conf
+
+#  rm -rf $ROOT/include/$PKGNAME
+  rm -rf $PKG/.{channels,registry}
+  rm -f $PKG/.depdb*
+  rm -f $PKG/.{filemap,lock}
+}

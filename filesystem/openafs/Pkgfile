@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Client-server distributed filesystem.
+#  AFS is a distributed filesystem which offers a client-server architecture,
+#  transparent data migration abilities, scalability, a single namespace,
+#  and integrated ancillary subsystems.
+# URL: http://www.openafs.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=openafs
+version=1.4.5
+release=1
+source=(http://www.openafs.org/dl/openafs/$version/openafs-$version-src.tar.bz2)
+
+build()
+{
+  cd openafs-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

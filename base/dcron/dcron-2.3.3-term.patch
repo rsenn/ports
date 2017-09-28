@@ -1,0 +1,28 @@
+diff -ru dcron-2.3.3.orig/main.c dcron-2.3.3/main.c
+--- dcron-2.3.3.orig/main.c	1994-05-02 17:28:24.000000000 +0200
++++ dcron-2.3.3/main.c	2006-10-12 14:37:02.000000000 +0200
+@@ -24,6 +24,13 @@
+ char  *CDir = CRONTABS;
+ int DaemonUid;
+ 
++void
++terminate(int sig)
++{
++  log9("crond " VERSION " dillon, terminated (signal %i)\n", sig);
++  exit(0);
++}
++
+ int
+ main(int ac, char **av)
+ {
+@@ -131,6 +138,10 @@
+      *             of 1 second.
+      */
+ 
++    signal(SIGTERM, terminate);
++    signal(SIGINT, terminate);
++    signal(SIGHUP, terminate);
++  
+     log9("%s " VERSION " dillon, started\n", av[0]);
+     SynchronizeDir(".");
+ 

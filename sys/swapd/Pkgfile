@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A dynamic swap creation daemon for Linux.
+# swapd is a dynamic swap creation daemon for Linux. It monitors the
+# system memory and detects when swap creation will be required. The swap
+# size is determined automatically with respect to the limits set by the
+# sysadmin. It works with Linux kernels version 2.4.23 or higher.
+#
+# URL: http://sourceforge.net/projects/swapd/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=swapd
+version=1.0.1
+release=1
+source=($mirror_sf/swapd/GNU-Linux-swapd-$version.tar.bz2)
+
+build()
+{
+  cd GNU-Linux-swapd-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

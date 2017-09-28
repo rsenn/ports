@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An encrypted filesystem for FUSE.
+# URL: http://reboot.animeirc.de/cryptofs/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libfuse2, libgcrypt11, libglib2.0-0
+
+name=cryptofs
+version=0.6.0
+release=1
+source=(http://reboot.animeirc.de/cryptofs/cryptofs-$version.tar.gz)
+
+build()
+{
+  cd cryptofs-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --program-prefix=""
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/cryptofs
+  install -m 644 [A-Z]*[A-Z]* doc/README.xml $ROOT/share/doc/cryptofs
+}

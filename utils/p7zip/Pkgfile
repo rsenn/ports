@@ -1,0 +1,25 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A port of 7za.exe for Unix, Mac OS X, and BeOS.
+#  p7zip is a port of 7za.exe for Unix, Mac OS X, and BeOS. 7za.exe is
+#  the command line version of 7-zip (7zip), a file archiver with a high
+#  compression ratio.
+# URL: http://p7zip.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=p7zip
+version=9.04
+release=1
+source=($mirror_sf/p7zip/p7zip_${version}_src_all.tar.bz2)
+
+build()
+{
+  cd p7zip_$version
+
+  make OPTFLAGS="${CFLAGS--g -O2}" all3
+
+  make DEST_HOME="$PKG$prefix" install
+
+  install -m 755 bin/7z bin/7za bin/7zr $ROOT/bin/
+}

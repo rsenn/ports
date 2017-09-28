@@ -1,0 +1,37 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: $'A CONVERTER FOR WIKI-LIKE MARKUP/RDOC TO HTML, LATEX, DOCBOOK, AND MORE.\NDEPLATE CONVERTS WIKI-LIKE MARKUP TO LATEX (STANDARD CLASSES, KOMA, DRAMATIST, SWEAVE), HTML/PHP (SINGLE PAGE, CHUNKED/WEBSITE, HTML, OR S5-BASED SLIDESHOW), DOCBOOK (ARTICLE, BOOK, MAN/REF PAGE), AND REALLY PLAIN TEXT'A converter for wiki-like markup/rdoc to HTML, LaTeX, DocBook, and more.\ndeplate converts wiki-like markup to LaTeX (standard classes, koma, dramatist, sweave), HTML/PHP (single page, chunked/website, HTML, or s5-based slideshow), DocBook (article, book, man/ref page), and really plain text
+#  Currently supported input formats are viki and Ruby\047s rdoc. The
+#  viki markup supports footnotes, citations, index, table of contents,
+#  embedded LaTeX for mathematics, integration with R for dynamically
+#  generated figures and tables, and more. Output can be customized via
+#  page templates.'
+#  .
+# URL: http://deplate.sourceforge.net
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name='deplate'
+version=0.8.5
+release=1
+source=($mirror_sf/deplate/deplate-0.8.5.zip)
+
+build()
+{
+  cd deplate
+
+  set `ruby --version`
+
+  RUBYVERSION="$2"
+
+  RUBYLIBDIR="$prefix/lib/ruby/${RUBYVERSION%.*}"
+
+  ruby setup.rb config --siterubyver="$RUBYLIBDIR"
+  ruby setup.rb setup
+  ruby setup.rb install --prefix="$PKG"
+
+  install -d $ROOT/share/doc/deplate
+  install -m 644 AUTHORS.TXT CHANGES.TXT DATE.TXT debian/README.Debian LICENSE.TXT NEWS.TXT README.TXT README_DEBIAN.TXT TODO.TXT Update-pre0.5.txt VERSION.TXT $ROOT/share/doc/deplate
+}
+
+# EOF

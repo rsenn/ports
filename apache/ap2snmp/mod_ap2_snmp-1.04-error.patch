@@ -1,0 +1,26 @@
+--- mod_ap2_snmp.c.orig	2007-01-18 16:32:47.000000000 +0100
++++ mod_ap2_snmp.c	2007-01-18 16:34:04.000000000 +0100
+@@ -168,8 +168,13 @@
+     if (failures) SOCK_CLEANUP;
+ 
+     status = snmp_synch_response(ss, pdu, &response);
++    int errstat = pdu->errstat;
+ 
+-    if (response) snmp_free_pdu(response);
++    if (response) 
++    {
++      errstat = response->errstat;
++      snmp_free_pdu(response);
++    }
+ 
+     /* close session */
+     snmp_close(ss);
+@@ -178,7 +183,7 @@
+     /* if value assign fail */
+     if (status != STAT_SUCCESS)
+     {
+-        MOD_SNMP_ERROR("AP2_SNMP: Can't set MIB value %s", object);
++        MOD_SNMP_ERROR("AP2_SNMP: Can't set MIB value %s: %s", object, snmp_errstring(errstat));
+     	return 1; // with errors
+     }
+ /* END SNMP set  function*/

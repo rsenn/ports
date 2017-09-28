@@ -1,0 +1,26 @@
+# $Id: Pkgfile,v 1.5 2007/05/09 21:02:43 roman Exp $
+#
+# Description: A major revision to the ORBit code base.
+#  ORBit2 is a major revision to the ORBit code base, adding the foundations
+#  of threading support, a massively shrunk and genericised code base,
+#  and lots more power, completeness, and correctness.
+# URL: http://www.gnome.org/projects/ORBit2/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=orbit2
+version=2.14.0
+release=1
+source=(ftp://ftp.gnome.org/pub/gnome/sources/ORBit2/2.14/ORBit2-$version.tar.bz2)
+
+build()
+{
+  cd ORBit2-${version}
+  ./configure --prefix="$prefix"
+  make
+  make DESTDIR=$PKG install
+
+  copy_license "COPYING"
+
+  chmod 644 $ROOT/lib/*.la
+}

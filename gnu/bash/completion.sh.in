@@ -1,0 +1,27 @@
+# $Id: bash_completion.sh,v 1.2 2006/02/25 01:21:33 ianmacd Exp $
+
+# Check for bash (and that we haven't already been sourced).
+if test -n "$BASH_VERSION" -a -z "$BASH_COMPLETION"
+then
+  # Check for recent enough version of bash.
+  bversion=${BASH_VERSION%.*}
+
+  bmajor=${bversion%.*}
+  bminor=${bversion#*.}
+
+  # Check for interactive shell.
+  if test -n "$PS1"
+  then
+    if test $((bmajor)) -ge 3 ||                    # version >= 3.0
+       test $((bmajor)) -eq 2 -a $((bminor)) -gt 4  # version >2.04
+    then
+      if test -r @sysconfdir@/bash_completion
+      then
+        # Source completion code.
+        . @sysconfdir@/bash_completion
+      fi
+    fi
+  fi
+fi
+
+unset b{release,{min,maj}or}

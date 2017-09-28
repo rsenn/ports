@@ -1,0 +1,34 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A reverb impulse response processor library including XMMS/BMP/audacious plugins
+#  The Freeverb3 library includes high quality freeverb, nreverb,
+#  impulse response reverb, FIR filter constructor, band splitter, and
+#  hardknee/softknee compressor. Its oversampling feature provides high
+#  quality audio processing. The compressor provides mastering quality
+#  audio processing. This library includes XMMS plugins, audacious plugins,
+#  BMP beep media player plugins, and sample programs, which enable you to
+#  test the audio effects easily. Freeverb3_vst is a VST plugin version of
+#  the freeverb3 library.
+#  .
+# URL: http://freeverb3.sourceforge.net/
+# Maintainer:  Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=freeverb3
+version=2.3.0
+release=1
+source=($mirror_sf/freeverb3/freeverb3-2.3.0.tar.gz)
+
+build()
+{
+  cd freeverb3-2.3.0
+./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+make
+make DESTDIR="$PKG" install
+}
+
+# EOF

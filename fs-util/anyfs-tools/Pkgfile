@@ -1,0 +1,37 @@
+# $Id: Pkgfile,v 1.15 2007/05/09 21:02:55 roman Exp $
+#
+# Description: A Unix-style toolset for recovering and converting filesystems.
+#  anyfs-tools allows you to recover and convert filesystems while using
+#  minimal extra disk space. Unlike other recovery tools, anyfs-tools doesn't
+#  copy all the files found on other disks (or partitions), but only saves
+#  information about the location of the file blocks to an external inode
+#  table. After recovery, a user may mount the damaged filesystem with anyfs
+#  and the external inode table and then interact with all recovered files
+#  with any program.
+# URL: http://anyfs-tools.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=anyfs-tools
+version=0.84.11
+release=1
+source=($mirror_sf/anyfs-tools/anyfs-tools-$version.tar.bz2
+        anyfs-tools-0.84.11-fixes.patch)
+
+build()
+{
+  cd anyfs-tools-$version
+
+  patch -N -p1 -i $SRC/anyfs-tools-0.84.11-fixes.patch
+
+  LIBS="-lintl" \
+  ./configure \
+        --build="$build" \
+        --host="$host" \
+        --prefix="$prefix" \
+        --${shared:=enable}-shared \
+        --${static:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+}

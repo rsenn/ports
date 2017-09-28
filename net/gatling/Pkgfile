@@ -1,0 +1,123 @@
+# $Id: Pkgfile,v 1.21 2007/05/09 21:02:56 roman Exp $
+#
+# Description: A high-performance Web server.
+#  gatling is a high-performance HTTP and FTP server. It is small, fast,
+#  and scalable, and uses platform-specific performance and scalability
+#  APIs. It supports connection keep-alive, el-cheapo virtual domains
+#  (similar to thttpd), IPv6, and Content-Range (not the full specs, just
+#  a-b or a-byte ranges).
+# URL: http://www.fefe.de/gatling/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=gatling
+version=0.8
+release=1
+source=(http://dl.fefe.de/gatling-$version.tar.bz2
+        gatling-0.8-fixes.patch)
+
+# ----------------------------------------------------------------------------
+build()
+{
+  cd gatling-$version
+
+  patch -N -p1 -i $SRC/gatling-0.8-fixes.patch
+
+  install -d $ROOT/man/man1
+
+  make CC="${CC-cc}" \
+       CFLAGS="$CFLAGS -I$prefix/include/libowfat" \
+       DESTDIR="$PKG" \
+       prefix="$prefix" \
+       all install
+}
+
+# ----------------------------------------------------------------------------
+postmerge()
+{
+  # enable the service if wanted
+  if isin "$services_run" "gatling"; then
+    service_add "gatling"
+  else
+    service_remove "gatling"
+  fi
+}
+
+# snmpd configuration
+# --------------------------------------------------------------------------------
+config()
+{
+  config_branch 'gatling'    'Gatling HTTP server'
+    config_value 'user'      'Gatling HTTP server user'
+      config_description     'The system-user the HTTP daemon will run as'
+      config_default         '$(user_find HTTP nobody daemon monitor)'
+      config_function        'choose --help-{button,label} Create $(user_list)'
+      config_extra           'input'
+    config_end
+
+    config_value 'group'     'Gatling HTTP server group'
+      config_description     'The system-group the HTTP daemon will run as'
+      config_default         '$(group_find HTTP nobody daemon monitor)'
+      config_function        'choose --help-{button,label} Create $(group_list)'
+      config_extra           'input'
+    config_end
+
+    config_value 'host'      'Gatling HTTP server host'
+      config_description     'The host address the HTTP server will listen to'
+      config_default         '$(config_getvalue global_ipaddr)'
+    config_end
+
+    config_value 'port'      'Gatling HTTP server port'
+      config_description     'The port the HTTP server will listen to'
+      config_default         '80'
+    config_end
+  config_end
+
+  # enhance daemontools package configuration
+  config_enter     'services' 'run' 'gatling'
+    config_label   'Run gatling at boot'
+    config_default 'yes'
+    config_type    'value'
+  config_leave
+}
+
+# set up a service for snmpd
+# --------------------------------------------------------------------------------
+services()
+{
+  config_branch 'gatling'
+
+    config_branch 'log'
+    config_end
+
+    config_set  'TITLE' 'Gatling HTTP server'
+    config_set  'START'
+    config_set  'STOP'
+  config_end
+}
+
+# script to start gatling from supervise
+# --------------------------------------------------------------------------------
+gatling()
+{
+  # redirect stderr to stdout and set env vars
+  exec 2>&1
+
+  # set default values
+  host=${gatling_host:-0.0.0.0}
+  port=${gatling_port:-80}
+  user=${gatling_user:-nobody}
+
+  # check if the user is available to setuidgid
+  if ! user_avail $user; then
+    service_error "no such user:" ${user}
+  fi
+
+  # check whether host:port is bindable
+  if proc=$(inet_bound tcp $host:$port); then
+    service_error $host:$port "already bound"
+  fi
+
+  # finally execute gatling
+  exec -a gatling ${bindir}/gatling
+}

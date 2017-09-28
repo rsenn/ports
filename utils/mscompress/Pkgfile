@@ -1,0 +1,41 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A Microsoft &amp;quot;compress.exe/expand.exe&amp;quot; compatible (de)compressor.
+#  The mscompress package contains two programs: msexpand, which decompress
+#  files compressed by the Microsoft compress.exe utility (e.g. Win 3.x
+#  installation files) and mscompress, which compresses files using the LZ77
+#  compression algorithm. Output files can be decompressed using Microsoft
+#  expand.exe or msexpand.
+# URL: http://martin.hinner.info/mscompress/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=mscompress
+version=0.3
+release=1
+source=(ftp://ftp.penguin.cz/pub/users/mhi/mscompress/mscompress-$version.tar.bz2)
+
+build()
+{
+  cd mscompress-$version
+
+  sed \
+    -e 's,/usr/man,$(mandir),g' \
+    -e 's,/usr,$(prefix),g' \
+    -i Makefile.in
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix" \
+       --mandir="${mandir=$prefix/share/man}"
+
+  make
+  make prefix="$prefix" mandir="$mandir" BUILDROOT="$PKG" install
+
+  install -d $ROOT/share/doc/mscompress
+  install -m 644 README ChangeLog format.txt TODO COPYING $ROOT/share/doc/mscompress
+}
+
+# EOF

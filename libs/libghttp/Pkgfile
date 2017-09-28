@@ -1,0 +1,48 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Original GNOME HTTP client library - run-time kit
+#  The HTTP protocol is the protocol that is the underlying transport
+#  mechanism for the modern world wide web. The protocol is well documented
+#  and widely implemented. While the use of the protocol is generally
+#  associated with the web, its uses can be extended to many other areas
+#  where a stateless, transactional protocol may be appropriate. . The
+#  original GNOME HTTP library was designed to be simple and easy to use
+#  while still allowing one to get one's feet wet at the protocol layer if
+#  needed. It was also designed with graphical, non-threaded applications
+#  in mind. One should be able to use the library in an application and
+#  never block waiting to send or receive data to a remote server. The
+#  main thread of execution should always be available to refresh its
+#  display. . This library is fully compliant with HTTP 1.1 as defined in
+#  the draft 5 update of RFC 2068.
+#  .
+# URL:
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=libghttp
+version=1.0.9
+release=1
+source=(http://ftp.gnome.org/pub/gnome/sources/libghttp/1.0/libghttp-$version.tar.gz
+        libghttp-1.0.9-shared.patch)
+
+build()
+{
+  cd libghttp-$version
+
+  patch -N -p1 -i $SRC/libghttp-1.0.9-shared.patch
+
+  sh autogen.sh
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix" \
+     --enable-shared \
+     --enable-static
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

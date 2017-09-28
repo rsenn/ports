@@ -1,0 +1,95 @@
+# $Id: Pkgfile,v 1.8 2007/04/22 23:07:58 roman Exp $
+# Name:
+# Description: A cross-platform development framework/toolkit.
+#  Qt is a cross-platform C++ application framework. Qt's primary feature is
+#  its rich set of widgets that provide standard GUI functionality. . This
+#  is a dummy transitional package to enable installation of other Debian
+#  packages linked against Qt 4.3 or earlier Qt 4 releases previously shipped
+#  in Debian. transitional package for Qt 4 core non-GUI runtime libraries
+#  Qt is a cross-platform C++ application framework. Qt's primary feature
+#  is its rich set of widgets that provide standard GUI functionality.
+# License:
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=qt-4.3
+version=4.3.5
+release=1
+source=(ftp://ftp.trolltech.com/qt/source/qt-x11-opensource-src-$version.tar.gz
+        ftp://ftp.trolltech.com/qt/source/qt-win-opensource-src-$version.zip
+        qt-x11-opensource-src-4.3.0-fixes.patch)
+
+build()
+{
+  case $host in
+     *-linux-gnu)
+        platform="linux-g++-32"
+        tk="x11"
+        cfg="./configure"
+        ;;
+     *-mingw32|*-cygwin)
+        platform="win32-g++"
+        tk="win"
+        cfg="wine configure.exe"
+        ;;
+     *-msvc*)
+        platform="win32-msvc"
+        tk="win"
+        cfg="wine configure.exe"
+        ;;
+  esac
+
+  cd qt-$tk-opensource-src-$version
+
+  patch -R -p1 -i $SRC/qt-x11-opensource-src-4.3.0-fixes.patch
+
+  yes "yes" | $cfg \
+         ${platform:+-platform "$platform"} \
+         -prefix "$prefix" \
+         -libdir "$prefix/lib" \
+         -headerdir "$prefix/include/qt-${version%.*}" \
+         -sysconfdir "$prefix/etc/qt-${version%.*}" \
+         -plugindir "$prefix/lib/qt-${version%.*}/plugins" \
+         -datadir "$prefix/share/qt-${version%.*}" \
+         -translationdir "$prefix/share/qt-${version%.*}/translations" \
+         -docdir "$prefix/share/doc/qt-${version%.*}" \
+         -debug \
+         -no-separate-debug-info \
+         -shared \
+         -qt3support \
+         -qdbus \
+         -pch \
+         -nomake examples \
+         -nomake demos \
+         -qt-gif \
+         -fast
+
+  make
+  make INSTALL_ROOT="$PKG" install
+
+  if [ -r "$ROOT/lib/$name/pkgconfig" ]; then
+    mv "$ROOT/lib/$name/pkgconfig" "$ROOT/lib"
+  fi
+
+ (cd $ROOT/bin
+  for BIN in *; do
+    mv -vf ${BIN} ${BIN}-${version%.*}
+  done)
+
+  mkdir -p $ROOT/bin/designer
+}
+
+postmerge()
+{
+  for bin in assistant designer linguist lrelease lupdate moc pixeltool \
+            qdbus qdbuscpp2xml qdbusviewer qdbusxml2cpp \
+            qmake qt3to4 qtconfig rcc uic uic3
+  do
+    if test -e ${prefix}/bin/$bin-${version%.*} &&
+     ! test -e ${prefix}/bin/$bin
+    then
+      ln -sf $bin-${version%.*} ${prefix}/bin/$bin
+    fi
+  done
+}

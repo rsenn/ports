@@ -1,0 +1,43 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Tiling window management for the console
+# dvtm brings the concept of tiling window management,
+# popularized by X11-window managers like dwm to the
+# console. As a console window manager it tries to make
+# it easy to work with multiple console based programs
+# like vim, mutt, cmus or irssi.
+# URL: http://www.brain-dump.org/projects/dvtm/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libncurses5
+
+name=dvtm
+version=0.4.1
+release=1
+source=(http://www.brain-dump.org/projects/dvtm/dvtm-$version.tar.gz)
+
+build()
+{
+  cd dvtm-$version
+#      CFLAGS="$CFLAGS -std=c99 -DNDEBUG -DHANDLE_MOUSE -DVERSION=\\\"$version\\\"" \
+
+  sed -i \
+      -e "s,^SRC +=,SRC =," \
+      -e "s,^\t@,\t," \
+      -e "s,\${\([^}]\+\)},\$(\1),g" \
+      Makefile
+
+  make \
+      CC="${CC-cc}" \
+      DESTDIR="$PKG" \
+      PREFIX="$prefix" \
+    dvtm #install
+
+  install -d $ROOT/bin
+  install -m 755 dvtm $ROOT/bin
+
+  install -d $ROOT/share/man/man1
+  install -m 644 *.1 $ROOT/share/man/man1
+
+  install -d $ROOT/share/doc/dvtm
+  install -m 644 [A-Z]*[A-Z]* $ROOT/share/doc/dvtm
+}

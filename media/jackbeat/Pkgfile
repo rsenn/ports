@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A JACK audio sequencer.
+#  Jackbeat is an audio sequencer with support for the JACK Audio Connection
+#  Kit. Featuring a drum-machine-like interface, it is designed with
+#  real-time operation in mind: while playing, the pattern can be edited,
+#  the BPM rate modified, and new samples loaded. The number of tracks
+#  and beats is virtually unlimited, and though it is simple, it becomes
+#  a powerful tool when connected to other JACK applications providing
+#  mastering, effects plugins, etc.
+# URL: http://jackbeat.samalyse.org
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=jackbeat
+version=0.6.2
+release=1
+source=(http://www.samalyse.com/jackbeat/files/jackbeat-$version.tar.gz)
+
+build()
+{
+  cd jackbeat-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: X11 Fixes extension wire protocol
+#  This package provides development headers describing the wire protocol
+#  for the Fixes extension, which contains a few small extensions to the
+#  X protocol, including a Region type.
+#  This package is built from the X.org fixesproto proto module.
+# URL: http://www.X.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=fixesproto
+version=4.0
+release=1
+source=(ftp://ftp.x.org/pub/individual/proto/fixesproto-$version.tar.bz2)
+
+build()
+{
+  cd fixesproto-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

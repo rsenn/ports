@@ -1,0 +1,25 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Package: python-jack
+# Section: universe/python
+# Description: Jack audio client module for python
+# URL: http://sourceforge.net/projects/py-jack/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=py-jack
+version=0.1
+release=1
+source=($mirror_sf/py-jack/py-jack-$version.tar.gz)
+
+build() 
+{
+  cd pyjack-$version
+  
+  python setup.py install --prefix="$ROOT"
+
+  install -d $ROOT/share/doc/pyjack
+  install -m 644 LICENSE TODO README $ROOT/share/doc/pyjack
+}
+
+# EOF

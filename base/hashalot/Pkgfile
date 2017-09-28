@@ -1,0 +1,31 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: Read and hash a passphrase
+#  This program will read a passphrase from standard input and print a binary
+#  (not printable) hash to standard output. The output is suitable for use
+#  as an encryption key.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=hashalot
+version=0.3
+release=1
+source=($mirror_gentoo/hashalot-$version.tar.gz)
+
+build() 
+{
+  cd hashalot-$version
+  
+  ./configure \
+    --build="$build" \
+    --host="$host" \
+    --prefix="$prefix" \
+    --mandir="$prefix/share/man"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/hashalot
+  install -m 644 README COPYING NEWS AUTHORS INSTALL ChangeLog $ROOT/share/doc/hashalot
+}

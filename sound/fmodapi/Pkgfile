@@ -1,0 +1,22 @@
+# $Id: Pkgfile 424 2008-08-10 01:52:57Z enki $
+#
+# Description: FMOD music & sound effects system
+# URL: http://www.fmod.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libgcc1, libstdc++6
+
+name=fmodapi
+version=4.17.01
+release=1
+source=(http://www.fmod.org/index.php/release/version/fmodapi${version//./}linux.tar.gz)
+
+build()
+{
+  cd fmodapi${version//./}linux
+
+  install -d $ROOT/include
+  cp -rf api/inc/* $ROOT/include
+
+  install -d $ROOT/lib
+  mv -vf api/lib/* $ROOT/lib
+}

@@ -1,0 +1,32 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:43 roman Exp $
+#
+# Description: An extensible extension language
+#  Lua is a programming language originally designed for extending
+#  applications, but also frequently used as a general-purpose, stand-alone
+#  language. It combines simple procedural syntax (similar to Pascal) with
+#  powerful data description constructs based on associative arrays and
+#  extensible semantics. It is dynamically typed, interpreted from bytecodes,
+#  and has automatic memory management, making it ideal for configuration,
+#  scripting, and rapid prototyping. It is implemented as a small library
+#  of C functions, written in ANSI C, and compiles unmodified in all
+#  known platforms. The implementation goals are simplicity, efficiency,
+#  portability, and low embedding cost. It has been used on games such as
+#  Vendetta, FarCry, Homeworld2, Painkiller, and World of Warcraft.
+# URL: http://www.lua.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=lua
+version=5.1.4
+release=1
+source=(http://www.lua.org/ftp/lua-$version.tar.gz)
+
+build()
+{
+  cd lua-$version
+
+  make linux
+  make linux \
+    INSTALL_TOP="$ROOT" \
+    INSTALL_MAN="\$(INSTALL_TOP)/share/man/man1" install
+}

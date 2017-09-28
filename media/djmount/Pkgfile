@@ -1,0 +1,38 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A client to mount a UPnP AV device as a Linux filesystem.
+#  djmount is a UPnP AV client. It mounts the media content of compatible
+#  UPnP AV devices as a Linux filesystem (using FUSE). The audio and video
+#  content on the network is automatically discovered, and can be browsed as
+#  a standard directory tree. djmount should work with any UPnP AV compliant
+#  devices or software servers. Currently tested devices include TwonkyVision
+#  UPnP Music Server on Linux, GMediaServer on Linux, GeeXboX uShare on
+#  Linux, Ahead Nero MediaHome Server, and Microsoft Windows Media Connect.
+#  .
+# URL: http://djmount.sourceforge.net/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=djmount
+version=0.71
+release=1
+source=($mirror_sf/djmount/djmount-$version.tar.gz)
+
+build()
+{
+  cd djmount-$version
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/djmount
+  install -m 644 AUTHORS COPYING ChangeLog INSTALL NEWS README THANKS TODO $ROOT/share/doc/djmount
+}
+
+# EOF

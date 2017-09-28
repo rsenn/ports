@@ -1,0 +1,36 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:50 roman Exp $
+#
+# Description: A set of Python bindings for the GTK widget set.
+#  PyGTK is a set of Python bindings for the GTK widget set. It provides
+#  an object oriented interface that is slightly higher level than the C
+#  one. It automatically does all the type casting and reference counting
+#  that you normally would have to do with the C API.
+# URL: http://www.pygtk.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=pygtk
+version=2.13.0
+release=1
+source=($mirror_gnome/sources/pygtk/${version%.*}/pygtk-$version.tar.bz2
+        pygtk-2.13.0-no-std-c9x.patch)
+
+build()
+{
+  cd pygtk-$version
+
+  patch -N -p1 -i $SRC/pygtk-2.13.0-no-std-c9x.patch
+
+  sh autogen.sh
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --prefix="$prefix" \
+     --disable-dependency-tracking \
+     --disable-maintainer-mode
+
+  make
+  make DESTDIR="$PKG" install
+}
+

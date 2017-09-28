@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A tool that finds the latest-version RPMs in a tree.
+#  novi is a tool for finding the latest-version RPMs in a tree. It can
+#  be used to create Kickstart trees or yum repositories that contain the
+#  updated RPMS. In the case of Kickstart, this means machines come to
+#  life with the updates already applied. Using novi for a yum repository
+#  trims the size of the repodata files, which reduces client download and
+#  processing time.
+# URL: http://www.exmachinatech.net/01/novi/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=novi
+version=1.1.8
+release=1
+source=(http://downloads.exmachinatech.net/novi/$version/novi-$version.tar.bz2)
+
+build()
+{
+  cd novi-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

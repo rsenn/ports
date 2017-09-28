@@ -1,0 +1,35 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A tool to search/replace/dump memory from running applications and core files.
+#  memgrep is a tool to search, replace, or dump arbitrary memory from
+#  running applications and core files. Potential applications for memgrep
+#  include reverse engineering, debugging, and vulnerability assessment.
+# URL: http://www.hick.org/code.html
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=memgrep
+category=utils
+version=0.8.0
+release=1
+source=(http://www.hick.org/code/skape/memgrep/memgrep-$version.tar.gz
+        #memgrep-0.8.0-cflags.patch
+        memgrep-0.8.0-installdirs.patch
+        memgrep-0.8.0-missheaders.patch)
+
+build()
+{
+  cd memgrep-$version
+
+  #patch -N -p1 -i $SRC/memgrep-0.8.0-cflags.patch
+  patch -N -p1 -i $SRC/memgrep-0.8.0-missheaders.patch
+  patch -N -p1 -i $SRC/memgrep-0.8.0-installdirs.patch
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make CFLAGS="$CFLAGS"
+  make PREFIX="$ROOT" install
+}

@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A standalone C++ port of the Emacs Psychiatrist.
+# Freud is a standalone C++ port of the Emacs Psychiatrist, originally
+# written in Emacs LISP. It simulates a Rogerian analyst using
+# phrase-production techniques similar to the classic ELIZA demonstration
+# of pseudo-AI.
+#
+# URL: http://stud4.tuwien.ac.at/~e0225855/freud/freud.html
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=freud
+version=1.0
+release=1
+source=(http://stud4.tuwien.ac.at/~e0225855/freud/freud-$version.tar.gz)
+
+build()
+{
+  cd freud-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

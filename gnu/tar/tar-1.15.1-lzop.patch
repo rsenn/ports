@@ -1,0 +1,59 @@
+--- tar-1.15.1_orig/src/tar.c	2008-04-04 20:34:24.000000000 +0000
++++ tar-1.15.1/src/tar.c	2008-04-04 20:53:21.000000000 +0000
+@@ -433,6 +433,8 @@
+    N_("filter the archive through lzma"), 68 },
+   {"bzip2", 'j', 0, 0,
+    N_("filter the archive through bzip2"), 68 },
++  {"lzop", 'l', 0, 0,
++   N_("filter the archive through lzop"), 68 },
+   {"gzip", 'z', 0, 0,
+    N_("filter the archive through gzip"), 68 },
+   {"gunzip", 0, 0, OPTION_ALIAS, NULL, 68 },
+@@ -474,7 +476,6 @@
+    N_("avoid descending automatically in directories"), 71 },
+   {"one-file-system", ONE_FILE_SYSTEM_OPTION, 0, 0,
+    N_("stay in local file system when creating archive"), 71 },
+-  {NULL, 'l', 0, OPTION_HIDDEN, "", 71},
+   {"recursion", RECURSION_OPTION, 0, 0,
+    N_("recurse into directories (default)"), 71 },
+   {"absolute-names", 'P', 0, 0,
+@@ -731,16 +732,9 @@
+       break;
+       
+     case 'l':
+-      /* Historically equivalent to --one-file-system. This usage is
+-	 incompatible with UNIX98 and POSIX specs and therefore is
+-	 deprecated. The semantics of -l option will be changed in
+-	 future versions. See TODO.
+-      */
+-      WARN ((0, 0,
+-	     _("Semantics of -l option will change in the future releases.")));
+-      WARN ((0, 0,
+-	     _("Please use --one-file-system option instead.")));
+-      /* FALL THROUGH */
++      set_use_compress_program_option ("lzop");
++      break;
++      
+     case ONE_FILE_SYSTEM_OPTION:
+       /* When dumping directories, don't dump files/subdirectories
+ 	 that are on other filesystems. */
+--- tar-1.15.1_orig/src/buffer.c	2008-04-04 20:34:24.000000000 +0000
++++ tar-1.15.1/src/buffer.c	2008-04-04 21:00:29.000000000 +0000
+@@ -154,7 +154,8 @@
+   ct_compress,
+   ct_gzip,
+   ct_bzip2,
+-  ct_lzma
++  ct_lzma,
++  ct_lzop
+ };
+ 
+ struct zip_magic
+@@ -172,6 +173,7 @@
+   { ct_gzip,     "\037\213", 2, "gzip", "-z"  },
+   { ct_bzip2,    "BZh",      3, "bzip2", "-j" },
+   { ct_lzma,     "\xFFLZMA", 6, "lzma", "-a" },
++  { ct_lzop,     "\x89LZO\0\r\n", 7, "lzop", "-l" },
+ };
+ 
+ #define NMAGIC (sizeof(magic)/sizeof(magic[0]))

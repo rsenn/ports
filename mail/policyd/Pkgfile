@@ -1,0 +1,43 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A policy daemon supporting popular MTAs.
+#  Policyd v2 (codenamed "cluebringer") is a multi-platform policy server
+#  for popular MTAs. This policy daemon is designed mostly for large scale
+#  mail hosting environments. The main goal is to implement as many spam
+#  combating and email compliance features as possible while at the same
+#  time maintaining portability, stability, and performance. Its features
+#  include detailed policy and group specification, access control, helo/ehlo
+#  checks (helo randomization prevention and RFC compliance), SPF checks,
+#  Greylisting, Quotas, and Amavisd-new integration.
+#  .
+# URL: http://policyd.org/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=policyd
+version=2.0.6
+release=1
+source=($mirror_sf/policyd/cluebringer-2.0.6.tar.bz2)
+
+build()
+{
+  cd cluebringer-$version
+
+  case $prefix in
+    "/usr") sysconfdir="/etc" ;;
+  esac
+
+  install -d $PKG/${sysconfdir="$prefix/etc"}
+  install -m 644 cluebringer.conf $PKG/${sysconfdir}
+
+  install -d $ROOT/bin
+  install -m 755 cbpadmin cbpolicyd $ROOT/bin
+
+  install -d $ROOT/share/doc/policyd
+  install -m 644 AUTHORS CHANGELOG INSTALL LICENSE TODO WISHLIST $ROOT/share/doc/policyd
+
+  install -d $ROOT/lib/policyd-2.0
+  cp -rf cbp webui $ROOT/lib/policyd-2.0
+}
+
+# EOF

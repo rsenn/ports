@@ -1,0 +1,95 @@
+diff -r -u net-tools-1.60_orig/Makefile net-tools-1.60/Makefile
+--- net-tools-1.60_orig/Makefile	2007-08-24 14:44:02.000000000 +0200
++++ net-tools-1.60/Makefile	2007-08-24 14:49:36.000000000 +0200
+@@ -70,7 +70,7 @@
+ #
+ 
+ # set the base of the Installation 
+-# BASEDIR = /mnt
++BASEDIR = /usr/local
+ 
+ # path to the net-lib support library. Default: lib
+ NET_LIB_PATH = lib
+@@ -118,9 +118,9 @@
+ 
+ SUBDIRS	= man/ $(NET_LIB_PATH)/
+ 
+-ifeq ($(origin CC), undefined)
++#ifeq ($(origin CC), undefined)
+ CC	= gcc
+-endif
++#endif
+ LD	= $(CC)
+ 
+ NLIB	= -l$(NET_LIB_NAME)
+diff -r -u net-tools-1.60_orig/ifconfig.c net-tools-1.60/ifconfig.c
+--- net-tools-1.60_orig/ifconfig.c	2007-08-24 14:44:02.000000000 +0200
++++ net-tools-1.60/ifconfig.c	2007-08-24 14:49:13.000000000 +0200
+@@ -124,6 +124,7 @@
+ static int set_flag(char *ifname, short flag)
+ {
+     struct ifreq ifr;
++    int skfd;
+ 
+     safe_strncpy(ifr.ifr_name, ifname, IFNAMSIZ);
+     if (ioctl(skfd, SIOCGIFFLAGS, &ifr) < 0) {
+@@ -144,7 +145,7 @@
+ static int clr_flag(char *ifname, short flag)
+ {
+     struct ifreq ifr;
+-    int fd;
++    int fd, skfd;
+ 
+     if (strchr(ifname, ':')) {
+         /* This is a v4 alias interface.  Downing it via a socket for
+@@ -235,7 +236,7 @@
+     struct ifreq ifr;
+     int goterr = 0, didnetmask = 0;
+     char **spp;
+-    int fd;
++    int fd, skfd;
+ #if HAVE_AFINET6
+     extern struct aftype inet6_aftype;
+     struct sockaddr_in6 sa6;
+@@ -996,6 +997,7 @@
+ {
+     struct ifreq ifr;
+     struct sockaddr_in sin;
++    int skfd;
+ 
+     safe_strncpy(ifr.ifr_name, name, IFNAMSIZ);
+     memset(&sin, 0, sizeof(struct sockaddr));
+diff -r -u net-tools-1.60_orig/lib/interface.c net-tools-1.60/lib/interface.c
+--- net-tools-1.60_orig/lib/interface.c	2007-08-24 14:44:02.000000000 +0200
++++ net-tools-1.60/lib/interface.c	2007-08-24 14:46:50.000000000 +0200
+@@ -391,12 +391,14 @@
+ int if_fetch(struct interface *ife)
+ {
+     struct ifreq ifr;
+-    int fd;
++    int fd, skfd;
+     char *ifname = ife->name; 
+ 
+     strcpy(ifr.ifr_name, ifname);
+-    if (ioctl(skfd, SIOCGIFFLAGS, &ifr) < 0)
+-	return (-1);
++
++    if(ioctl(skfd, SIOCGIFFLAGS, &ifr) < 0)
++      return -1;
++
+     ife->flags = ifr.ifr_flags;
+ 
+     strcpy(ifr.ifr_name, ifname);
+diff -r -u net-tools-1.60_orig/netstat.c net-tools-1.60/netstat.c
+--- net-tools-1.60_orig/netstat.c	2007-08-24 14:44:02.000000000 +0200
++++ net-tools-1.60/netstat.c	2007-08-24 14:49:49.000000000 +0200
+@@ -1440,7 +1440,8 @@
+ 
+ static int iface_info(void)
+ {
+-    if (skfd < 0) {
++  int skfd;
++  if (skfd < 0) {
+ 	if ((skfd = sockets_open(0)) < 0) {
+ 	    perror("socket");
+ 	    exit(1);

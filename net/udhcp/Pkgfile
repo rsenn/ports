@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An Embedded DHCP Server and Client.
+#  udhcp Server/Client is an embedded DHCP client and server that can be
+#  compiled seperately (19k and 17k respectively), or as one combined binary
+#  (29k). The server stores its lease file periodically, or by a signal (for
+#  systems with flash memory) in terms of absolute time of lease expiration,
+#  or time remaining in a lease (for systems with no clocks). The client
+#  calls helper scripts to do the work of configuring the interfaces for
+#  more flexibility.
+# URL: http://udhcp.busybox.net
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=udhcp
+version=0.9.8
+release=1
+source=(http://udhcp.busybox.net/source/udhcp-$version.tar.gz
+        udhcp-0.9.8-case-label.patch)
+
+build()
+{
+  cd udhcp-$version
+
+  patch -N -p1 -i $SRC/udhcp-0.9.8-case-label.patch
+
+  install -d $ROOT/sbin
+
+  make
+  make prefix="$ROOT" install
+}

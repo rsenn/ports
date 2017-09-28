@@ -1,0 +1,27 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: XCB-based Python bindings for the X Window System
+# URL:
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=xpyb
+version=1.0
+release=1
+source=(http://xcb.freedesktop.org/dist/xpyb-$version.tar.bz2)
+
+build()
+{
+  cd xpyb-$version
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

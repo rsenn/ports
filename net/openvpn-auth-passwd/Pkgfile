@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An OpenVPN plugin for authenticating users using passwd or shadow files.
+#  OpenVPN Auth Passwd is a plugin that authenticates OpenVPN users using the
+#  local passwd or shadow files, using a privilege separation model. The
+#  authentication method must be defined in the Makefile prior to the
+#  compilation of the plugin. On shadowed systems it uses the functions
+#  provided in the shadow suite and, on other systems, the getpwnam(3)
+#  function to verify the username/password.
+#  .
+# URL: http://auth-passwd.sourceforge.net/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=openvpn-auth-passwd
+version=1.1
+release=1
+source=($mirror_sf/auth-passwd/openvpn-auth-passwd-$version.tar.bz2)
+
+build()
+{
+  cd auth-passwd
+
+  make
+  make PREFIX="$ROOT" install
+}
+
+# EOF

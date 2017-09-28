@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Bookmark Server
+# URL: http://sitebar.org/
+# Maintainer: 
+# Depends on: 
+
+name=sitebar
+version=3.3.9
+release=1
+source=($mirror_sf/sitebar/SiteBar-$version.tar.bz2
+        apache.conf)
+
+build() 
+{
+  cd SiteBar-$version
+
+  case $prefix in
+    "/usr") sysconfdir="/etc" ;;
+  esac
+
+  install -d $ROOT/share/sitebar
+  cp -r * $ROOT/share/sitebar
+  
+  install -d $PKG/${sysconfdir="$prefix/etc"}/sitebar
+  install -m 644 $SRC/apache.conf $PKG/$sysconfdir/sitebar
+}
+
+# EOF

@@ -1,0 +1,42 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: The ionCube PHP Accelerator.
+#  The ionCube PHP Accelerator is an easily installed PHP Zend engine
+#  extension that provides a PHP cache, and is capable of delivering a
+#  substantial acceleration of PHP scripts without requiring any script
+#  changes, loss of dynamic content, or other application compromises.
+# URL: http://www.php-accelerator.co.uk/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=php_accelerator
+version=1.3.3r2
+release=3
+source=(http://www.php-accelerator.co.uk/releases/linux_i686-glibc2.1.3/${version}_4.3.0/php_accelerator-${version}_php-4.3.0_linux_i686-glibc2.1.3.tgz
+        http://www.php-accelerator.co.uk/releases/freebsd_i386-4.5/${version}_4.3.0/php_accelerator-${version}_php-4.3.0_freebsd_i386-4.5.tgz)
+
+build()
+{
+  case $target in
+    *freebsd*)
+      cd php_accelerator-${version}_php-4.3.0_freebsd_i386-4.5
+      ;;
+    *linux*)
+      cd php_accelerator-${version}_php-4.3.0_linux_i686-glibc2.1.3
+      ;;
+  esac
+
+  install -d $ROOT/lib/php
+  install php_accelerator_$version.so $ROOT/lib/php
+
+  install -d $ROOT/bin
+  install -m755 phpa_cache_admin $ROOT/bin
+}
+
+postmerge()
+{
+  text_insert_after \
+    "zend_extension = php_accelerator_$version.so" \
+    "zend extensions" \
+    $libdir/php.ini
+}

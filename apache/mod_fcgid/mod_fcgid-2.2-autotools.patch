@@ -1,0 +1,341 @@
+args: -r -u -N -- mod_fcgid.2.2_orig mod_fcgid.2.2
+File mod_fcgid.2.2_orig/.deps is a regular empty file while file mod_fcgid.2.2/.deps is a directory
+diff -r -u -N -- mod_fcgid.2.2_orig/.libs/mod_fcgid.la mod_fcgid.2.2/.libs/mod_fcgid.la
+diff -r -u -N -- mod_fcgid.2.2_orig/.libs/mod_fcgid.lai mod_fcgid.2.2/.libs/mod_fcgid.lai
+diff -r -u -N -- mod_fcgid.2.2_orig/Makefile mod_fcgid.2.2/Makefile
+diff -r -u -N -- mod_fcgid.2.2_orig/Makefile.am mod_fcgid.2.2/Makefile.am
+--- mod_fcgid.2.2_orig/Makefile.am	1970-01-01 01:00:00.000000000 +0100
++++ mod_fcgid.2.2/Makefile.am	2008-10-28 13:16:28.000000000 +0100
+@@ -0,0 +1,14 @@
++lib_LTLIBRARIES = mod_fcgid.la
++
++INCLUDES = $(APR_CFLAGS)
++
++mod_fcgid_la_LDFLAGS = -module -avoid-version
++mod_fcgid_la_SOURCES = \
++  fcgid_bridge.c \
++  fcgid_bucket.c \
++  fcgid_conf.c \
++  fcgid_filter.c \
++  fcgid_pm_main.c \
++  fcgid_protocol.c \
++  fcgid_spawn_ctl.c \
++  mod_fcgid.c
+diff -r -u -N -- mod_fcgid.2.2_orig/Makefile.in mod_fcgid.2.2/Makefile.in
+diff -r -u -N -- mod_fcgid.2.2_orig/aclocal.m4 mod_fcgid.2.2/aclocal.m4
+diff -r -u -N -- mod_fcgid.2.2_orig/autogen.sh mod_fcgid.2.2/autogen.sh
+--- mod_fcgid.2.2_orig/autogen.sh	1970-01-01 01:00:00.000000000 +0100
++++ mod_fcgid.2.2/autogen.sh	2008-10-28 13:19:44.000000000 +0100
+@@ -0,0 +1,11 @@
++#!/bin/sh
++#
++# 20081028
++
++
++libtoolize --force --copy --automake
++aclocal --force -I .
++autoheader --force
++automake --force --copy --foreign --add-missing --foreign
++aclocal --force -I .
++autoconf --force
+diff -r -u -N -- mod_fcgid.2.2_orig/autom4te.cache/output.1 mod_fcgid.2.2/autom4te.cache/output.1
+diff -r -u -N -- mod_fcgid.2.2_orig/autom4te.cache/output.2 mod_fcgid.2.2/autom4te.cache/output.2
+diff -r -u -N -- mod_fcgid.2.2_orig/autom4te.cache/output.3 mod_fcgid.2.2/autom4te.cache/output.3
+diff -r -u -N -- mod_fcgid.2.2_orig/autom4te.cache/requests mod_fcgid.2.2/autom4te.cache/requests
+diff -r -u -N -- mod_fcgid.2.2_orig/autom4te.cache/traces.0 mod_fcgid.2.2/autom4te.cache/traces.0
+diff -r -u -N -- mod_fcgid.2.2_orig/autom4te.cache/traces.1 mod_fcgid.2.2/autom4te.cache/traces.1
+diff -r -u -N -- mod_fcgid.2.2_orig/autom4te.cache/traces.2 mod_fcgid.2.2/autom4te.cache/traces.2
+diff -r -u -N -- mod_fcgid.2.2_orig/autom4te.cache/traces.3 mod_fcgid.2.2/autom4te.cache/traces.3
+diff -r -u -N -- mod_fcgid.2.2_orig/config.guess mod_fcgid.2.2/config.guess
+diff -r -u -N -- mod_fcgid.2.2_orig/config.h mod_fcgid.2.2/config.h
+diff -r -u -N -- mod_fcgid.2.2_orig/config.h.in mod_fcgid.2.2/config.h.in
+diff -r -u -N -- mod_fcgid.2.2_orig/config.log mod_fcgid.2.2/config.log
+diff -r -u -N -- mod_fcgid.2.2_orig/config.status mod_fcgid.2.2/config.status
+diff -r -u -N -- mod_fcgid.2.2_orig/config.sub mod_fcgid.2.2/config.sub
+diff -r -u -N -- mod_fcgid.2.2_orig/configure mod_fcgid.2.2/configure
+diff -r -u -N -- mod_fcgid.2.2_orig/configure.in mod_fcgid.2.2/configure.in
+--- mod_fcgid.2.2_orig/configure.in	1970-01-01 01:00:00.000000000 +0100
++++ mod_fcgid.2.2/configure.in	2008-10-28 13:19:22.000000000 +0100
+@@ -0,0 +1,95 @@
++AC_INIT([mod_bash],[0.1.1])
++AC_CONFIG_SRCDIR([mod_fcgid.c])
++AC_CONFIG_HEADERS(config.h)
++AM_INIT_AUTOMAKE
++
++AM_SANITY_CHECK
++
++AC_PROG_CC
++AC_PROG_LN_S
++AC_ISC_POSIX
++AC_PROG_LIBTOOL
++AC_PROG_INSTALL
++AM_PROG_CC_STDC
++
++AC_C_CONST
++AC_C_INLINE
++
++# GLIB 2.x:
++dnl PKG_CHECK_MODULES(glib, [
++dnl   glib-2.0 >= 2.6.0 
++dnl ])
++dnl
++dnl LDFLAGS="$LDFLAGS $glib_LIBS"
++dnl CFLAGS="$CFLAGS $glib_CFLAGS -DG_DISABLE_DEPRECATED"
++
++# Bash:
++dnl AC_PATH_PROG(bash, bash)
++dnl if test "$bash" = ""; then
++dnl  AC_MSG_ERROR(No bash found!)
++dnl fi
++
++# apr-0:
++APR_FIND_APR([],[],[1],[0])
++
++AC_SUBST([APR_CFLAGS], [`$apr_config --includes`])
++
++# APXS2:
++APXS="apxs"
++AC_ARG_WITH([apxs], [AS_HELP_STRING([--with-apxs],[Build shared Apache module.])], [if test "$withval" = yes; then
++  withval="apxs"
++fi
++APXS="$withval"
++])
++
++AC_PATH_PROG(apxs2, "$APXS")
++if test "$apxs2" = ""; then
++  AC_MSG_ERROR(No apxs2 (apache2) found!)
++fi
++
++# CFLAGS:
++AC_MSG_CHECKING(for apache CFLAGS)
++RESULT=`$apxs2 -q CFLAGS`
++CFLAGS="$CFLAGS $RESULT"
++AC_MSG_RESULT($RESULT)
++
++AC_MSG_CHECKING(for apache CFLAGS_SHLIB)
++RESULT=`$apxs2 -q CFLAGS_SHLIB`
++CFLAGS="$CFLAGS $RESULT"
++AC_MSG_RESULT($RESULT)
++
++AC_MSG_CHECKING(for apache INCLUDEDIR)
++RESULT=`$apxs2 -q INCLUDEDIR`
++CFLAGS="$CFLAGS -I$RESULT"
++AC_MSG_RESULT($RESULT)
++
++# LIBS:
++AC_MSG_CHECKING(for apache LIBS_SHLIB)
++RESULT=`$apxs2 -q LIBS_SHLIB`
++LIBS="$LIBS -I$RESULT"
++AC_MSG_RESULT($RESULT)
++
++AC_MSG_CHECKING(for apache LD_SHLIB)
++RESULT=`$apxs2 -q LD_SHLIB`
++LIBS="$LIBS -I$RESULT"
++AC_MSG_RESULT($RESULT)
++
++AC_MSG_CHECKING(for apache LDFLAGS_SHLIB)
++RESULT=`$apxs2 -q LDFLAGS_SHLIB`
++LIBS="$LIBS -I$RESULT"
++AC_MSG_RESULT($RESULT)
++
++# Module Path:
++AC_MSG_CHECKING(for apache module path)
++RESULT=`$apxs2 -q LIBEXECDIR`
++libdir="$RESULT"
++AC_MSG_RESULT($RESULT)
++
++# Generic stuff:
++CFLAGS="$CFLAGS -Wall"
++
++AC_CONFIG_FILES([
++Makefile
++])
++AC_OUTPUT
++
+diff -r -u -N -- mod_fcgid.2.2_orig/configure.in~ mod_fcgid.2.2/configure.in~
+diff -r -u -N -- mod_fcgid.2.2_orig/depcomp mod_fcgid.2.2/depcomp
+diff -r -u -N -- mod_fcgid.2.2_orig/fcgid_bridge.lo mod_fcgid.2.2/fcgid_bridge.lo
+diff -r -u -N -- mod_fcgid.2.2_orig/fcgid_bucket.lo mod_fcgid.2.2/fcgid_bucket.lo
+diff -r -u -N -- mod_fcgid.2.2_orig/fcgid_conf.lo mod_fcgid.2.2/fcgid_conf.lo
+diff -r -u -N -- mod_fcgid.2.2_orig/fcgid_filter.lo mod_fcgid.2.2/fcgid_filter.lo
+diff -r -u -N -- mod_fcgid.2.2_orig/fcgid_pm_main.lo mod_fcgid.2.2/fcgid_pm_main.lo
+diff -r -u -N -- mod_fcgid.2.2_orig/fcgid_protocol.lo mod_fcgid.2.2/fcgid_protocol.lo
+diff -r -u -N -- mod_fcgid.2.2_orig/fcgid_spawn_ctl.lo mod_fcgid.2.2/fcgid_spawn_ctl.lo
+diff -r -u -N -- mod_fcgid.2.2_orig/find_apr.m4 mod_fcgid.2.2/find_apr.m4
+--- mod_fcgid.2.2_orig/find_apr.m4	1970-01-01 01:00:00.000000000 +0100
++++ mod_fcgid.2.2/find_apr.m4	2008-10-28 13:17:29.000000000 +0100
+@@ -0,0 +1,167 @@
++dnl -------------------------------------------------------- -*- autoconf -*-
++dnl Licensed to the Apache Software Foundation (ASF) under one or more
++dnl contributor license agreements.  See the NOTICE file distributed with
++dnl this work for additional information regarding copyright ownership.
++dnl The ASF licenses this file to You under the Apache License, Version 2.0
++dnl (the "License"); you may not use this file except in compliance with
++dnl the License.  You may obtain a copy of the License at
++dnl
++dnl     http://www.apache.org/licenses/LICENSE-2.0
++dnl
++dnl Unless required by applicable law or agreed to in writing, software
++dnl distributed under the License is distributed on an "AS IS" BASIS,
++dnl WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++dnl See the License for the specific language governing permissions and
++dnl limitations under the License.
++
++dnl
++dnl find_apr.m4 : locate the APR include files and libraries
++dnl
++dnl This macro file can be used by applications to find and use the APR
++dnl library. It provides a standardized mechanism for using APR. It supports
++dnl embedding APR into the application source, or locating an installed
++dnl copy of APR.
++dnl
++dnl APR_FIND_APR(srcdir, builddir, implicit-install-check, acceptable-majors)
++dnl
++dnl   where srcdir is the location of the bundled APR source directory, or
++dnl   empty if source is not bundled.
++dnl
++dnl   where builddir is the location where the bundled APR will will be built,
++dnl   or empty if the build will occur in the srcdir.
++dnl
++dnl   where implicit-install-check set to 1 indicates if there is no
++dnl   --with-apr option specified, we will look for installed copies.
++dnl
++dnl   where acceptable-majors is a space separated list of acceptable major
++dnl   version numbers. Often only a single major version will be acceptable.
++dnl   If multiple versions are specified, and --with-apr=PREFIX or the
++dnl   implicit installed search are used, then the first (leftmost) version
++dnl   in the list that is found will be used.  Currently defaults to [0 1].
++dnl
++dnl Sets the following variables on exit:
++dnl
++dnl   apr_found : "yes", "no", "reconfig"
++dnl
++dnl   apr_config : If the apr-config tool exists, this refers to it. If
++dnl                apr_found is "reconfig", then the bundled directory
++dnl                should be reconfigured *before* using apr_config.
++dnl
++dnl Note: this macro file assumes that apr-config has been installed; it
++dnl       is normally considered a required part of an APR installation.
++dnl
++dnl If a bundled source directory is available and needs to be (re)configured,
++dnl then apr_found is set to "reconfig". The caller should reconfigure the
++dnl (passed-in) source directory, placing the result in the build directory,
++dnl as appropriate.
++dnl
++dnl If apr_found is "yes" or "reconfig", then the caller should use the
++dnl value of apr_config to fetch any necessary build/link information.
++dnl
++
++AC_DEFUN([APR_FIND_APR], [
++  apr_found="no"
++
++  if test "$target_os" = "os2-emx"; then
++    # Scripts don't pass test -x on OS/2
++    TEST_X="test -f"
++  else
++    TEST_X="test -x"
++  fi
++
++  ifelse([$4], [], [
++         ifdef(AC_WARNING,AC_WARNING([$0: missing argument 4 (acceptable-majors): Defaulting to APR 0.x then APR 1.x]))
++         acceptable_majors="0 1"],
++         [acceptable_majors="$4"])
++
++  apr_temp_acceptable_apr_config=""
++  for apr_temp_major in $acceptable_majors
++  do
++    case $apr_temp_major in
++      0)
++      apr_temp_acceptable_apr_config="$apr_temp_acceptable_apr_config apr-config"
++      ;;
++      *)
++      apr_temp_acceptable_apr_config="$apr_temp_acceptable_apr_config apr-$apr_temp_major-config"
++      ;;
++    esac
++  done
++
++  AC_MSG_CHECKING(for APR)
++  AC_ARG_WITH(apr,
++  [  --with-apr=PATH         prefix for installed APR, path to APR build tree,
++                          or the full path to apr-config],
++  [
++    if test "$withval" = "no" || test "$withval" = "yes"; then
++      AC_MSG_ERROR([--with-apr requires a directory or file to be provided])
++    fi
++
++    for apr_temp_apr_config_file in $apr_temp_acceptable_apr_config
++    do
++      for lookdir in "$withval/bin" "$withval"
++      do
++        if $TEST_X "$lookdir/$apr_temp_apr_config_file"; then
++          apr_found="yes"
++          apr_config="$lookdir/$apr_temp_apr_config_file"
++          break 2
++        fi
++      done
++    done
++
++    if test "$apr_found" != "yes" && $TEST_X "$withval" && $withval --help > /dev/null 2>&1 ; then
++      apr_found="yes"
++      apr_config="$withval"
++    fi
++
++    dnl if --with-apr is used, it is a fatal error for its argument
++    dnl to be invalid
++    if test "$apr_found" != "yes"; then
++      AC_MSG_ERROR([the --with-apr parameter is incorrect. It must specify an install prefix, a build directory, or an apr-config file.])
++    fi
++  ],[
++    dnl If we allow installed copies, check those before using bundled copy.
++    if test -n "$3" && test "$3" = "1"; then
++      for apr_temp_apr_config_file in $apr_temp_acceptable_apr_config
++      do
++        if $apr_temp_apr_config_file --help > /dev/null 2>&1 ; then
++          apr_found="yes"
++          apr_config="$apr_temp_apr_config_file"
++          break
++        else
++          dnl look in some standard places
++          for lookdir in /usr /usr/local /usr/local/apr /opt/apr; do
++            if $TEST_X "$lookdir/bin/$apr_temp_apr_config_file"; then
++              apr_found="yes"
++              apr_config="$lookdir/bin/$apr_temp_apr_config_file"
++              break 2
++            fi
++          done
++        fi
++      done
++    fi
++    dnl if we have not found anything yet and have bundled source, use that
++    if test "$apr_found" = "no" && test -d "$1"; then
++      apr_temp_abs_srcdir="`cd $1 && pwd`"
++      apr_found="reconfig"
++      apr_bundled_major="`sed -n '/#define.*APR_MAJOR_VERSION/s/^[^0-9]*\([0-9]*\).*$/\1/p' \"$1/include/apr_version.h\"`"
++      case $apr_bundled_major in
++        "")
++          AC_MSG_ERROR([failed to find major version of bundled APR])
++        ;;
++        0)
++          apr_temp_apr_config_file="apr-config"
++        ;;
++        *)
++          apr_temp_apr_config_file="apr-$apr_bundled_major-config"
++        ;;
++      esac
++      if test -n "$2"; then
++        apr_config="$2/$apr_temp_apr_config_file"
++      else
++        apr_config="$1/$apr_temp_apr_config_file"
++      fi
++    fi
++  ])
++
++  AC_MSG_RESULT($apr_found)
++])
+diff -r -u -N -- mod_fcgid.2.2_orig/install-sh mod_fcgid.2.2/install-sh
+diff -r -u -N -- mod_fcgid.2.2_orig/libtool mod_fcgid.2.2/libtool
+diff -r -u -N -- mod_fcgid.2.2_orig/ltmain.sh mod_fcgid.2.2/ltmain.sh
+diff -r -u -N -- mod_fcgid.2.2_orig/missing mod_fcgid.2.2/missing
+diff -r -u -N -- mod_fcgid.2.2_orig/mod_fcgid.la mod_fcgid.2.2/mod_fcgid.la
+diff -r -u -N -- mod_fcgid.2.2_orig/mod_fcgid.lo mod_fcgid.2.2/mod_fcgid.lo
+diff -r -u -N -- mod_fcgid.2.2_orig/stamp-h1 mod_fcgid.2.2/stamp-h1

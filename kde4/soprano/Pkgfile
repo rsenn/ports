@@ -1,0 +1,39 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:50 roman Exp $
+#
+# Description: libraries for the Soprano RDF framework
+#  Soprano is a pluggable RDF storage, parsing, and serialization framework
+#  based on Qt 4. Soprano is targeted at desktop applications that need
+#  to store RDF data. Its API has been optimized for simplicity and ease
+#  of use, while its modular structure allows it to use various different
+#  RDF storage implementations as its backend.
+#  This package contains the Soprano core libraries, D-Bus service, parser
+#  plugins, and a storage plugin for the Redland RDF Application Framework.
+# URL: http://soprano.sourceforge.net
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=soprano
+version=2.0.2
+prefix=/opt/kde4
+
+release=1
+source=($mirror_sf/soprano/soprano-$version.tar.bz2)
+
+build()
+{
+  rm -rf ${builddir=$SRC/soprano-build} && mkdir $builddir && cd $builddir
+
+  case $CXXFLAGS in
+    *-ggdb*) build_type="Debug" ;;
+       *-g*) build_type="RelWithDebInfo" CXXFLAGS="$CXXFLAGS -DNDEBUG" ;;
+         *) build_type="Release" CXXFLAGS="$CXXFLAGS -DNDEBUG" ;;
+  esac
+
+  cmake \
+       -DCMAKE_INSTALL_PREFIX="$prefix" \
+     ${srcdir=$SRC/soprano-$version}
+
+  make
+  make DESTDIR="$PKG" install
+}
+

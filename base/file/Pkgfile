@@ -1,0 +1,70 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: File
+#  File attempts to classify files depending on their contents and prints
+#  a description if a match is found.
+# URL: http://www.darwinsys.com/file/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Split: libmagic1 (lib/libmagic1)
+# Depends on:
+
+name=file
+version=5.03
+release=1
+source=(ftp://ftp.astron.com/pub/file/file-$version.tar.gz 
+        file-5.00-ms-wab.patch
+        file-5.00-ldap-ldif.patch
+        file-5.00-vcard.patch
+        file-5.00-gburner-gbi.patch
+        file-4.17-msoffice.patch
+        file-4.17-magic2mime.patch
+        file-4.17-mingw32.patch
+        file-4.17-lzma.patch)
+
+build()
+{
+  cd file-$version
+
+  patch -N -p1 -i $SRC/file-5.00-ms-wab.patch
+  patch -N -p1 -i $SRC/file-5.00-ldap-ldif.patch
+  patch -N -p1 -i $SRC/file-5.00-vcard.patch
+  patch -N -p1 -i $SRC/file-5.00-gburner-gbi.patch
+#  patch -N -p1 -i $SRC/file-4.17-msoffice.patch
+#  patch -N -p1 -i $SRC/file-4.17-magic2mime.patch
+#  patch -N -p1 -i $SRC/file-4.17-mingw32.patch
+#  patch -N -p1 -i $SRC/file-4.17-lzma.patch
+
+  libtoolize --force --copy --install
+  aclocal --force -I .
+  automake --force --copy --foreign
+  aclocal --force -I .
+  autoheader --force
+  autoconf --force
+
+  case $host in
+    *-mingw32)
+      export LIBS="-lregex"
+      ;;
+  esac
+
+  (echo "#!/bin/sh" && echo 'echo "$@"') >config.sub
+
+  rm -f magic/magic.mgc
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --${shared:=enable}-shared \
+      --${static:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/file
+  install -m 644 README AUTHORS COPYING ChangeLog INSTALL NEWS TODO MAINT $ROOT/share/doc/file
+
+  cd src
+
+  sh ../libtool --tag="CC" --mode="link" ${CC-cc} -all-static $CFLAGS -o $ROOT/bin/file.static file.o libmagic.la -lz
+}

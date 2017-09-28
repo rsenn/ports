@@ -1,0 +1,27 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A PAM enabled, shadow compatible login program.
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=pam_login
+version=3.29
+release=1
+source=(ftp://ftp.suse.com/pub/people/kukuk/pam/pam_login/pam_login-$version.tar.bz2)
+
+build()
+{
+  cd pam_login-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

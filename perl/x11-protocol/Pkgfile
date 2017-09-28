@@ -1,0 +1,24 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Perl module for the X Window System Protocol, version 11
+# URL: http://search.cpan.org/dist/X11-Protocol/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: perl-base
+
+name=x11-protocol
+version=0.56
+release=1
+source=(http://search.cpan.org/CPAN/authors/id/S/SM/SMCCAM/X11-Protocol-$version.tar.gz)
+
+build()
+{
+  cd X11-Protocol-$version
+
+  perl Makefile.PL
+
+  make \
+       DESTDIR="$PKG" \
+       INSTALLDIRS="vendor" \
+       PREFIX="$prefix" \
+       install
+}

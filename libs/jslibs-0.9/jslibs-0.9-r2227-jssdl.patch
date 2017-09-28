@@ -1,0 +1,286 @@
+--- jslibs-0.9-r1881_orig/src/jssdl/Makefile	2009-02-06 07:25:29.000000000 +0100
++++ jslibs-0.9-r1881/src/jssdl/Makefile	2009-02-06 07:11:27.000000000 +0100
+@@ -1,7 +1,7 @@
+ TARGET     = jssdl.so
+ SRC        = $(wildcard *.cpp)
+-INCLUDES   =
++INCLUDES   = `pkg-config js sdl --cflags`
+ STATICLIBS =
+-SHAREDLIBS =
++SHAREDLIBS = `pkg-config js sdl --libs`
+ 
+ include ../rules.mk
+--- jslibs-0.9-r1881_orig/src/jssdl/cursor.cpp	2009-02-06 07:25:29.000000000 +0100
++++ jslibs-0.9-r1881/src/jssdl/cursor.cpp	2009-02-06 07:16:51.000000000 +0100
+@@ -14,7 +14,7 @@
+ 
+ #include "stdafx.h"
+ #include "error.h"
+-#include "sdl.h"
++#include <SDL.h>
+ 
+ /**doc
+ $CLASS_HEADER
+@@ -41,12 +41,15 @@
+    $ARG ImageObject image
+ **/
+ DEFINE_CONSTRUCTOR() {
+-
++  SDL_Cursor *cursor;
++  unsigned char *cursorImage, *cursorMask;
++  int length, cursorDataLength;
++  JSObject *imageObj;
+ 	J_S_ASSERT_CONSTRUCTING();
+ 	J_S_ASSERT_ARG_MIN(1);
+ 	J_S_ASSERT_OBJECT( J_ARG(1) );
+ 	
+-	JSObject *imageObj = JSVAL_TO_OBJECT( J_ARG(1) );
++  imageObj = JSVAL_TO_OBJECT( J_ARG(1) );
+ 	int sWidth, sHeight, sChannels;
+ 	J_CHK( GetPropertyInt(cx, imageObj, "width", &sWidth) );
+ 	J_CHK( GetPropertyInt(cx, imageObj, "height", &sHeight) );
+@@ -56,16 +59,15 @@
+ 	size_t bufferLength;
+ 	J_CHK( JsvalToStringAndLength(cx, &J_ARG(1), (const char**)&sBuffer, &bufferLength ) ); // warning: GC on the returned buffer !
+ 
+-	J_S_ASSERT( bufferLength == sWidth * sHeight * sChannels * 1, "Invalid image format." );
++	J_S_ASSERT( bufferLength == (unsigned)(sWidth * sHeight * sChannels * 1), "Invalid image format." );
+ 
+ 	J_S_ASSERT( sWidth % 8 == 0, "The cursor width must be a multiple of 8.");
+ 	J_S_ASSERT( sChannels == 3 || sChannels == 4, "Invalid image format (need RGB or RGBA).");
+ 
+-	int length = sWidth * sHeight;
+-
+-	int cursorDataLength = 2*sHeight*sWidth/8;
+-	unsigned char *cursorImage = (unsigned char *)malloc(cursorDataLength); // data + mask
+-	unsigned char *cursorMask = cursorImage + sHeight*sWidth/8;
++	length = sWidth * sHeight;
++	cursorDataLength = 2*sHeight*sWidth/8;
++  cursorImage = (unsigned char *)malloc(cursorDataLength); // data + mask
++	cursorMask = cursorImage + sHeight*sWidth/8;
+ 	memset(cursorImage, 0, cursorDataLength);
+ 	
+ 	// data  mask    resulting pixel on screen
+@@ -98,7 +100,7 @@
+ 		hotY = 0;
+ 		
+ 
+-	SDL_Cursor *cursor = SDL_CreateCursor(cursorImage, cursorMask, sWidth, sHeight, hotX, hotY);
++	cursor = SDL_CreateCursor(cursorImage, cursorMask, sWidth, sHeight, hotX, hotY);
+ 	if ( cursor == NULL ) {
+ 
+ 		free(cursorImage);
+--- jslibs-0.9-r1881_orig/src/jssdl/main.cpp	2009-02-06 07:25:29.000000000 +0100
++++ jslibs-0.9-r1881/src/jssdl/main.cpp	2009-02-06 07:17:14.000000000 +0100
+@@ -16,19 +16,19 @@
+ 
+ #include "static.h"
+ #include "error.h"
+-#include "sdl.h"
++#include <SDL.h>
+ 
+ bool _unsafeMode = false;
+ 
+ DECLARE_CLASS( Cursor )
+ 
+ EXTERN_C DLLEXPORT JSBool ModuleInit(JSContext *cx, JSObject *obj) {
+-
++  int status;
+ 	_unsafeMode = GetHostPrivate(cx)->unsafeMode;
+ 
+ 	INIT_CLASS( SdlError );
+ 
+-	int status = SDL_Init(SDL_INIT_VIDEO | SDL_INIT_NOPARACHUTE);
++	status = SDL_Init(SDL_INIT_VIDEO | SDL_INIT_NOPARACHUTE);
+ 	if ( status != 0 )
+ 		return ThrowSdlError(cx);
+ 
+--- jslibs-0.9-r1881_orig/src/jssdl/static.cpp	2009-02-06 07:25:29.000000000 +0100
++++ jslibs-0.9-r1881/src/jssdl/static.cpp	2009-02-06 07:21:05.000000000 +0100
+@@ -40,10 +40,12 @@
+    * $UNDEF if any dimension is okay for the given format.
+ **/
+ DEFINE_FUNCTION_FAST( GetVideoModeList ) {
+-
++  JSObject *modesArray;
++  SDL_Rect **modes;
++  const SDL_VideoInfo *videoInfo;
+ 	J_S_ASSERT_ARG_MIN(2);
+ 
+-	const SDL_VideoInfo *videoInfo = SDL_GetVideoInfo(); // If called before SDL_SetVideoMode(), 'vfmt' is the pixel format of the "best" video mode.
++	videoInfo = SDL_GetVideoInfo(); // If called before SDL_SetVideoMode(), 'vfmt' is the pixel format of the "best" video mode.
+ 	SDL_PixelFormat format;
+ 	format = *videoInfo->vfmt;
+ 
+@@ -62,7 +64,7 @@
+ 	else
+ 		flags = 0;
+ 
+-	SDL_Rect **modes = SDL_ListModes(&format, (Uint32)flags);
++	modes = SDL_ListModes(&format, (Uint32)flags);
+ 
+ 	if ( modes == (SDL_Rect **)-1 ) {
+ 
+@@ -71,7 +73,7 @@
+ 		return JS_TRUE;
+ 	}
+ 
+-	JSObject *modesArray = JS_NewArrayObject(cx, 0, NULL);
++	modesArray = JS_NewArrayObject(cx, 0, NULL);
+ 	J_S_ASSERT_ALLOC(modesArray);
+ 	*J_FRVAL = OBJECT_TO_JSVAL( modesArray );
+ 
+@@ -106,7 +108,7 @@
+ **/
+ DEFINE_FUNCTION_FAST( VideoModeOK ) {
+ 
+-	int width, height, bpp;
++	int width, height, bpp, status;
+ 	Uint32 flags;
+ 
+ 	if ( J_FARG_ISDEF(1) )
+@@ -132,7 +134,7 @@
+ 	} else
+ 		flags = 0;
+ 
+-	int status = SDL_VideoModeOK(width, height, bpp, (Uint32)flags);
++	status = SDL_VideoModeOK(width, height, bpp, (Uint32)flags);
+ //	J_CHK( BoolToJsval(cx, status != 0, J_FRVAL) );
+ 	J_CHK( IntToJsval(cx, status, J_FRVAL) );
+ 	return JS_TRUE;
+@@ -154,6 +156,7 @@
+ 
+ 	int width, height, bpp;
+ 	Uint32 flags;
++  SDL_Surface *surface;
+ 
+ 	const SDL_VideoInfo *videoInfo = SDL_GetVideoInfo(); // If called before SDL_SetVideoMode(), 'vfmt' is the pixel format of the "best" video mode.
+ //	SDL_PixelFormat format = *videoInfo->vfmt;
+@@ -183,7 +186,7 @@
+ 	} else
+ 		flags = currentSurface != NULL ? currentSurface->flags : 0; // if not given, use the previous setting or a default value.
+ 
+-	SDL_Surface *surface = SDL_SetVideoMode(width, height, bpp, flags);
++	surface = SDL_SetVideoMode(width, height, bpp, flags);
+ 	if ( surface == NULL )
+ 		return ThrowSdlError(cx);
+ 	*J_FRVAL = JSVAL_VOID;
+@@ -219,6 +222,8 @@
+ **/
+ DEFINE_PROPERTY( icon ) {
+ 
++  JSObject *imageObj;
++  SDL_Surface *surface;
+ 	jsval image = *vp;
+ 
+ 	if ( JSVAL_IS_VOID(image) ) {
+@@ -229,7 +234,7 @@
+ 
+ 	J_S_ASSERT_OBJECT(image);
+ 
+-	JSObject *imageObj = JSVAL_TO_OBJECT( image );
++	imageObj = JSVAL_TO_OBJECT( image );
+ 	int sWidth, sHeight, sChannels;
+ 	J_CHK( GetPropertyInt(cx, imageObj, "width", &sWidth) );
+ 	J_CHK( GetPropertyInt(cx, imageObj, "height", &sHeight) );
+@@ -257,7 +262,7 @@
+ 		 amask = 0xff000000;
+ 	#endif
+ 
+-	SDL_Surface *surface = SDL_CreateRGBSurfaceFrom((void*)sBuffer, sWidth, sHeight, 8 * sChannels, sWidth * sChannels, rmask, gmask, bmask, amask);
++	surface = SDL_CreateRGBSurfaceFrom((void*)sBuffer, sWidth, sHeight, 8 * sChannels, sWidth * sChannels, rmask, gmask, bmask, amask);
+ 
+ 	if ( surface == NULL )
+ 		return ThrowSdlError(cx);
+@@ -467,12 +472,13 @@
+    $ARG ImageObject image:
+ **/
+ DEFINE_FUNCTION_FAST( SetCursor ) {
+-
++  SDL_Cursor *cursor;
++  JSObject *cursorObj;
+ 	J_S_ASSERT_ARG_MIN(1);
+ 	J_S_ASSERT_OBJECT( J_FARG(1) );
+-	JSObject *cursorObj = JSVAL_TO_OBJECT( J_FARG(1) );
++	cursorObj = JSVAL_TO_OBJECT( J_FARG(1) );
+ 	J_S_ASSERT_CLASS( cursorObj, classCursor );
+-	SDL_Cursor *cursor = (SDL_Cursor *)JS_GetPrivate(cx, cursorObj);
++	cursor = (SDL_Cursor *)JS_GetPrivate(cx, cursorObj);
+ 	J_S_ASSERT_RESOURCE( cursor );
+ 	SDL_SetCursor(cursor);
+ 	*J_FRVAL = JSVAL_VOID;
+@@ -621,7 +627,7 @@
+    }}}
+ **/
+ DEFINE_FUNCTION_FAST( PollEvent ) {
+-
++  int status;
+ 	J_S_ASSERT_OBJECT( J_FARG(1) );
+ 
+ 	SDL_Event ev;
+@@ -629,7 +635,7 @@
+ 
+ 	//	SDL_EventState(SDL_USEREVENT, SDL_IGNORE);
+ 
+-	int status = SDL_PeepEvents(&ev, 1, SDL_GETEVENT, SDL_ALLEVENTS); // see SDL_EventState
++	status = SDL_PeepEvents(&ev, 1, SDL_GETEVENT, SDL_ALLEVENTS); // see SDL_EventState
+ 	if ( status == -1 )
+ 		return ThrowSdlError(cx);
+ 
+@@ -748,11 +754,11 @@
+    $ARG enum keysym: the key to be tested. see key constants below.
+ **/
+ DEFINE_FUNCTION_FAST( GetKeyState ) {
+-
++  Uint8 *keystate;
+ 	J_S_ASSERT_ARG_MIN(1);
+ 	unsigned int key;
+ 	J_CHK( JsvalToUInt(cx, J_FARG(1), &key) );
+-	Uint8 *keystate = SDL_GetKeyState(NULL);
++	keystate = SDL_GetKeyState(NULL);
+ 	J_CHK( BoolToJsval(cx, keystate[key] != 0, J_FRVAL) );
+ 	return JS_TRUE;
+ 	JL_BAD;
+@@ -765,12 +771,13 @@
+    $ARG enum keysym
+ **/
+ DEFINE_FUNCTION_FAST( GetKeyName ) {
+-
++  char *keyName;
++  JSString *jsStr;
+ 	J_S_ASSERT_ARG_MIN(1);
+ 	unsigned int key;
+ 	J_CHK( JsvalToUInt(cx, J_FARG(1), &key) );
+-	char *keyName = SDL_GetKeyName((SDLKey)key);
+-	JSString *jsStr = JS_NewStringCopyZ(cx, keyName);
++	keyName = SDL_GetKeyName((SDLKey)key);
++	jsStr = JS_NewStringCopyZ(cx, keyName);
+ 	*J_FRVAL = STRING_TO_JSVAL(jsStr);
+ 	return JS_TRUE;
+ 	JL_BAD;
+@@ -784,10 +791,10 @@
+ **/
+ DEFINE_PROPERTY_SETTER( keyRepeatDelay ) {
+ 
+-	int delay, interval;
++	int delay, interval, status;
+ 	SDL_GetKeyRepeat(&delay, &interval);
+ 	J_CHK( JsvalToInt(cx, *vp, &delay) );
+-	int status = SDL_EnableKeyRepeat(delay, interval);
++	status = SDL_EnableKeyRepeat(delay, interval);
+ 	if ( status == -1 )
+ 		return ThrowSdlError(cx);
+ 	return JS_TRUE;
+@@ -811,10 +818,10 @@
+ **/
+ DEFINE_PROPERTY_SETTER( keyRepeatInterval ) {
+ 
+-	int delay, interval;
++	int delay, interval, status;
+ 	SDL_GetKeyRepeat(&delay, &interval);
+ 	J_CHK( JsvalToInt(cx, *vp, &interval) );
+-	int status = SDL_EnableKeyRepeat(delay, interval);
++	status = SDL_EnableKeyRepeat(delay, interval);
+ 	if ( status == -1 )
+ 		return ThrowSdlError(cx);
+ 	return JS_TRUE;

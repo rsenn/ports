@@ -1,0 +1,49 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:50 roman Exp $
+#
+# Description: Particle system API
+#  The Particle System API allows C++ application developers to easily 
+#  include dynamic simulations of groups of moving objects. 
+#  The API is much lighter weight than a full physics engine. 
+#  It is especially useful for eye candy in games and screen savers, 
+#  but is also used in off-line animation software.
+# URL: http://www.particlesystems.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=particle
+version=2.21
+release=1
+source=(http://www.particlesystems.org/Distrib/Particle${version//./}Src.zip
+        particle-2.21-fixes.patch)
+
+build()
+{
+  cd Particle${version//./}Src
+
+  patch -p1 -i $SRC/particle-2.21-fixes.patch
+
+  for DIR in \
+      DMcTools \
+      Particle2/ParticleLib \
+      Particle2/ParBench \
+      Particle2/Example #Particle2/PSpray
+  do
+    make -C "$DIR" || exit $?
+  done
+
+  install -d $ROOT/lib
+  install -m 644 DMcTools/*.a Particle2/*/*.a $ROOT/lib
+
+  install -d $ROOT/bin
+  install -m 755 Particle2/ParBench/parbench $ROOT/bin
+
+  find DMcTools Particle2 -name "*.h" | 
+  while read HEADER; do
+    install -d $ROOT/include/`dirname "$HEADER"`
+    install -m 644 $HEADER $ROOT/include/$HEADER
+  done
+
+  install -d $ROOT/share/doc/particle
+  install -m 644 Particle2/Readme.txt $ROOT/share/doc/particle/README.Particle2
+  install -m 644 Particle2/PSpray/Readme.txt $ROOT/share/doc/particle/Particle2/README.PSpray
+}

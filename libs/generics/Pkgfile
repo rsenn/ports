@@ -1,0 +1,37 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: general c++ utility library - shared libraries
+#  Libgenerics is a general c++ utility library. Its main purpose is to give
+#  developers a set of tools that enable them to describe the objects they
+#  are developing at compile time to dynamically analyse them at runtime. It
+#  gives the possibility to dump and restore the objects states in a binary
+#  chunk or xml format way too.
+#  Libgenerics introduces the following notions:
+#  * metaclasses handling,
+#  * serialization process definition,
+#  * a small xml object layer,
+#  * object listener abstraction,
+#  * API-signed dynamic module load / link capabilities.
+#  This package contains the shared libraries.
+# URL: http://libgenerics.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=generics
+version=0.4.2.tar.bz2
+release=1
+source=(http://villmow.googlepages.com/generics-$version)
+
+build()
+{
+  cd /tmp/bash.g25382
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

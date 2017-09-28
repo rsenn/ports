@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Command Line WRAPper is a tool that provides an easy way to build and run commands from input lines, avoiding the use of shell script. It is similar to xargs. 
+# URL: http://clwrap.sourceforge.net/
+# Maintainer: 
+# Depends on: 
+
+name=clwrap
+version=1.1.2
+release=1
+source=(http://heanet.dl.sourceforge.net/sourceforge/clwrap/clwrap-$version.tgz)
+
+build() 
+{
+  cd clwrap-$version
+  
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+  
+  make
+
+  install -d $ROOT/bin
+  install -m 755 clwrap $ROOT/bin
+
+  install -d $ROOT/share/doc/clwrap
+  install -m 644 COPYING README $ROOT/share/doc/clwrap
+}
+
+# EOF

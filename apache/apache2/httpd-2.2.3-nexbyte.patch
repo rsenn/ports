@@ -1,0 +1,54 @@
+diff -ru -ru httpd-2.2.3_orig/modules/ssl/ssl_engine_init.c httpd-2.2.3/modules/ssl/ssl_engine_init.c
+--- httpd-2.2.3_orig/modules/ssl/ssl_engine_init.c	2006-09-21 11:19:54.000000000 +0200
++++ httpd-2.2.3/modules/ssl/ssl_engine_init.c	2006-09-21 11:20:57.000000000 +0200
+@@ -831,8 +831,7 @@
+     if (SSL_X509_getBC(cert, &is_ca, &pathlen)) {
+         if (is_ca) {
+             ap_log_error(APLOG_MARK, APLOG_WARNING, 0, s,
+-                         "%s server certificate is a CA certificate "
+-                         "(BasicConstraints: CA == TRUE !?)",
++                         "%s server certificate is a self-signed certificate",
+                          ssl_asn1_keystr(type));
+         }
+ 
+diff -ru -ru httpd-2.2.3_orig/server/mpm/prefork/prefork.c httpd-2.2.3/server/mpm/prefork/prefork.c
+--- httpd-2.2.3_orig/server/mpm/prefork/prefork.c	2006-09-21 11:20:13.000000000 +0200
++++ httpd-2.2.3/server/mpm/prefork/prefork.c	2006-09-21 11:33:41.000000000 +0200
+@@ -1083,6 +1083,9 @@
+ 
+     mpm_state = AP_MPMQ_STOPPING;
+ 
++    ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, ap_server_conf,
++                 "caught SIGTERM, shutting down");
++
+     if (shutdown_pending && !is_graceful) {
+         /* Time to shut down:
+          * Kill child processes, tell them to call child_exit, etc...
+@@ -1103,9 +1106,6 @@
+                                 pidfile, (long)getpid());
+         }
+ 
+-        ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, ap_server_conf,
+-                    "caught SIGTERM, shutting down");
+-
+         return 1;
+     } else if (shutdown_pending) {
+         /* Time to perform a graceful shut down:
+diff -ru -ru httpd-2.2.3_orig/server/core.c httpd-2.2.3/server/core.c
+--- httpd-2.2.3_orig/server/core.c	2007-01-18 10:09:28.000000000 +0100
++++ httpd-2.2.3/server/core.c	2007-01-18 10:09:59.000000000 +0100
+@@ -475,13 +475,11 @@
+ #if APR_HAS_SO_ACCEPTFILTER
+ #ifndef ACCEPT_FILTER_NAME
+ #define ACCEPT_FILTER_NAME "httpready"
+-#ifdef __FreeBSD_version
+-#if __FreeBSD_version < 411000 /* httpready broken before 4.1.1 */
++#ifdef __FreeBSD__
+ #undef ACCEPT_FILTER_NAME
+ #define ACCEPT_FILTER_NAME "dataready"
+ #endif
+ #endif
+-#endif
+     apr_table_set(conf->accf_map, "http", ACCEPT_FILTER_NAME);
+     apr_table_set(conf->accf_map, "https", "dataready");
+ #endif

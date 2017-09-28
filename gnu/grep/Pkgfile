@@ -1,0 +1,160 @@
+# $Id: Pkgfile,v 1.14 2007/04/22 23:07:54 roman Exp $
+#
+# Package: grep
+# Version: 3:
+# Section: utils
+# Description: GNU Grep
+#  Package includes the GNU 'grep,' 'egrep,' and 'fgrep,' which find lines
+#  that match entered patterns. By default, grep prints the matching lines.
+#  GNU grep is based on a fast lazy-state deterministic matcher (about twice
+#  as fast as the standard Unix grep) hybridized with a Boyer-Moore-Gosper
+#  search for a fixed string that eliminates impossible text from being
+#  considered by the full regexp match without having to look at every
+#  character; the result is usually many times faster than UNIX 'grep' or
+#  'egrep.'
+# URL: http://www.gnu.org/software/grep/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libpcre3, zlib1g
+
+name=grep
+version=2.5.4~dfsg
+release=4
+source=($mirror_gnu/grep/grep-${version%%'~'*}.tar.bz2
+        grep-2.5.3-static.patch
+        grep-2.5.3-bigfile.patch
+        #grep-2.5.3-m4-fixquotes.patch
+        grep-2.5.3-egf-speedup.patch
+        #grep-2.5.3-autogen-sh.patch
+        grep-2.5.3-man-rgrep.patch
+        #grep-2.5.3-dfa-case-fold{,-charclass,-range}.patch
+        #grep-2.5.3-dfa-optional.patch
+        grep-2.5.3-wchar-type.patch
+        grep-2.5.3-warn-recurse-stdin.patch
+        grep-2.5.3-kwset-bmicase.patch
+        grep-2.5.3-recursive-no-cvs-svn.patch
+        #grep-2.5.3-uncompress.patch
+        grep-2.5.3-no-search-output.patch
+        grep-2.5.3-multibyte-color.patch
+        grep-2.5.3-no-recurse-symlinks.patch
+        grep-colors.sh)
+
+build()
+{
+  cd grep-${version%%'~'*}
+
+  patch -N -p1 -i $SRC/grep-2.5.3-bigfile.patch
+  patch -N -p1 -i $SRC/grep-2.5.3-static.patch
+  #patch -N -p1 -i $SRC/grep-2.5.3-m4-fixquotes.patch
+  patch -N -p1 -i $SRC/grep-2.5.3-egf-speedup.patch
+  #patch -N -p1 -i $SRC/grep-2.5.3-autogen-sh.patch
+  patch -N -p1 -i $SRC/grep-2.5.3-man-rgrep.patch
+  #patch -N -p1 -i $SRC/grep-2.5.3-dfa-case-fold.patch
+  #patch -N -p1 -i $SRC/grep-2.5.3-dfa-case-fold-charclass.patch
+  #patch -N -p1 -i $SRC/grep-2.5.3-dfa-case-fold-range.patch
+  #patch -N -p1 -i $SRC/grep-2.5.3-dfa-optional.patch
+  patch -N -p1 -i $SRC/grep-2.5.3-wchar-type.patch
+  patch -N -p1 -i $SRC/grep-2.5.3-warn-recurse-stdin.patch
+  patch -N -p1 -i $SRC/grep-2.5.3-kwset-bmicase.patch
+  patch -N -p1 -i $SRC/grep-2.5.3-recursive-no-cvs-svn.patch
+  #patch -N -p1 -i $SRC/grep-2.5.3-uncompress.patch
+  patch -N -p1 -i $SRC/grep-2.5.3-no-search-output.patch
+  patch -N -p1 -i $SRC/grep-2.5.3-multibyte-color.patch
+  patch -N -p1 -i $SRC/grep-2.5.3-no-recurse-symlinks.patch
+
+  libtoolize --force --copy --install --automake
+  aclocal --force -I m4
+  autoheader --force
+  automake --force --copy --foreign --add-missing
+  aclocal --force -I m4
+  autoconf --force
+
+#  if set -- $prefix/lib/libcompat.* && test -e "$1"; then
+#    export LIBS="${LIBS:+$LIBS }-lcompat"
+#  fi
+
+  case $prefix in
+    "/usr") bindir="/bin" sysconfdir="/etc" ;;
+  esac
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --bindir="${bindir=$prefix/bin}" \
+       --${nls:-enable}-nls \
+       --without-included-gettext \
+       --without-included-getopt \
+       --without-included-regex
+
+  make
+  make DESTDIR="$PKG" install
+
+  case $prefix in
+    "/usr")
+      if test -e $ROOT/bin; then
+        mv -f $ROOT/bin/grep* $PKG/bin/
+      fi
+      ;;
+  esac
+
+  rm -f $ROOT/share/info/dir
+
+  install -d $ROOT/bin
+
+  # install the rgrep wrapper
+  cat >>$ROOT/bin/rgrep <<__EOF__
+#!/bin/sh
+exec grep -R "$@"
+__EOF__
+  chmod 755 $ROOT/bin/rgrep
+
+  # install shell profile for grep colors
+  install -d $PKG${sysconfdir="$prefix/etc"}/sysprofile.d
+  install -m 644 $SRC/grep-colors.sh $PKG${sysconfdir}/sysprofile.d
+
+  install -d $ROOT/share/doc/grep
+  install -m 644 README ABOUT-NLS AUTHORS COPYING ChangeLog INSTALL NEWS THANKS TODO README-alpha $ROOT/share/doc/grep
+}
+
+postinst()
+{
+  case "$1" in
+    configure)
+      sysprofiledir=${sysconfdir:-/etc}/sysprofile.d
+      if test -d "$sysprofiledir"; then
+        echo -e "Activating grep-colors profile for\c" 1>&2
+        for shpath in \
+          /bin/bash \
+          ${prefix:-/usr}/bin/zsh \
+          ${prefix:-/usr}/bin/ksh \
+          /bin/dash
+        do
+          shname=`basename "$shpath"`
+          echo -e " $shname\c" 1>&2
+          ln -sf grep-colors.sh $sysprofiledir/grep-colors.$shname
+        done
+        echo 1>&2
+      fi
+    ;;
+  esac
+}
+
+postrm()
+{
+  sysprofiledir=${sysconfdir:-/etc}/sysprofile.d
+  if test -d $sysprofiledir; then
+    if test -z "`echo -e`"; then
+      ECHO_E="echo -e"
+    else
+      ECHO_E="echo"
+    fi
+    $ECHO_E "Deactivating grep-colors profile for\c" 1>&2
+    for f in $sysprofiledir/grep-colors.*; do
+      if test -h $f; then
+        $ECHO_E " ${f##*.}\c" 1>&2
+        rm -f $f
+      fi
+    done
+    echo
+  fi
+}

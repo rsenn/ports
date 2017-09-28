@@ -1,0 +1,13 @@
+MAILTO=penetrator@lala-land.org
+
+# Run the dynamic DNS updater every quarter hour
+# ---------------------------------------------------------------------------
+
+# No logging at all - drop privileges to user ez-ipupd
+#*/15 * * * * ez-ipupd /usr/sbin/ez-ipupdate -c /etc/ez-ipupdate.conf -a `/usr/bin/ez-extip` 2>&1
+
+# Log to syslog.notice facility while non-privileged
+*/15 * * * * ez-ipupd /usr/sbin/ez-ipupdate -c /etc/ez-ipupdate.conf -a `/usr/bin/ez-extip` 2>&1 | logger -p syslog.notice -t ez-ipupdate
+
+## Appending to logfile - need to be root (use for debugging)
+#*/15 * * * * root >>/var/log/ez-ipupdate.log /usr/sbin/ez-ipupdate -c /etc/ez-ipupdate.conf -a `/usr/bin/ez-extip` 2>&1

@@ -1,0 +1,46 @@
+# $Id: Pkgfile: js 494 2008-08-26 12:23:37Z root $
+#
+# Package: js
+# Description: The Mozilla SpiderMonkey JavaScript library
+#  This library provides the embeddable JavaScript/ECMAScript engine from
+#  browsers as well as by the iPlanet WebServer).
+# URL: http://www.mozilla.org/js/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=js
+version=1.7.0
+release=1
+source=(ftp://ftp.mozilla.org/pub/js/js-$version.tar.gz
+        js-1.7.0-autotools.patch
+        js-1.7.0-pkgconfig.patch)
+
+build()
+{
+  cd js
+
+  patch -N -p1 -i $SRC/js-1.7.0-autotools.patch
+  patch -N -p1 -i $SRC/js-1.7.0-pkgconfig.patch
+
+  libtoolize --force
+  aclocal --force
+  automake --force --copy --foreign --add-missing &&
+  aclocal --force || true
+  autoconf --force
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/include/js
+  install -m 644 src/{jsopcode.tbl,js.msg} $ROOT/include/js
+
+  install -d $ROOT/lib/js
+
+  install -d $ROOT/share/doc/js
+  install -m 644 [A-Z]*[A-Z]* $ROOT/share/doc/js
+}

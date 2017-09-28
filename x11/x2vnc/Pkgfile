@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A dual-screen hack for VNC.
+#  x2vnc is an implementation of the VNC RFB protocol designed to control a
+#  machine running a VNC server in a dual-monitor situation. Its effect is
+#  to make the controlled machine's display function as if attached to the
+#  controlling machine, allowing the use of just one set of input devices
+#  on two or more machines.
+#  .
+# URL: http://fredrik.hubbe.net/x2vnc.html
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=x2vnc
+version=1.7.2
+release=1
+source=(http://fredrik.hubbe.net/x2vnc/x2vnc-1.7.2.tar.gz)
+
+build()
+{
+  cd x2vnc-1.7.2
+./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+make
+make DESTDIR="$PKG" install
+}
+
+# EOF

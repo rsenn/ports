@@ -1,0 +1,26 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A tool for setup and on-demand mounting of encrypted filesystems under Linux.
+# URL: 
+# Maintainer: 
+# Depends on: 
+
+name=cryptmount
+version=3.1
+release=1
+source=(http://puzzle.dl.sourceforge.net/sourceforge/cryptmount/cryptmount-3.1.2.tar.gz)
+
+build() 
+{
+  cd cryptmount-3.1.2
+  
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+  
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

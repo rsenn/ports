@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A filesystem for accessing FTP hosts based on FUSE and libcurl
+# It features SSL support, connecting through tunneling HTTP proxies, and
+# automatically reconnecting if the server times out.
+# URL: http://curlftpfs.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libcomerr2, libcurl3, libfuse2, libglib2.0-0, libidn11, libkrb53, libldap-2.4-2, libssl0.9.8, zlib1g
+
+name=curlftpfs
+version=0.9.1
+release=1
+source=($mirror_sf/curlftpfs/curlftpfs-$version.tar.gz)
+
+build()
+{
+  cd curlftpfs-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/curlftpfs
+  install -m 644 [A-Z]*[A-Z]* $ROOT/share/doc/curlftpfs
+}

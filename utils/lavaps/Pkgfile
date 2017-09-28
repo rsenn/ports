@@ -1,0 +1,34 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A lava lamp of currently running processes
+#  LavaPS is an interactive process-tracking program like "top", but with
+#  a much different attitude. Rather than presenting lots of specific info
+#  in digital form, it tries to present certain important information in a
+#  graphical analog form. The idea is that you can run it in the background
+#  and get a rough idea of what's happening to your system without devoting
+#  much concentration to the task. Lavaps was inspired the idea of calm
+#  computing from "The Coming Age of Calm Technology" by Mark Weiser and
+#  John Seely Brown.
+#  .
+# URL: http://www.isi.edu/~johnh/SOFTWARE/LAVAPS/index.html
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=lavaps
+version=2.6
+release=1
+source=(http://www.isi.edu/~johnh/SOFTWARE/LAVAPS/lavaps-2.6.tar.gz)
+
+build()
+{
+  cd lavaps-2.6
+./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+make
+make DESTDIR="$PKG" install
+}
+
+# EOF

@@ -1,0 +1,34 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:03:14 roman Exp $
+#
+# Description: A portable OpenGL application framework.
+#  GLFW is a portable framework for OpenGL application development. It
+#  handles operating system-specific tasks, such OpenGL window management,
+#  keyboard, mouse, and joystick input, reading a high precision timer,
+#  creating threads, and more.
+# URL: http://glfw.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=glfw
+pkgname=libglfw
+version=2.6
+release=1
+source=($mirror_sf/glfw/glfw-$version.tar.bz2)
+
+build()
+{
+  cd glfw-${version%.*}
+
+  make x11 \
+      CFLAGS="-I.. -I. -Iinclude -I../include -I$prefix/include $CFLAGS -c" \
+      LFLAGS="-Llib/x11 -L../lib/x11 -L$prefix/lib -lglfw -lGLU -lGL -lX11 -lXdmcp -lXau -lXext -lpthread -ldl -lm"
+
+  install -d $ROOT/lib
+  install -m 644 lib/x11/libglfw.a $ROOT/lib
+
+  install -d $ROOT/include/GL
+  install -m 644 include/GL/glfw.h $ROOT/include/GL
+
+  install -d $ROOT/share/doc/glfw-${version%.*}
+  install -m 644 docs/* $ROOT/share/doc/glfw-${version%.*}
+}

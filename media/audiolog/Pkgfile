@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A small tool for analyzing traces and logfiles by playing sounds.
+#  Audiolog is a small tool for analyzing traces or logfiles in real time
+#  and producing sound events. It always reads line by line from standard
+#  input. In a configuration file, you configure regular expressions. If
+#  audiolog reads a line matching a certain expression, it plays a note. You
+#  can specify the pitch and duration of that note. This allows you to hear
+#  your network traffic.
+#  .
+# URL: http://mathias-kettner.de/audiolog.html
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=audiolog
+version=1.0.1
+release=1
+source=(http://mathias-kettner.de/download/audiolog-$version.tar.gz)
+
+build()
+{
+  cd audiolog-$version
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/audiolog
+  install -m 644 README $ROOT/share/doc/audiolog
+}
+
+# EOF

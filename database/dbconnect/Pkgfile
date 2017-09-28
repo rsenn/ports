@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Easy to use C++ object API to allow applications to connect to databases.
+#  DBConnect API is an easy to use C++ object API to allow applications
+#  to connect to DBMSs. The API currently implements msql, MySQL, Oracle8,
+#  ODBC, and PostgreSQL drivers in the Unix environments and MySQL, Oracle8,
+#  and ODBC in the Windows environment.
+# URL: http://dbconnect.sourceforge.net
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=dbconnect
+version=0.3.5
+release=1
+source=($mirror_sf/dbconnect/dbconnect-$version.tar.gz)
+
+build()
+{
+  cd dbconnect-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

@@ -1,0 +1,39 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A program that converts an AsciiDoc text file to DocBook or HTML.
+#  AsciiDoc is a text document format for writing short documents, articles,
+#  books, and UNIX man pages. AsciiDoc files can be translated to HTML
+#  and DocBook markups using the asciidoc(1) command. AsciiDoc is highly
+#  configurable: both the AsciiDoc source file syntax and the backend
+#  output markups (which can be almost any type of SGML/XML markup) can be
+#  customized and extended by the user.
+# URL: http://www.methods.co.nz/asciidoc/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=asciidoc
+version=8.2.5
+release=1
+source=($mirror_sf/asciidoc/asciidoc-$version.tar.gz)
+
+build()
+{
+  cd asciidoc-$version
+
+  case $prefix in
+    /usr) sysconfdir="/etc" ;;
+       *) sysconfdir="$prefix/etc" ;;
+  esac
+
+  sed -i "/^[_A-Z0-9]\+=.\+\$/ {
+    s,.*,: \${&},
+  }" install.sh
+
+  install -d $ROOT/{bin,share}
+
+  CONFDIR="$PKG/$sysconfdir/asciidoc" \
+  BINDIR="$PKG/$prefix/bin" \
+  MANDIR="$PKG/$prefix/share/man" \
+  VIM_CONFDIR="$PKG/$sysconfdir/vim" \
+    ./install.sh
+}

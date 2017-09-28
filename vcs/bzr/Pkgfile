@@ -1,0 +1,28 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A simple distributed version control system.
+#  Bazaar is a simple decentralized revision control system. Decentralized
+#  revision control systems give users the ability to branch remote
+#  repositories to a local context. Users can commit to local branches
+#  without requiring special permission from the branches that they
+#  branched from.
+#  .
+# URL: http://bazaar-vcs.org/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=bzr
+version=1.9
+release=1
+source=(https://launchpad.net/bzr/1.9/$version/+download/bzr-$version.tar.gz)
+
+build()
+{
+  cd bzr-$version
+
+  sed -i "s,'\(man/man1\)','share/\1'," setup.py
+
+  python setup.py install --prefix="$ROOT"
+}
+
+# EOF

@@ -1,0 +1,31 @@
+diff -r -u grep-2.5.3_orig/src/Makefile.in grep-2.5.3/src/Makefile.in
+--- grep-2.5.3_orig/src/Makefile.in	2007-08-15 23:27:34.000000000 +0000
++++ grep-2.5.3/src/Makefile.in	2007-08-15 23:28:58.000000000 +0000
+@@ -34,7 +34,7 @@
+ build_triplet = @build@
+ host_triplet = @host@
+ ANSI2KNR = @ANSI2KNR@
+-bin_PROGRAMS = grep$(EXEEXT) egrep$(EXEEXT) fgrep$(EXEEXT)
++bin_PROGRAMS = grep$(EXEEXT) grep.static$(EXEEXT) egrep$(EXEEXT) fgrep$(EXEEXT)
+ subdir = src
+ DIST_COMMON = $(noinst_HEADERS) $(srcdir)/Makefile.am \
+ 	$(srcdir)/Makefile.in ansi2knr.1 ansi2knr.c
+@@ -274,7 +274,7 @@
+ 
+ clean-binPROGRAMS:
+ 	-test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
+-egrep$(EXEEXT): $(egrep_OBJECTS) $(egrep_DEPENDENCIES) 
++egrep$(EXEEXT): $(egrep_OBJECTS) $(egrep_DEPENDENCIES)
+ 	@rm -f egrep$(EXEEXT)
+ 	$(LINK) $(egrep_OBJECTS) $(egrep_LDADD) $(LIBS)
+ fgrep$(EXEEXT): $(fgrep_OBJECTS) $(fgrep_DEPENDENCIES) 
+@@ -283,6 +283,9 @@
+ grep$(EXEEXT): $(grep_OBJECTS) $(grep_DEPENDENCIES) 
+ 	@rm -f grep$(EXEEXT)
+ 	$(LINK) $(grep_OBJECTS) $(grep_LDADD) $(LIBS)
++grep.static$(EXEEXT): $(grep_OBJECTS) $(grep_DEPENDENCIES) 
++	@rm -f grep.static$(EXEEXT)
++	$(LINK) -static $(grep_OBJECTS) $(grep_LDADD) $(LIBS)
+ 
+ mostlyclean-compile:
+ 	-rm -f *.$(OBJEXT)

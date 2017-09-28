@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A library to make writing a VNC server easy.
+#  LibVNCServer is a library that makes it easy to make a VNC server. All you
+#  do is provide a frame buffer and some I/O functions, and call a function
+#  each time the frame buffer changes. It supports all encodings known,
+#  including tight, zlib, ZRLE, and cursor encodings. It also includes
+#  the HTTP server from Xvnc, so you can start a java viewer by surfing
+#  to http://my.vnc.server:5801 or similar. It includes a beta version of
+#  LibVNCClient, which makes it easy to make a VNC client. Also included
+#  is LinuxVNC, which is to the Linux console as WinVNC is to the Windows
+#  desktop.
+# URL: http://libvncserver.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libvncserver
+version=0.4
+release=1
+source=($mirror_sf/libvncserver/libvncserver-$version.tar.gz)
+
+build()
+{
+  cd libvncserver-$version
+
+  make CC="${CC-cc}" OPTFLAGS="$CFLAGS"
+
+  install -d $ROOT/lib
+  install -m 644 libvncserver.a $ROOT/lib
+
+  install -d $ROOT/include/libvncserver
+  install -m 644 *.h $ROOT/include/libvncserver
+}

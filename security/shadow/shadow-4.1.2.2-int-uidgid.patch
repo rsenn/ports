@@ -1,0 +1,206 @@
+args: -r -u -N -- shadow-4.1.2.2_orig shadow-4.1.2.2
+diff -r -u -N -- shadow-4.1.2.2_orig/Makefile shadow-4.1.2.2/Makefile
+diff -r -u -N -- shadow-4.1.2.2_orig/config.h shadow-4.1.2.2/config.h
+diff -r -u -N -- shadow-4.1.2.2_orig/config.log shadow-4.1.2.2/config.log
+diff -r -u -N -- shadow-4.1.2.2_orig/config.status shadow-4.1.2.2/config.status
+diff -r -u -N -- shadow-4.1.2.2_orig/contrib/Makefile shadow-4.1.2.2/contrib/Makefile
+diff -r -u -N -- shadow-4.1.2.2_orig/doc/Makefile shadow-4.1.2.2/doc/Makefile
+diff -r -u -N -- shadow-4.1.2.2_orig/etc/Makefile shadow-4.1.2.2/etc/Makefile
+diff -r -u -N -- shadow-4.1.2.2_orig/etc/pam.d/Makefile shadow-4.1.2.2/etc/pam.d/Makefile
+diff -r -u -N -- shadow-4.1.2.2_orig/lib/.deps/commonio.Plo shadow-4.1.2.2/lib/.deps/commonio.Plo
+diff -r -u -N -- shadow-4.1.2.2_orig/lib/.deps/encrypt.Plo shadow-4.1.2.2/lib/.deps/encrypt.Plo
+diff -r -u -N -- shadow-4.1.2.2_orig/lib/.deps/fputsx.Plo shadow-4.1.2.2/lib/.deps/fputsx.Plo
+diff -r -u -N -- shadow-4.1.2.2_orig/lib/.deps/getdef.Plo shadow-4.1.2.2/lib/.deps/getdef.Plo
+diff -r -u -N -- shadow-4.1.2.2_orig/lib/.deps/groupio.Plo shadow-4.1.2.2/lib/.deps/groupio.Plo
+diff -r -u -N -- shadow-4.1.2.2_orig/lib/.deps/groupmem.Plo shadow-4.1.2.2/lib/.deps/groupmem.Plo
+diff -r -u -N -- shadow-4.1.2.2_orig/lib/.deps/gshadow.Plo shadow-4.1.2.2/lib/.deps/gshadow.Plo
+diff -r -u -N -- shadow-4.1.2.2_orig/lib/.deps/lockpw.Plo shadow-4.1.2.2/lib/.deps/lockpw.Plo
+diff -r -u -N -- shadow-4.1.2.2_orig/lib/.deps/nscd.Plo shadow-4.1.2.2/lib/.deps/nscd.Plo
+diff -r -u -N -- shadow-4.1.2.2_orig/lib/.deps/port.Plo shadow-4.1.2.2/lib/.deps/port.Plo
+diff -r -u -N -- shadow-4.1.2.2_orig/lib/.deps/pwauth.Plo shadow-4.1.2.2/lib/.deps/pwauth.Plo
+diff -r -u -N -- shadow-4.1.2.2_orig/lib/.deps/pwio.Plo shadow-4.1.2.2/lib/.deps/pwio.Plo
+diff -r -u -N -- shadow-4.1.2.2_orig/lib/.deps/pwmem.Plo shadow-4.1.2.2/lib/.deps/pwmem.Plo
+diff -r -u -N -- shadow-4.1.2.2_orig/lib/.deps/sgetgrent.Plo shadow-4.1.2.2/lib/.deps/sgetgrent.Plo
+diff -r -u -N -- shadow-4.1.2.2_orig/lib/.deps/sgetpwent.Plo shadow-4.1.2.2/lib/.deps/sgetpwent.Plo
+diff -r -u -N -- shadow-4.1.2.2_orig/lib/.deps/sgroupio.Plo shadow-4.1.2.2/lib/.deps/sgroupio.Plo
+diff -r -u -N -- shadow-4.1.2.2_orig/lib/.deps/shadow.Plo shadow-4.1.2.2/lib/.deps/shadow.Plo
+diff -r -u -N -- shadow-4.1.2.2_orig/lib/.deps/shadowio.Plo shadow-4.1.2.2/lib/.deps/shadowio.Plo
+diff -r -u -N -- shadow-4.1.2.2_orig/lib/.deps/shadowmem.Plo shadow-4.1.2.2/lib/.deps/shadowmem.Plo
+diff -r -u -N -- shadow-4.1.2.2_orig/lib/.deps/utent.Plo shadow-4.1.2.2/lib/.deps/utent.Plo
+diff -r -u -N -- shadow-4.1.2.2_orig/lib/.libs/libshadow.la shadow-4.1.2.2/lib/.libs/libshadow.la
+diff -r -u -N -- shadow-4.1.2.2_orig/lib/Makefile shadow-4.1.2.2/lib/Makefile
+diff -r -u -N -- shadow-4.1.2.2_orig/lib/commonio.lo shadow-4.1.2.2/lib/commonio.lo
+diff -r -u -N -- shadow-4.1.2.2_orig/lib/encrypt.lo shadow-4.1.2.2/lib/encrypt.lo
+diff -r -u -N -- shadow-4.1.2.2_orig/lib/fputsx.lo shadow-4.1.2.2/lib/fputsx.lo
+diff -r -u -N -- shadow-4.1.2.2_orig/lib/getdef.lo shadow-4.1.2.2/lib/getdef.lo
+diff -r -u -N -- shadow-4.1.2.2_orig/lib/groupio.c shadow-4.1.2.2/lib/groupio.c
+--- shadow-4.1.2.2_orig/lib/groupio.c	2008-12-16 12:23:37.000000000 +0100
++++ shadow-4.1.2.2/lib/groupio.c	2008-12-16 12:28:15.000000000 +0100
+@@ -145,7 +145,7 @@
+ 	return commonio_locate (&group_db, name);
+ }
+ 
+-const struct group *gr_locate_gid (gid_t gid)
++const struct group *gr_locate_gid (int gid)
+ {
+ 	const struct group *grp;
+ 
+diff -r -u -N -- shadow-4.1.2.2_orig/lib/groupio.h shadow-4.1.2.2/lib/groupio.h
+--- shadow-4.1.2.2_orig/lib/groupio.h	2008-12-16 12:23:37.000000000 +0100
++++ shadow-4.1.2.2/lib/groupio.h	2008-12-16 12:24:12.000000000 +0100
+@@ -34,7 +34,7 @@
+ #include <grp.h>
+ extern int gr_close (void);
+ extern const struct group *gr_locate (const char *);
+-extern const struct group *gr_locate_gid (gid_t gid);
++extern const struct group *gr_locate_gid (int gid);
+ extern int gr_lock (void);
+ extern int gr_name (const char *);
+ extern const struct group *gr_next (void);
+diff -r -u -N -- shadow-4.1.2.2_orig/lib/groupio.lo shadow-4.1.2.2/lib/groupio.lo
+diff -r -u -N -- shadow-4.1.2.2_orig/lib/groupmem.lo shadow-4.1.2.2/lib/groupmem.lo
+diff -r -u -N -- shadow-4.1.2.2_orig/lib/gshadow.lo shadow-4.1.2.2/lib/gshadow.lo
+diff -r -u -N -- shadow-4.1.2.2_orig/lib/libshadow.la shadow-4.1.2.2/lib/libshadow.la
+diff -r -u -N -- shadow-4.1.2.2_orig/lib/lockpw.lo shadow-4.1.2.2/lib/lockpw.lo
+diff -r -u -N -- shadow-4.1.2.2_orig/lib/nscd.lo shadow-4.1.2.2/lib/nscd.lo
+diff -r -u -N -- shadow-4.1.2.2_orig/lib/port.lo shadow-4.1.2.2/lib/port.lo
+diff -r -u -N -- shadow-4.1.2.2_orig/lib/pwauth.lo shadow-4.1.2.2/lib/pwauth.lo
+diff -r -u -N -- shadow-4.1.2.2_orig/lib/pwio.c shadow-4.1.2.2/lib/pwio.c
+--- shadow-4.1.2.2_orig/lib/pwio.c	2008-12-16 12:23:37.000000000 +0100
++++ shadow-4.1.2.2/lib/pwio.c	2008-12-16 12:28:27.000000000 +0100
+@@ -128,7 +128,7 @@
+ 	return commonio_locate (&passwd_db, name);
+ }
+ 
+-const struct passwd *pw_locate_uid (uid_t uid)
++const struct passwd *pw_locate_uid (int uid)
+ {
+ 	const struct passwd *pwd;
+ 
+diff -r -u -N -- shadow-4.1.2.2_orig/lib/pwio.h shadow-4.1.2.2/lib/pwio.h
+--- shadow-4.1.2.2_orig/lib/pwio.h	2008-12-16 12:23:37.000000000 +0100
++++ shadow-4.1.2.2/lib/pwio.h	2008-12-16 12:23:57.000000000 +0100
+@@ -34,7 +34,7 @@
+ #include <pwd.h>
+ extern int pw_close (void);
+ extern const struct passwd *pw_locate (const char *);
+-extern const struct passwd *pw_locate_uid (uid_t uid);
++extern const struct passwd *pw_locate_uid (int uid);
+ extern int pw_lock (void);
+ extern int pw_name (const char *);
+ extern const struct passwd *pw_next (void);
+diff -r -u -N -- shadow-4.1.2.2_orig/lib/pwio.lo shadow-4.1.2.2/lib/pwio.lo
+diff -r -u -N -- shadow-4.1.2.2_orig/lib/pwmem.lo shadow-4.1.2.2/lib/pwmem.lo
+diff -r -u -N -- shadow-4.1.2.2_orig/lib/sgetgrent.lo shadow-4.1.2.2/lib/sgetgrent.lo
+diff -r -u -N -- shadow-4.1.2.2_orig/lib/sgetpwent.lo shadow-4.1.2.2/lib/sgetpwent.lo
+diff -r -u -N -- shadow-4.1.2.2_orig/lib/sgroupio.lo shadow-4.1.2.2/lib/sgroupio.lo
+diff -r -u -N -- shadow-4.1.2.2_orig/lib/shadow.lo shadow-4.1.2.2/lib/shadow.lo
+diff -r -u -N -- shadow-4.1.2.2_orig/lib/shadowio.lo shadow-4.1.2.2/lib/shadowio.lo
+diff -r -u -N -- shadow-4.1.2.2_orig/lib/shadowmem.lo shadow-4.1.2.2/lib/shadowmem.lo
+diff -r -u -N -- shadow-4.1.2.2_orig/lib/utent.lo shadow-4.1.2.2/lib/utent.lo
+diff -r -u -N -- shadow-4.1.2.2_orig/libmisc/.deps/addgrps.Po shadow-4.1.2.2/libmisc/.deps/addgrps.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/libmisc/.deps/age.Po shadow-4.1.2.2/libmisc/.deps/age.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/libmisc/.deps/audit_help.Po shadow-4.1.2.2/libmisc/.deps/audit_help.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/libmisc/.deps/basename.Po shadow-4.1.2.2/libmisc/.deps/basename.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/libmisc/.deps/chkname.Po shadow-4.1.2.2/libmisc/.deps/chkname.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/libmisc/.deps/chowndir.Po shadow-4.1.2.2/libmisc/.deps/chowndir.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/libmisc/.deps/chowntty.Po shadow-4.1.2.2/libmisc/.deps/chowntty.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/libmisc/.deps/console.Po shadow-4.1.2.2/libmisc/.deps/console.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/libmisc/.deps/copydir.Po shadow-4.1.2.2/libmisc/.deps/copydir.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/libmisc/.deps/entry.Po shadow-4.1.2.2/libmisc/.deps/entry.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/libmisc/.deps/env.Po shadow-4.1.2.2/libmisc/.deps/env.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/libmisc/.deps/failure.Po shadow-4.1.2.2/libmisc/.deps/failure.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/libmisc/.deps/fields.Po shadow-4.1.2.2/libmisc/.deps/fields.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/libmisc/.deps/find_new_ids.Po shadow-4.1.2.2/libmisc/.deps/find_new_ids.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/libmisc/.deps/getdate.Po shadow-4.1.2.2/libmisc/.deps/getdate.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/libmisc/.deps/getlong.Po shadow-4.1.2.2/libmisc/.deps/getlong.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/libmisc/.deps/hushed.Po shadow-4.1.2.2/libmisc/.deps/hushed.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/libmisc/.deps/isexpired.Po shadow-4.1.2.2/libmisc/.deps/isexpired.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/libmisc/.deps/list.Po shadow-4.1.2.2/libmisc/.deps/list.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/libmisc/.deps/log.Po shadow-4.1.2.2/libmisc/.deps/log.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/libmisc/.deps/loginprompt.Po shadow-4.1.2.2/libmisc/.deps/loginprompt.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/libmisc/.deps/mail.Po shadow-4.1.2.2/libmisc/.deps/mail.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/libmisc/.deps/motd.Po shadow-4.1.2.2/libmisc/.deps/motd.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/libmisc/.deps/myname.Po shadow-4.1.2.2/libmisc/.deps/myname.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/libmisc/.deps/pam_pass.Po shadow-4.1.2.2/libmisc/.deps/pam_pass.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/libmisc/.deps/pwd2spwd.Po shadow-4.1.2.2/libmisc/.deps/pwd2spwd.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/libmisc/.deps/pwd_init.Po shadow-4.1.2.2/libmisc/.deps/pwd_init.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/libmisc/.deps/rlogin.Po shadow-4.1.2.2/libmisc/.deps/rlogin.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/libmisc/.deps/salt.Po shadow-4.1.2.2/libmisc/.deps/salt.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/libmisc/.deps/setugid.Po shadow-4.1.2.2/libmisc/.deps/setugid.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/libmisc/.deps/setupenv.Po shadow-4.1.2.2/libmisc/.deps/setupenv.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/libmisc/.deps/shell.Po shadow-4.1.2.2/libmisc/.deps/shell.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/libmisc/.deps/strtoday.Po shadow-4.1.2.2/libmisc/.deps/strtoday.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/libmisc/.deps/sub.Po shadow-4.1.2.2/libmisc/.deps/sub.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/libmisc/.deps/sulog.Po shadow-4.1.2.2/libmisc/.deps/sulog.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/libmisc/.deps/ttytype.Po shadow-4.1.2.2/libmisc/.deps/ttytype.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/libmisc/.deps/tz.Po shadow-4.1.2.2/libmisc/.deps/tz.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/libmisc/.deps/ulimit.Po shadow-4.1.2.2/libmisc/.deps/ulimit.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/libmisc/.deps/utmp.Po shadow-4.1.2.2/libmisc/.deps/utmp.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/libmisc/.deps/valid.Po shadow-4.1.2.2/libmisc/.deps/valid.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/libmisc/.deps/xgetgrgid.Po shadow-4.1.2.2/libmisc/.deps/xgetgrgid.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/libmisc/.deps/xgetgrnam.Po shadow-4.1.2.2/libmisc/.deps/xgetgrnam.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/libmisc/.deps/xgetpwnam.Po shadow-4.1.2.2/libmisc/.deps/xgetpwnam.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/libmisc/.deps/xgetpwnam.Tpo shadow-4.1.2.2/libmisc/.deps/xgetpwnam.Tpo
+diff -r -u -N -- shadow-4.1.2.2_orig/libmisc/.deps/xgetpwuid.Po shadow-4.1.2.2/libmisc/.deps/xgetpwuid.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/libmisc/.deps/xgetspnam.Po shadow-4.1.2.2/libmisc/.deps/xgetspnam.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/libmisc/.deps/xmalloc.Po shadow-4.1.2.2/libmisc/.deps/xmalloc.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/libmisc/.deps/yesno.Po shadow-4.1.2.2/libmisc/.deps/yesno.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/libmisc/Makefile shadow-4.1.2.2/libmisc/Makefile
+diff -r -u -N -- shadow-4.1.2.2_orig/libtool shadow-4.1.2.2/libtool
+diff -r -u -N -- shadow-4.1.2.2_orig/man/Makefile shadow-4.1.2.2/man/Makefile
+diff -r -u -N -- shadow-4.1.2.2_orig/man/cs/Makefile shadow-4.1.2.2/man/cs/Makefile
+diff -r -u -N -- shadow-4.1.2.2_orig/man/de/Makefile shadow-4.1.2.2/man/de/Makefile
+diff -r -u -N -- shadow-4.1.2.2_orig/man/es/Makefile shadow-4.1.2.2/man/es/Makefile
+diff -r -u -N -- shadow-4.1.2.2_orig/man/fi/Makefile shadow-4.1.2.2/man/fi/Makefile
+diff -r -u -N -- shadow-4.1.2.2_orig/man/fr/Makefile shadow-4.1.2.2/man/fr/Makefile
+diff -r -u -N -- shadow-4.1.2.2_orig/man/hu/Makefile shadow-4.1.2.2/man/hu/Makefile
+diff -r -u -N -- shadow-4.1.2.2_orig/man/id/Makefile shadow-4.1.2.2/man/id/Makefile
+diff -r -u -N -- shadow-4.1.2.2_orig/man/it/Makefile shadow-4.1.2.2/man/it/Makefile
+diff -r -u -N -- shadow-4.1.2.2_orig/man/ja/Makefile shadow-4.1.2.2/man/ja/Makefile
+diff -r -u -N -- shadow-4.1.2.2_orig/man/ko/Makefile shadow-4.1.2.2/man/ko/Makefile
+diff -r -u -N -- shadow-4.1.2.2_orig/man/pl/Makefile shadow-4.1.2.2/man/pl/Makefile
+diff -r -u -N -- shadow-4.1.2.2_orig/man/pt_BR/Makefile shadow-4.1.2.2/man/pt_BR/Makefile
+diff -r -u -N -- shadow-4.1.2.2_orig/man/ru/Makefile shadow-4.1.2.2/man/ru/Makefile
+diff -r -u -N -- shadow-4.1.2.2_orig/man/sv/Makefile shadow-4.1.2.2/man/sv/Makefile
+diff -r -u -N -- shadow-4.1.2.2_orig/man/tr/Makefile shadow-4.1.2.2/man/tr/Makefile
+diff -r -u -N -- shadow-4.1.2.2_orig/man/zh_CN/Makefile shadow-4.1.2.2/man/zh_CN/Makefile
+diff -r -u -N -- shadow-4.1.2.2_orig/man/zh_TW/Makefile shadow-4.1.2.2/man/zh_TW/Makefile
+diff -r -u -N -- shadow-4.1.2.2_orig/po/Makefile shadow-4.1.2.2/po/Makefile
+diff -r -u -N -- shadow-4.1.2.2_orig/po/Makefile.in shadow-4.1.2.2/po/Makefile.in
+diff -r -u -N -- shadow-4.1.2.2_orig/src/.deps/chage.Po shadow-4.1.2.2/src/.deps/chage.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/src/.deps/chfn.Po shadow-4.1.2.2/src/.deps/chfn.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/src/.deps/chgpasswd.Po shadow-4.1.2.2/src/.deps/chgpasswd.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/src/.deps/chpasswd.Po shadow-4.1.2.2/src/.deps/chpasswd.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/src/.deps/chsh.Po shadow-4.1.2.2/src/.deps/chsh.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/src/.deps/expiry.Po shadow-4.1.2.2/src/.deps/expiry.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/src/.deps/faillog.Po shadow-4.1.2.2/src/.deps/faillog.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/src/.deps/gpasswd.Po shadow-4.1.2.2/src/.deps/gpasswd.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/src/.deps/groupadd.Po shadow-4.1.2.2/src/.deps/groupadd.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/src/.deps/groupdel.Po shadow-4.1.2.2/src/.deps/groupdel.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/src/.deps/groupmems.Po shadow-4.1.2.2/src/.deps/groupmems.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/src/.deps/groupmod.Po shadow-4.1.2.2/src/.deps/groupmod.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/src/.deps/groups.Po shadow-4.1.2.2/src/.deps/groups.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/src/.deps/grpck.Po shadow-4.1.2.2/src/.deps/grpck.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/src/.deps/grpconv.Po shadow-4.1.2.2/src/.deps/grpconv.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/src/.deps/grpunconv.Po shadow-4.1.2.2/src/.deps/grpunconv.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/src/.deps/id.Po shadow-4.1.2.2/src/.deps/id.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/src/.deps/lastlog.Po shadow-4.1.2.2/src/.deps/lastlog.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/src/.deps/login.Po shadow-4.1.2.2/src/.deps/login.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/src/.deps/login_nopam.Po shadow-4.1.2.2/src/.deps/login_nopam.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/src/.deps/logoutd.Po shadow-4.1.2.2/src/.deps/logoutd.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/src/.deps/newgrp.Po shadow-4.1.2.2/src/.deps/newgrp.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/src/.deps/newusers.Po shadow-4.1.2.2/src/.deps/newusers.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/src/.deps/nologin.Po shadow-4.1.2.2/src/.deps/nologin.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/src/.deps/passwd.Po shadow-4.1.2.2/src/.deps/passwd.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/src/.deps/pwck.Po shadow-4.1.2.2/src/.deps/pwck.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/src/.deps/pwconv.Po shadow-4.1.2.2/src/.deps/pwconv.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/src/.deps/pwunconv.Po shadow-4.1.2.2/src/.deps/pwunconv.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/src/.deps/su.Po shadow-4.1.2.2/src/.deps/su.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/src/.deps/suauth.Po shadow-4.1.2.2/src/.deps/suauth.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/src/.deps/sulogin.Po shadow-4.1.2.2/src/.deps/sulogin.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/src/.deps/useradd.Po shadow-4.1.2.2/src/.deps/useradd.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/src/.deps/userdel.Po shadow-4.1.2.2/src/.deps/userdel.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/src/.deps/usermod.Po shadow-4.1.2.2/src/.deps/usermod.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/src/.deps/vipw.Po shadow-4.1.2.2/src/.deps/vipw.Po
+diff -r -u -N -- shadow-4.1.2.2_orig/src/Makefile shadow-4.1.2.2/src/Makefile

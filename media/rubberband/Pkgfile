@@ -1,0 +1,27 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Rubber Band is an audio time-stretching and pitch-shifting library and utility program. It permits you to change the tempo and pitch of an audio recording independently of one another.
+# URL: http://www.breakfastquay.com/rubberband/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libfftw3-3, libgcc1, libsamplerate0, libsndfile1, libstdc++6, vamp-plugin-sdk
+
+name=rubberband
+version=1.3
+release=1
+source=(http://www.breakfastquay.com/rubberband/files/rubberband-$version.tar.bz2
+        rubberband-1.2-cstdlib.patch)
+
+build()
+{
+  cd rubberband-$version
+
+  patch -N -p1 -i $SRC/rubberband-1.2-cstdlib.patch
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

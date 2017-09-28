@@ -1,0 +1,34 @@
+# $Id: Pkgfile,v 1.7 2007/04/22 23:07:53 roman Exp $
+#
+# Description: A C++ interface for the popular GUI library GTK+.
+#  gtkmm (previously known as Gtk--) is a C++ interface for the popular GUI
+#  library GTK+. It provides a convenient interface for C++ programmers
+#  to create graphical user interfaces with GTK+'s framework. Highlights
+#  include typesafe callbacks, widgets which are extensible by inheritance,
+#  and many classes that can be easily combined to quickly create complex
+#  user interfaces.
+# URL: http://www.gtkmm.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=gtkmm
+version=2.14.1
+release=1
+source=($mirror_gnome/sources/gtkmm/${version%.*}/gtkmm-$version.tar.bz2)
+
+build()
+{
+  cd gtkmm-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --${shared:=enable}-shared \
+       --${static:=enable}-shared \
+       --disable-maintainer-mode \
+       --disable-dependency-tracking
+
+  make
+  make DESTDIR="$PKG" install
+}

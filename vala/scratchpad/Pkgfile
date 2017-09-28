@@ -1,0 +1,25 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Scratchpad is a document oriented (aka spatial) text editor for the GNOME desktop, written in the Vala programming language.
+# URL: http://code.google.com/p/scratchpad/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=scratchpad
+version=0.3.0
+release=1
+source=(http://scratchpad.googlecode.com/files/scratchpad-0.3.0.tar.bz2)
+
+build()
+{
+  cd scratchpad-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

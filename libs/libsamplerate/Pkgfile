@@ -1,0 +1,35 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:51 roman Exp $
+#
+# Description: A library for performing sample rate conversion on audio.
+#  Secret Rabbit Code is a sample rate converter for audio. It is capable
+#  of 256 and upsample by the same factor. The ratio of input and output
+#  with time for speeding up and slowing down effects.
+#  .
+# URL: http://www.mega-nerd.com/SRC/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libsamplerate
+version=0.1.7
+release=1
+source=(http://www.mega-nerd.com/SRC/libsamplerate-$version.tar.gz)
+
+build()
+{
+  cd libsamplerate-$version
+
+#  libtoolize --force --copy
+#  aclocal --force
+#  autoconf --force
+#
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/libsamplerate
+  install -m 644 doc/NEWS AUTHORS doc/ChangeLog INSTALL COPYING README $ROOT/share/doc/libsamplerate
+}

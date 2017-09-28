@@ -1,0 +1,49 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A connection-time spam filter for qmail.
+#  spamdyke is a drop-in filter for qmail to provide connection-time
+#  blacklisting, graylisting, DNS RBL/RHSBL checking, sender MX checking,
+#  improved logging, and more. spamdyke will provide SMTP AUTH and TLS to
+#  unpatched qmail servers. Installing spamdyke does not require patching
+#  or recompiling qmail.
+#  .
+# URL: http://www.spamdyke.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=spamdyke
+version=4.0.7
+release=1
+source=(http://www.spamdyke.org/releases/spamdyke-$version.tgz)
+
+build()
+{
+  cd spamdyke-$version
+
+  for dir in spamdyke utils; do
+   (set -e
+    cd "$dir"
+    ./configure \
+        --build="$build" \
+        --host="$host" \
+        --prefix="$prefix"
+    make) || exit $?
+  done
+
+
+  install -d $ROOT/bin
+  install -m 755 spamdyke/spamdyke $ROOT/bin
+
+  install -d $ROOT/share/doc/spamdyke
+  install -m 644 documentation/* $ROOT/share/doc/spamdyke
+
+  install -d $ROOT/share/doc/spamdyke/html
+  mv -vf $ROOT/share/doc/spamdyke/*.html $ROOT/share/doc/spamdyke/html
+
+  cd utils
+
+  install -d $ROOT/bin
+  install -m 755 dnsa dnsany dnsany_libc dnscname dnsns dnsptr dnssoa domain2path domainsplit $ROOT/bin
+}
+
+# EOF

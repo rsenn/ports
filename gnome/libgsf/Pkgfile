@@ -1,0 +1,37 @@
+# $Id: Pkgfile,v 1.10 2007/04/22 23:07:53 roman Exp $
+#
+# Description: GNOME Structured File Library
+#  libgsf is a simple i/o library that can read and write common file
+#  types and handle structured formats that provide file-system-in-a-file
+#  semantics. There are some additional utilities for document centric
+#  applications.
+#  .
+# URL: http://www.gnome.org/projects/libgsf/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libgsf
+version=1.14.10
+release=1
+source=($mirror_gnome/sources/libgsf/${version%.*}/libgsf-$version.tar.bz2
+        gsf-oleinfo.c)
+
+build()
+{
+  cd libgsf-$version
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --${shared:=enable}-shared \
+      --${static:=enable}-shared \
+      --disable-nls \
+      --with-python \
+      --without-gnome \
+      --with-bz2
+
+#  make
+  make DESTDIR="$PKG" all install \
+      -i
+}

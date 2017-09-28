@@ -1,0 +1,22 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: GNAT (GNU New York University Ada Translator) is an Ada 95 compiler. It is implemented as a gcc front-end (it does NOT generate intermediate C code).
+# URL: http://www.gnat.com/
+# Maintainer: 
+# Depends on: 
+
+name=gnat-gpl
+version=2009
+release=1
+source=(http://libre2.adacore.com/dynamic/view/sources/gnat-gpl-2009-src.tgz)
+
+build() 
+{
+  cd gnat-gpl-$version-src
+  
+  make -f Makefile.tmplt.binary-5
+  make -f Makefile.tmplt.binary-5 \
+       PREFIX="$ROOT" install
+}
+
+# EOF

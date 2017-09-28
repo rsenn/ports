@@ -1,0 +1,27 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Section: universe/libs
+# Description: A Heterogenous C Library of Numeric Functions
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=libbrahe
+version=1.1.0
+release=1
+source=($mirror_gentoo/libbrahe-$version.tar.gz)
+
+build()
+{
+  cd libbrahe-$version
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

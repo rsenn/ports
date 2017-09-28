@@ -1,0 +1,26 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: GTK+ client for MPD.
+# URL: http://gna.org/projects/ragnarok/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=ragnarok
+version=20090222
+release=1
+source=(ragnarok-$version.tar.bz2
+        ragnarok-20090222-install.patch)
+
+build() 
+{
+  cd ragnarok-$version
+
+  patch -p1 -i $SRC/ragnarok-20090222-install.patch
+  
+  make prefix="$prefix" DESTDIR="$PKG" all install
+
+  install -d $ROOT/share/doc/ragnarok
+  install -m 644 ChangeLog COPYING README TODO $ROOT/share/doc/ragnarok
+}
+
+# EOF

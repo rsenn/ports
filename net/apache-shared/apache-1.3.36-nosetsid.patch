@@ -1,0 +1,269 @@
+diff -ru -ru apache_1.3.36_orig/src/include/ap_config.h apache_1.3.36/src/include/ap_config.h
+--- apache_1.3.36_orig/src/include/ap_config.h	2006-03-20 19:15:15.000000000 +0100
++++ apache_1.3.36/src/include/ap_config.h	2006-03-20 19:15:31.000000000 +0100
+@@ -118,7 +118,7 @@
+ #elif defined(SUNOS4)
+ #define HAVE_GMTOFF 1
+ #undef NO_KILLPG
+-#undef NO_SETSID
++
+ char *crypt(const char *pw, const char *salt);
+ char *mktemp(char *);
+ #define HAVE_MMAP 1
+@@ -136,7 +136,7 @@
+ #elif defined(SOLARIS2)
+ #undef HAVE_GMTOFF
+ #define NO_KILLPG
+-#undef NO_SETSID
++
+ #define bzero(a,b) memset(a,0,b)
+ #define HAVE_SYSVSEM_SERIALIZED_ACCEPT
+ #define HAVE_FCNTL_SERIALIZED_ACCEPT
+@@ -160,7 +160,7 @@
+ /* IRIX has killpg, but it's only in _BSD_COMPAT, so don't use it in case
+  * there's some weird conflict with non-BSD signals */
+ #define NO_KILLPG
+-#undef NO_SETSID
++
+ #define HAVE_FLOCK_SERIALIZED_ACCEPT
+ #define HAVE_FCNTL_SERIALIZED_ACCEPT
+ #define HAVE_USLOCK_SERIALIZED_ACCEPT
+@@ -182,7 +182,7 @@
+ #elif defined(HIUX)
+ #undef HAVE_GMTOFF
+ #define NO_KILLPG
+-#undef NO_SETSID
++
+ #ifndef _HIUX_SOURCE
+ #define _HIUX_SOURCE
+ #endif
+@@ -202,14 +202,14 @@
+ #define HAVE_MMAP
+ #define USE_MMAP_FILES
+ #define NO_KILLPG
+-#undef  NO_SETSID
++
+ #define HAVE_SYSLOG
+ #define AP_ENABLE_EXCEPTION_HOOK
+ 
+ #elif defined(HPUX) || defined(HPUX10)
+ #undef HAVE_GMTOFF
+ #define NO_KILLPG
+-#undef NO_SETSID
++
+ #define HAVE_FCNTL_SERIALIZED_ACCEPT
+ #ifndef _HPUX_SOURCE
+ #define _HPUX_SOURCE
+@@ -225,7 +225,7 @@
+ #elif defined(AIX)
+ #undef HAVE_GMTOFF
+ #undef NO_KILLPG
+-#undef NO_SETSID
++
+ #ifndef __ps2__
+ #define HAVE_MMAP 1
+ #define USE_MMAP_SCOREBOARD
+@@ -268,7 +268,7 @@
+ #undef HAVE_SYS_RESOURCE_H
+ #define HAVE_GMTOFF 1
+ #undef NO_KILLPG
+-#undef NO_SETSID
++
+ #define ULTRIX_BRAIN_DEATH
+ #define NEED_STRDUP
+ /* If you have Ultrix 4.3, and are using cc, const is broken */
+@@ -279,7 +279,7 @@
+ #elif defined(OSF1)
+ #define HAVE_GMTOFF 1
+ #undef NO_KILLPG
+-#undef NO_SETSID
++
+ #define HAVE_MMAP 1
+ #define USE_MMAP_SCOREBOARD
+ #define USE_MMAP_FILES
+@@ -292,7 +292,7 @@
+ #elif defined(PARAGON)
+ #define HAVE_GMTOFF 1
+ #undef NO_KILLPG
+-#undef NO_SETSID
++
+ #define HAVE_MMAP 1
+ #define USE_MMAP_SCOREBOARD
+ #define USE_MMAP_FILES
+@@ -310,7 +310,7 @@
+ #define USE_MMAP_SCOREBOARD 1
+ #define HAVE_FCNTL_SERIALIZED_ACCEPT 1
+ #define JMP_BUF sigjmp_buf
+-#undef NO_SETSID
++
+ #if SEQUENT < 40
+ typedef int rlim_t;
+ #define NO_GETTIMEOFDAY
+@@ -476,7 +476,7 @@
+ 
+ #undef HAVE_GMTOFF
+ #undef NO_KILLPG
+-#undef NO_SETSID
++
+ #undef NEED_STRDUP
+ #include <sys/time.h>
+ #define HAVE_SYSLOG 1
+@@ -490,7 +490,7 @@
+ #elif defined(SCO)
+ #undef HAVE_GMTOFF
+ #undef NO_KILLPG
+-#undef NO_SETSID
++
+ #define NEED_INITGROUPS
+ #define NO_WRITEV
+ #include <sys/time.h>
+@@ -508,7 +508,7 @@
+ 
+ #undef HAVE_GMTOFF
+ #undef NO_KILLPG
+-#undef NO_SETSID
++
+ #undef NEED_STRDUP
+ #define HAVE_SYSLOG 1
+ 
+@@ -548,7 +548,7 @@
+ #include <sys/time.h>
+ #undef HAVE_GMTOFF
+ #undef NO_KILLPG
+-#undef NO_SETSID
++
+ #define NEED_STRDUP
+ /* fcntl() locking is expensive with NFS */
+ #define HAVE_FLOCK_SERIALIZED_ACCEPT
+@@ -570,7 +570,7 @@
+ 
+ #elif defined(SVR4)
+ #define NO_KILLPG
+-#undef  NO_SETSID
++
+ #undef NEED_STRDUP
+ #ifndef MPRAS
+ #define NEED_STRCASECMP
+@@ -608,7 +608,7 @@
+ #else
+ #define SINGLE_LISTEN_UNSERIALIZED_ACCEPT
+ #endif
+-#undef  NO_SETSID
++
+ #undef NEED_STRDUP
+ #define NEED_STRCASECMP
+ #define NEED_STRNCASECMP
+@@ -627,7 +627,7 @@
+ 
+ #elif defined(DGUX)
+ #define NO_KILLPG
+-#undef  NO_SETSID
++
+ #undef NEED_STRDUP
+ #ifdef _IX86_DG
+ #undef NEED_STRCASECMP
+@@ -645,7 +645,7 @@
+ #elif defined(__NetBSD__) || defined(__OpenBSD__) || defined(NETBSD)
+ #define HAVE_GMTOFF 1
+ #undef NO_KILLPG
+-#undef NO_SETSID
++
+ #define HAVE_SYSLOG 1
+ #ifndef DEFAULT_USER
+ #define DEFAULT_USER "nobody"
+@@ -696,7 +696,7 @@
+ #elif defined(APOLLO)
+ #undef HAVE_GMTOFF
+ #undef NO_KILLPG
+-#undef NO_SETSID
++
+ #define HAVE_SYSLOG 1
+ 
+ #elif defined(__FreeBSD__) || defined(__bsdi__)
+@@ -705,7 +705,7 @@
+ #endif
+ #define HAVE_GMTOFF 1
+ #undef NO_KILLPG
+-#undef NO_SETSID
++
+ #define HAVE_MMAP 1
+ #define USE_MMAP_SCOREBOARD
+ #define USE_MMAP_FILES
+@@ -738,7 +738,7 @@
+ #define strncasecmp strnicmp
+ #endif
+ #undef NO_KILLPG
+-#undef NO_SETSID
++
+ #define NEED_INITGROUPS
+ #define NEED_SELECT_H
+ #define NEED_PROCESS_H
+@@ -758,7 +758,7 @@
+ #define HAVE_NONE_SERIALIZED_ACCEPT
+ #define USE_LONGJMP
+ #undef NO_KILLPG
+-#undef NO_SETSID
++
+ #undef NO_USE_SIGACTION
+ #undef NO_LINGCLOSE
+ extern char *crypt(char *pw, char *salt);
+@@ -771,7 +771,7 @@
+ #undef NEED_STRDUP
+ #undef HAVE_GMTOFF
+ #define NO_KILLPG
+-#undef NO_SETSID
++
+ #define bzero(a,b) memset(a,0,b)
+ #define HAVE_FCNTL_SERIALIZED_ACCEPT
+ #define HAVE_MMAP 1
+@@ -823,7 +823,7 @@
+ #elif defined(CONVEXOS11)
+ #undef HAVE_GMTOFF
+ #undef NO_KILLPG
+-#undef NO_SETSID
++
+ #undef NEED_STRDUP
+ #define HAVE_MMAP 1
+ #define USE_MMAP_SCOREBOARD
+@@ -838,7 +838,7 @@
+ #elif defined(ISC)
+ #include <net/errno.h>
+ #define NO_KILLPG
+-#undef NO_SETSID
++
+ #define HAVE_SHMGET 1
+ #define USE_SHMGET_SCOREBOARD
+ #define HAVE_FCNTL_SERIALIZED_ACCEPT
+@@ -974,7 +974,7 @@
+ /* NO_KILLPG is set on systems that don't have killpg */
+ #undef NO_KILLPG
+ /* NO_SETSID is set on systems that don't have setsid */
+-#undef NO_SETSID
++
+ /* NEED_STRDUP is set on stupid systems that don't have strdup. */
+ #undef NEED_STRDUP
+ #endif
+diff -ru -ru apache_1.3.36_orig/src/main/http_main.c apache_1.3.36/src/main/http_main.c
+--- apache_1.3.36_orig/src/main/http_main.c	2006-05-15 13:53:16.630922400 +0200
++++ apache_1.3.36/src/main/http_main.c	2006-05-15 13:53:34.895145816 +0200
+@@ -3499,7 +3499,7 @@
+         exit(1);
+     }
+ #else
+-    if ((pgrp = setpgrp(getpid(), 0)) == -1) {
++    if ((pgrp = setpgrp()) == -1) {
+ 	perror("setpgrp");
+ 	fprintf(stderr, "%s: setpgrp failed\n", ap_server_argv0);
+ 	exit(1);
+diff -ru -ru apache_1.3.36_orig/src/modules/proxy/proxy_cache.c apache_1.3.36/src/modules/proxy/proxy_cache.c
+--- apache_1.3.36_orig/src/modules/proxy/proxy_cache.c	2006-05-18 14:55:00.665434096 +0200
++++ apache_1.3.36/src/modules/proxy/proxy_cache.c	2006-05-18 14:56:01.191232776 +0200
+@@ -214,7 +214,7 @@
+                 exit(1);
+             }
+ #else
+-            if ((pgrp = setpgrp(getpid(), 0)) == -1) {
++            if ((pgrp = setpgrp()) == -1) {
+                 perror("setpgrp");
+                 fprintf(stderr, "%s: setpgrp failed\n",
+                         ap_server_argv0);

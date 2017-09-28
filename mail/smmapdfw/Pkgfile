@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A framework for socket map processors for Sendmail.
+# Sendmail SocketMap Daemon Framework provides tools for handling socket
+# map processors. It includes a threaded TCP server, the netstring
+# codec, map name dispatching, configuration file processing, and more,
+# so that someone who wishes to design and implement a particular socket
+# map can focus completely on the particular task the socket map has to
+# perform. The particular socket map processor appears as a shared object
+# which is dynamically loaded by the daemon depending on the configuration.
+#
+# URL: https://sourceforge.net/projects/smmapdfw/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=smmapdfw
+version=0.94
+release=1
+source=($mirror_sf/smmapdfw/smmapdfw-$version.tar.gz)
+
+build()
+{
+  cd smmapdfw-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

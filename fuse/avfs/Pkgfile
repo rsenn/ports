@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+# Section: universe/utils
+# Description: Virtual file system layer for transparently accessing the content of archives and remote directories just like local files.
+# URL: http://avf.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libfuse2, perl-modules
+
+name=avfs
+version=0.9.8
+release=1
+source=($mirror_sf/avf/avfs-$version.tar.bz2)
+
+build()
+{
+  cd avfs-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d ${docdir=$ROOT/share/doc/avfs}
+
+  for DOC in `find * -type f -name "[A-Z]*[A-Z]*" -or -name "api-overview" -or -name "background"`; do
+    DIR=$docdir/`dirname "$DOC"`
+
+    install -d ${DIR%/doc}
+    install -m 644 $DOC ${DIR%/doc}
+  done
+}

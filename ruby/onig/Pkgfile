@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Oniguruma regular expressions library
+#  The characteristics of this library is that different character encoding
+#  for every regular expression object can be specified.
+# URL: http://www.geocities.jp/kosako3/oniguruma/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=onig
+version=5.9.1
+release=1
+source=(http://www.geocities.jp/kosako3/oniguruma/archive/onig-$version.tar.gz)
+
+build()
+{
+  cd onig-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+  
+  install -d $ROOT/share/doc/onig
+  install -m 644 README COPYING INSTALL HISTORY AUTHORS $ROOT/share/doc/onig
+}

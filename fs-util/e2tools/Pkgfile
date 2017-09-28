@@ -1,0 +1,31 @@
+# $Id: Pkgfile,v 1.15 2007/05/09 21:02:55 roman Exp $
+#
+# Description: Utilities for manipulating files on a ext2 file system.
+#  E2tools is a simple set of utilities for reading, writing, and
+#  manipulating files in an ext2/ext3 filesystem. Similar in concept to
+#  mtools, they are designed for machines that don't have ext2 support,
+#  but can also be used on Linux machines to read or write to disk images
+#  and floppies without having to mount them.
+# URL: http://www.pobox.com/~sheff/sw/e2tools/index.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=e2tools
+version=0.0.16
+release=1
+source=(http://home.earthlink.net/~k_sheff/sw/e2tools/e2tools-$version.tar.gz)
+
+build()
+{
+  cd e2tools-$version
+
+  ./configure \
+        --build="$build" \
+        --host="$host" \
+        --prefix="$prefix" \
+        --${shared:=enable}-shared \
+        --${static:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+}

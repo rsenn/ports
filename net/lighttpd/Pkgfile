@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: lighttpd is a secure, fast, compliant, and very flexible Web
+# server which has been optimized for high-performance environments. It has a
+# very low memory footprint compared to other Web servers, and it takes care
+# of CPU load. It has an advanced feature set that includes FastCGI (load
+# balanced), CGI, Auth, Output-Compression, URL-Rewriting, SSL, and much more.
+# URL: http://www.lighttpd.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=lighttpd
+version=1.4.19
+release=1
+source=(http://www.lighttpd.net/download/lighttpd-$version.tar.bz2)
+
+build()
+{
+  cd lighttpd-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix" \
+       --libdir="$prefix/lib/lighttpd" \
+       --program-prefix=""
+
+  make
+  make DESTDIR="$PKG" install
+}

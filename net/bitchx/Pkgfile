@@ -1,0 +1,69 @@
+# $Id: Pkgfile,v 1.20 2007/05/09 21:02:55 roman Exp $
+#
+# Description: ANSI capable IRC chat client with a text/curses interface.
+#  BitchX is the premiere IRC (Internet Relay Chat) client. It originally
+#  was a modified version of the popular ircII client, and the features
+#  were eventually merged into the EPIC IRC client. The current development
+#  is aimed at merging the client back to a current branch of EPIC and
+#  bringing compatibility and stability back to the client, while bringing
+#  the features that are BitchX into a new client.
+# URL: http://www.bitchx.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: slang
+
+name=bitchx
+version=1.1
+release=1
+source=(http://www.bitchx.com/download/ircii-pana-$version-final.tar.gz
+        bitchx-1.1-fixes.patch
+        bitchx-1.1-fixes-2.patch
+        bitchx-1.1-cygwin.patch
+        bitchx-1.1-cygwin-2.patch
+        http://www.bitchx.com/script/cyp1.0k.tar.gz
+        cyp-1.0k-fixes.patch)
+
+build()
+{
+  cd $SRC/cyp
+
+  sed -i "s,@pkglibdir@,$libdir/bx,g" $SRC/cyp-1.0k-fixes.patch
+  patch -N -p1 -i $SRC/cyp-1.0k-fixes.patch
+
+  find $SRC/cyp -type f -perm 600 -print0 | xargs -0 chmod 644
+
+  install -d $ROOT/lib/bx
+
+  cp -rvf $SRC/cyp $ROOT/lib/bx
+
+#  return 0
+
+  cd $SRC/BitchX
+
+  patch -N -p1 -i $SRC/bitchx-1.1-fixes.patch
+  patch -N -p1 -i $SRC/bitchx-1.1-cygwin.patch
+  patch -N -p1 -i $SRC/bitchx-1.1-cygwin-2.patch
+  patch -N -p1 -i $SRC/bitchx-1.1-fixes-2.patch
+
+#  LIBS="-L$libdir/w32api" \
+
+  CFLAGS="${CFLAGS//-Wall/} -O0 -g -ggdb" \
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="${prefix%/$host}/$host" \
+      --with-ssl="${prefix%/$host}/$host" \
+      --with-default-server="kon.ath.cx:6667" \
+      --without-plugins \
+      --disable-sound \
+      --disable-cdrom \
+      --enable-debug
+
+  make SHLIB_CFLAGS="-L$libdir/w32api" prefix="$prefix" CFLAGS="$CFLAGS"
+  make prefix="$ROOT" install
+
+  rm -f $ROOT/bin/BitchX
+  ln -s BitchX-$version-final $ROOT/bin/BitchX
+  ln -s BitchX $ROOT/bin/irc
+
+  chown -R 0:0 $PKG
+}

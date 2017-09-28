@@ -1,0 +1,215 @@
+# $Id: Pkgfile,v 1.38 2007/04/22 23:07:57 roman Exp $
+#
+# Description: openssh
+# URL: http://www.openssh.org
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: openssl zlib
+
+name=openssh
+version=5.2p1
+release=1
+source=(ftp://ftp.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-$version.tar.gz
+        http://matt.ucc.asn.au/ssh-xfer/ssh-xfer-0.15.diff
+        ssh-hostkeygen
+        version.h
+        sshd_config
+        openssh-4.3p2-re-exec.patch
+        openssh-4.3p2-motd.patch
+        openssh-4.3p2-shell.patch
+        openssh-4.7p1-ubuntu.patch
+        openssh-4.7p1-blacklist-path.patch
+        openssh-4.7p1-bsd-optarg.patch
+        run.in)
+
+# package build script
+# --------------------------------------------------------------------------------
+build()
+{
+
+  cd openssh-$version
+
+#  patch -N -p1 -i $SRC/openssh-4.3p2-re-exec.patch
+  patch -N -p1 -i $SRC/openssh-4.3p2-motd.patch
+#  patch -N -p1 -i $SRC/openssh-4.3p2-shell.patch
+#  patch -N -p1 -i $SRC/openssh-4.7p1-ubuntu.patch
+#  patch -N -p1 -i $SRC/openssh-4.7p1-blacklist-path.patch
+#  patch -N -p1 -i $SRC/openssh-4.7p1-bsd-optarg.patch
+#  patch -N -p0 -i $SRC/ssh-xfer-0.15.diff
+
+
+  case $prefix in
+    "/usr") sysconfdir="/etc" localstatedir="/var" ;;
+  esac
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --datadir="$prefix/share/$name" \
+       --sysconfdir="${sysconfdir=$prefix/etc}/ssh" \
+       --libexecdir="$prefix/lib" \
+       --with-md5-passwords \
+       --with-privsep-user="sshd" \
+       --with-privsep-path="${localstatedir=$prefix/var}/empty" \
+       --with-pid-dir="${localstatedir=$prefix/var}/run" \
+       --with-ssl-dir="$prefix" \
+       --with-pam \
+       --with-xauth="$prefix/bin/xauth" \
+       --with-libedit="$prefix" \
+       --with-4in6
+
+  cp $SRC/version.h .
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/openssh
+  install -m 644 CREDITS ChangeLog INSTALL LICENCE OVERVIEW PROTOCOL README TODO WARNING.RNG $ROOT/share/doc/openssh
+
+  cd ..
+
+  sed -i -e "s,@prefix@,$prefix,g" ssh-hostkeygen sshd_config
+
+  install -m 755 ssh-hostkeygen $ROOT/bin
+  install -m 644 sshd_config $PKG$sysconfdir
+
+  mkdir -p $PKG/$localstatedir/empty
+  chown 0:0 $PKG/$localstatedir/empty
+  chmod 700 $PKG/$localstatedir/empty
+}
+
+# package postmerge script
+# --------------------------------------------------------------------------------
+postmerge()
+{
+  $bindir/sed -i -e \
+    "s,@prefix@,$prefix,g
+     s,@sshd_user@,${sshd_user:-sshd},g
+     s,@sshd_group@,${sshd_group:-sshd},g
+     s,@sshd_host@,${sshd_host:-0.0.0.0},g
+     s,@sshd_port@,${sshd_port:-22},g" $sysconfdir/sshd_config
+
+  rm -f $prefix/srv/sshd
+
+  if isin "$services_run" 'sshd'; then
+    mkdir -p $prefix/srv
+    ln -sf $sysconfdir/srv/sshd $prefix/srv/sshd
+  fi
+
+  # check if there is a hostkey, if not generate one
+  if [ ! -f ${sysconfdir=$prefix/etc}/ssh/ssh_host_key ]; then
+    echo "No host key found, generating one..."
+    $prefix/bin/ssh-hostkeygen 1>/dev/null || exit 1
+  fi
+
+  # check if there is a user 'sshd', if not create it
+  if ! grep -q "^${sshd_user:-sshd}:" /etc/passwd; then
+    echo "No user '${sshd_user:-sshd}' found, creating it..."
+
+    # check if there is a group 'sshd', if not create it
+    if ! grep -q "^${sshd_user:-sshd}:" /etc/group; then
+      echo "No group '${sshd_user:-sshd}' found, creating it..."
+      groupadd ${sshd_user:-sshd} || exit 1
+    fi
+
+    useradd -d $prefix/var/empty -g ${sshd_user:-sshd} -m -s /bin/false ${sshd_user:-sshd} || exit 1
+  fi
+}
+
+# package configuration
+# --------------------------------------------------------------------------------
+config()
+{
+  # add the main-menu entry "sshd"
+  config_branch 'sshd'     'OpenSSH server configuration'
+
+    config_value 'user'    'OpenSSH server user'
+      config_description   'User the OpenSSH server will run under'
+      config_default       '$(user_find ssh daemon nobody)'
+      config_function      'eval choose $(user_table)'
+    config_end
+
+    config_value 'group'   'OpenSSH server group'
+      config_description   'Group the OpenSSH server will run under'
+      config_default       '$(user_group $(config_getvalue sshd_user) || group_find ssh daemon nogroup)'
+      config_function      'eval choose $(group_table)'
+    config_end
+
+    config_value 'host'    'OpenSSH server host'
+      config_description   'Address the OpenSSH server will listen to'
+      config_default       '$ipaddr'
+      config_function      'input'
+    config_end
+
+    config_value 'port'    'OpenSSH server port'
+      config_description   'Port the OpenSSH server will listen to'
+      config_default       '22'
+      config_function      'input'
+    config_end
+
+  config_end
+
+  # enhance daemontools package configuration
+  config_enter 'services' 'run' 'sshd'
+
+    config_label   'Run sshd at boot'
+    config_default 'no'
+
+  config_leave
+}
+
+# set up the service for sshd
+# -----------------------------------------------------------------------------
+services()
+{
+  config_branch 'sshd'
+
+    config_set 'TITLE'   'OpenSSH server'
+    config_set 'PIDFILE' "$prefix/var/run/sshd.pid"
+    config_set 'BIN'     "$prefix/sbin/sshd"
+    config_set 'START'   "Server listening"
+    config_set 'STOP'    "terminating."
+
+  config_end
+}
+
+# the run-script which is called from supervise
+sshd()
+{
+  exec 2>&1
+
+  # set default values
+  host=${sshd_host:-0.0.0.0}
+  port=${sshd_port:-22}
+  user=${sshd_user:-nobody}
+
+  # check if the user is available to setuidgid
+  if ! user_avail $user; then
+    service_error "no such user:" ${user}
+  fi
+
+  if [ ! -f ${sysconfdir=$prefix/etc}/ssh/ssh_host_rsa_key ]; then
+    echo "Missing sshd host key, creating one..."
+    $prefix/bin/ssh-hostkeygen
+  fi
+
+  # check if there's already an instance of sshd
+  if [ -f ${sshd_PIDFILE} ]; then
+    pid=$(cat ${sshd_PIDFILE})
+
+    if [ -d $prefix/proc/$pid ]; then
+      service_msg "sshd already running, restarting..."
+      kill ${pid}
+      sleep 1
+      exit 1
+    fi
+  fi
+
+  # check whether host:port is bindable
+  if proc=$(inet_bound tcp $host:$port); then
+    service_error $host:$port "already bound"
+  fi
+
+  # finally execute sshd
+  exec -a sshd $prefix/sbin/sshd -De
+}

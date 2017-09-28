@@ -1,0 +1,37 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A Python iCalendar library
+#  vobject is intended to be a full featured Python package for parsing and
+#  generating vCard and vCalendar files. It is being developed in concert
+#  with the Open Source Application Foundation's Chandler project. Currently,
+#  iCalendar files are supported and well tested. vCard 3.0 files are
+#  supported, and all data should be imported, but only a few components are
+#  understood in a sophisticated way. The Calendar Server team has added
+#  VAVAILABILITY support to vobject's iCalendar parsing. Please report
+#  bugs by entering them in the OSAF Bugzilla, product vobject. vobject is
+#  licensed under the Apache 1.1 license.
+#  .
+# URL: http://vobject.skyhouseconsulting.com/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=python-vobject
+version=0.7.1
+release=1
+source=(http://vobject.skyhouseconsulting.com/vobject-$version.tar.gz)
+
+build()
+{
+  cd vobject-$version
+
+  PYTHONVER=$(set -- `python --version 2>&1` && echo $2)
+  PYTHONPATH="$ROOT/lib/python${PYTHONVER%.*}/site-packages"
+
+  install -d $PYTHONPATH
+
+  export PYTHONPATH
+
+  python setup.py install --prefix="$ROOT"
+}
+
+# EOF

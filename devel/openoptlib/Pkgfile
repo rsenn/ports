@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A C optimization methods library for constrained problems.
+#  The Open Optimization Library (OOL) is a set of optimization codes
+#  written in C under the GNU Scientific Library (GSL) standards. It intends
+#  to provide modern optimization algorithms, all of them published in
+#  well-known optimization journals.
+#  .
+# URL: http://ool.sourceforge.net/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=openoptlib
+version=0.2.0
+release=1
+source=($mirror_sf/ool/ool-$version.tar.gz)
+
+build()
+{
+  cd ool-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

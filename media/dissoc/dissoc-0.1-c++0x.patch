@@ -1,0 +1,221 @@
+diff -ru dissoc-0.1_orig/chunk.cc dissoc-0.1/chunk.cc
+--- dissoc-0.1_orig/chunk.cc	2009-02-28 07:58:56.000000000 +0100
++++ dissoc-0.1/chunk.cc	2009-02-28 08:01:15.000000000 +0100
+@@ -75,7 +75,7 @@
+ void Samples::Chunk::calc_diffs (Chunk *chs, int n, int start)
+ {
+   // XXX rewrite this to be more efficient!
+-  vector<diff_t>  diffs_tmp (n);
++  std::vector<diff_t>  diffs_tmp (n);
+   diff_tot = 0;
+   for (int i = 0; i < n; i++) {
+     int which = (i + start) % n;
+Only in dissoc-0.1: chunk.o
+diff -ru dissoc-0.1_orig/diffstore.h dissoc-0.1/diffstore.h
+--- dissoc-0.1_orig/diffstore.h	2009-02-28 07:58:56.000000000 +0100
++++ dissoc-0.1/diffstore.h	2009-02-28 07:59:59.000000000 +0100
+@@ -22,7 +22,7 @@
+   bool set_diff (unsigned int which, float f, unsigned int j);
+   // set_diff returns true if should continue.
+   // set_diff is presented w/ distances in increasing and contiguous
+-  // j-order (beginning w/ 0, ending w/ len - 1 as set by set_len).
++  // j-order (beginning w/ 0, ending w/ len - 1 as std::set by set_len).
+ private:
+   guchar *pix;
+   unsigned int len;
+Only in dissoc-0.1: dissoc
+Only in dissoc-0.1: dissoc.o
+Only in dissoc-0.1: gtkdistvis.o
+diff -ru dissoc-0.1_orig/gtklinvis.cc dissoc-0.1/gtklinvis.cc
+--- dissoc-0.1_orig/gtklinvis.cc	2009-02-28 07:58:56.000000000 +0100
++++ dissoc-0.1/gtklinvis.cc	2009-02-28 08:01:45.000000000 +0100
+@@ -144,7 +144,7 @@
+     if (age == -1)
+       continue;
+ 
+-    int l_width = max (1, chunk_height - age - 2);
++    int l_width = std::max (1, chunk_height - age - 2);
+     gc.set_line_attributes (l_width, GDK_LINE_SOLID, GDK_CAP_ROUND);
+     // join style is ignored, so let it default.
+     d.draw_line (gc, r.x, r.y, r.x + r.width, r.y);
+Only in dissoc-0.1: gtklinvis.o
+diff -ru dissoc-0.1_orig/gtkplayer.cc dissoc-0.1/gtkplayer.cc
+--- dissoc-0.1_orig/gtkplayer.cc	2009-02-28 07:58:56.000000000 +0100
++++ dissoc-0.1/gtkplayer.cc	2009-02-28 08:01:15.000000000 +0100
+@@ -151,7 +151,7 @@
+   samp->make_chunks ();
+   clear_hist ();
+   Vis::Parm vp = {samp->get_chunk_cnt(), samp};
+-  for (set<Vis *>::const_iterator i = visualizer_set.begin();
++  for (std::set<Vis *>::const_iterator i = visualizer_set.begin();
+        i != visualizer_set.end (); i++) {
+     (*i)->set_parms (&vp);
+   }
+@@ -163,8 +163,8 @@
+     float ch = 0.01 * (1 - ((rand ()/17)  % 3));
+     Gtk::Adjustment *adj = jump_prob_spin.get_adjustment ();
+     float new_val = adj->get_value () + ch;
+-    new_val = min (new_val, adj->get_upper());
+-    new_val = max (new_val, adj->get_lower());
++    new_val = std::min (new_val, adj->get_upper());
++    new_val = std::max (new_val, adj->get_lower());
+     adj->set_value (new_val);
+   }
+   return TRUE;
+@@ -183,7 +183,7 @@
+     for (ttc_map::iterator it = time_to_chunk.begin (); 
+ 	 it != time_to_chunk.end (); it++) {
+       int chunk = it->second;
+-      for (set<Vis *>::iterator v = visualizer_set.begin ();
++      for (std::set<Vis *>::iterator v = visualizer_set.begin ();
+ 	   v != visualizer_set.end (); v++) 
+ 	(*v)->redisp (chunk);
+ 
+diff -ru dissoc-0.1_orig/gtkplayer.h dissoc-0.1/gtkplayer.h
+--- dissoc-0.1_orig/gtkplayer.h	2009-02-28 07:58:56.000000000 +0100
++++ dissoc-0.1/gtkplayer.h	2009-02-28 07:59:59.000000000 +0100
+@@ -29,7 +29,7 @@
+   float get_jump_probability ();
+ 
+  private:
+-  set<Vis *> visualizer_set;
++  std::set<Vis *> visualizer_set;
+   GdkRgbInit gri;
+   Gtk::Window mainwnd;
+   Gtk::VBox vbox;
+Only in dissoc-0.1: gtkplayer.o
+Only in dissoc-0.1: mk_test
+Only in dissoc-0.1: mk_test.o
+diff -ru dissoc-0.1_orig/player.h dissoc-0.1/player.h
+--- dissoc-0.1_orig/player.h	2009-02-28 07:58:56.000000000 +0100
++++ dissoc-0.1/player.h	2009-02-28 07:59:59.000000000 +0100
+@@ -23,10 +23,10 @@
+   ttc_map time_to_chunk;
+   // XXX be careful about wrapping.
+ 
+-  vector<unsigned int> play_times;
++  std::vector<unsigned int> play_times;
+   // only contains times which have actually played.
+ 
+-  vector<int> prev_chunk;  // for each played chunk, maps to
++  std::vector<int> prev_chunk;  // for each played chunk, maps to
+   // the chunk that preceeded it (or -1 for chunk not played or 
+   // first chunk played.
+ 
+Only in dissoc-0.1: player.o
+Only in dissoc-0.1: rgbinit.o
+diff -ru dissoc-0.1_orig/samples.cc dissoc-0.1/samples.cc
+--- dissoc-0.1_orig/samples.cc	2009-02-28 07:58:56.000000000 +0100
++++ dissoc-0.1/samples.cc	2009-02-28 08:01:33.000000000 +0100
+@@ -24,6 +24,8 @@
+ #include <sys/types.h>
+ #include <sys/stat.h>
+ #include <fcntl.h>
++#include <cstring>
++#include <ctime>
+ 
+ #include <audiofile.h>
+ 
+@@ -227,7 +229,7 @@
+ }
+ 
+ 
+-void assert_not_nan (const vector<fftw_real>& v, int c) 
++void assert_not_nan (const std::vector<fftw_real>& v, int c) 
+ {
+   for (unsigned int i = 0; i < v.size (); i++) {
+     if  (isnan (v[i])) {
+@@ -237,7 +239,7 @@
+ }
+ 
+ void compute_power (fftw_real *buf, size_t len, 
+-			       vector<fftw_real>& loudness, bool dbg = false)
++			       std::vector<fftw_real>& loudness, bool dbg = false)
+ {
+   size_t loudness_len = (len) / 2;
+   // len/2 + 1, but then don't store dc.
+@@ -273,7 +275,7 @@
+ // and add in an extra term for the octave-th octave
+ 
+ void compute_power_and_reduce (fftw_real *buf, size_t len, 
+-			       vector<fftw_real>& loudness, 
++			       std::vector<fftw_real>& loudness, 
+ 			       unsigned int octaves, bool dbg = false)
+ {
+   assert (len > 1);
+@@ -367,7 +369,7 @@
+   }
+ }
+ 
+-void Samples::calc_loudness (int c, vector<fftw_real>& loudness)
++void Samples::calc_loudness (int c, std::vector<fftw_real>& loudness)
+ {
+   unsigned int len = get_chunk_sz();
+   fftw_real buf [len];
+Only in dissoc-0.1: samples.o
+diff -ru dissoc-0.1_orig/soundcard.cc dissoc-0.1/soundcard.cc
+--- dissoc-0.1_orig/soundcard.cc	2009-02-28 07:58:56.000000000 +0100
++++ dissoc-0.1/soundcard.cc	2009-02-28 08:01:15.000000000 +0100
+@@ -23,6 +23,7 @@
+ #include <assert.h>
+ 
+ #include <stdio.h>
++#include <cstdlib>
+ #include "soundcard.h"
+ 
+ SoundPlayer::SoundPlayer ()
+diff -ru dissoc-0.1_orig/soundcard.h dissoc-0.1/soundcard.h
+--- dissoc-0.1_orig/soundcard.h	2009-02-28 07:58:56.000000000 +0100
++++ dissoc-0.1/soundcard.h	2009-02-28 07:59:59.000000000 +0100
+@@ -60,12 +60,12 @@
+   int signed_to_player_offset; // 0 if eventual player format is signed, 
+   // 2^{n-1} for n-bit unsigned
+   size_t sample_sz;
+-  // next 3 only used during setup.  We really ought to,
++  // next 3 only used during std::setup.  We really ought to,
+   // instead, have a parameters object which is created
+   // by the client, then passed to create() and discarded.
+   bool debug;
+   bool verbose;
+-  int req_audio_fmt; // only used during setup
++  int req_audio_fmt; // only used during std::setup
+ };
+ 
+ #endif
+Only in dissoc-0.1: soundcard.o
+diff -ru dissoc-0.1_orig/stuff.h dissoc-0.1/stuff.h
+--- dissoc-0.1_orig/stuff.h	2009-02-28 07:58:56.000000000 +0100
++++ dissoc-0.1/stuff.h	2009-02-28 07:59:59.000000000 +0100
+@@ -34,7 +34,7 @@
+   void copy_and_echo (fftw_real * buf, int c);
+   void diffs_to_pixels (DiffStore *ds, unsigned int i);
+ private:
+-  void calc_loudness (int c, vector<fftw_real>& calcd_loudness);
++  void calc_loudness (int c, std::vector<fftw_real>& calcd_loudness);
+   class Chunk {
+   public:
+     Chunk ();
+@@ -43,10 +43,10 @@
+     int get_similar (float prob);
+     void diffs_to_pixels (DiffStore *ds);
+     // XXX get_loudness is icky, but only accessible to Samples...
+-    vector<fftw_real>& get_loudness () {return loudness;};
++    std::vector<fftw_real>& get_loudness () {return loudness;};
+   private:
+ 
+-    vector<fftw_real> loudness;
++    std::vector<fftw_real> loudness;
+ 
+     // log (re ^ 2 + im ^ 2), starting w/ 1st non-DC component
+     // (psychoacoustically, DC isn't sensed), reduced 
+@@ -63,7 +63,7 @@
+       bool operator< (const struct diff_t& a) const;
+     };
+ 
+-    vector<struct diff_t> diffs;
++    std::vector<struct diff_t> diffs;
+     fftw_real calc_one_diff (Chunk *c);
+     double diff_tot;
+   };
+Only in dissoc-0.1: vis.o
+Only in dissoc-0.1: visfact.o

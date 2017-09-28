@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Makefile dependency generator for use with GNU gcc
+# URL: 
+# Maintainer: 
+# Depends on: 
+
+name=gccmakedep
+version=1.0.2
+release=1
+source=(ftp://ftp.x.org/pub/individual/util/gccmakedep-$version.tar.bz2)
+
+build() 
+{
+  cd gccmakedep-$version
+
+  rm -f config.sub
+  autoreconf --force --verbose --install
+  
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+  
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/gccmakedep
+  install -m 644 COPYING ChangeLog $ROOT/share/doc/gccmakedep
+}
+
+# EOF

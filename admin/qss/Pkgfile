@@ -1,0 +1,238 @@
+# $Id: Pkgfile 424 2008-08-10 01:52:57Z enki $
+#
+# Description: Qmail-Scanner Statistics (QSS) uses the Qmail-Scanner Logfile to generate daily, monthly, and yearly statistics
+# It also shows a complete list of viruses stopped by Qmail-Scanner, the
+# top five domains from which the viruses came, as well as the countries
+# of origin.
+# URL: http://sourceforge.net/projects/qss/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=qss
+version=3.0
+release=1adfinis1
+source=($mirror_sf/qss/qss-${version}_a1.tar.bz2
+        apache.conf)
+
+build()
+{
+  cd qss-$version*
+
+  install -d $PKG/etc/qss
+  install -m 644 $SRC/apache.conf $PKG/etc/qss
+
+  install -d $ROOT/share/qss
+  cp -rf *.php */ $ROOT/share/qss
+
+  install -d $ROOT/share/doc/qss
+  install -m 644 [A-Z]*[A-Z]* $ROOT/share/doc/qss
+}
+
+postinst()
+{
+  lighttpd_install()
+  {
+    if test ! -f /etc/lighttpd/conf-available/60-qss.conf
+    then
+      if test ! -x /usr/sbin/lighty-enable-mod
+      then
+        echo "Lighttpd not installed, skipping"
+      else
+        ln -s ../../qss/lighttpd.conf /etc/lighttpd/conf-available/60-qss.conf
+        # We also need auth to protect setup.php
+        /usr/sbin/lighty-enable-mod qss auth
+      fi
+    fi
+  }
+
+  apache_install()
+  {
+   webserver=$1
+
+    if test -d /etc/$webserver/conf.d && test ! -e /etc/$webserver/conf.d/qss.conf
+    then
+      ln -s ../../qss/apache.conf /etc/$webserver/conf.d/qss.conf
+    fi
+  }
+
+  if test "$1" = "configure"
+  then
+
+    . /usr/share/debconf/confmodule
+    db_version 2.0
+
+    # The following only on a new install
+    if test "$2" = ""
+    then
+
+      # Generate an htpasswd file for the web based setup
+      if test ! -f /etc/qss/htpasswd.setup
+      then
+        touch /etc/qss/htpasswd.setup
+        chgrp www-data /etc/qss/htpasswd.setup
+        chmod 0640 /etc/qss/htpasswd.setup
+        db_get qss/setup-username
+        setup_username=${RET:-admin}
+        db_get qss/setup-password
+
+        if test -n "$RET"
+        then
+          setup_password=`perl -le 'print crypt($ARGV[0], join("", map{("a".."z","A".."Z",0..9)[int(rand(62))]}(1..2)))' "$RET"`
+        else
+          setup_password="*"
+        fi
+        echo "$setup_username:$setup_password" > /etc/qss/htpasswd.setup
+        db_reset qss/setup-username || true
+        db_reset qss/setup-password || true
+
+      fi
+    fi
+
+    # Configure Apache
+    db_get qss/reconfigure-webserver
+
+    webservers="$RET"
+
+    for webserver in $webservers
+    do
+      webserver=${webserver%,}
+
+      if test "$webserver" = "lighttpd"
+      then
+        lighttpd_install
+      else
+        apache_install $webserver
+      fi
+
+      # Reload webserver in any case, configuration might have changed
+      # Redirection of 3 is needed because Debconf uses it and it might
+      # be inherited by webserver. See bug #446324.
+      if test -x /usr/sbin/invoke-rc.d
+      then
+        invoke-rc.d $webserver reload 3>/dev/null || true
+      else
+        /etc/init.d/$webserver reload 3>/dev/null || true
+      fi
+    done
+  fi
+}
+
+postrm()
+{
+  lighttpd_remove() {
+    if test -f /etc/lighttpd/conf-available/50-qss.conf
+    then
+      rm -f /etc/lighttpd/conf-available/50-qss.conf
+
+      if test ! -x /usr/sbin/lighty-disable-mod
+      then
+        echo "Lighttpd not installed, skipping"
+      else
+        /usr/sbin/lighty-disable-mod qss
+        # We also enabled auth in postinst, but I think it's safer to keep it there
+      fi
+
+      # See bug #448682
+      if test -h /etc/lighttpd/conf-enabled/50-qss.conf
+      then
+          echo 'Manually deleting lighttpd/qss configuration link'
+          rm /etc/lighttpd/conf-enabled/50-qss.conf
+      fi
+    fi
+  }
+
+  apache_remove() {
+    if test -d /etc/$webserver/conf.d -a -L /etc/$webserver/conf.d/qss.conf
+    then
+      rm -f /etc/$webserver/conf.d/qss.conf
+    fi
+  }
+
+  if test "$1" = "remove" -o "$1" = "purge"
+  then
+    if test -f /usr/share/debconf/confmodule
+    then
+      . /usr/share/debconf/confmodule
+      db_version 2.0
+
+      db_get qss/reconfigure-webserver
+
+      webservers="$RET"
+
+      for webserver in $webservers
+      do
+        webserver=${webserver%,}
+
+        if test "$webserver" = "lighttpd"
+        then
+          lighttpd_remove
+        else
+          apache_remove $webserver
+        fi
+        # Redirection of 3 is needed because Debconf uses it and it might
+        # be inherited by webserver. See bug #446324.
+        if test -x /usr/sbin/invoke-rc.d
+        then
+          invoke-rc.d $webserver reload 3>/dev/null || true
+        else
+          /etc/init.d/$webserver reload 3>/dev/null || true
+        fi
+      done
+    fi
+
+    if test "$1" = "purge"
+    then
+      rm -rf /etc/qss
+    fi
+  fi
+}
+
+templates()
+{
+  Template: qss/reconfigure-webserver
+  Type: multiselect
+  Choices: apache2, lighttpd
+  Default:
+  Description: Web server to reconfigure automatically:
+   qss supports any web server that PHP does, but this automatic
+   configuration process only supports Apache.
+
+  Template: qss/setup-username
+  Type: string
+  Default: admin
+  Description: User name for web-based setup system:
+   qss comes with a setup script that can help you with creating
+   a configuration. The script is located at http://localhost/qss/scripts/setup.php.
+   For security reasons it requires authorization.
+   .
+   Leave empty if you want to use the default user name 'admin'.
+
+  Template: qss/setup-password
+  Type: password
+  Default:
+  Description: Password for web-based setup system:
+   qss comes with a setup script that can help you with creating
+   a configuration. The script is located at http://localhost/qss/scripts/setup.php.
+   For security reasons it requires authorization.
+   .
+   You can manage the usernames and passwords with the 'htpasswd' command.
+   They are stored in the file /etc/qss/htpasswd.setup
+   .
+   Leave empty if you want to disable access to the web-based setup.
+}
+
+config()
+{
+  . /usr/share/debconf/confmodule
+  db_version 2.0
+
+  db_input high qss/reconfigure-webserver || true
+
+  if test ! -f /etc/qss/htpasswd.setup
+  then
+    db_input low qss/setup-username || true
+    db_input low qss/setup-password || true
+  fi
+
+  db_go || true
+}

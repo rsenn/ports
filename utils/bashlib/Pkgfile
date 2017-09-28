@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: bashlib is a shell script that makes CGI programming in the
+# bash shell easier, or at least more tolerable. It contains a few functions
+# that get called automatically and place form elements (from POSTs and GETs)
+# and cookies in your environment. It also contains complete documentation on
+# how to use these variables and how to set cookies manually.
+# URL: http://bashlib.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: bash, coreutils, grep, sed, mawk | gawk
+
+name=bashlib
+version=0.4
+release=1
+source=(http://bashlib.sourceforge.net/src/bashlib-$version.tar.gz)
+
+build()
+{
+  cd bashlib-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  install -d $ROOT/bin
+  install -d $ROOT/share/doc/bashlib
+  install -m 644 [A-Z]*[A-Z]* $ROOT/share/doc/bashlib
+
+  make PREFIX="$ROOT" install
+}

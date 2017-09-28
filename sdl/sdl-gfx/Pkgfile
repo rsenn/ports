@@ -1,0 +1,36 @@
+# $Id: Pkgfile,v 1.10 2007/04/22 23:07:53 roman Exp $
+#
+# Description: SDL graphics drawing primitives and other support functions.
+#  The SDL_gfx library offers several components: Graphic Primitives,
+#  Rotozoomer, Framerate control, and MMX image filters. The Primitives
+#  component provides basic drawing routines: pixels, hlines, vlines, lines,
+#  aa-lines, rectangles, circles, ellipses, trigons, polygons, Bezier
+#  curves, and an 8x8 pixmap font for drawing onto any SDL Surface. Full
+#  alpha blending, hardware surface locking, and all surface depths are
+#  supported. The Rotozoomer can use interpolation for high quality output.
+# URL: http://www.ferzkopp.net/joomla/content/view/19/14/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=sdl-gfx
+version=2.0.18
+release=1
+source=(http://www.ferzkopp.net/Software/SDL_gfx-2.0/SDL_gfx-$version.tar.gz)
+
+build()
+{
+  cd SDL_gfx-$version
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --${static:=enable}-shared \
+      --${shared:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/sdl-gfx
+  install -m 644 Note.txt LICENSE ChangeLog README-rpm INSTALL AUTHORS README COPYING NEWS $ROOT/share/doc/sdl-gfx
+}

@@ -1,0 +1,43 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:03:01 roman Exp $
+#
+# Description: An object-oriented language for quick and easy programming
+#  Ruby is a language for quick and easy programming. Similar in scope
+#  to Perl and Python, it has high-level data types, automatic memory
+#  management, dynamic typing, a module system, exceptions, and a rich
+#  standard library. What sets Ruby apart is a clean and consistent language
+#  design where everything is an object. Other distinguishing features are
+#  CLU-style iterators for loop abstraction, singleton classes/methods and
+#  lexical closures.
+# URL: http://www.ruby-lang.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: gdbm glibc libiconv ncurses openssl readline zlib
+
+name=ruby
+version=1.8.7-p174
+release=1
+source=(ftp://ftp.ruby-lang.org/pub/ruby/1.8/ruby-$version.tar.bz2
+        ruby-1.8.6-ni-const.patch
+        ruby-1.8.6-memory-leak.diff
+        ruby-1.8.6_p111-r13657.patch)
+
+build()
+{
+  cd ruby-$version
+
+#  patch -N -p1 -i $SRC/ruby-1.8.6-ni-const.patch
+#  patch -N -p0 -i $SRC/ruby-1.8.6-memory-leak.diff
+#  patch -N -p1 -i $SRC/ruby-1.8.6_p111-r13657.patch
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --${static:=enable}-shared \
+      --${shared:=enable}-shared
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/include/ruby
+  install -m 644 ruby.h config.h defines.h missing.h intern.h dln.h node.h st.h util.h $ROOT/include/ruby/
+}

@@ -1,0 +1,27 @@
+diff -r -u -N -- mod_mp3-1.2_orig/autogen.sh mod_mp3-1.2/autogen.sh
+--- mod_mp3-1.2_orig/autogen.sh	1970-01-01 00:00:00.000000000 +0000
++++ mod_mp3-1.2/autogen.sh	2008-11-20 10:47:53.000000000 +0000
+@@ -0,0 +1,11 @@
++#!/bin/sh
++#
++# 20081120
++
++
++libtoolize --force --copy --automake
++aclocal --force -I build
++autoheader --force
++automake --force --copy --foreign --add-missing --add-missing
++aclocal --force -I build
++autoconf --force
+diff -r -u -N -- mod_mp3-1.2_orig/src/Makefile.am mod_mp3-1.2/src/Makefile.am
+--- mod_mp3-1.2_orig/src/Makefile.am	2008-11-20 10:43:23.000000000 +0000
++++ mod_mp3-1.2/src/Makefile.am	2008-11-20 10:44:00.000000000 +0000
+@@ -11,6 +11,8 @@
+ -L$(top_builddir)/libID3/lib -lid3 $(GDB_INCLUDE)
+ 
+ lib_LTLIBRARIES = libmod_mp3.la
++
++libmod_mp3_la_LDFLAGS = -rpath $(libdir) -avoid-version -module
+ libmod_mp3_la_SOURCES = common.c directory_register.c internal_dispatch.c  \
+ 			mod_mp3.c pgsql_dispatch.c \
+ 			compat.c encode.c load.c mysql_dispatch.c \

@@ -1,0 +1,40 @@
+# $Id: Pkgfile,v 1.2 2007/05/09 21:02:48 roman Exp $
+#
+# Description: A scripting language with C syntax.
+#  C Scripting Language (CSL) is an embeddable scripting language with
+#  C syntax. A comprehensive set of libraries is included in the base
+#  package, and writing your own libraries is possible with an easy API for
+#  C programs, as well as a class interface for C++ programs. If you are
+#  looking for a compact and powerful scripting engine for your application,
+#  CSL might be the choice.
+# URL: http://csl.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=csl
+version=4.1
+release=1
+source=(http://fastlabinc.com/CSL/CSL$version.tgz
+        csl-4.1-fixes.patch
+        csl-4.1-mingw32.patch
+        csl-4.1-c++0x.patch)
+
+build()
+{
+  cd CSL
+  patch -N -p1 -i $SRC/csl-4.1-fixes.patch
+  patch -N -p1 -i $SRC/csl-4.1-mingw32.patch
+  patch -N -p1 -i $SRC/csl-4.1-c++0x.patch
+
+  make -C Linux CC="$CXX" COPTS="$CFLAGS"
+
+  install -d $ROOT/{include,lib}
+  install -m 644 Linux/libCSL.a $ROOT/lib
+
+  find CSL -name "*.h" | while read file
+  do
+    dir=$(dirname $file)
+    install -d $ROOT/include/$dir
+    install -m 644 $file $ROOT/include/$dir
+  done
+}

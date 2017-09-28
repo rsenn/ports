@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A program that fetches NNTP and POP3 messages and stores them in a database.
+#  Korallenriff is a program that collects input from different network
+#  sources and stores their data into one database. For example, it can
+#  receive POP3 mail or can fetch NNTP groups and store the received messages
+#  in a database. One can then, for example, use the database data within
+#  a Web site to display the latest postings of a newsgroup or to create
+#  an online mailing list archive. Another possible use would be to build
+#  a blogging-software where one can post via email.
+#  .
+# URL: http://www.wendzel.de/?sub=softwssub=korallenriff
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=korallenriff
+version=0.2.1
+release=1
+source=(http://www.wendzel.de/dr.org/files/Projects/korallenriff/korallenriff-$version.tgz)
+
+build()
+{
+  cd korallenriff-${version}beta
+
+  install -d $ROOT/sbin
+
+  make
+  make BASE="$ROOT" install
+}
+
+# EOF

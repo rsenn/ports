@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: An advanced alternative, asynchronous resolver
+#  adns is a replacement resolver library. Its programming interface is at
+#  once easier to use and more powerful than the standard libresolv. For
+#  example, responses are automatically decoded into native C formats,
+#  and it is possible to launch many queries and once and deal with the
+#  responses asynchronously.
+# URL: http://www.chiark.greenend.org.uk/~ian/adns/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=adns
+version=1.3
+release=1
+source=(ftp://ftp.gnu.org/gnu/adns/adns-$version.tar.gz)
+
+build()
+{
+  cd adns-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --${shared:=enable}-shared \
+       --${static:=enable}-shared
+
+  make
+  make prefix="$PKG$prefix" install
+}

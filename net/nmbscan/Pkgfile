@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A network scanner for the NMB/SMB/NetBIOS protocols.
+#  NMB Scanner scans the shares of a NetBIOS/SMB network, using the
+#  NMB/SMB/NetBIOS protocols. It is useful for acquiring information
+#  on a local area network for such purposes as security auditing. It
+#  can obtain such information as NMB/SMB/NetBIOS/Windows hostname,
+#  IP address, IP hostname, ethernet MAC address, Windows username,
+#  NMB/SMB/NetBIOS/Windows domain name, and master browser. It can discover
+#  all the NMB/SMB/NetBIOS/Windows hosts on a local area network by using
+#  the hosts lists maintained by master browsers.
+# URL: http://nmbscan.gbarbier.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=nmbscan
+version=1.2.5
+release=1
+source=(http://nmbscan.gbarbier.org/down.php?file=nmbscan-$version.tar.gz)
+
+build()
+{
+  install -d $ROOT/share/doc/
+  cp -rf Documentation $ROOT/share/doc/nmbscan-$version
+
+  install -d $ROOT/bin
+  install -m 755 nmbscan $ROOT/bin
+  install -m 644 nmbscan.spec *.txt $ROOT/share/doc/nmbscan-$version
+}

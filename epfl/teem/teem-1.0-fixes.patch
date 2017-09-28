@@ -1,0 +1,127 @@
+args: -r -u -N -- teem-1.0_orig teem-1.0
+diff -r -u -N -- teem-1.0_orig/Makefile teem-1.0/Makefile
+diff -r -u -N -- teem-1.0_orig/Makefile.in teem-1.0/Makefile.in
+diff -r -u -N -- teem-1.0_orig/aclocal.m4 teem-1.0/aclocal.m4
+diff -r -u -N -- teem-1.0_orig/autogen.sh teem-1.0/autogen.sh
+--- teem-1.0_orig/autogen.sh	1970-01-01 01:00:00.000000000 +0100
++++ teem-1.0/autogen.sh	2009-02-26 00:39:07.000000000 +0100
+@@ -0,0 +1,9 @@
++#!/bin/sh
++#
++# 20090226
++
++
++aclocal-1.4
++automake-1.4 --copy --foreign --add-missing --foreign --add-missing
++aclocal-1.4
++autoconf --force
+diff -r -u -N -- teem-1.0_orig/autom4te.cache/output.0 teem-1.0/autom4te.cache/output.0
+diff -r -u -N -- teem-1.0_orig/autom4te.cache/output.1 teem-1.0/autom4te.cache/output.1
+diff -r -u -N -- teem-1.0_orig/autom4te.cache/requests teem-1.0/autom4te.cache/requests
+diff -r -u -N -- teem-1.0_orig/autom4te.cache/traces.0 teem-1.0/autom4te.cache/traces.0
+diff -r -u -N -- teem-1.0_orig/autom4te.cache/traces.1 teem-1.0/autom4te.cache/traces.1
+diff -r -u -N -- teem-1.0_orig/config.guess teem-1.0/config.guess
+diff -r -u -N -- teem-1.0_orig/config.log teem-1.0/config.log
+diff -r -u -N -- teem-1.0_orig/config.status teem-1.0/config.status
+diff -r -u -N -- teem-1.0_orig/config.sub teem-1.0/config.sub
+diff -r -u -N -- teem-1.0_orig/configure teem-1.0/configure
+diff -r -u -N -- teem-1.0_orig/configure.in teem-1.0/configure.in
+--- teem-1.0_orig/configure.in	2009-02-26 00:33:54.000000000 +0100
++++ teem-1.0/configure.in	2009-02-26 01:03:33.000000000 +0100
+@@ -77,11 +77,12 @@
+ if test "$have_viewer" = "yes"; then
+ 	AC_CHECK_HEADER([ffmpeg/avcodec.h],,have_avcodec=no)
+ 	AC_CHECK_HEADER([ffmpeg/avformat.h],,have_avcodec=no)
++	AC_CHECK_HEADER([ffmpeg/imgconvert.h], AC_DEFINE([HAVE_FFMPEG_IMGCONVERT_H]))
+ fi
+ if test "$have_avcodec" = "yes"; then
+ 	AC_DEFINE([HAVE_AVCODEC])
+-	CXXFLAGS="$CXXFLAGS `ffmpeg-config --cflags`"
+-	OPT_LIBS="$OPT_LIBS `ffmpeg-config --libs avformat`"
++	CXXFLAGS="$CXXFLAGS `pkg-config --cflags libavcodec`"
++	OPT_LIBS="$OPT_LIBS `pkg-config --libs libavformat libavcodec libavutil`"
+ else
+ 	AC_MSG_WARN([libavcodec not found! Video support disabled])
+ fi
+diff -r -u -N -- teem-1.0_orig/controller/.deps/GenotypeDecoder.Po teem-1.0/controller/.deps/GenotypeDecoder.Po
+diff -r -u -N -- teem-1.0_orig/controller/.deps/Joystick.Po teem-1.0/controller/.deps/Joystick.Po
+diff -r -u -N -- teem-1.0_orig/controller/.deps/Keyboard.Po teem-1.0/controller/.deps/Keyboard.Po
+diff -r -u -N -- teem-1.0_orig/controller/.deps/MatrixController.Po teem-1.0/controller/.deps/MatrixController.Po
+diff -r -u -N -- teem-1.0_orig/controller/.deps/ParameterGenotypeDecoder.Po teem-1.0/controller/.deps/ParameterGenotypeDecoder.Po
+diff -r -u -N -- teem-1.0_orig/controller/Makefile teem-1.0/controller/Makefile
+diff -r -u -N -- teem-1.0_orig/controller/Makefile.in teem-1.0/controller/Makefile.in
+diff -r -u -N -- teem-1.0_orig/controller/nn/Makefile teem-1.0/controller/nn/Makefile
+diff -r -u -N -- teem-1.0_orig/controller/nn/Makefile.in teem-1.0/controller/nn/Makefile.in
+diff -r -u -N -- teem-1.0_orig/depcomp teem-1.0/depcomp
+diff -r -u -N -- teem-1.0_orig/docsource/Makefile teem-1.0/docsource/Makefile
+diff -r -u -N -- teem-1.0_orig/docsource/Makefile.in teem-1.0/docsource/Makefile.in
+diff -r -u -N -- teem-1.0_orig/enkiviewer/.deps/EnkiViewer.P teem-1.0/enkiviewer/.deps/EnkiViewer.P
+diff -r -u -N -- teem-1.0_orig/enkiviewer/.deps/NeuralNetworkDrawer.P teem-1.0/enkiviewer/.deps/NeuralNetworkDrawer.P
+diff -r -u -N -- teem-1.0_orig/enkiviewer/.deps/videorec.P teem-1.0/enkiviewer/.deps/videorec.P
+diff -r -u -N -- teem-1.0_orig/enkiviewer/EnkiViewer.cpp teem-1.0/enkiviewer/EnkiViewer.cpp
+--- teem-1.0_orig/enkiviewer/EnkiViewer.cpp	2009-02-26 00:33:53.000000000 +0100
++++ teem-1.0/enkiviewer/EnkiViewer.cpp	2009-02-26 01:09:51.000000000 +0100
+@@ -17,7 +17,7 @@
+ 
+ Viewer::Viewer(bool recVideo) :
+ 	realtime("teem.realtime", 0),
+-	fontFileName("teem.viewer.fontFileName", "sans.ttf")
++	fontFileName("teem.viewer.fontFileName", "/usr/share/fonts/truetype/freefont/FreeSans.ttf")
+ {
+ 	displayAll = false;
+ 	eventStep = 0;
+diff -r -u -N -- teem-1.0_orig/enkiviewer/Makefile teem-1.0/enkiviewer/Makefile
+diff -r -u -N -- teem-1.0_orig/enkiviewer/Makefile.in teem-1.0/enkiviewer/Makefile.in
+diff -r -u -N -- teem-1.0_orig/enkiviewer/videorec.cpp teem-1.0/enkiviewer/videorec.cpp
+--- teem-1.0_orig/enkiviewer/videorec.cpp	2009-02-26 00:33:53.000000000 +0100
++++ teem-1.0/enkiviewer/videorec.cpp	2009-02-26 00:44:10.000000000 +0100
+@@ -1,8 +1,14 @@
+ #ifdef HAVE_AVCODEC
+ 
+ #include "videorec.h"
++
++extern "C" {
+ #include <ffmpeg/avcodec.h>
+ #include <ffmpeg/avformat.h>
++#ifdef HAVE_FFMPEG_IMGCONVERT_H
++#include <ffmpeg/imgconvert.h>
++#endif
++}
+ #include <iostream>
+ #include <cstring>
+ #include <cstdlib>
+diff -r -u -N -- teem-1.0_orig/experiment/.deps/BatteryRecharge.P teem-1.0/experiment/.deps/BatteryRecharge.P
+diff -r -u -N -- teem-1.0_orig/experiment/.deps/KheperaNavigation.P teem-1.0/experiment/.deps/KheperaNavigation.P
+diff -r -u -N -- teem-1.0_orig/experiment/.deps/NullExperiment.P teem-1.0/experiment/.deps/NullExperiment.P
+diff -r -u -N -- teem-1.0_orig/experiment/.deps/SingleRobotExperiment.P teem-1.0/experiment/.deps/SingleRobotExperiment.P
+diff -r -u -N -- teem-1.0_orig/experiment/Makefile teem-1.0/experiment/Makefile
+diff -r -u -N -- teem-1.0_orig/experiment/Makefile.in teem-1.0/experiment/Makefile.in
+diff -r -u -N -- teem-1.0_orig/ga/Makefile teem-1.0/ga/Makefile
+diff -r -u -N -- teem-1.0_orig/ga/Makefile.in teem-1.0/ga/Makefile.in
+diff -r -u -N -- teem-1.0_orig/install-sh teem-1.0/install-sh
+diff -r -u -N -- teem-1.0_orig/libgag/Makefile teem-1.0/libgag/Makefile
+diff -r -u -N -- teem-1.0_orig/libgag/Makefile.in teem-1.0/libgag/Makefile.in
+diff -r -u -N -- teem-1.0_orig/main/.deps/Registry.P teem-1.0/main/.deps/Registry.P
+diff -r -u -N -- teem-1.0_orig/main/.deps/VerboseLevel.P teem-1.0/main/.deps/VerboseLevel.P
+diff -r -u -N -- teem-1.0_orig/main/.deps/main.P teem-1.0/main/.deps/main.P
+diff -r -u -N -- teem-1.0_orig/main/Makefile teem-1.0/main/Makefile
+diff -r -u -N -- teem-1.0_orig/main/Makefile.in teem-1.0/main/Makefile.in
+diff -r -u -N -- teem-1.0_orig/missing teem-1.0/missing
+diff -r -u -N -- teem-1.0_orig/mkinstalldirs teem-1.0/mkinstalldirs
+diff -r -u -N -- teem-1.0_orig/settings/Makefile teem-1.0/settings/Makefile
+diff -r -u -N -- teem-1.0_orig/settings/Makefile.in teem-1.0/settings/Makefile.in
+diff -r -u -N -- teem-1.0_orig/utils/Makefile teem-1.0/utils/Makefile
+diff -r -u -N -- teem-1.0_orig/utils/Makefile.in teem-1.0/utils/Makefile.in
+diff -r -u -N -- teem-1.0_orig/utils/Registrar.h teem-1.0/utils/Registrar.h
+--- teem-1.0_orig/utils/Registrar.h	2009-02-26 00:33:54.000000000 +0100
++++ teem-1.0/utils/Registrar.h	2009-02-26 00:41:33.000000000 +0100
+@@ -5,6 +5,7 @@
+ #include <map>
+ #include <string>
+ #include <assert.h>
++#include <cstdlib>
+ 
+ /*!	\file Registrar.h
+ 	\brief Templatised registry helper classes
+diff -r -u -N -- teem-1.0_orig/world/Makefile teem-1.0/world/Makefile
+diff -r -u -N -- teem-1.0_orig/world/Makefile.in teem-1.0/world/Makefile.in

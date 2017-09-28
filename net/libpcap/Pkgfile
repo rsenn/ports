@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A system-independent interface for user-level packet capture.
+#  This is a handy little library which provides a packet filtering mechanism
+#  based on the BSD packet filter (BPF). Most notably, tcpdump needs this
+#  to work, and there is also a perl module (still in beta) which can use
+#  this as well. In plain english, if you want to write your own network
+#  traffic analyzer, this is the place to start.
+# URL: http://www.tcpdump.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libpcap
+version=0.9.8
+release=1
+source=(http://www.tcpdump.org/release/libpcap-$version.tar.gz)
+
+build()
+{
+  cd libpcap-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

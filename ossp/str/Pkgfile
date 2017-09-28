@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A generic string library.
+#  OSSP str is a generic string handling library written in ISO-C which
+#  provides functions for handling, matching, parsing, searching, and
+#  formatting of ISO-C strings. It can be considered as a superset of POSIX
+#  string(3), but its main intention is to provide a more convinient and
+#  compact API and a more generalized functionality.
+#  .
+# URL: http://www.ossp.org/pkg/lib/str/
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=str
+version=0.9.12
+release=1
+source=(ftp://ftp.ossp.org/pkg/lib/str/str-0.9.12.tar.gz)
+
+build()
+{
+  cd str-0.9.12
+./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+make
+make DESTDIR="$PKG" install
+}
+
+# EOF

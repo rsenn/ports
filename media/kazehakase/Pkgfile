@@ -1,0 +1,33 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:52 roman Exp $
+#
+# Description: Yet another GTK+2 based Web browser.
+#  Kazehakase is a Web browser which aims to provide a user interface that is
+#  truly user-friendly and fully customizable. It supports tabbed browsing, a
+#  "remote bookmark" feature (through RSS) in a menu or sidebar, a variable
+#  UI to adapt to the user's skill level, and customizable mouse gestures
+#  and key accelerators.
+# URL: http://kazehakase.sourceforge.jp/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=kazehakase
+version=0.5.0
+release=1
+source=(http://osdn.dl.sourceforge.jp/kazehakase/27774/kazehakase-$version.tar.gz)
+
+build()
+{
+  cd kazehakase-$version
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --with-xercesc="$prefix" \
+      --with-clhep="$prefix" \
+      --with-geant4="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+

@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A pluggable password checker.
+#  pam_passwdqc is a simple password strength checking module for
+#  PAM-aware password changing programs, such as passwd(1). In addition to
+#  checking regular passwords, it offers support for passphrases and can
+#  provide randomly generated ones. All features are optional and can be
+#  (re-)configured without rebuilding.
+#  .
+# URL: http://www.openwall.com/passwdqc/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=pam_passwdqc
+version=1.0.5
+release=1
+source=(http://www.openwall.com/pam/modules/pam_passwdqc/pam_passwdqc-$version.tar.gz)
+
+build()
+{
+  cd pam_passwdqc-$version
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/pam_passwdqc
+  install -m 644 INTERNALS LICENSE PLATFORMS README $ROOT/share/doc/pam_passwdqc
+}
+
+# EOF

@@ -1,0 +1,33 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:52 roman Exp $
+#
+# Description: A C++ library of mathematical, signal processing, and communication routines.
+#  IT++ is a C++ library of mathematical, signal processing, and
+#  communication classes and functions. Its main use is in simulation
+#  of communication systems or for performing research in the area of
+#  communications. The kernel of the library consists of generic vector
+#  and matrix classes and lots of functions for vectors and matrices. Such
+#  a kernel makes the IT++ library similar to MATLAB or GNU Octave.
+# URL: http://itpp.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=itpp
+version=3.10.10
+release=1
+source=($mirror_sf/itpp/itpp-$version.tar.bz2
+        itpp-3.10.10-mingw32.patch)
+
+build()
+{
+  cd itpp-$version
+
+  patch -N -p1 -i $SRC/itpp-3.10.10-mingw32.patch
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

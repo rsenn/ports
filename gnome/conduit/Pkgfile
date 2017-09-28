@@ -1,0 +1,39 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Synchronization application for GNOME.
+#  Conduit is a synchronization application for GNOME. It allows you to
+#  synchronize your files, photos, emails, contacts, notes, calendar data
+#  and any other type of personal information and synchronize that data
+#  with another computer, an online service, or even another electronic
+#  device. Conduit manages the synchronization and conversion of data into
+#  other formats. For example, Conduit allows you to; * Synchronize your
+#  Tomboy notes with another computer * Synchronize your your PIM data to
+#  your mobile phone, iPod, Nokia Internet tablet, or between computers *
+#  Upload photos to Flickr, Picasa, SmugMug, ShutterFly and your iPod, *
+#  ... and many more Any combination you can imagine, Conduit will take
+#  care of the conversion and synchronization.
+#  .
+# URL: http://www.conduit-project.org/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=conduit
+version=0.3.15
+release=1
+source=(ftp://ftp.gnome.org/pub/gnome/sources/conduit/${version%.*}/conduit-$version.tar.bz2)
+
+build()
+{
+  cd conduit-$version
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

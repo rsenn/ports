@@ -1,0 +1,29 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Repair qmail queue directory structure
+#  A toolkit for dealing with the qmail queue directory structure; it can
+#  create a new queue, move and properly rename a queue, dynamically change
+#  the conf-split value, convert big-todo queues to non-big-todo and vice
+#  versa, and repair a corrupted queue.
+#  .
+# URL: http://pyropus.ca/software/queue-repair/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=qmail-queue-repair
+version=0.9.0
+release=1
+source=(http://pyropus.ca/software/queue-repair/queue-repair-$version.tar.gz)
+
+build()
+{
+  cd queue-repair-0.9.0
+
+  install -d $ROOT/bin
+  install -m 755 queue_repair.py $ROOT/bin/qmail-queue-repair
+
+  install -d $ROOT/share/doc/qmail-queue-repair
+  install -m 644 BLURB CHANGELOG TODO COPYING $ROOT/share/doc/qmail-queue-repair
+}
+
+# EOF

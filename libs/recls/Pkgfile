@@ -1,0 +1,73 @@
+# $Id: Pkgfile,v 1.1 2007/04/22 23:07:57 roman Exp $
+#
+# Description: A multi-platform recursive filesystem search library.
+#  recls is a multi-platform recursive filesystem searching library. It
+#  presents a C API with mappings to C++, COM, D, Java, Python, and Ruby.
+# URL: http://recls.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=recls
+version=1.8.13
+release=1
+source=(http://synesis.com.au/downloads/recls/recls-$version.zip
+        recls-1.8.7-mingw32-gcc34.patch
+        recls-1.8.7-linux-gcc40.patch
+        recls-1.8.11-libtool.patch)
+
+build()
+{
+  cd recls-$version
+
+  patch -N -p1 -i $SRC/recls-1.8.11-libtool.patch
+
+  case $host in
+   *-mingw32*)
+       makefile="makefile.mingw32"
+       builddir="build/gcc34"
+       ;;
+   *-linux*)
+       makefile="makefile.unix"
+
+       if set -- $prefix/bin/libtool && test -e "$1"
+       then
+         builddir="build/lt"
+       else
+         builddir="build/gcc40"
+       fi
+       ;;
+  esac
+
+  # Converting line endings to UNIX
+  find -type f -name "*.cpp" -or -name "*.hpp" -or -name "*.h" | xargs dos2unix
+
+  mkdir -p lib bin
+
+  make -C "$builddir" -f "$makefile" \
+    CC="${CC-cc} ${CFLAGS--g -O2}" \
+    CPPC="${CXX-c++} ${CXXFLAGS--g -O2}" \
+    AR="${AR-ar}" \
+    CPPC_F_WARNING_ERR="" \
+    AR_ARGS=""
+
+  case $builddir in
+    "build/lt")
+      make -C "$builddir" -f "$makefile" \
+        DESTDIR="$PKG" \
+        prefix="$prefix" \
+        install
+      ;;
+    *)
+      install -d $ROOT
+      mv include lib $ROOT
+      ;;
+  esac
+
+  install -d $ROOT/share/doc/recls
+
+  mv doc/html/$version $ROOT/share/doc/recls/html
+  mv {ex,s}amples $ROOT/share/doc/recls
+
+  install -d $ROOT/share/doc/recls/txt
+  cp *.txt $ROOT/share/doc/recls/txt
+}

@@ -1,0 +1,44 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Package: pciutils
+# Description: Linux PCI Utilities
+#  This package contains various utilities for inspecting and setting of
+#  devices connected to the PCI bus.
+# URL: http://atrey.karlin.mff.cuni.cz/~mj/pciutils.shtml
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=pciutils
+version=2.2.10
+release=1
+source=(ftp://ftp.eu.kernel.org/pub/software/utils/pciutils/pciutils-$version.tar.bz2)
+
+build()
+{
+  cd pciutils-$version
+
+  sbindir="\${PREFIX}/sbin"
+  datadir="\${PREFIX}/share"
+
+  case ${prefix:=/usr} in
+    /usr)
+      sbindir="/sbin"
+      datadir="/lib"
+    ;;
+  esac
+
+  make \
+      CC="${CC-cc}" \
+      OPT="$CFLAGS" \
+      DESTDIR="$PKG" \
+      PREFIX="$prefix" \
+      SHAREDIR="$datadir" \
+      SBINDIR="$sbindir" \
+    all \
+    install
+
+   instdatadir="$PKG/`eval echo \"$datadir\"`"
+
+   gzip -d $instdatadir/pci.ids.gz
+   install -d $instdatadir/pci.ids.d
+}

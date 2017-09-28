@@ -1,0 +1,30 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A mixer application for Jack.
+#  JackMix is a mixer application fo Jack, the low-latency audio server. It
+#  allows a number of inputs to be mixed into a number of outputs.
+#  .
+# URL: http://www.arnoldarts.de/drupal/?q=JackMix
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=jackmix
+version=0.4.1
+release=1
+source=(http://www.arnoldarts.de/drupal/files/downloads/jackmix/jackmix-$version.tar.gz)
+
+build()
+{
+  cd jackmix-$version
+
+  scons
+  #scons prefix="$ROOT" install
+  #
+  install -d $ROOT/bin
+  install -m 755 jackmix/jackmix $ROOT/bin
+
+  install -d $ROOT/share/doc/jackmix
+  install -m 644  AUTHORS COPYING README ChangeLog INSTALL $ROOT/share/doc/jackmix
+}
+
+# EOF

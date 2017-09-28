@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A library to display memory leaks within a program.
+#  leakbug is a small, simple library intended to show where memory leaks
+#  are occuring within a program. It does not report leaks due to incorrect
+#  use of another library - all reported leaks are leaks found within the
+#  program itself.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=leakbug
+version=0.1.5
+release=1
+source=($mirror_sf/gnupdate/leakbug-$version.tar.gz
+        leakbug-0.1.5-m4.patch)
+
+build()
+{
+  cd leakbug-$version
+
+  patch -N -p1 -i $SRC/leakbug-0.1.5-m4.patch
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

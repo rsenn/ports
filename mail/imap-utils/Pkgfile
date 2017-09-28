@@ -1,0 +1,34 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A set of simple utilities for managing IMAP email messages.
+#  IMAP utils is a set of simple utilities for managing IMAP email
+#  messages. It contains utilities to purge old read and unread messages
+#  from folders, create folders on an IMAP server, and display a summary
+#  about unread and unseen messages.
+#  .
+# URL: http://cihar.com/software/imap-utils/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=imap-utils
+version=svn52
+release=1
+source=(http://dl.cihar.com/imap-utils/snapshot/imap-utils-$version.tar.bz2
+        imap-utils-svn25-fixes.patch)
+
+build()
+{
+  cd imap-utils-$version
+
+  patch -N -p1 -i $SRC/imap-utils-svn25-fixes.patch
+
+  python setup.py install --prefix="$ROOT"
+
+  install -d $ROOT/bin
+  install -m 755 fetch-messages process-messages store-message $ROOT/bin
+
+  install -d $ROOT/share/doc/imap-utils
+  install -m 644 AUTHORS COPYING ChangeLog PKG-INFO README $ROOT/share/doc/imap-utils
+}
+
+# EOF

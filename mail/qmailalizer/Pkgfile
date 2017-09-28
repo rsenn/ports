@@ -1,0 +1,44 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Qmail-send log analyzer.
+# Qmailalizer analyses the qmail-send logs and generates html files with
+# the results. Its alike webalizer but only for qmail.
+#
+# URL: http://sourceforge.net/projects/qmailalizer/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libgcc1, libgd2-xpm, libpng12-0, libstdc++6, libxml2
+
+name=qmailalizer
+version=0.34
+release=1
+source=($mirror_sf/qmailalizer/qmailalizer-$version.tar.gz
+        qmailalizer-0.34-trailing-newline.patch)
+
+build()
+{
+  cd qmailalizer
+
+  patch -N -p1 -i $SRC/qmailalizer-0.34-trailing-newline.patch
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+
+  install -d $ROOT/bin
+
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/qmailalizer
+  install -m 644 AUTHORS COPYING ChangeLog INSTALL NEWS README \
+    $ROOT/share/doc/qmailalizer
+
+  install -d $PKG/etc
+  install -m 644 qmailalizer.conf $PKG/etc
+
+  install -d $ROOT/share/qmailalizer
+  cp -rf template $ROOT/share/qmailalizer
+}

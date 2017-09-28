@@ -1,0 +1,43 @@
+# $Id: Pkgfile 505 2008-08-30 04:12:17Z enki $
+#
+# Description: Epto is a small library and framework for industrial strength shell script programming with sh. It features convenient error handling, tracing, logging, option handling, documentation template, process level transaction safety (sort of), and more.
+# URL: http://sourceforge.net/projects/epto/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=epto
+version=0.8.16
+release=1
+source=($mirror_sf/epto/epto-$version.tar.bz2
+        epto-0.8.16-proper-progname.patch)
+
+build()
+{
+  cd epto-$version
+
+  patch -N -p1 -i $SRC/epto-0.8.16-proper-progname.patch
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make \
+      BASEDIR="$prefix" \
+      DESTDIR="\$(BASEDIR)/lib/epto"
+
+  make \
+      BASEDIR="$ROOT" \
+      DESTDIR="\$(BASEDIR)/lib/epto" \
+      MAN1DIR="$ROOT/share/man/man1" \
+      MAN3DIR="$ROOT/share/man/man3" \
+    install
+
+  sed -i \
+      -e "s,\(/lib/epto\)/epto-[.0-9]\+,\1,g" \
+      -e "s,/usr,$prefix,g" \
+      -e "s,$ROOT,$prefix,g" \
+    $ROOT/bin/* \
+    $ROOT/lib/epto/*
+}

@@ -1,0 +1,37 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Collection of mostly independent C modules potentially useful to any project
+# There are the usual ADTs including a linkedlist, hashmap, pool, stack, and
+# varray, a flexible memory allocator, CSV parser, path canonicalization
+# routine, I18N text abstraction, configuration file module, portable
+# semaphores, condition variables, and more. The code is designed so that
+# individual modules can be integrated into existing codebases rather than
+# requiring the user to commit to the entire library.
+# URL: http://www.ioplex.com/~miallen/libmba/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libmba
+version=0.9.1
+release=1
+source=(http://www.ioplex.com/~miallen/libmba/dl/libmba-$version.tar.gz
+        http://www.ioplex.com/~miallen/libmba/dl/patches/libmba-0.9.1-{memset,mktool}.patch
+        libmba-0.9.1-optflags.patch)
+
+build()
+{
+  cd libmba-$version
+
+  patch -N -p1 -i $SRC/libmba-0.9.1-memset.patch
+  patch -N -p1 -i $SRC/libmba-0.9.1-mktool.patch
+  patch -N -p1 -i $SRC/libmba-0.9.1-optflags.patch
+
+  make CC="${CC-cc}" OPTFLAGS="$CFLAGS" prefix="$prefix"
+  make prefix="$ROOT" mandir="$ROOT/share/man" install
+
+  install -d $ROOT/share/doc/
+
+  rm -rf docs/man
+  mv -vf docs $ROOT/share/doc/libmba-$version
+
+}

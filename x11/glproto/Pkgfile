@@ -1,0 +1,36 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: X11 OpenGL extension wire protocol
+# This package provides development headers describing the wire protocol
+# for OpenGL-related extensions, used to enable the rendering of
+# applications using OpenGL.
+#
+# More information about X.Org can be found at:
+# <URL:http://www.X.org>
+# <URL:http://xorg.freedesktop.org>
+# <URL:http://lists.freedesktop.org/mailman/listinfo/xorg>
+#
+# This package is built from the X.org glproto proto module.
+#
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=glproto
+version=1.4.9
+release=1
+source=(ftp://ftp.x.org/pub/individual/proto/glproto-$version.tar.bz2)
+
+build()
+{
+  cd glproto-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

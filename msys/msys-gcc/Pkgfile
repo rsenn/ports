@@ -1,0 +1,61 @@
+# $Id: Pkgfile,v 1.11 2007/05/09 21:02:40 roman Exp $
+#
+# Description: gcc
+# URL: http://gcc.gnu.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=msys-gcc
+version=3.4.6
+release=1
+target=i686-pc-msys
+
+source=($mirror_gnu/gcc/gcc-$version/gcc-core-$version.tar.bz2
+        $mirror_gnu/gcc/gcc-$version/gcc-g++-$version.tar.bz2
+        gcc-core-$version-mingw32.patch.gz
+        gcc-g++-$version-mingw32.patch.gz
+        gcc-$version-linktest.patch
+        gcc-$version-ssize_max.patch
+        gcc-core-3.4.6-msys.patch
+        gcc-3.4.6-msys.patch
+        gcc-3.4.6-msys-all.patch
+        gcc-3.4.6-msys-2.patch
+        libstdc++-v3-msys.patch)
+
+build()
+{
+  cd ${srcdir=$SRC/gcc-$version}
+
+  patch -N -p1 -i $SRC/gcc-3.4.6-msys-all.patch
+
+  cp $datadir/automake/config.{sub,guess} $srcdir
+
+  # configure in a separate build tree
+  rm -rf ${builddir=$SRC/gcc-$version/$host} && mkdir -p $builddir  && cd $builddir
+
+  $srcdir/configure \
+      --build="$build" \
+      --host="$host" \
+      ${target+--target="$target"} \
+      --prefix="$prefix" \
+      --with-local-prefix="$prefix" \
+      --without-included-gettext \
+      --enable-threads="win32" \
+      --with-tls \
+      --disable-rpath \
+      --disable-shared \
+      --${static:=enable}-shared \
+      --enable-languages="c,c++" \
+      --with-ld="$prefix/bin/$target-ld" \
+      --with-as="$prefix/bin/$target-as" \
+      --with-system-zlib \
+      --with-headers="$prefix/$target/include" \
+      --with-libs="$prefix/$target/lib" \
+      --with-gxx-include-dir="$prefix/$target/include/c++/$version" \
+      --with-cpp-install-dir="$prefix/$target/lib" \
+      --disable-concept-checks
+
+  make DESTDIR="$PKG" all install
+
+  rm -rf $ROOT/{lib/libiberty.a,info,man}
+}

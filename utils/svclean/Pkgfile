@@ -1,0 +1,27 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Utilities for enhancing svscan and supervise
+# With these tools, you get clean shutdown (i.e., services are guaranteed
+# to be stopped before their loggers, so no logs are lost) and supervised
+# logging of svscan's and supervise's output (so if the last-resort logger
+# is killed, it can be restarted). svclean-conf is a configuration package
+# for svclean. These features are practically necessary for running svscan
+# as process 1, but are useful even when svscan does not run as process
+# 1. Ideally, equivalent features would be included in a future version
+# of daemontools, and this package would become obsolete.
+#
+# URL: http://code.dogmap.org/svclean/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=svclean
+version=2004.07.16
+release=1
+source=(http://code.dogmap.org./svclean/releases/svclean-$version.tar.bz2)
+
+build()
+{
+  cd admin/svclean-$version
+
+  package/build
+}

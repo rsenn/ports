@@ -1,0 +1,27 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Time and date functions for Perl
+#  The Date::Parse module can parse dates in a wide variety of input formats,
+#  and many languages, though it is limited to only parsing absolute
+#  dates. To parse relative dates, try Time::ParseDate.
+#  This package also includes Date::Format, which can format dates into
+#  strings, and Time::Zone, which can contains miscellaneous timezone
+#  functions.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=libtimedate-perl
+version=1.1600
+release=1
+source=(http://ftp.de.debian.org/debian/pool/main/t/timedate/timedate_$version.orig.tar.gz)
+
+build()
+{
+  cd timedate-$version.orig
+
+  perl Makefile.PL
+
+  make
+  make DESTDIR="$PKG" install
+}

@@ -1,0 +1,686 @@
+--- recls-1.8.11_orig/build/lt/makefile.unix	2008-03-30 08:44:46.000000000 +0000
++++ recls-1.8.11/build/lt/makefile.unix	2008-03-30 08:44:30.000000000 +0000
+@@ -0,0 +1,683 @@
++################################################################################
++# File:     makefile.unix
++#
++# Purpose:  Makefile for the recls project, for the any compiler compatible to
++#           GNU libtool
++#
++# Created:  30rd March 2008
++#
++################################################################################
++
++
++################################################################################
++# Symbols
++
++# Identification
++
++COMP_MODE         =   RELEASE
++PROJ_TAG          =   recls
++PROJ_VER_MAJOR    =   1
++PROJ_TAG_VER      =   $(PROJ_TAG).$(PROJ_VER_MAJOR)
++
++LIBTOOL             =   libtool
++INSTALL             =   install
++LTINSTALL           =   $(LIBTOOL) --tag=CXX --mode=install $(INSTALL)
++LTFINISH            =   $(LIBTOOL) --tag=CXX --mode=finish
++COMPILE             =   $(LIBTOOL) --tag=CC --mode=compile $(CC)
++CXXCOMPILE          =   $(LIBTOOL) --tag=CXX --mode=compile $(CPPC)
++LINK                =   $(LIBTOOL) --tag=CC --mode=link $(CC)
++CXXLINK             =   $(LIBTOOL) --tag=CXX --mode=link $(CPPC)
++AR                  =   ar
++RM                  =   rm -f
++CP                  =   cp
++RC                  =   
++
++# Installation directories
++DESTDIR             =
++prefix              =   /usr
++libdir              =   ${prefix}/lib
++includedir          =   ${prefix}/include
++
++# Distribution directories
++
++PROJ_BASE_DIR       =   ../..
++PROJ_BIN_DIR        =   $(PROJ_BASE_DIR)/bin
++PROJ_INCLUDE_DIR    =   $(PROJ_BASE_DIR)/include
++PROJ_LIB_DIR        =   $(PROJ_BASE_DIR)/lib
++PROJ_OBJ_DIR        =   .
++PROJ_SRC_DIR        =   $(PROJ_BASE_DIR)/src
++PROJ_MAPPINGS_DIR   =   $(PROJ_BASE_DIR)/mappings
++PROJ_TESTS_DIR      =   $(PROJ_BASE_DIR)/test
++PROJ_EXAMPLES_DIR   =   $(PROJ_BASE_DIR)/examples
++PROJ_SAMPLES_DIR    =   $(PROJ_BASE_DIR)/samples
++
++VPATH = $(PROJ_BASE_DIR):$(PROJ_OBJ_DIR):$(PROJ_SRC_DIR):$(PROJ_TESTS_DIR):$(PROJ_EXAMPLES_DIR):$(PROJ_SAMPLES_DIR)
++
++# Includes
++
++INCLUDES_LEADER     =   
++
++PROJ_INCLUDE        =   -I$(PROJ_INCLUDE_DIR)
++
++ENV_INCLUDES 	=	
++
++COMMON_INCLUDES		=	
++
++CC_INCLUDES = \
++$(INCLUDES_LEADER) \
++$(PROJ_INCLUDE) \
++$(COMMON_INCLUDES) \
++$(ENV_INCLUDES) \
++ \
++
++CPPC_INCLUDES = \
++$(INCLUDES_LEADER) \
++$(PROJ_INCLUDE) \
++$(COMMON_INCLUDES) \
++$(ENV_INCLUDES) \
++ \
++
++3PTY_LIBS = \
++ \
++
++
++# Lib
++
++COMMON_LIB =
++LTLDFLAGS = -rpath $(libdir) -no-undefined -version-number 1:8:11
++LIBS_LEADER =	
++
++# lib paths
++
++ENV_LIBPATHS		=	
++COMMON_LIBPATHS			=	
++
++
++
++LIBPATHS=\
++$(LIBS_LEADER) \
++$(COMMON_LIBPATHS) \
++$(ENV_LIBPATHS) \
++\
++
++# #defines
++
++CMN_DEF_NO_IMPLICIT_LINK =\
++ -DRECLS_NO_IMPLICIT_LINK\
++ \
++
++COMMON_DEFS         =   -Dunix $(CMN_DEF_NO_IMPLICIT_LINK)
++
++CC_DEFS             =   $(COMMON_DEFS)
++
++CPPC_DEFS           =   $(COMMON_DEFS)
++
++# Flags
++
++CC_F_COMPILE_ONLY       =   -c
++CC_F_WARNING_MAX        =   -Wall -Wno-long-long -Wno-unused-value -Wundef -Wshadow
++CC_F_WARNING_ERR        =   -Werror
++
++CPPC_F_COMPILE_ONLY =   -c
++CPPC_F_WARNING_MAX  =   -Wall -Wno-long-long -Wno-unused-value
++CPPC_F_EXCEPTIONS   =   #-fexceptions
++CPPC_F_RTTI         =   #-frtti
++
++CC_TOOL_FLAGS       =   
++
++CFLAGS = \
++ $(CC_TOOL_FLAGS) \
++ $(CC_F_COMPILE_ONLY) \
++ $(CC_F_WARNING_MAX) \
++ \
++
++CPPC_TOOL_FLAGS     =   
++
++CXXFLAGS = \
++ $(CPPC_TOOL_FLAGS) \
++ $(CPPC_F_COMPILE_ONLY) \
++ $(CPPC_F_WARNING_MAX) \
++ $(CPPC_F_EXCEPTIONS) \
++ $(CPPC_F_RTTI) \
++ \
++
++# Arguments (= flags + defines + includes)
++
++CC_ARGS_DEBUG = -D_DEBUG -UNDEBUG $(CFLAGS) $(DEFS) $(INCLUDES)
++CC_ARGS_RELEASE = -DNDEBUG -U_DEBUG $(CFLAGS) $(DEFS) $(INCLUDES)
++
++CC_ARGS = $(CC_ARGS_$(COMP_MODE))
++
++CPPC_ARGS_DEBUG = -D_DEBUG -UNDEBUG $(CXXFLAGS) $(DEFS) $(INCLUDES)
++CPPC_ARGS_RELEASE = -DNDEBUG -U_DEBUG $(CXXFLAGS) $(DEFS) $(INCLUDES)
++
++CPPC_ARGS = $(CPPC_ARGS_$(COMP_MODE))
++
++# archiver flags and arguments
++
++AR_ARGS = 
++
++# linker flags and arguments
++
++LD_F_NOLOGO = 
++
++
++VARIANT_LIB_DEBUG	= \
++ \
++
++LD_ARGS_DEBUG =  $(LD_F_NOLOGO) $(LIBPATHS) $(COMMON_LIB) $(VARIANT_LIB_DEBUG)
++
++VARIANT_LIB_RELEASE	= \
++ \
++
++LD_ARGS_RELEASE =  $(LD_F_NOLOGO) $(LIBPATHS) $(COMMON_LIB) $(VARIANT_LIB_RELEASE)
++
++LD_ARGS = $(LD_ARGS_$(COMP_MODE))
++
++################################################################################
++# Targets
++
++########################################
++# TARGETS_LIBS
++
++TARGET_LIB = $(PROJ_LIB_DIR)/lib$(PROJ_TAG).la
++
++TARGETS_LIBS =\
++ $(TARGET_LIB) \
++ \
++
++########################################
++# TARGETS_TESTS
++
++
++TARGETS_TESTS =\
++ \
++
++########################################
++# TARGETS_EXAMPLES
++
++TARGET_EXAMPLE_C_1 = $(PROJ_BIN_DIR)/$(PROJ_TAG_VER).example.c_1
++TARGET_EXAMPLE_C_2 = $(PROJ_BIN_DIR)/$(PROJ_TAG_VER).example.c_2
++TARGET_EXAMPLE_C_3 = $(PROJ_BIN_DIR)/$(PROJ_TAG_VER).example.c_3
++TARGET_EXAMPLE_C_4 = $(PROJ_BIN_DIR)/$(PROJ_TAG_VER).example.c_4
++TARGET_EXAMPLE_C_5 = $(PROJ_BIN_DIR)/$(PROJ_TAG_VER).example.c_5
++TARGET_EXAMPLE_C_6 = $(PROJ_BIN_DIR)/$(PROJ_TAG_VER).example.c_6
++TARGET_EXAMPLE_C_7 = $(PROJ_BIN_DIR)/$(PROJ_TAG_VER).example.c_7
++TARGET_EXAMPLE_C_8 = $(PROJ_BIN_DIR)/$(PROJ_TAG_VER).example.c_8
++TARGET_EXAMPLE_CPP_1 = $(PROJ_BIN_DIR)/$(PROJ_TAG_VER).example.cpp_1
++TARGET_EXAMPLE_CPP_2 = $(PROJ_BIN_DIR)/$(PROJ_TAG_VER).example.cpp_2
++TARGET_EXAMPLE_CPP_3 = $(PROJ_BIN_DIR)/$(PROJ_TAG_VER).example.cpp_3
++TARGET_EXAMPLE_STL_1 = $(PROJ_BIN_DIR)/$(PROJ_TAG_VER).example.stl_1
++TARGET_EXAMPLE_STL_2 = $(PROJ_BIN_DIR)/$(PROJ_TAG_VER).example.stl_2
++
++TARGETS_EXAMPLES =\
++ $(TARGET_EXAMPLE_C_1) \
++ $(TARGET_EXAMPLE_C_2) \
++ $(TARGET_EXAMPLE_C_3) \
++ $(TARGET_EXAMPLE_C_4) \
++ $(TARGET_EXAMPLE_C_5) \
++ $(TARGET_EXAMPLE_C_6) \
++ $(TARGET_EXAMPLE_C_7) \
++ $(TARGET_EXAMPLE_C_8) \
++ $(TARGET_EXAMPLE_CPP_1) \
++ $(TARGET_EXAMPLE_CPP_2) \
++ $(TARGET_EXAMPLE_CPP_3) \
++ $(TARGET_EXAMPLE_STL_1) \
++ $(TARGET_EXAMPLE_STL_2) \
++ \
++
++########################################
++# TARGETS_SAMPLES
++
++TARGET_SAMPLE_C_1 = $(PROJ_BIN_DIR)/sample_c_1
++TARGET_SAMPLE_C_2 = $(PROJ_BIN_DIR)/sample_c_2
++
++TARGETS_SAMPLES =\
++ $(TARGET_SAMPLE_C_1) \
++ $(TARGET_SAMPLE_C_2) \
++ \
++
++########################################
++# TARGETS
++
++TARGETS = \
++ $(TARGETS_LIBS) \
++ $(TARGETS_TESTS) \
++ $(TARGETS_EXAMPLES) \
++ $(TARGETS_SAMPLES) \
++ \
++
++########################################
++# OBJS_CORE
++
++OBJ_C_recls_api								= recls.api.lo
++OBJ_C_recls_api_unix			= recls.api.unix.lo
++OBJ_C_recls_fileinfo							= recls.fileinfo.lo
++OBJ_C_recls_fileinfo_unix	= recls.fileinfo.unix.lo
++OBJ_C_recls_util								= recls.util.lo
++OBJ_C_recls_util_unix		= recls.util.unix.lo
++OBJ_C_entryinfo								= entryinfo.lo
++OBJ_C_ReclsSearch								= ReclsSearch.lo
++OBJ_C_ReclsFileSearch							= ReclsFileSearch.lo
++OBJ_C_ReclsFileSrchDirNode					= ReclsFileSearchDirectoryNode.lo
++
++OBJS_CORE = \
++ $(OBJ_C_recls_api) \
++ $(OBJ_C_recls_api_unix) \
++ $(OBJ_C_recls_fileinfo) \
++ $(OBJ_C_recls_fileinfo_unix) \
++ $(OBJ_C_recls_ftp_api_win32) \
++ $(OBJ_C_recls_util) \
++ $(OBJ_C_recls_util_unix) \
++ $(OBJ_C_entryinfo) \
++ $(OBJ_C_ReclsSearch) \
++ $(OBJ_C_ReclsFileSearch) \
++ $(OBJ_C_ReclsFileSrchDirNode) \
++ $(OBJ_C_ReclsFtpSearch_win32) \
++ $(OBJ_C_RFtpSDN_win32) \
++ $(OBJ_C_recls_wininet_dl)
++
++########################################
++# OBJS_LIBS
++
++OBJS_LIBS =\
++ $(OBJS_CORE) \
++ \
++
++########################################
++# OBJS_TESTS
++
++
++OBJS_TESTS =\
++ \
++
++########################################
++# OBJS_EXAMPLES
++
++OBJ_EXAMPLE_C_1 = example.c_1.lo
++OBJ_EXAMPLE_C_2 = example.c_2.lo
++OBJ_EXAMPLE_C_3 = example.c_3.lo
++OBJ_EXAMPLE_C_4 = example.c_4.lo
++OBJ_EXAMPLE_C_5 = example.c_5.lo
++OBJ_EXAMPLE_C_6 = example.c_6.lo
++OBJ_EXAMPLE_C_7 = example.c_7.lo
++OBJ_EXAMPLE_C_8 = example.c_8.lo
++OBJ_EXAMPLE_CPP_1 = example.cpp_1.lo
++OBJ_EXAMPLE_CPP_2 = example.cpp_2.lo
++OBJ_EXAMPLE_CPP_3 = example.cpp_3.lo
++OBJ_EXAMPLE_STL_1 = example.stl_1.lo
++OBJ_EXAMPLE_STL_2 = example.stl_2.lo
++
++OBJS_EXAMPLES =\
++ $(OBJ_EXAMPLE_C_1) \
++ $(OBJ_EXAMPLE_C_2) \
++ $(OBJ_EXAMPLE_C_3) \
++ $(OBJ_EXAMPLE_C_4) \
++ $(OBJ_EXAMPLE_C_5) \
++ $(OBJ_EXAMPLE_C_6) \
++ $(OBJ_EXAMPLE_C_7) \
++ $(OBJ_EXAMPLE_C_8) \
++ $(OBJ_EXAMPLE_CPP_1) \
++ $(OBJ_EXAMPLE_CPP_2) \
++ $(OBJ_EXAMPLE_CPP_3) \
++ $(OBJ_EXAMPLE_STL_1) \
++ $(OBJ_EXAMPLE_STL_2) \
++ \
++
++########################################
++# OBJS_SAMPLES
++
++OBJ_SAMPLE_C_1 = sample_c_1.lo
++OBJ_SAMPLE_C_2 = sample_c_2.lo
++
++OBJS_SAMPLES =\
++ $(OBJ_SAMPLE_C_1) \
++ $(OBJ_SAMPLE_C_2) \
++ \
++
++
++########################################
++# OBJS
++
++OBJS = \
++ $(OBJS_LIBS) \
++ $(OBJS_TESTS) \
++ $(OBJS_EXAMPLES) \
++ $(OBJS_SAMPLES) \
++ \
++
++########################################
++# SRC_CORE
++
++LIB_CORE_recls_H = $(PROJ_INCLUDE_DIR)/recls/recls.h
++LIB_CORE_alloca_H = $(PROJ_INCLUDE_DIR)/recls/alloca.h
++LIB_CORE_assert_H = $(PROJ_INCLUDE_DIR)/recls/assert.h
++LIB_CORE_ftp_H = $(PROJ_INCLUDE_DIR)/recls/ftp.h
++LIB_CORE_minmax_H = $(PROJ_INCLUDE_DIR)/recls/minmax.h
++LIB_CORE_unix_H = $(PROJ_INCLUDE_DIR)/recls/unix.h
++LIB_CORE_win32_H = $(PROJ_INCLUDE_DIR)/recls/win32.h
++LIB_CORE_implicit_link_H = $(PROJ_INCLUDE_DIR)/recls/implicit_link.h
++
++LIB_CORE_recls_api_CPP = $(PROJ_SRC_DIR)/recls_api.cpp
++LIB_CORE_recls_api_unix_CPP = $(PROJ_SRC_DIR)/recls_api_unix.cpp
++LIB_CORE_recls_fileinfo_CPP = $(PROJ_SRC_DIR)/recls_fileinfo.cpp
++LIB_CORE_recls_fileinfo_unix_CPP = $(PROJ_SRC_DIR)/recls_fileinfo_unix.cpp
++LIB_CORE_recls_util_CPP = $(PROJ_SRC_DIR)/recls_util.cpp
++LIB_CORE_recls_util_unix_CPP = $(PROJ_SRC_DIR)/recls_util_unix.cpp
++LIB_CORE_entryinfo_CPP = $(PROJ_SRC_DIR)/entryinfo.cpp
++LIB_CORE_ReclsSearch_CPP = $(PROJ_SRC_DIR)/ReclsSearch.cpp
++LIB_CORE_ReclsFileSearch_CPP = $(PROJ_SRC_DIR)/ReclsFileSearch.cpp
++LIB_CORE_ReclsFileSrchDirNode_CPP = $(PROJ_SRC_DIR)/ReclsFileSearchDirectoryNode.cpp
++
++########################################
++# SRC_HEADERS
++
++HEADERS_LIB	= \
++ $(LIB_CORE_recls_H) \
++ $(LIB_CORE_alloca_H) \
++ $(LIB_CORE_assert_H) \
++ $(LIB_CORE_ftp_H) \
++ $(LIB_CORE_minmax_H) \
++ $(LIB_CORE_unix_H) \
++ $(LIB_CORE_win32_H) \
++ $(LIB_CORE_implicit_link_H) \
++ \
++
++HEADERS_MAPPING_CPP =\
++ $(PROJ_INCLUDE_DIR)/recls/cpp/recls.hpp\
++ $(PROJ_INCLUDE_DIR)/recls/cpp/fileentry.hpp\
++ $(PROJ_INCLUDE_DIR)/recls/cpp/filesearch.hpp\
++ $(PROJ_INCLUDE_DIR)/recls/cpp/ftpsearch.hpp\
++ $(PROJ_INCLUDE_DIR)/recls/cpp/search.hpp\
++ \
++
++HEADERS_MAPPING_STL =\
++ $(PROJ_INCLUDE_DIR)/recls/stl/recls.hpp\
++ $(PROJ_INCLUDE_DIR)/recls/stl/root_sequence.hpp\
++ $(PROJ_INCLUDE_DIR)/recls/stl/search_sequence.hpp\
++ $(PROJ_INCLUDE_DIR)/recls/stl/traits.hpp\
++ \
++
++########################################
++# SRC_TESTS
++
++
++########################################
++# SRC_EXAMPLES
++
++SRC_EXAMPLE_C_1 = $(PROJ_EXAMPLES_DIR)/c/example_c_1/example_c_1.c
++SRC_EXAMPLE_C_2 = $(PROJ_EXAMPLES_DIR)/c/example_c_2/example_c_2.c
++SRC_EXAMPLE_C_3 = $(PROJ_EXAMPLES_DIR)/c/example_c_3/example_c_3.c
++SRC_EXAMPLE_C_4 = $(PROJ_EXAMPLES_DIR)/c/example_c_4/example_c_4.c
++SRC_EXAMPLE_C_5 = $(PROJ_EXAMPLES_DIR)/c/example_c_5/example_c_5.c
++SRC_EXAMPLE_C_6 = $(PROJ_EXAMPLES_DIR)/c/example_c_6/example_c_6.c
++SRC_EXAMPLE_C_7 = $(PROJ_EXAMPLES_DIR)/c/example_c_7/example_c_7.c
++SRC_EXAMPLE_C_8 = $(PROJ_EXAMPLES_DIR)/c/example_c_8/example_c_8.c
++SRC_EXAMPLE_CPP_1 = $(PROJ_EXAMPLES_DIR)/cpp/example_cpp_1/example_cpp_1.cpp
++SRC_EXAMPLE_CPP_2 = $(PROJ_EXAMPLES_DIR)/cpp/example_cpp_2/example_cpp_2.cpp
++SRC_EXAMPLE_CPP_3 = $(PROJ_EXAMPLES_DIR)/cpp/example_cpp_3/example_cpp_3.cpp
++SRC_EXAMPLE_STL_1 = $(PROJ_EXAMPLES_DIR)/stl/example_stl_1/example_stl_1.cpp
++SRC_EXAMPLE_STL_2 = $(PROJ_EXAMPLES_DIR)/stl/example_stl_2/example_stl_2.cpp
++
++########################################
++# SRC_SAMPLES
++
++SRC_SAMPLE_C_1 = $(PROJ_SAMPLES_DIR)/c/sample_c_1/sample_c_1.c
++SRC_SAMPLE_C_2 = $(PROJ_SAMPLES_DIR)/c/sample_c_2/sample_c_2.c
++
++################################################################################
++# External Targets (invokable by make)
++
++all:                build.all
++
++check.lib.dir:
++	@-mkdir -p $(PROJ_LIB_DIR)
++
++check.bin.dir:
++	@-mkdir -p $(PROJ_BIN_DIR)
++
++build.libs.core:    check.lib.dir $(TARGETS_LIBS)
++
++build.libs.com:     makefile.unix
++
++build.libs.dotnet:  makefile.unix
++
++build.libs:         build.libs.core build.libs.com build.libs.dotnet
++
++build.examples:     check.bin.dir $(TARGETS_EXAMPLES)
++
++build.samples:      check.bin.dir $(TARGETS_SAMPLES)
++
++build.test:         check.bin.dir $(TARGETS_TESTS)
++
++build.all:          build.libs build.examples build.samples build.test
++
++build:              build.all
++
++compile:            $(OBJS)
++
++
++test_:              makefile.unix
++
++test:		build.all test_
++
++test.all:	test
++
++test-all:	test.all	# backwards compatibility
++
++
++usage:
++	@echo "make [usage | clean | compile | all | test | target] - default is 'all'"
++
++clean.libs.core:
++	@-$(RM) $(TARGET_LIB)
++	@-$(RM) $(OBJ_C_recls_api)
++	@-$(RM) $(OBJ_C_recls_api_unix)
++	@-$(RM) $(OBJ_C_recls_fileinfo)
++	@-$(RM) $(OBJ_C_recls_fileinfo_unix)
++	@-$(RM) $(OBJ_C_recls_ftp_api_win32)
++	@-$(RM) $(OBJ_C_recls_util)
++	@-$(RM) $(OBJ_C_recls_util_unix)
++	@-$(RM) $(OBJ_C_entryinfo)
++	@-$(RM) $(OBJ_C_ReclsSearch)
++	@-$(RM) $(OBJ_C_ReclsFileSearch)
++	@-$(RM) $(OBJ_C_ReclsFileSrchDirNode)
++	@-$(RM) $(OBJ_C_ReclsFtpSearch_win32)
++	@-$(RM) $(OBJ_C_RFtpSDN_win32)
++	@-$(RM) $(OBJ_C_recls_wininet_dl)
++
++clean.libs.com:
++
++clean.libs.dotnet:
++
++clean.libs:         clean.libs.core clean.libs.com clean.libs.dotnet
++
++clean.test:
++
++clean.examples:
++	@-$(RM) $(TARGET_EXAMPLE_C_1)
++	@-$(RM) $(TARGET_EXAMPLE_C_2)
++	@-$(RM) $(TARGET_EXAMPLE_C_3)
++	@-$(RM) $(TARGET_EXAMPLE_C_4)
++	@-$(RM) $(TARGET_EXAMPLE_C_5)
++	@-$(RM) $(TARGET_EXAMPLE_C_6)
++	@-$(RM) $(TARGET_EXAMPLE_C_7)
++	@-$(RM) $(TARGET_EXAMPLE_C_8)
++	@-$(RM) $(TARGET_EXAMPLE_CPP_1)
++	@-$(RM) $(TARGET_EXAMPLE_CPP_2)
++	@-$(RM) $(TARGET_EXAMPLE_CPP_3)
++	@-$(RM) $(TARGET_EXAMPLE_STL_1)
++	@-$(RM) $(TARGET_EXAMPLE_STL_2)
++	@-$(RM) $(OBJ_EXAMPLE_C_1)
++	@-$(RM) $(OBJ_EXAMPLE_C_2)
++	@-$(RM) $(OBJ_EXAMPLE_C_3)
++	@-$(RM) $(OBJ_EXAMPLE_C_4)
++	@-$(RM) $(OBJ_EXAMPLE_C_5)
++	@-$(RM) $(OBJ_EXAMPLE_C_6)
++	@-$(RM) $(OBJ_EXAMPLE_C_7)
++	@-$(RM) $(OBJ_EXAMPLE_C_8)
++	@-$(RM) $(OBJ_EXAMPLE_CPP_1)
++	@-$(RM) $(OBJ_EXAMPLE_CPP_2)
++	@-$(RM) $(OBJ_EXAMPLE_CPP_3)
++	@-$(RM) $(OBJ_EXAMPLE_STL_1)
++	@-$(RM) $(OBJ_EXAMPLE_STL_2)
++
++clean.samples:
++	@-$(RM) $(TARGET_SAMPLE_C_1)
++	@-$(RM) $(TARGET_SAMPLE_C_2)
++	@-$(RM) $(OBJ_SAMPLE_C_1)
++	@-$(RM) $(OBJ_SAMPLE_C_2)
++
++clean: clean.libs clean.test clean.examples clean.samples
++
++install:
++	$(INSTALL) -d $(DESTDIR)$(libdir)
++	$(LTINSTALL) $(TARGET_LIB) $(DESTDIR)$(libdir)
++	$(LTFINISH) $(DESTDIR)$(libdir)
++	$(INSTALL) -d $(DESTDIR)$(includedir)
++	$(CP) -rf $(PROJ_INCLUDE_DIR)/* $(DESTDIR)$(includedir)
++
++################################################################################
++# Internal Targets (invokable by make)
++
++########################################
++# core
++
++
++$(TARGET_LIB): $(OBJS_CORE) makefile.unix
++	$(CXXLINK) $(LTLDFLAGS) -o $@ $(OBJS_CORE)
++
++$(OBJ_C_recls_api): $(PROJ_SRC_DIR)/recls_api.cpp $(HEADERS_LIB) makefile.unix
++	$(CXXCOMPILE) $(CPPC_ARGS) $(CPPC_INCLUDES) -o $@ $(PROJ_SRC_DIR)/recls_api.cpp
++$(OBJ_C_recls_api_unix): $(PROJ_SRC_DIR)/recls_api_unix.cpp $(HEADERS_LIB) makefile.unix
++	$(CXXCOMPILE) $(CPPC_ARGS) $(CPPC_INCLUDES) -o $@ $(PROJ_SRC_DIR)/recls_api_unix.cpp
++$(OBJ_C_recls_fileinfo): $(PROJ_SRC_DIR)/recls_fileinfo.cpp $(HEADERS_LIB) makefile.unix
++	$(CXXCOMPILE) $(CPPC_ARGS) $(CPPC_INCLUDES) -o $@ $(PROJ_SRC_DIR)/recls_fileinfo.cpp
++$(OBJ_C_recls_fileinfo_unix): $(PROJ_SRC_DIR)/recls_fileinfo_unix.cpp $(HEADERS_LIB) makefile.unix
++	$(CXXCOMPILE) $(CPPC_ARGS) $(CPPC_INCLUDES) -o $@ $(PROJ_SRC_DIR)/recls_fileinfo_unix.cpp
++$(OBJ_C_recls_util): $(PROJ_SRC_DIR)/recls_util.cpp $(HEADERS_LIB) makefile.unix
++	$(CXXCOMPILE) $(CPPC_ARGS) $(CPPC_INCLUDES) -o $@ $(PROJ_SRC_DIR)/recls_util.cpp
++$(OBJ_C_recls_util_unix): $(PROJ_SRC_DIR)/recls_util_unix.cpp $(HEADERS_LIB) makefile.unix
++	$(CXXCOMPILE) $(CPPC_ARGS) $(CPPC_INCLUDES) -o $@ $(PROJ_SRC_DIR)/recls_util_unix.cpp
++$(OBJ_C_entryinfo): $(PROJ_SRC_DIR)/entryinfo.cpp $(HEADERS_LIB) makefile.unix
++	$(CXXCOMPILE) $(CPPC_ARGS) $(CPPC_INCLUDES) -o $@ $(PROJ_SRC_DIR)/entryinfo.cpp
++$(OBJ_C_ReclsSearch): $(PROJ_SRC_DIR)/ReclsSearch.cpp $(HEADERS_LIB) makefile.unix
++	$(CXXCOMPILE) $(CPPC_ARGS) $(CPPC_INCLUDES) -o $@ $(PROJ_SRC_DIR)/ReclsSearch.cpp
++$(OBJ_C_ReclsFileSearch): $(PROJ_SRC_DIR)/ReclsFileSearch.cpp $(HEADERS_LIB) makefile.unix
++	$(CXXCOMPILE) $(CPPC_ARGS) $(CPPC_INCLUDES) -o $@ $(PROJ_SRC_DIR)/ReclsFileSearch.cpp
++$(OBJ_C_ReclsFileSrchDirNode): $(PROJ_SRC_DIR)/ReclsFileSearchDirectoryNode.cpp $(HEADERS_LIB) makefile.unix
++	$(CXXCOMPILE) $(CPPC_ARGS) $(CPPC_INCLUDES) -o $@ $(PROJ_SRC_DIR)/ReclsFileSearchDirectoryNode.cpp
++
++
++########################################
++# test
++
++########################################
++# examples
++
++# C example client
++
++$(TARGET_EXAMPLE_C_1):	$(OBJ_EXAMPLE_C_1) makefile.unix $(TARGET_LIB)
++	$(LINK) $(LD_ARGS) -o $@ $(OBJ_EXAMPLE_C_1) $(TARGET_LIB) $(3PTY_LIBS)
++
++$(OBJ_EXAMPLE_C_1):	$(SRC_EXAMPLE_C_1) $(HEADERS_LIB) makefile.unix
++	$(COMPILE) $(CC_ARGS) $(CC_INCLUDES) -o $@ $(SRC_EXAMPLE_C_1)
++
++$(TARGET_EXAMPLE_C_2):	$(OBJ_EXAMPLE_C_2) makefile.unix $(TARGET_LIB)
++	$(LINK) $(LD_ARGS) -o $@ $(OBJ_EXAMPLE_C_2) $(TARGET_LIB) $(3PTY_LIBS)
++
++$(OBJ_EXAMPLE_C_2):	$(SRC_EXAMPLE_C_2) $(HEADERS_LIB) makefile.unix
++	$(COMPILE) $(CC_ARGS) $(CC_INCLUDES) -o $@ $(SRC_EXAMPLE_C_2)
++
++$(TARGET_EXAMPLE_C_3):	$(OBJ_EXAMPLE_C_3) makefile.unix $(TARGET_LIB)
++	$(LINK) $(LD_ARGS) -o $@ $(OBJ_EXAMPLE_C_3) $(TARGET_LIB) $(3PTY_LIBS)
++
++$(OBJ_EXAMPLE_C_3):	$(SRC_EXAMPLE_C_3) $(HEADERS_LIB) makefile.unix
++	$(COMPILE) $(CC_ARGS) $(CC_INCLUDES) -o $@ $(SRC_EXAMPLE_C_3)
++
++$(TARGET_EXAMPLE_C_4):	$(OBJ_EXAMPLE_C_4) makefile.unix $(TARGET_LIB)
++	$(LINK) $(LD_ARGS) -o $@ $(OBJ_EXAMPLE_C_4) $(TARGET_LIB) $(3PTY_LIBS)
++
++$(OBJ_EXAMPLE_C_4):	$(SRC_EXAMPLE_C_4) $(HEADERS_LIB) makefile.unix
++	$(COMPILE) $(CC_ARGS) $(CC_INCLUDES) -o $@ $(SRC_EXAMPLE_C_4)
++
++$(TARGET_EXAMPLE_C_5):	$(OBJ_EXAMPLE_C_5) makefile.unix $(TARGET_LIB)
++	$(LINK) $(LD_ARGS) -o $@ $(OBJ_EXAMPLE_C_5) $(TARGET_LIB) $(3PTY_LIBS)
++
++$(OBJ_EXAMPLE_C_5):	$(SRC_EXAMPLE_C_5) $(HEADERS_LIB) makefile.unix
++	$(COMPILE) $(CC_ARGS) $(CC_INCLUDES) -o $@ $(SRC_EXAMPLE_C_5)
++
++$(TARGET_EXAMPLE_C_6):	$(OBJ_EXAMPLE_C_6) makefile.unix $(TARGET_LIB)
++	$(LINK) $(LD_ARGS) -o $@ $(OBJ_EXAMPLE_C_6) $(TARGET_LIB) $(3PTY_LIBS)
++
++$(OBJ_EXAMPLE_C_6):	$(SRC_EXAMPLE_C_6) $(HEADERS_LIB) makefile.unix
++	$(COMPILE) $(CC_ARGS) $(CC_INCLUDES) -o $@ $(SRC_EXAMPLE_C_6)
++
++$(TARGET_EXAMPLE_C_7):	$(OBJ_EXAMPLE_C_7) makefile.unix $(TARGET_LIB)
++	$(LINK) $(LD_ARGS) -o $@ $(OBJ_EXAMPLE_C_7) $(TARGET_LIB) $(3PTY_LIBS)
++
++$(OBJ_EXAMPLE_C_7):	$(SRC_EXAMPLE_C_7) $(HEADERS_LIB) makefile.unix
++	$(COMPILE) $(CC_ARGS) $(CC_INCLUDES) -o $@ $(SRC_EXAMPLE_C_7)
++
++$(TARGET_EXAMPLE_C_8):	$(OBJ_EXAMPLE_C_8) makefile.unix $(TARGET_LIB)
++	$(LINK) $(LD_ARGS) -o $@ $(OBJ_EXAMPLE_C_8) $(TARGET_LIB) $(3PTY_LIBS)
++
++$(OBJ_EXAMPLE_C_8):	$(SRC_EXAMPLE_C_8) $(HEADERS_LIB) makefile.unix
++	$(COMPILE) $(CC_ARGS) $(CC_INCLUDES) -o $@ $(SRC_EXAMPLE_C_8)
++
++# C++ example client
++
++$(TARGET_EXAMPLE_CPP_1):	$(OBJ_EXAMPLE_CPP_1) makefile.unix $(TARGET_LIB)
++	$(CXXLINK) $(LD_ARGS) -o $@ $(OBJ_EXAMPLE_CPP_1) $(TARGET_LIB) $(3PTY_LIBS)
++
++$(OBJ_EXAMPLE_CPP_1):	$(SRC_EXAMPLE_CPP_1) $(HEADERS_LIB) $(HEADERS_MAPPING_CPP) makefile.unix
++	$(CXXCOMPILE) $(CPPC_ARGS) $(CPPC_INCLUDES) -o $@ $(SRC_EXAMPLE_CPP_1)
++
++$(TARGET_EXAMPLE_CPP_2):	$(OBJ_EXAMPLE_CPP_2) makefile.unix $(TARGET_LIB)
++	$(CXXLINK) $(LD_ARGS) -o $@ $(OBJ_EXAMPLE_CPP_2) $(TARGET_LIB) $(3PTY_LIBS)
++
++$(OBJ_EXAMPLE_CPP_2):	$(SRC_EXAMPLE_CPP_2) $(HEADERS_LIB) $(HEADERS_MAPPING_CPP) makefile.unix
++	$(CXXCOMPILE) $(CPPC_ARGS) $(CPPC_INCLUDES) -o $@ $(SRC_EXAMPLE_CPP_2)
++
++$(TARGET_EXAMPLE_CPP_3):	$(OBJ_EXAMPLE_CPP_3) makefile.unix $(TARGET_LIB)
++	$(CXXLINK) $(LD_ARGS) -o $@ $(OBJ_EXAMPLE_CPP_3) $(TARGET_LIB) $(3PTY_LIBS)
++
++$(OBJ_EXAMPLE_CPP_3):	$(SRC_EXAMPLE_CPP_3) $(HEADERS_LIB) $(HEADERS_MAPPING_CPP) makefile.unix
++	$(CXXCOMPILE) $(CPPC_ARGS) $(CPPC_INCLUDES) -o $@ $(SRC_EXAMPLE_CPP_3)
++
++# STL example client
++
++$(TARGET_EXAMPLE_STL_1):	$(OBJ_EXAMPLE_STL_1) makefile.unix $(TARGET_LIB)
++	$(CXXLINK) $(LD_ARGS) -o $@ $(OBJ_EXAMPLE_STL_1) $(TARGET_LIB) $(3PTY_LIBS)
++
++$(OBJ_EXAMPLE_STL_1):	$(SRC_EXAMPLE_STL_1) $(HEADERS_LIB) $(HEADERS_MAPPING_STL) makefile.unix
++	$(CXXCOMPILE) $(CPPC_ARGS) $(CPPC_INCLUDES) -o $@ $(SRC_EXAMPLE_STL_1)
++
++$(TARGET_EXAMPLE_STL_2):	$(OBJ_EXAMPLE_STL_2) makefile.unix $(TARGET_LIB)
++	$(CXXLINK) $(LD_ARGS) -o $@ $(OBJ_EXAMPLE_STL_2) $(TARGET_LIB) $(3PTY_LIBS)
++
++$(OBJ_EXAMPLE_STL_2):	$(SRC_EXAMPLE_STL_2) $(HEADERS_LIB) $(HEADERS_MAPPING_STL) makefile.unix
++	$(CXXCOMPILE) $(CPPC_ARGS) $(CPPC_INCLUDES) -o $@ $(SRC_EXAMPLE_STL_2)
++
++########################################
++# samples
++
++# C sample client
++
++$(TARGET_SAMPLE_C_1):	$(OBJ_SAMPLE_C_1) makefile.unix $(TARGET_LIB)
++	$(LINK) $(LD_ARGS) -o $@ $(OBJ_SAMPLE_C_1) $(TARGET_LIB) $(3PTY_LIBS)
++
++$(OBJ_SAMPLE_C_1):	$(SRC_SAMPLE_C_1) $(HEADERS_LIB) makefile.unix
++	$(COMPILE) $(CC_ARGS) $(CC_INCLUDES) -o $@ $(SRC_SAMPLE_C_1)
++
++$(TARGET_SAMPLE_C_2):	$(OBJ_SAMPLE_C_2) makefile.unix $(TARGET_LIB)
++	$(LINK) $(LD_ARGS) -o $@ $(OBJ_SAMPLE_C_2) $(TARGET_LIB) $(3PTY_LIBS)
++
++$(OBJ_SAMPLE_C_2):	$(SRC_SAMPLE_C_2) $(HEADERS_LIB) makefile.unix
++	$(COMPILE) $(CC_ARGS) $(CC_INCLUDES) -o $@ $(SRC_SAMPLE_C_2)
++
++################################################################################
++%.lo: %.c $(HEADERS_LIB) makefile.unix
++	$(COMPILE) $(CC_ARGS) $(CC_INCLUDES) -o $@ $<
++
++################################################################################

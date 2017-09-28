@@ -1,0 +1,35 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: XML and HTML processing tools.
+#  These are tools for converting XML and HTML to and from a line-oriented
+#  format designed to facilitate processing by classic Unix pipeline
+#  processing tools (grep, sed, awk, cut, sh, etc).
+# URL: http://ofb.net/~egnor/xml2/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=xml2
+version=0.4
+release=1
+source=(http://download.ofb.net/gale/xml2-$version.tar.gz)
+
+build()
+{
+  cd xml2-$version
+
+  ./configure \
+      --build="$build" \
+      --host="$host" \
+      --prefix="$prefix" \
+      --disable-dependency-tracking
+
+  make
+  make DESTDIR="$PKG" install
+
+  cd $ROOT/bin
+
+  rm -f 2html html2
+
+  ln -s 2xml 2html
+  ln -s xml2 html2
+}

@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: The Packware Project has been founded to support Slackware Linux
+# users. The flag product is pwbuilder, a tool to easily create software
+# packages for Slackware. We also provide a big set of build scripts for
+# pwbuilder, as well as ready-to-use packages.
+# URL: http://developer.berlios.de/projects/packware/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=pwutils
+version=0.7
+release=1
+source=(http://download.berlios.de/packware/pwutils-$version.tar.bz2)
+
+build()
+{
+  cd pwutils
+
+  make
+
+  install -d $ROOT/bin
+
+  install -m 755 clearpath $ROOT/bin
+  install -m 755 desc $ROOT/bin
+  install -m 755 getsfmirror $ROOT/bin
+  install -m 755 sltd $ROOT/bin
+  install -m 755 sltm $ROOT/bin
+  install -m 755 spn $ROOT/bin
+  install -m 755 tod $ROOT/bin
+}

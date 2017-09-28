@@ -1,0 +1,26 @@
+diff -r -u -- libowfat-0.25_orig/Makefile libowfat-0.25/Makefile
+--- libowfat-0.25_orig/Makefile	2007-06-21 17:58:37.000000000 +0000
++++ libowfat-0.25/Makefile	2007-06-21 17:59:18.000000000 +0000
+@@ -726,7 +726,7 @@
+ iob_send.o scan_ip6if.o: havealloca.h
+ 
+ dep: haveip6.h haven2i.h havesl.h haveinline.h iopause.h select.h haveepoll.h havekqueue.h havedevpoll.h havescope.h havesigio.h havebsdsf.h havesendfile.h
+-	gcc -I. -MM `ls */*.c | grep -v test` t.c | sed -e 's@ \./@ @g' > dep
++	$(CC) -I. -MM `ls */*.c | grep -v test` t.c | sed -e 's@ \./@ @g' > dep
+ 
+ libdep:
+ 	for i in $(LIBS); do (echo -n $$i|tr a-z A-Z|sed 's/.A$$/_OBJS=/'; echo $${i%.a}/*.c|sed -e 's@[^/]*/\([^.]*\)\.c@\1.o @g'); done > libdep
+diff -r -u -- libowfat-0.25_orig/io/io_socketpair.c libowfat-0.25/io/io_socketpair.c
+--- libowfat-0.25_orig/io/io_socketpair.c	2007-06-21 17:58:37.000000000 +0000
++++ libowfat-0.25/io/io_socketpair.c	2007-06-21 17:58:50.000000000 +0000
+@@ -12,7 +12,9 @@
+   int fds[2];
+   __winsock_init();
+   if (socketpair(AF_UNIX,SOCK_STREAM,0,fds)==-1)
++#ifdef AF_INET6
+     if (socketpair(AF_INET6,SOCK_STREAM,IPPROTO_TCP,fds)==-1)
++#endif
+       if (socketpair(AF_INET,SOCK_STREAM,IPPROTO_TCP,fds)==-1)
+ 	return 0;
+   if (io_fd(fds[1]) && io_fd(fds[0])) {
+Only in libowfat-0.25: libsocket

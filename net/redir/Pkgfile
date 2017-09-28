@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: TCP Port redirector (for firewalls etc)
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=redir
+version=2.2.1
+release=1
+source=(http://www.sfr-fresh.com/cgi-bin/warex?linux/misc/redir-$version.tar.bz2)
+
+build()
+{
+  cd redir-$version
+
+  make \
+      CC="${CC-cc}" \
+      CFLAGS="$CFLAGS \$(STR_CFLAGS) \$(WRAP_CFLAGS) \$(EXTRA_CFLAGS)" \
+      LDFLAGS="$LDFLAGS"
+
+  install -d $ROOT/bin
+  install -m 755 redir $ROOT/bin
+
+  install -d $ROOT/share/man/man1
+  install -m 644 redir.man $ROOT/share/man/man1/redir.1
+
+  install -d $ROOT/share/doc/redir-$version
+  install -m 644 [A-Z]*[A-Z]* *.txt $ROOT/share/doc/redir-$version
+
+  cp -rf contrib $ROOT/share/doc/redir-$version
+}

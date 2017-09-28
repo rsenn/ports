@@ -1,0 +1,30 @@
+args: -r -u -N -- mod_mp3-1.2_orig/Makefile.am mod_mp3-1.2/Makefile.am
+--- mod_mp3-1.2_orig/Makefile.am	2008-11-20 10:43:23.000000000 +0000
++++ mod_mp3-1.2/Makefile.am	2008-11-20 10:54:15.000000000 +0000
+@@ -13,26 +13,6 @@
+ 	$(APXS) -i -n 'mp3' src/.libs/libmod_mp3.so
+ 	@echo "+--------------------------------------------------------+"; \
+ 	echo "| All done.                                              |" ; \
+-	if [ -d $(APXS_CONFDIR).d ]; then\
+-	  if [ -f $(APXS_CONFDIR).d/mp3.conf ]; then\
+-		  echo "| Preserving old mp3.conf                                |"; \
+-		  $(CP) support/mp3.conf $(APXS_CONFDIR).d/mp3.conf.default; \
+-	  else \ 
+-		  echo "| Installing mp3.conf into $(APXS_CONFDIR).d/            |"; \
+-		  $(CP) support/mp3.conf $(APXS_CONFDIR).d/mp3.conf; \
+-	  fi \
+-	else \ 
+-	  if [ -f $(APXS_CONFDIR)/mp3.conf ]; then \
+-		  echo "| Preserving old mp3.conf                                |"; \
+-		  $(CP) support/mp3.conf $(APXS_CONFDIR)/mp3.conf.default; \
+-	  else \
+-		  echo "| You will need to add the following to your httpd.conf            |"; \
+-		  echo "| Include $(APXS_CONFDIR)/mp3.conf                               |"; \
+-		  echo "| It would probably be a good idea to open it up and make sure     |"; \
+-		  echo "| that it is right.                                                |"; \
+-		  $(CP) support/mp3.conf $(APXS_CONFDIR)/mp3.conf; \
+-	  fi \
+-	fi; \
+ 	echo "|                                                        |"; \
+ 	echo "| Thanks for installing mod_mp3.                         |"; \
+ 	echo "|    -Brian                                              |"; \

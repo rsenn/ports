@@ -1,0 +1,209 @@
+args: -r -u -N -- glib-2.17.6_orig glib-2.17.6
+diff -r -u -N -- glib-2.17.6_orig/configure.in glib-2.17.6/configure.in
+--- glib-2.17.6_orig/configure.in	2008-08-06 12:25:20.000000000 +0200
++++ glib-2.17.6/configure.in	2008-08-06 12:25:21.000000000 +0200
+@@ -574,7 +574,12 @@
+ AC_CHECK_SIZEOF(long long)
+ AC_CHECK_SIZEOF(__int64)
+ 
+-if test x$ac_cv_sizeof_long = x8 || test x$ac_cv_sizeof_long_long = x8 || test x$ac_cv_sizeof___int64 = x8 ; then
++case $host in 
++  *-mingw32*)
++  ;;
++  *)
++
++if test "$ac_cv_sizeof_long" = 8 || test "$ac_cv_sizeof_long_long" = 8 || test "$ac_cv_sizeof___int64" = 8 ; then
+   :
+ else
+   AC_MSG_ERROR([
+@@ -582,6 +587,8 @@
+ *** using the GNU C compiler.
+ ])
+ fi
++  ;;
++esac
+ 
+ if test x$glib_native_win32 != xyes && test x$ac_cv_sizeof_long_long = x8; then
+ 	# long long is a 64 bit integer.
+@@ -655,6 +662,9 @@
+ dnl
+ dnl check in which direction the stack grows
+ dnl
++case $host in
++  i[3456]86-* | *-mingw32*) glib_cv_stack_grows=yes ;;
++  *)
+ AC_CACHE_CHECK([for growing stack pointer],glib_cv_stack_grows,[
+         AC_TRY_RUN([
+ 	volatile int *a = 0, *b = 0;
+@@ -667,6 +677,8 @@
+ 	glib_cv_stack_grows=yes
+         ,)
+ ])
++  ;;
++esac
+ 
+ dnl AC_C_INLINE is useless to us since it bails out too early, we need to
+ dnl truely know which ones of `inline', `__inline' and `__inline__' are
+@@ -2621,8 +2633,12 @@
+ dnl this section will only be run if config.status is invoked with no
+ dnl arguments, or with "glibconfig.h" as an argument.
+ AC_CONFIG_COMMANDS([glibconfig.h],
+-[
+-	outfile=glibconfig.h-tmp
++[outfile=glibconfig.h-tmp
++case $host in
++  *-mingw32*)
++    cp -v $srcdir/glibconfig.h.win32 $outfile
++  ;;
++  *)
+ 	cat > $outfile <<\_______EOF
+ /* glibconfig.h
+  *
+@@ -2960,7 +2976,8 @@
+ 
+ #endif /* GLIBCONFIG_H */
+ _______EOF
+-
++;;
++esac
+ 
+ 	if cmp -s $outfile glibconfig.h; then
+ 	  AC_MSG_NOTICE([glibconfig.h is unchanged])
+@@ -3373,3 +3390,11 @@
+ fi
+ 
+ AC_OUTPUT
++
++
++case $host in
++  *-mingw32*)
++    cp -v $srcdir/config.h.win32 config.h
++    cp -v $srcdir/glibconfig.h.win32 glibconfig.h
++    ;;
++esac
+diff -r -u -N -- glib-2.17.6_orig/configure.in~ glib-2.17.6/configure.in~
+diff -r -u -N -- glib-2.17.6_orig/glib/Makefile.am glib-2.17.6/glib/Makefile.am
+--- glib-2.17.6_orig/glib/Makefile.am	2008-08-06 12:25:20.000000000 +0200
++++ glib-2.17.6/glib/Makefile.am	2008-08-06 12:27:37.000000000 +0200
+@@ -19,7 +19,7 @@
+ gregex_h =
+ endif
+ 
+-SUBDIRS = libcharset $(PRINTF_SUBDIR) $(MAYBE_PCRE) update-pcre . tests
++SUBDIRS = libcharset $(PRINTF_SUBDIR) $(MAYBE_PCRE) update-pcre . #tests
+ 
+ DIST_SUBDIRS = libcharset gnulib pcre update-pcre tests
+ 
+@@ -81,14 +81,14 @@
+ 
+ lib_LTLIBRARIES = libglib-2.0.la
+ 
+-if OS_WIN32_AND_DLL_COMPILATION
+-if MS_LIB_AVAILABLE
+-noinst_DATA = glib-2.0.lib
+-
+-install_ms_lib_cmd = $(INSTALL) glib-2.0.lib $(DESTDIR)$(libdir)
+-uninstall_ms_lib_cmd = -rm $(DESTDIR)$(libdir)/glib-2.0.lib
+-endif
+-endif
++#if OS_WIN32_AND_DLL_COMPILATION
++#if MS_LIB_AVAILABLE
++#noinst_DATA = glib-2.0.lib
++#
++#install_ms_lib_cmd = $(INSTALL) glib-2.0.lib $(DESTDIR)$(libdir)
++#uninstall_ms_lib_cmd = -rm $(DESTDIR)$(libdir)/glib-2.0.lib
++#endif
++#endif
+ 
+ install-ms-lib:
+ 	$(install_ms_lib_cmd)
+@@ -352,8 +352,8 @@
+ 
+ endif
+ 
+-glib-2.0.lib: libglib-2.0.la glib.def
+-	lib -machine:@LIB_EXE_MACHINE_FLAG@ -name:libglib-2.0-$(LT_CURRENT_MINUS_AGE).dll -def:glib.def -out:$@
++#glib-2.0.lib: libglib-2.0.la glib.def
++#	lib -machine:@LIB_EXE_MACHINE_FLAG@ -name:libglib-2.0-$(LT_CURRENT_MINUS_AGE).dll -def:glib.def -out:$@
+ 
+ dist-hook: $(BUILT_EXTRA_DIST)
+ 	files='$(BUILT_EXTRA_DIST)'; \
+diff -r -u -N -- glib-2.17.6_orig/glib/gmessages.c~ glib-2.17.6/glib/gmessages.c~
+diff -r -u -N -- glib-2.17.6_orig/gmodule/Makefile.am glib-2.17.6/gmodule/Makefile.am
+--- glib-2.17.6_orig/gmodule/Makefile.am	2008-08-06 12:25:20.000000000 +0200
++++ glib-2.17.6/gmodule/Makefile.am	2008-08-06 12:25:21.000000000 +0200
+@@ -43,14 +43,14 @@
+ 
+ lib_LTLIBRARIES = libgmodule-2.0.la
+ 
+-if OS_WIN32_AND_DLL_COMPILATION
+-if MS_LIB_AVAILABLE
+-noinst_DATA = gmodule-2.0.lib
+-
+-install_ms_lib_cmd = $(INSTALL) gmodule-2.0.lib $(DESTDIR)$(libdir)
+-uninstall_ms_lib_cmd = -rm $(DESTDIR)$(libdir)/gmodule-2.0.lib
+-endif
+-endif
++#if OS_WIN32_AND_DLL_COMPILATION
++#if MS_LIB_AVAILABLE
++#noinst_DATA = gmodule-2.0.lib
++#
++#install_ms_lib_cmd = $(INSTALL) gmodule-2.0.lib $(DESTDIR)$(libdir)
++#uninstall_ms_lib_cmd = -rm $(DESTDIR)$(libdir)/gmodule-2.0.lib
++#endif
++#endif
+ 
+ install-ms-lib:
+ 	$(install_ms_lib_cmd)
+diff -r -u -N -- glib-2.17.6_orig/gobject/Makefile.am glib-2.17.6/gobject/Makefile.am
+--- glib-2.17.6_orig/gobject/Makefile.am	2008-08-06 12:25:19.000000000 +0200
++++ glib-2.17.6/gobject/Makefile.am	2008-08-06 12:25:21.000000000 +0200
+@@ -36,14 +36,14 @@
+ # libraries to compile and install
+ lib_LTLIBRARIES = libgobject-2.0.la
+ 
+-if OS_WIN32_AND_DLL_COMPILATION
+-if MS_LIB_AVAILABLE
+-noinst_DATA = gobject-2.0.lib
+-
+-install_ms_lib_cmd = $(INSTALL) gobject-2.0.lib $(DESTDIR)$(libdir)
+-uninstall_ms_lib_cmd = -rm $(DESTDIR)$(libdir)/gobject-2.0.lib
+-endif
+-endif
++#if OS_WIN32_AND_DLL_COMPILATION
++#if MS_LIB_AVAILABLE
++#noinst_DATA = gobject-2.0.lib
++#
++#install_ms_lib_cmd = $(INSTALL) gobject-2.0.lib $(DESTDIR)$(libdir)
++#uninstall_ms_lib_cmd = -rm $(DESTDIR)$(libdir)/gobject-2.0.lib
++#endif
++#endif
+ 
+ install-ms-lib:
+ 	$(install_ms_lib_cmd)
+diff -r -u -N -- glib-2.17.6_orig/gthread/Makefile.am glib-2.17.6/gthread/Makefile.am
+--- glib-2.17.6_orig/gthread/Makefile.am	2008-08-06 12:25:19.000000000 +0200
++++ glib-2.17.6/gthread/Makefile.am	2008-08-06 12:25:21.000000000 +0200
+@@ -28,14 +28,14 @@
+ 
+ lib_LTLIBRARIES = libgthread-2.0.la
+ 
+-if OS_WIN32_AND_DLL_COMPILATION
+-if MS_LIB_AVAILABLE
+-noinst_DATA = gthread-2.0.lib
+-
+-install_ms_lib_cmd = $(INSTALL) gthread-2.0.lib $(DESTDIR)$(libdir)
+-uninstall_ms_lib_cmd = -rm $(DESTDIR)$(libdir)/gthread-2.0.lib
+-endif
+-endif
++#if OS_WIN32_AND_DLL_COMPILATION
++#if MS_LIB_AVAILABLE
++#noinst_DATA = gthread-2.0.lib
++#
++#install_ms_lib_cmd = $(INSTALL) gthread-2.0.lib $(DESTDIR)$(libdir)
++#uninstall_ms_lib_cmd = -rm $(DESTDIR)$(libdir)/gthread-2.0.lib
++#endif
++#endif
+ 
+ install-ms-lib:
+ 	$(install_ms_lib_cmd)

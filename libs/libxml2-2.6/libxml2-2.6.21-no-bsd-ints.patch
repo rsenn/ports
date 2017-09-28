@@ -1,0 +1,22 @@
+--- libxml2-2.6.31_orig/nanoftp.c	2008-06-09 22:02:42.000000000 +0200
++++ libxml2-2.6.31/nanoftp.c	2008-06-09 22:03:02.000000000 +0200
+@@ -946,7 +946,7 @@
+ 	((struct sockaddr_in *)&ctxt->ftpAddr)->sin_family = AF_INET;
+ 	memcpy (&((struct sockaddr_in *)&ctxt->ftpAddr)->sin_addr,
+ 		hp->h_addr_list[0], hp->h_length);
+-	((struct sockaddr_in *)&ctxt->ftpAddr)->sin_port = (u_short)htons ((unsigned short)port);
++	((struct sockaddr_in *)&ctxt->ftpAddr)->sin_port = (unsigned short)htons ((unsigned short)port);
+ 	ctxt->controlFd = socket (AF_INET, SOCK_STREAM, 0);
+ 	addrlen = sizeof (struct sockaddr_in);
+     }
+--- libxml2-2.6.31_orig/nanohttp.c	2008-06-09 22:02:43.000000000 +0200
++++ libxml2-2.6.31/nanohttp.c	2008-06-09 22:03:02.000000000 +0200
+@@ -1098,7 +1098,7 @@
+ 		memcpy (&ia, h->h_addr_list[i], h->h_length);
+ 		sockin.sin_family = h->h_addrtype;
+ 		sockin.sin_addr = ia;
+-		sockin.sin_port = (u_short)htons ((unsigned short)port);
++		sockin.sin_port = (unsigned short)htons ((unsigned short)port);
+ 		addr = (struct sockaddr *) &sockin;
+ #ifdef SUPPORT_IP6
+ 	    } else if (have_ipv6 () && (h->h_addrtype == AF_INET6)) {

@@ -1,0 +1,31 @@
+# $Id: Pkgfile 514 2008-09-06 04:39:51Z enki $
+#
+# Description: eject removable media
+#  Eject is a program for ejecting removable media under software control. It
+#  can also control the auto-eject feature of some drives and can be used
+#  to switch CDs on an IDE/ATAPI CD changer.
+# URL: http://www.pobox.com/~tranter/eject.html
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=eject
+version=2.1.5
+release=1
+source=($mirror_gentoo/eject-$version.tar.gz)
+
+build() 
+{
+  cd eject
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix" \
+       --mandir="$prefix/share/man"
+       
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/eject
+  install -m 644 NEWS TODO README PROBLEMS AUTHORS INSTALL PORTING ChangeLog COPYING $ROOT/share/doc/eject
+}

@@ -1,0 +1,35 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A Server-side JavaScript framework.
+#  JSEXT is a JavaScript framework for server scripts, Web servers, and Web
+#  clients. It is based on Mozilla's interpreter and seamlessly integrates C
+#  libraries with JavaScript code. It provides support for FastCGI, MySQL,
+#  SQLite, FTP, SMTP, HTTP, and more. Code can be run on the server, in a
+#  Web browser, or both, in which case JSEXT automatically passes arguments
+#  and return values between server and client with JSON encoding. It also
+#  supports WSDL import/export for server-to-server applications.
+#  .
+# URL: http://jsext.net/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=jsext
+version=1.1
+release=1
+source=($mirror_sf/jsext/jsext-$version.tar.gz)
+
+build()
+{
+  cd jsext-$version
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

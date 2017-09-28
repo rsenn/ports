@@ -1,0 +1,45 @@
+# $Id: Pkgfile,v 1.3 2006/05/29 10:07:47 root Exp $
+#
+# Description: an XSL processor fully implemented in C++
+#  Sablotron is a fast, compact and portable XML toolkit implementing XSLT
+#  1.0, DOM Level2 and XPath 1.0.
+#  The goal of this project is to create a reliable and fast XSLT processor
+#  conforming to the W3C specification, which is available for public and
+#  can be used as a base for multiplatform XML data distribution systems.
+#  This package includes Sablotron runtime libraries, which are needed for
+#  Sablotron binaries to work.
+# URL: 
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=sablot
+version=1.0.3
+release=1
+source=(http://download-1.gingerall.cz/download/sablot/Sablot-${version}.tar.gz)
+
+build()
+{
+  cd ${srcdir=Sablot-$version}
+
+#  LIBS="-lreadline -lhistory" \
+
+  SABLOT_GPL="yes" \
+  ./configure \
+      --prefix="$prefix" \
+      --disable-static \
+      --enable-warnings \
+      --enable-javascript \
+      --enable-js-threads \
+      --enable-perlconnect \
+      --enable-debugger \
+      --with-js \
+      --with-js-prefix="$prefix" \
+      --with-expat \
+      --with-expat-prefix="$prefix" \
+      --with-iconv \
+      --with-iconv-prefix="$prefix" \
+      --with-readline
+
+  make
+  make DESTDIR="$PKG" install
+}

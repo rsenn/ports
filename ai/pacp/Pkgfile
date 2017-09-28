@@ -1,0 +1,36 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A machine learning program for pattern classification.
+# PCP (Pattern Classification Program) is a machine learning program for
+# supervised classification of patterns. It runs in interactive and batch
+# modes, and implements the following machine learning algorithms and
+# methods: k-means clustering, Fisher's linear discriminant, dimension
+# reduction using Singular Value Decomposition, Principal Component
+# Analysis, feature subset selection, Bayes error estimation, parametric
+# classifiers (linear and quadratic), pseudo-inverse linear discriminant,
+# k-Nearest Neighbor method, neural networks, Support Vector Machine
+# algorithm (SVM), model selection for SVM, cross-validation, and bagging
+# (committee) classification.
+#
+# URL: http://pcp.sourceforge.net
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=pacp
+version=2.2
+release=1
+source=($mirror_sf/pcp/pcp-$version.tar.gz)
+
+build()
+{
+  cd pcp-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

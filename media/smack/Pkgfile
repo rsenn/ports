@@ -1,0 +1,31 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Drum Synth.
+#  Smack is a drum synth, 100% sample free. It emulate both TR808 and TR909
+#  drums and has a bunch of random drums of its own. It also has original
+#  conga drums, noise based random percussion and some other goodies. It's
+#  built with ladspa plugins and Om.
+# URL: http://smack.berlios.de/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=smack
+version=0.3
+release=1
+source=(http://download.berlios.de/smack/smack-$version.tar.gz)
+
+build()
+{
+  cd smack-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/smack
+  install -m 644 NEWS TODO README THANKS AUTHORS INSTALL ChangeLog COPYING $ROOT/share/doc/smack
+}

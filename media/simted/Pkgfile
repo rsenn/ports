@@ -1,0 +1,38 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:50 roman Exp $
+#
+# Description: Simulation of complex electrical, mechanical, thermodynamical and mixed-typed systems. 
+#  Simted is a fast growing C++ library which provides many features
+#  for simulation of complex electrical, mechanical, thermodynamical,
+#  and mixed-typed systems. There are three analysis modes implemented at
+#  the moment: time domain (time response), frequency domain (frequency
+#  response), and steady-state analysis.
+# URL: http://www.simted.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=simted
+version=004_20051011
+release=1
+source=(http://ows.linux.tucows.com/files/simted$version.tgz
+        simted-004.20051011-fixes.patch)
+
+build()
+{
+  cd v${version%%_*}release
+
+  patch -p1 -i $SRC/simted-004.20051011-fixes.patch
+
+  TCL_INCLUDEDIR=`ls -d /usr/include/tcl[0-9]*/`
+
+  make TCL_INCLUDE="-I${TCL_INCLUDEDIR}"
+
+  install -d $ROOT/lib
+  install -m 755 lib/* $ROOT/lib
+
+  install -d $ROOT/share/simted
+  cp -r examples $ROOT/share/simted
+
+  install -d $ROOT/share/doc/simted
+  cp -r doc/html $ROOT/share/doc/simted
+}
+

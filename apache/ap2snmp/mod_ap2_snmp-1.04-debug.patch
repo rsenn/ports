@@ -1,0 +1,181 @@
+--- mod_ap2_snmp_1.04_orig/mod_ap2_snmp.c	2007-01-23 17:28:20.000000000 +0100
++++ mod_ap2_snmp_1.04/mod_ap2_snmp.c	2007-01-23 17:27:46.000000000 +0100
+@@ -37,8 +37,8 @@
+ #define DEFAULT_TIME_FORMAT "%A, %d-%b-%Y %H:%M:%S %Z"
+ #endif
+ 
+-//#define MOD_SNMP_DEBUG(message) ap_log_error(APLOG_MARK, APLOG_DEBUG, APR_SUCCESS, NULL, message);
+-#define MOD_SNMP_DEBUG(message...) ap_log_error(APLOG_MARK, APLOG_DEBUG, APR_SUCCESS, NULL, message);
++#define MOD_SNMP_DEBUG(message...) 
++// #define MOD_SNMP_DEBUG(message...) ap_log_error(APLOG_MARK, APLOG_DEBUG, APR_SUCCESS, NULL, message);
+ #define MOD_SNMP_ERROR(message...) ap_log_error(APLOG_MARK, APLOG_ERR, APR_SUCCESS, NULL, message);
+ #define MOD_SNMP_NOTICE(message...) ap_log_error(APLOG_MARK, APLOG_NOTICE, APR_SUCCESS, NULL, message);
+ 
+@@ -86,6 +86,8 @@
+     netsnmp_variable_list *vars;
+     int             status;
+ 
++    MOD_SNMP_DEBUG("AP2_SNMP: set(%s, %i, %s)", object, type, value);
++  
+     init_snmp("snmpapp");
+     snmp_sess_init(&session);
+ 
+@@ -145,11 +147,10 @@
+     /* ERROR */
+     if (!ss) {
+           MOD_SNMP_ERROR("AP2_SNMP: cannot connect with SNMP agent %s", agent_address);
++        SOCK_CLEANUP;
+         return 1;
+     }
+ 
+-    if (ss == NULL)  SOCK_CLEANUP;
+-
+     pdu = snmp_pdu_create(SNMP_MSG_SET);
+     name_length = MAX_OID_LEN;
+     if (snmp_parse_oid(object, name, &name_length) == NULL)
+@@ -172,7 +173,9 @@
+ 
+     if (response) 
+     {
++      if(response->errstat && !errstat)
+       errstat = response->errstat;
++
+       snmp_free_pdu(response);
+     }
+ 
+@@ -198,7 +201,10 @@
+ static const char* set_agent_address(cmd_parms *cmd, void *dummy, const char* arg)
+ {
+ 	if (strlen(arg)<=LEN_BUFFER)
++  {
+ 		strcpy(agent_address,arg);
++    MOD_SNMP_NOTICE("AP2_SNMP: Agent is at %s:161", arg);
++  }
+ 	else
+ 	{	MOD_SNMP_ERROR("AP2_SNMP: Invalid snmp_agent_address %s", arg);
+ 	}
+@@ -212,7 +218,10 @@
+ static const char* set_community(cmd_parms *cmd, void *dummy, const char* arg)
+ {
+ 	if (strlen(arg)<=LEN_BUFFER)
++  {
+ 		strcpy(ap_snmp_community,arg);
++    MOD_SNMP_NOTICE("AP2_SNMP: Community %s", arg);
++  }
+ 	else
+ 	{	MOD_SNMP_ERROR("AP2_SNMP: Invalid snmp_community %s", arg);
+ 	}
+@@ -225,10 +234,14 @@
+ */
+ static const char* set_tmp_dir(cmd_parms *cmd, void *dummy, const char* arg)
+ {
+-	if (strlen(arg)<=LEN_BUFFER)
++  size_t n = strlen(arg);
++	if (n+sizeof(TMP_FILENAME)<=LEN_BUFFER)
+ 	{
+ 		strcpy(tmp_dir,arg);
+-		strcat(tmp_dir,TMP_FILENAME);
++    if(n && tmp_dir[n - 1] != '/') tmp_dir[n++] = '/';
++    strcpy(tmp_dir+n,TMP_FILENAME);
++
++    MOD_SNMP_NOTICE("AP2_SNMP: Temporary exchange file %s", tmp_dir);
+ 
+ 		// 12/12/2004 - it was moved to *ap2_snmp_pre_mpm* function
+ 		//snmp_set("APACHE2-MIB::serverTmpDir.0",'s',tmp_dir);
+@@ -262,7 +275,9 @@
+ 		 break;
+ 		default:
+ 		MOD_SNMP_ERROR("AP2_SNMP: Invalid SNMP version ")
++    return NULL;
+ 	}
++  MOD_SNMP_NOTICE("AP2_SNMP: Protocol version %i", atoi(arg));
+ 	return NULL;
+ }
+ 
+@@ -296,7 +311,7 @@
+ 		strcat(agentHttpAddress,":");
+ 		strcat(agentHttpAddress,port);
+ 
+-		MOD_SNMP_NOTICE("AP2_SNMP: agentHttpAddress set to %s", agentHttpAddress);
++		MOD_SNMP_NOTICE("AP2_SNMP: Agent connects to %s", agentHttpAddress);
+ 
+ 		// 12/12/2004 - it was moved to *ap2_snmp_pre_mpm* function
+ 		/*snmp_set("APACHE2-MIB::agentHttpAddress.0",'s',tmp_buffer);*/
+@@ -344,6 +359,8 @@
+ 		strcpy(agentHttpAddress,DEFAULT_AGENT_HTTP_SERVER);
+ 	}
+ 
++  MOD_SNMP_DEBUG("AP2_SNMP: Pre MPM initialisation, %s, %s", tmp_dir, agentHttpAddress);
++  
+ 	/* remove old tmp file */
+ 	MOD_SNMP_DEBUG("AP2_SNMP: deleting old ap2_snmp %s", tmp_dir); //for debugging
+ 	unlink(tmp_dir);
+@@ -354,9 +371,9 @@
+ 	snmp_set("APACHE2-MIB::serverTmpDir.0",'s',tmp_dir);
+ 	snmp_set("APACHE2-MIB::agentHttpAddress.0",'s',agentHttpAddress);
+ 	snmp_set("APACHE2-MIB::serverStatus.0",'i',"3");
+-	snmp_set("APACHE2-MIB::serverVersion.0",'s',ap_get_server_version());
+-	snmp_set("APACHE2-MIB::serverBuilt.0",'s',ap_get_server_built());
+-	snmp_set("APACHE2-MIB::serverRoot.0",'s',ap_server_root);
++	snmp_set("APACHE2-MIB::serverVersion.0",'s',(char *)ap_get_server_version());
++	snmp_set("APACHE2-MIB::serverBuilt.0",'s',(char *)ap_get_server_built());
++	snmp_set("APACHE2-MIB::serverRoot.0",'s',(char *)ap_server_root);
+ 	pidfile_name = ap_server_root_relative(p,ap_pid_fname);
+ 	snmp_set("APACHE2-MIB::serverPidfile.0",'s',pidfile_name);
+     	snmp_set("APACHE2-MIB::serverRestart.0",'s',ap_ht_time(p,ap_scoreboard_image->global->restart_time,DEFAULT_TIME_FORMAT, 0));
+@@ -498,14 +515,21 @@
+ char file_temp[LEN_BUFFER+20];
+ FILE *fp;		// file handler for interchange file (snmp agent <--> apache module)
+ 
+-
+-    if (strcmp(r->handler, STATUS_MAGIC_TYPE) &&
+-        strcmp(r->handler, "ap2_snmp")) {
++    if (strcmp(r->handler, STATUS_MAGIC_TYPE) && strcmp(r->handler, "ap2_snmp")) {
++      MOD_SNMP_DEBUG("AP2_SNMP: Request from %s:%i to %s:%i declined (%s): %s",
++                     r->connection->remote_ip, (int)r->connection->remote_addr->port, 
++                     r->connection->local_ip, (int)r->connection->local_addr->port, 
++                     r->handler, r->the_request);
+         return DECLINED;
+     }
+ 
++  MOD_SNMP_DEBUG("AP2_SNMP: Request from %s:%i to %s:%i%s",
++                 r->connection->remote_ip, (int)r->connection->remote_addr->port, 
++                 r->connection->local_ip, (int)r->connection->local_addr->port,
++                 r->uri);
++
+  //ap_log_error(APLOG_MARK,APLOG_DEBUG,0,r->server,"SNMP MODULE - ap2_handler (uri) %s",r->uri ) ;
+- MOD_SNMP_DEBUG("AP2_SNMP: hook - ap2_handler (init)");
++ //MOD_SNMP_DEBUG("AP2_SNMP: hook - ap2_handler (init)");
+ 
+  // HTTP response
+  strcpy(temporal,"OK");
+@@ -514,6 +538,7 @@
+  // if we are checking only status --> don´t write interchange file
+  if (!strcmp(r->uri,"/ap2_snmp/status"))
+   {
++//    MOD_SNMP_NOTICE("AP2_SNMP: Only checking status.");
+   	MOD_SNMP_DEBUG("AP2_SNMP: hook - ap2_handler (end)");
+   	return 0;
+   }
+@@ -530,6 +555,11 @@
+  // view process and threas to get KB and access count
+     for (i = 0; i < server_limit; ++i) {
+         ps_record = ap_get_scoreboard_process(i);
++      
++      if(ps_record->pid) {
++          MOD_SNMP_DEBUG("AP2_SNMP: Scoreboard process #%i PID=%i GENERATION=%i.", i, ps_record->pid, ps_record->generation);
++      }
++
+         for (j = 0; j < thread_limit; ++j) {
+             int indx = (i * thread_limit) + j;
+ 
+@@ -553,6 +583,9 @@
+ 
+                if (lres != 0 || (res != SERVER_READY && res != SERVER_DEAD)) {
+ 
++               MOD_SNMP_DEBUG("AP2_SNMP: Worker [%i] on vhost %s { access_count: %i, bytes_served: %i, my_access_count: %i, my_bytes_served: %i, conn_bytes: %i, conn_count: %i }", 
++                              ws_record->pid, ws_record->vhost, ws_record->access_count, ws_record->bytes_served, ws_record->my_access_count, ws_record->my_bytes_served, ws_record->conn_bytes, ws_record->conn_count);          
++          
+                     count += lres;
+                     bcount += bytes;
+ 

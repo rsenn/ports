@@ -1,0 +1,32 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A minimal http/ftp download tool for boot disks
+# fget supports downloading a single URL (the first argument on the command
+# line) from an FTP or HTTP server. The URL may contain username and
+# password (like in http://bob:secret@download.com/file.tar.gz). fget
+# supports IPv4 and IPv6 (the IPv6 URL format for IP numbers is
+# http://[::1]:80/file.tar.gz) transport. You can set the INTERFACE
+# environment variable to the name of the network interface ("eth0")
+# to use IPv6 link-local addresses. Files are always written to stdout.
+#
+# URL:
+# Maintainer: Roman Senn <roman.l.senn@gmail.com>
+# Depends on:
+
+name=fget
+category=net
+version=0.4.1.tar.bz2
+release=1
+source=(http://www.fefe.de/fget/fget-$version)
+
+build()
+{
+  cd fget
+
+  echo "${CC-cc} $CFLAGS -include errno.h" >conf-cc
+  echo "${CC-cc} $CFLAGS $LDFLAGS" >conf-ld
+  echo "$ROOT" >conf-home
+
+  make fget
+#  make PREFIX="$ROOT" install
+}

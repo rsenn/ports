@@ -1,0 +1,38 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+# Package: clutter-gst-0.8
+# Provides: clutter-gst
+# Description: GStreamer Integration library for Clutter
+# Clutter-GStreamer (clutter-gst) is an integration library for using GStreamer
+# with Clutter.
+#  Clutter is an open source software library for creating fast, visually
+# rich and animated graphical user interfaces. It uses OpenGL for drawing
+# primitives and has multiple backends, allowing its usage on different
+# platforms.
+#  GStreamer is a streaming media framework, based on graphs of filters
+# which operate on media data.  Applications using this library can do
+# anything from real-time sound processing to playing videos, and just
+# about anything else media-related.  Its plugin-based architecture means
+# that new data types or processing capabilities can be added simply by
+# installing new plug-ins.
+# URL: http://clutter-project.org/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6, libcairo-directfb2, libcairo2, libclutter-0.8-0, libglib2.0-0, libgstreamer-plugins-base0.10-0, libgstreamer0.10-0, libgtk2.0-0, libpango1.0-0, libxml2
+
+name=clutter-gst
+version=0.8.0
+release=1
+source=(http://www.clutter-project.org/sources/clutter-gst/${version%.*}/clutter-gst-$version.tar.bz2)
+
+build()
+{
+  cd clutter-gst-$version
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --target="$target" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}

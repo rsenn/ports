@@ -1,0 +1,33 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: A GTK2-based instant messaging client.
+#  Pidgin is a GTK2-based instant messenger application. It supports multiple
+#  protocols via modules, including AIM, ICQ, Yahoo!, MSN, Jabber, IRC,
+#  Napster, Gadu-Gadu and Zephyr. It has many common features found in
+#  other clients, as well as many unique features. Pidgin is not endorsed
+#  by or affiliated with AOL TimeWarner, Microsoft, or Yahoo.
+#  .
+# URL: http://www.pidgin.im/
+# Maintainer: Roman Senn <roman@digitall.ch>
+# Depends on:
+
+name=pidgin
+version=2.4.0
+release=1
+source=(http://downloads.sourceforge.net/pidgin/pidgin-$version.tar.bz2)
+
+build()
+{
+  cd pidgin-$version
+
+  ./configure \
+     --build="$build" \
+     --host="$host" \
+     --target="$target" \
+     --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+
+# EOF

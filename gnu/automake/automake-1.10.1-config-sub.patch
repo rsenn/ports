@@ -1,0 +1,23 @@
+diff -ru automake-1.10.1_orig/lib/config.sub automake-1.10.1/lib/config.sub
+--- automake-1.10.1_orig/lib/config.sub	2008-12-19 03:52:41.000000000 +0100
++++ automake-1.10.1/lib/config.sub	2008-12-19 03:53:38.000000000 +0100
+@@ -304,7 +304,10 @@
+ 	# because (1) that's what they normally are, and
+ 	# (2) the word "unknown" tends to confuse beginning users.
+ 	i*86 | x86_64)
+-	  basic_machine=$basic_machine-pc
++	  case $basic_machine:$os in
++      i486:*-gnu) ;;
++      *) basic_machine=$basic_machine-pc ;;
++    esac
+ 	  ;;
+ 	# Object if more than one company name word.
+ 	*-*-*)
+@@ -1290,7 +1290,6 @@
+ 		os=-linux-diet
+ 		;;
+ 	-linux*)
+-		os=`echo $os | sed -e 's|linux|linux-gnu|'`
+ 		;;
+ 	-sunos5*)
+ 		os=`echo $os | sed -e 's|sunos5|solaris2|'`

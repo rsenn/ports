@@ -1,0 +1,38 @@
+--- jslibs-0.9-r1881_orig/src/jsode/geom.cpp	2009-02-06 07:25:29.000000000 +0100
++++ jslibs-0.9-r1881/src/jsode/geom.cpp	2009-02-06 07:06:12.000000000 +0100
+@@ -53,7 +53,6 @@
+ 	m[14] = pos[2];
+ 	m[15] = 1;
+ 	return JS_TRUE;
+-	JL_BAD;
+ }
+ 
+ 
+@@ -175,7 +174,7 @@
+ //		J_S_ASSERT( ReadMatrix != NULL, "Invalid matrix interface." );
+ //		ReadMatrix( cx, srcObj, (float**)&m);
+ 
+-		J_S_ASSERT( *m != NULL, "Invalid matrix." );
++		J_S_ASSERT( *m != 0, "Invalid matrix." );
+ 		ode::dMatrix3 m3 = { m[0], m[4], m[8], 0, m[1], m[5], m[9], 0, m[2], m[6], m[10], 0 }; // (TBD) check
+ 		ode::dGeomSetOffsetRotation(geom, m3);
+ 		ode::dGeomSetOffsetPosition(geom, m[3], m[7], m[11]);
+--- jslibs-0.9-r1881_orig/src/jsode/world.cpp	2009-02-06 07:25:29.000000000 +0100
++++ jslibs-0.9-r1881/src/jsode/world.cpp	2009-02-06 07:09:03.000000000 +0100
+@@ -95,7 +95,7 @@
+ 				vel[2] += vel2[2];
+ */
+ 
+-				jsval pos;
++				jsval pos = JSVAL_VOID;
+ 				//FloatVectorToArray(cx, 3, contact[i].geom.pos, &pos);
+ 				FloatVectorToJsval(cx, contact[i].geom.pos, 3, &pos);
+ 
+@@ -376,7 +376,6 @@
+ 		*vp = OBJECT_TO_JSVAL(staticBody);
+ 	}
+ 	return JS_TRUE;
+-	JL_BAD;
+ }
+ 
+ /**doc

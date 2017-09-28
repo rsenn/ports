@@ -1,0 +1,50 @@
+# $Id: Pkgfile,v 1.1 2007/05/09 21:02:50 roman Exp $
+#
+# Description: Lightweight OSC library
+#  This is a lightweight, easy to use implementation of the OSC (Open
+#  Sound Control) protocol (see
+#  <http://www.cnmat.berkeley.edu/OpenSoundControl/> for details).
+#  .
+#  Open Sound Control (OSC) is a protocol for communication among
+#  computers, sound synthesizers, and other multimedia devices that is
+#  optimized for modern networking technology. OSC features:
+#  .
+#   * Open-ended, dynamic, URL-style symbolic naming scheme
+#   * Symbolic and high-resolution numeric argument data
+#   * Pattern matching language to specify multiple recipients of a
+#     single message
+#   * High resolution time tags
+#  .
+# URL: http://liblo.sourceforge.net/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: libc6
+
+name=liblo
+version=0.25
+release=1
+source=($mirror_sf/liblo/liblo-0.25.tar.gz)
+
+build()
+{
+  cd liblo-$version
+
+  libtoolize --force --copy
+  aclocal --force
+  automake --force --copy --foreign --add-missing
+  aclocal --force
+  autoconf --force
+
+  case $host in
+    *-mingw32|*-cygwin) export LIBS="-lws2_32"
+      ;;
+  esac
+
+  ./configure \
+       --build="$build" \
+       --host="$host" \
+       --prefix="$prefix"
+
+  make
+  make DESTDIR="$PKG" install
+}
+

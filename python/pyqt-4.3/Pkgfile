@@ -1,0 +1,26 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description:
+# URL:
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on:
+
+name=pyqt-4.3
+version=4.3.1
+release=1
+source=(http://www.riverbankcomputing.com/Downloads/PyQt4/GPL/PyQt-x11-gpl-$version.tar.gz
+        pyqt-4.3.1-configure.patch)
+
+build()
+{
+  cd PyQt-x11-gpl-$version
+
+  patch -N -p1 -i $SRC/pyqt-4.3.1-configure.patch
+
+  python configure.py
+
+  make CC="${CC-cc}" \
+       CFLAGS="$CFLAGS"
+
+  make DESTDIR="$PKG" install
+}

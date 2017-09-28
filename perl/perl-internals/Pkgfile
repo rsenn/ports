@@ -1,0 +1,25 @@
+# $Id: Pkgtemplate 459 2007-09-24 23:30:12Z root $
+#
+# Description: Write-protect variables, manipulate refcounts
+# URL: http://search.cpan.org/dist/Internals/
+# Maintainer: Roman Senn <rs@adfinis.com>
+# Depends on: 
+
+name=perl-internals
+version=1.1
+release=1
+source=(http://search.cpan.org/CPAN/authors/id/S/ST/STBEY/Internals-$version.tar.gz)
+
+build() 
+{
+  cd Internals-1.1
+  
+  perl Makefile.PL installdirs=vendor
+  
+  make DESTDIR="$PKG" install
+
+  install -d $ROOT/share/doc/perl-internals
+  install -m 644 Artistic.txt MANIFEST CHANGES.txt GNU_GPL.txt README.txt $ROOT/share/doc/perl-internals
+}
+
+# EOF
