@@ -24,10 +24,22 @@ build()
   patch -N -p1 -i $SRC/glib-1.2.10-gcc34-fix.patch
   patch -N -p1 -i $SRC/glib-1.2.10-m4.patch
 
+  #rm -f libtool 
+  #rm -f config.sub config.guess
+
+#  libtoolize --force --copy --automake
+#  automake --force --copy --foreign --add-missing
+#  rm -f config.sub
+#  aclocal --force
+#  autoreconf --force --install
+#  unset build host
+  sed -i '2 { s|.*|echo "$@"| }' config.sub
+
+  CFLAGS="-std=gnu89" \
   LIBS="-lpthread" \
   ./configure \
-       --build="$build" \
-       --host="$host" \
+       ${build+--build="$build"} \
+       ${host+--host="$host"} \
        --prefix="$prefix" \
        --infodir="$prefix/share/info" \
        --mandir="$prefix/share/man" \

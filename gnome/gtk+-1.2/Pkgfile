@@ -14,9 +14,12 @@ build()
 {
   cd gtk+-$version
 
+   sed -i '2 { s|.*|echo "$@"| }' config.sub
+
+  CFLAGS="-std=gnu89" \
   ./configure \
-       --build="$build" \
-       --host="$host" \
+       ${build+--build="$build"} \
+       ${host+--host="$host"} \
        --prefix="$prefix" \
        --${shared:=enable}-shared \
        --${static:=enable}-shared \

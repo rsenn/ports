@@ -23,9 +23,10 @@ build()
   patch -N -p1 -i $SRC/xmms-1.2.10-ir.patch
 #  patch -N -p1 -i $SRC/xmms-1.2.10-m4.patch
 
+  CFLAGS="-std=gnu89" \
   ./configure \
-       --build="$build" \
-       --host="$host" \
+       ${build+--build="$build"} \
+       ${host+--host="$host"} \
        --prefix="$prefix" \
        --${shared:=enable}-shared \
        --${static:=enable}-shared \
