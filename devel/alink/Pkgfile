@@ -6,15 +6,18 @@
 # Depends on:
 
 name=alink
-version=1.0
+version=1.6
 release=1
-source=($mirror_sf/alink/alinksrc.zip)
+source=(alinksrc.zip
+        alink-linux.patch)
 
 build()
 {
   cd alink-src
 
-  make CC="${CC-cc}" CFLAGS="$CFLAGS" EXEEXT=""
+#  patch -p1 --binary -i $SRC/alink-linux.patch
+
+  make -f makefile.linux CC="${CC-cc}" CFLAGS="$CFLAGS" EXEEXT=""
 
   install -d $ROOT/bin
   install -m 755 alink $ROOT/bin

@@ -10,7 +10,7 @@
 # Depends on:
 
 name=glibc
-version=2.7
+version=2.26
 release=1
 source=(ftp://ftp.gnu.org/gnu/glibc/glibc-$version.tar.gz
         glibc-2.7-size_t-fix.patch
@@ -24,9 +24,9 @@ build()
 
   cd $srcdir
 
-  patch -N -p1 -i $SRC/glibc-2.7-size_t-fix.patch
-  patch -N -p1 -i $SRC/glibc-2.7-stack-chk.patch
-  patch -N -p1 -i $SRC/glibc-2.7-fnstsw.patch
+#  patch -N -p1 -i $SRC/glibc-2.7-size_t-fix.patch
+#  patch -N -p1 -i $SRC/glibc-2.7-stack-chk.patch
+ # patch -N -p1 -i $SRC/glibc-2.7-fnstsw.patch
 
   case $prefix in
     "/usr") sysconfdir="/etc" localstatedir="/var" ;;
@@ -46,7 +46,7 @@ build()
       --${selinux-without}-selinux \
       --${gd-without}-gd
 
-  echo "CFLAGS += -march=i486" >configparms
+  #echo "CFLAGS += -march=i486" >configparms
 
   make
   make install_root="$PKG" install
