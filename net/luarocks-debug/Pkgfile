@@ -12,7 +12,7 @@
 # Maintainer: Roman Senn <rs@adfinis.com>
 # Depends on:
 
-name=luarocks
+name=luarocks-debug
 version=3.0.4
 release=1
 source=(https://github.com/luarocks/luarocks/archive/v3.0.4.tar.gz)
@@ -26,12 +26,14 @@ build()
 #  autoconf --force
 #  automake --force --copy --foreign --add-missing
 #
+  CFLAGS="${CFLAGS//-O2/-g3 -ggdb -O0}"
+   grep -rIl  '\-O[23]' * |xargs sed -i 's, -O[23], -g3 -ggdb -O0, ; s, -fomit-frame-pointer,,g'
   ./configure \
-       --prefix="/opt/openresty/luajit" \
+       --prefix="/opt/openresty-debug/luajit" \
        --lua-version=5.1 \
-       --with-lua="/opt/openresty/luajit" \
-       --with-lua-include="/opt/openresty/luajit/include/luajit-2.1"
-
+       --with-lua="/opt/openresty-debug/luajit" \
+       --with-lua-include="/opt/openresty-debug/luajit/include/luajit-2.1"
+   
 
   make 
   make DESTDIR="$PKG" install

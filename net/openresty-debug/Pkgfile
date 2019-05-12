@@ -12,7 +12,7 @@
 # Maintainer: Roman Senn <rs@adfinis.com>
 # Depends on:
 
-name=openresty
+name=openresty-debug
 version=1.13.6.2
 release=1
 source=(https://openresty.org/download/openresty-1.13.6.2.tar.gz
@@ -28,8 +28,11 @@ build()
 #  autoconf --force
 #  automake --force --copy --foreign --add-missing
 #
+  CFLAGS="${CFLAGS//-O2/-g3 -ggdb -O0}"
+   grep -rIl  '\-O[23]' * |xargs sed -i 's, -O[23], -g3 -ggdb -O0, ; s, -fomit-frame-pointer,,g'
+
   ./configure \
-       --prefix="/opt/openresty" \
+       --prefix="/opt/openresty-debug" \
 		--with-pcre-jit \
 		--with-ipv6 \
 		--without-http_redis2_module \
@@ -42,10 +45,11 @@ build()
         --with-http_mp4_module \
         --with-luajit \
         --add-module=$PWD/nginx-rtmp-module \
+        --with-debug \
         --with-cc="zapcc" \
-        --with-cc-opt="-Os" \
+        --with-cc-opt="-g3 -ggdb -O0" \
 		-j8
 
-  make MAKE="make V=1 Q=" -j8
+  make -j8
   make DESTDIR="$PKG" install
 }
