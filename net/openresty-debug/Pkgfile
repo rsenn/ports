@@ -16,11 +16,16 @@ name=openresty-debug
 version=1.13.6.2
 release=1
 source=(https://openresty.org/download/openresty-1.13.6.2.tar.gz
-        https://github.com/arut/nginx-rtmp-module/archive/v1.2.1.tar.gz)
+        https://github.com/arut/nginx-rtmp-module/archive/v1.2.1.tar.gz
+        http://distfiles.gentoo.org/distfiles/ngx_brotli-8104036af9cff4b1d34f22d00ba857e2a93a243c.tar.gz
+        http://distfiles.gentoo.org/distfiles/brotli-1.0.7.tar.gz)
 
 build()
 {
   mv nginx-rtmp-module-1.2.1 openresty-$version/nginx-rtmp-module
+  mv ngx_brotli-8104036af9cff4b1d34f22d00ba857e2a93a243c openresty-$version/nginx-brotli-module
+  rm -rf openresty-$version/nginx-brotli-module/deps/brotli
+  mv brotli-1.0.7 openresty-$version/nginx-brotli-module/deps/brotli
   cd openresty-$version
 
 #  libtoolize --force --copy --automake
@@ -32,22 +37,31 @@ build()
    grep -rIl  '\-O[23]' * |xargs sed -i 's, -O[23], -g3 -ggdb -O0, ; s, -fomit-frame-pointer,,g'
 
   ./configure \
-       --prefix="/opt/openresty-debug" \
-		--with-pcre-jit \
-		--with-ipv6 \
-		--without-http_redis2_module \
-		--with-http_iconv_module \
-        --with-luajit \
-        --with-mail \
-        --with-mail_ssl_module \
-        --with-stream \
-        --with-stream_ssl_module \
-        --with-http_mp4_module \
-        --with-luajit \
-        --add-module=$PWD/nginx-rtmp-module \
-        --with-debug \
-        --with-cc="zapcc" \
-        --with-cc-opt="-g3 -ggdb -O0" \
+    --prefix="/opt/openresty-debug" \
+    --with-pcre-jit \
+    --with-ipv6 \
+    --without-http_redis2_module \
+    --with-http_iconv_module \
+    --with-luajit="/opt/openresty/luajit" \
+    --with-mail \
+    --with-mail_ssl_module \
+    --with-stream \
+    --with-stream_ssl_module \
+    --with-stream_ssl_preread_module \
+    --with-http_iconv_module \
+    --with-http_v2_module \
+    --with-http_mp4_module \
+    --with-http_gunzip_module \
+    --with-http_gzip_static_module \
+    --add-module=$PWD/nginx-rtmp-module \
+    --add-module=$PWD/nginx-brotli-module \
+    --with-pcre-jit \
+    --with-ipv6 \
+    --without-http_redis2_module \
+    --with-http_iconv_module \
+    --with-debug \
+    --with-cc="$CC" \
+    --with-cc-opt="-g3 -ggdb -O0" \
 		-j8
 
   make -j8

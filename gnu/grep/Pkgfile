@@ -61,12 +61,12 @@ build()
   patch -N -p1 -i $SRC/grep-2.5.3-multibyte-color.patch
   patch -N -p1 -i $SRC/grep-2.5.3-no-recurse-symlinks.patch
 
-  libtoolize --force --copy --install --automake
-  aclocal --force -I m4
-  autoheader --force
-  automake --force --copy --foreign --add-missing
-  aclocal --force -I m4
-  autoconf --force
+#  libtoolize --force --copy --install --automake
+#  aclocal --force -I m4
+#  autoheader --force
+#  automake --force --copy --foreign --add-missing
+#  aclocal --force -I m4
+#  autoconf --force
 
 #  if set -- $prefix/lib/libcompat.* && test -e "$1"; then
 #    export LIBS="${LIBS:+$LIBS }-lcompat"
@@ -76,6 +76,7 @@ build()
     "/usr") bindir="/bin" sysconfdir="/etc" ;;
   esac
 
+  LIBS="-lpthread" \
   ./configure \
        --build="$build" \
        --host="$host" \
