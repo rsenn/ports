@@ -13,9 +13,9 @@
 # Depends on:
 
 name=openresty
-version=1.13.6.2
+version=1.15.8.2
 release=1
-source=(https://openresty.org/download/openresty-1.13.6.2.tar.gz
+source=(https://openresty.org/download/openresty-$version.tar.gz
         https://github.com/arut/nginx-rtmp-module/archive/v1.2.1.tar.gz
         http://distfiles.gentoo.org/distfiles/ngx_brotli-8104036af9cff4b1d34f22d00ba857e2a93a243c.tar.gz
         http://distfiles.gentoo.org/distfiles/brotli-1.0.7.tar.gz)
@@ -52,8 +52,8 @@ build()
     --with-http_gzip_static_module \
     --add-module=$PWD/nginx-rtmp-module \
     --add-module=$PWD/nginx-brotli-module \
-    --with-cc="$CC" \
-    --with-cc-opt="$CFLAGS" \
+    --with-cc="${CC:-gcc}" \
+    --with-cc-opt="${CFLAGS:--Os}" \
 		-j8
 
   make MAKE="make V=1 Q=" -j8
