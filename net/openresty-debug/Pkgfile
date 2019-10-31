@@ -13,9 +13,9 @@
 # Depends on:
 
 name=openresty-debug
-version=1.13.6.2
+version=1.15.8.2
 release=1
-source=(https://openresty.org/download/openresty-1.13.6.2.tar.gz
+source=(https://openresty.org/download/openresty-$version.tar.gz
         https://github.com/arut/nginx-rtmp-module/archive/v1.2.1.tar.gz)
 
 build()
@@ -46,7 +46,7 @@ build()
         --with-luajit \
         --add-module=$PWD/nginx-rtmp-module \
         --with-debug \
-        --with-cc="zapcc" \
+        --with-cc="${CC:-gcc}" \
         --with-cc-opt="-g3 -ggdb -O0" \
 		-j8
 

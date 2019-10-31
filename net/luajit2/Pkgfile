@@ -13,13 +13,13 @@
 # Depends on:
 
 name=luajit2
-version=2.1-20190329
+version=2.1-20190912
 release=1
-source=(https://luajit2.org/download/v2.1-20190329.tar.gz)
+source=(https://github.com/openresty/luajit2/archive/v$version.tar.gz)
 
 build()
 {
-  cd luajit2-2.1-20190329
+  cd luajit2-$version
 
 #  libtoolize --force --copy --automake
 #  aclocal --force -I m4
@@ -27,5 +27,5 @@ build()
 #  automake --force --copy --foreign --add-missing
 #
 
-  make DEFAULT_CC="zapcc" CCDEBUG="-g -ggdb" Q= E="@:" PREFIX=/opt/openresty/luajit all install DESTDIR="$PKG" 
+  make DEFAULT_CC="${CC:-gcc}" CCDEBUG="-g -ggdb" Q= E="@:" PREFIX=/opt/openresty/luajit all install DESTDIR="$PKG" 
 }
