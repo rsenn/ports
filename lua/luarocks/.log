@@ -1,6 +1,93 @@
 Executing: build
 Executing: cd luarocks-1.0
-Executing: ./configure --prefix=/usr --with-lua=/usr
-Lua interpreter found: /usr/lua...
-Checking Lua includes... lua.h not found (looked in /usr/include/lua.h)
-You may want to use the flag --with-lua-include. See --help.
+Executing: ./configure --prefix=/opt/openresty/luajit --lua-suffix=jit --with-lua=/opt/openresty/luajit/ --with-lua-include=/opt/openresty/luajit/include/luajit-2.1
+Checking Lua includes... lua.h found in /opt/openresty/luajit/include/luajit-2.1/lua.h
+wget found at /usr/bin
+md5sum found at /usr/bin
+Configuring for system... Linux
+Configuring for architecture... x86_64
+Writing configuration...
+
+Installation prefix: /opt/openresty/luajit
+LuaRocks configuration directory: /opt/openresty/luajit/etc/luarocks
+Using Lua from: /opt/openresty/luajit/
+
+Done. You can now run 'make' to build.
+
+Executing: make
+for f in luarocks luarocks-admin ;\
+do \
+   sed "1d" src/bin/$f >> src/bin/$f.bak ;\
+   echo "#!/opt/openresty/luajit//bin/luajit" > src/bin/$f ;\
+   echo "package.path = [[/opt/openresty/luajit/share/lua/5.1//?.lua;/opt/openresty/luajit/share/lua/5.1//?/init.lua;]]..package.path" >> src/bin/$f ;\
+   cat src/bin/$f.bak >> src/bin/$f ;\
+   rm src/bin/$f.bak ;\
+done
+cp src/luarocks/cfg.lua src/luarocks/cfg.lua.bak
+rm src/luarocks/cfg.lua
+if [ -n "/opt/openresty/luajit" ] ;\
+then \
+   echo "local LUAROCKS_PREFIX=[[/opt/openresty/luajit]]" >> src/luarocks/cfg.lua ;\
+fi
+if [ -n "/opt/openresty/luajit/include/luajit-2.1" ] ;\
+then \
+   echo "local LUA_INCDIR=[[/opt/openresty/luajit/include/luajit-2.1]]" >> src/luarocks/cfg.lua ;\
+fi
+if [ -n "/opt/openresty/luajit//lib" ] ;\
+then \
+   echo "local LUA_LIBDIR=[[/opt/openresty/luajit//lib]]" >> src/luarocks/cfg.lua ;\
+fi
+if [ -n "/opt/openresty/luajit//bin" ] ;\
+then \
+   echo "local LUA_BINDIR=[[/opt/openresty/luajit//bin]]" >> src/luarocks/cfg.lua ;\
+fi
+if [ -n "jit" ] ;\
+then \
+   echo "local LUA_INTERPRETER=[[luajit]]" >> src/luarocks/cfg.lua ;\
+fi
+if [ -n "/opt/openresty/luajit/etc/luarocks" ] ;\
+then \
+   echo "local LUAROCKS_SYSCONFIG=[[/opt/openresty/luajit/etc/luarocks/config.lua]]" >> src/luarocks/cfg.lua ;\
+fi
+if [ -n "/opt/openresty/luajit/lib/luarocks" ] ;\
+then \
+   echo "local LUAROCKS_ROCKS_TREE=[[/opt/openresty/luajit/lib/luarocks]]" >> src/luarocks/cfg.lua ;\
+fi
+if [ -n "" ] ;\
+then \
+   echo "local LUAROCKS_FORCE_CONFIG=true" >> src/luarocks/cfg.lua ;\
+fi
+echo "local LUAROCKS_UNAME_S=[[Linux]]" >> src/luarocks/cfg.lua
+echo "local LUAROCKS_UNAME_M=[[x86_64]]" >> src/luarocks/cfg.lua
+echo "local LUAROCKS_DOWNLOADER=[[wget]]" >> src/luarocks/cfg.lua
+echo "local LUAROCKS_MD5CHECKER=[[md5sum]]" >> src/luarocks/cfg.lua
+cat src/luarocks/cfg.lua.bak >> src/luarocks/cfg.lua
+rm src/luarocks/cfg.lua.bak
+
+Done. Type 'make install' to install into /opt/openresty/luajit.
+
+Executing: make DESTDIR=$PKG install
+mkdir -p "$PKG/opt/openresty/luajit/bin"
+cd src/bin && cp luarocks luarocks-admin "$PKG/opt/openresty/luajit/bin"
+mkdir -p "$PKG/opt/openresty/luajit/share/lua/5.1//luarocks"
+cd src/luarocks && for f in build/cmake.lua build/command.lua build.lua build/make.lua command_line.lua cfg.lua deps.lua fetch.lua fs.lua fs/unix.lua fs/win32.lua help.lua install.lua list.lua persist.lua make_manifest.lua pack.lua path.lua rep.lua require.lua search.lua type_check.lua util.lua remove.lua build/builtin.lua make.lua manif.lua unpack.lua fetch/cvs.lua fetch/sscm.lua fetch/git.lua; do d="$PKG/opt/openresty/luajit/share/lua/5.1//luarocks"/`dirname "$f"`; mkdir -p "$d"; cp "$f" "$d"; done
+mkdir -p "$PKG/opt/openresty/luajit/lib/luarocks"
+if [ ! -f "$PKG/opt/openresty/luajit/etc/luarocks/config.lua" ] ;\
+then \
+   mkdir -p `dirname "$PKG/opt/openresty/luajit/etc/luarocks/config.lua"` ;\
+   echo 'rocks_servers = {' >> "$PKG/opt/openresty/luajit/etc/luarocks/config.lua" ;\
+   echo '   [[http://luarocks.luaforge.net/rocks]]' >> "$PKG/opt/openresty/luajit/etc/luarocks/config.lua" ;\
+   echo '}' >> "$PKG/opt/openresty/luajit/etc/luarocks/config.lua" ;\
+   echo 'rocks_trees = {' >> "$PKG/opt/openresty/luajit/etc/luarocks/config.lua" ;\
+   if  [ ! -n "" ] ;\
+   then \
+      echo '   home..[[/.luarocks]],' >> "$PKG/opt/openresty/luajit/etc/luarocks/config.lua" ;\
+   fi ;\
+   echo '   [[/opt/openresty/luajit/lib/luarocks]]' >> "$PKG/opt/openresty/luajit/etc/luarocks/config.lua" ;\
+   echo '}' >> "$PKG/opt/openresty/luajit/etc/luarocks/config.lua" ;\
+   if [ -n "" ] ;\
+   then \
+      echo "scripts_dir = [[]]" >> "$PKG/opt/openresty/luajit/etc/luarocks/config.lua" ;\
+   fi ;\
+fi
+Executing: exit 0
