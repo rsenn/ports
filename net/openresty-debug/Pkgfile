@@ -18,7 +18,8 @@ release=1
 source=(https://openresty.org/download/openresty-$version.tar.gz
         https://github.com/arut/nginx-rtmp-module/archive/v1.2.1.tar.gz
         http://distfiles.gentoo.org/distfiles/ngx_brotli-8104036af9cff4b1d34f22d00ba857e2a93a243c.tar.gz
-        http://distfiles.gentoo.org/distfiles/brotli-1.0.7.tar.gz)
+        http://distfiles.gentoo.org/distfiles/brotli-1.0.7.tar.gz
+        openresty-1.15.8.2-no-global-warn.diff)
 
 build()
 {
@@ -27,6 +28,8 @@ build()
   rm -rf openresty-$version/nginx-brotli-module/deps/brotli
   mv brotli-1.0.7 openresty-$version/nginx-brotli-module/deps/brotli
   cd openresty-$version
+
+  patch -p0 -R -i $SRC/openresty-1.15.8.2-no-global-warn.diff
 
 #  libtoolize --force --copy --automake
 #  aclocal --force -I m4
