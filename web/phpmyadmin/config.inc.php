@@ -55,3 +55,5 @@ $cfg['UploadDir'] = '';
 $cfg['SaveDir'] = '';
 
 
+$cfg['PmaNoRelation_DisableWarning'] = true;
+$cfg['Lang'] = 'en';

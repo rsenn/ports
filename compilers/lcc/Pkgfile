@@ -25,19 +25,40 @@ build()
 
   patch -N -p1 -i $SRC/lcc-4.1-installation.patch
 
-  export BUILDDIR="x86" TARGET="linux" HOSTFILE="etc/linux.c"
+  mkdir -p lcc
+  BUILDDIR=lcc make -j2 CFLAGS="-O2 -DLCCDIR='\"/usr/lib/lcc/\"'" HOSTFILE=./etc/linux.c all
+  #BUILDDIR=lcc make -j2 CFLAGS="-O2 -DLCCDIR='\"/usr/lib/lcc/\"'" all
+ 
+  cd lcc 
+  mkdir -p $PKG/usr/{bin,lib/${name}/include,man/man1}
+  install -Dm755 bprint $PKG/usr/bin/bprint
+  install -Dm755 lburg $PKG/usr/bin/lburg
+  install -Dm755 lcc $PKG/usr/bin/lcc
 
-  make CC="${CC-cc}" CFLAGS="$CFLAGS" rcc lburg cpp lcc bprint liblcc
+  ## rcc renamed to lcc-rcc to avoid a conflict with qtchooser
+  install -Dm755 rcc $PKG/usr/bin/${name}-rcc
 
-  install -d $ROOT/bin $ROOT/libexec/lcc/$BUILDDIR/$TARGET
-  install -m 755 $BUILDDIR/lcc $ROOT/bin
-  install -m 755 $BUILDDIR/{cpp,rcc,*.a} $ROOT/libexec/lcc/$BUILDDIR/$TARGET
-
-  install -d $ROOT/share/man/man1
-  install -m 644 */*.1 $ROOT/share/man/man1
-
-  install -d $ROOT/share/doc/$name-$version
-  install -m 644 README LOG */*.{html,pdf} $ROOT/share/doc/$name-$version
-
-  copy_license "CPYRIGHT"
+  install -Dm755 cpp $PKG/usr/lib/${name}/
+  mv liblcc.a librcc.a $PKG/usr/lib/${name}/
+  install -Dm644 ../CPYRIGHT $PKG/usr/share/licenses/${name}/COPYRIGHT
+  ln -s /usr/lib/gcc/*-linux-gnu/*/include/* $PKG/usr/lib/${name}/include/
+  ln -s /usr/lib/gcc/*-linux-gnu/*/crt* $PKG/usr/lib/${name}/
+  cp -f ../include/x86/linux/* $PKG/usr/lib/${name}/include/
+  install -Dm644 ../doc/bprint.1 $PKG/usr/man/man1/bprint.1
+  install -Dm644 ../doc/lcc.1 $PKG/usr/man/man1/lcc.1
+#  export BUILDDIR="x86" TARGET="linux" HOSTFILE="etc/linux.c"
+#
+#  make CC="${CC-cc}" CFLAGS="$CFLAGS" rcc lburg cpp lcc bprint liblcc
+#
+#  install -d $ROOT/bin $ROOT/libexec/lcc/$BUILDDIR/$TARGET
+#  install -m 755 $BUILDDIR/lcc $ROOT/bin
+#  install -m 755 $BUILDDIR/{cpp,rcc,*.a} $ROOT/libexec/lcc/$BUILDDIR/$TARGET
+#
+#  install -d $ROOT/share/man/man1
+#  install -m 644 */*.1 $ROOT/share/man/man1
+#
+#  install -d $ROOT/share/doc/$name-$version
+#  install -m 644 README LOG */*.{html,pdf} $ROOT/share/doc/$name-$version
+#
+#  copy_license "CPYRIGHT"
 }
