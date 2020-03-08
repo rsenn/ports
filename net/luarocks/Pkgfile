@@ -13,9 +13,10 @@
 # Depends on:
 
 name=luarocks
-version=3.2.1
+version=3.3.1
 release=1
-source=(https://github.com/luarocks/luarocks/archive/v$version.tar.gz)
+source=(https://github.com/luarocks/luarocks/archive/v$version.tar.gz
+        luarocks.sh)
 
 build()
 {
@@ -35,4 +36,7 @@ build()
 
   make 
   make DESTDIR="$PKG" install
+
+  install -d $PKG/etc/profile.d/
+  install -m 644  $SRC/luarocks.sh $PKG/etc/profile.d/
 }
