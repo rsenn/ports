@@ -20,7 +20,6 @@ _luarocks() {
     esac
   done
   set +x
-var_dump CMD OPTS FILTER
 [ $# -gt 0 ] ||  set -- ""
   for ARG; do 
     eval "(echo 'Searching $ARG ...' 1>&2 ; set -x; command luarocks \$CMD \$OPTS \$ARG${FILTER:+ | sed -e '$FILTER'}) || exit \$?"
